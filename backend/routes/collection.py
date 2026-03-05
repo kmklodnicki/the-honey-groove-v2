@@ -106,6 +106,104 @@ async def get_record(record_id: str, current_user: Optional[Dict] = Depends(get_
     
     return RecordResponse(**record, spin_count=spin_count)
 
+
+@router.get("/records/{record_id}/detail")
+async def get_record_detail(record_id: str, current_user: Optional[Dict] = Depends(get_current_user)):
+    """Enriched record detail: community stats, market value, related posts, owners."""
+    record = await db.records.find_one({"id": record_id}, {"_id": 0})
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found")
+
+    spin_count = await db.spins.count_documents({"record_id": record_id})
+
+    # Find all copies of this record across the platform (by discogs_id or artist+title)
+    sibling_query = {}
+    if record.get("discogs_id"):
+        sibling_query = {"discogs_id": record["discogs_id"]}
+    else:
+        sibling_query = {"artist": record["artist"], "title": record["title"]}
+
+    siblings = await db.records.find(sibling_query, {"_id": 0}).to_list(500)
+    sibling_ids = [s["id"] for s in siblings]
+    owner_ids = list({s["user_id"] for s in siblings})
+
+    # Community stats
+    total_owners = len(owner_ids)
+    total_community_spins = await db.spins.count_documents({"record_id": {"$in": sibling_ids}})
+
+    # Owners list (up to 12)
+    owners = []
+    if owner_ids:
+        users_list = await db.users.find(
+            {"id": {"$in": owner_ids[:12]}},
+            {"_id": 0, "id": 1, "username": 1, "avatar_url": 1}
+        ).to_list(12)
+        owners = users_list
+
+    # Related posts (Now Spinning, ADDED_TO_COLLECTION for this record)
+    related_posts = await db.posts.find(
+        {"record_id": {"$in": sibling_ids}},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(10).to_list(10)
+
+    # Enrich posts with user info
+    post_user_ids = list({p["user_id"] for p in related_posts})
+    if post_user_ids:
+        ul = await db.users.find(
+            {"id": {"$in": post_user_ids}},
+            {"_id": 0, "id": 1, "username": 1, "avatar_url": 1}
+        ).to_list(50)
+        users_map = {u["id"]: u for u in ul}
+        for p in related_posts:
+            p["user"] = users_map.get(p["user_id"])
+
+    # Market value (from cache or Discogs)
+    market_value = None
+    if record.get("discogs_id"):
+        cached = await db.discogs_values.find_one(
+            {"discogs_id": record["discogs_id"]}, {"_id": 0}
+        )
+        if cached:
+            market_value = {
+                "low": cached.get("low_value"),
+                "median": cached.get("median_value"),
+                "high": cached.get("high_value"),
+                "currency": "USD",
+            }
+
+    # ISO/wantlist count (how many people want this)
+    wantlist_count = 0
+    if record.get("discogs_id"):
+        wantlist_count = await db.iso_items.count_documents({
+            "$or": [
+                {"discogs_id": record["discogs_id"]},
+                {"artist": record["artist"], "title": record["title"]},
+            ]
+        })
+    else:
+        wantlist_count = await db.iso_items.count_documents({
+            "artist": record["artist"], "title": record["title"]
+        })
+
+    # Owner info
+    owner_user = await db.users.find_one(
+        {"id": record["user_id"]},
+        {"_id": 0, "id": 1, "username": 1, "avatar_url": 1}
+    )
+
+    return {
+        "record": {**record, "spin_count": spin_count},
+        "owner": owner_user,
+        "community": {
+            "total_owners": total_owners,
+            "total_spins": total_community_spins,
+            "wantlist_count": wantlist_count,
+            "owners": owners,
+        },
+        "market_value": market_value,
+        "related_posts": related_posts,
+    }
+
 @router.get("/users/{username}/records", response_model=List[RecordResponse])
 async def get_user_records(username: str, current_user: Optional[Dict] = Depends(get_current_user)):
     user = await db.users.find_one({"username": username.lower()}, {"_id": 0})
