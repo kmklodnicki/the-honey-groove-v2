@@ -257,6 +257,9 @@ class ISOResponse(BaseModel):
     artist: str
     album: str
     record_id: Optional[str] = None
+    discogs_id: Optional[int] = None
+    cover_url: Optional[str] = None
+    year: Optional[int] = None
     priority: str = "MED"
     pressing_notes: Optional[str] = None
     condition_pref: Optional[str] = None
@@ -289,11 +292,49 @@ class ISOPostCreate(BaseModel):
     target_price_min: Optional[float] = None
     target_price_max: Optional[float] = None
     caption: Optional[str] = None
+    discogs_id: Optional[int] = None
+    cover_url: Optional[str] = None
+    year: Optional[int] = None
 
 class VinylMoodCreate(BaseModel):
     mood: str  # Late Night, Sunday Morning, Rainy Day, etc.
     caption: Optional[str] = None
     record_id: Optional[str] = None
+
+# Marketplace Listing Models
+LISTING_TYPES = ["BUY_NOW", "MAKE_OFFER", "TRADE"]
+LISTING_CONDITIONS = ["Mint", "Near Mint", "Very Good Plus", "Very Good", "Good Plus", "Good", "Fair"]
+
+class ListingCreate(BaseModel):
+    record_id: Optional[str] = None
+    discogs_id: Optional[int] = None
+    artist: str
+    album: str
+    cover_url: Optional[str] = None
+    year: Optional[int] = None
+    condition: Optional[str] = None
+    pressing_notes: Optional[str] = None
+    listing_type: str  # BUY_NOW, MAKE_OFFER, TRADE
+    price: Optional[float] = None
+    description: Optional[str] = None
+
+class ListingResponse(BaseModel):
+    id: str
+    user_id: str
+    record_id: Optional[str] = None
+    discogs_id: Optional[int] = None
+    artist: str
+    album: str
+    cover_url: Optional[str] = None
+    year: Optional[int] = None
+    condition: Optional[str] = None
+    pressing_notes: Optional[str] = None
+    listing_type: str
+    price: Optional[float] = None
+    description: Optional[str] = None
+    status: str = "ACTIVE"
+    created_at: str
+    user: Optional[Dict[str, Any]] = None
 
 # Weekly Summary Models
 class WeeklySummaryResponse(BaseModel):
@@ -1484,6 +1525,9 @@ async def composer_iso(data: ISOPostCreate, user: Dict = Depends(require_auth)):
         "user_id": user["id"],
         "artist": data.artist,
         "album": data.album,
+        "discogs_id": data.discogs_id,
+        "cover_url": data.cover_url,
+        "year": data.year,
         "pressing_notes": data.pressing_notes,
         "condition_pref": data.condition_pref,
         "tags": data.tags or [],
@@ -1557,6 +1601,122 @@ async def delete_iso(iso_id: str, user: Dict = Depends(require_auth)):
         raise HTTPException(status_code=404, detail="ISO not found")
     await db.iso_items.delete_one({"id": iso_id})
     return {"message": "ISO deleted"}
+
+# ============== MARKETPLACE LISTING ROUTES ==============
+
+@api_router.post("/listings", response_model=ListingResponse)
+async def create_listing(data: ListingCreate, user: Dict = Depends(require_auth)):
+    """Create a marketplace listing"""
+    now = datetime.now(timezone.utc).isoformat()
+    listing_id = str(uuid.uuid4())
+    
+    listing_doc = {
+        "id": listing_id,
+        "user_id": user["id"],
+        "record_id": data.record_id,
+        "discogs_id": data.discogs_id,
+        "artist": data.artist,
+        "album": data.album,
+        "cover_url": data.cover_url,
+        "year": data.year,
+        "condition": data.condition,
+        "pressing_notes": data.pressing_notes,
+        "listing_type": data.listing_type,
+        "price": data.price,
+        "description": data.description,
+        "status": "ACTIVE",
+        "created_at": now
+    }
+    await db.listings.insert_one(listing_doc)
+    
+    # Check for ISO matches
+    iso_matches = await db.iso_items.find({
+        "status": "OPEN",
+        "user_id": {"$ne": user["id"]},
+        "$or": [
+            {"discogs_id": data.discogs_id} if data.discogs_id else {"_id": None},
+            {"artist": {"$regex": data.artist, "$options": "i"}, "album": {"$regex": data.album, "$options": "i"}}
+        ]
+    }, {"_id": 0}).to_list(100)
+    
+    user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url")}
+    return ListingResponse(**{k: v for k, v in listing_doc.items() if k != '_id'}, user=user_data)
+
+@api_router.get("/listings", response_model=List[ListingResponse])
+async def get_listings(listing_type: Optional[str] = None, search: Optional[str] = None, limit: int = 50, skip: int = 0):
+    """Browse marketplace listings"""
+    query = {"status": "ACTIVE"}
+    if listing_type and listing_type in LISTING_TYPES:
+        query["listing_type"] = listing_type
+    if search:
+        query["$or"] = [
+            {"artist": {"$regex": search, "$options": "i"}},
+            {"album": {"$regex": search, "$options": "i"}}
+        ]
+    
+    listings = await db.listings.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    result = []
+    for listing in listings:
+        seller = await db.users.find_one({"id": listing["user_id"]}, {"_id": 0, "password_hash": 0})
+        user_data = {"id": seller["id"], "username": seller["username"], "avatar_url": seller.get("avatar_url")} if seller else None
+        result.append(ListingResponse(**listing, user=user_data))
+    
+    return result
+
+@api_router.get("/listings/my", response_model=List[ListingResponse])
+async def get_my_listings(user: Dict = Depends(require_auth)):
+    """Get current user's listings"""
+    listings = await db.listings.find({"user_id": user["id"]}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url")}
+    return [ListingResponse(**l, user=user_data) for l in listings]
+
+@api_router.get("/listings/iso-matches")
+async def get_iso_matches(user: Dict = Depends(require_auth)):
+    """Get listings that match the user's active ISOs"""
+    my_isos = await db.iso_items.find({"user_id": user["id"], "status": "OPEN"}, {"_id": 0}).to_list(100)
+    
+    if not my_isos:
+        return []
+    
+    # Build match conditions
+    or_conditions = []
+    for iso in my_isos:
+        cond = {"artist": {"$regex": iso["artist"], "$options": "i"}, "album": {"$regex": iso["album"], "$options": "i"}}
+        or_conditions.append(cond)
+        if iso.get("discogs_id"):
+            or_conditions.append({"discogs_id": iso["discogs_id"]})
+    
+    matches = await db.listings.find({
+        "status": "ACTIVE",
+        "user_id": {"$ne": user["id"]},
+        "$or": or_conditions
+    }, {"_id": 0}).sort("created_at", -1).to_list(50)
+    
+    result = []
+    for listing in matches:
+        seller = await db.users.find_one({"id": listing["user_id"]}, {"_id": 0, "password_hash": 0})
+        user_data = {"id": seller["id"], "username": seller["username"], "avatar_url": seller.get("avatar_url")} if seller else None
+        result.append(ListingResponse(**listing, user=user_data))
+    
+    return result
+
+@api_router.get("/listings/{listing_id}", response_model=ListingResponse)
+async def get_listing(listing_id: str):
+    listing = await db.listings.find_one({"id": listing_id}, {"_id": 0})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+    seller = await db.users.find_one({"id": listing["user_id"]}, {"_id": 0, "password_hash": 0})
+    user_data = {"id": seller["id"], "username": seller["username"], "avatar_url": seller.get("avatar_url")} if seller else None
+    return ListingResponse(**listing, user=user_data)
+
+@api_router.delete("/listings/{listing_id}")
+async def delete_listing(listing_id: str, user: Dict = Depends(require_auth)):
+    listing = await db.listings.find_one({"id": listing_id, "user_id": user["id"]})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+    await db.listings.delete_one({"id": listing_id})
+    return {"message": "Listing deleted"}
 
 # ============== PROFILE DATA ROUTES ==============
 
@@ -2347,6 +2507,8 @@ async def startup_event():
     await db.discogs_tokens.create_index("user_id", unique=True)
     await db.iso_items.create_index("user_id")
     await db.iso_items.create_index("status")
+    await db.listings.create_index([("status", 1), ("created_at", -1)])
+    await db.listings.create_index("user_id")
     
     # Initialize storage
     try:

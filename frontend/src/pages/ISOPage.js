@@ -6,6 +6,7 @@ import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Skeleton } from '../components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import {
   Dialog,
   DialogContent,
@@ -13,79 +14,172 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../components/ui/dialog';
-import { Search, Plus, CheckCircle2, Loader2, Trash2, Filter } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../components/ui/select';
+import { Search, Plus, CheckCircle2, Loader2, Trash2, Filter, Tag, DollarSign, Disc, ArrowRightLeft, ShoppingBag } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
+import { Link } from 'react-router-dom';
 
 const ISO_TAGS = ['OG Press', 'Factory Sealed', 'Any', 'Promo'];
 const FILTER_OPTIONS = ['All', 'OPEN', 'FOUND'];
+const LISTING_CONDITIONS = ['Mint', 'Near Mint', 'Very Good Plus', 'Very Good', 'Good Plus', 'Good', 'Fair'];
 
 const ISOPage = () => {
   const { user, token, API } = useAuth();
+  const [activeTab, setActiveTab] = useState('iso');
   const [isos, setIsos] = useState([]);
+  const [listings, setListings] = useState([]);
+  const [myListings, setMyListings] = useState([]);
+  const [isoMatches, setIsoMatches] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showCreate, setShowCreate] = useState(false);
+  const [showCreate, setShowCreate] = useState(null); // 'iso' or 'listing'
   const [filter, setFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Shared Discogs search state
+  const [discogsQuery, setDiscogsQuery] = useState('');
+  const [discogsResults, setDiscogsResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [selectedRelease, setSelectedRelease] = useState(null);
+  const [manualMode, setManualMode] = useState(false);
+
+  // ISO form
+  const [isoArtist, setIsoArtist] = useState('');
+  const [isoAlbum, setIsoAlbum] = useState('');
+  const [isoPressing, setIsoPressing] = useState('');
+  const [isoCondition, setIsoCondition] = useState('');
+  const [isoPriceMin, setIsoPriceMin] = useState('');
+  const [isoPriceMax, setIsoPriceMax] = useState('');
+  const [isoTags, setIsoTags] = useState([]);
+  const [isoCaption, setIsoCaption] = useState('');
+
+  // Listing form
+  const [listArtist, setListArtist] = useState('');
+  const [listAlbum, setListAlbum] = useState('');
+  const [listCondition, setListCondition] = useState('');
+  const [listPressing, setListPressing] = useState('');
+  const [listType, setListType] = useState('BUY_NOW');
+  const [listPrice, setListPrice] = useState('');
+  const [listDesc, setListDesc] = useState('');
+
   const [submitting, setSubmitting] = useState(false);
 
-  // Form state
-  const [artist, setArtist] = useState('');
-  const [album, setAlbum] = useState('');
-  const [pressing, setPressing] = useState('');
-  const [condition, setCondition] = useState('');
-  const [priceMin, setPriceMin] = useState('');
-  const [priceMax, setPriceMax] = useState('');
-  const [selectedTags, setSelectedTags] = useState([]);
-  const [caption, setCaption] = useState('');
-
-  const fetchISOs = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
-      const resp = await axios.get(`${API}/iso`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setIsos(resp.data);
-    } catch {
-      toast.error('Failed to load ISOs');
-    } finally {
-      setLoading(false);
-    }
+      const headers = { Authorization: `Bearer ${token}` };
+      const [isoRes, listingsRes, myListRes, matchesRes] = await Promise.all([
+        axios.get(`${API}/iso`, { headers }),
+        axios.get(`${API}/listings?limit=30`),
+        axios.get(`${API}/listings/my`, { headers }),
+        axios.get(`${API}/listings/iso-matches`, { headers }),
+      ]);
+      setIsos(isoRes.data);
+      setListings(listingsRes.data);
+      setMyListings(myListRes.data);
+      setIsoMatches(matchesRes.data);
+    } catch { /* ignore */ }
+    finally { setLoading(false); }
   }, [API, token]);
 
-  useEffect(() => { fetchISOs(); }, [fetchISOs]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
-  const toggleTag = (tag) => {
-    setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
+  // Discogs search
+  const searchDiscogs = async (query) => {
+    setDiscogsQuery(query);
+    if (!query || query.length < 2) { setDiscogsResults([]); return; }
+    setSearchLoading(true);
+    try {
+      const resp = await axios.get(`${API}/discogs/search?q=${encodeURIComponent(query)}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setDiscogsResults(resp.data.slice(0, 10));
+    } catch { setDiscogsResults([]); }
+    finally { setSearchLoading(false); }
+  };
+
+  const selectRelease = (release) => {
+    setSelectedRelease(release);
+    setDiscogsResults([]);
+    setDiscogsQuery('');
+    // Fill form fields based on modal type
+    if (showCreate === 'iso') {
+      setIsoArtist(release.artist);
+      setIsoAlbum(release.title);
+    } else if (showCreate === 'listing') {
+      setListArtist(release.artist);
+      setListAlbum(release.title);
+    }
   };
 
   const resetForm = () => {
-    setArtist(''); setAlbum(''); setPressing(''); setCondition('');
-    setPriceMin(''); setPriceMax(''); setSelectedTags([]); setCaption('');
+    setSelectedRelease(null); setManualMode(false); setDiscogsQuery(''); setDiscogsResults([]);
+    setIsoArtist(''); setIsoAlbum(''); setIsoPressing(''); setIsoCondition('');
+    setIsoPriceMin(''); setIsoPriceMax(''); setIsoTags([]); setIsoCaption('');
+    setListArtist(''); setListAlbum(''); setListCondition(''); setListPressing('');
+    setListType('BUY_NOW'); setListPrice(''); setListDesc('');
   };
 
-  const handleCreate = async () => {
-    if (!artist.trim() || !album.trim()) { toast.error('Artist and album required'); return; }
+  const openModal = (type) => { resetForm(); setShowCreate(type); };
+  const closeModal = () => { setShowCreate(null); resetForm(); };
+
+  const toggleTag = (tag) => setIsoTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
+
+  // Submit ISO
+  const submitISO = async () => {
+    const artist = isoArtist || selectedRelease?.artist;
+    const album = isoAlbum || selectedRelease?.title;
+    if (!artist || !album) { toast.error('Artist and album required'); return; }
     setSubmitting(true);
     try {
       await axios.post(`${API}/composer/iso`, {
-        artist: artist.trim(),
-        album: album.trim(),
-        pressing_notes: pressing || null,
-        condition_pref: condition || null,
-        tags: selectedTags.length > 0 ? selectedTags : null,
-        target_price_min: priceMin ? parseFloat(priceMin) : null,
-        target_price_max: priceMax ? parseFloat(priceMax) : null,
-        caption: caption || null,
+        artist, album,
+        discogs_id: selectedRelease?.discogs_id || null,
+        cover_url: selectedRelease?.cover_url || null,
+        year: selectedRelease?.year || null,
+        pressing_notes: isoPressing || null,
+        condition_pref: isoCondition || null,
+        tags: isoTags.length > 0 ? isoTags : null,
+        target_price_min: isoPriceMin ? parseFloat(isoPriceMin) : null,
+        target_price_max: isoPriceMax ? parseFloat(isoPriceMax) : null,
+        caption: isoCaption || null,
       }, { headers: { Authorization: `Bearer ${token}` }});
       toast.success('ISO posted!');
-      setShowCreate(false);
-      resetForm();
-      fetchISOs();
-    } catch (err) {
-      toast.error(err.response?.data?.detail || 'Failed');
-    } finally {
-      setSubmitting(false);
-    }
+      closeModal();
+      fetchData();
+    } catch (err) { toast.error(err.response?.data?.detail || 'Failed'); }
+    finally { setSubmitting(false); }
+  };
+
+  // Submit Listing
+  const submitListing = async () => {
+    const artist = listArtist || selectedRelease?.artist;
+    const album = listAlbum || selectedRelease?.title;
+    if (!artist || !album) { toast.error('Artist and album required'); return; }
+    if (listType !== 'TRADE' && !listPrice) { toast.error('Price required for Buy/Offer listings'); return; }
+    setSubmitting(true);
+    try {
+      await axios.post(`${API}/listings`, {
+        artist, album,
+        discogs_id: selectedRelease?.discogs_id || null,
+        cover_url: selectedRelease?.cover_url || null,
+        year: selectedRelease?.year || null,
+        condition: listCondition || null,
+        pressing_notes: listPressing || null,
+        listing_type: listType,
+        price: listPrice ? parseFloat(listPrice) : null,
+        description: listDesc || null,
+      }, { headers: { Authorization: `Bearer ${token}` }});
+      toast.success('Listing posted!');
+      closeModal();
+      fetchData();
+    } catch (err) { toast.error(err.response?.data?.detail || 'Failed'); }
+    finally { setSubmitting(false); }
   };
 
   const handleMarkFound = async (id) => {
@@ -96,7 +190,7 @@ const ISOPage = () => {
     } catch { toast.error('Failed'); }
   };
 
-  const handleDelete = async (id) => {
+  const handleDeleteIso = async (id) => {
     try {
       await axios.delete(`${API}/iso/${id}`, { headers: { Authorization: `Bearer ${token}` }});
       setIsos(prev => prev.filter(i => i.id !== id));
@@ -104,7 +198,16 @@ const ISOPage = () => {
     } catch { toast.error('Failed'); }
   };
 
-  const filtered = isos.filter(iso => {
+  const handleDeleteListing = async (id) => {
+    try {
+      await axios.delete(`${API}/listings/${id}`, { headers: { Authorization: `Bearer ${token}` }});
+      setMyListings(prev => prev.filter(l => l.id !== id));
+      setListings(prev => prev.filter(l => l.id !== id));
+      toast.success('Listing removed');
+    } catch { toast.error('Failed'); }
+  };
+
+  const filteredIsos = isos.filter(iso => {
     if (filter !== 'All' && iso.status !== filter) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -115,6 +218,53 @@ const ISOPage = () => {
 
   const openCount = isos.filter(i => i.status === 'OPEN').length;
   const foundCount = isos.filter(i => i.status === 'FOUND').length;
+
+  // Shared Discogs picker used in both ISO and Listing modals
+  const DiscogsPicker = () => (
+    <div className="space-y-3">
+      {!selectedRelease && !manualMode ? (
+        <>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search Discogs for an album..."
+              value={discogsQuery}
+              onChange={e => searchDiscogs(e.target.value)}
+              className="pl-9 border-honey/50"
+              data-testid="discogs-picker-search"
+              autoFocus
+            />
+            {searchLoading && <Loader2 className="w-4 h-4 animate-spin absolute right-3 top-3 text-muted-foreground" />}
+          </div>
+          {discogsResults.length > 0 && (
+            <div className="border border-honey/30 rounded-lg max-h-48 overflow-y-auto bg-white">
+              {discogsResults.map(r => (
+                <button key={r.discogs_id} onClick={() => selectRelease(r)} className="w-full text-left px-3 py-2 hover:bg-honey/10 flex items-center gap-3 text-sm border-b border-honey/10 last:border-0" data-testid={`discogs-result-${r.discogs_id}`}>
+                  {r.cover_url ? <img src={r.cover_url} alt="" className="w-10 h-10 rounded object-cover" /> : <div className="w-10 h-10 rounded bg-honey/20 flex items-center justify-center"><Disc className="w-5 h-5 text-honey" /></div>}
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium truncate">{r.title}</p>
+                    <p className="text-xs text-muted-foreground truncate">{r.artist} {r.year ? `(${r.year})` : ''}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+          <button onClick={() => setManualMode(true)} className="text-sm text-honey-amber hover:underline" data-testid="manual-entry-btn">
+            Or enter manually
+          </button>
+        </>
+      ) : selectedRelease ? (
+        <div className="flex items-center gap-3 bg-honey/10 rounded-lg p-3">
+          {selectedRelease.cover_url ? <img src={selectedRelease.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow" /> : <div className="w-14 h-14 rounded-lg bg-honey/20 flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>}
+          <div className="flex-1 min-w-0">
+            <p className="font-heading text-base">{selectedRelease.title}</p>
+            <p className="text-sm text-muted-foreground">{selectedRelease.artist} {selectedRelease.year ? `(${selectedRelease.year})` : ''}</p>
+          </div>
+          <button onClick={() => { setSelectedRelease(null); setManualMode(false); }} className="text-xs text-muted-foreground hover:text-red-500">Change</button>
+        </div>
+      ) : null}
+    </div>
+  );
 
   if (loading) {
     return (
@@ -128,143 +278,341 @@ const ISOPage = () => {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 pt-24 pb-24 md:pb-8" data-testid="iso-page">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="font-heading text-3xl text-vinyl-black">ISO</h1>
-          <p className="text-sm text-muted-foreground">In Search Of — your vinyl wish list</p>
-        </div>
-        <Button onClick={() => setShowCreate(true)} className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2" data-testid="create-iso-btn">
-          <Plus className="w-4 h-4" /> New ISO
+      <div className="mb-6">
+        <h1 className="font-heading text-3xl text-vinyl-black">ISO & Market</h1>
+        <p className="text-sm text-muted-foreground mt-1">Buy, offer, or trade with collectors like you</p>
+      </div>
+
+      {/* Action buttons */}
+      <div className="flex gap-3 mb-6">
+        <Button onClick={() => openModal('iso')} className="bg-purple-100 text-purple-800 hover:bg-purple-200 rounded-full gap-2 flex-1" data-testid="create-iso-btn">
+          <Search className="w-4 h-4" /> New ISO
+        </Button>
+        <Button onClick={() => openModal('listing')} className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2 flex-1" data-testid="create-listing-btn">
+          <Tag className="w-4 h-4" /> List for Sale
         </Button>
       </div>
 
-      {/* Stats Bar */}
-      <div className="flex gap-4 mb-4">
-        <div className="bg-purple-50 px-4 py-2 rounded-lg">
-          <span className="text-2xl font-heading text-purple-700">{openCount}</span>
-          <span className="text-xs text-purple-600 ml-1">hunting</span>
-        </div>
-        <div className="bg-green-50 px-4 py-2 rounded-lg">
-          <span className="text-2xl font-heading text-green-700">{foundCount}</span>
-          <span className="text-xs text-green-600 ml-1">found</span>
-        </div>
-      </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="bg-honey/10 mb-6 w-full grid grid-cols-3">
+          <TabsTrigger value="iso" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-iso-list">
+            ISO ({openCount})
+          </TabsTrigger>
+          <TabsTrigger value="market" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-market">
+            Market ({listings.length})
+          </TabsTrigger>
+          <TabsTrigger value="my-listings" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-my-listings">
+            My Listings ({myListings.length})
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Search + Filter */}
-      <div className="flex gap-3 mb-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Search your ISOs..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-9 border-honey/50" data-testid="iso-search" />
-        </div>
-        <div className="flex gap-1">
-          {FILTER_OPTIONS.map(f => (
-            <Button key={f} size="sm" variant={filter === f ? 'default' : 'outline'} onClick={() => setFilter(f)}
-              className={`rounded-full text-xs ${filter === f ? 'bg-vinyl-black text-white' : ''}`} data-testid={`iso-filter-${f.toLowerCase()}`}>
-              {f === 'All' ? <Filter className="w-3 h-3 mr-1" /> : null} {f}
-            </Button>
-          ))}
-        </div>
-      </div>
+        {/* ISO Tab */}
+        <TabsContent value="iso">
+          <div className="flex gap-4 mb-4">
+            <div className="bg-purple-50 px-4 py-2 rounded-lg">
+              <span className="text-2xl font-heading text-purple-700">{openCount}</span>
+              <span className="text-xs text-purple-600 ml-1">hunting</span>
+            </div>
+            <div className="bg-green-50 px-4 py-2 rounded-lg">
+              <span className="text-2xl font-heading text-green-700">{foundCount}</span>
+              <span className="text-xs text-green-600 ml-1">found</span>
+            </div>
+          </div>
 
-      {/* ISO List */}
-      {filtered.length === 0 ? (
-        <Card className="p-8 text-center border-honey/30">
-          <Search className="w-12 h-12 text-purple-300 mx-auto mb-4" />
-          <h3 className="font-heading text-xl mb-2">
-            {isos.length === 0 ? 'No ISOs yet' : 'No results'}
-          </h3>
-          <p className="text-muted-foreground text-sm">
-            {isos.length === 0 ? 'Tap "New ISO" to start your vinyl hunt!' : 'Try a different filter or search term.'}
-          </p>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {filtered.map(iso => (
-            <Card key={iso.id} className={`p-4 border-honey/30 transition-all ${iso.status === 'FOUND' ? 'opacity-60 bg-green-50/30' : 'hover:shadow-md'}`} data-testid={`iso-item-${iso.id}`}>
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="font-heading text-lg">{iso.album}</h4>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                      iso.status === 'FOUND' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'
-                    }`}>{iso.status}</span>
+          {isoMatches.length > 0 && (
+            <Card className="p-4 border-purple-200 bg-purple-50/50 mb-4" data-testid="iso-matches-banner">
+              <p className="text-sm font-medium text-purple-700 mb-2">ISO Matches Found!</p>
+              <div className="flex gap-3 overflow-x-auto pb-2">
+                {isoMatches.map(m => (
+                  <div key={m.id} className="flex-shrink-0 bg-white rounded-lg p-3 border border-purple-200 w-48">
+                    <div className="flex items-center gap-2 mb-1">
+                      {m.cover_url ? <img src={m.cover_url} alt="" className="w-8 h-8 rounded object-cover" /> : <Disc className="w-8 h-8 text-purple-400" />}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-medium truncate">{m.album}</p>
+                        <p className="text-xs text-muted-foreground truncate">{m.artist}</p>
+                      </div>
+                    </div>
+                    <span className="text-xs text-purple-600 font-medium">{m.listing_type === 'TRADE' ? 'Trade' : `$${m.price}`}</span>
+                    <span className="text-xs text-muted-foreground ml-1">by @{m.user?.username}</span>
                   </div>
-                  <p className="text-sm text-muted-foreground">{iso.artist}</p>
+                ))}
+              </div>
+            </Card>
+          )}
 
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {(iso.tags || []).map(tag => (
-                      <span key={tag} className="px-2 py-0.5 rounded-full text-xs bg-honey/20 text-honey-amber font-medium">{tag}</span>
-                    ))}
-                  </div>
+          <div className="flex gap-3 mb-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input placeholder="Search ISOs..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-9 border-honey/50" data-testid="iso-search" />
+            </div>
+            <div className="flex gap-1">
+              {FILTER_OPTIONS.map(f => (
+                <Button key={f} size="sm" variant={filter === f ? 'default' : 'outline'} onClick={() => setFilter(f)}
+                  className={`rounded-full text-xs ${filter === f ? 'bg-vinyl-black text-white' : ''}`} data-testid={`iso-filter-${f.toLowerCase()}`}>
+                  {f}
+                </Button>
+              ))}
+            </div>
+          </div>
 
-                  <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
-                    {iso.pressing_notes && <span>Press: {iso.pressing_notes}</span>}
-                    {iso.condition_pref && <span>Cond: {iso.condition_pref}</span>}
-                    {(iso.target_price_min || iso.target_price_max) && (
-                      <span>Budget: {iso.target_price_min ? `$${iso.target_price_min}` : '?'} – {iso.target_price_max ? `$${iso.target_price_max}` : '?'}</span>
-                    )}
-                  </div>
+          {filteredIsos.length === 0 ? (
+            <Card className="p-8 text-center border-honey/30">
+              <Search className="w-12 h-12 text-purple-300 mx-auto mb-4" />
+              <h3 className="font-heading text-xl mb-2">{isos.length === 0 ? 'No ISOs yet' : 'No results'}</h3>
+              <p className="text-muted-foreground text-sm">{isos.length === 0 ? 'Tap "New ISO" to start your vinyl hunt!' : 'Try a different filter.'}</p>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {filteredIsos.map(iso => (
+                <ISOCard key={iso.id} iso={iso} isOwn={true} onMarkFound={handleMarkFound} onDelete={handleDeleteIso} />
+              ))}
+            </div>
+          )}
+        </TabsContent>
 
-                  <p className="text-xs text-muted-foreground mt-1">{formatDistanceToNow(new Date(iso.created_at), { addSuffix: true })}</p>
-                </div>
+        {/* Market Tab */}
+        <TabsContent value="market">
+          {listings.length === 0 ? (
+            <Card className="p-8 text-center border-honey/30">
+              <ShoppingBag className="w-12 h-12 text-honey mx-auto mb-4" />
+              <h3 className="font-heading text-xl mb-2">No listings yet</h3>
+              <p className="text-muted-foreground text-sm mb-4">Be the first to list a record for sale or trade!</p>
+              <Button onClick={() => openModal('listing')} className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2">
+                <Tag className="w-4 h-4" /> List a Record
+              </Button>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {listings.map(listing => (
+                <ListingCard key={listing.id} listing={listing} />
+              ))}
+            </div>
+          )}
+        </TabsContent>
 
-                <div className="flex gap-1 shrink-0">
-                  {iso.status === 'OPEN' && (
-                    <Button size="sm" variant="ghost" className="text-green-600 hover:bg-green-50 h-8 px-2" onClick={() => handleMarkFound(iso.id)} data-testid={`mark-found-${iso.id}`}>
-                      <CheckCircle2 className="w-4 h-4" />
-                    </Button>
-                  )}
-                  <Button size="sm" variant="ghost" className="text-red-400 hover:bg-red-50 h-8 px-2" onClick={() => handleDelete(iso.id)} data-testid={`delete-iso-${iso.id}`}>
+        {/* My Listings Tab */}
+        <TabsContent value="my-listings">
+          {myListings.length === 0 ? (
+            <Card className="p-8 text-center border-honey/30">
+              <Tag className="w-12 h-12 text-honey mx-auto mb-4" />
+              <h3 className="font-heading text-xl mb-2">No listings yet</h3>
+              <p className="text-muted-foreground text-sm mb-4">List vinyl from your collection for other collectors.</p>
+              <Button onClick={() => openModal('listing')} className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2">
+                <Tag className="w-4 h-4" /> List a Record
+              </Button>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {myListings.map(listing => (
+                <div key={listing.id} className="relative">
+                  <ListingCard listing={listing} />
+                  <Button size="sm" variant="ghost" onClick={() => handleDeleteListing(listing.id)}
+                    className="absolute top-3 right-3 text-red-400 hover:bg-red-50 h-8 w-8 p-0" data-testid={`delete-listing-${listing.id}`}>
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      )}
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
 
-      {/* Create ISO Modal */}
-      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+      {/* ===== Create ISO Modal ===== */}
+      <Dialog open={showCreate === 'iso'} onOpenChange={(open) => !open && closeModal()}>
         <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-heading flex items-center gap-2"><Search className="w-5 h-5 text-purple-600" /> New ISO</DialogTitle>
             <DialogDescription>What vinyl are you hunting?</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-2">
-            <Input placeholder="Artist *" value={artist} onChange={e => setArtist(e.target.value)} className="border-honey/50" data-testid="iso-form-artist" />
-            <Input placeholder="Album *" value={album} onChange={e => setAlbum(e.target.value)} className="border-honey/50" data-testid="iso-form-album" />
-            <Input placeholder="Press / year preference" value={pressing} onChange={e => setPressing(e.target.value)} className="border-honey/50" />
-            <Input placeholder="Condition preference" value={condition} onChange={e => setCondition(e.target.value)} className="border-honey/50" />
+            <DiscogsPicker />
+            {(manualMode || selectedRelease) && (
+              <>
+                {manualMode && (
+                  <>
+                    <Input placeholder="Artist *" value={isoArtist} onChange={e => setIsoArtist(e.target.value)} className="border-honey/50" data-testid="iso-form-artist" />
+                    <Input placeholder="Album *" value={isoAlbum} onChange={e => setIsoAlbum(e.target.value)} className="border-honey/50" data-testid="iso-form-album" />
+                  </>
+                )}
+                <Input placeholder="Press / year preference" value={isoPressing} onChange={e => setIsoPressing(e.target.value)} className="border-honey/50" />
+                <Input placeholder="Condition preference" value={isoCondition} onChange={e => setIsoCondition(e.target.value)} className="border-honey/50" />
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Tags</label>
+                  <div className="flex flex-wrap gap-2">
+                    {ISO_TAGS.map(tag => (
+                      <button key={tag} onClick={() => toggleTag(tag)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${isoTags.includes(tag) ? 'bg-honey text-vinyl-black shadow-sm' : 'bg-honey/10 text-muted-foreground hover:bg-honey/20'}`}
+                        data-testid={`iso-tag-${tag.toLowerCase().replace(/\s/g, '-')}`}>
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <Input placeholder="Min budget ($)" type="number" value={isoPriceMin} onChange={e => setIsoPriceMin(e.target.value)} className="border-honey/50" />
+                  <Input placeholder="Max budget ($)" type="number" value={isoPriceMax} onChange={e => setIsoPriceMax(e.target.value)} className="border-honey/50" />
+                </div>
+                <Textarea placeholder="Caption for The Hive (optional)" value={isoCaption} onChange={e => setIsoCaption(e.target.value)} className="border-honey/50 resize-none" rows={2} />
+                <Button onClick={submitISO} disabled={submitting || (manualMode && (!isoArtist || !isoAlbum)) || (!manualMode && !selectedRelease)}
+                  className="w-full bg-purple-100 text-purple-800 hover:bg-purple-200 rounded-full" data-testid="iso-form-submit">
+                  {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Search className="w-4 h-4 mr-2" />}
+                  Post ISO
+                </Button>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
-            {/* Tags */}
-            <div>
-              <label className="text-sm font-medium mb-2 block">Tags</label>
-              <div className="flex flex-wrap gap-2">
-                {ISO_TAGS.map(tag => (
-                  <button key={tag} onClick={() => toggleTag(tag)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                      selectedTags.includes(tag) ? 'bg-honey text-vinyl-black shadow-sm' : 'bg-honey/10 text-muted-foreground hover:bg-honey/20'
-                    }`} data-testid={`iso-tag-${tag.toLowerCase().replace(/\s/g, '-')}`}>
-                    {tag}
-                  </button>
-                ))}
-              </div>
-            </div>
+      {/* ===== List for Sale Modal ===== */}
+      <Dialog open={showCreate === 'listing'} onOpenChange={(open) => !open && closeModal()}>
+        <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-heading flex items-center gap-2"><Tag className="w-5 h-5 text-honey-amber" /> List a Record</DialogTitle>
+            <DialogDescription>Sell or trade vinyl with the community</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <DiscogsPicker />
+            {(manualMode || selectedRelease) && (
+              <>
+                {manualMode && (
+                  <>
+                    <Input placeholder="Artist *" value={listArtist} onChange={e => setListArtist(e.target.value)} className="border-honey/50" data-testid="list-form-artist" />
+                    <Input placeholder="Album *" value={listAlbum} onChange={e => setListAlbum(e.target.value)} className="border-honey/50" data-testid="list-form-album" />
+                  </>
+                )}
+                <Select value={listCondition} onValueChange={setListCondition}>
+                  <SelectTrigger className="border-honey/50" data-testid="list-condition-select">
+                    <SelectValue placeholder="Condition" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LISTING_CONDITIONS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <Input placeholder="Press / year (e.g. 1973 US press)" value={listPressing} onChange={e => setListPressing(e.target.value)} className="border-honey/50" />
 
-            <div className="grid grid-cols-2 gap-3">
-              <Input placeholder="Min budget ($)" type="number" value={priceMin} onChange={e => setPriceMin(e.target.value)} className="border-honey/50" />
-              <Input placeholder="Max budget ($)" type="number" value={priceMax} onChange={e => setPriceMax(e.target.value)} className="border-honey/50" />
-            </div>
-            <Textarea placeholder="Caption for The Hive (optional)" value={caption} onChange={e => setCaption(e.target.value)} className="border-honey/50 resize-none" rows={2} />
-            <Button onClick={handleCreate} disabled={submitting || !artist.trim() || !album.trim()} className="w-full bg-purple-100 text-purple-800 hover:bg-purple-200 rounded-full" data-testid="iso-form-submit">
-              {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Search className="w-4 h-4 mr-2" />}
-              Post ISO
-            </Button>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Listing Type</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { key: 'BUY_NOW', label: 'Buy Now', icon: DollarSign, color: 'bg-green-100 text-green-700' },
+                      { key: 'MAKE_OFFER', label: 'Offer', icon: ShoppingBag, color: 'bg-blue-100 text-blue-700' },
+                      { key: 'TRADE', label: 'Trade', icon: ArrowRightLeft, color: 'bg-purple-100 text-purple-700' },
+                    ].map(t => (
+                      <button key={t.key} onClick={() => setListType(t.key)}
+                        className={`px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-1 justify-center transition-all ${
+                          listType === t.key ? `${t.color} ring-2 ring-offset-1 ring-current shadow-sm` : 'bg-gray-50 text-muted-foreground hover:bg-gray-100'
+                        }`} data-testid={`list-type-${t.key.toLowerCase()}`}>
+                        <t.icon className="w-3 h-3" /> {t.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {listType !== 'TRADE' && (
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input placeholder="Price" type="number" value={listPrice} onChange={e => setListPrice(e.target.value)} className="pl-9 border-honey/50" data-testid="list-price-input" />
+                  </div>
+                )}
+
+                <Textarea placeholder="Description (optional)" value={listDesc} onChange={e => setListDesc(e.target.value)} className="border-honey/50 resize-none" rows={2} />
+
+                <Button onClick={submitListing} disabled={submitting || (manualMode && (!listArtist || !listAlbum)) || (!manualMode && !selectedRelease)}
+                  className="w-full bg-honey text-vinyl-black hover:bg-honey-amber rounded-full" data-testid="list-form-submit">
+                  {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Tag className="w-4 h-4 mr-2" />}
+                  {listType === 'TRADE' ? 'List for Trade' : `List for $${listPrice || '0'}`}
+                </Button>
+              </>
+            )}
           </div>
         </DialogContent>
       </Dialog>
     </div>
+  );
+};
+
+// ISO Card Component
+const ISOCard = ({ iso, isOwn, onMarkFound, onDelete }) => (
+  <Card className={`p-4 border-honey/30 transition-all ${iso.status === 'FOUND' ? 'opacity-60 bg-green-50/30' : 'hover:shadow-md'}`} data-testid={`iso-item-${iso.id}`}>
+    <div className="flex items-start gap-3">
+      {iso.cover_url ? (
+        <img src={iso.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow" />
+      ) : (
+        <div className="w-14 h-14 rounded-lg bg-purple-100 flex items-center justify-center shrink-0">
+          <Search className="w-6 h-6 text-purple-400" />
+        </div>
+      )}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <h4 className="font-heading text-base">{iso.album}</h4>
+          <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+            iso.status === 'FOUND' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'
+          }`}>{iso.status}</span>
+        </div>
+        <p className="text-sm text-muted-foreground">{iso.artist}{iso.year ? ` (${iso.year})` : ''}</p>
+        <div className="flex flex-wrap gap-1.5 mt-1">
+          {(iso.tags || []).map(tag => (
+            <span key={tag} className="px-2 py-0.5 rounded-full text-xs bg-honey/20 text-honey-amber font-medium">{tag}</span>
+          ))}
+        </div>
+        <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
+          {iso.pressing_notes && <span>Press: {iso.pressing_notes}</span>}
+          {iso.condition_pref && <span>Cond: {iso.condition_pref}</span>}
+          {(iso.target_price_min || iso.target_price_max) && (
+            <span>Budget: {iso.target_price_min ? `$${iso.target_price_min}` : '?'} – {iso.target_price_max ? `$${iso.target_price_max}` : '?'}</span>
+          )}
+        </div>
+      </div>
+      {isOwn && iso.status === 'OPEN' && (
+        <div className="flex gap-1 shrink-0">
+          <Button size="sm" variant="ghost" className="text-green-600 hover:bg-green-50 h-8 px-2" onClick={() => onMarkFound(iso.id)} data-testid={`mark-found-${iso.id}`}>
+            <CheckCircle2 className="w-4 h-4" />
+          </Button>
+          <Button size="sm" variant="ghost" className="text-red-400 hover:bg-red-50 h-8 px-2" onClick={() => onDelete(iso.id)}>
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        </div>
+      )}
+    </div>
+  </Card>
+);
+
+// Listing Card Component
+const ListingCard = ({ listing }) => {
+  const typeConfig = {
+    BUY_NOW: { label: 'Buy Now', color: 'bg-green-100 text-green-700' },
+    MAKE_OFFER: { label: 'Make Offer', color: 'bg-blue-100 text-blue-700' },
+    TRADE: { label: 'Trade', color: 'bg-purple-100 text-purple-700' },
+  };
+  const tc = typeConfig[listing.listing_type] || typeConfig.BUY_NOW;
+
+  return (
+    <Card className="border-honey/30 overflow-hidden hover:shadow-md transition-all" data-testid={`listing-${listing.id}`}>
+      <div className="flex gap-3 p-4">
+        {listing.cover_url ? (
+          <img src={listing.cover_url} alt="" className="w-20 h-20 rounded-lg object-cover shadow" />
+        ) : (
+          <div className="w-20 h-20 rounded-lg bg-honey/20 flex items-center justify-center shrink-0">
+            <Disc className="w-8 h-8 text-honey" />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <h4 className="font-heading text-base truncate">{listing.album}</h4>
+          <p className="text-sm text-muted-foreground truncate">{listing.artist}{listing.year ? ` (${listing.year})` : ''}</p>
+          <div className="flex items-center gap-2 mt-2">
+            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${tc.color}`}>{tc.label}</span>
+            {listing.price && <span className="text-sm font-heading">${listing.price}</span>}
+            {listing.condition && <span className="text-xs text-muted-foreground">{listing.condition}</span>}
+          </div>
+          {listing.user && (
+            <Link to={`/profile/${listing.user.username}`} className="text-xs text-muted-foreground hover:underline mt-1 block">
+              @{listing.user.username}
+            </Link>
+          )}
+        </div>
+      </div>
+    </Card>
   );
 };
 
