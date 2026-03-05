@@ -9,6 +9,7 @@ import { Textarea } from './ui/textarea';
 import { Skeleton } from './ui/skeleton';
 import { Loader2, Disc, Share2, Send, Flame, Download } from 'lucide-react';
 import { toast } from 'sonner';
+import { trackEvent } from '../utils/analytics';
 
 // ─── Daily Prompt Card (top of Hive feed) ───
 
@@ -121,6 +122,7 @@ const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
         post_to_hive: postToHive,
       }, { headers: { Authorization: `Bearer ${token}` } });
       setResponseData(r.data);
+      trackEvent('daily_prompt_answered');
       toast.success(postToHive ? 'Buzzed in & posted to The Hive!' : 'Buzzed in!');
       onSuccess?.(r.data);
     } catch (err) { toast.error(err.response?.data?.detail || 'Failed'); }
@@ -136,6 +138,7 @@ const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
         responseType: 'blob',
       });
       const blob = new Blob([r.data], { type: 'image/png' });
+      trackEvent('export_card_generated', { card_type: 'daily_prompt' });
       const file = new File([blob], `honeygroove-prompt-${Date.now()}.png`, { type: 'image/png' });
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], title: 'the Honey Groove · Daily Prompt' });

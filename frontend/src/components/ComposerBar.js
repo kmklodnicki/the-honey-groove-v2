@@ -12,6 +12,7 @@ import {
 } from '../components/ui/select';
 import { Disc, Package, Search, Loader2, X, Feather, ImagePlus, Tag } from 'lucide-react';
 import { toast } from 'sonner';
+import { trackEvent } from '../utils/analytics';
 
 const MOOD_CONFIG = {
   'Late Night': { emoji: '\u{1F56F}\uFE0F', bg: '#1a1230', btnColor: '#6a3a9a', placeholder: 'what are you listening to at this hour?' },
@@ -129,6 +130,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
         mood: spinMood || null,
       }, { headers: { Authorization: `Bearer ${token}` }});
       toast.success('Now Spinning posted!');
+      trackEvent('now_spinning_posted');
       closeModal(); onPostCreated?.();
     } catch (err) { toast.error(err.response?.data?.detail || 'Failed to post'); }
     finally { setSubmitting(false); }
@@ -142,6 +144,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
         store_name: haulStoreName || null, caption: haulCaption || null, items: haulItems,
       }, { headers: { Authorization: `Bearer ${token}` }});
       toast.success('Haul posted!');
+      trackEvent('haul_posted');
       closeModal(); onPostCreated?.();
     } catch (err) { toast.error(err.response?.data?.detail || 'Failed to post'); }
     finally { setSubmitting(false); }
@@ -165,6 +168,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
         caption: isoCaption || null,
       }, { headers: { Authorization: `Bearer ${token}` }});
       toast.success('ISO posted!');
+      trackEvent('iso_posted');
       closeModal(); onPostCreated?.();
     } catch (err) { toast.error(err.response?.data?.detail || 'Failed to post'); }
     finally { setSubmitting(false); }

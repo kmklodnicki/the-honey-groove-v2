@@ -10,6 +10,7 @@ import { Textarea } from '../components/ui/textarea';
 import { Skeleton } from '../components/ui/skeleton';
 import { Search, Disc, Plus, Check, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
+import { trackEvent } from '../utils/analytics';
 import debounce from 'lodash.debounce';
 import { usePageTitle } from '../hooks/usePageTitle';
 
@@ -101,6 +102,7 @@ const AddRecordPage = () => {
       });
 
       toast.success('Record added to collection!');
+      trackEvent('collection_record_added');
       navigate('/collection');
     } catch (error) {
       console.error('Add error:', error);

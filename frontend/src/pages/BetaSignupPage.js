@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import axios from 'axios';
 import { Loader2 } from 'lucide-react';
+import { trackEvent } from '../utils/analytics';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
@@ -32,6 +33,7 @@ const BetaSignupPage = () => {
     setLoading(true);
     try {
       await axios.post(`${API}/api/beta/signup`, form);
+      trackEvent('beta_signup', { feature_interest: form.feature_interest });
       setSubmitted(true);
     } catch (err) {
       setError(err.response?.data?.detail || 'something went wrong. try again.');

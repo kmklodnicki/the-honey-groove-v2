@@ -12,6 +12,7 @@ import {
 import { ArrowLeft, TrendingUp, Users, Disc, Heart, MapPin, Play, Plus, MessageCircle, UserPlus } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
+import { trackEvent } from '../utils/analytics';
 import { usePageTitle } from '../hooks/usePageTitle';
 
 const SECTIONS = {
@@ -86,6 +87,7 @@ const ExploreSeeAllPage = () => {
     try {
       await axios.post(`${API}/composer/iso`, { artist, album, discogs_id, cover_url, year }, { headers });
       toast.success('Added to your Wantlist!');
+      trackEvent('wantlist_added');
     } catch (err) {
       if (err.response?.status === 409) toast.info('Already on your Wantlist');
       else toast.error('Failed to add');

@@ -15,6 +15,7 @@ import {
 } from '../components/ui/select';
 import { Search, Plus, CheckCircle2, Loader2, Trash2, Tag, DollarSign, Disc, ArrowRightLeft, ShoppingBag, Camera, X, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
+import { trackEvent } from '../utils/analytics';
 import { formatDistanceToNow } from 'date-fns';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { ProposeTradeModal } from './TradesPage';
@@ -74,7 +75,7 @@ const ISOPage = () => {
       const checkStatus = async () => {
         try {
           const resp = await axios.get(`${API}/payments/status/${sessionId}`, { headers: { Authorization: `Bearer ${token}` } });
-          if (resp.data.status === 'PAID') { toast.success(`Payment of $${resp.data.amount} confirmed!`); fetchData(); }
+          if (resp.data.status === 'PAID') { trackEvent('purchase_completed', { amount: resp.data.amount }); toast.success(`Payment of $${resp.data.amount} confirmed!`); fetchData(); }
           else toast.info('Payment is being processed. You\'ll be notified when complete.');
         } catch { toast.error('Could not verify payment status'); }
       };
@@ -201,6 +202,7 @@ const ISOPage = () => {
         caption: isoCaption || null,
       }, { headers: { Authorization: `Bearer ${token}` }});
       toast.success('ISO posted!');
+      trackEvent('iso_posted');
       closeModal(); fetchData();
     } catch (err) { toast.error(err.response?.data?.detail || 'Failed'); }
     finally { setSubmitting(false); }

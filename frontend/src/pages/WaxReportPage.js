@@ -13,6 +13,7 @@ import {
   Calendar, Clock, BarChart3, Download, Share2, RefreshCw, ChevronRight, Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { trackEvent } from '../utils/analytics';
 import { usePageTitle } from '../hooks/usePageTitle';
 
 /* ═══════ Brand Colors ═══════ */
@@ -70,6 +71,7 @@ const WaxReportPage = () => {
         headers, responseType: 'blob',
       });
       setShareImg(URL.createObjectURL(resp.data));
+      trackEvent('export_card_generated', { card_type: 'week_in_wax' });
     } catch { toast.error('Failed to generate share card'); }
     finally { setShareLoading(false); }
   };

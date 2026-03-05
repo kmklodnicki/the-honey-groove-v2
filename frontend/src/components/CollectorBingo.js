@@ -9,6 +9,7 @@ import {
 } from './ui/dialog';
 import { Loader2, Download, Lock, PartyPopper, Maximize2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { trackEvent } from '../utils/analytics';
 
 /* ── Helpers ── */
 
@@ -179,6 +180,7 @@ const CollectorBingo = () => {
     try {
       const r = await axios.get(`${API}/bingo/export`, { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' });
       const blob = new Blob([r.data], { type: 'image/png' });
+      trackEvent('export_card_generated', { card_type: 'bingo' });
       const file = new File([blob], `honeygroove-bingo-${Date.now()}.png`, { type: 'image/png' });
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], title: 'the Honey Groove · Collector Bingo' });

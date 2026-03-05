@@ -24,6 +24,7 @@ import {
 } from '../components/ui/select';
 import { ArrowRightLeft, Check, X, MessageSquare, Disc, Loader2, DollarSign, Search, Package, AlertTriangle, Star, Camera, Truck, Clock, CheckCircle2, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { trackEvent } from '../utils/analytics';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -303,6 +304,7 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
         }
       }
       toast.success('Trade accepted! Ship within 5 days.');
+      trackEvent('trade_completed');
       onUpdate();
     }
   };
@@ -827,7 +829,7 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
         boot_direction: bootAmount ? bootDirection : null,
         message: message || null,
       }, { headers: { Authorization: `Bearer ${token}` } });
-      toast.success('Trade proposed!'); onOpenChange(false); onSuccess?.();
+      toast.success('Trade proposed!'); trackEvent('trade_proposed'); onOpenChange(false); onSuccess?.();
     } catch (err) { toast.error(err.response?.data?.detail || 'Failed'); setUploadingPhotos(false); }
     finally { setLoading(false); }
   };

@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { trackEvent } from '../utils/analytics';
 import { usePageTitle } from '../hooks/usePageTitle';
 
 const API = process.env.REACT_APP_BACKEND_URL;
@@ -52,6 +53,7 @@ const JoinPage = () => {
       setToken(access_token);
       setUser(user);
       toast.success('Welcome to the Honey Groove!');
+      trackEvent('invite_used');
       navigate('/hive');
     } catch (err) {
       const detail = err.response?.data?.detail || 'Registration failed';

@@ -10,6 +10,7 @@ import {
 } from '../components/ui/dialog';
 import { ExternalLink, RefreshCw, CheckCircle2, AlertCircle, Loader2, Unplug, Disc, ArrowRight, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { trackEvent } from '../utils/analytics';
 
 const DiscogsImport = ({ onImportComplete, compact = false }) => {
   const { token, API } = useAuth();
@@ -60,6 +61,7 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
           clearInterval(interval);
           if (resp.data.status === 'completed') {
             toast.success(`Imported ${resp.data.imported} records from Discogs!`);
+            trackEvent('discogs_import_completed', { records_imported: resp.data.imported });
             // Fetch summary and show modal
             fetchSummary();
             onImportComplete?.();

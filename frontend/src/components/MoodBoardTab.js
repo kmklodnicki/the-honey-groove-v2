@@ -6,6 +6,7 @@ import { Button } from './ui/button';
 import { Skeleton } from './ui/skeleton';
 import { Loader2, Download, Grid3X3 } from 'lucide-react';
 import { toast } from 'sonner';
+import { trackEvent } from '../utils/analytics';
 
 const TIME_PILLS = [
   { key: 'week', label: 'This Week' },
@@ -44,6 +45,7 @@ export const MoodBoardTab = ({ username }) => {
     try {
       const r = await axios.get(`${API}/mood-boards/${boardId}/image`, { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' });
       const blob = new Blob([r.data], { type: 'image/png' });
+      trackEvent('export_card_generated', { card_type: 'mood_board' });
       const file = new File([blob], `honeygroove-moodboard-${Date.now()}.png`, { type: 'image/png' });
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file], title: 'the Honey Groove · Mood Board' });
