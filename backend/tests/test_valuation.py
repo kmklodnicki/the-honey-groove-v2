@@ -3,7 +3,8 @@ Tests for Discogs valuation/market data endpoints.
 Features:
 - Collection Value: GET /api/valuation/collection and /api/valuation/collection/{username}
 - Hidden Gems: GET /api/valuation/hidden-gems and /api/valuation/hidden-gems/{username}
-- Taste Report: GET /api/valuation/taste-report
+- Taste Report JSON: GET /api/valuation/taste-report
+- Taste Report Image: GET /api/valuation/taste-report/image (1080x1920 PNG for Instagram Stories)
 - Record Values: GET /api/valuation/record-values
 - Pricing Assist: GET /api/valuation/pricing-assist/{discogs_id}
 - Wantlist Price Alert: PUT /api/valuation/wantlist/{iso_id}/price-alert
@@ -32,6 +33,11 @@ class TestValuationAuth:
     def test_taste_report_requires_auth(self):
         """GET /api/valuation/taste-report requires authentication."""
         resp = requests.get(f"{BASE_URL}/api/valuation/taste-report")
+        assert resp.status_code == 401, f"Expected 401, got {resp.status_code}"
+
+    def test_taste_report_image_requires_auth(self):
+        """GET /api/valuation/taste-report/image requires authentication."""
+        resp = requests.get(f"{BASE_URL}/api/valuation/taste-report/image")
         assert resp.status_code == 401, f"Expected 401, got {resp.status_code}"
 
     def test_record_values_requires_auth(self):
@@ -169,6 +175,45 @@ class TestValuationAuthenticated:
             assert "artist" in mv, "most_valuable missing artist"
             assert "median_value" in mv, "most_valuable missing median_value"
         print(f"Taste report: ${data['total_value']}, {data['over_100_count']} over $100")
+
+    def test_taste_report_image_returns_png(self, auth_token):
+        """GET /api/valuation/taste-report/image returns a valid PNG image (1080x1920)."""
+        resp = requests.get(
+            f"{BASE_URL}/api/valuation/taste-report/image",
+            headers={"Authorization": f"Bearer {auth_token}"},
+            timeout=30  # Image generation may take a few seconds due to cover art downloads
+        )
+        assert resp.status_code == 200, f"Expected 200, got {resp.status_code}: {resp.text}"
+        # Check content type
+        content_type = resp.headers.get("Content-Type", "")
+        assert "image/png" in content_type, f"Expected image/png content type, got {content_type}"
+        # Verify it's a PNG by checking magic bytes
+        content = resp.content
+        assert len(content) > 100, f"Image too small: {len(content)} bytes"
+        # PNG magic bytes: 89 50 4E 47 0D 0A 1A 0A
+        assert content[:8] == b'\x89PNG\r\n\x1a\n', "Not a valid PNG (magic bytes mismatch)"
+        print(f"Taste report image: {len(content)} bytes, content-type={content_type}")
+
+    def test_taste_report_image_dimensions(self, auth_token):
+        """GET /api/valuation/taste-report/image returns exactly 1080x1920 PNG."""
+        from io import BytesIO
+        try:
+            from PIL import Image
+        except ImportError:
+            pytest.skip("PIL not available for image dimension check")
+        
+        resp = requests.get(
+            f"{BASE_URL}/api/valuation/taste-report/image",
+            headers={"Authorization": f"Bearer {auth_token}"},
+            timeout=30
+        )
+        assert resp.status_code == 200
+        
+        img = Image.open(BytesIO(resp.content))
+        width, height = img.size
+        assert width == 1080, f"Expected width 1080, got {width}"
+        assert height == 1920, f"Expected height 1920, got {height}"
+        print(f"Taste report image dimensions: {width}x{height}")
 
     def test_record_values_authenticated(self, auth_token):
         """GET /api/valuation/record-values returns record_id -> median_value map."""

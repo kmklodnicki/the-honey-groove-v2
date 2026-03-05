@@ -1,13 +1,18 @@
 from fastapi import APIRouter, HTTPException, Depends
+from fastapi.responses import Response
 from typing import Dict, Optional, List
 from datetime import datetime, timezone, timedelta
+from pathlib import Path
 import asyncio
+import io
+import requests as http_requests
 
 from database import db, require_auth, logger, create_notification, get_discogs_market_data
 
 router = APIRouter()
 
 CACHE_TTL_HOURS = 24
+FONTS_DIR = Path(__file__).parent.parent / "fonts"
 
 
 async def _get_cached_value(discogs_id: int) -> Optional[Dict]:
@@ -236,6 +241,245 @@ async def get_taste_report(user: Dict = Depends(require_auth)):
         "over_100_count": over_100_count,
         "most_valuable": most_valuable,
     }
+
+
+# ===================== TASTE REPORT IMAGE =====================
+
+def _download_cover(url: str, size: int = 300) -> "Image.Image | None":
+    """Download a cover image and resize it."""
+    from PIL import Image
+    try:
+        resp = http_requests.get(url, timeout=8, headers={"User-Agent": "HoneyGrooveApp/1.0"})
+        if resp.status_code == 200 and len(resp.content) > 100:
+            img = Image.open(io.BytesIO(resp.content)).convert("RGBA")
+            img = img.resize((size, size), Image.LANCZOS)
+            return img
+    except Exception as e:
+        logger.error(f"Cover download failed: {e}")
+    return None
+
+
+def _round_corners(img: "Image.Image", radius: int) -> "Image.Image":
+    from PIL import Image, ImageDraw
+    mask = Image.new("L", img.size, 0)
+    draw = ImageDraw.Draw(mask)
+    draw.rounded_rectangle([(0, 0), img.size], radius=radius, fill=255)
+    result = img.copy()
+    result.putalpha(mask)
+    return result
+
+
+def _generate_taste_report_png(user_data: dict, report: dict, gems: list) -> bytes:
+    """Generate a 1080x1920 Instagram Story PNG."""
+    from PIL import Image, ImageDraw, ImageFont
+
+    W, H = 1080, 1920
+    HONEY = (244, 185, 66)
+    HONEY_SOFT = (249, 215, 118)
+    CREAM = (255, 246, 230)
+    BLACK = (31, 31, 31)
+    WHITE = (255, 255, 255)
+    DARK_BG = (24, 24, 24)
+    SUBTLE = (100, 100, 100)
+
+    img = Image.new("RGBA", (W, H), DARK_BG)
+    draw = ImageDraw.Draw(img)
+
+    # Fonts
+    try:
+        heading_lg = ImageFont.truetype(str(FONTS_DIR / "DMSerifDisplay-Regular.ttf"), 72)
+        heading_md = ImageFont.truetype(str(FONTS_DIR / "DMSerifDisplay-Regular.ttf"), 52)
+        heading_sm = ImageFont.truetype(str(FONTS_DIR / "DMSerifDisplay-Regular.ttf"), 40)
+        body_lg = ImageFont.truetype(str(FONTS_DIR / "Inter.ttf"), 36)
+        body_md = ImageFont.truetype(str(FONTS_DIR / "Inter.ttf"), 28)
+        body_sm = ImageFont.truetype(str(FONTS_DIR / "Inter.ttf"), 22)
+        body_xs = ImageFont.truetype(str(FONTS_DIR / "Inter.ttf"), 18)
+    except Exception:
+        heading_lg = ImageFont.load_default()
+        heading_md = heading_lg
+        heading_sm = heading_lg
+        body_lg = heading_lg
+        body_md = heading_lg
+        body_sm = heading_lg
+        body_xs = heading_lg
+
+    # --- Top accent bar ---
+    draw.rectangle([(0, 0), (W, 8)], fill=HONEY)
+
+    # --- Header ---
+    y = 80
+    draw.text((80, y), "HoneyGroove", fill=HONEY, font=heading_md)
+    y += 70
+    draw.text((80, y), "taste report", fill=SUBTLE, font=body_md)
+    y += 50
+
+    # --- Username + date ---
+    username = user_data.get("username", "collector")
+    now_str = datetime.now(timezone.utc).strftime("%B %d, %Y")
+    draw.text((80, y), f"@{username}", fill=WHITE, font=body_lg)
+    draw.text((80, y + 50), now_str, fill=SUBTLE, font=body_sm)
+    y += 130
+
+    # --- Divider line ---
+    draw.line([(80, y), (W - 80, y)], fill=(50, 50, 50), width=2)
+    y += 50
+
+    # --- Total Value (hero stat) ---
+    total_val = report.get("total_value", 0)
+    draw.text((80, y), "estimated collection value", fill=SUBTLE, font=body_sm)
+    y += 40
+    val_str = f"${total_val:,.0f}"
+    draw.text((80, y), val_str, fill=HONEY, font=heading_lg)
+    y += 100
+
+    # Sub-stats row
+    valued = report.get("valued_count", 0)
+    total = report.get("total_count", 0)
+    over_100 = report.get("over_100_count", 0)
+
+    col_w = (W - 160) // 3
+    stats = [
+        (str(total), "records"),
+        (str(valued), "valued"),
+        (str(over_100), "over $100"),
+    ]
+    for i, (val, label) in enumerate(stats):
+        sx = 80 + i * col_w
+        draw.text((sx, y), val, fill=WHITE, font=heading_sm)
+        draw.text((sx, y + 55), label, fill=SUBTLE, font=body_xs)
+    y += 120
+
+    # --- Divider ---
+    draw.line([(80, y), (W - 80, y)], fill=(50, 50, 50), width=2)
+    y += 50
+
+    # --- Most Valuable Record ---
+    mv = report.get("most_valuable")
+    if mv:
+        draw.text((80, y), "most valuable record", fill=SUBTLE, font=body_sm)
+        y += 45
+        # Try to load cover art
+        cover = None
+        if mv.get("cover_url"):
+            cover = _download_cover(mv["cover_url"], 200)
+        if cover:
+            cover_rounded = _round_corners(cover, 20)
+            img.paste(cover_rounded, (80, y), cover_rounded)
+            tx = 310
+        else:
+            tx = 80
+        draw.text((tx, y + 20), mv.get("title", "Unknown")[:30], fill=WHITE, font=heading_sm)
+        draw.text((tx, y + 75), mv.get("artist", "")[:35], fill=SUBTLE, font=body_md)
+        mv_val = mv.get("median_value", 0)
+        draw.text((tx, y + 120), f"${mv_val:,.2f}", fill=HONEY, font=heading_sm)
+        y += 240
+    else:
+        y += 20
+
+    # --- Divider ---
+    draw.line([(80, y), (W - 80, y)], fill=(50, 50, 50), width=2)
+    y += 50
+
+    # --- Hidden Gems ---
+    if gems:
+        draw.text((80, y), "hidden gems", fill=SUBTLE, font=body_sm)
+        y += 50
+        for i, gem in enumerate(gems[:3]):
+            # Number badge
+            badge_x, badge_y = 80, y + 10
+            draw.rounded_rectangle(
+                [(badge_x, badge_y), (badge_x + 44, badge_y + 44)],
+                radius=22, fill=HONEY
+            )
+            draw.text((badge_x + 14, badge_y + 6), str(i + 1), fill=BLACK, font=body_md)
+
+            # Cover art
+            cover = None
+            if gem.get("cover_url"):
+                cover = _download_cover(gem["cover_url"], 100)
+            if cover:
+                cover_r = _round_corners(cover, 12)
+                img.paste(cover_r, (140, y), cover_r)
+                tx = 260
+            else:
+                tx = 140
+
+            # Text
+            title = gem.get("title", "")[:28]
+            artist = gem.get("artist", "")[:30]
+            draw.text((tx, y + 10), title, fill=WHITE, font=body_md)
+            draw.text((tx, y + 48), artist, fill=SUBTLE, font=body_sm)
+            gem_val = gem.get("median_value", 0)
+            draw.text((W - 250, y + 20), f"${gem_val:,.2f}", fill=HONEY_SOFT, font=body_lg)
+            y += 120
+
+    # --- Footer ---
+    y = H - 160
+    draw.line([(80, y), (W - 80, y)], fill=(50, 50, 50), width=2)
+    y += 30
+    draw.text((80, y), "the vinyl social club", fill=SUBTLE, font=body_sm)
+    y += 35
+    draw.text((80, y), "thehoneygroove.com", fill=HONEY, font=body_md)
+
+    # --- Bottom accent bar ---
+    draw.rectangle([(0, H - 8), (W, H)], fill=HONEY)
+
+    # Export to PNG
+    buf = io.BytesIO()
+    img.save(buf, format="PNG", optimize=True)
+    return buf.getvalue()
+
+
+@router.get("/valuation/taste-report/image")
+async def get_taste_report_image(user: Dict = Depends(require_auth)):
+    """Generate and return a 1080x1920 Taste Report PNG."""
+    # Gather data
+    records = await db.records.find(
+        {"user_id": user["id"], "discogs_id": {"$ne": None}}, {"_id": 0}
+    ).to_list(5000)
+    discogs_ids = list({r["discogs_id"] for r in records if r.get("discogs_id")})
+    values = await db.collection_values.find(
+        {"release_id": {"$in": discogs_ids}}, {"_id": 0}
+    ).to_list(5000)
+    val_map = {v["release_id"]: v for v in values}
+
+    total_value = 0.0
+    over_100_count = 0
+    most_valuable = None
+    most_valuable_val = 0
+    enriched = []
+
+    for r in records:
+        v = val_map.get(r.get("discogs_id"))
+        if v and v.get("median_value"):
+            mv = v["median_value"]
+            total_value += mv
+            if mv > 100:
+                over_100_count += 1
+            if mv > most_valuable_val:
+                most_valuable_val = mv
+                most_valuable = {
+                    "title": r.get("title"), "artist": r.get("artist"),
+                    "cover_url": r.get("cover_url"), "median_value": mv,
+                }
+            enriched.append({
+                "title": r.get("title"), "artist": r.get("artist"),
+                "cover_url": r.get("cover_url"), "median_value": mv,
+            })
+
+    enriched.sort(key=lambda x: x["median_value"], reverse=True)
+    total_records = await db.records.count_documents({"user_id": user["id"]})
+
+    report = {
+        "total_value": round(total_value, 2),
+        "valued_count": len([v for v in values if v.get("median_value")]),
+        "total_count": total_records,
+        "over_100_count": over_100_count,
+        "most_valuable": most_valuable,
+    }
+
+    png_bytes = _generate_taste_report_png(user, report, enriched[:3])
+    return Response(content=png_bytes, media_type="image/png")
 
 
 # ===================== PRICING ASSIST =====================

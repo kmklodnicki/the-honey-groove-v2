@@ -13,13 +13,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, DollarSign, TrendingUp, RefreshCw } from 'lucide-react';
+import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, DollarSign, TrendingUp, RefreshCw, Download, Loader2, X } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+} from '../components/ui/dialog';
 import { toast } from 'sonner';
 import DiscogsImport from '../components/DiscogsImport';
 
@@ -48,25 +51,22 @@ const CollectionPage = () => {
   const [collectionValue, setCollectionValue] = useState(null);
   const [hiddenGems, setHiddenGems] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [tasteReport, setTasteReport] = useState(null);
   const [valueMap, setValueMap] = useState({});
 
   const fetchData = useCallback(async () => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
-      const [recordsRes, spinsRes, valueRes, gemsRes, reportRes, valMapRes] = await Promise.all([
+      const [recordsRes, spinsRes, valueRes, gemsRes, valMapRes] = await Promise.all([
         axios.get(`${API}/records`, { headers }),
         axios.get(`${API}/spins`, { headers }),
         axios.get(`${API}/valuation/collection`, { headers }).catch(() => ({ data: null })),
         axios.get(`${API}/valuation/hidden-gems`, { headers }).catch(() => ({ data: [] })),
-        axios.get(`${API}/valuation/taste-report`, { headers }).catch(() => ({ data: null })),
         axios.get(`${API}/valuation/record-values`, { headers }).catch(() => ({ data: {} })),
       ]);
       setRecords(recordsRes.data);
       setSpins(spinsRes.data);
       setCollectionValue(valueRes.data);
       setHiddenGems(gemsRes.data || []);
-      setTasteReport(reportRes.data);
       setValueMap(valMapRes.data || {});
     } catch (error) {
       console.error('Failed to fetch records:', error);
@@ -286,53 +286,9 @@ const CollectionPage = () => {
         </div>
       )}
 
-      {/* Taste Report */}
-      {tasteReport && tasteReport.valued_count > 0 && (
-        <Card className="mb-6 p-4 border-honey/30 bg-vinyl-black text-white" data-testid="taste-report-card">
-          <div className="flex items-center gap-2 mb-3">
-            <TrendingUp className="w-4 h-4 text-honey" />
-            <h2 className="font-heading text-base text-white">Taste Report</h2>
-          </div>
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <p className="text-honey font-heading text-xl" data-testid="taste-total-value">
-                ${tasteReport.total_value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-              </p>
-              <p className="text-[11px] text-white/60">total collection value</p>
-            </div>
-            <div>
-              {tasteReport.most_valuable ? (
-                <>
-                  <p className="text-sm font-medium text-white truncate" data-testid="taste-most-valuable">{tasteReport.most_valuable.title}</p>
-                  <p className="text-[11px] text-white/60 truncate">{tasteReport.most_valuable.artist} · ${tasteReport.most_valuable.median_value?.toFixed(2)}</p>
-                </>
-              ) : (
-                <p className="text-sm text-white/40">—</p>
-              )}
-              <p className="text-[11px] text-white/60">most valuable record</p>
-            </div>
-            <div>
-              <p className="text-honey font-heading text-xl" data-testid="taste-over-100">{tasteReport.over_100_count}</p>
-              <p className="text-[11px] text-white/60">records valued over $100</p>
-            </div>
-          </div>
-          {hiddenGems.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-white/10">
-              <p className="text-[10px] text-white/40 mb-1.5">hidden gems</p>
-              <div className="flex gap-2">
-                {hiddenGems.map((gem, i) => (
-                  <div key={gem.id} className="flex items-center gap-1.5">
-                    {gem.cover_url ? <img src={gem.cover_url} alt="" className="w-6 h-6 rounded object-cover" />
-                      : <div className="w-6 h-6 rounded bg-honey/30 flex items-center justify-center"><Disc className="w-3 h-3 text-honey" /></div>}
-                    <span className="text-[11px] text-white/70 truncate max-w-[100px]">{gem.title}</span>
-                    <span className="text-[10px] text-honey">${gem.median_value?.toFixed(0)}</span>
-                    {i < hiddenGems.length - 1 && <span className="text-white/20 mx-1">·</span>}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </Card>
+      {/* Taste Report CTA */}
+      {collectionValue && collectionValue.valued_count > 0 && (
+        <TasteReportCTA token={token} API={API} user={user} />
       )}
 
       {/* Search and Sort Controls */}
@@ -494,6 +450,89 @@ const RecordCard = ({ record, onSpin, onDelete, isSpinning, value }) => {
         </Button>
       </div>
     </Card>
+  );
+};
+
+const TasteReportCTA = ({ token, API, user }) => {
+  const [showModal, setShowModal] = useState(false);
+  const [imageUrl, setImageUrl] = useState(null);
+  const [generating, setGenerating] = useState(false);
+
+  const generateReport = async () => {
+    setGenerating(true);
+    setShowModal(true);
+    try {
+      const resp = await axios.get(`${API}/valuation/taste-report/image`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob',
+      });
+      const url = URL.createObjectURL(resp.data);
+      setImageUrl(url);
+    } catch {
+      toast.error('Failed to generate Taste Report');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const downloadImage = () => {
+    if (!imageUrl) return;
+    const a = document.createElement('a');
+    a.href = imageUrl;
+    a.download = `taste-report-${user?.username || 'honeygroove'}.png`;
+    a.click();
+  };
+
+  return (
+    <>
+      <button
+        onClick={generateReport}
+        className="mb-6 w-full group"
+        data-testid="taste-report-cta"
+      >
+        <Card className="p-4 bg-vinyl-black text-white border-vinyl-black hover:border-honey/40 transition-all">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-honey/20 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-honey" />
+              </div>
+              <div>
+                <p className="font-heading text-base text-white">Taste Report</p>
+                <p className="text-[11px] text-white/50">Generate your shareable collection story</p>
+              </div>
+            </div>
+            <span className="text-xs text-honey group-hover:translate-x-0.5 transition-transform">Generate &rarr;</span>
+          </div>
+        </Card>
+      </button>
+
+      <Dialog open={showModal} onOpenChange={(open) => { if (!open) { setShowModal(false); if (imageUrl) URL.revokeObjectURL(imageUrl); setImageUrl(null); }}}>
+        <DialogContent className="sm:max-w-sm p-0 overflow-hidden bg-vinyl-black border-vinyl-black/50" aria-describedby="taste-report-desc">
+          <DialogHeader className="px-4 pt-4">
+            <DialogTitle className="font-heading text-white flex items-center gap-2"><TrendingUp className="w-4 h-4 text-honey" /> Taste Report</DialogTitle>
+            <p id="taste-report-desc" className="sr-only">Your weekly shareable collection report</p>
+          </DialogHeader>
+          <div className="px-4 pb-4">
+            {generating ? (
+              <div className="flex flex-col items-center justify-center py-20">
+                <Loader2 className="w-8 h-8 text-honey animate-spin mb-3" />
+                <p className="text-sm text-white/60">Generating your report...</p>
+              </div>
+            ) : imageUrl ? (
+              <>
+                <img src={imageUrl} alt="Taste Report" className="w-full rounded-lg shadow-lg mb-3" data-testid="taste-report-image" />
+                <div className="flex gap-2">
+                  <Button onClick={downloadImage} className="flex-1 bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2" data-testid="taste-report-download">
+                    <Download className="w-4 h-4" /> Save to Camera Roll
+                  </Button>
+                </div>
+                <p className="text-[10px] text-white/40 text-center mt-2">1080 × 1920 · designed for Instagram Stories</p>
+              </>
+            ) : null}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
