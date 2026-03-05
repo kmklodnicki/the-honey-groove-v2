@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
-import { Home, Search, PlusCircle, User, LogOut, Settings, Library } from 'lucide-react';
+import { Home, Search, PlusCircle, User, LogOut, Settings, Library, Disc } from 'lucide-react';
 
 // Bee icon SVG component
 const BeeIcon = ({ className = "w-4 h-4" }) => (
@@ -95,6 +95,15 @@ const Navbar = () => {
                   Collection
                 </Button>
               </Link>
+              <Link to="/iso" data-testid="nav-iso">
+                <Button 
+                  variant="ghost" 
+                  className={`gap-2 ${isActive('/iso') ? 'bg-honey/20' : ''}`}
+                >
+                  <Disc className="w-4 h-4" />
+                  ISO
+                </Button>
+              </Link>
               <Link to="/add-record" data-testid="nav-add-record">
                 <Button 
                   variant="ghost" 
@@ -170,11 +179,11 @@ const Navbar = () => {
             <Link to="/explore" className={`p-2 rounded-lg ${isActive('/explore') ? 'bg-honey/20' : ''}`} data-testid="mobile-explore">
               <Search className="w-6 h-6" />
             </Link>
-            <Link to="/add-record" className={`p-2 rounded-lg ${isActive('/add-record') ? 'bg-honey/20' : ''}`} data-testid="mobile-add">
-              <PlusCircle className="w-6 h-6" />
-            </Link>
             <Link to="/collection" className={`p-2 rounded-lg ${isActive('/collection') ? 'bg-honey/20' : ''}`} data-testid="mobile-collection">
               <Library className="w-6 h-6" />
+            </Link>
+            <Link to="/iso" className={`p-2 rounded-lg ${isActive('/iso') ? 'bg-honey/20' : ''}`} data-testid="mobile-iso">
+              <Disc className="w-6 h-6" />
             </Link>
             <Link to={`/profile/${user.username}`} className={`p-2 rounded-lg ${isActive(`/profile/${user.username}`) ? 'bg-honey/20' : ''}`} data-testid="mobile-profile">
               <User className="w-6 h-6" />

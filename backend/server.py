@@ -247,6 +247,7 @@ class ISOCreate(BaseModel):
     priority: str = "MED"  # HIGH, MED, LOW
     pressing_notes: Optional[str] = None
     condition_pref: Optional[str] = None
+    tags: Optional[List[str]] = None  # OG Press, Factory Sealed, Any, Promo
     target_price_min: Optional[float] = None
     target_price_max: Optional[float] = None
 
@@ -259,6 +260,7 @@ class ISOResponse(BaseModel):
     priority: str = "MED"
     pressing_notes: Optional[str] = None
     condition_pref: Optional[str] = None
+    tags: Optional[List[str]] = None
     target_price_min: Optional[float] = None
     target_price_max: Optional[float] = None
     status: str = "OPEN"
@@ -283,6 +285,7 @@ class ISOPostCreate(BaseModel):
     album: str
     pressing_notes: Optional[str] = None
     condition_pref: Optional[str] = None
+    tags: Optional[List[str]] = None
     target_price_min: Optional[float] = None
     target_price_max: Optional[float] = None
     caption: Optional[str] = None
@@ -848,6 +851,51 @@ async def update_me(update_data: UserUpdate, user: Dict = Depends(require_auth))
 
 # ============== USER ROUTES ==============
 
+@api_router.get("/users/discover/suggestions")
+async def get_suggested_users(user: Dict = Depends(require_auth)):
+    """Get suggested users to follow (users not already followed)"""
+    following = await db.followers.find({"follower_id": user["id"]}, {"_id": 0}).to_list(1000)
+    following_ids = [f["following_id"] for f in following]
+    following_ids.append(user["id"])
+    
+    all_users = await db.users.find(
+        {"id": {"$nin": following_ids}},
+        {"_id": 0, "password_hash": 0}
+    ).to_list(50)
+    
+    suggestions = []
+    for u in all_users:
+        record_count = await db.records.count_documents({"user_id": u["id"]})
+        suggestions.append({
+            "id": u["id"],
+            "username": u["username"],
+            "avatar_url": u.get("avatar_url"),
+            "bio": u.get("bio"),
+            "record_count": record_count,
+            "is_following": False
+        })
+    
+    suggestions.sort(key=lambda x: x["record_count"], reverse=True)
+    return suggestions[:20]
+
+@api_router.get("/users/search")
+async def search_users_q(query: str = Query(..., min_length=2), user: Dict = Depends(require_auth)):
+    users = await db.users.find(
+        {"username": {"$regex": query, "$options": "i"}},
+        {"_id": 0, "password_hash": 0}
+    ).limit(20).to_list(20)
+    result = []
+    for u in users:
+        is_following = await db.followers.find_one({"follower_id": user["id"], "following_id": u["id"]}) is not None
+        result.append({
+            "id": u["id"],
+            "username": u["username"],
+            "avatar_url": u.get("avatar_url"),
+            "bio": u.get("bio"),
+            "is_following": is_following
+        })
+    return result
+
 @api_router.get("/users/{username}", response_model=UserResponse)
 async def get_user_profile(username: str, current_user: Optional[Dict] = Depends(get_current_user)):
     user = await db.users.find_one({"username": username.lower()}, {"_id": 0, "password_hash": 0})
@@ -871,14 +919,6 @@ async def get_user_profile(username: str, current_user: Optional[Dict] = Depends
         followers_count=followers_count,
         following_count=following_count
     )
-
-@api_router.get("/users/search/{query}")
-async def search_users(query: str, user: Dict = Depends(require_auth)):
-    users = await db.users.find(
-        {"username": {"$regex": query, "$options": "i"}},
-        {"_id": 0, "password_hash": 0}
-    ).limit(20).to_list(20)
-    return users
 
 # ============== DISCOGS ROUTES ==============
 
@@ -1205,10 +1245,18 @@ async def get_followers(username: str, current_user: Optional[Dict] = Depends(ge
     for f in followers:
         follower_user = await db.users.find_one({"id": f["follower_id"]}, {"_id": 0, "password_hash": 0})
         if follower_user:
+            is_following = False
+            if current_user:
+                is_following = await db.followers.find_one({
+                    "follower_id": current_user["id"],
+                    "following_id": follower_user["id"]
+                }) is not None
             result.append({
                 "id": follower_user["id"],
                 "username": follower_user["username"],
-                "avatar_url": follower_user.get("avatar_url")
+                "avatar_url": follower_user.get("avatar_url"),
+                "bio": follower_user.get("bio"),
+                "is_following": is_following
             })
     
     return result
@@ -1225,10 +1273,18 @@ async def get_following(username: str, current_user: Optional[Dict] = Depends(ge
     for f in following:
         following_user = await db.users.find_one({"id": f["following_id"]}, {"_id": 0, "password_hash": 0})
         if following_user:
+            is_following = False
+            if current_user:
+                is_following = await db.followers.find_one({
+                    "follower_id": current_user["id"],
+                    "following_id": following_user["id"]
+                }) is not None
             result.append({
                 "id": following_user["id"],
                 "username": following_user["username"],
-                "avatar_url": following_user.get("avatar_url")
+                "avatar_url": following_user.get("avatar_url"),
+                "bio": following_user.get("bio"),
+                "is_following": is_following
             })
     
     return result
@@ -1430,6 +1486,7 @@ async def composer_iso(data: ISOPostCreate, user: Dict = Depends(require_auth)):
         "album": data.album,
         "pressing_notes": data.pressing_notes,
         "condition_pref": data.condition_pref,
+        "tags": data.tags or [],
         "target_price_min": data.target_price_min,
         "target_price_max": data.target_price_max,
         "status": "OPEN",
@@ -1492,6 +1549,53 @@ async def mark_iso_found(iso_id: str, user: Dict = Depends(require_auth)):
     now = datetime.now(timezone.utc).isoformat()
     await db.iso_items.update_one({"id": iso_id}, {"$set": {"status": "FOUND", "found_at": now}})
     return {"message": "ISO marked as found"}
+
+@api_router.delete("/iso/{iso_id}")
+async def delete_iso(iso_id: str, user: Dict = Depends(require_auth)):
+    iso = await db.iso_items.find_one({"id": iso_id, "user_id": user["id"]})
+    if not iso:
+        raise HTTPException(status_code=404, detail="ISO not found")
+    await db.iso_items.delete_one({"id": iso_id})
+    return {"message": "ISO deleted"}
+
+# ============== PROFILE DATA ROUTES ==============
+
+@api_router.get("/users/{username}/spins")
+async def get_user_spins(username: str, limit: int = 50):
+    target = await db.users.find_one({"username": username.lower()}, {"_id": 0})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    spins = await db.spins.find({"user_id": target["id"]}, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+    result = []
+    for spin in spins:
+        record = await db.records.find_one({"id": spin["record_id"]}, {"_id": 0})
+        if record:
+            result.append({**spin, "record": record})
+    return result
+
+@api_router.get("/users/{username}/iso")
+async def get_user_isos(username: str):
+    target = await db.users.find_one({"username": username.lower()}, {"_id": 0})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    isos = await db.iso_items.find({"user_id": target["id"]}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return isos
+
+@api_router.get("/users/{username}/posts")
+async def get_user_posts(username: str, current_user: Optional[Dict] = Depends(get_current_user), limit: int = 50):
+    target = await db.users.find_one({"username": username.lower()}, {"_id": 0})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    posts = await db.posts.find({"user_id": target["id"]}, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+    result = []
+    uid = current_user["id"] if current_user else None
+    for post in posts:
+        resp = await build_post_response(post, uid)
+        result.append(resp)
+    return result
 
 # ============== BUZZING NOW (Trending) ROUTES ==============
 

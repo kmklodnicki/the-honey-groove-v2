@@ -17,6 +17,7 @@ import ProfilePage from "./pages/ProfilePage";
 import RecordDetailPage from "./pages/RecordDetailPage";
 import SettingsPage from "./pages/SettingsPage";
 import CreateHaulPage from "./pages/CreateHaulPage";
+import ISOPage from "./pages/ISOPage";
 
 // Protected Route wrapper
 const ProtectedRoute = ({ children }) => {
@@ -112,6 +113,13 @@ function AppContent() {
         <ProtectedRoute>
           <AppLayout>
             <CreateHaulPage />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/iso" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <ISOPage />
           </AppLayout>
         </ProtectedRoute>
       } />
