@@ -60,6 +60,9 @@ The Hive — Explore — Collection — The Honeypot
 48. **Founding Member Badge** — Auto-assigned to first 500 users. Honeycomb icon next to username in Hive posts. Founding member italic badge on profile. Permanent. (Mar 2026)
 49. **Report & Block System** — POST /api/reports with type (post/listing/user), reason, notes. Admin queue at GET /api/reports/admin with status toggle. (Mar 2026)
 50. **Empty States** — Thoughtful empty states for Hive, Collection, Wantlist, Honeypot, Notifications, DMs, Search with CTAs. (Mar 2026)
+51. **Dynamic Platform Fee** — Platform fee is now configurable (default 6%) via admin API. Stored in platform_settings collection. Admin endpoints: GET/POST /api/admin/settings. (Mar 2026)
+52. **Navigation Fix** — Separated Explore (globe icon) and Global Search (magnifying glass) in navbar. (Mar 2026)
+53. **Search UI Polish** — Removed X close button from search popup, replaced with Cancel text button only. (Mar 2026)
 
 ## Code Architecture
 ```

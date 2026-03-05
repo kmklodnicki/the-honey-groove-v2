@@ -3,73 +3,80 @@ The user wants to build a web app called **The HoneyGroove**, a social platform 
 
 **PRODUCT REQUIREMENTS (Synthesized from initial request and subsequent user directives):**
 *   **Core App:** A full-stack application for vinyl collectors to track their collection, log spins, and interact socially.
-*   **Branding & Pages:** A warm, honey-inspired theme. Includes an **About Page** and an **FAQ Page**.
-*   **User System:** User accounts with profiles (avatar, bio, stats, city/region), and a following system.
-*   **The Hive (Feed):** A central social feed. The Now Spinning and Vinyl Mood post types have been merged into a single, enhanced Now Spinning flow.
-*   **Explore Page:** A discovery page with Trending, Taste Match, Fresh Pressings, Most Wanted, and Near You sections, each with its own See All page.
-*   **Collection Management & Valuation:** Users can add records to their collection. The app integrates **Discogs market data** to display:
-    *   Total collection value on profile and collection pages.
-    *   Hidden Gems (most valuable records).
-    *   Pricing assistance when listing records for sale.
-*   **Your Week in Wax Report:** A comprehensive weekly activity report, replacing the old Taste Report. It's generated every Sunday via a background job, stored permanently, and includes a shareable Instagram Story-sized PNG image.
-*   **The Honeypot (Marketplace):** A three-tab marketplace (Shop, Trade, ISO).
-    *   **Trade System:** A multi-step trade flow. **Trade proposals and trade-only listings now require condition selection and photo uploads.**
-    *   **Wantlist:** A user's list of desired records with price alert notifications.
-    *   **ISO Posts:** When creating an In Search Of post, users can search Discogs or add a record manually.
-*   **Payments:** Stripe Connect integration for sales, with a 4% application fee.
-*   **Direct Messaging (DM):** A private messaging system.
-*   **Notifications:** An in-app notification center.
+*   **Branding & Pages:** A warm, honey-inspired theme. Includes a landing page, About Page, FAQ Page, and an official logo/favicon.
+*   **User System & Profile:** User accounts with profiles featuring avatar, bio, setup, location, favorite genre, stats, and a following system. Includes a permanent Founding Member badge for the first 500 users.
+*   **Onboarding:** A mandatory 3-step onboarding flow for new users to build their initial collection and follow other collectors.
+*   **Social & Engagement Features:**
+    *   **The Hive (Feed):** A central social feed for user posts, supporting types like Now Spinning, New Haul, ISO, and a new free-form A Note.
+    *   **Daily Prompt:** A daily community prompt with a 'buzz in' flow, streak tracking, and a shareable export card.
+    *   **The Mood Board:** A weekly auto-generated 3x3 grid of a user's most-spun album covers, exportable and shareable to The Hive.
+    *   **Collector Bingo:** A weekly 5x5 bingo card with tactile animations, real-time bingo detection, community stats on locked cards, and a compact preview on the Explore page that opens into a full-screen modal. Features both active and locked countdown timers.
+*   **Search & Discovery:**
+    *   **Global Search:** A global, live-updating search for records, collectors, and posts, accessible from the main navigation.
+    *   **Explore Page:** A discovery page with Trending, Taste Match, Fresh Pressings, Most Wanted, and Near You sections.
+    *   **Record Detail Page:** A dedicated page for each record showing Discogs data, market value, community ownership stats, and related Hive posts.
+*   **Collection Management & Valuation:** Integrates Discogs market data for collection value, Hidden Gems, and pricing assistance. All album art is cached.
+*   **The Honeypot (Marketplace):** A marketplace with a configurable platform fee (currently 6%) on all transactions.
+*   **Admin & Safety:** Admin panel sections for managing social features and a new configurable platform fee. A user-driven report and block system for posts, listings, and profiles.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A mature full-stack React/FastAPI/MongoDB application. The backend is modular, featuring scheduled background jobs () and server-side image generation (). The frontend includes a comprehensive set of features: a redesigned landing page, a full DM system, The Honeypot marketplace, an advanced Explore page with See All views, an About page, and a rich, beautifully styled Your Week in Wax weekly report page. The Now Spinning and Vinyl Mood post types have been successfully merged, and Discogs valuation data is integrated throughout the user's collection.
+A feature-rich full-stack application. Major recent additions include a global search system, a comprehensive 3-step user onboarding flow, expanded user profiles (bio, setup, location), and a Founding Member badge system. The platform fee for the marketplace has been updated from a hardcoded 4% to a dynamic, admin-configurable 6%. The main navigation has been fixed to provide separate, distinct access to the Explore page and the new Global Search functionality. All previously implemented features like the Daily Prompt, Mood Board, and highly interactive Collector Bingo are complete and integrated.
 
 **Last working item**:
--   **Last item agent was working:** Implementing a large user request to enhance the trade system and the In Search Of (ISO) posting flow. This involves:
-    1.  Requiring condition selection and photo uploads for all trade proposals and trade-only listings.
-    2.  Displaying this information in the trade detail view.
-    3.  Integrating Discogs search into the ISO creation modal.
--   **Status:** IN PROGRESS
--   **Agent Testing Done:** N
+-   **Last item agent was working:** The agent completed a batch of high-priority user requests:
+    1.  **Navigation Fix:** Separated the Explore page icon (globe) from the Global Search icon (magnifying glass) in the main navigation bar to resolve user confusion.
+    2.  **Dynamic Platform Fee:** Refactored the marketplace transaction fee. It was changed from a hardcoded 4% to a dynamic value (defaulting to 6%) fetched from a new  collection in the database.
+    3.  **Admin Fee Management:** Created backend API endpoints for an administrator to get and set the platform fee percentage.
+    4.  **Copy Updates:** Updated all user-facing text (e.g., in the FAQ) to reflect the new 6% fee.
+-   **Status:** USER VERIFICATION PENDING
+-   **Agent Testing Done:** Y
 -   **Which testing method agent to use?** both
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: (P0)** The implementation of the enhanced trade system and Discogs ISO search is incomplete. The agent has only just begun the backend work, specifically by updating the Pydantic model and starting to modify the  endpoint. All frontend work and the remainder of the backend logic are still pending.
+-   There are no outstanding issues. The previous work is complete and awaiting user verification.
 
 **In progress Task List**:
--   **Task 1: Complete Trade System Enhancements & Discogs ISO Search** (Priority: P0)
-    -   **Where to resume:** The agent has modified the  model in  and started updating the  function in . The next steps are:
-        1.  Finish the backend logic in  to correctly save and retrieve the new  and  fields.
-        2.  Implement all frontend changes: add condition pills and photo uploaders to the  and the List for Trade modal within .
-        3.  Update the  to display the condition and photos of the offered record.
-        4.  Integrate Discogs search functionality into the  ISO modal.
-    -   **What will be achieved with this?** A more robust and transparent trading system with photo evidence, and a more powerful ISO creation flow connected to the Discogs database.
-    -   **Status:** IN PROGRESS
-    -   **Should Test frontend/backend/both after fix?** both
-    -   **Blocked on something:** None
+-   There are no tasks currently in progress.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
-    -   **P1: Implement Frontend for Sweetener Payments:** The backend endpoint () for making cash payments in trades exists, but the frontend UI to trigger this flow is missing.
-    -   **P1: Push Notifications:** Enhance the existing in-app notification system with browser push notifications.
+    -   **P1: Admin Panel UI Development:**
+        -   Build the UI for managing Daily Prompts and Bingo Squares.
+        -   Build the UI for managing the new configurable platform fee.
+        -   Build the UI for the report review queue.
+    -   **P1: Complete Record Detail Page:** The page exists but needs to be fully populated with all specified data sections (Discogs value, community owners, related posts, etc.).
+    -   **P1: Daily Prompt Enhancements:**
+        -   Implement backend logic for streak tracking.
+        -   Implement scheduled nudge notifications.
+    -   **P1: Browser Push Notifications:** Enhance the existing in-app notification system.
+    -   **P1: Sweetener Payments UI:** Implement the frontend for the existing Sweetener payment endpoint.
 -   **Future Tasks:**
-    -   **P2: Implement Discogs Collection Import:** The FAQ page mentions this feature is coming soon.
-    -   **P2: Refactor :** This monolithic component still manages three tabs and has grown in complexity.
+    -   **P2: Discogs Collection Import:** A planned feature mentioned in the FAQ.
+    -   **P2: Refactor :** Address known technical debt in this complex component.
     -   **P2: Monetization Features:** Implement Pro memberships or a Verified Seller badge.
-    -   **P2: Enhance Hauls Feature:** Develop a dedicated page and more functionality for New Haul posts.
+    -   **P2: Enhance Hauls Feature:** Develop a dedicated page and more functionality.
 
 **Completed work in this session**
--   **Your Week in Wax Report:** Replaced the Taste Report with a comprehensive, beautifully designed weekly user activity report, generated via a scheduled background job and including a shareable PNG. (DONE)
--   **Discogs Valuation Feature:** Integrated Discogs market data to show collection value, hidden gems, and pricing assistance when listing records. (DONE)
--   **Merged Post Types:** Combined Now Spinning and Vinyl Mood into a single Now Spinning post type, simplifying the UI and feed. (DONE)
--   **Explore See All Pages:** Built dynamic See All pages for all five sections of the Explore page. (DONE)
--   **About Page:** Created a new About page with brand story and linked it in the footer. (DONE)
--   **Explore Page v2 Completion:** Finalized and tested the new Explore page. (DONE)
+-   **Platform Fee & Navigation Overhaul:**
+    -   Separated Explore and Search in the main navigation.
+    -   Made the platform fee dynamic (defaulting to 6%) and manageable via new admin APIs.
+    -   Updated all user-facing copy to reflect the new fee.
+-   **Global Search:** Implemented a multi-tabbed search for Records, Collectors, and Posts, accessible from the navbar.
+-   **User Onboarding Flow:** Created a mandatory, 3-step modal flow for all new users.
+-   **Expanded Profile & Badges:** Added Bio, Setup, Location, and Genre fields to profiles and implemented a Founding Member badge for early users.
+-   **Empty States:** Added thoughtful empty state messages and CTAs across all major app sections.
+-   **Record Detail Page:** Created the route and basic page structure.
+-   **Report/Block System:** Implemented backend models and API endpoints for user-driven reporting.
+-   **A Note Post Type:** Added a new free-form text post type to The Hive feed.
+-   **Collector Bingo Enhancements:** Made the component highly interactive with animations, countdowns, community stats, and a compact preview/modal design.
+-   **Mobile Navigation Fix:** Implemented a fixed top/bottom nav bar layout for mobile to prevent content overlap.
+-   **1080x1920 Exports:** Updated all image exports (Bingo, Mood Board) to a vertical Instagram Story format.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1:** The  was noted as being overly complex. This technical debt remains and has increased with recent additions.
+-   **Issue 1:** The  was noted as being overly complex and a candidate for future refactoring.
 
 **Known issue recurrence from previous fork**
 -   N/A
@@ -78,72 +85,70 @@ A mature full-stack React/FastAPI/MongoDB application. The backend is modular, f
 
 
 **Key Technical Concepts**
--   **Frontend:** React, Tailwind CSS, Axios, Shadcn UI
+-   **Frontend:** React, Tailwind CSS, Shadcn UI
 -   **Backend:** FastAPI, Pydantic, Motor (async MongoDB)
 -   **Database:** MongoDB
--   **Image Generation:** Pillow library on the backend for creating dynamic PNGs.
--   **Background Jobs:**  scheduler in FastAPI for running weekly tasks.
--   **Integrations:** Discogs API, Stripe SDK
+-   **Dynamic Configuration:** The platform fee is now stored in a  collection in MongoDB and fetched at runtime, rather than being hardcoded.
+-   **Image Generation:** Pillow library for server-side PNG exports.
 
 **key DB schema**
--   **collection_values:** 
--   **wax_reports:** 
--   **posts:** Added optional  field to  post types.
--   **trades:** Will add  and  to trade proposals.
+-   **users:** 
+-   **platform_settings:**  (NEW)
+-   **reports:**  (NEW)
 
 **changes in tech stack**
--   **Pillow:** Added for server-side image generation.
--   **asyncio:** Used within FastAPI to schedule the weekly report generation.
+-   None.
 
 **All files of reference**
-*   **New Backend:** , , 
-*   **Modified Backend:** , , , 
-*   **New Frontend:** , , , 
-*   **Modified Frontend:** , , , , , , 
+*   **New Backend Routes:** , 
+*   **New Frontend Components:** , , , 
+*   **Modified Core Files:** , , , , , , 
 
 **Areas that need refactoring**:
--    remains a critical monolithic component managing three tabs and multiple complex modals. It is the top candidate for refactoring.
+-    is a known complex component that could be simplified.
 
 **key api endpoints**
--   **Valuation:** , 
--   **Wax Reports:** , , 
--   **Image Gen:**  (legacy), 
--   **Hive:**  (updated to accept )
--   **Trades:**  (being updated for condition/photos)
+-   
+-    (for onboarding)
+-   
+-   
+-   
 
 **Critical Info for New Agent**
--   The current task is large and unfinished. The agent must first complete the backend changes for trade proposals (saving condition/photos) before moving to the extensive frontend modifications on , , , and .
--   The feature Your Week in Wax is a core part of the app now. It relies on a scheduler started in  and has its own routes in .
--   All image generation happens on the backend using the Pillow library, with fonts stored in .
--   The  was significantly refactored to merge Now Spinning and Vinyl Mood posts. Any changes to posting flow should be made there.
+-   The last task was to fix the main navigation and convert the platform fee into a dynamic, admin-configurable variable. This work is complete but pending user verification.
+-   The platform fee is no longer hardcoded anywhere. It's fetched from the  collection via a helper function . The admin panel to manage this has a backend but no UI.
+-   A very large number of features were added in this session. A full regression test would be a good idea after getting user approval on the latest changes and before starting the next phase of work (Admin Panel UI).
 
 **documents and test reports created in this job**
 -    (updated multiple times)
--   Multiple test reports in  generated by the testing agent for each completed feature.
+-   Multiple test reports in , including the latest reports verifying all newly implemented features.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **user:** Defines the full Wax Report feature, replacing Taste Report with a detailed weekly summary. Specifies layout, stats, and a shareable export card.
-2.  **agent:** Confirms understanding and plans the implementation.
-3.  **user:** Merges Now Spinning and Vinyl Mood post types into a single modal, removing the Vinyl Mood button. Specifies the new modal flow, mood-based UI changes, and feed display.
-4.  **agent:** Confirms understanding and plans the implementation.
-5.  **user:** Defines the requirement to add mandatory condition selection and photo uploads for trade proposals.
-6.  **user:** Clarifies the requirement should also apply to the other side (trade detail view) and to trade-only listings in The Honeypot.
-7.  **user:** Adds a requirement for the ISO selection modal to connect to Discogs search.
-8.  **agent:** Asks for confirmation on the combined task.
-9.  **user:** yes
-10. **agent:** Starts exploring the relevant files to begin implementation.
+1.  **user:** Requested A Note post type and an active countdown for the Collector Bingo card.
+2.  **agent:** Implemented the A Note feature and the active countdown for bingo, ran tests, and finished.
+3.  **user:** Submitted a massive 7-point feature request: Global Search, Onboarding Flow, Profile Fields, Empty States, Record Detail Page, Report/Block, and Founding Member Badge.
+4.  **agent:** Acknowledged the large scope and created a structured plan, which the user approved.
+5.  **agent:** Began work on Global Search.
+6.  **agent:** Implemented the full 7-feature batch, ran tests, and finished.
+7.  **user:** Pointed out a bug: the Global Search had replaced the Explore page in the navigation. Also requested the platform fee be updated from 4% to 6% and made configurable from an admin panel.
+8.  **agent:** Acknowledged the feedback and created a plan to fix the navigation and implement the dynamic fee system.
+9.  **agent:** Implemented the navigation fix and the dynamic fee system.
+10. **agent:** Ran tests, verified the changes with a screenshot, and called the testing agent. The work is now complete and awaiting user verification.
 
 **Project Health Check:**
 -   **Broken:** None known.
--   **Mocked:** The UI for the new trade requirements (condition/photos) and the Discogs ISO search has not been built yet.
+-   **Mocked:**
+    -   The Admin Panel UI for managing the platform fee is non-existent (backend is ready).
+    -   The Admin Panel UI for reviewing user reports is non-existent (backend is ready).
+    -   The  is a placeholder and does not yet display the required data sections.
 
 **3rd Party Integrations**
--   **Discogs API** — Used for collection data, Fresh Pressings, market valuation, and soon for ISO search.
--   **Stripe Connect** — Integrated for seller onboarding and payments with application fees.
--   **Pillow** — Installed and used for backend image generation.
+-   **Discogs API:** Used for record data, market valuation, and high-resolution album art.
+-   **Stripe Connect:** Used for marketplace payments (now with a dynamic 6% fee).
+-   **Pillow:** Python library used for all server-side image generation.
 
 **Testing status**
--   **Testing agent used after significant changes:** YES, for all completed features.
+-   **Testing agent used after significant changes:** YES. The agent was used multiple times to validate large feature batches.
 -   **Troubleshoot agent used after agent stuck in loop:** NO
 -   **Test files created:** []
 -   **Known regressions:** None.
@@ -153,4 +158,4 @@ A mature full-stack React/FastAPI/MongoDB application. The backend is modular, f
 -   **Password:** 
 
 **What agent forgot to execute**
--   The agent is in the middle of a large, user-directed feature implementation. Nothing has been forgotten, but the task is complex and only partially started.</analysis>
+-   The agent successfully implemented all items from the user's latest requests. The next steps are clearly defined in the Upcoming Tasks based on the user's overall project plan.</analysis>

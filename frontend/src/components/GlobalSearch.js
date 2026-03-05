@@ -5,7 +5,7 @@ import axios from 'axios';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Search, X, Plus, Clock, Trash2, UserPlus, Disc, Feather } from 'lucide-react';
+import { Search, Plus, Clock, Trash2, UserPlus, Disc, Feather } from 'lucide-react';
 import { toast } from 'sonner';
 
 const TABS = [
@@ -117,11 +117,6 @@ const GlobalSearch = ({ onClose, initialTab }) => {
           className="border-0 shadow-none focus-visible:ring-0 text-base"
           data-testid="global-search-input"
         />
-        {query && (
-          <button onClick={() => setQuery('')} className="text-muted-foreground hover:text-vinyl-black">
-            <X className="w-4 h-4" />
-          </button>
-        )}
         <Button variant="ghost" size="sm" onClick={onClose} className="text-muted-foreground shrink-0" data-testid="search-close-btn">
           Cancel
         </Button>

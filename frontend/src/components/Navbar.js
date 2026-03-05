@@ -198,7 +198,7 @@ const Navbar = () => {
 
     {/* Global Search Dialog */}
     <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
-      <DialogContent className="sm:max-w-2xl max-h-[80vh] p-0 overflow-hidden" aria-describedby="global-search-desc">
+      <DialogContent className="sm:max-w-2xl max-h-[80vh] p-0 overflow-hidden [&>button:last-child]:hidden" aria-describedby="global-search-desc">
         <div className="sr-only"><span>Search</span></div>
         <span id="global-search-desc" className="sr-only">Search records, collectors, and posts</span>
         <GlobalSearch onClose={() => setSearchOpen(false)} />
