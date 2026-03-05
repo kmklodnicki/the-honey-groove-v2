@@ -302,9 +302,10 @@ const ExplorePage = () => {
 
       {/* Trending Record Modal */}
       <Dialog open={!!trendingModal} onOpenChange={(open) => { if (!open) setTrendingModal(null); }}>
-        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto" aria-describedby="trending-modal-desc">
           <DialogHeader>
             <DialogTitle className="font-heading text-lg">Now Spinning</DialogTitle>
+            <p id="trending-modal-desc" className="sr-only">Recent spins for this record</p>
           </DialogHeader>
           {trendingModal && (
             <div>
@@ -357,9 +358,10 @@ const ExplorePage = () => {
 
       {/* Location Prompt Modal */}
       <Dialog open={showLocationPrompt} onOpenChange={setShowLocationPrompt}>
-        <DialogContent className="sm:max-w-sm">
+        <DialogContent className="sm:max-w-sm" aria-describedby="location-modal-desc">
           <DialogHeader>
             <DialogTitle className="font-heading">Set Your Location</DialogTitle>
+            <p id="location-modal-desc" className="sr-only">Add your city to find nearby collectors</p>
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <Input placeholder="City *" value={cityInput} onChange={e => setCityInput(e.target.value)} className="border-honey/50" data-testid="location-city" autoFocus />
