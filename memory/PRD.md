@@ -64,6 +64,10 @@ The Hive — Explore — Collection — The Honeypot
 52. **Navigation Fix** — Separated Explore (globe icon) and Global Search (magnifying glass) in navbar. (Mar 2026)
 53. **Search UI Polish** — Removed X close button from search popup, replaced with Cancel text button only. (Mar 2026)
 54. **Wax Report Card v2 Redesign** — Complete redesign of the 1080x1920 export card. Removed collection value section entirely. Added Top Record section with Discogs album art hero. Personality labels now data-driven (uses top artist, era, mood, spin count — no generic phrases). No quotation marks. Artist bars redesigned: dark text on low-opacity amber bars with proportional width, spin counts right-aligned italic. Visual hierarchy: rank 1 at 72px scaling down to 38px. Stats tiles: spins, unique records, unique artists (no empty mood dashes). Era pills enlarged. Closing line is poetic and data-driven, auto-sizes to fit within canvas. Footer: left/center/right layout. Thin amber gradient dividers between all sections. (Mar 2026)
+55. **Auth Lockdown** — All routes require authentication except: / (landing), /beta, /about, /faq, /login, /join. Logged-out users redirected to landing page (not /login). Admin routes (/admin/*) require is_admin role; non-admin users redirected to /hive. Session expiry also redirects to landing. No app content visible to logged-out users. (Mar 2026)
+56. **Closed Beta / Invite Code System** — Public signup disabled entirely. Landing page "join the hive" opens a waitlist modal linking to /beta. All "sign up" / "create account" links removed site-wide. Invite-only registration at /join?code=XXXXXX. Admin generates single-use invite codes (individual or batch 10/25/50). Each code: unused → used → expired. Accounts created via invite code auto-receive founding member badge. Backend: /api/auth/register-invite, /api/admin/invite-codes/*. (Mar 2026)
+57. **Beta Signup Page** — Public standalone page at /beta. Mobile-optimized, no nav/footer. Cream background, HoneyGroove logo, "you found it." headline. Form: first name, email, Instagram handle (@prefix), feature interest dropdown (7 options). Saves to beta_signups collection. Confirmation message replaces form on submit ("you're on the list."). Email notification to hello@thehoneygroove.com via Resend (RESEND_API_KEY required). SEO meta tags + og:image. (Mar 2026)
+58. **Admin Beta & Invites Panel** — Admin page at /admin/beta with two tabs: Beta Signups (table with name, IG, email, feature, date, editable notes, CSV export) and Invite Codes (generate 1/10/25/50, status badges, copy invite link, used-by info). Accessible from Navbar dropdown for admin users. (Mar 2026)
 
 ## Code Architecture
 ```
@@ -81,15 +85,22 @@ The Hive — Explore — Collection — The Honeypot
     ├── dms.py         # DM conversations & messages
     ├── explore.py     # Trending, fresh pressings, most wanted, near you, follow, stats
     ├── valuation.py   # Discogs market value endpoints
-    └── wax_reports.py # Weekly reports & image generation
+    ├── wax_reports.py # Weekly reports & image generation
+    ├── reports.py     # User-driven content reporting
+    └── admin.py       # Platform settings, invite codes, beta signups
 
 /app/frontend/src/
 ├── pages/
+│   ├── BetaSignupPage.js    # Public beta waitlist signup
+│   ├── JoinPage.js          # Invite-only registration
+│   ├── AdminBetaPage.js     # Admin panel for beta/invites
 │   ├── TradesPage.js        # ProposeTradeModal (condition+photos), TradeDetailModal (condition+photos display)
 │   ├── ISOPage.js           # The Honeypot (3 tabs), listing modal with condition+photos
 │   ├── WaxReportPage.js     # Full weekly report view
 │   └── ...other pages
 ├── components/
+│   ├── auth/
+│   │   └── ProtectedRoute.js # ProtectedRoute + AdminRoute wrappers
 │   ├── ComposerBar.js       # ISO modal with Discogs search, Now Spinning with mood
 │   └── ...other components
 ```
