@@ -41,7 +41,7 @@ The Hive — Explore — Collection — The Honeypot
 29. **FAQ Page** — Comprehensive FAQ with accordion UI covering all features
 30. **Explore "See All" Pages** — Full-page views for each Explore section (/explore/trending, /explore/taste-match, /explore/fresh-pressings, /explore/most-wanted, /explore/near-you) with grid/list layouts and higher data limits
 31. **Discogs Market Valuation** — Collection Value banner, Hidden Gems (top 3 most valuable), value badges on record cards, "Highest Value" sort, pricing assist in listing modal ("recent sales: $X — $Y on Discogs"), wantlist price alerts, background 24h refresh with rate limiting. Cache in collection_values table.
-32. **Taste Report PNG** — Shareable 1080×1920 Instagram Story image generated via Pillow. Includes: total collection value, most valuable record with cover art, hidden gems top 3, stats, HoneyGroove branding. Downloadable via modal on Collection page.
+32. **Your Week in Wax** — Comprehensive weekly vinyl report replacing old "Taste Report". Sections: Header (avatar, username, date range), Personality label (algorithmic, one reroll/week), Listening stats (6 metrics), Top 5 artists/records/genres, Era breakdown (% bars by decade), Mood breakdown, Collection value (with weekly change, $50/$100/$200 tiers, hidden gem), Wantlist pulse (trending, matches, longest hunt), Social stats (followers, posts, trades, most liked), Closing line. 1080×1080 shareable PNG export card. Stored permanently in wax_reports collection. Browsable history. Pinned to profile. Background scheduler every Sunday midnight UTC with in-app notification.
 
 ## Code Architecture
 ```
@@ -60,6 +60,8 @@ The Hive — Explore — Collection — The Honeypot
     └── explore.py     # Trending, fresh pressings, most wanted, near you, follow, stats
 
 /app/frontend/src/pages/
+├── WaxReportPage.js   # Full weekly report view
+├── WaxReportHistory.js # Past reports list
 ├── ExploreSeeAllPage.js # See All pages for each Explore section
 ├── AboutPage.js       # Founder story + social links
 ├── ExplorePage.js     # 5-section discovery page
@@ -97,7 +99,8 @@ trades, trade_messages, trade_shippings, trade_disputes, trade_ratings,
 notifications, payment_transactions,
 dm_conversations (participant_ids[], context, last_message),
 dm_messages (conversation_id, sender_id, text, read),
-collection_values (release_id, median_value, low_value, high_value, last_updated)
+collection_values (release_id, median_value, low_value, high_value, last_updated),
+wax_reports (id, user_id, username, week_start, week_end, personality, listening_stats, top_artists, top_records, top_genres, era_breakdown, mood_breakdown, collection_value, wantlist_pulse, social_stats, closing_line, label_regenerated)
 ```
 
 ## Test Credentials
