@@ -284,8 +284,8 @@ const ISOPage = () => {
   const foundCount = isos.filter(i => i.status === 'FOUND').length;
 
   // Dynamic labels
-  const ctaLabels = { shop: 'List a Record', trade: 'List for Trade', iso: 'Add to Hunt List' };
-  const modalTitles = { shop: 'List a Record', trade: 'List for Trade', iso: 'Add to Hunt List' };
+  const ctaLabels = { shop: 'List a Record', trade: 'List for Trade', iso: 'Add to Wantlist' };
+  const modalTitles = { shop: 'List a Record', trade: 'List for Trade', iso: 'Add to Wantlist' };
 
   // Discogs picker
   const DiscogsPicker = () => (
@@ -430,7 +430,7 @@ const ISOPage = () => {
           </div>
 
           {/* Your Hunt List */}
-          <h3 className="font-heading text-lg text-vinyl-black mb-3" data-testid="your-hunt-list-title">Your Hunt List</h3>
+          <h3 className="font-heading text-lg text-vinyl-black mb-3" data-testid="your-wantlist-title">Your Wantlist</h3>
           <div className="flex gap-3 mb-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -447,7 +447,7 @@ const ISOPage = () => {
             <Card className="p-6 text-center border-honey/30 mb-8">
               <Search className="w-10 h-10 text-purple-300 mx-auto mb-3" />
               <h3 className="font-heading text-lg mb-1">{isos.length === 0 ? 'No ISOs yet' : 'No results'}</h3>
-              <p className="text-muted-foreground text-sm">{isos.length === 0 ? 'Tap "+ Add to Hunt List" to start your vinyl hunt!' : 'Try a different filter.'}</p>
+              <p className="text-muted-foreground text-sm">{isos.length === 0 ? 'Tap "Add to Wantlist" to start your vinyl hunt!' : 'Try a different filter.'}</p>
             </Card>
           ) : (
             <div className="space-y-3 mb-8">
@@ -559,7 +559,7 @@ const ISOPage = () => {
                 <Button onClick={submitISO} disabled={submitting || (manualMode && (!isoArtist || !isoAlbum)) || (!manualMode && !selectedRelease)}
                   className="w-full bg-purple-100 text-purple-800 hover:bg-purple-200 rounded-full" data-testid="iso-form-submit">
                   {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Search className="w-4 h-4 mr-2" />}
-                  Add to Hunt List
+                  Add to Wantlist
                 </Button>
               </>
             )}
