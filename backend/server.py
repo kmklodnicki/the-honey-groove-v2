@@ -14,6 +14,7 @@ from routes.trades import router as trades_router
 from routes.notifications import router as notifications_router
 from routes.dms import router as dms_router
 from routes.explore import router as explore_router
+from routes.valuation import router as valuation_router
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -21,7 +22,8 @@ app = FastAPI(title="HoneyGroove API")
 
 # Register all route modules under /api prefix
 for r in [auth_router, hive_router, collection_router, honeypot_router,
-          trades_router, notifications_router, dms_router, explore_router]:
+          trades_router, notifications_router, dms_router, explore_router,
+          valuation_router]:
     app.include_router(r, prefix="/api")
 
 app.add_middleware(
@@ -63,6 +65,8 @@ async def startup_event():
     await db.dm_conversations.create_index([("last_message_at", -1)])
     await db.dm_messages.create_index("conversation_id")
     await db.dm_messages.create_index([("sender_id", 1), ("read", 1)])
+    await db.collection_values.create_index("release_id", unique=True)
+    await db.collection_values.create_index("last_updated")
 
     await db.users.update_one({"email": "demo@example.com"}, {"$set": {"is_admin": True}})
 

@@ -29,6 +29,7 @@ const ProfilePage = () => {
   const [stripeStatus, setStripeStatus] = useState(null);
   const [stripeLoading, setStripeLoading] = useState(false);
   const [ratings, setRatings] = useState(null);
+  const [collectionValue, setCollectionValue] = useState(null);
 
   const isOwnProfile = user?.username === username;
 
@@ -50,6 +51,7 @@ const ProfilePage = () => {
         axios.get(`${API}/stripe/status`, { headers: { Authorization: `Bearer ${token}` }}).then(r => setStripeStatus(r.data)).catch(() => {});
       }
       axios.get(`${API}/users/${username}/ratings`).then(r => setRatings(r.data)).catch(() => {});
+      axios.get(`${API}/valuation/collection/${username}`).then(r => setCollectionValue(r.data)).catch(() => {});
     } catch {
       toast.error('Failed to load profile');
     } finally {
@@ -215,6 +217,14 @@ const ProfilePage = () => {
                 <div className="font-heading text-2xl text-vinyl-black">{profile.followers_count}</div>
                 <div className="text-xs text-muted-foreground">Followers</div>
               </button>
+              {collectionValue && collectionValue.total_value > 0 && (
+                <div className="text-center" data-testid="profile-collection-value">
+                  <div className="font-heading text-2xl text-honey-amber">
+                    ${collectionValue.total_value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Est. Value</div>
+                </div>
+              )}
             </div>
 
             {/* Trade rating */}

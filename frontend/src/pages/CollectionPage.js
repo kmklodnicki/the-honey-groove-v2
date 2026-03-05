@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown } from 'lucide-react';
+import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, DollarSign, TrendingUp, RefreshCw } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,6 +34,7 @@ const SORT_OPTIONS = [
   { value: 'least_spins', label: 'Least Spins' },
   { value: 'recently_spun', label: 'Recently Spun' },
   { value: 'never_spun', label: 'Never Spun' },
+  { value: 'highest_value', label: 'Highest Value' },
 ];
 
 const CollectionPage = () => {
@@ -44,19 +45,29 @@ const CollectionPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('newest');
   const [spinningRecordId, setSpinningRecordId] = useState(null);
+  const [collectionValue, setCollectionValue] = useState(null);
+  const [hiddenGems, setHiddenGems] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [tasteReport, setTasteReport] = useState(null);
+  const [valueMap, setValueMap] = useState({});
 
   const fetchData = useCallback(async () => {
     try {
-      const [recordsRes, spinsRes] = await Promise.all([
-        axios.get(`${API}/records`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        axios.get(`${API}/spins`, {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+      const headers = { Authorization: `Bearer ${token}` };
+      const [recordsRes, spinsRes, valueRes, gemsRes, reportRes, valMapRes] = await Promise.all([
+        axios.get(`${API}/records`, { headers }),
+        axios.get(`${API}/spins`, { headers }),
+        axios.get(`${API}/valuation/collection`, { headers }).catch(() => ({ data: null })),
+        axios.get(`${API}/valuation/hidden-gems`, { headers }).catch(() => ({ data: [] })),
+        axios.get(`${API}/valuation/taste-report`, { headers }).catch(() => ({ data: null })),
+        axios.get(`${API}/valuation/record-values`, { headers }).catch(() => ({ data: {} })),
       ]);
       setRecords(recordsRes.data);
       setSpins(spinsRes.data);
+      setCollectionValue(valueRes.data);
+      setHiddenGems(gemsRes.data || []);
+      setTasteReport(reportRes.data);
+      setValueMap(valMapRes.data || {});
     } catch (error) {
       console.error('Failed to fetch records:', error);
       toast.error('Failed to load collection');
@@ -64,6 +75,19 @@ const CollectionPage = () => {
       setLoading(false);
     }
   }, [API, token]);
+
+  const handleRefreshValues = async () => {
+    setRefreshing(true);
+    try {
+      const resp = await axios.post(`${API}/valuation/refresh`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success(resp.data.message);
+      // Poll after a delay to show new values
+      setTimeout(fetchData, 5000);
+    } catch { toast.error('Failed to refresh values'); }
+    finally { setRefreshing(false); }
+  };
 
   useEffect(() => {
     fetchData();
@@ -162,12 +186,15 @@ const CollectionPage = () => {
           return aSpins - bSpins;
         });
         break;
+      case 'highest_value':
+        filtered.sort((a, b) => (valueMap[b.id] || 0) - (valueMap[a.id] || 0));
+        break;
       default:
         break;
     }
 
     return filtered;
-  }, [records, searchQuery, sortBy, spins]);
+  }, [records, searchQuery, sortBy, spins, valueMap]);
 
   if (loading) {
     return (
@@ -198,6 +225,115 @@ const CollectionPage = () => {
           </Button>
         </Link>
       </div>
+
+      {/* Collection Value Banner */}
+      {collectionValue && collectionValue.valued_count > 0 && (
+        <Card className="p-4 mb-5 border-honey/30 bg-gradient-to-r from-honey/5 to-honey/15" data-testid="collection-value-banner">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-honey/20 flex items-center justify-center">
+                <DollarSign className="w-5 h-5 text-honey-amber" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">estimated value</p>
+                <p className="font-heading text-2xl text-vinyl-black" data-testid="collection-total-value">
+                  ${collectionValue.total_value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                </p>
+                <p className="text-[10px] text-muted-foreground">based on Discogs market data · {collectionValue.valued_count} of {collectionValue.total_count} records valued</p>
+              </div>
+            </div>
+            <Button variant="ghost" size="sm" onClick={handleRefreshValues} disabled={refreshing}
+              className="text-xs text-honey-amber hover:bg-honey/10 rounded-full" data-testid="refresh-values-btn">
+              <RefreshCw className={`w-3.5 h-3.5 mr-1 ${refreshing ? 'animate-spin' : ''}`} /> {refreshing ? 'Refreshing...' : 'Refresh'}
+            </Button>
+          </div>
+        </Card>
+      )}
+
+      {/* Hidden Gems */}
+      {hiddenGems.length > 0 && (
+        <div className="mb-6" data-testid="hidden-gems-section">
+          <div className="flex items-center gap-2 mb-3">
+            <Gem className="w-4 h-4 text-honey-amber" />
+            <h2 className="font-heading text-base text-vinyl-black">Hidden Gems</h2>
+            <span className="text-[10px] text-muted-foreground ml-1">your most valuable records</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {hiddenGems.map((gem, idx) => (
+              <Card key={gem.id} className="p-3 border-honey/30 flex items-center gap-3 hover:shadow-sm transition-all" data-testid={`hidden-gem-${idx}`}>
+                <div className="relative shrink-0">
+                  {gem.cover_url ? <img src={gem.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow-sm" />
+                    : <div className="w-14 h-14 rounded-lg bg-honey/20 flex items-center justify-center"><Disc className="w-7 h-7 text-honey" /></div>}
+                  <span className="absolute -top-1.5 -left-1.5 w-5 h-5 bg-honey rounded-full flex items-center justify-center text-[10px] font-bold text-vinyl-black shadow">
+                    {idx + 1}
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{gem.title}</p>
+                  <p className="text-xs text-muted-foreground truncate">{gem.artist}</p>
+                  <p className="text-xs font-medium text-honey-amber mt-0.5" data-testid={`gem-value-${idx}`}>
+                    ${gem.median_value.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    {gem.low_value && gem.high_value && (
+                      <span className="text-[10px] text-muted-foreground font-normal ml-1">
+                        (${gem.low_value.toFixed(0)} — ${gem.high_value.toFixed(0)})
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Taste Report */}
+      {tasteReport && tasteReport.valued_count > 0 && (
+        <Card className="mb-6 p-4 border-honey/30 bg-vinyl-black text-white" data-testid="taste-report-card">
+          <div className="flex items-center gap-2 mb-3">
+            <TrendingUp className="w-4 h-4 text-honey" />
+            <h2 className="font-heading text-base text-white">Taste Report</h2>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <div>
+              <p className="text-honey font-heading text-xl" data-testid="taste-total-value">
+                ${tasteReport.total_value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              </p>
+              <p className="text-[11px] text-white/60">total collection value</p>
+            </div>
+            <div>
+              {tasteReport.most_valuable ? (
+                <>
+                  <p className="text-sm font-medium text-white truncate" data-testid="taste-most-valuable">{tasteReport.most_valuable.title}</p>
+                  <p className="text-[11px] text-white/60 truncate">{tasteReport.most_valuable.artist} · ${tasteReport.most_valuable.median_value?.toFixed(2)}</p>
+                </>
+              ) : (
+                <p className="text-sm text-white/40">—</p>
+              )}
+              <p className="text-[11px] text-white/60">most valuable record</p>
+            </div>
+            <div>
+              <p className="text-honey font-heading text-xl" data-testid="taste-over-100">{tasteReport.over_100_count}</p>
+              <p className="text-[11px] text-white/60">records valued over $100</p>
+            </div>
+          </div>
+          {hiddenGems.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-white/10">
+              <p className="text-[10px] text-white/40 mb-1.5">hidden gems</p>
+              <div className="flex gap-2">
+                {hiddenGems.map((gem, i) => (
+                  <div key={gem.id} className="flex items-center gap-1.5">
+                    {gem.cover_url ? <img src={gem.cover_url} alt="" className="w-6 h-6 rounded object-cover" />
+                      : <div className="w-6 h-6 rounded bg-honey/30 flex items-center justify-center"><Disc className="w-3 h-3 text-honey" /></div>}
+                    <span className="text-[11px] text-white/70 truncate max-w-[100px]">{gem.title}</span>
+                    <span className="text-[10px] text-honey">${gem.median_value?.toFixed(0)}</span>
+                    {i < hiddenGems.length - 1 && <span className="text-white/20 mx-1">·</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* Search and Sort Controls */}
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
@@ -258,6 +394,7 @@ const CollectionPage = () => {
               onSpin={handleLogSpin}
               onDelete={handleDeleteRecord}
               isSpinning={spinningRecordId === record.id}
+              value={valueMap[record.id]}
             />
           ))}
         </div>
@@ -266,7 +403,7 @@ const CollectionPage = () => {
   );
 };
 
-const RecordCard = ({ record, onSpin, onDelete, isSpinning }) => {
+const RecordCard = ({ record, onSpin, onDelete, isSpinning, value }) => {
   return (
     <Card 
       className="group border-honey/30 overflow-hidden hover:shadow-honey transition-all hover:-translate-y-1"
@@ -297,6 +434,13 @@ const RecordCard = ({ record, onSpin, onDelete, isSpinning }) => {
           {record.spin_count === 0 && (
             <div className="absolute bottom-2 left-2 bg-white/80 text-vinyl-black text-xs px-2 py-1 rounded-full font-medium">
               Unspun
+            </div>
+          )}
+
+          {/* Value badge */}
+          {value > 0 && (
+            <div className="absolute top-2 right-2 bg-vinyl-black/80 text-honey text-[10px] px-1.5 py-0.5 rounded-full font-medium" data-testid={`record-value-${record.id}`}>
+              ${value.toFixed(0)}
             </div>
           )}
         </div>

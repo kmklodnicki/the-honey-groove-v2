@@ -102,6 +102,7 @@ const ISOPage = () => {
   const [listPhotos, setListPhotos] = useState([]);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [pricingAssist, setPricingAssist] = useState(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -141,7 +142,16 @@ const ISOPage = () => {
   const selectRelease = (release) => {
     setSelectedRelease(release); setDiscogsResults([]); setDiscogsQuery('');
     if (showCreate === 'iso') { setIsoArtist(release.artist); setIsoAlbum(release.title); }
-    else if (showCreate === 'listing') { setListArtist(release.artist); setListAlbum(release.title); }
+    else if (showCreate === 'listing') {
+      setListArtist(release.artist); setListAlbum(release.title);
+      // Fetch pricing assist for the listing modal
+      if (release.discogs_id) {
+        setPricingAssist(null);
+        axios.get(`${API}/valuation/pricing-assist/${release.discogs_id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }).then(r => { if (r.data && r.data.low !== null) setPricingAssist(r.data); }).catch(() => {});
+      }
+    }
   };
 
   const resetForm = () => {
@@ -151,7 +161,7 @@ const ISOPage = () => {
     setListArtist(''); setListAlbum(''); setListCondition(''); setListPressing('');
     setListType('BUY_NOW'); setListPrice(''); setListDesc('');
     listPhotos.forEach(p => p.preview && URL.revokeObjectURL(p.preview));
-    setListPhotos([]); setUploadingPhotos(false);
+    setListPhotos([]); setUploadingPhotos(false); setPricingAssist(null);
   };
 
   const openModal = (type) => {
@@ -283,6 +293,16 @@ const ISOPage = () => {
   });
   const openCount = isos.filter(i => i.status === 'OPEN').length;
   const foundCount = isos.filter(i => i.status === 'FOUND').length;
+
+  const handleSetPriceAlert = async (isoId, targetPrice) => {
+    try {
+      await axios.put(`${API}/valuation/wantlist/${isoId}/price-alert`, { target_price: targetPrice }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setIsos(prev => prev.map(i => i.id === isoId ? { ...i, price_alert: targetPrice } : i));
+      toast.success(targetPrice ? `Price alert set at $${targetPrice}` : 'Price alert removed');
+    } catch { toast.error('Failed to set price alert'); }
+  };
 
   // Dynamic labels
   const ctaLabels = { shop: 'List a Record', trade: 'List for Trade', iso: 'Add to Wantlist' };
@@ -452,7 +472,7 @@ const ISOPage = () => {
             </Card>
           ) : (
             <div className="space-y-3 mb-8">
-              {filteredIsos.map(iso => <ISOCard key={iso.id} iso={iso} isOwn={true} onMarkFound={handleMarkFound} onDelete={handleDeleteIso} />)}
+              {filteredIsos.map(iso => <ISOCard key={iso.id} iso={iso} isOwn={true} onMarkFound={handleMarkFound} onDelete={handleDeleteIso} onSetPriceAlert={handleSetPriceAlert} />)}
             </div>
           )}
 
@@ -613,9 +633,16 @@ const ISOPage = () => {
                 )}
 
                 {listType !== 'TRADE' && (
-                  <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <Input placeholder="Price" type="number" value={listPrice} onChange={e => setListPrice(e.target.value)} className="pl-9 border-honey/50" data-testid="list-price-input" />
+                  <div>
+                    <div className="relative">
+                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input placeholder="Price" type="number" value={listPrice} onChange={e => setListPrice(e.target.value)} className="pl-9 border-honey/50" data-testid="list-price-input" />
+                    </div>
+                    {pricingAssist && pricingAssist.low !== null && (
+                      <p className="text-[11px] text-muted-foreground mt-1 pl-1" data-testid="pricing-assist-hint">
+                        recent sales: ${pricingAssist.low?.toFixed(2)} — ${pricingAssist.high?.toFixed(2)} on Discogs
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -683,35 +710,66 @@ const ISOPage = () => {
 };
 
 // ISO Card Component (for user's own ISOs)
-const ISOCard = ({ iso, isOwn, onMarkFound, onDelete }) => (
-  <Card className={`p-4 border-honey/30 transition-all ${iso.status === 'FOUND' ? 'opacity-60 bg-green-50/30' : 'hover:shadow-md'}`} data-testid={`iso-item-${iso.id}`}>
-    <div className="flex items-start gap-3">
-      {iso.cover_url ? <img src={iso.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow" />
-        : <div className="w-14 h-14 rounded-lg bg-purple-100 flex items-center justify-center shrink-0"><Search className="w-6 h-6 text-purple-400" /></div>}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <h4 className="font-heading text-base">{iso.album}</h4>
-          <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${iso.status === 'FOUND' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'}`}>{iso.status}</span>
+const ISOCard = ({ iso, isOwn, onMarkFound, onDelete, onSetPriceAlert }) => {
+  const [alertInput, setAlertInput] = React.useState('');
+  const [showAlertInput, setShowAlertInput] = React.useState(false);
+
+  return (
+    <Card className={`p-4 border-honey/30 transition-all ${iso.status === 'FOUND' ? 'opacity-60 bg-green-50/30' : 'hover:shadow-md'}`} data-testid={`iso-item-${iso.id}`}>
+      <div className="flex items-start gap-3">
+        {iso.cover_url ? <img src={iso.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow" />
+          : <div className="w-14 h-14 rounded-lg bg-purple-100 flex items-center justify-center shrink-0"><Search className="w-6 h-6 text-purple-400" /></div>}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h4 className="font-heading text-base">{iso.album}</h4>
+            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${iso.status === 'FOUND' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'}`}>{iso.status}</span>
+          </div>
+          <p className="text-sm text-muted-foreground">{iso.artist}{iso.year ? ` (${iso.year})` : ''}</p>
+          <div className="flex flex-wrap gap-1.5 mt-1">
+            {(iso.tags || []).map(tag => <span key={tag} className="px-2 py-0.5 rounded-full text-xs bg-honey/20 text-honey-amber font-medium">{tag}</span>)}
+          </div>
+          <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
+            {iso.pressing_notes && <span>Press: {iso.pressing_notes}</span>}
+            {iso.condition_pref && <span>Cond: {iso.condition_pref}</span>}
+            {(iso.target_price_min || iso.target_price_max) && <span>Budget: {iso.target_price_min ? `$${iso.target_price_min}` : '?'} – {iso.target_price_max ? `$${iso.target_price_max}` : '?'}</span>}
+          </div>
+          {/* Price Alert */}
+          {isOwn && iso.status === 'OPEN' && (
+            <div className="mt-2">
+              {iso.price_alert ? (
+                <span className="inline-flex items-center gap-1 text-xs text-honey-amber bg-honey/10 px-2 py-0.5 rounded-full" data-testid={`price-alert-badge-${iso.id}`}>
+                  <DollarSign className="w-3 h-3" /> Alert at ${iso.price_alert}
+                  <button onClick={() => onSetPriceAlert(iso.id, null)} className="ml-1 text-muted-foreground hover:text-red-500"><X className="w-3 h-3" /></button>
+                </span>
+              ) : showAlertInput ? (
+                <div className="flex items-center gap-1.5">
+                  <Input type="number" placeholder="Target $" value={alertInput} onChange={e => setAlertInput(e.target.value)}
+                    className="h-7 w-24 text-xs border-honey/50" data-testid={`price-alert-input-${iso.id}`} autoFocus />
+                  <Button size="sm" className="h-7 px-2 text-xs bg-honey text-vinyl-black hover:bg-honey-amber rounded-full"
+                    onClick={() => { if (alertInput) { onSetPriceAlert(iso.id, parseFloat(alertInput)); setShowAlertInput(false); setAlertInput(''); }}}
+                    data-testid={`price-alert-save-${iso.id}`}>Set</Button>
+                  <button onClick={() => setShowAlertInput(false)} className="text-xs text-muted-foreground hover:text-red-500">Cancel</button>
+                </div>
+              ) : (
+                <button onClick={() => setShowAlertInput(true)}
+                  className="text-[11px] text-muted-foreground hover:text-honey-amber transition-colors flex items-center gap-1"
+                  data-testid={`set-price-alert-${iso.id}`}>
+                  <DollarSign className="w-3 h-3" /> Set price alert
+                </button>
+              )}
+            </div>
+          )}
         </div>
-        <p className="text-sm text-muted-foreground">{iso.artist}{iso.year ? ` (${iso.year})` : ''}</p>
-        <div className="flex flex-wrap gap-1.5 mt-1">
-          {(iso.tags || []).map(tag => <span key={tag} className="px-2 py-0.5 rounded-full text-xs bg-honey/20 text-honey-amber font-medium">{tag}</span>)}
-        </div>
-        <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
-          {iso.pressing_notes && <span>Press: {iso.pressing_notes}</span>}
-          {iso.condition_pref && <span>Cond: {iso.condition_pref}</span>}
-          {(iso.target_price_min || iso.target_price_max) && <span>Budget: {iso.target_price_min ? `$${iso.target_price_min}` : '?'} – {iso.target_price_max ? `$${iso.target_price_max}` : '?'}</span>}
-        </div>
+        {isOwn && iso.status === 'OPEN' && (
+          <div className="flex gap-1 shrink-0">
+            <Button size="sm" variant="ghost" className="text-green-600 hover:bg-green-50 h-8 px-2" onClick={() => onMarkFound(iso.id)} data-testid={`mark-found-${iso.id}`}><CheckCircle2 className="w-4 h-4" /></Button>
+            <Button size="sm" variant="ghost" className="text-red-400 hover:bg-red-50 h-8 px-2" onClick={() => onDelete(iso.id)}><Trash2 className="w-4 h-4" /></Button>
+          </div>
+        )}
       </div>
-      {isOwn && iso.status === 'OPEN' && (
-        <div className="flex gap-1 shrink-0">
-          <Button size="sm" variant="ghost" className="text-green-600 hover:bg-green-50 h-8 px-2" onClick={() => onMarkFound(iso.id)} data-testid={`mark-found-${iso.id}`}><CheckCircle2 className="w-4 h-4" /></Button>
-          <Button size="sm" variant="ghost" className="text-red-400 hover:bg-red-50 h-8 px-2" onClick={() => onDelete(iso.id)}><Trash2 className="w-4 h-4" /></Button>
-        </div>
-      )}
-    </div>
-  </Card>
-);
+    </Card>
+  );
+};
 
 // Community ISO Card (other users' ISOs with "I have this" button)
 const CommunityISOCard = ({ iso, onHaveThis }) => (

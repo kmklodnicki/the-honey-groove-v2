@@ -183,6 +183,52 @@ def get_discogs_release(release_id: int) -> Optional[Dict]:
     return None
 
 
+def get_discogs_market_data(release_id: int) -> Optional[Dict]:
+    """Fetch price statistics from Discogs marketplace for a release."""
+    headers = {"User-Agent": DISCOGS_USER_AGENT}
+    params = {}
+    if DISCOGS_TOKEN:
+        params["token"] = DISCOGS_TOKEN
+    try:
+        resp = requests.get(
+            f"{DISCOGS_API_BASE}/marketplace/price_suggestions/{release_id}",
+            params=params, headers=headers, timeout=10
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            # price_suggestions returns prices by condition
+            vinyl_price = data.get("Very Good Plus (VG+)", {})
+            mint_price = data.get("Mint (M)", {})
+            good_price = data.get("Good Plus (G+)", {})
+            median = vinyl_price.get("value") or mint_price.get("value")
+            low = good_price.get("value") or vinyl_price.get("value")
+            high = mint_price.get("value") or vinyl_price.get("value")
+            if median is not None:
+                return {
+                    "median_value": round(float(median), 2),
+                    "low_value": round(float(low), 2) if low else round(float(median) * 0.6, 2),
+                    "high_value": round(float(high), 2) if high else round(float(median) * 1.5, 2),
+                }
+        # Fallback: try community stats from release endpoint
+        resp2 = requests.get(
+            f"{DISCOGS_API_BASE}/releases/{release_id}",
+            params=params, headers=headers, timeout=10
+        )
+        if resp2.status_code == 200:
+            data2 = resp2.json()
+            community = data2.get("community", {})
+            lowest = data2.get("lowest_price")
+            if lowest is not None:
+                return {
+                    "median_value": round(float(lowest) * 1.3, 2),
+                    "low_value": round(float(lowest), 2),
+                    "high_value": round(float(lowest) * 2, 2),
+                }
+    except Exception as e:
+        logger.error(f"Discogs market data error for {release_id}: {e}")
+    return None
+
+
 async def create_notification(user_id: str, ntype: str, title: str, body: str, data: Dict = None):
     now = datetime.now(timezone.utc).isoformat()
     doc = {

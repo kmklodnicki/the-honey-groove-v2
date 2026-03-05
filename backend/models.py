@@ -68,7 +68,7 @@ class DiscogsSearchResult(BaseModel):
     artist: str
     cover_url: Optional[str] = None
     year: Optional[int] = None
-    format: Optional[str] = None
+    format: Optional[List[str]] = None  # Discogs returns format as a list
     country: Optional[str] = None
 
 # Spin Models
