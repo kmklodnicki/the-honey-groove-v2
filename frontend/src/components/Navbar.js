@@ -152,9 +152,9 @@ const Navbar = () => {
                   {user.is_admin && (
                     <>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={() => navigate('/admin/beta')} data-testid="menu-admin-beta">
-                        <User className="mr-2 h-4 w-4" />
-                        Beta & Invites
+                      <DropdownMenuItem onClick={() => navigate('/admin')} data-testid="menu-admin">
+                        <Settings className="mr-2 h-4 w-4" />
+                        Admin Panel
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => navigate('/admin/disputes')} data-testid="menu-admin-disputes">
                         <ArrowRightLeft className="mr-2 h-4 w-4" />

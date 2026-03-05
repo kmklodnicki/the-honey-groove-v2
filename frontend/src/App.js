@@ -22,7 +22,7 @@ import CreateHaulPage from "./pages/CreateHaulPage";
 import ISOPage from "./pages/ISOPage";
 import TradesPage from "./pages/TradesPage";
 import AdminDisputesPage from "./pages/AdminDisputesPage";
-import AdminBetaPage from "./pages/AdminBetaPage";
+import AdminPage from "./pages/AdminPage";
 import MessagesPage from "./pages/MessagesPage";
 import FAQPage from "./pages/FAQPage";
 import AboutPage from "./pages/AboutPage";
@@ -174,16 +174,17 @@ function AppContent() {
       } />
 
       {/* Admin routes */}
+      <Route path="/admin" element={
+        <AdminRoute>
+          <AppLayout><AdminPage /></AppLayout>
+        </AdminRoute>
+      } />
       <Route path="/admin/disputes" element={
         <AdminRoute>
           <AppLayout><AdminDisputesPage /></AppLayout>
         </AdminRoute>
       } />
-      <Route path="/admin/beta" element={
-        <AdminRoute>
-          <AppLayout><AdminBetaPage /></AppLayout>
-        </AdminRoute>
-      } />
+      <Route path="/admin/beta" element={<Navigate to="/admin?section=beta" replace />} />
 
       {/* Catch all — redirect to landing */}
       <Route path="*" element={<Navigate to="/" replace />} />
