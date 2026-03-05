@@ -11,8 +11,10 @@ import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, CheckCircle2, A
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { FollowListModal } from '../components/FollowList';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const ProfilePage = () => {
+  usePageTitle('Profile');
   const { username } = useParams();
   const { user, token, API } = useAuth();
   const navigate = useNavigate();

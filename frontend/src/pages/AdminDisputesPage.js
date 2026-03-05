@@ -15,8 +15,10 @@ import {
 import { AlertTriangle, ArrowRightLeft, CheckCircle2, XCircle, Loader2, Disc, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const AdminDisputesPage = () => {
+  usePageTitle('Admin Disputes');
   const { token, API } = useAuth();
   const [disputes, setDisputes] = useState([]);
   const [allDisputes, setAllDisputes] = useState([]);

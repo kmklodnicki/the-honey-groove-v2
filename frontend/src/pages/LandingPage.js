@@ -2,8 +2,10 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Disc, Music2, ShoppingBag, Search, ArrowLeftRight, Share2 } from 'lucide-react';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const LandingPage = () => {
+  usePageTitle();
   const navigate = useNavigate();
 
   const HoneycombPattern = () => (

@@ -8,8 +8,10 @@ import { Card } from '../components/ui/card';
 import { Skeleton } from '../components/ui/skeleton';
 import { ArrowLeft, Send, Disc, Search } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const MessagesPage = () => {
+  usePageTitle('Messages');
   const { user, token, API } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [conversations, setConversations] = useState([]);

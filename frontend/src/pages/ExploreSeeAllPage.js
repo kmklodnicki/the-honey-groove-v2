@@ -12,6 +12,7 @@ import {
 import { ArrowLeft, TrendingUp, Users, Disc, Heart, MapPin, Play, Plus, MessageCircle, UserPlus } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const SECTIONS = {
   trending: { title: 'Trending in the Hive', icon: TrendingUp, iconColor: 'text-honey-amber' },
@@ -22,6 +23,7 @@ const SECTIONS = {
 };
 
 const ExploreSeeAllPage = () => {
+  usePageTitle('Explore');
   const { section } = useParams();
   const { user, token, API } = useAuth();
   const navigate = useNavigate();

@@ -7,8 +7,10 @@ import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Disc, Eye, EyeOff } from 'lucide-react';
 import { toast } from 'sonner';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const SignupPage = () => {
+  usePageTitle('Join the Hive');
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');

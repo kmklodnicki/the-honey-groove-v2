@@ -13,6 +13,7 @@ import {
   Calendar, Clock, BarChart3, Download, Share2, RefreshCw, ChevronRight, Loader2,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 /* ═══════ Brand Colors ═══════ */
 const C = {
@@ -24,6 +25,7 @@ const C = {
 };
 
 const WaxReportPage = () => {
+  usePageTitle('Your Week in Wax');
   const { reportId } = useParams();
   const { user, token, API } = useAuth();
   const navigate = useNavigate();

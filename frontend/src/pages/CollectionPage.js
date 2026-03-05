@@ -22,6 +22,7 @@ import {
 } from '../components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import DiscogsImport from '../components/DiscogsImport';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const SORT_OPTIONS = [
   { value: 'artist_asc', label: 'Artist A → Z' },
@@ -38,6 +39,7 @@ const SORT_OPTIONS = [
 ];
 
 const CollectionPage = () => {
+  usePageTitle('Your Collection');
   const { user, token, API } = useAuth();
   const [records, setRecords] = useState([]);
   const [spins, setSpins] = useState([]);

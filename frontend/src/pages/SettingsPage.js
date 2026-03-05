@@ -10,8 +10,10 @@ import { Textarea } from '../components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { ArrowLeft, Save, LogOut, Camera, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const SettingsPage = () => {
+  usePageTitle('Settings');
   const { user, token, API, updateUser, logout } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);

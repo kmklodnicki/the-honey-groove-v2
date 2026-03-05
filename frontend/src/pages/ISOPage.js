@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { ProposeTradeModal } from './TradesPage';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const ISO_TAGS = ['OG Press', 'Factory Sealed', 'Any', 'Promo'];
 const FILTER_OPTIONS = ['All', 'OPEN', 'FOUND'];
@@ -36,6 +37,7 @@ const STATUS_CONFIG = {
 };
 
 const ISOPage = () => {
+  usePageTitle('The Honeypot');
   const { user, token, API } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('shop');

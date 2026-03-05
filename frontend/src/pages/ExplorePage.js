@@ -12,8 +12,10 @@ import {
 import { Disc, Users, Search, TrendingUp, Lock, ShoppingBag, Play, UserPlus, MessageCircle, MapPin, Heart, Plus, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const ExplorePage = () => {
+  usePageTitle('Explore');
   const { user, token, API } = useAuth();
   const navigate = useNavigate();
   const [trending, setTrending] = useState([]);

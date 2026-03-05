@@ -1,8 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Instagram, Mail, ArrowLeft } from 'lucide-react';
+import { usePageTitle } from '../hooks/usePageTitle';
 
-const AboutPage = () => (
+const AboutPage = () => {
+  usePageTitle('About');
+  return (
   <div className="min-h-screen bg-honey-cream">
     <div className="max-w-2xl mx-auto px-4 py-12 pt-28 pb-24" data-testid="about-page">
       {/* Back link */}
@@ -97,6 +100,7 @@ const AboutPage = () => (
       </div>
     </div>
   </div>
-);
+  );
+};
 
 export default AboutPage;

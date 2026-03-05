@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const faqSections = [
   {
@@ -159,7 +160,9 @@ const FAQItem = ({ q, a }) => {
   );
 };
 
-const FAQPage = () => (
+const FAQPage = () => {
+  usePageTitle('FAQ');
+  return (
   <div className="min-h-screen bg-honey-cream">
     <div className="max-w-2xl mx-auto px-4 py-12 pt-28 pb-24" data-testid="faq-page">
       <h1 className="font-heading text-4xl text-vinyl-black mb-2">FAQ</h1>
@@ -186,6 +189,7 @@ const FAQPage = () => (
       </div>
     </div>
   </div>
-);
+  );
+};
 
 export default FAQPage;

@@ -5,6 +5,7 @@ import axios from 'axios';
 import { Card } from '../components/ui/card';
 import { Skeleton } from '../components/ui/skeleton';
 import { ArrowLeft, Calendar, ChevronRight } from 'lucide-react';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const C = {
   bg: '#FAEDC7', textDark: '#2A1A06', textMuted: '#8A6B4A',
@@ -12,6 +13,7 @@ const C = {
 };
 
 const WaxReportHistory = () => {
+  usePageTitle('Wax Report History');
   const { token, API } = useAuth();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);

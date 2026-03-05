@@ -11,8 +11,10 @@ import { Skeleton } from '../components/ui/skeleton';
 import { Search, Disc, Plus, Check, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import debounce from 'lodash.debounce';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const AddRecordPage = () => {
+  usePageTitle('Add Record');
   const { token, API } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');

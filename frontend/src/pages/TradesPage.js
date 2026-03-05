@@ -26,6 +26,7 @@ import { ArrowRightLeft, Check, X, MessageSquare, Disc, Loader2, DollarSign, Sea
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const STATUS_CONFIG = {
   PROPOSED: { label: 'Proposed', color: 'bg-amber-100 text-amber-700', dot: 'bg-amber-400' },
@@ -40,6 +41,7 @@ const STATUS_CONFIG = {
 };
 
 const TradesPage = () => {
+  usePageTitle('Trades');
   const { user, token, API } = useAuth();
   const [trades, setTrades] = useState([]);
   const [loading, setLoading] = useState(true);

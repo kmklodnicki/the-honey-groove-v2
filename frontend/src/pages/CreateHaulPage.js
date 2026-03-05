@@ -11,8 +11,10 @@ import { Skeleton } from '../components/ui/skeleton';
 import { ArrowLeft, Search, Disc, Plus, X, Package, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import debounce from 'lodash.debounce';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const CreateHaulPage = () => {
+  usePageTitle('New Haul');
   const { token, API } = useAuth();
   const navigate = useNavigate();
   

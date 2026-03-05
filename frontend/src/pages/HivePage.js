@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import ComposerBar from '../components/ComposerBar';
 import { PostTypeBadge, PostCardBody } from '../components/PostCards';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 // Bee Avatar Component
 const BeeAvatar = ({ user, className = "h-10 w-10" }) => {
@@ -248,6 +249,7 @@ const PostCard = ({ post, onLike, onCommentCountChange, token, API }) => {
 };
 
 const HivePage = () => {
+  usePageTitle('The Hive');
   const { user, token, API } = useAuth();
   const [posts, setPosts] = useState([]);
   const [records, setRecords] = useState([]);

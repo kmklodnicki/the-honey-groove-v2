@@ -8,8 +8,10 @@ import { Skeleton } from '../components/ui/skeleton';
 import { Disc, Play, ArrowLeft, Share2, Calendar, User, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const RecordDetailPage = () => {
+  usePageTitle('Record');
   const { recordId } = useParams();
   const { user, token, API } = useAuth();
   const navigate = useNavigate();
