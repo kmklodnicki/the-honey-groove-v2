@@ -24,6 +24,7 @@ const PostTypeBadge = ({ type, mood }) => {
     ADDED_TO_COLLECTION: { label: 'Added', icon: Plus, bg: 'bg-green-100/60 text-green-700' },
     WEEKLY_WRAP: { label: 'Weekly Wrap', icon: Music, bg: 'bg-purple-100/60 text-purple-700' },
     VINYL_MOOD: { label: 'Vinyl Mood', icon: Moon, bg: 'bg-purple-100/60 text-purple-700' },
+    DAILY_PROMPT: { label: 'Daily Prompt', icon: Disc, bg: 'bg-amber-100/60 text-amber-700' },
   };
   const c = config[type] || config.NOW_SPINNING;
   const Icon = c.icon;
@@ -178,6 +179,25 @@ const VinylMoodCard = ({ post }) => {
   );
 };
 
+// DAILY_PROMPT card body
+const DailyPromptPostCard = ({ post }) => (
+  <div data-testid="daily-prompt-post-card">
+    <p className="text-sm italic text-amber-700 mb-3">{post.prompt_text}</p>
+    <div className="flex gap-4 items-start bg-amber-50/60 rounded-lg p-3">
+      {post.cover_url ? (
+        <img src={post.cover_url} alt="" className="w-20 h-20 rounded-lg object-cover shadow-md" />
+      ) : (
+        <div className="w-20 h-20 rounded-lg bg-amber-100 flex items-center justify-center"><Disc className="w-8 h-8 text-amber-300" /></div>
+      )}
+      <div className="flex-1 min-w-0">
+        <p className="font-heading text-lg leading-tight">{post.record_title}</p>
+        <p className="text-sm text-muted-foreground">{post.record_artist}</p>
+      </div>
+    </div>
+    {post.caption && <p className="text-sm mt-3">{post.caption}</p>}
+  </div>
+);
+
 // Main renderer
 const PostCardBody = ({ post }) => {
   switch (post.post_type) {
@@ -187,6 +207,7 @@ const PostCardBody = ({ post }) => {
     case 'ADDED_TO_COLLECTION': return <AddedToCollectionCard post={post} />;
     case 'WEEKLY_WRAP': return <WeeklyWrapCard post={post} />;
     case 'VINYL_MOOD': return <VinylMoodCard post={post} />;
+    case 'DAILY_PROMPT': return <DailyPromptPostCard post={post} />;
     default:
       return (
         <div>

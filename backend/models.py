@@ -145,6 +145,10 @@ class PostResponse(BaseModel):
     weekly_wrap_id: Optional[str] = None
     track: Optional[str] = None
     mood: Optional[str] = None
+    prompt_text: Optional[str] = None
+    record_title: Optional[str] = None
+    record_artist: Optional[str] = None
+    cover_url: Optional[str] = None
     created_at: str
     likes_count: int = 0
     comments_count: int = 0

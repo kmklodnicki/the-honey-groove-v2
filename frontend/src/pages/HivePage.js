@@ -20,6 +20,7 @@ import { formatDistanceToNow } from 'date-fns';
 import ComposerBar from '../components/ComposerBar';
 import { PostTypeBadge, PostCardBody } from '../components/PostCards';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { DailyPromptCard } from '../components/DailyPrompt';
 
 // Bee Avatar Component
 const BeeAvatar = ({ user, className = "h-10 w-10" }) => {
@@ -342,6 +343,9 @@ const HivePage = () => {
 
       {/* Composer Bar */}
       <ComposerBar onPostCreated={handlePostCreated} records={records} />
+
+      {/* Daily Prompt */}
+      <DailyPromptCard records={records} onPostCreated={handlePostCreated} />
 
       {posts.length === 0 ? (
         <Card className="p-8 text-center border-honey/30">

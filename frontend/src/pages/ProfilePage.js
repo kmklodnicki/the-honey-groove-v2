@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { FollowListModal } from '../components/FollowList';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { StreakBadge } from '../components/DailyPrompt';
 
 const ProfilePage = () => {
   usePageTitle('Profile');
@@ -236,6 +237,11 @@ const ProfilePage = () => {
                 <span className="text-xs text-muted-foreground ml-1">{ratings.average} ({ratings.count} trade{ratings.count !== 1 ? 's' : ''})</span>
               </div>
             )}
+
+            {/* Prompt Streak */}
+            <div className="mt-2">
+              <StreakBadge username={profile.username} />
+            </div>
 
             {/* Stripe Connect */}
             {isOwnProfile && stripeStatus && (
