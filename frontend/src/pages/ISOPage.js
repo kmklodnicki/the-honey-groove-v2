@@ -16,7 +16,7 @@ import {
 import { Search, Plus, CheckCircle2, Loader2, Trash2, Tag, DollarSign, Disc, ArrowRightLeft, ShoppingBag, Camera, X, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { ProposeTradeModal } from './TradesPage';
 
 const ISO_TAGS = ['OG Press', 'Factory Sealed', 'Any', 'Promo'];
@@ -37,6 +37,7 @@ const STATUS_CONFIG = {
 
 const ISOPage = () => {
   const { user, token, API } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('shop');
   const [isos, setIsos] = useState([]);
   const [communityIsos, setCommunityIsos] = useState([]);
@@ -465,7 +466,9 @@ const ISOPage = () => {
           ) : (
             <div className="space-y-3">
               {communityIsos.map(iso => (
-                <CommunityISOCard key={iso.id} iso={iso} onHaveThis={(l) => setTradeTarget({ id: 'iso-' + l.id, user_id: l.user_id, album: l.album, artist: l.artist, user: l.user })} />
+                <CommunityISOCard key={iso.id} iso={iso} onHaveThis={(l) => {
+                  navigate(`/messages?to=${l.user_id}&contextType=iso&contextRecord=${encodeURIComponent(l.artist + ' — ' + l.album)}&contextAction=I have this`);
+                }} />
               ))}
             </div>
           )}

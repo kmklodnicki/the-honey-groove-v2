@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Skeleton } from '../components/ui/skeleton';
-import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, CheckCircle2, ArrowRightLeft, CreditCard, Star } from 'lucide-react';
+import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, CheckCircle2, ArrowRightLeft, CreditCard, Star, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { FollowListModal } from '../components/FollowList';
@@ -15,6 +15,7 @@ import { FollowListModal } from '../components/FollowList';
 const ProfilePage = () => {
   const { username } = useParams();
   const { user, token, API } = useAuth();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [records, setRecords] = useState([]);
   const [spins, setSpins] = useState([]);
@@ -162,18 +163,28 @@ const ProfilePage = () => {
             <div className="flex items-center gap-3 flex-wrap">
               <h1 className="font-heading text-2xl" data-testid="profile-username">@{profile.username}</h1>
               {!isOwnProfile && token && (
-                <Button
-                  size="sm"
-                  onClick={handleFollow}
-                  disabled={followLoading}
-                  className={`rounded-full ${isFollowing ? 'bg-white border border-vinyl-black/30 text-vinyl-black hover:bg-red-50 hover:text-red-600' : 'bg-honey text-vinyl-black hover:bg-honey-amber'}`}
-                  data-testid="follow-btn"
-                >
-                  {followLoading ? <Loader2 className="w-4 h-4 animate-spin" /> :
-                    isFollowing ? <><UserMinus className="w-4 h-4 mr-1" />Following</> :
-                    <><UserPlus className="w-4 h-4 mr-1" />Follow</>
-                  }
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={handleFollow}
+                    disabled={followLoading}
+                    className={`rounded-full ${isFollowing ? 'bg-white border border-vinyl-black/30 text-vinyl-black hover:bg-red-50 hover:text-red-600' : 'bg-honey text-vinyl-black hover:bg-honey-amber'}`}
+                    data-testid="follow-btn"
+                  >
+                    {followLoading ? <Loader2 className="w-4 h-4 animate-spin" /> :
+                      isFollowing ? <><UserMinus className="w-4 h-4 mr-1" />Following</> :
+                      <><UserPlus className="w-4 h-4 mr-1" />Follow</>
+                    }
+                  </Button>
+                  <Button
+                    size="sm" variant="outline"
+                    onClick={() => navigate(`/messages?to=${profile.id}`)}
+                    className="rounded-full border-vinyl-black/30"
+                    data-testid="profile-message-btn"
+                  >
+                    <MessageCircle className="w-4 h-4 mr-1" /> Message
+                  </Button>
+                </div>
               )}
               {isOwnProfile && (
                 <Link to="/settings">

@@ -20,6 +20,7 @@ import CreateHaulPage from "./pages/CreateHaulPage";
 import ISOPage from "./pages/ISOPage";
 import TradesPage from "./pages/TradesPage";
 import AdminDisputesPage from "./pages/AdminDisputesPage";
+import MessagesPage from "./pages/MessagesPage";
 
 // Protected Route wrapper
 const ProtectedRoute = ({ children }) => {
@@ -131,6 +132,13 @@ function AppContent() {
         <ProtectedRoute>
           <AppLayout>
             <AdminDisputesPage />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/messages" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <MessagesPage />
           </AppLayout>
         </ProtectedRoute>
       } />

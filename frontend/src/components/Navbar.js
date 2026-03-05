@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
-import { Home, Search, User, LogOut, Settings, Library, Disc, ArrowRightLeft, Bell, Check } from 'lucide-react';
+import { Home, Search, User, LogOut, Settings, Library, Disc, ArrowRightLeft, Bell, Check, MessageCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 // Bee icon SVG component
@@ -111,6 +111,7 @@ const Navbar = () => {
 
           {/* Right Side */}
           <div className="flex items-center gap-2">
+            {user && <DMBadge />}
             {user && <NotificationBell />}
             {user ? (
               <DropdownMenu>
@@ -193,6 +194,33 @@ const Navbar = () => {
   );
 };
 
+// DM Badge Component
+const DMBadge = () => {
+  const { token, API } = useAuth();
+  const navigate = useNavigate();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const fetchCount = useCallback(async () => {
+    try {
+      const resp = await axios.get(`${API}/dm/unread-count`, { headers: { Authorization: `Bearer ${token}` } });
+      setUnreadCount(resp.data.count);
+    } catch { /* ignore */ }
+  }, [API, token]);
+
+  useEffect(() => { fetchCount(); const iv = setInterval(fetchCount, 15000); return () => clearInterval(iv); }, [fetchCount]);
+
+  return (
+    <Button variant="ghost" className="relative h-9 w-9 rounded-full" onClick={() => navigate('/messages')} data-testid="dm-badge-btn">
+      <MessageCircle className="h-5 w-5 text-vinyl-black" />
+      {unreadCount > 0 && (
+        <span className="absolute -top-0.5 -right-0.5 bg-honey text-vinyl-black text-[10px] font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center" data-testid="dm-unread-badge">
+          {unreadCount > 9 ? '9+' : unreadCount}
+        </span>
+      )}
+    </Button>
+  );
+};
+
 // Notification Bell Component
 const NotificationBell = () => {
   const { token, API } = useAuth();
@@ -263,7 +291,8 @@ const NotificationBell = () => {
     }
     setOpen(false);
     const d = notif.data || {};
-    if (d.trade_id) navigate('/trades');
+    if (d.conversation_id) navigate('/messages');
+    else if (d.trade_id) navigate('/trades');
     else if (d.follower_username) navigate(`/profile/${d.follower_username}`);
     else if (d.listing_id) navigate('/honeypot');
     else if (d.post_id) navigate('/hive');
