@@ -1,34 +1,152 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+/* WaxLog App Styles */
+
+/* Button Variants */
+.btn-primary {
+    @apply inline-flex items-center justify-center rounded-full text-sm font-medium h-10 px-8 py-2;
+    @apply bg-wax-black text-white;
+    transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+.btn-primary:hover {
+    @apply bg-wax-black/90;
+    transform: scale(1.05);
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+.btn-secondary {
+    @apply inline-flex items-center justify-center rounded-full text-sm font-medium h-10 px-8 py-2;
+    @apply bg-wax-pink text-wax-black;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.App-link {
-    color: #61dafb;
+.btn-secondary:hover {
+    @apply bg-wax-rose text-white;
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+.btn-outline {
+    @apply inline-flex items-center justify-center rounded-full text-sm font-medium h-10 px-8 py-2;
+    @apply border-2 border-wax-black bg-transparent text-wax-black;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
+
+.btn-outline:hover {
+    @apply bg-wax-black text-white;
+}
+
+.btn-ghost {
+    @apply inline-flex items-center justify-center rounded-full text-sm font-medium h-10 px-8 py-2;
+    @apply bg-transparent text-wax-black;
+    transition: background-color 0.2s ease;
+}
+
+.btn-ghost:hover {
+    @apply bg-wax-pink/30;
+}
+
+/* Card Styles */
+.wax-card {
+    @apply rounded-2xl border border-wax-champagne/30 bg-white/50 backdrop-blur-sm;
+    transition: box-shadow 0.3s ease;
+}
+
+.wax-card:hover {
+    @apply shadow-md;
+}
+
+.vinyl-card {
+    @apply aspect-square relative group overflow-hidden rounded-lg bg-black;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.vinyl-card:hover {
+    @apply shadow-vinyl;
+    transform: translateY(-4px);
+}
+
+/* Input Styles */
+.wax-input {
+    @apply flex h-12 w-full rounded-xl border border-wax-champagne/50 bg-white/80 px-4 py-2 text-sm;
+    @apply placeholder:text-muted-foreground;
+    @apply focus:outline-none focus:ring-2 focus:ring-wax-rose focus:border-transparent;
+    @apply disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+/* Record Cover Animation */
+.record-spinning {
+    animation: spin 8s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Vinyl Sheen Effect */
+.vinyl-sheen {
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.1) 100%);
+}
+
+/* Activity Feed Post */
+.feed-post {
+    @apply p-6 border-b border-wax-champagne/20;
+    transition: background-color 0.2s ease;
+}
+
+.feed-post:hover {
+    @apply bg-wax-pink/5;
+}
+
+/* Glass Effect */
+.glass {
+    @apply bg-white/50 backdrop-blur-lg border border-wax-champagne/30;
+}
+
+/* Hero Gradient Overlay */
+.hero-gradient {
+    background: linear-gradient(180deg, rgba(250,247,242,0) 0%, #FAF7F2 100%);
+}
+
+/* Hover Lift Effect */
+.hover-lift {
+    transition: transform 0.3s ease-out;
+}
+
+.hover-lift:hover {
+    transform: translateY(-4px);
+}
+
+/* Page Transitions */
+.page-enter {
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+.page-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #FAF7F2;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #D98FA1;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #E6C98B;
+}
+
+/* Staggered Animation Delays */
+.stagger-1 { animation-delay: 0.1s; }
+.stagger-2 { animation-delay: 0.2s; }
+.stagger-3 { animation-delay: 0.3s; }
+.stagger-4 { animation-delay: 0.4s; }
+.stagger-5 { animation-delay: 0.5s; }
