@@ -19,6 +19,7 @@ import SettingsPage from "./pages/SettingsPage";
 import CreateHaulPage from "./pages/CreateHaulPage";
 import ISOPage from "./pages/ISOPage";
 import TradesPage from "./pages/TradesPage";
+import AdminDisputesPage from "./pages/AdminDisputesPage";
 
 // Protected Route wrapper
 const ProtectedRoute = ({ children }) => {
@@ -128,6 +129,13 @@ function AppContent() {
         <ProtectedRoute>
           <AppLayout>
             <TradesPage />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/disputes" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <AdminDisputesPage />
           </AppLayout>
         </ProtectedRoute>
       } />

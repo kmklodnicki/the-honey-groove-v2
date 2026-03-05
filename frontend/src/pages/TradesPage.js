@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { ArrowRightLeft, Check, X, MessageSquare, Disc, Loader2, DollarSign, ChevronRight, Search } from 'lucide-react';
+import { ArrowRightLeft, Check, X, MessageSquare, Disc, Loader2, DollarSign, Search, Package, AlertTriangle, Star, Camera, Truck, Clock, CheckCircle2, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
@@ -49,9 +49,7 @@ const TradesPage = () => {
 
   const fetchTrades = useCallback(async () => {
     try {
-      const resp = await axios.get(`${API}/trades`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const resp = await axios.get(`${API}/trades`, { headers: { Authorization: `Bearer ${token}` } });
       setTrades(resp.data);
     } catch { /* ignore */ }
     finally { setLoading(false); }
@@ -59,22 +57,17 @@ const TradesPage = () => {
 
   useEffect(() => { fetchTrades(); }, [fetchTrades]);
 
-  const activeTrades = trades.filter(t => ['PROPOSED', 'COUNTERED', 'ACCEPTED', 'SHIPPING', 'CONFIRMING'].includes(t.status));
+  const activeTrades = trades.filter(t => ['PROPOSED', 'COUNTERED', 'SHIPPING', 'CONFIRMING', 'DISPUTED'].includes(t.status));
   const completedTrades = trades.filter(t => ['COMPLETED', 'DECLINED', 'CANCELLED'].includes(t.status));
 
-  const openDetail = (trade) => {
-    setSelectedTrade(trade);
-    setShowDetail(true);
-  };
+  const openDetail = (trade) => { setSelectedTrade(trade); setShowDetail(true); };
 
-  if (loading) {
-    return (
-      <div className="max-w-3xl mx-auto px-4 py-8 pt-24">
-        <Skeleton className="h-10 w-48 mb-6" />
-        {[1, 2, 3].map(i => <Skeleton key={i} className="h-28 w-full mb-3" />)}
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="max-w-3xl mx-auto px-4 py-8 pt-24">
+      <Skeleton className="h-10 w-48 mb-6" />
+      {[1, 2, 3].map(i => <Skeleton key={i} className="h-28 w-full mb-3" />)}
+    </div>
+  );
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 pt-24 pb-24 md:pb-8" data-testid="trades-page">
@@ -82,36 +75,23 @@ const TradesPage = () => {
         <h1 className="font-heading text-3xl text-vinyl-black">My Trades</h1>
         <p className="text-sm text-muted-foreground mt-1">Manage your record trades with other collectors</p>
       </div>
-
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="bg-honey/10 mb-6 w-full grid grid-cols-2">
-          <TabsTrigger value="active" className="data-[state=active]:bg-honey text-sm" data-testid="tab-active-trades">
-            Active ({activeTrades.length})
-          </TabsTrigger>
-          <TabsTrigger value="history" className="data-[state=active]:bg-honey text-sm" data-testid="tab-trade-history">
-            History ({completedTrades.length})
-          </TabsTrigger>
+          <TabsTrigger value="active" className="data-[state=active]:bg-honey text-sm" data-testid="tab-active-trades">Active ({activeTrades.length})</TabsTrigger>
+          <TabsTrigger value="history" className="data-[state=active]:bg-honey text-sm" data-testid="tab-trade-history">History ({completedTrades.length})</TabsTrigger>
         </TabsList>
-
         <TabsContent value="active">
           {activeTrades.length === 0 ? (
             <Card className="p-8 text-center border-honey/30">
               <ArrowRightLeft className="w-12 h-12 text-honey mx-auto mb-4" />
               <h3 className="font-heading text-xl mb-2">No active trades</h3>
               <p className="text-muted-foreground text-sm mb-4">Browse TRADE listings in the Market to propose a trade!</p>
-              <Link to="/iso">
-                <Button className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full">Go to Market</Button>
-              </Link>
+              <Link to="/iso"><Button className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full">Go to Market</Button></Link>
             </Card>
           ) : (
-            <div className="space-y-3">
-              {activeTrades.map(trade => (
-                <TradeCard key={trade.id} trade={trade} currentUserId={user?.id} onClick={() => openDetail(trade)} />
-              ))}
-            </div>
+            <div className="space-y-3">{activeTrades.map(t => <TradeCard key={t.id} trade={t} currentUserId={user?.id} onClick={() => openDetail(t)} />)}</div>
           )}
         </TabsContent>
-
         <TabsContent value="history">
           {completedTrades.length === 0 ? (
             <Card className="p-8 text-center border-honey/30">
@@ -120,44 +100,31 @@ const TradesPage = () => {
               <p className="text-muted-foreground text-sm">Completed and declined trades will appear here.</p>
             </Card>
           ) : (
-            <div className="space-y-3">
-              {completedTrades.map(trade => (
-                <TradeCard key={trade.id} trade={trade} currentUserId={user?.id} onClick={() => openDetail(trade)} />
-              ))}
-            </div>
+            <div className="space-y-3">{completedTrades.map(t => <TradeCard key={t.id} trade={t} currentUserId={user?.id} onClick={() => openDetail(t)} />)}</div>
           )}
         </TabsContent>
       </Tabs>
-
-      {/* Trade Detail Modal */}
       {selectedTrade && (
-        <TradeDetailModal
-          open={showDetail}
-          onOpenChange={(open) => { if (!open) { setShowDetail(false); setSelectedTrade(null); } }}
-          trade={selectedTrade}
-          currentUserId={user?.id}
-          token={token}
-          API={API}
-          onUpdate={fetchTrades}
-        />
+        <TradeDetailModal open={showDetail} onOpenChange={(o) => { if (!o) { setShowDetail(false); setSelectedTrade(null); } }}
+          trade={selectedTrade} currentUserId={user?.id} token={token} API={API} onUpdate={() => { fetchTrades(); setShowDetail(false); setSelectedTrade(null); }} />
       )}
     </div>
   );
 };
 
-// Trade Card Component
+// ======= Trade Card =======
 const TradeCard = ({ trade, currentUserId, onClick }) => {
   const isInitiator = trade.initiator_id === currentUserId;
   const otherUser = isInitiator ? trade.responder : trade.initiator;
   const sc = STATUS_CONFIG[trade.status] || STATUS_CONFIG.PROPOSED;
-  const needsAction = (trade.status === 'PROPOSED' && !isInitiator) || (trade.status === 'COUNTERED' && isInitiator);
+  const needsAction = (trade.status === 'PROPOSED' && !isInitiator) || (trade.status === 'COUNTERED' && isInitiator)
+    || (trade.status === 'SHIPPING' && !hasShipped(trade, currentUserId))
+    || (trade.status === 'CONFIRMING' && !hasConfirmed(trade, currentUserId))
+    || (trade.status === 'COMPLETED' && !hasRated(trade, currentUserId));
 
   return (
-    <Card
-      className={`p-4 border-honey/30 cursor-pointer transition-all hover:shadow-md ${needsAction ? 'ring-2 ring-honey/50' : ''}`}
-      onClick={onClick}
-      data-testid={`trade-card-${trade.id}`}
-    >
+    <Card className={`p-4 border-honey/30 cursor-pointer transition-all hover:shadow-md ${needsAction ? 'ring-2 ring-honey/50' : ''}`}
+      onClick={onClick} data-testid={`trade-card-${trade.id}`}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <span className={`w-2 h-2 rounded-full ${sc.dot}`} />
@@ -166,30 +133,21 @@ const TradeCard = ({ trade, currentUserId, onClick }) => {
         </div>
         <span className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(trade.updated_at), { addSuffix: true })}</span>
       </div>
-
-      {/* Two records side by side */}
       <div className="flex items-center gap-3">
         <RecordMini record={trade.offered_record} label={isInitiator ? 'You offer' : `@${trade.initiator?.username} offers`} />
         <ArrowRightLeft className="w-5 h-5 text-honey shrink-0" />
         <RecordMini record={trade.listing_record} label={isInitiator ? `@${trade.responder?.username}'s` : 'Your listing'} />
       </div>
-
-      {/* Boot info */}
       {trade.boot_amount > 0 && (
         <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
-          <DollarSign className="w-3 h-3" />
-          ${trade.boot_amount} boot {trade.boot_direction === 'TO_SELLER' ? `to @${trade.responder?.username}` : `to @${trade.initiator?.username}`}
-          <span className="text-honey-amber ml-1">(settled directly between traders)</span>
+          <DollarSign className="w-3 h-3" />${trade.boot_amount} boot
+          <span className="text-honey-amber ml-1">(settled directly)</span>
         </div>
       )}
-
-      {/* Counter indicator */}
-      {trade.status === 'COUNTERED' && trade.counter && (
-        <div className="mt-2 px-3 py-1.5 bg-blue-50 rounded-lg text-xs text-blue-700">
-          Counter: {trade.counter.record_id ? 'Different record requested' : ''} {trade.counter.boot_amount ? `$${trade.counter.boot_amount} boot` : ''}
-        </div>
+      {/* Shipping status summary */}
+      {trade.status === 'SHIPPING' && trade.shipping && (
+        <ShippingSummary trade={trade} currentUserId={currentUserId} />
       )}
-
       <div className="flex items-center justify-between mt-3">
         <div className="flex items-center gap-2">
           <Avatar className="h-5 w-5">
@@ -199,24 +157,44 @@ const TradeCard = ({ trade, currentUserId, onClick }) => {
           <span className="text-xs text-muted-foreground">with @{otherUser?.username}</span>
         </div>
         {trade.messages?.length > 0 && (
-          <span className="text-xs text-muted-foreground flex items-center gap-1">
-            <MessageSquare className="w-3 h-3" /> {trade.messages.length}
-          </span>
+          <span className="text-xs text-muted-foreground flex items-center gap-1"><MessageSquare className="w-3 h-3" /> {trade.messages.length}</span>
         )}
       </div>
     </Card>
   );
 };
 
-// Mini record display
+// ======= Helpers =======
+const hasShipped = (trade, userId) => {
+  const role = trade.initiator_id === userId ? 'initiator' : 'responder';
+  return trade.shipping?.[role] != null;
+};
+const hasConfirmed = (trade, userId) => trade.confirmations?.[userId] === true;
+const hasRated = (trade, userId) => trade.ratings?.[userId] != null;
+
+const ShippingSummary = ({ trade, currentUserId }) => {
+  const iShipped = hasShipped(trade, currentUserId);
+  const otherShipped = trade.initiator_id === currentUserId
+    ? trade.shipping?.responder != null
+    : trade.shipping?.initiator != null;
+  const otherName = trade.initiator_id === currentUserId ? trade.responder?.username : trade.initiator?.username;
+  return (
+    <div className="mt-2 flex items-center gap-2 text-xs">
+      {iShipped ? <CheckCircle2 className="w-3 h-3 text-green-500" /> : <Clock className="w-3 h-3 text-amber-500" />}
+      <span>{iShipped ? 'You shipped' : 'You need to ship'}</span>
+      <span className="text-muted-foreground">|</span>
+      {otherShipped ? <CheckCircle2 className="w-3 h-3 text-green-500" /> : <Clock className="w-3 h-3 text-amber-500" />}
+      <span>{otherShipped ? `@${otherName} shipped` : `Waiting on @${otherName}`}</span>
+    </div>
+  );
+};
+
 const RecordMini = ({ record, label }) => (
   <div className="flex items-center gap-2 flex-1 min-w-0">
     {record?.cover_url ? (
       <img src={record.cover_url} alt="" className="w-12 h-12 rounded-lg object-cover shadow" />
     ) : (
-      <div className="w-12 h-12 rounded-lg bg-honey/20 flex items-center justify-center shrink-0">
-        <Disc className="w-5 h-5 text-honey" />
-      </div>
+      <div className="w-12 h-12 rounded-lg bg-honey/20 flex items-center justify-center shrink-0"><Disc className="w-5 h-5 text-honey" /></div>
     )}
     <div className="min-w-0 flex-1">
       <p className="text-[10px] text-muted-foreground">{label}</p>
@@ -226,7 +204,7 @@ const RecordMini = ({ record, label }) => (
   </div>
 );
 
-// Trade Detail Modal
+// ======= Trade Detail Modal =======
 const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API, onUpdate }) => {
   const [loading, setLoading] = useState(false);
   const [showCounter, setShowCounter] = useState(false);
@@ -237,70 +215,120 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
   const [counterRecordId, setCounterRecordId] = useState('');
   const [loadingRecords, setLoadingRecords] = useState(false);
   const [messageText, setMessageText] = useState('');
+  // Shipping
+  const [trackingNumber, setTrackingNumber] = useState('');
+  const [carrier, setCarrier] = useState('');
+  // Dispute
+  const [showDispute, setShowDispute] = useState(false);
+  const [disputeReason, setDisputeReason] = useState('');
+  const [disputePhotos, setDisputePhotos] = useState([]);
+  const [disputeResponse, setDisputeResponse] = useState('');
+  const [disputeResponsePhotos, setDisputeResponsePhotos] = useState([]);
+  // Rating
+  const [showRating, setShowRating] = useState(false);
+  const [ratingValue, setRatingValue] = useState(0);
+  const [ratingReview, setRatingReview] = useState('');
 
   const isInitiator = trade.initiator_id === currentUserId;
   const canAccept = (trade.status === 'PROPOSED' && !isInitiator) || (trade.status === 'COUNTERED' && isInitiator);
   const canCounter = (trade.status === 'PROPOSED' && !isInitiator) || (trade.status === 'COUNTERED' && isInitiator);
   const canDecline = ['PROPOSED', 'COUNTERED'].includes(trade.status);
+  const canShip = trade.status === 'SHIPPING' && !hasShipped(trade, currentUserId);
+  const canConfirm = trade.status === 'CONFIRMING' && !hasConfirmed(trade, currentUserId);
+  const canDispute = ['CONFIRMING', 'SHIPPING'].includes(trade.status) && !trade.dispute;
+  const canRespondDispute = trade.status === 'DISPUTED' && trade.dispute && !trade.dispute.response && trade.dispute.opened_by !== currentUserId;
+  const needsRating = trade.status === 'COMPLETED' && !hasRated(trade, currentUserId);
   const sc = STATUS_CONFIG[trade.status] || STATUS_CONFIG.PROPOSED;
+  const otherUser = isInitiator ? trade.responder : trade.initiator;
 
-  // Fetch other party's collection for counter
   const fetchOtherRecords = async () => {
     const otherUsername = isInitiator ? trade.responder?.username : trade.initiator?.username;
     if (!otherUsername) return;
     setLoadingRecords(true);
-    try {
-      const resp = await axios.get(`${API}/users/${otherUsername}/records`);
-      setOtherRecords(resp.data);
-    } catch { /* ignore */ }
+    try { const resp = await axios.get(`${API}/users/${otherUsername}/records`); setOtherRecords(resp.data); }
+    catch { /* ignore */ }
     finally { setLoadingRecords(false); }
   };
 
-  const handleAccept = async () => {
+  const apiCall = async (method, url, body) => {
     setLoading(true);
     try {
-      await axios.put(`${API}/trades/${trade.id}/accept`, {}, { headers: { Authorization: `Bearer ${token}` } });
-      toast.success('Trade accepted!');
-      onOpenChange(false);
-      onUpdate();
-    } catch (err) { toast.error(err.response?.data?.detail || 'Failed'); }
+      const config = { headers: { Authorization: `Bearer ${token}` } };
+      if (method === 'put') await axios.put(url, body || {}, config);
+      else await axios.post(url, body || {}, config);
+      return true;
+    } catch (err) { toast.error(err.response?.data?.detail || 'Failed'); return false; }
     finally { setLoading(false); }
   };
 
-  const handleDecline = async () => {
-    setLoading(true);
-    try {
-      await axios.put(`${API}/trades/${trade.id}/decline`, {}, { headers: { Authorization: `Bearer ${token}` } });
-      toast.success('Trade declined');
-      onOpenChange(false);
-      onUpdate();
-    } catch (err) { toast.error(err.response?.data?.detail || 'Failed'); }
-    finally { setLoading(false); }
-  };
+  const handleAccept = async () => { if (await apiCall('put', `${API}/trades/${trade.id}/accept`)) { toast.success('Trade accepted! Ship within 5 days.'); onUpdate(); } };
+  const handleDecline = async () => { if (await apiCall('put', `${API}/trades/${trade.id}/decline`)) { toast.success('Trade declined'); onUpdate(); } };
 
   const handleCounter = async () => {
-    setLoading(true);
-    try {
-      await axios.put(`${API}/trades/${trade.id}/counter`, {
-        requested_record_id: counterRecordId || null,
-        boot_amount: counterBoot ? parseFloat(counterBoot) : null,
-        boot_direction: counterBoot ? counterBootDir : null,
-        message: counterMessage || null,
-      }, { headers: { Authorization: `Bearer ${token}` } });
-      toast.success('Counter sent!');
-      setShowCounter(false);
-      onOpenChange(false);
-      onUpdate();
-    } catch (err) { toast.error(err.response?.data?.detail || 'Failed'); }
-    finally { setLoading(false); }
+    if (await apiCall('put', `${API}/trades/${trade.id}/counter`, {
+      requested_record_id: counterRecordId || null,
+      boot_amount: counterBoot ? parseFloat(counterBoot) : null,
+      boot_direction: counterBoot ? counterBootDir : null,
+      message: counterMessage || null,
+    })) { toast.success('Counter sent!'); onUpdate(); }
+  };
+
+  const handleShip = async () => {
+    if (!trackingNumber.trim()) { toast.error('Enter a tracking number'); return; }
+    if (await apiCall('put', `${API}/trades/${trade.id}/ship`, { tracking_number: trackingNumber, carrier: carrier || null })) {
+      toast.success('Tracking added!'); onUpdate();
+    }
+  };
+
+  const handleConfirm = async () => {
+    if (await apiCall('put', `${API}/trades/${trade.id}/confirm-receipt`)) { toast.success('Receipt confirmed!'); onUpdate(); }
+  };
+
+  const handleCancelShipping = async () => {
+    if (await apiCall('put', `${API}/trades/${trade.id}/cancel-shipping`)) { toast.success('Trade cancelled'); onUpdate(); }
+  };
+
+  const handleOpenDispute = async () => {
+    // Upload photos first
+    const photoUrls = [];
+    for (const photo of disputePhotos) {
+      const fd = new FormData(); fd.append('file', photo.file);
+      try {
+        const r = await axios.post(`${API}/upload`, fd, { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } });
+        photoUrls.push(r.data.path);
+      } catch { /* skip */ }
+    }
+    if (await apiCall('post', `${API}/trades/${trade.id}/dispute`, { reason: disputeReason, photo_urls: photoUrls })) {
+      toast.success('Dispute opened'); onUpdate();
+    }
+  };
+
+  const handleDisputeRespond = async () => {
+    const photoUrls = [];
+    for (const photo of disputeResponsePhotos) {
+      const fd = new FormData(); fd.append('file', photo.file);
+      try {
+        const r = await axios.post(`${API}/upload`, fd, { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } });
+        photoUrls.push(r.data.path);
+      } catch { /* skip */ }
+    }
+    if (await apiCall('put', `${API}/trades/${trade.id}/dispute/respond`, { response_text: disputeResponse, photo_urls: photoUrls })) {
+      toast.success('Response submitted'); onUpdate();
+    }
+  };
+
+  const handleRate = async () => {
+    if (ratingValue === 0) { toast.error('Select a rating'); return; }
+    if (await apiCall('post', `${API}/trades/${trade.id}/rate`, { rating: ratingValue, review: ratingReview || null })) {
+      toast.success('Rating submitted!'); onUpdate();
+    }
   };
 
   const handleSendMessage = async () => {
     if (!messageText.trim()) return;
     try {
       await axios.post(`${API}/trades/${trade.id}/message`, { text: messageText }, { headers: { Authorization: `Bearer ${token}` } });
-      setMessageText('');
-      onUpdate();
+      setMessageText(''); onUpdate();
     } catch { toast.error('Failed to send'); }
   };
 
@@ -318,23 +346,17 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
         </DialogHeader>
 
         <div className="space-y-4 pt-2">
-          {/* The Exchange */}
+          {/* THE EXCHANGE */}
           <div className="bg-honey/5 rounded-xl p-4">
             <p className="text-xs font-medium text-muted-foreground mb-3">THE EXCHANGE</p>
             <div className="flex items-start gap-3">
               <div className="flex-1">
-                <p className="text-[10px] text-muted-foreground mb-1">
-                  @{trade.initiator?.username} {isInitiator ? '(you)' : ''} offers
-                </p>
+                <p className="text-[10px] text-muted-foreground mb-1">@{trade.initiator?.username} {isInitiator ? '(you)' : ''} offers</p>
                 <RecordDetail record={trade.offered_record} />
               </div>
-              <div className="flex flex-col items-center pt-6">
-                <ArrowRightLeft className="w-5 h-5 text-honey" />
-              </div>
+              <div className="flex flex-col items-center pt-6"><ArrowRightLeft className="w-5 h-5 text-honey" /></div>
               <div className="flex-1">
-                <p className="text-[10px] text-muted-foreground mb-1">
-                  @{trade.responder?.username} {!isInitiator ? '(you)' : ''} has
-                </p>
+                <p className="text-[10px] text-muted-foreground mb-1">@{trade.responder?.username} {!isInitiator ? '(you)' : ''} has</p>
                 <RecordDetail record={trade.listing_record} />
               </div>
             </div>
@@ -349,16 +371,193 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
             </div>
           )}
 
-          {/* Counter info */}
-          {trade.status === 'COUNTERED' && trade.counter && (
-            <div className="px-3 py-2 bg-blue-50 rounded-lg text-sm border border-blue-200">
-              <p className="font-medium text-blue-700 text-xs mb-1">Counter Offer</p>
-              {trade.counter_record && (
-                <p className="text-sm">Wants: <strong>{trade.counter_record.title}</strong> by {trade.counter_record.artist}</p>
+          {/* === SHIPPING STATUS === */}
+          {(trade.status === 'SHIPPING' || trade.status === 'CONFIRMING') && trade.shipping && (
+            <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
+              <p className="text-xs font-medium text-purple-700 mb-3 flex items-center gap-1"><Truck className="w-3 h-3" /> SHIPPING STATUS</p>
+              {['initiator', 'responder'].map(role => {
+                const s = trade.shipping?.[role];
+                const name = role === 'initiator' ? trade.initiator?.username : trade.responder?.username;
+                const isMe = (role === 'initiator' && isInitiator) || (role === 'responder' && !isInitiator);
+                return (
+                  <div key={role} className={`flex items-center gap-2 py-2 ${role === 'responder' ? 'border-t border-purple-200' : ''}`}>
+                    {s ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Clock className="w-4 h-4 text-amber-500" />}
+                    <span className="text-sm flex-1">
+                      <strong>@{name}</strong> {isMe ? '(you)' : ''} — {s ? `Shipped via ${s.carrier || 'carrier'}` : 'Waiting to ship'}
+                    </span>
+                    {s && <span className="text-xs text-purple-600 font-mono">{s.tracking_number}</span>}
+                  </div>
+                );
+              })}
+              {trade.shipping_deadline && (
+                <p className="text-xs text-purple-600 mt-2">
+                  <Clock className="w-3 h-3 inline mr-1" />
+                  Ship by {new Date(trade.shipping_deadline).toLocaleDateString()}
+                  {trade.shipping_overdue && <span className="text-red-600 font-bold ml-1">OVERDUE</span>}
+                </p>
               )}
-              {trade.counter.boot_amount > 0 && (
-                <p className="text-sm">${trade.counter.boot_amount} boot {trade.counter.boot_direction === 'TO_SELLER' ? 'to seller' : 'to buyer'}</p>
+            </div>
+          )}
+
+          {/* Ship form */}
+          {canShip && (
+            <div className="border border-purple-200 rounded-lg p-3 space-y-3 bg-purple-50/50">
+              <p className="text-sm font-medium text-purple-700 flex items-center gap-1"><Package className="w-4 h-4" /> Add Tracking Info</p>
+              <div className="grid grid-cols-2 gap-2">
+                <Input placeholder="Tracking number" value={trackingNumber} onChange={e => setTrackingNumber(e.target.value)} className="text-sm border-purple-200" data-testid="tracking-number-input" />
+                <Input placeholder="Carrier (USPS, UPS...)" value={carrier} onChange={e => setCarrier(e.target.value)} className="text-sm border-purple-200" data-testid="carrier-input" />
+              </div>
+              <Button onClick={handleShip} disabled={loading || !trackingNumber.trim()} className="w-full bg-purple-600 text-white hover:bg-purple-700 rounded-full text-sm" data-testid="submit-tracking-btn">
+                {loading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Truck className="w-4 h-4 mr-1" />}
+                Submit Tracking
+              </Button>
+            </div>
+          )}
+
+          {/* Cancel shipping (if overdue) */}
+          {trade.status === 'SHIPPING' && trade.shipping_overdue && hasShipped(trade, currentUserId) && (
+            <Button onClick={handleCancelShipping} disabled={loading} variant="outline" className="w-full rounded-full text-red-600 border-red-200 hover:bg-red-50" data-testid="cancel-shipping-btn">
+              <XCircle className="w-4 h-4 mr-1" /> Cancel — Partner hasn't shipped
+            </Button>
+          )}
+
+          {/* === CONFIRMATION === */}
+          {trade.status === 'CONFIRMING' && (
+            <div className="bg-cyan-50 rounded-xl p-4 border border-cyan-200">
+              <p className="text-xs font-medium text-cyan-700 mb-2">CONFIRMATION WINDOW</p>
+              <p className="text-sm text-cyan-600 mb-3">Both packages delivered. Confirm your record arrived as described.</p>
+              {trade.confirmation_deadline && (
+                <p className="text-xs text-cyan-600 mb-2"><Clock className="w-3 h-3 inline mr-1" />
+                  Auto-completes {formatDistanceToNow(new Date(trade.confirmation_deadline), { addSuffix: true })}
+                </p>
               )}
+              {hasConfirmed(trade, currentUserId) ? (
+                <p className="text-sm text-green-600 font-medium flex items-center gap-1"><CheckCircle2 className="w-4 h-4" /> You confirmed. Waiting on @{otherUser?.username}</p>
+              ) : (
+                <div className="flex gap-2">
+                  <Button onClick={handleConfirm} disabled={loading} className="flex-1 bg-cyan-600 text-white hover:bg-cyan-700 rounded-full text-sm" data-testid="confirm-receipt-btn">
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Check className="w-4 h-4 mr-1" />}
+                    Arrived as described
+                  </Button>
+                  {canDispute && (
+                    <Button onClick={() => setShowDispute(true)} variant="outline" className="rounded-full text-red-600 border-red-200 hover:bg-red-50 text-sm" data-testid="open-dispute-btn">
+                      <AlertTriangle className="w-4 h-4 mr-1" /> Dispute
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* === DISPUTE SECTION === */}
+          {trade.dispute && (
+            <div className="bg-red-50 rounded-xl p-4 border border-red-200">
+              <p className="text-xs font-medium text-red-700 mb-2 flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> DISPUTE</p>
+              <p className="text-sm mb-1"><strong>Opened by:</strong> @{trade.dispute.opened_by === trade.initiator_id ? trade.initiator?.username : trade.responder?.username}</p>
+              <p className="text-sm mb-2">{trade.dispute.reason}</p>
+              {trade.dispute.photo_urls?.length > 0 && (
+                <div className="flex gap-2 mb-2 overflow-x-auto">{trade.dispute.photo_urls.map((url, i) => <img key={i} src={url} alt="" className="w-16 h-16 rounded object-cover border" />)}</div>
+              )}
+              {trade.dispute.response && (
+                <div className="mt-3 pl-3 border-l-2 border-red-300">
+                  <p className="text-xs font-medium text-red-600">Response:</p>
+                  <p className="text-sm">{trade.dispute.response.text}</p>
+                  {trade.dispute.response.photo_urls?.length > 0 && (
+                    <div className="flex gap-2 mt-1 overflow-x-auto">{trade.dispute.response.photo_urls.map((url, i) => <img key={i} src={url} alt="" className="w-16 h-16 rounded object-cover border" />)}</div>
+                  )}
+                </div>
+              )}
+              {trade.dispute.resolution && (
+                <div className="mt-3 bg-white rounded-lg p-2 border border-red-200">
+                  <p className="text-xs font-medium text-green-700">Resolution: {trade.dispute.resolution.outcome}</p>
+                  <p className="text-sm text-muted-foreground">{trade.dispute.resolution.notes}</p>
+                </div>
+              )}
+              {!trade.dispute.response && !trade.dispute.resolution && (
+                <p className="text-xs text-red-500 mt-2"><Clock className="w-3 h-3 inline mr-1" />
+                  Response due {formatDistanceToNow(new Date(trade.dispute.response_deadline), { addSuffix: true })}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Dispute response form */}
+          {canRespondDispute && (
+            <div className="border border-red-200 rounded-lg p-3 space-y-3 bg-red-50/50">
+              <p className="text-sm font-medium text-red-700">Respond to Dispute</p>
+              <Textarea placeholder="Describe your side..." value={disputeResponse} onChange={e => setDisputeResponse(e.target.value)} className="text-sm border-red-200 resize-none" rows={3} data-testid="dispute-response-input" />
+              <PhotoUploadMini photos={disputeResponsePhotos} setPhotos={setDisputeResponsePhotos} label="Evidence photos" />
+              <Button onClick={handleDisputeRespond} disabled={loading || !disputeResponse.trim()} className="w-full bg-red-600 text-white hover:bg-red-700 rounded-full text-sm" data-testid="submit-dispute-response-btn">
+                {loading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
+                Submit Response
+              </Button>
+            </div>
+          )}
+
+          {/* Open dispute form */}
+          {showDispute && !trade.dispute && (
+            <div className="border border-red-200 rounded-lg p-3 space-y-3 bg-red-50/50">
+              <p className="text-sm font-medium text-red-700">Open a Dispute</p>
+              <Textarea placeholder="Describe the issue..." value={disputeReason} onChange={e => setDisputeReason(e.target.value)} className="text-sm border-red-200 resize-none" rows={3} data-testid="dispute-reason-input" />
+              <PhotoUploadMini photos={disputePhotos} setPhotos={setDisputePhotos} label="Upload photos of the issue" />
+              <div className="flex gap-2">
+                <Button onClick={handleOpenDispute} disabled={loading || !disputeReason.trim()} className="flex-1 bg-red-600 text-white hover:bg-red-700 rounded-full text-sm" data-testid="submit-dispute-btn">
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <AlertTriangle className="w-4 h-4 mr-1" />}
+                  Open Dispute
+                </Button>
+                <Button variant="outline" onClick={() => setShowDispute(false)} className="rounded-full text-sm">Cancel</Button>
+              </div>
+            </div>
+          )}
+
+          {/* === COMPLETED + RATING === */}
+          {trade.status === 'COMPLETED' && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+              <CheckCircle2 className="w-6 h-6 text-green-600 mx-auto mb-1" />
+              <p className="text-sm font-medium text-green-700">Trade Completed!</p>
+              <p className="text-xs text-green-600 mt-1">Records have been transferred to both collections.</p>
+            </div>
+          )}
+
+          {/* Rating prompt */}
+          {needsRating && !showRating && (
+            <Button onClick={() => setShowRating(true)} className="w-full bg-honey text-vinyl-black hover:bg-honey-amber rounded-full" data-testid="rate-trade-btn">
+              <Star className="w-4 h-4 mr-1" /> Rate @{otherUser?.username}
+            </Button>
+          )}
+
+          {showRating && (
+            <div className="border border-honey/30 rounded-lg p-3 space-y-3 bg-honey/5">
+              <p className="text-sm font-medium">Rate your trade with @{otherUser?.username}</p>
+              <div className="flex gap-1 justify-center">
+                {[1, 2, 3, 4, 5].map(v => (
+                  <button key={v} onClick={() => setRatingValue(v)} className="p-1 transition-transform hover:scale-110" data-testid={`rating-star-${v}`}>
+                    <Star className={`w-8 h-8 ${v <= ratingValue ? 'fill-honey text-honey' : 'text-gray-300'}`} />
+                  </button>
+                ))}
+              </div>
+              <Textarea placeholder="How was the experience? (optional)" value={ratingReview} onChange={e => setRatingReview(e.target.value)} className="text-sm border-honey/50 resize-none" rows={2} data-testid="rating-review-input" />
+              <Button onClick={handleRate} disabled={loading || ratingValue === 0} className="w-full bg-honey text-vinyl-black hover:bg-honey-amber rounded-full text-sm" data-testid="submit-rating-btn">
+                {loading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Star className="w-4 h-4 mr-1" />}
+                Submit Rating ({ratingValue}/5)
+              </Button>
+            </div>
+          )}
+
+          {/* Existing ratings display */}
+          {trade.ratings && Object.keys(trade.ratings).length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-2">RATINGS</p>
+              {Object.entries(trade.ratings).map(([uid, r]) => {
+                const rater = uid === trade.initiator_id ? trade.initiator : trade.responder;
+                return (
+                  <div key={uid} className="flex items-center gap-2 text-sm py-1">
+                    <span className="text-xs text-muted-foreground">@{rater?.username}:</span>
+                    <div className="flex gap-0.5">{[1,2,3,4,5].map(v => <Star key={v} className={`w-3 h-3 ${v <= r.rating ? 'fill-honey text-honey' : 'text-gray-300'}`} />)}</div>
+                    {r.review && <span className="text-xs text-muted-foreground ml-1">"{r.review}"</span>}
+                  </div>
+                );
+              })}
             </div>
           )}
 
@@ -382,23 +581,17 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
           )}
 
           {/* Message input */}
-          {['PROPOSED', 'COUNTERED', 'ACCEPTED'].includes(trade.status) && (
+          {['PROPOSED', 'COUNTERED', 'SHIPPING', 'CONFIRMING'].includes(trade.status) && (
             <div className="flex gap-2">
-              <Input
-                placeholder="Send a message..."
-                value={messageText}
-                onChange={e => setMessageText(e.target.value)}
-                className="border-honey/50 text-sm"
-                onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
-                data-testid="trade-message-input"
-              />
+              <Input placeholder="Send a message..." value={messageText} onChange={e => setMessageText(e.target.value)} className="border-honey/50 text-sm"
+                onKeyDown={e => e.key === 'Enter' && handleSendMessage()} data-testid="trade-message-input" />
               <Button size="sm" onClick={handleSendMessage} className="bg-honey text-vinyl-black hover:bg-honey-amber" data-testid="trade-send-msg-btn">
                 <MessageSquare className="w-4 h-4" />
               </Button>
             </div>
           )}
 
-          {/* Counter Form */}
+          {/* Counter form */}
           {showCounter && (
             <div className="border border-blue-200 rounded-lg p-3 space-y-3 bg-blue-50/50">
               <p className="text-sm font-medium text-blue-700">Counter Offer</p>
@@ -410,23 +603,15 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
                 </Button>
                 {otherRecords.length > 0 && (
                   <Select value={counterRecordId} onValueChange={setCounterRecordId}>
-                    <SelectTrigger className="text-sm border-blue-200">
-                      <SelectValue placeholder="Pick a different record..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {otherRecords.map(r => (
-                        <SelectItem key={r.id} value={r.id}>{r.artist} — {r.title}</SelectItem>
-                      ))}
-                    </SelectContent>
+                    <SelectTrigger className="text-sm border-blue-200"><SelectValue placeholder="Pick a different record..." /></SelectTrigger>
+                    <SelectContent>{otherRecords.map(r => <SelectItem key={r.id} value={r.id}>{r.artist} — {r.title}</SelectItem>)}</SelectContent>
                   </Select>
                 )}
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <Input placeholder="Boot amount ($)" type="number" value={counterBoot} onChange={e => setCounterBoot(e.target.value)} className="text-sm border-blue-200" />
                 <Select value={counterBootDir} onValueChange={setCounterBootDir}>
-                  <SelectTrigger className="text-sm border-blue-200">
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger className="text-sm border-blue-200"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="TO_SELLER">Boot to seller</SelectItem>
                     <SelectItem value="TO_BUYER">Boot to buyer</SelectItem>
@@ -444,7 +629,7 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
             </div>
           )}
 
-          {/* Action Buttons */}
+          {/* Phase 1 action buttons */}
           {(canAccept || canDecline) && !showCounter && (
             <div className="flex gap-2 pt-2">
               {canAccept && (
@@ -465,37 +650,53 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
               )}
             </div>
           )}
-
-          {/* Accepted state */}
-          {trade.status === 'ACCEPTED' && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
-              <Check className="w-6 h-6 text-green-600 mx-auto mb-1" />
-              <p className="text-sm font-medium text-green-700">Trade Accepted!</p>
-              <p className="text-xs text-green-600 mt-1">Both parties have agreed. Shipping details coming in Phase 2.</p>
-            </div>
-          )}
         </div>
       </DialogContent>
     </Dialog>
   );
 };
 
-// Record detail card
+// ======= Mini photo upload =======
+const PhotoUploadMini = ({ photos, setPhotos, label }) => {
+  const handleSelect = (e) => {
+    const files = Array.from(e.target.files || []);
+    const toAdd = files.slice(0, 5 - photos.length).map(f => ({ file: f, preview: URL.createObjectURL(f) }));
+    setPhotos(prev => [...prev, ...toAdd]);
+  };
+  return (
+    <div>
+      <p className="text-xs text-muted-foreground mb-1">{label}</p>
+      <div className="flex gap-2 items-center">
+        {photos.map((p, i) => (
+          <div key={i} className="relative w-12 h-12">
+            <img src={p.preview} alt="" className="w-12 h-12 rounded object-cover border" />
+            <button onClick={() => setPhotos(prev => prev.filter((_, j) => j !== i))} className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[8px]">x</button>
+          </div>
+        ))}
+        {photos.length < 5 && (
+          <label className="w-12 h-12 border-2 border-dashed border-gray-300 rounded flex items-center justify-center cursor-pointer hover:border-gray-400">
+            <Camera className="w-4 h-4 text-gray-400" />
+            <input type="file" accept="image/*" multiple onChange={handleSelect} className="hidden" />
+          </label>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const RecordDetail = ({ record }) => (
   <div className="bg-white rounded-lg p-2 border border-honey/20">
     {record?.cover_url ? (
       <img src={record.cover_url} alt="" className="w-full aspect-square rounded-lg object-cover mb-2" />
     ) : (
-      <div className="w-full aspect-square rounded-lg bg-honey/10 flex items-center justify-center mb-2">
-        <Disc className="w-8 h-8 text-honey" />
-      </div>
+      <div className="w-full aspect-square rounded-lg bg-honey/10 flex items-center justify-center mb-2"><Disc className="w-8 h-8 text-honey" /></div>
     )}
     <p className="text-sm font-heading truncate">{record?.title || record?.album || 'Unknown'}</p>
     <p className="text-xs text-muted-foreground truncate">{record?.artist || ''}</p>
   </div>
 );
 
-// Propose Trade Modal (exported for use in ISOPage)
+// ======= Propose Trade Modal (exported for ISOPage) =======
 export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onSuccess }) => {
   const { user: currentUser } = useAuth();
   const [records, setRecords] = useState([]);
@@ -510,9 +711,7 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
     if (open && token && currentUser?.username) {
       setLoadingRecords(true);
       axios.get(`${API}/users/${currentUser.username}/records`, { headers: { Authorization: `Bearer ${token}` } })
-        .then(r => setRecords(r.data))
-        .catch(() => {})
-        .finally(() => setLoadingRecords(false));
+        .then(r => setRecords(r.data)).catch(() => {}).finally(() => setLoadingRecords(false));
     }
   }, [open, API, token, currentUser?.username]);
 
@@ -521,48 +720,32 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
     setLoading(true);
     try {
       await axios.post(`${API}/trades`, {
-        listing_id: listing.id,
-        offered_record_id: selectedRecordId,
+        listing_id: listing.id, offered_record_id: selectedRecordId,
         boot_amount: bootAmount ? parseFloat(bootAmount) : null,
         boot_direction: bootAmount ? bootDirection : null,
         message: message || null,
       }, { headers: { Authorization: `Bearer ${token}` } });
-      toast.success('Trade proposed!');
-      onOpenChange(false);
-      onSuccess?.();
-    } catch (err) { toast.error(err.response?.data?.detail || 'Failed to propose'); }
+      toast.success('Trade proposed!'); onOpenChange(false); onSuccess?.();
+    } catch (err) { toast.error(err.response?.data?.detail || 'Failed'); }
     finally { setLoading(false); }
   };
 
-  const reset = () => {
-    setSelectedRecordId('');
-    setBootAmount('');
-    setBootDirection('TO_SELLER');
-    setMessage('');
-  };
+  const reset = () => { setSelectedRecordId(''); setBootAmount(''); setBootDirection('TO_SELLER'); setMessage(''); };
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) reset(); onOpenChange(o); }}>
       <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-heading flex items-center gap-2">
-            <ArrowRightLeft className="w-5 h-5 text-honey" /> Propose a Trade
-          </DialogTitle>
+          <DialogTitle className="font-heading flex items-center gap-2"><ArrowRightLeft className="w-5 h-5 text-honey" /> Propose a Trade</DialogTitle>
           <DialogDescription>Offer a record from your collection</DialogDescription>
         </DialogHeader>
-
         <div className="space-y-4 pt-2">
-          {/* What they have */}
           <div>
             <p className="text-xs font-medium text-muted-foreground mb-2">THEY HAVE</p>
             <div className="flex items-center gap-3 bg-honey/10 rounded-lg p-3">
-              {listing?.cover_url ? (
-                <img src={listing.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow" />
-              ) : listing?.photo_urls?.[0] ? (
-                <img src={listing.photo_urls[0]} alt="" className="w-14 h-14 rounded-lg object-cover shadow" />
-              ) : (
-                <div className="w-14 h-14 rounded-lg bg-honey/20 flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>
-              )}
+              {listing?.cover_url ? <img src={listing.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow" />
+                : listing?.photo_urls?.[0] ? <img src={listing.photo_urls[0]} alt="" className="w-14 h-14 rounded-lg object-cover shadow" />
+                : <div className="w-14 h-14 rounded-lg bg-honey/20 flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>}
               <div>
                 <p className="font-heading text-base">{listing?.album}</p>
                 <p className="text-sm text-muted-foreground">{listing?.artist}</p>
@@ -570,29 +753,17 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
               </div>
             </div>
           </div>
-
-          {/* What you offer */}
           <div>
             <p className="text-xs font-medium text-muted-foreground mb-2">YOU OFFER</p>
-            {loadingRecords ? (
-              <Skeleton className="h-10 w-full" />
-            ) : records.length === 0 ? (
+            {loadingRecords ? <Skeleton className="h-10 w-full" /> : records.length === 0 ? (
               <p className="text-sm text-muted-foreground">No records in your collection to offer.</p>
             ) : (
               <Select value={selectedRecordId} onValueChange={setSelectedRecordId}>
-                <SelectTrigger className="border-honey/50" data-testid="trade-offer-select">
-                  <SelectValue placeholder="Choose a record from your collection" />
-                </SelectTrigger>
-                <SelectContent>
-                  {records.map(r => (
-                    <SelectItem key={r.id} value={r.id}>{r.artist} — {r.title}</SelectItem>
-                  ))}
-                </SelectContent>
+                <SelectTrigger className="border-honey/50" data-testid="trade-offer-select"><SelectValue placeholder="Choose a record from your collection" /></SelectTrigger>
+                <SelectContent>{records.map(r => <SelectItem key={r.id} value={r.id}>{r.artist} — {r.title}</SelectItem>)}</SelectContent>
               </Select>
             )}
           </div>
-
-          {/* Boot (cash on top) */}
           <div>
             <p className="text-xs font-medium text-muted-foreground mb-2">BOOT <span className="font-normal">(cash on top, optional)</span></p>
             <div className="grid grid-cols-2 gap-2">
@@ -601,9 +772,7 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
                 <Input placeholder="Amount" type="number" value={bootAmount} onChange={e => setBootAmount(e.target.value)} className="pl-9 border-honey/50" data-testid="trade-boot-amount" />
               </div>
               <Select value={bootDirection} onValueChange={setBootDirection}>
-                <SelectTrigger className="border-honey/50">
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger className="border-honey/50"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="TO_SELLER">You pay boot</SelectItem>
                   <SelectItem value="TO_BUYER">They pay boot</SelectItem>
@@ -612,15 +781,8 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
             </div>
             <p className="text-[10px] text-muted-foreground mt-1">Boot is settled directly between traders</p>
           </div>
-
           <Textarea placeholder="Message to seller (optional)" value={message} onChange={e => setMessage(e.target.value)} className="border-honey/50 resize-none" rows={2} data-testid="trade-message-input" />
-
-          <Button
-            onClick={handlePropose}
-            disabled={loading || !selectedRecordId}
-            className="w-full bg-honey text-vinyl-black hover:bg-honey-amber rounded-full"
-            data-testid="trade-propose-btn"
-          >
+          <Button onClick={handlePropose} disabled={loading || !selectedRecordId} className="w-full bg-honey text-vinyl-black hover:bg-honey-amber rounded-full" data-testid="trade-propose-btn">
             {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <ArrowRightLeft className="w-4 h-4 mr-2" />}
             Propose Trade
           </Button>

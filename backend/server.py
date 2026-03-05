@@ -398,6 +398,14 @@ class TradeResponse(BaseModel):
     status: str
     messages: List[Dict[str, Any]] = []
     counter: Optional[Dict[str, Any]] = None
+    # Phase 2 fields
+    shipping: Optional[Dict[str, Any]] = None  # {initiator: {tracking, carrier, shipped_at}, responder: {...}}
+    shipping_deadline: Optional[str] = None
+    confirmation_deadline: Optional[str] = None
+    confirmations: Optional[Dict[str, Any]] = None  # {initiator_id: bool, responder_id: bool}
+    # Phase 3 fields
+    dispute: Optional[Dict[str, Any]] = None
+    ratings: Optional[Dict[str, Any]] = None
     created_at: str
     updated_at: str
     initiator: Optional[Dict[str, Any]] = None
@@ -406,6 +414,27 @@ class TradeResponse(BaseModel):
     listing_record: Optional[Dict[str, Any]] = None
     counter_record: Optional[Dict[str, Any]] = None
     listing: Optional[Dict[str, Any]] = None
+
+class TradeShipInput(BaseModel):
+    tracking_number: str
+    carrier: Optional[str] = None
+
+class TradeDisputeInput(BaseModel):
+    reason: str
+    photo_urls: List[str] = []
+
+class TradeDisputeResponse(BaseModel):
+    response_text: str
+    photo_urls: List[str] = []
+
+class TradeRatingInput(BaseModel):
+    rating: int = Field(..., ge=1, le=5)
+    review: Optional[str] = None
+
+class AdminDisputeResolve(BaseModel):
+    resolution: str  # COMPLETED, CANCELLED, PARTIAL
+    notes: str
+    partial_amount: Optional[float] = None
 
 # ============== UTILITY FUNCTIONS ==============
 
@@ -1761,8 +1790,63 @@ async def delete_listing(listing_id: str, user: Dict = Depends(require_auth)):
 
 # ============== TRADE ROUTES ==============
 
+async def check_trade_deadlines(trade: Dict) -> Dict:
+    """Lazy deadline checker - evaluates on access"""
+    now = datetime.now(timezone.utc)
+
+    if trade.get("status") == "SHIPPING" and trade.get("shipping_deadline"):
+        deadline = datetime.fromisoformat(trade["shipping_deadline"])
+        if now > deadline:
+            shipping = trade.get("shipping") or {}
+            init_shipped = shipping.get("initiator") is not None
+            resp_shipped = shipping.get("responder") is not None
+            if not init_shipped or not resp_shipped:
+                trade["shipping_overdue"] = True
+
+    if trade.get("status") == "CONFIRMING" and trade.get("confirmation_deadline"):
+        deadline = datetime.fromisoformat(trade["confirmation_deadline"])
+        if now > deadline:
+            confirmations = trade.get("confirmations") or {}
+            if any(confirmations.values()):
+                from contextlib import suppress
+                with suppress(Exception):
+                    await complete_trade(trade)
+                    trade["status"] = "COMPLETED"
+
+    return trade
+
+
+async def complete_trade(trade: Dict):
+    """Transfer records and mark trade as completed"""
+    now = datetime.now(timezone.utc).isoformat()
+    initiator_id = trade["initiator_id"]
+    responder_id = trade["responder_id"]
+    offered_id = trade["offered_record_id"]
+
+    listing = await db.listings.find_one({"id": trade["listing_id"]}, {"_id": 0})
+
+    # Transfer offered record: initiator -> responder
+    await db.records.update_one({"id": offered_id}, {"$set": {"user_id": responder_id}})
+
+    # Transfer listing record: responder -> initiator
+    if listing and listing.get("record_id"):
+        await db.records.update_one({"id": listing["record_id"]}, {"$set": {"user_id": initiator_id}})
+
+    # Mark trade completed
+    await db.trades.update_one({"id": trade["id"]}, {"$set": {
+        "status": "COMPLETED", "updated_at": now, "completed_at": now,
+    }})
+
+    # Mark listing as TRADED
+    if listing:
+        await db.listings.update_one({"id": listing["id"]}, {"$set": {"status": "TRADED"}})
+
+
 async def build_trade_response(trade: Dict) -> Dict:
     """Populate a trade document with user and record data"""
+    # Lazy deadline check
+    trade = await check_trade_deadlines(trade)
+
     initiator = await db.users.find_one({"id": trade["initiator_id"]}, {"_id": 0, "password_hash": 0})
     responder = await db.users.find_one({"id": trade["responder_id"]}, {"_id": 0, "password_hash": 0})
     offered_record = await db.records.find_one({"id": trade["offered_record_id"]}, {"_id": 0})
@@ -1863,6 +1947,21 @@ async def get_my_trades(status_filter: Optional[str] = None, user: Dict = Depend
     return result
 
 
+@api_router.get("/trades/can-initiate")
+async def can_initiate_trade(user: Dict = Depends(require_auth)):
+    """Check if user has mandatory pending ratings blocking new trades"""
+    pending = await db.trades.find({
+        "$or": [{"initiator_id": user["id"]}, {"responder_id": user["id"]}],
+        "status": "COMPLETED",
+    }, {"_id": 0}).to_list(100)
+    unrated = []
+    for trade in pending:
+        ratings = trade.get("ratings") or {}
+        if not ratings.get(user["id"]):
+            unrated.append(trade["id"])
+    return {"can_trade": len(unrated) == 0, "unrated_trade_ids": unrated}
+
+
 @api_router.get("/trades/{trade_id}")
 async def get_trade(trade_id: str, user: Dict = Depends(require_auth)):
     """Get trade detail"""
@@ -1910,6 +2009,15 @@ async def accept_trade(trade_id: str, user: Dict = Depends(require_auth)):
 
     # Mark the listing as IN_TRADE
     await db.listings.update_one({"id": trade["listing_id"]}, {"$set": {"status": "IN_TRADE"}})
+
+    # Set shipping deadline (5 days from now) and transition to SHIPPING
+    shipping_deadline = (datetime.now(timezone.utc) + timedelta(days=5)).isoformat()
+    await db.trades.update_one({"id": trade_id}, {"$set": {
+        "status": "SHIPPING",
+        "shipping_deadline": shipping_deadline,
+        "shipping": {"initiator": None, "responder": None},
+        "confirmations": {},
+    }})
 
     updated = await db.trades.find_one({"id": trade_id}, {"_id": 0})
     return await build_trade_response(updated)
@@ -1989,6 +2097,301 @@ async def add_trade_message(trade_id: str, data: Dict, user: Dict = Depends(requ
     msg = {"user_id": user["id"], "text": data.get("text", ""), "created_at": now}
     await db.trades.update_one({"id": trade_id}, {"$push": {"messages": msg}, "$set": {"updated_at": now}})
     return {"message": "Message added"}
+
+
+# ============== TRADE PHASE 2: SHIPPING & CONFIRMATION ==============
+
+@api_router.put("/trades/{trade_id}/ship")
+async def ship_trade(trade_id: str, data: TradeShipInput, user: Dict = Depends(require_auth)):
+    """Upload tracking number for a trade"""
+    trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade not found")
+    if trade["status"] != "SHIPPING":
+        raise HTTPException(status_code=400, detail="Trade is not in shipping status")
+    if trade["initiator_id"] != user["id"] and trade["responder_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    now = datetime.now(timezone.utc).isoformat()
+    role = "initiator" if trade["initiator_id"] == user["id"] else "responder"
+    shipping = trade.get("shipping") or {"initiator": None, "responder": None}
+
+    if shipping.get(role):
+        raise HTTPException(status_code=400, detail="You have already submitted tracking info")
+
+    shipping[role] = {
+        "tracking_number": data.tracking_number,
+        "carrier": data.carrier,
+        "shipped_at": now,
+    }
+
+    update_fields = {"shipping": shipping, "updated_at": now}
+
+    # Check if both parties have shipped -> move to CONFIRMING
+    if shipping.get("initiator") and shipping.get("responder"):
+        confirmation_deadline = (datetime.now(timezone.utc) + timedelta(hours=48)).isoformat()
+        update_fields["status"] = "CONFIRMING"
+        update_fields["confirmation_deadline"] = confirmation_deadline
+
+    await db.trades.update_one({"id": trade_id}, {"$set": update_fields})
+    updated = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    return await build_trade_response(updated)
+
+
+@api_router.put("/trades/{trade_id}/confirm-receipt")
+async def confirm_receipt(trade_id: str, user: Dict = Depends(require_auth)):
+    """Confirm record arrived as described"""
+    trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade not found")
+    if trade["status"] != "CONFIRMING":
+        raise HTTPException(status_code=400, detail="Trade is not in confirming status")
+    if trade["initiator_id"] != user["id"] and trade["responder_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    now = datetime.now(timezone.utc).isoformat()
+    confirmations = trade.get("confirmations") or {}
+    confirmations[user["id"]] = True
+
+    # Check if both confirmed
+    both_confirmed = (
+        confirmations.get(trade["initiator_id"]) and
+        confirmations.get(trade["responder_id"])
+    )
+
+    if both_confirmed:
+        await db.trades.update_one({"id": trade_id}, {"$set": {"confirmations": confirmations, "updated_at": now}})
+        await complete_trade(trade)
+        updated = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+        return await build_trade_response(updated)
+    else:
+        await db.trades.update_one({"id": trade_id}, {"$set": {"confirmations": confirmations, "updated_at": now}})
+        updated = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+        return await build_trade_response(updated)
+
+
+@api_router.put("/trades/{trade_id}/cancel-shipping")
+async def cancel_shipping(trade_id: str, user: Dict = Depends(require_auth)):
+    """Cancel trade if shipping deadline passed and partner hasn't shipped"""
+    trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade not found")
+    if trade["status"] != "SHIPPING":
+        raise HTTPException(status_code=400, detail="Trade is not in shipping status")
+    if trade["initiator_id"] != user["id"] and trade["responder_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Check deadline
+    if trade.get("shipping_deadline"):
+        deadline = datetime.fromisoformat(trade["shipping_deadline"])
+        if datetime.now(timezone.utc) < deadline:
+            raise HTTPException(status_code=400, detail="Shipping deadline has not passed yet")
+
+    # Check that the requesting user has shipped but the other hasn't
+    shipping = trade.get("shipping") or {}
+    role = "initiator" if trade["initiator_id"] == user["id"] else "responder"
+    other_role = "responder" if role == "initiator" else "initiator"
+
+    if not shipping.get(role):
+        raise HTTPException(status_code=400, detail="You must ship before cancelling")
+    if shipping.get(other_role):
+        raise HTTPException(status_code=400, detail="Both parties have shipped, cannot cancel")
+
+    now = datetime.now(timezone.utc).isoformat()
+    await db.trades.update_one({"id": trade_id}, {"$set": {"status": "CANCELLED", "updated_at": now}})
+    # Release listing back to active
+    await db.listings.update_one({"id": trade["listing_id"]}, {"$set": {"status": "ACTIVE"}})
+    return {"message": "Trade cancelled due to shipping deadline"}
+
+
+# ============== TRADE PHASE 3: DISPUTES & RATINGS ==============
+
+@api_router.post("/trades/{trade_id}/dispute")
+async def open_dispute(trade_id: str, data: TradeDisputeInput, user: Dict = Depends(require_auth)):
+    """Open a dispute on a trade"""
+    trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade not found")
+    if trade["status"] not in ["CONFIRMING", "SHIPPING"]:
+        raise HTTPException(status_code=400, detail="Cannot dispute a trade with this status")
+    if trade["initiator_id"] != user["id"] and trade["responder_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    if trade.get("dispute"):
+        raise HTTPException(status_code=400, detail="A dispute is already open on this trade")
+
+    now = datetime.now(timezone.utc).isoformat()
+    response_deadline = (datetime.now(timezone.utc) + timedelta(hours=24)).isoformat()
+
+    dispute = {
+        "opened_by": user["id"],
+        "reason": data.reason,
+        "photo_urls": data.photo_urls,
+        "opened_at": now,
+        "response_deadline": response_deadline,
+        "response": None,
+        "resolution": None,
+    }
+
+    await db.trades.update_one({"id": trade_id}, {"$set": {
+        "status": "DISPUTED", "dispute": dispute, "updated_at": now,
+    }})
+    updated = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    return await build_trade_response(updated)
+
+
+@api_router.put("/trades/{trade_id}/dispute/respond")
+async def respond_to_dispute(trade_id: str, data: TradeDisputeResponse, user: Dict = Depends(require_auth)):
+    """Respond to a dispute"""
+    trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade not found")
+    if trade["status"] != "DISPUTED":
+        raise HTTPException(status_code=400, detail="Trade is not in disputed status")
+    dispute = trade.get("dispute")
+    if not dispute:
+        raise HTTPException(status_code=400, detail="No dispute found")
+    if dispute["opened_by"] == user["id"]:
+        raise HTTPException(status_code=400, detail="Cannot respond to your own dispute")
+    if trade["initiator_id"] != user["id"] and trade["responder_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    if dispute.get("response"):
+        raise HTTPException(status_code=400, detail="Already responded to this dispute")
+
+    now = datetime.now(timezone.utc).isoformat()
+    dispute["response"] = {
+        "by_user_id": user["id"],
+        "text": data.response_text,
+        "photo_urls": data.photo_urls,
+        "responded_at": now,
+    }
+
+    await db.trades.update_one({"id": trade_id}, {"$set": {"dispute": dispute, "updated_at": now}})
+    updated = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    return await build_trade_response(updated)
+
+
+@api_router.post("/trades/{trade_id}/rate")
+async def rate_trade(trade_id: str, data: TradeRatingInput, user: Dict = Depends(require_auth)):
+    """Rate the other party after trade completion"""
+    trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade not found")
+    if trade["status"] != "COMPLETED":
+        raise HTTPException(status_code=400, detail="Can only rate completed trades")
+    if trade["initiator_id"] != user["id"] and trade["responder_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    ratings = trade.get("ratings") or {}
+    if ratings.get(user["id"]):
+        raise HTTPException(status_code=400, detail="You have already rated this trade")
+
+    now = datetime.now(timezone.utc).isoformat()
+    other_id = trade["responder_id"] if trade["initiator_id"] == user["id"] else trade["initiator_id"]
+    ratings[user["id"]] = {
+        "rating": data.rating,
+        "review": data.review,
+        "rated_user_id": other_id,
+        "created_at": now,
+    }
+
+    await db.trades.update_one({"id": trade_id}, {"$set": {"ratings": ratings, "updated_at": now}})
+
+    # Store in separate collection for profile aggregation
+    rating_doc = {
+        "trade_id": trade_id,
+        "rater_id": user["id"],
+        "rated_user_id": other_id,
+        "rating": data.rating,
+        "review": data.review,
+        "created_at": now,
+    }
+    await db.trade_ratings.insert_one(rating_doc)
+
+    return {"message": "Rating submitted", "rating": data.rating}
+
+
+@api_router.get("/users/{username}/ratings")
+async def get_user_ratings(username: str):
+    """Get trade ratings for a user's profile"""
+    target = await db.users.find_one({"username": username.lower()}, {"_id": 0})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+    ratings = await db.trade_ratings.find({"rated_user_id": target["id"]}).to_list(100)
+    cleaned = [{k: v for k, v in r.items() if k != "_id"} for r in ratings]
+    avg = sum(r.get("rating", 0) for r in cleaned) / len(cleaned) if cleaned else 0
+    return {"ratings": cleaned, "average": round(avg, 1), "count": len(cleaned)}
+
+
+# ============== ADMIN ROUTES ==============
+
+async def require_admin(user: Dict = Depends(require_auth)):
+    """Check if user is admin"""
+    u = await db.users.find_one({"id": user["id"]}, {"_id": 0})
+    if not u or not u.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return user
+
+
+@api_router.get("/admin/disputes")
+async def get_admin_disputes(user: Dict = Depends(require_admin)):
+    """List all disputed trades for admin review"""
+    trades = await db.trades.find({"status": "DISPUTED"}, {"_id": 0}).sort("updated_at", -1).to_list(100)
+    result = []
+    for trade in trades:
+        result.append(await build_trade_response(trade))
+    return result
+
+
+@api_router.get("/admin/disputes/all")
+async def get_all_disputes(user: Dict = Depends(require_admin)):
+    """List all trades that have had disputes (including resolved)"""
+    trades = await db.trades.find({"dispute": {"$ne": None}}, {"_id": 0}).sort("updated_at", -1).to_list(200)
+    result = []
+    for trade in trades:
+        result.append(await build_trade_response(trade))
+    return result
+
+
+@api_router.put("/admin/disputes/{trade_id}/resolve")
+async def resolve_dispute(trade_id: str, data: AdminDisputeResolve, user: Dict = Depends(require_admin)):
+    """Admin resolves a dispute"""
+    trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade not found")
+    if trade["status"] != "DISPUTED":
+        raise HTTPException(status_code=400, detail="Trade is not disputed")
+
+    now = datetime.now(timezone.utc).isoformat()
+    dispute = trade.get("dispute", {})
+    dispute["resolution"] = {
+        "outcome": data.resolution,
+        "notes": data.notes,
+        "partial_amount": data.partial_amount,
+        "resolved_by": user["id"],
+        "resolved_at": now,
+    }
+
+    if data.resolution == "COMPLETED":
+        # Force complete the trade
+        await db.trades.update_one({"id": trade_id}, {"$set": {
+            "dispute": dispute, "updated_at": now,
+        }})
+        await complete_trade(trade)
+    elif data.resolution == "CANCELLED":
+        # Cancel and release listings
+        await db.trades.update_one({"id": trade_id}, {"$set": {
+            "status": "CANCELLED", "dispute": dispute, "updated_at": now,
+        }})
+        await db.listings.update_one({"id": trade["listing_id"]}, {"$set": {"status": "ACTIVE"}})
+    else:
+        # PARTIAL - mark completed with notes
+        await db.trades.update_one({"id": trade_id}, {"$set": {
+            "dispute": dispute, "updated_at": now,
+        }})
+        await complete_trade(trade)
+
+    updated = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    return await build_trade_response(updated)
 
 
 @api_router.get("/users/{username}/trades")
@@ -2797,6 +3200,13 @@ async def startup_event():
     await db.iso_items.create_index("status")
     await db.listings.create_index([("status", 1), ("created_at", -1)])
     await db.listings.create_index("user_id")
+    await db.trades.create_index([("initiator_id", 1)])
+    await db.trades.create_index([("responder_id", 1)])
+    await db.trades.create_index("status")
+    await db.trade_ratings.create_index("rated_user_id")
+
+    # Mark demo user as admin
+    await db.users.update_one({"email": "demo@example.com"}, {"$set": {"is_admin": True}})
     
     # Initialize storage
     try:
