@@ -1,0 +1,114 @@
+{
+  "summary": "Iteration 24: Newsletter feature and landing page updates - ALL 13 BACKEND TESTS PASSED. Verified newsletter subscribe/unsubscribe/status endpoints, landing page CTA ('join the hive'), newsletter section with 'stay in the loop' headline, bee emoji bridge, footer wordmark sizing, navbar wordmark sizing, settings page 'The Weekly Wax' toggle, newsletter popup for non-logged-in visitors (30s delay), and wax report share card 1080x1920 vertical format.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "passed_tests": [
+    "Backend: POST /api/newsletter/subscribe works for landing page (public, no auth)",
+    "Backend: POST /api/newsletter/subscribe rejects invalid email (400)",
+    "Backend: POST /api/newsletter/subscribe rejects empty email (400)",
+    "Backend: POST /api/newsletter/subscribe handles re-subscribe (updates existing)",
+    "Backend: POST /api/newsletter/subscribe works for in-app (authenticated)",
+    "Backend: GET /api/newsletter/status returns subscription status",
+    "Backend: GET /api/newsletter/status requires authentication",
+    "Backend: POST /api/newsletter/unsubscribe works with auth",
+    "Backend: POST /api/newsletter/unsubscribe requires authentication",
+    "Backend: Full newsletter toggle flow (subscribe -> status -> unsubscribe -> status)",
+    "Backend: GET /api/wax-reports/{id}/share-card returns 1080x1920 PNG",
+    "Backend: GET /api/wax-reports/{id}/share-card requires authentication",
+    "Backend: API health check passes",
+    "Frontend: Landing page Hero CTA button says 'join the hive' (lowercase)",
+    "Frontend: Landing page has bee emoji (🐝) between logo and headline",
+    "Frontend: Landing page newsletter section visible with 'stay in the loop' headline",
+    "Frontend: Landing page newsletter form has email input and subscribe button",
+    "Frontend: Landing page newsletter subscribe shows success ('you're in! welcome to the hive')",
+    "Frontend: Landing page footer wordmark has w-[180px] md:w-[200px] classes",
+    "Frontend: Newsletter popup appears for non-logged-in visitors (after 30s)",
+    "Frontend: Popup has 'stay in the loop' headline and subscribe form",
+    "Frontend: Settings page 'The Weekly Wax' newsletter card visible",
+    "Frontend: Settings page newsletter toggle switch works (subscribe/unsubscribe)",
+    "Frontend: Navbar wordmark is h-[52px] (52px measured)",
+    "Frontend: Navbar height is h-[66px] (68px measured)"
+  ],
+
+  "test_report_links": [
+    "/app/backend/tests/test_newsletter.py",
+    "/app/test_reports/pytest/newsletter_results.xml"
+  ],
+
+  "action_items": [],
+
+  "critical_code_review_comments": [],
+
+  "updated_files": [
+    "/app/backend/tests/test_newsletter.py"
+  ],
+
+  "success_rate": {
+    "backend": "100% (13/13 tests passed)",
+    "frontend": "100% (11/11 visual checks passed)"
+  },
+
+  "test_credentials": {
+    "email": "demo@example.com",
+    "password": "password123"
+  },
+
+  "seed_data_creation": "Test emails created in newsletter_subscribers collection: testuser_landing@example.com, duplicate_test@example.com, playwright_test_123@example.com, health_check@test.com",
+
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+
+  "context_for_next_testing_agent": "Newsletter feature fully working. Newsletter popup only appears for non-logged-in users after 30 seconds delay, uses sessionStorage 'nl_popup_dismissed' flag. Subscribe endpoint is PUBLIC (no auth), status/unsubscribe require auth. Settings page newsletter card is at /settings with data-testid='newsletter-settings-card'. Wax Report share card is now 1080x1920 vertical format. All landing page elements verified: CTA lowercase, bee bridge emoji, newsletter section between features and CTA, footer/navbar wordmark sizes.",
+
+  "features_verified": {
+    "newsletter_backend": {
+      "endpoints": [
+        "POST /api/newsletter/subscribe (public)",
+        "GET /api/newsletter/status (auth required)",
+        "POST /api/newsletter/unsubscribe (auth required)"
+      ],
+      "collection": "newsletter_subscribers",
+      "status": "WORKING"
+    },
+    "landing_page_updates": {
+      "hero_cta": "join the hive (lowercase)",
+      "bee_bridge_emoji": "🐝 visible between logo and headline",
+      "newsletter_section": "Between features and CTA sections with 'stay in the loop' headline",
+      "footer_wordmark": "w-[180px] md:w-[200px]",
+      "status": "WORKING"
+    },
+    "newsletter_popup": {
+      "trigger": "30 seconds delay for non-logged-in users",
+      "storage": "sessionStorage 'nl_popup_dismissed'",
+      "once_per_session": true,
+      "status": "WORKING"
+    },
+    "settings_newsletter_toggle": {
+      "card_title": "The Weekly Wax",
+      "component": "Switch toggle",
+      "data_testid": "newsletter-toggle",
+      "status": "WORKING"
+    },
+    "navbar_wordmark": {
+      "height": "h-[52px] (measured 52px)",
+      "nav_height": "h-[66px] (measured 68px)",
+      "status": "WORKING"
+    },
+    "wax_report_share_card": {
+      "dimensions": "1080x1920 (vertical story format)",
+      "format": "PNG",
+      "endpoint": "GET /api/wax-reports/{id}/share-card",
+      "status": "WORKING"
+    }
+  }
+}

@@ -9,6 +9,8 @@ import asyncio
 import io
 import uuid
 import random
+import textwrap
+import math
 
 from database import db, require_auth, logger, create_notification
 
@@ -138,7 +140,7 @@ def _generate_closing_line(stats: dict) -> str:
     top_record = stats.get("top_records", [{}])[0].get("title", "") if stats.get("top_records") else ""
     top_mood = stats.get("mood_breakdown", [{}])[0].get("mood", "") if stats.get("mood_breakdown") else ""
     total_spins = stats.get("total_spins", 0)
-    personality = stats.get("personality", {}).get("label", "")
+    personality = stats.get("personality", {}).get("label", "")  # noqa: F841
 
     if top_artist and top_record:
         parts.append(f"This week was all about {top_artist}")
@@ -541,115 +543,258 @@ def _round_corners(img, radius: int):
 
 
 def _generate_share_card(report: dict) -> bytes:
-    """Generate a 1080x1080 condensed share card PNG."""
+    """Generate a 1080x1920 Instagram Story share card PNG."""
     from PIL import Image, ImageDraw, ImageFont
 
-    W, H = 1080, 1080
-    # Brand colors from spec
-    BG = (250, 237, 199)         # #FAEDC7
-    CARD = (255, 255, 255)       # white card
-    TEXT_DARK = (42, 26, 6)      # #2A1A06
-    TEXT_MUTED = (138, 107, 74)  # #8A6B4A
+    W, H = 1080, 1920
+    BG = (250, 246, 238)         # #FAF6EE
+    CARD = (255, 255, 255)
+    TEXT_DARK = (42, 26, 6)
+    TEXT_MUTED = (138, 107, 74)
     AMBER = (153, 96, 18)       # #996012
     AMBER_ACCENT = (200, 134, 26)  # #C8861A
-    AMBER_LIGHT = (232, 168, 32)   # #E8A820
-    GREEN = (51, 145, 71)        # #339147
+    GREEN = (51, 145, 71)
+    RED_MUTED = (180, 80, 60)
 
     img = Image.new("RGBA", (W, H), BG)
     draw = ImageDraw.Draw(img)
 
+    # Subtle radial glows
+    glow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    glow_draw = ImageDraw.Draw(glow)
+    for r in range(700, 0, -2):
+        alpha = max(0, int(15 * (1 - r / 700)))
+        glow_draw.ellipse([(W - 200 - r, -100 - r), (W - 200 + r, -100 + r)], fill=(200, 134, 26, alpha))
+    for r in range(500, 0, -2):
+        alpha = max(0, int(10 * (1 - r / 500)))
+        glow_draw.ellipse([(-100 - r, H - 200 - r), (-100 + r, H - 200 + r)], fill=(200, 134, 26, alpha))
+    img = Image.alpha_composite(img, glow)
+    draw = ImageDraw.Draw(img)
+
+    # Load fonts
     try:
-        heading_lg = ImageFont.truetype(str(FONTS_DIR / "DMSerifDisplay-Regular.ttf"), 56)
-        heading_md = ImageFont.truetype(str(FONTS_DIR / "DMSerifDisplay-Regular.ttf"), 40)
-        heading_sm = ImageFont.truetype(str(FONTS_DIR / "DMSerifDisplay-Regular.ttf"), 32)
-        body_lg = ImageFont.truetype(str(FONTS_DIR / "Inter.ttf"), 28)
-        body_md = ImageFont.truetype(str(FONTS_DIR / "Inter.ttf"), 22)
-        body_sm = ImageFont.truetype(str(FONTS_DIR / "Inter.ttf"), 18)
-        body_xs = ImageFont.truetype(str(FONTS_DIR / "Inter.ttf"), 15)
+        playfair_bold = ImageFont.truetype(str(FONTS_DIR / "PlayfairDisplay-Bold2.ttf"), 36)
+        playfair_italic = ImageFont.truetype(str(FONTS_DIR / "PlayfairDisplay-Italic2.ttf"), 28)
+        playfair_italic_sm = ImageFont.truetype(str(FONTS_DIR / "PlayfairDisplay-Italic2.ttf"), 20)
+        cormorant_italic_lg = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Italic2.ttf"), 56)
+        cormorant_italic_md = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Italic2.ttf"), 52)
+        cormorant_italic_sm = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Italic2.ttf"), 28)
+        body_28 = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Regular2.ttf"), 28)
+        body_26 = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Regular2.ttf"), 26)
+        stat_num = ImageFont.truetype(str(FONTS_DIR / "PlayfairDisplay-Bold2.ttf"), 72)
+        stat_label = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Regular2.ttf"), 26)
+        eyebrow = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Regular2.ttf"), 28)
+        artist_lg = ImageFont.truetype(str(FONTS_DIR / "PlayfairDisplay-Bold2.ttf"), 48)
+        artist_md = ImageFont.truetype(str(FONTS_DIR / "PlayfairDisplay-Bold2.ttf"), 40)
+        artist_sm = ImageFont.truetype(str(FONTS_DIR / "PlayfairDisplay-Bold2.ttf"), 34)
+        value_lg = ImageFont.truetype(str(FONTS_DIR / "PlayfairDisplay-Bold2.ttf"), 80)
+        footer_font = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Regular2.ttf"), 28)
     except Exception:
-        heading_lg = ImageFont.load_default()
-        heading_md = heading_sm = body_lg = body_md = body_sm = body_xs = heading_lg
+        playfair_bold = ImageFont.load_default()
+        playfair_italic = cormorant_italic_lg = cormorant_italic_md = playfair_bold
+        cormorant_italic_sm = body_28 = body_26 = stat_num = stat_label = eyebrow = playfair_bold
+        artist_lg = artist_md = artist_sm = value_lg = footer_font = playfair_bold
 
     pad = 60
-    y = pad
+    y = 72
 
-    # ── Brand header ──
-    draw.text((pad, y), "HoneyGroove", fill=AMBER, font=heading_md)
-    y += 50
+    def draw_divider(y_pos):
+        overlay = Image.new("RGBA", (W, 4), (0, 0, 0, 0))
+        od = ImageDraw.Draw(overlay)
+        for x in range(pad, W - pad):
+            alpha = int(51 * (1 - abs(x - W / 2) / (W / 2 - pad)))
+            od.point((x - pad, 1), fill=(200, 134, 26, max(0, alpha)))
+        img.paste(overlay, (pad, y_pos), overlay)
+        return y_pos + 10
+
+    # ── Header (160px block) ──
+    draw.text((pad, y), "the Honey Groove", fill=AMBER_ACCENT, font=playfair_italic)
     username = report.get("username", "collector")
+    draw.text((pad, y + 40), f"@{username}", fill=TEXT_MUTED, font=body_26)
     ws = report.get("week_start", "")
     we = report.get("week_end", "")
     try:
         ws_dt = datetime.fromisoformat(ws)
         we_dt = datetime.fromisoformat(we) - timedelta(days=1)
-        date_range = f"{ws_dt.strftime('%b %d')} — {we_dt.strftime('%b %d')}"
+        date_range = f"{ws_dt.strftime('%b %d')} — {we_dt.strftime('%b %d, %Y')}"
     except Exception:
         date_range = ""
-    draw.text((pad, y), f"@{username}  ·  {date_range}", fill=TEXT_MUTED, font=body_sm)
-    y += 40
+    bbox = draw.textbbox((0, 0), date_range, font=body_26)
+    draw.text((W - pad - (bbox[2] - bbox[0]), y), date_range, fill=TEXT_MUTED, font=body_26)
+    y = 160
+    y = draw_divider(y)
 
-    # ── Personality label ──
+    # ── Personality Label (centered, 56px, generous margins) ──
     personality = report.get("personality", {})
     label = personality.get("label", "")
     if label:
-        # Card background
-        draw.rounded_rectangle([(pad, y), (W - pad, y + 70)], radius=16, fill=CARD, outline=(*AMBER_ACCENT, 38))
-        draw.text((pad + 20, y + 18), f'"{label}"', fill=AMBER_ACCENT, font=body_md)
-        y += 90
+        y += 80
+        lines = textwrap.wrap(f'"{label}"', width=28)
+        for line in lines:
+            bbox = draw.textbbox((0, 0), line, font=cormorant_italic_lg)
+            tw = bbox[2] - bbox[0]
+            draw.text(((W - tw) / 2, y), line, fill=AMBER_ACCENT, font=cormorant_italic_lg)
+            y += 66
+        y += 80
+        y = draw_divider(y)
 
-    # ── Top 3 Artists ──
-    draw.text((pad, y), "top artists", fill=TEXT_MUTED, font=body_sm)
-    y += 30
-    top_artists = report.get("top_artists", [])[:3]
+    # ── Top 5 Artists ──
+    y += 20
+    draw.text((pad, y), "TOP ARTISTS", fill=TEXT_MUTED, font=eyebrow)
+    y += 44
+    top_artists = report.get("top_artists", [])[:5]
+    max_spins = max((a.get("spins", 0) for a in top_artists), default=1)
     for i, a in enumerate(top_artists):
-        draw.text((pad, y), f"{i+1}.", fill=AMBER, font=heading_sm)
-        draw.text((pad + 40, y + 2), a.get("artist", ""), fill=TEXT_DARK, font=body_lg)
-        draw.text((W - pad - 80, y + 4), f'{a.get("spins", 0)} spins', fill=AMBER_ACCENT, font=body_sm)
-        y += 42
-    y += 15
+        fonts = [artist_lg, artist_lg, artist_md, artist_sm, artist_sm]
+        font = fonts[min(i, 4)]
+        heights = [90, 90, 80, 70, 70]
+        row_h = heights[min(i, 4)]
+        # Bar behind
+        bar_w = int((a.get("spins", 0) / max(max_spins, 1)) * (W - 2 * pad - 160))
+        draw.rounded_rectangle([(pad, y + 10), (pad + bar_w + 160, y + row_h - 10)], radius=12, fill=(*AMBER_ACCENT, 18))
+        draw.text((pad + 16, y + (row_h - 50) // 2), f"{i + 1}", fill=AMBER_ACCENT, font=body_28)
+        artist_name = a.get("artist", "")[:22]
+        draw.text((pad + 56, y + (row_h - 50) // 2 - 4), artist_name, fill=TEXT_DARK, font=font)
+        spins_text = f'{a.get("spins", 0)} spins'
+        bbox = draw.textbbox((0, 0), spins_text, font=body_26)
+        draw.text((W - pad - (bbox[2] - bbox[0]), y + (row_h - 30) // 2), spins_text, fill=AMBER_ACCENT, font=body_26)
+        y += row_h
+    y += 20
+    y = draw_divider(y)
 
-    # ── Stats row ──
-    draw.rounded_rectangle([(pad, y), (W - pad, y + 90)], radius=16, fill=CARD, outline=(*AMBER_ACCENT, 38))
-    col_w = (W - 2 * pad) // 3
-    stats_data = [
-        (str(report.get("total_spins", 0)), "spins this week"),
-        (f'${report.get("collection_value", {}).get("total_value", 0):,.0f}', "collection value"),
+    # ── Stats Row (3 tiles, 160px tall) ──
+    y += 20
+    draw.text((pad, y), "THIS WEEK", fill=TEXT_MUTED, font=eyebrow)
+    y += 44
+    tile_w = (W - 2 * pad - 20) // 3
+    tile_h = 160
+    stats = [
+        (str(report.get("total_spins", 0)), "spins"),
+        (str(report.get("listening_stats", {}).get("unique_records", 0)), "unique records"),
     ]
-    top_mood = report.get("mood_breakdown", [{}])
-    mood_label = top_mood[0].get("mood", "—") if top_mood else "—"
-    stats_data.append((mood_label[:15], "top mood"))
+    mood_list = report.get("mood_breakdown", [])
+    top_mood = mood_list[0].get("mood", "—") if mood_list else "—"
+    stats.append((top_mood[:10], "top mood"))
 
-    for i, (val, label) in enumerate(stats_data):
-        sx = pad + 20 + i * col_w
-        draw.text((sx, y + 15), val, fill=AMBER, font=heading_sm)
-        draw.text((sx, y + 55), label, fill=TEXT_MUTED, font=body_xs)
-    y += 110
+    for i, (val, lbl) in enumerate(stats):
+        tx = pad + i * (tile_w + 10)
+        draw.rounded_rectangle([(tx, y), (tx + tile_w, y + tile_h)], radius=16, fill=CARD, outline=(*AMBER_ACCENT, 25))
+        bbox = draw.textbbox((0, 0), val, font=stat_num)
+        tw = bbox[2] - bbox[0]
+        draw.text((tx + (tile_w - tw) // 2, y + 24), val, fill=AMBER, font=stat_num)
+        bbox2 = draw.textbbox((0, 0), lbl, font=stat_label)
+        tw2 = bbox2[2] - bbox2[0]
+        draw.text((tx + (tile_w - tw2) // 2, y + 110), lbl, fill=TEXT_MUTED, font=stat_label)
+    y += tile_h + 20
+    y = draw_divider(y)
 
-    # ── Closing line ──
+    # ── Era Breakdown ──
+    era = report.get("era_breakdown", [])
+    if era:
+        y += 16
+        draw.text((pad, y), "ERAS", fill=TEXT_MUTED, font=eyebrow)
+        y += 40
+        pill_x = pad
+        for e in era[:6]:
+            text = f'{e["decade"]} ({e["pct"]}%)'
+            bbox = draw.textbbox((0, 0), text, font=body_26)
+            pw = bbox[2] - bbox[0] + 30
+            if pill_x + pw > W - pad:
+                pill_x = pad
+                y += 48
+            draw.rounded_rectangle([(pill_x, y), (pill_x + pw, y + 40)], radius=20, fill=CARD, outline=(*AMBER_ACCENT, 40))
+            draw.text((pill_x + 15, y + 6), text, fill=AMBER, font=body_26)
+            pill_x += pw + 12
+        y += 60
+        y = draw_divider(y)
+
+    # ── Vinyl Mood Breakdown (2x2 grid) ──
+    moods = report.get("mood_breakdown", [])[:4]
+    if moods:
+        y += 16
+        draw.text((pad, y), "VINYL MOODS", fill=TEXT_MUTED, font=eyebrow)
+        y += 44
+        mood_colors = {
+            "Chill": (100, 180, 220), "Nostalgic": (180, 130, 80), "Energized": (220, 160, 50),
+            "Melancholy": (120, 100, 160), "Euphoric": (240, 180, 60), "Focused": (80, 160, 130),
+            "Rebellious": (200, 70, 70), "Romantic": (200, 100, 130), "Peaceful": (130, 190, 150),
+            "Dark": (60, 60, 80), "Uplifting": (240, 200, 100), "Groovy": (200, 140, 60),
+        }
+        tile_w = (W - 2 * pad - 16) // 2
+        mood_tile_h = 140
+        for i, m in enumerate(moods):
+            col = i % 2
+            row = i // 2
+            mx = pad + col * (tile_w + 16)
+            my = y + row * (mood_tile_h + 12)
+            mc = mood_colors.get(m["mood"], AMBER_ACCENT)
+            draw.rounded_rectangle([(mx, my), (mx + tile_w, my + mood_tile_h)], radius=16, fill=CARD, outline=(*mc, 100))
+            mood_name = m["mood"][:12]
+            count = str(m["count"])
+            draw.text((mx + 20, my + 20), mood_name, fill=mc, font=playfair_bold)
+            bbox = draw.textbbox((0, 0), count, font=stat_num)
+            draw.text((mx + tile_w - 30 - (bbox[2] - bbox[0]), my + 30), count, fill=(*mc, 180), font=stat_num)
+        rows_used = math.ceil(len(moods) / 2)
+        y += rows_used * (mood_tile_h + 12) + 16
+        y = draw_divider(y)
+
+    # ── Collection Value Strip ──
+    cv = report.get("collection_value", {})
+    total_val = cv.get("total_value", 0)
+    if total_val > 0:
+        y += 16
+        card_h = 140
+        draw.rounded_rectangle([(pad, y), (W - pad, y + card_h)], radius=20, fill=CARD, outline=(*AMBER_ACCENT, 30))
+        val_text = f"${total_val:,.0f}"
+        draw.text((pad + 24, y + 20), val_text, fill=AMBER, font=value_lg)
+        draw.text((pad + 24, y + 100), "collection value", fill=TEXT_MUTED, font=stat_label)
+        change = cv.get("value_change", 0)
+        if change != 0:
+            ch_color = GREEN if change > 0 else RED_MUTED if change < 0 else AMBER_ACCENT
+            ch_text = f"+${change:,.0f}" if change > 0 else f"-${abs(change):,.0f}"
+            bbox = draw.textbbox((0, 0), ch_text, font=playfair_bold)
+            draw.text((W - pad - 24 - (bbox[2] - bbox[0]), y + 36), ch_text, fill=ch_color, font=playfair_bold)
+            draw.text((W - pad - 24 - 80, y + 80), "this week", fill=TEXT_MUTED, font=body_26)
+        mv = cv.get("most_valuable")
+        if mv:
+            mv_text = f"most valuable: {mv.get('title', '')[:30]}"
+            draw.text((pad + 24, y + card_h - 36), mv_text, fill=TEXT_MUTED, font=cormorant_italic_sm)
+        y += card_h + 20
+        y = draw_divider(y)
+
+    # ── Closing Line ──
     closing = report.get("closing_line", "")
     if closing:
-        draw.text((pad, y), closing[:70], fill=TEXT_DARK, font=body_md)
-        if len(closing) > 70:
-            draw.text((pad, y + 28), closing[70:140], fill=TEXT_DARK, font=body_md)
-        y += 65
+        y += 60
+        lines = textwrap.wrap(closing, width=32)
+        for line in lines[:2]:
+            bbox = draw.textbbox((0, 0), line, font=cormorant_italic_md)
+            tw = bbox[2] - bbox[0]
+            draw.text(((W - tw) / 2, y), line, fill=TEXT_DARK, font=cormorant_italic_md)
+            y += 62
+        y += 60
 
-    # ── Footer ──
-    y = H - 60
-    draw.text((pad, y), "thehoneygroove.com", fill=AMBER, font=body_md)
-    draw.text((W - pad - 180, y), "your week in wax", fill=TEXT_MUTED, font=body_sm)
-
-    # Top + bottom accent lines
-    draw.rectangle([(0, 0), (W, 5)], fill=AMBER_ACCENT)
-    draw.rectangle([(0, H - 5), (W, H)], fill=AMBER_ACCENT)
+    # ── Footer (pinned to bottom) ──
+    fy = H - 60
+    # Divider above footer
+    draw_divider(fy - 16)
+    draw.text((pad, fy), "thehoneygroove.com", fill=AMBER_ACCENT, font=footer_font)
+    bee = "🐝"
+    bbox = draw.textbbox((0, 0), bee, font=footer_font)
+    draw.text(((W - (bbox[2] - bbox[0])) / 2, fy), bee, fill=TEXT_DARK, font=footer_font)
+    yw_text = "your week in wax"
+    bbox = draw.textbbox((0, 0), yw_text, font=footer_font)
+    draw.text((W - pad - (bbox[2] - bbox[0]), fy), yw_text, fill=TEXT_MUTED, font=footer_font)
 
     buf = io.BytesIO()
-    img.save(buf, format="PNG", optimize=True)
+    final = img.convert("RGB")
+    final.save(buf, format="PNG", optimize=True)
     return buf.getvalue()
 
 
 @router.get("/wax-reports/{report_id}/share-card")
 async def get_share_card(report_id: str, user: Dict = Depends(require_auth)):
-    """Generate a 1080x1080 shareable card PNG."""
+    """Generate a 1080x1920 shareable story card PNG."""
     report = await db.wax_reports.find_one({"id": report_id}, {"_id": 0})
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")

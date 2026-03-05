@@ -18,6 +18,7 @@ from routes.explore import router as explore_router
 from routes.valuation import router as valuation_router
 from routes.wax_reports import router as wax_reports_router, schedule_weekly_reports
 from routes.daily_prompts import router as daily_prompts_router, seed_prompts
+from routes.newsletter import router as newsletter_router
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -26,7 +27,7 @@ app = FastAPI(title="HoneyGroove API")
 # Register all route modules under /api prefix
 for r in [auth_router, hive_router, collection_router, honeypot_router,
           trades_router, notifications_router, dms_router, explore_router,
-          valuation_router, wax_reports_router, daily_prompts_router]:
+          valuation_router, wax_reports_router, daily_prompts_router, newsletter_router]:
     app.include_router(r, prefix="/api")
 
 app.add_middleware(

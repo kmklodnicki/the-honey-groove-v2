@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -8,7 +8,8 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
-import { ArrowLeft, Save, LogOut, Camera, Loader2 } from 'lucide-react';
+import { Switch } from '../components/ui/switch';
+import { ArrowLeft, Save, LogOut, Camera, Loader2, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
 
@@ -22,6 +23,30 @@ const SettingsPage = () => {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState(user?.avatar_url);
+  const [nlSubscribed, setNlSubscribed] = useState(false);
+  const [nlLoading, setNlLoading] = useState(false);
+
+  useEffect(() => {
+    axios.get(`${API}/newsletter/status`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => setNlSubscribed(r.data.subscribed))
+      .catch(() => {});
+  }, [API, token]);
+
+  const toggleNewsletter = async () => {
+    setNlLoading(true);
+    try {
+      if (nlSubscribed) {
+        await axios.post(`${API}/newsletter/unsubscribe`, { email: user.email }, { headers: { Authorization: `Bearer ${token}` } });
+        setNlSubscribed(false);
+        toast.success('Unsubscribed');
+      } else {
+        await axios.post(`${API}/newsletter/subscribe`, { email: user.email, source: 'in_app' }, { headers: { Authorization: `Bearer ${token}` } });
+        setNlSubscribed(true);
+        toast.success('Subscribed!');
+      }
+    } catch { toast.error('Failed to update'); }
+    finally { setNlLoading(false); }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -211,6 +236,28 @@ const SettingsPage = () => {
             <Save className="w-4 h-4" />
             {saving ? 'Saving...' : 'Save Changes'}
           </Button>
+        </CardContent>
+      </Card>
+
+      {/* Newsletter */}
+      <Card className="border-honey/30 mb-6" data-testid="newsletter-settings-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Mail className="w-5 h-5 text-amber-500" /> The Weekly Wax</CardTitle>
+          <CardDescription>get the honey groove newsletter in your inbox every week.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium">{nlSubscribed ? 'Subscribed' : 'Not subscribed'}</p>
+              <p className="text-xs text-muted-foreground">{user?.email}</p>
+            </div>
+            <Switch
+              checked={nlSubscribed}
+              onCheckedChange={toggleNewsletter}
+              disabled={nlLoading}
+              data-testid="newsletter-toggle"
+            />
+          </div>
         </CardContent>
       </Card>
 
