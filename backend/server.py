@@ -18,6 +18,7 @@ from requests_oauthlib import OAuth1Session
 from io import BytesIO
 import asyncio
 from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionRequest
+import stripe as stripe_sdk
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -2534,33 +2535,58 @@ async def create_payment_checkout(request: Request, body: Dict, user: Dict = Dep
     else:
         raise HTTPException(status_code=400, detail="Invalid listing type or missing offer amount")
 
+    # Verify seller has Stripe Connect account
+    seller = await db.users.find_one({"id": listing["user_id"]}, {"_id": 0})
+    if not seller or not seller.get("stripe_account_id"):
+        raise HTTPException(status_code=400, detail="Seller has not connected their Stripe account")
+
     platform_fee = round(amount * PLATFORM_FEE_PERCENT / 100, 2)
+    amount_cents = int(round(amount * 100))
+    fee_cents = int(round(platform_fee * 100))
+
     host_url = body.get("origin_url", str(request.base_url).rstrip("/"))
     success_url = f"{host_url}/honeypot?payment=success&session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = f"{host_url}/honeypot?payment=cancelled"
-    webhook_url = f"{str(request.base_url).rstrip('/')}/api/webhook/stripe"
-    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
-    metadata = {
-        "listing_id": listing_id, "buyer_id": user["id"],
-        "seller_id": listing["user_id"], "platform_fee": str(platform_fee),
-        "type": "marketplace_purchase",
-    }
-    checkout_req = CheckoutSessionRequest(
-        amount=amount, currency="usd",
-        success_url=success_url, cancel_url=cancel_url, metadata=metadata,
-    )
-    session = await stripe_checkout.create_checkout_session(checkout_req)
+
+    stripe_sdk.api_key = STRIPE_API_KEY
+    try:
+        session = stripe_sdk.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{
+                "price_data": {
+                    "currency": "usd",
+                    "product_data": {"name": f"{listing['album']} by {listing['artist']}"},
+                    "unit_amount": amount_cents,
+                },
+                "quantity": 1,
+            }],
+            mode="payment",
+            success_url=success_url,
+            cancel_url=cancel_url,
+            payment_intent_data={
+                "application_fee_amount": fee_cents,
+                "transfer_data": {"destination": seller["stripe_account_id"]},
+            },
+            metadata={
+                "listing_id": listing_id, "buyer_id": user["id"],
+                "seller_id": listing["user_id"], "type": "marketplace_purchase",
+            },
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Stripe checkout error: {str(e)}")
 
     now = datetime.now(timezone.utc).isoformat()
     await db.payment_transactions.insert_one({
-        "id": str(uuid.uuid4()), "session_id": session.session_id,
+        "id": str(uuid.uuid4()), "session_id": session.id,
         "listing_id": listing_id, "buyer_id": user["id"],
         "seller_id": listing["user_id"], "amount": amount,
         "platform_fee": platform_fee, "seller_payout": round(amount - platform_fee, 2),
         "currency": "usd", "payment_status": "PENDING",
-        "metadata": metadata, "created_at": now, "updated_at": now,
+        "type": "marketplace_purchase",
+        "metadata": {"listing_id": listing_id, "seller_stripe_account": seller["stripe_account_id"]},
+        "created_at": now, "updated_at": now,
     })
-    return {"url": session.url, "session_id": session.session_id}
+    return {"url": session.url, "session_id": session.id}
 
 
 @api_router.get("/payments/status/{session_id}")
@@ -2571,15 +2597,17 @@ async def get_payment_status(session_id: str, request: Request, user: Dict = Dep
     if txn["payment_status"] in ["PAID", "FAILED", "EXPIRED"]:
         return {"status": txn["payment_status"], "amount": txn["amount"], "session_id": session_id}
 
-    webhook_url = f"{str(request.base_url).rstrip('/')}/api/webhook/stripe"
-    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
-    checkout_status = await stripe_checkout.get_checkout_status(session_id)
-    now = datetime.now(timezone.utc).isoformat()
-    new_status = "PENDING"
-    if checkout_status.payment_status == "paid":
-        new_status = "PAID"
-    elif checkout_status.status == "expired":
-        new_status = "EXPIRED"
+    stripe_sdk.api_key = STRIPE_API_KEY
+    try:
+        session = stripe_sdk.checkout.Session.retrieve(session_id)
+        now = datetime.now(timezone.utc).isoformat()
+        new_status = "PENDING"
+        if session.payment_status == "paid":
+            new_status = "PAID"
+        elif session.status == "expired":
+            new_status = "EXPIRED"
+    except Exception:
+        return {"status": txn["payment_status"], "amount": txn["amount"], "session_id": session_id}
 
     if new_status != txn["payment_status"]:
         await db.payment_transactions.update_one({"session_id": session_id}, {"$set": {
@@ -2618,6 +2646,85 @@ async def stripe_webhook(request: Request):
     except Exception as e:
         logging.error(f"Webhook error: {e}")
     return {"received": True}
+
+
+@api_router.post("/trades/{trade_id}/pay-sweetener")
+async def pay_trade_sweetener(trade_id: str, request: Request, body: Dict, user: Dict = Depends(require_auth)):
+    """Create a Stripe checkout session for the sweetener payment on a trade"""
+    trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade not found")
+    if trade["status"] != "ACCEPTED":
+        raise HTTPException(status_code=400, detail="Trade must be in ACCEPTED status for sweetener payment")
+
+    boot_amount = trade.get("boot_amount")
+    boot_direction = trade.get("boot_direction")
+    if not boot_amount or boot_amount <= 0:
+        raise HTTPException(status_code=400, detail="This trade has no sweetener")
+
+    # Determine payer and recipient
+    if boot_direction == "TO_SELLER":
+        payer_id = trade["proposer_id"]
+        recipient_id = trade["receiver_id"]
+    else:
+        payer_id = trade["receiver_id"]
+        recipient_id = trade["proposer_id"]
+
+    if user["id"] != payer_id:
+        raise HTTPException(status_code=403, detail="You are not the sweetener payer for this trade")
+
+    recipient = await db.users.find_one({"id": recipient_id}, {"_id": 0})
+    if not recipient or not recipient.get("stripe_account_id"):
+        raise HTTPException(status_code=400, detail="Recipient has not connected their Stripe account")
+
+    amount = float(boot_amount)
+    platform_fee = round(amount * PLATFORM_FEE_PERCENT / 100, 2)
+    amount_cents = int(round(amount * 100))
+    fee_cents = int(round(platform_fee * 100))
+
+    host_url = body.get("origin_url", str(request.base_url).rstrip("/"))
+    success_url = f"{host_url}/honeypot?payment=success&session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = f"{host_url}/honeypot?payment=cancelled"
+
+    stripe_sdk.api_key = STRIPE_API_KEY
+    try:
+        session = stripe_sdk.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{
+                "price_data": {
+                    "currency": "usd",
+                    "product_data": {"name": f"Trade sweetener — Trade #{trade_id[:8]}"},
+                    "unit_amount": amount_cents,
+                },
+                "quantity": 1,
+            }],
+            mode="payment",
+            success_url=success_url,
+            cancel_url=cancel_url,
+            payment_intent_data={
+                "application_fee_amount": fee_cents,
+                "transfer_data": {"destination": recipient["stripe_account_id"]},
+            },
+            metadata={
+                "trade_id": trade_id, "payer_id": payer_id,
+                "recipient_id": recipient_id, "type": "trade_sweetener",
+            },
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Stripe checkout error: {str(e)}")
+
+    now = datetime.now(timezone.utc).isoformat()
+    await db.payment_transactions.insert_one({
+        "id": str(uuid.uuid4()), "session_id": session.id,
+        "trade_id": trade_id, "buyer_id": payer_id,
+        "seller_id": recipient_id, "amount": amount,
+        "platform_fee": platform_fee, "seller_payout": round(amount - platform_fee, 2),
+        "currency": "usd", "payment_status": "PENDING",
+        "type": "trade_sweetener",
+        "metadata": {"trade_id": trade_id, "recipient_stripe_account": recipient["stripe_account_id"]},
+        "created_at": now, "updated_at": now,
+    })
+    return {"url": session.url, "session_id": session.id}
 
 
 @api_router.get("/payments/my-sales")
