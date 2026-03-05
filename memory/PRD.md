@@ -39,6 +39,7 @@ The Hive — Explore — Collection — The Honeypot
 27. **Explore Page v2** — 5 sections: Trending (14-day spins with modal), Taste Match (collection overlap), Fresh Pressings (Discogs current year), Most Wanted (wantlist aggregation), Near You (city/region matching)
 28. **About Page** — Founder story by Katie, social links (Instagram, TikTok, Email), linked from landing footer
 29. **FAQ Page** — Comprehensive FAQ with accordion UI covering all features
+30. **Explore "See All" Pages** — Full-page views for each Explore section (/explore/trending, /explore/taste-match, /explore/fresh-pressings, /explore/most-wanted, /explore/near-you) with grid/list layouts and higher data limits
 
 ## Code Architecture
 ```
@@ -57,6 +58,7 @@ The Hive — Explore — Collection — The Honeypot
     └── explore.py     # Trending, fresh pressings, most wanted, near you, follow, stats
 
 /app/frontend/src/pages/
+├── ExploreSeeAllPage.js # See All pages for each Explore section
 ├── AboutPage.js       # Founder story + social links
 ├── ExplorePage.js     # 5-section discovery page
 ├── FAQPage.js         # Accordion FAQ
@@ -76,7 +78,6 @@ COMPLETED → Mandatory rating before next trade
 ```
 
 ## Upcoming Tasks
-- **P1: "See All" Pages** — Full-page views for each Explore section
 - **P1: Sweetener UI** — Frontend for trade cash payments (backend endpoint exists)
 - **P1: Push Notifications** — Service worker-based browser push
 - **P2: Discogs Import** — Bulk collection import
