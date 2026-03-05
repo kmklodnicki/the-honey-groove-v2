@@ -1,86 +1,56 @@
 # HoneyGroove PRD
 
-## Original Problem Statement
-Build HoneyGroove - a social platform for vinyl collectors where users track their records, log spins, share hauls, and follow friends. The branding should feel warm, cozy, and music-focused with honey-inspired aesthetics.
+## Problem Statement
+A social platform for vinyl collectors called **HoneyGroove** (formerly WaxLog). Users can track their vinyl collection, log spins, share activity with friends, and import their Discogs collection.
 
-## User Personas
-1. **Casual Collector** - Wants to track their vinyl collection and share with friends
-2. **Serious Collector** - Needs detailed tracking, notes, and weekly listening stats
-3. **Social Collector** - Focused on following others and discovering new music through the community
+## Branding
+- **Colors:** Honey Gold (#F4B942), Soft Honey (#F9D776), Cream Background (#FFF6E6), Warm Amber Accent (#D98C2F), Vinyl Black Text (#1F1F1F)
+- **Fonts:** DM Serif Display (headings), Inter (UI text)
+- **Motif:** Subtle bee and honeycomb elements
+- **Logo:** User-provided transparent logo, prominent placement
 
-## Core Requirements (Static)
-- User authentication (email/password with username)
-- Vinyl collection tracking with Discogs API integration
-- Spin logging for listening history
-- Hauls for batch record additions
-- Friends/Following system
-- Activity feed ("The Hive")
-- Trending records ("Buzzing Now")
-- Weekly summary ("HoneyGroove Weekly")
-- Shareable PNG graphics for social media
+## Core Features
 
-## What's Been Implemented ✅
-**Date: Jan 2026**
+### Implemented (Complete)
+1. **User Authentication** - Register, login, JWT tokens, demo account
+2. **Vinyl Collection Tracking** - Add records via Discogs search (artist, album, cover, year, notes)
+3. **Activity Feed ("The Hive")** - Social feed visible to logged-in users, blurred for guests
+4. **Spin Logging** - Log when a record is played
+5. **Comments & Likes** - Comment on and like posts in the feed
+6. **Shareable Graphics** - Square (1080x1080) and Story (1080x1920) PNG export for "Now Spinning"
+7. **Collection Sorting** - 10 sort options: Artist (A-Z, Z-A), Album Title (A-Z, Z-A), Added (Newest, Oldest), Spins (Most, Least), Spun (Recently, Never)
+8. **Profile Photos** - Upload custom or use default bee avatar (bee icon + first initial)
+9. **Import from Discogs** - Connect Discogs account via OAuth 1.0a or personal token, import full collection with progress UI, "Sync Now" for re-import
 
-### Backend (FastAPI + MongoDB)
-- User auth (register, login, profile update)
-- Discogs API integration for record search and cover art
-- Records CRUD with spin count tracking
-- Spins logging system
-- Hauls creation (batch record additions)
-- Following/followers system
-- Activity feed (posts, likes, comments)
-- Weekly summary generation
-- PNG share image generation (Now Spinning, Hauls, Weekly Summary)
-- File upload support
+### In Progress
+- None currently
 
-### Frontend (React + shadcn/ui + Tailwind)
-- Landing page with HoneyGroove branding
-- Auth pages (Login, Signup)
-- The Hive (activity feed)
-- Explore page with Latest and Buzzing Now tabs
-- Collection page with search and Spin Now
-- Add Record page with Discogs search
-- Profile page with stats and weekly summary
-- Record detail page with share option
-- Create Haul page
-- Settings page
-- Responsive navigation with mobile bottom nav
+### Upcoming (P1-P2)
+- **Hauls** - Create posts for buying multiple records at once
+- **Friends/Following** - Follow/unfollow users, dedicated friend feed
+- **Profile Page Improvements** - Show user stats, posts, full collection
 
-### Design System
-- Honey color palette (#F4B942, #F9D776, #FFF6E6, #D98C2F, #1F1F1F)
-- DM Serif Display for headings, Inter for UI
-- Honeycomb patterns and bee motifs
-- Warm, cozy aesthetic
+### Future/Backlog (P3)
+- **HoneyGroove Weekly** - Weekly listening stats summary (top artist/album, mood, spins)
+- **JWT Token Persistence** - Proper token refresh/persistence handling
 
-## Prioritized Backlog
+## Architecture
+- **Frontend:** React + Tailwind CSS + Shadcn UI
+- **Backend:** FastAPI + Motor (async MongoDB)
+- **Database:** MongoDB
+- **Integrations:** Discogs API (search + OAuth import), Pillow (image generation)
 
-### P0 (Critical) - Done ✅
-- User registration/login
-- Add records from Discogs
-- View collection
-- Log spins
-- Activity feed
+## Key Endpoints
+- `/api/auth/{register, login}`
+- `/api/users/me`, `/api/users/{user_id}/profile`
+- `/api/records`, `/api/records/search`
+- `/api/feed`, `/api/posts/{post_id}/comments`, `/api/posts/{post_id}/like`
+- `/api/share/generate`
+- `/api/discogs/oauth/start`, `/api/discogs/oauth/callback`
+- `/api/discogs/connect-token`, `/api/discogs/status`
+- `/api/discogs/import`, `/api/discogs/import/progress`
+- `/api/discogs/disconnect`
 
-### P1 (Important)
-- Story format (1080x1920) share graphics
-- Improved image generation with actual cover art
-- Comments UI in feed
-- Search users feature
-- Profile followers/following list
-
-### P2 (Nice to Have)
-- Push notifications
-- Record price tracking
-- Wishlist feature
-- Collection value estimation
-- Advanced search filters (by year, format, genre)
-- Record condition tracking
-- Dark mode
-
-## Next Tasks
-1. Add story format (1080x1920) share graphics
-2. Implement comments UI in feed posts
-3. Add user search in navbar
-4. Improve share graphics with actual album art
-5. Add haul creation link to navigation
+## Test Credentials
+- Email: demo@example.com / Password: password123
+- Discogs username: katieintheafterglow (connected via personal token)
