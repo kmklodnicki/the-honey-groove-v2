@@ -40,6 +40,7 @@ The Hive — Explore — Collection — The Honeypot
 28. **About Page** — Founder story by Katie, social links (Instagram, TikTok, Email), linked from landing footer
 29. **FAQ Page** — Comprehensive FAQ with accordion UI covering all features
 30. **Explore "See All" Pages** — Full-page views for each Explore section (/explore/trending, /explore/taste-match, /explore/fresh-pressings, /explore/most-wanted, /explore/near-you) with grid/list layouts and higher data limits
+31. **Discogs Market Valuation** — Collection Value banner ($7,603 est.), Hidden Gems (top 3 most valuable), Taste Report card, value badges on record cards, "Highest Value" sort, pricing assist in listing modal ("recent sales: $X — $Y on Discogs"), wantlist price alerts, background 24h refresh with rate limiting. Cache in collection_values table.
 
 ## Code Architecture
 ```
@@ -81,6 +82,7 @@ COMPLETED → Mandatory rating before next trade
 - **P1: Sweetener UI** — Frontend for trade cash payments (backend endpoint exists)
 - **P1: Push Notifications** — Service worker-based browser push
 - **P2: Discogs Import** — Bulk collection import
+- **P2: Discogs Import** — Bulk collection import
 - **P2: Refactor ISOPage.jsx** — Break monolithic 3-tab component into ShopTab/TradeTab/ISOTab
 - **P2: Monetization** — Pro membership, Verified Seller badge
 - **P2: Hauls Enhancement** — Dedicated hauls page
@@ -93,7 +95,8 @@ likes, comments, followers,
 trades, trade_messages, trade_shippings, trade_disputes, trade_ratings,
 notifications, payment_transactions,
 dm_conversations (participant_ids[], context, last_message),
-dm_messages (conversation_id, sender_id, text, read)
+dm_messages (conversation_id, sender_id, text, read),
+collection_values (release_id, median_value, low_value, high_value, last_updated)
 ```
 
 ## Test Credentials
