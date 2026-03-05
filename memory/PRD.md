@@ -9,7 +9,7 @@ A social platform for vinyl collectors called **The HoneyGroove** — the vinyl 
 
 ## Core Pages
 1. **Landing Page** — Hero ("the vinyl social club, finally."), Features ("built for the obsessed."), CTA, Footer with About + FAQ links
-2. **The Hive** — Social feed with composer bar (Now Spinning, New Haul, ISO, Vinyl Mood)
+2. **The Hive** — Social feed with composer bar (Now Spinning, New Haul, ISO)
 3. **Explore** — Advanced discovery page with 5 sections: Trending in the Hive, Taste Match, Fresh Pressings, Most Wanted, Near You
 4. **Collection** — Personal vinyl library with sorting + Discogs import + Add Record
 5. **The Honeypot** — 3-tab marketplace: Shop (Buy/Offer), ISO (Hunt List + Community Hunt), Trade (Active Trades + Browse Trades)
@@ -29,19 +29,22 @@ The Hive — Explore — Collection — The Honeypot
 17. **Trade System (Complete)** — Propose/Counter/Accept/Decline, shipping, confirmation, disputes, ratings
 18. **Stripe Connect Onboarding** — Seller onboarding via Stripe Connect Express
 19. **In-App Notifications** — Notification bell with dropdown, unread count, mark-all-read
-20. **Landing Page Redesign** — Updated hero, features (6 cards), CTA, footer (© 2026)
+20. **Landing Page Redesign** — Updated hero, features (6 cards), CTA, footer
 21. **Stripe Payment Execution** — Buy Now & Make Offer checkout with 4% application fee via Stripe Connect
 22. **Admin Dispute Dashboard** — Full UI with Open/Resolved tabs, dispute cards, resolve modal
 23. **Browser Push Notifications** — Desktop notifications via Notification API for real-time alerts
 24. **The Honeypot Rebrand** — Renamed Marketplace → The Honeypot, 3-tab layout (Shop/ISO/Trade)
 25. **Direct Messages** — Full 1:1 DM system with context cards, inbox badge, entry points
 26. **Backend Refactor** — Split 3700-line server.py into 8 route modules + database.py + models.py
-27. **Explore Page v2** — 5 sections: Trending (14-day spins with modal), Taste Match (collection overlap), Fresh Pressings (Discogs current year), Most Wanted (wantlist aggregation), Near You (city/region matching)
-28. **About Page** — Founder story by Katie, social links (Instagram, TikTok, Email), linked from landing footer
-29. **FAQ Page** — Comprehensive FAQ with accordion UI covering all features
-30. **Explore "See All" Pages** — Full-page views for each Explore section (/explore/trending, /explore/taste-match, /explore/fresh-pressings, /explore/most-wanted, /explore/near-you) with grid/list layouts and higher data limits
-31. **Discogs Market Valuation** — Collection Value banner, Hidden Gems (top 3 most valuable), value badges on record cards, "Highest Value" sort, pricing assist in listing modal ("recent sales: $X — $Y on Discogs"), wantlist price alerts, background 24h refresh with rate limiting. Cache in collection_values table.
-32. **Your Week in Wax** — Comprehensive weekly vinyl report replacing old "Taste Report". Sections: Header (avatar, username, date range), Personality label (algorithmic, one reroll/week), Listening stats (6 metrics), Top 5 artists/records/genres, Era breakdown (% bars by decade), Mood breakdown, Collection value (with weekly change, $50/$100/$200 tiers, hidden gem), Wantlist pulse (trending, matches, longest hunt), Social stats (followers, posts, trades, most liked), Closing line. 1080×1080 shareable PNG export card. Stored permanently in wax_reports collection. Browsable history. Pinned to profile. Background scheduler every Sunday midnight UTC with in-app notification.
+27. **Explore Page v2** — 5 sections: Trending, Taste Match, Fresh Pressings, Most Wanted, Near You
+28. **About Page** — Founder story by Katie, social links
+29. **FAQ Page** — Comprehensive FAQ with accordion UI
+30. **Explore "See All" Pages** — Full-page views for each Explore section
+31. **Discogs Market Valuation** — Collection Value banner, Hidden Gems, value badges, pricing assist, wantlist price alerts, background refresh
+32. **Your Week in Wax** — Weekly vinyl report with personality label, stats, shareable PNG, scheduled Sunday background job
+33. **Now Spinning + Mood Merge** — Combined Now Spinning and Vinyl Mood into single modal
+34. **Trade Condition & Photo Requirements** — Trade proposals and trade-only listings now require condition selection (7 grades) and photo uploads (1-5). TradeDetailModal displays condition badges and photo galleries for both records in the exchange. (Feb 2026)
+35. **ComposerBar Discogs ISO Search** — The ISO posting modal in ComposerBar now has Discogs search integration. Users can search Discogs for albums, select a result (with cover art), or enter manually. Discogs data (discogs_id, cover_url, year) is sent with ISO posts. (Feb 2026)
 
 ## Code Architecture
 ```
@@ -57,21 +60,19 @@ The Hive — Explore — Collection — The Honeypot
     ├── trades.py      # Trade lifecycle, admin disputes
     ├── notifications.py # Notification CRUD
     ├── dms.py         # DM conversations & messages
-    └── explore.py     # Trending, fresh pressings, most wanted, near you, follow, stats
+    ├── explore.py     # Trending, fresh pressings, most wanted, near you, follow, stats
+    ├── valuation.py   # Discogs market value endpoints
+    └── wax_reports.py # Weekly reports & image generation
 
-## Upcoming Tasks
-
-/app/frontend/src/pages/
-├── WaxReportPage.js   # Full weekly report view
-├── WaxReportHistory.js # Past reports list
-├── ExploreSeeAllPage.js # See All pages for each Explore section
-├── AboutPage.js       # Founder story + social links
-├── ExplorePage.js     # 5-section discovery page
-├── FAQPage.js         # Accordion FAQ
-├── ISOPage.js         # The Honeypot (3 tabs)
-├── MessagesPage.js    # DM inbox + threads
-├── LandingPage.js     # Hero + features + CTA + footer
-└── ...other pages
+/app/frontend/src/
+├── pages/
+│   ├── TradesPage.js        # ProposeTradeModal (condition+photos), TradeDetailModal (condition+photos display)
+│   ├── ISOPage.js           # The Honeypot (3 tabs), listing modal with condition+photos
+│   ├── WaxReportPage.js     # Full weekly report view
+│   └── ...other pages
+├── components/
+│   ├── ComposerBar.js       # ISO modal with Discogs search, Now Spinning with mood
+│   └── ...other components
 ```
 
 ## Trade Flow
@@ -83,26 +84,24 @@ SHIPPING/CONFIRMING → DISPUTED → Admin resolves (COMPLETED/CANCELLED/PARTIAL
 COMPLETED → Mandatory rating before next trade
 ```
 
-33. **Now Spinning + Mood Merge** — Combined Now Spinning and Vinyl Mood into single modal. Flow: Record → Track → "how does it feel?" 12-mood grid (optional) → Note → Post. Modal background/button shifts to mood color. Composer bar: 3 buttons (Now Spinning, New Haul, ISO). Feed shows mood pill badge on posts with mood. Renamed "Sunday Morning" → "Good Morning".
-- **P1: Sweetener UI** — Frontend for trade cash payments (backend endpoint exists)
+## Upcoming Tasks
+- **P1: Sweetener UI** — Frontend for trade cash payments (backend endpoint exists at /api/trades/{id}/pay-sweetener)
 - **P1: Push Notifications** — Service worker-based browser push
 - **P2: Discogs Import** — Bulk collection import
-- **P2: Discogs Import** — Bulk collection import
-- **P2: Refactor ISOPage.jsx** — Break monolithic 3-tab component into ShopTab/TradeTab/ISOTab
+- **P2: Refactor ISOPage.js** — Break monolithic 3-tab component into ShopTab/TradeTab/ISOTab
 - **P2: Monetization** — Pro membership, Verified Seller badge
 - **P2: Hauls Enhancement** — Dedicated hauls page
 
 ## Data Model
 ```
 users, posts, records, spins, hauls, iso_items,
-listings (photo_urls[]),
+listings (photo_urls[], condition),
 likes, comments, followers,
-trades, trade_messages, trade_shippings, trade_disputes, trade_ratings,
+trades (offered_condition, offered_photo_urls[]),
+trade_messages, trade_shippings, trade_disputes, trade_ratings,
 notifications, payment_transactions,
-dm_conversations (participant_ids[], context, last_message),
-dm_messages (conversation_id, sender_id, text, read),
-collection_values (release_id, median_value, low_value, high_value, last_updated),
-wax_reports (id, user_id, username, week_start, week_end, personality, listening_stats, top_artists, top_records, top_genres, era_breakdown, mood_breakdown, collection_value, wantlist_pulse, social_stats, closing_line, label_regenerated)
+dm_conversations, dm_messages,
+collection_values, wax_reports
 ```
 
 ## Test Credentials
