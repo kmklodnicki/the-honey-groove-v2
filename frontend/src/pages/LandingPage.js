@@ -52,11 +52,11 @@ const LandingPage = () => {
         <div className="max-w-6xl mx-auto px-4 md:px-8 pt-16">
           <div className="text-center max-w-4xl mx-auto">
             {/* Logo */}
-            <div className="flex justify-center mb-8">
+            <div className="flex justify-center mb-14 md:mb-16">
               <img
                 src="/logo-drip.png"
                 alt="the Honey Groove"
-                className="h-48 md:h-56 lg:h-64"
+                className="w-[85vw] max-w-[520px] md:max-w-[560px] lg:max-w-[600px]"
               />
             </div>
 
