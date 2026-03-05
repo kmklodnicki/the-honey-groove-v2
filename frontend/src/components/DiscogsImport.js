@@ -6,16 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../co
 import { Input } from '../components/ui/input';
 import { Progress } from '../components/ui/progress';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from '../components/ui/dialog';
-import { ExternalLink, RefreshCw, CheckCircle2, AlertCircle, Loader2, Unplug, Disc } from 'lucide-react';
+import { ExternalLink, RefreshCw, CheckCircle2, AlertCircle, Loader2, Unplug, Disc, ArrowRight, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
-const DiscogsImport = ({ onImportComplete }) => {
+const DiscogsImport = ({ onImportComplete, compact = false }) => {
   const { token, API } = useAuth();
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -23,21 +19,22 @@ const DiscogsImport = ({ onImportComplete }) => {
   const [progress, setProgress] = useState(null);
   const [showDisconnect, setShowDisconnect] = useState(false);
   const [showConnect, setShowConnect] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
+  const [summary, setSummary] = useState(null);
   const [discogsUsername, setDiscogsUsername] = useState('');
   const [connecting, setConnecting] = useState(false);
 
   const fetchStatus = useCallback(async () => {
     try {
       const [statusResp, progressResp] = await Promise.all([
-        axios.get(`${API}/discogs/status`, { headers: { Authorization: `Bearer ${token}` }}),
-        axios.get(`${API}/discogs/import/progress`, { headers: { Authorization: `Bearer ${token}` }})
+        axios.get(`${API}/discogs/status`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API}/discogs/import/progress`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       setStatus(statusResp.data);
-      
       if (statusResp.data.import_status?.status === 'in_progress') {
         setImporting(true);
         setProgress(statusResp.data.import_status);
-      } else if (progressResp.data?.status === 'completed' && progressResp.data?.imported > 0) {
+      } else if (progressResp.data?.status === 'completed' && (progressResp.data?.imported > 0 || progressResp.data?.skipped > 0)) {
         setProgress(progressResp.data);
       }
     } catch (err) {
@@ -47,37 +44,32 @@ const DiscogsImport = ({ onImportComplete }) => {
     }
   }, [API, token]);
 
-  useEffect(() => {
-    fetchStatus();
-  }, [fetchStatus]);
+  useEffect(() => { fetchStatus(); }, [fetchStatus]);
 
   // Poll for progress when importing
   useEffect(() => {
     if (!importing) return;
-
     const interval = setInterval(async () => {
       try {
         const resp = await axios.get(`${API}/discogs/import/progress`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setProgress(resp.data);
-
         if (resp.data.status === 'completed' || resp.data.status === 'error') {
           setImporting(false);
           clearInterval(interval);
           if (resp.data.status === 'completed') {
             toast.success(`Imported ${resp.data.imported} records from Discogs!`);
+            // Fetch summary and show modal
+            fetchSummary();
             onImportComplete?.();
           } else {
             toast.error(resp.data.error_message || 'Import failed');
           }
           fetchStatus();
         }
-      } catch (err) {
-        console.error('Poll error:', err);
-      }
+      } catch (err) { console.error('Poll error:', err); }
     }, 2000);
-
     return () => clearInterval(interval);
   }, [importing, API, token, fetchStatus, onImportComplete]);
 
@@ -87,7 +79,6 @@ const DiscogsImport = ({ onImportComplete }) => {
     const discogsParam = params.get('discogs');
     if (discogsParam === 'connected') {
       toast.success(`Discogs account connected! (${params.get('username') || ''})`);
-      // Clean up URL
       window.history.replaceState({}, '', window.location.pathname);
       fetchStatus();
     } else if (discogsParam === 'error') {
@@ -96,15 +87,25 @@ const DiscogsImport = ({ onImportComplete }) => {
     }
   }, [fetchStatus]);
 
+  const fetchSummary = async () => {
+    try {
+      const resp = await axios.get(`${API}/discogs/import/summary`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (resp.data.has_import) {
+        setSummary(resp.data);
+        setShowSummary(true);
+      }
+    } catch { /* ignore */ }
+  };
+
   const handleConnect = async () => {
     try {
       const resp = await axios.get(`${API}/discogs/oauth/start`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      // Redirect to Discogs for authorization
       window.location.href = resp.data.authorization_url;
     } catch (err) {
-      // If OAuth isn't configured, show username dialog for token-based connection
       if (err.response?.status === 400) {
         setShowConnect(true);
       } else {
@@ -116,14 +117,13 @@ const DiscogsImport = ({ onImportComplete }) => {
   const handleTokenConnect = async (e) => {
     e.preventDefault();
     if (!discogsUsername.trim()) return;
-    
     setConnecting(true);
     try {
-      await axios.post(`${API}/discogs/connect-token`, 
+      const resp = await axios.post(`${API}/discogs/connect-token`,
         { discogs_username: discogsUsername.trim() },
-        { headers: { Authorization: `Bearer ${token}` }}
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success(`Connected to Discogs as ${discogsUsername.trim()}`);
+      toast.success(`Connected to Discogs as ${discogsUsername.trim()}${resp.data.collection_count ? ` (${resp.data.collection_count} records found)` : ''}`);
       setShowConnect(false);
       setDiscogsUsername('');
       fetchStatus();
@@ -157,13 +157,11 @@ const DiscogsImport = ({ onImportComplete }) => {
       setProgress(null);
       setShowDisconnect(false);
       toast.success('Discogs account disconnected');
-    } catch (err) {
-      toast.error('Failed to disconnect');
-    }
+    } catch { toast.error('Failed to disconnect'); }
   };
 
   if (loading) {
-    return (
+    return compact ? null : (
       <Card className="border-honey/30">
         <CardContent className="py-6">
           <div className="flex items-center gap-3 text-muted-foreground">
@@ -198,13 +196,8 @@ const DiscogsImport = ({ onImportComplete }) => {
               </div>
             </div>
             {status?.connected && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowDisconnect(true)}
-                className="text-muted-foreground hover:text-red-500"
-                data-testid="discogs-disconnect-btn"
-              >
+              <Button variant="ghost" size="sm" onClick={() => setShowDisconnect(true)}
+                className="text-muted-foreground hover:text-red-500" data-testid="discogs-disconnect-btn">
                 <Unplug className="w-4 h-4" />
               </Button>
             )}
@@ -213,11 +206,9 @@ const DiscogsImport = ({ onImportComplete }) => {
 
         <CardContent>
           {!status?.connected ? (
-            <Button
-              onClick={handleConnect}
+            <Button onClick={handleConnect}
               className="bg-vinyl-black text-white hover:bg-vinyl-black/80 rounded-full gap-2 w-full sm:w-auto"
-              data-testid="discogs-connect-btn"
-            >
+              data-testid="discogs-connect-btn">
               <ExternalLink className="w-4 h-4" />
               Connect Discogs Account
             </Button>
@@ -240,25 +231,31 @@ const DiscogsImport = ({ onImportComplete }) => {
             </div>
           ) : (
             <div className="space-y-3">
-              {progress?.status === 'completed' && progress.imported > 0 && (
-                <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 px-3 py-2 rounded-lg" data-testid="import-complete-msg">
-                  <CheckCircle2 className="w-4 h-4" />
-                  Last import: {progress.imported} records imported
-                  {progress.skipped > 0 && `, ${progress.skipped} skipped (duplicates)`}
+              {progress?.status === 'completed' && (progress.imported > 0 || progress.skipped > 0) && (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 px-3 py-2 rounded-lg flex-1" data-testid="import-complete-msg">
+                    <CheckCircle2 className="w-4 h-4 shrink-0" />
+                    <span>
+                      {progress.imported > 0
+                        ? `Last import: ${progress.imported} records imported${progress.skipped > 0 ? `, ${progress.skipped} skipped (duplicates)` : ''}`
+                        : `Collection in sync — ${progress.skipped} records already imported`}
+                    </span>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={fetchSummary} className="text-xs text-honey-amber ml-2" data-testid="view-summary-btn">
+                    View Summary
+                  </Button>
                 </div>
               )}
               {progress?.status === 'error' && (
                 <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
-                  <AlertCircle className="w-4 h-4" />
-                  {progress.error_message || 'Import failed'}
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{progress.error_message || 'Import failed'}</span>
                 </div>
               )}
               <div className="flex items-center gap-3">
-                <Button
-                  onClick={handleImport}
+                <Button onClick={handleImport}
                   className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2"
-                  data-testid="discogs-sync-btn"
-                >
+                  data-testid="discogs-sync-btn">
                   <RefreshCw className="w-4 h-4" />
                   {status?.last_synced ? 'Sync Now' : 'Import Collection'}
                 </Button>
@@ -273,6 +270,97 @@ const DiscogsImport = ({ onImportComplete }) => {
         </CardContent>
       </Card>
 
+      {/* Import Summary Modal */}
+      <Dialog open={showSummary} onOpenChange={setShowSummary}>
+        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-xl flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-green-600" />
+              Import Complete
+            </DialogTitle>
+            <DialogDescription>
+              Your Discogs collection has been imported successfully.
+            </DialogDescription>
+          </DialogHeader>
+          {summary && (
+            <div className="space-y-5 pt-2">
+              {/* Stats row */}
+              <div className="grid grid-cols-3 gap-3" data-testid="import-summary-stats">
+                <div className="bg-green-50 rounded-xl p-3 text-center">
+                  <p className="font-heading text-2xl text-green-700" data-testid="summary-imported">{summary.imported}</p>
+                  <p className="text-xs text-green-600">imported</p>
+                </div>
+                <div className="bg-stone-50 rounded-xl p-3 text-center">
+                  <p className="font-heading text-2xl text-stone-600" data-testid="summary-skipped">{summary.skipped}</p>
+                  <p className="text-xs text-muted-foreground">duplicates skipped</p>
+                </div>
+                {summary.errors > 0 ? (
+                  <div className="bg-red-50 rounded-xl p-3 text-center">
+                    <p className="font-heading text-2xl text-red-600">{summary.errors}</p>
+                    <p className="text-xs text-red-500">errors</p>
+                  </div>
+                ) : (
+                  <div className="bg-amber-50 rounded-xl p-3 text-center">
+                    <p className="font-heading text-2xl text-amber-700" data-testid="summary-total">{summary.total}</p>
+                    <p className="text-xs text-amber-600">total in Discogs</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Sample covers */}
+              {summary.sample_covers?.length > 0 && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wide">Recently Imported</p>
+                  <div className="grid grid-cols-6 gap-1.5" data-testid="import-sample-covers">
+                    {summary.sample_covers.slice(0, 12).map((c, i) => (
+                      <div key={i} className="aspect-square rounded-lg overflow-hidden bg-stone-100" title={`${c.artist} — ${c.title}`}>
+                        {c.cover_url ? (
+                          <img src={c.cover_url} alt={c.title} className="w-full h-full object-cover" loading="lazy" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center"><Disc className="w-5 h-5 text-stone-300" /></div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Collection value */}
+              {summary.collection_stats && (
+                <div className="bg-gradient-to-r from-honey/10 to-honey/20 rounded-xl p-4" data-testid="import-summary-value">
+                  <p className="text-xs text-muted-foreground mb-1">Your Collection</p>
+                  <div className="flex items-baseline gap-3">
+                    <p className="font-heading text-2xl text-vinyl-black">{summary.collection_stats.total_records} records</p>
+                    {summary.collection_stats.total_value > 0 && (
+                      <p className="text-sm text-honey-amber font-medium">
+                        ~${summary.collection_stats.total_value.toLocaleString(undefined, { maximumFractionDigits: 0 })} estimated
+                      </p>
+                    )}
+                  </div>
+                  {summary.collection_stats.valued_count > 0 && (
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      {summary.collection_stats.valued_count} records valued via Discogs market data
+                      {summary.collection_stats.valued_count < summary.collection_stats.total_records && ' (more values loading in background)'}
+                    </p>
+                  )}
+                  {summary.collection_stats.valued_count === 0 && summary.imported > 0 && (
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      Market values are being fetched in the background. Check back in a few minutes.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <Button onClick={() => setShowSummary(false)}
+                className="w-full bg-honey text-vinyl-black hover:bg-honey-amber rounded-full"
+                data-testid="close-summary-btn">
+                Got it
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Disconnect Dialog */}
       <Dialog open={showDisconnect} onOpenChange={setShowDisconnect}>
         <DialogContent className="sm:max-w-md">
@@ -284,11 +372,7 @@ const DiscogsImport = ({ onImportComplete }) => {
           </DialogHeader>
           <div className="flex gap-3 justify-end pt-4">
             <Button variant="outline" onClick={() => setShowDisconnect(false)}>Cancel</Button>
-            <Button
-              variant="destructive"
-              onClick={handleDisconnect}
-              data-testid="confirm-disconnect-btn"
-            >
+            <Button variant="destructive" onClick={handleDisconnect} data-testid="confirm-disconnect-btn">
               Disconnect
             </Button>
           </div>
@@ -301,7 +385,7 @@ const DiscogsImport = ({ onImportComplete }) => {
           <DialogHeader>
             <DialogTitle className="font-heading">Connect Discogs</DialogTitle>
             <DialogDescription>
-              Enter your Discogs username to import your public collection.
+              Enter your Discogs username to import your public collection. Make sure your collection is set to public in your Discogs privacy settings.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleTokenConnect} className="space-y-4 pt-2">
@@ -315,12 +399,10 @@ const DiscogsImport = ({ onImportComplete }) => {
             />
             <div className="flex gap-3 justify-end">
               <Button type="button" variant="outline" onClick={() => setShowConnect(false)}>Cancel</Button>
-              <Button 
-                type="submit"
+              <Button type="submit"
                 className="bg-honey text-vinyl-black hover:bg-honey-amber"
                 disabled={!discogsUsername.trim() || connecting}
-                data-testid="discogs-username-submit"
-              >
+                data-testid="discogs-username-submit">
                 {connecting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                 Connect
               </Button>

@@ -714,11 +714,13 @@ async def get_import_progress(user: Dict = Depends(require_auth)):
                 "total": last_import.get("total", 0),
                 "imported": last_import.get("imported", 0),
                 "skipped": last_import.get("skipped", 0),
+                "errors": last_import.get("errors", 0),
                 "error_message": None,
                 "discogs_username": last_import.get("discogs_username"),
+                "sample_covers": last_import.get("sample_covers", []),
                 "last_synced": last_import.get("completed_at")
             }
-        return {"status": "idle", "total": 0, "imported": 0, "skipped": 0}
+        return {"status": "idle", "total": 0, "imported": 0, "skipped": 0, "errors": 0, "sample_covers": []}
     return progress
 
 
@@ -727,14 +729,12 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
     try:
         # Set up the appropriate session based on auth type
         if auth_type == "personal_token":
-            # Use personal token auth
             session = requests.Session()
             session.headers.update({
                 "Authorization": f"Discogs token={DISCOGS_TOKEN}",
                 "User-Agent": DISCOGS_USER_AGENT
             })
         else:
-            # Use OAuth session
             session = OAuth1Session(
                 client_key=DISCOGS_CONSUMER_KEY,
                 client_secret=DISCOGS_CONSUMER_SECRET,
@@ -747,9 +747,19 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
         first_page_url = f"{DISCOGS_API_BASE}/users/{discogs_username}/collection/folders/0/releases"
         first_resp = session.get(first_page_url, params={"page": 1, "per_page": 100})
         
+        if first_resp.status_code == 403:
+            import_progress[user_id]["status"] = "error"
+            import_progress[user_id]["error_message"] = f"Collection for '{discogs_username}' is private. Update your Discogs privacy settings or connect via OAuth."
+            return
+        
+        if first_resp.status_code == 404:
+            import_progress[user_id]["status"] = "error"
+            import_progress[user_id]["error_message"] = f"Discogs user '{discogs_username}' not found."
+            return
+        
         if first_resp.status_code != 200:
             import_progress[user_id]["status"] = "error"
-            import_progress[user_id]["error_message"] = f"Failed to fetch collection: {first_resp.status_code}"
+            import_progress[user_id]["error_message"] = f"Failed to fetch collection (HTTP {first_resp.status_code}). Please try again."
             return
         
         first_data = first_resp.json()
@@ -768,12 +778,11 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
         all_releases = first_data.get("releases", [])
         
         for page in range(2, total_pages + 1):
-            # Rate limit: respect Discogs 60 req/min
             remaining = int(first_resp.headers.get('X-Discogs-Ratelimit-Remaining', 60))
             if remaining < 5:
                 await asyncio.sleep(30)
             else:
-                await asyncio.sleep(1.1)  # ~55 req/min to be safe
+                await asyncio.sleep(1.1)
             
             page_resp = session.get(
                 first_page_url,
@@ -781,7 +790,6 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
             )
             
             if page_resp.status_code == 429:
-                # Rate limited - wait and retry
                 await asyncio.sleep(60)
                 page_resp = session.get(
                     first_page_url,
@@ -791,13 +799,16 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
             if page_resp.status_code == 200:
                 page_data = page_resp.json()
                 all_releases.extend(page_data.get("releases", []))
-                first_resp = page_resp  # update for rate limit headers
+                first_resp = page_resp
             else:
                 logger.warning(f"Failed to fetch page {page}: {page_resp.status_code}")
         
         # Now import each release into the user's collection
         imported = 0
         skipped = 0
+        errors = 0
+        imported_discogs_ids = []
+        sample_covers = []
         now = datetime.now(timezone.utc).isoformat()
         
         for release in all_releases:
@@ -822,14 +833,9 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
                     import_progress[user_id]["imported"] = imported
                     continue
                 
-                # Parse artist(s)
                 artists = basic_info.get("artists", [])
                 artist_name = ", ".join(a.get("name", "") for a in artists) if artists else "Unknown Artist"
-                
-                # Get cover image
                 cover_url = basic_info.get("cover_image") or basic_info.get("thumb")
-                
-                # Get format
                 formats = basic_info.get("formats", [])
                 format_name = formats[0].get("name", "Vinyl") if formats else "Vinyl"
                 
@@ -843,24 +849,32 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
                     "cover_url": cover_url,
                     "year": basic_info.get("year"),
                     "format": format_name,
-                    "notes": f"Imported from Discogs",
+                    "notes": "Imported from Discogs",
                     "source": "discogs_import",
                     "created_at": now
                 }
                 
                 await db.records.insert_one(record_doc)
                 imported += 1
+                imported_discogs_ids.append(discogs_id)
                 import_progress[user_id]["imported"] = imported
+                
+                # Collect sample covers for summary (first 12)
+                if cover_url and len(sample_covers) < 12:
+                    sample_covers.append({"title": record_doc["title"], "artist": artist_name, "cover_url": cover_url})
                 
             except Exception as e:
                 logger.error(f"Failed to import release: {e}")
+                errors += 1
                 skipped += 1
                 import_progress[user_id]["skipped"] = skipped
         
-        # Mark complete
+        # Mark complete with enriched summary
         import_progress[user_id]["status"] = "completed"
         import_progress[user_id]["imported"] = imported
         import_progress[user_id]["skipped"] = skipped
+        import_progress[user_id]["errors"] = errors
+        import_progress[user_id]["sample_covers"] = sample_covers
         
         # Store import record
         await db.discogs_imports.update_one(
@@ -871,6 +885,8 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
                 "total": total_items,
                 "imported": imported,
                 "skipped": skipped,
+                "errors": errors,
+                "sample_covers": sample_covers,
                 "completed_at": datetime.now(timezone.utc).isoformat()
             }},
             upsert=True
@@ -890,12 +906,46 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
             }
             await db.posts.insert_one(post_doc)
         
-        logger.info(f"Discogs import complete for {user_id}: {imported} imported, {skipped} skipped out of {total_items}")
+        # Background: fetch collection values for newly imported records
+        if imported_discogs_ids:
+            asyncio.create_task(_post_import_value_refresh(user_id, imported_discogs_ids))
+        
+        logger.info(f"Discogs import complete for {user_id}: {imported} imported, {skipped} skipped, {errors} errors out of {total_items}")
         
     except Exception as e:
         logger.error(f"Discogs import failed for {user_id}: {e}")
         import_progress[user_id]["status"] = "error"
         import_progress[user_id]["error_message"] = str(e)
+
+
+async def _post_import_value_refresh(user_id: str, discogs_ids: list):
+    """After import, fetch Discogs market values for newly imported records."""
+    from database import get_discogs_market_data
+    fetched = 0
+    for did in discogs_ids:
+        try:
+            cached = await db.collection_values.find_one({"release_id": did})
+            if cached:
+                continue  # Already valued
+            data = get_discogs_market_data(did)
+            if data:
+                now = datetime.now(timezone.utc).isoformat()
+                await db.collection_values.update_one(
+                    {"release_id": did},
+                    {"$set": {
+                        "release_id": did,
+                        "median_value": data["median_value"],
+                        "low_value": data["low_value"],
+                        "high_value": data["high_value"],
+                        "last_updated": now,
+                    }},
+                    upsert=True
+                )
+                fetched += 1
+        except Exception as e:
+            logger.error(f"Post-import value fetch failed for {did}: {e}")
+        await asyncio.sleep(1.1)  # Rate limit
+    logger.info(f"Post-import value refresh for {user_id}: {fetched}/{len(discogs_ids)} valued")
 
 
 @router.delete("/discogs/disconnect")
@@ -907,6 +957,50 @@ async def disconnect_discogs(user: Dict = Depends(require_auth)):
     return {"message": "Discogs account disconnected"}
 
 
+@router.get("/discogs/import/summary")
+async def get_import_summary(user: Dict = Depends(require_auth)):
+    """Get a rich summary of the last completed import including collection value."""
+    last_import = await db.discogs_imports.find_one({"user_id": user["id"]}, {"_id": 0})
+    if not last_import:
+        return {"has_import": False}
+    
+    # Get collection value
+    records = await db.records.find(
+        {"user_id": user["id"], "discogs_id": {"$ne": None}},
+        {"_id": 0, "discogs_id": 1}
+    ).to_list(5000)
+    discogs_ids = list({r["discogs_id"] for r in records if r.get("discogs_id")})
+    
+    total_value = 0.0
+    valued_count = 0
+    if discogs_ids:
+        values = await db.collection_values.find(
+            {"release_id": {"$in": discogs_ids}}, {"_id": 0}
+        ).to_list(5000)
+        for v in values:
+            if v.get("median_value"):
+                total_value += v["median_value"]
+                valued_count += 1
+    
+    total_records = await db.records.count_documents({"user_id": user["id"]})
+    
+    return {
+        "has_import": True,
+        "imported": last_import.get("imported", 0),
+        "skipped": last_import.get("skipped", 0),
+        "errors": last_import.get("errors", 0),
+        "total": last_import.get("total", 0),
+        "discogs_username": last_import.get("discogs_username"),
+        "sample_covers": last_import.get("sample_covers", []),
+        "completed_at": last_import.get("completed_at"),
+        "collection_stats": {
+            "total_records": total_records,
+            "total_value": round(total_value, 2),
+            "valued_count": valued_count,
+        }
+    }
+
+
 class DiscogsTokenConnect(BaseModel):
     discogs_username: str
 
@@ -916,20 +1010,39 @@ async def connect_discogs_with_token(data: DiscogsTokenConnect, user: Dict = Dep
     if not DISCOGS_TOKEN:
         raise HTTPException(status_code=400, detail="Discogs token not configured")
     
-    # Verify the username exists on Discogs
+    username = data.discogs_username.strip()
     headers = {
         "Authorization": f"Discogs token={DISCOGS_TOKEN}",
         "User-Agent": DISCOGS_USER_AGENT
     }
+    # Verify the username exists on Discogs
     try:
         resp = requests.get(
-            f"{DISCOGS_API_BASE}/users/{data.discogs_username}",
+            f"{DISCOGS_API_BASE}/users/{username}",
             headers=headers, timeout=10
         )
+        if resp.status_code == 404:
+            raise HTTPException(status_code=400, detail=f"Discogs user '{username}' not found. Please check the spelling.")
         if resp.status_code != 200:
-            raise HTTPException(status_code=400, detail=f"Discogs user '{data.discogs_username}' not found")
+            raise HTTPException(status_code=400, detail=f"Could not verify Discogs user (status {resp.status_code})")
     except requests.RequestException as e:
         raise HTTPException(status_code=500, detail=f"Failed to verify Discogs user: {str(e)}")
+    
+    # Verify collection is accessible (not private)
+    try:
+        col_resp = requests.get(
+            f"{DISCOGS_API_BASE}/users/{username}/collection/folders/0/releases",
+            params={"page": 1, "per_page": 1},
+            headers=headers, timeout=10
+        )
+        if col_resp.status_code == 403:
+            raise HTTPException(status_code=400, detail=f"The collection for '{username}' is private. Ask them to make it public in Discogs settings, or use OAuth to connect.")
+        if col_resp.status_code != 200:
+            raise HTTPException(status_code=400, detail=f"Could not access collection for '{username}' (status {col_resp.status_code})")
+        col_data = col_resp.json()
+        collection_count = col_data.get("pagination", {}).get("items", 0)
+    except requests.RequestException as e:
+        raise HTTPException(status_code=500, detail=f"Failed to access collection: {str(e)}")
     
     # Store as token-based connection
     await db.discogs_tokens.update_one(
@@ -937,11 +1050,11 @@ async def connect_discogs_with_token(data: DiscogsTokenConnect, user: Dict = Dep
         {"$set": {
             "user_id": user["id"],
             "auth_type": "personal_token",
-            "discogs_username": data.discogs_username,
+            "discogs_username": username,
             "connected_at": datetime.now(timezone.utc).isoformat()
         }},
         upsert=True
     )
     
-    return {"message": f"Connected as {data.discogs_username}", "discogs_username": data.discogs_username}
+    return {"message": f"Connected as {username}", "discogs_username": username, "collection_count": collection_count}
 
