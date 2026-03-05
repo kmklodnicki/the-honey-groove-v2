@@ -84,17 +84,21 @@ async def add_record(record_data: RecordCreate, user: Dict = Depends(require_aut
 
 @router.get("/records", response_model=List[RecordResponse])
 async def get_my_records(user: Dict = Depends(require_auth)):
-    records = await db.records.find({"user_id": user["id"]}, {"_id": 0}).sort("created_at", -1).to_list(1000)
-    
-    result = []
-    for record in records:
-        spin_count = await db.spins.count_documents({"record_id": record["id"]})
-        result.append(RecordResponse(
-            **record,
-            spin_count=spin_count
-        ))
-    
-    return result
+    pipeline = [
+        {"$match": {"user_id": user["id"]}},
+        {"$sort": {"created_at": -1}},
+        {"$limit": 1000},
+        {"$lookup": {
+            "from": "spins",
+            "localField": "id",
+            "foreignField": "record_id",
+            "as": "_spins"
+        }},
+        {"$addFields": {"spin_count": {"$size": "$_spins"}}},
+        {"$project": {"_spins": 0, "_id": 0}}
+    ]
+    records = await db.records.aggregate(pipeline).to_list(1000)
+    return [RecordResponse(**r) for r in records]
 
 @router.get("/records/{record_id}", response_model=RecordResponse)
 async def get_record(record_id: str, current_user: Optional[Dict] = Depends(get_current_user)):

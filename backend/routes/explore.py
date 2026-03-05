@@ -28,20 +28,23 @@ async def get_buzzing_records(current_user: Optional[Dict] = Depends(get_current
         {"$match": {"created_at": {"$gte": week_ago}}},
         {"$group": {"_id": "$record_id", "spin_count": {"$sum": 1}}},
         {"$sort": {"spin_count": -1}},
-        {"$limit": limit}
+        {"$limit": limit},
+        {"$lookup": {
+            "from": "records",
+            "localField": "_id",
+            "foreignField": "id",
+            "as": "record"
+        }},
+        {"$unwind": "$record"},
+        {"$replaceRoot": {
+            "newRoot": {
+                "$mergeObjects": ["$record", {"trending_spins": "$spin_count"}]
+            }
+        }},
+        {"$project": {"_id": 0}}
     ]
     
-    trending = await db.spins.aggregate(pipeline).to_list(limit)
-    
-    result = []
-    for item in trending:
-        record = await db.records.find_one({"id": item["_id"]}, {"_id": 0})
-        if record:
-            result.append({
-                **record,
-                "buzz_count": item["spin_count"]
-            })
-    
+    result = await db.spins.aggregate(pipeline).to_list(limit)
     return result
 
 
