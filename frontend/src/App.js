@@ -24,6 +24,8 @@ import MessagesPage from "./pages/MessagesPage";
 import FAQPage from "./pages/FAQPage";
 import AboutPage from "./pages/AboutPage";
 import ExploreSeeAllPage from "./pages/ExploreSeeAllPage";
+import WaxReportPage from "./pages/WaxReportPage";
+import WaxReportHistory from "./pages/WaxReportHistory";
 
 // Protected Route wrapper
 const ProtectedRoute = ({ children }) => {
@@ -156,6 +158,27 @@ function AppContent() {
         <ProtectedRoute>
           <AppLayout>
             <SettingsPage />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/wax-reports" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <WaxReportPage />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/wax-reports/history" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <WaxReportHistory />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/wax-reports/:reportId" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <WaxReportPage />
           </AppLayout>
         </ProtectedRoute>
       } />

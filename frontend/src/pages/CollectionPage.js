@@ -13,16 +13,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, DollarSign, TrendingUp, RefreshCw, Download, Loader2, X } from 'lucide-react';
+import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, DollarSign, TrendingUp, RefreshCw } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
-import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from '../components/ui/dialog';
 import { toast } from 'sonner';
 import DiscogsImport from '../components/DiscogsImport';
 
@@ -286,9 +283,9 @@ const CollectionPage = () => {
         </div>
       )}
 
-      {/* Taste Report CTA */}
+      {/* Your Week in Wax CTA */}
       {collectionValue && collectionValue.valued_count > 0 && (
-        <TasteReportCTA token={token} API={API} user={user} />
+        <WaxReportCTA />
       )}
 
       {/* Search and Sort Controls */}
@@ -453,87 +450,23 @@ const RecordCard = ({ record, onSpin, onDelete, isSpinning, value }) => {
   );
 };
 
-const TasteReportCTA = ({ token, API, user }) => {
-  const [showModal, setShowModal] = useState(false);
-  const [imageUrl, setImageUrl] = useState(null);
-  const [generating, setGenerating] = useState(false);
-
-  const generateReport = async () => {
-    setGenerating(true);
-    setShowModal(true);
-    try {
-      const resp = await axios.get(`${API}/valuation/taste-report/image`, {
-        headers: { Authorization: `Bearer ${token}` },
-        responseType: 'blob',
-      });
-      const url = URL.createObjectURL(resp.data);
-      setImageUrl(url);
-    } catch {
-      toast.error('Failed to generate Taste Report');
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  const downloadImage = () => {
-    if (!imageUrl) return;
-    const a = document.createElement('a');
-    a.href = imageUrl;
-    a.download = `taste-report-${user?.username || 'honeygroove'}.png`;
-    a.click();
-  };
-
-  return (
-    <>
-      <button
-        onClick={generateReport}
-        className="mb-6 w-full group"
-        data-testid="taste-report-cta"
-      >
-        <Card className="p-4 bg-vinyl-black text-white border-vinyl-black hover:border-honey/40 transition-all">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-honey/20 flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-honey" />
-              </div>
-              <div>
-                <p className="font-heading text-base text-white">Taste Report</p>
-                <p className="text-[11px] text-white/50">Generate your shareable collection story</p>
-              </div>
-            </div>
-            <span className="text-xs text-honey group-hover:translate-x-0.5 transition-transform">Generate &rarr;</span>
+const WaxReportCTA = () => (
+  <Link to="/wax-reports" className="block mb-6 group" data-testid="wax-report-cta">
+    <Card className="p-4 border-0 shadow-sm hover:shadow-md transition-all rounded-2xl" style={{ background: '#FAEDC7', border: '1px solid rgba(200,134,26,0.15)' }}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(200,134,26,0.08)' }}>
+            <TrendingUp className="w-5 h-5" style={{ color: '#C8861A' }} />
           </div>
-        </Card>
-      </button>
-
-      <Dialog open={showModal} onOpenChange={(open) => { if (!open) { setShowModal(false); if (imageUrl) URL.revokeObjectURL(imageUrl); setImageUrl(null); }}}>
-        <DialogContent className="sm:max-w-sm p-0 overflow-hidden bg-vinyl-black border-vinyl-black/50" aria-describedby="taste-report-desc">
-          <DialogHeader className="px-4 pt-4">
-            <DialogTitle className="font-heading text-white flex items-center gap-2"><TrendingUp className="w-4 h-4 text-honey" /> Taste Report</DialogTitle>
-            <p id="taste-report-desc" className="sr-only">Your weekly shareable collection report</p>
-          </DialogHeader>
-          <div className="px-4 pb-4">
-            {generating ? (
-              <div className="flex flex-col items-center justify-center py-20">
-                <Loader2 className="w-8 h-8 text-honey animate-spin mb-3" />
-                <p className="text-sm text-white/60">Generating your report...</p>
-              </div>
-            ) : imageUrl ? (
-              <>
-                <img src={imageUrl} alt="Taste Report" className="w-full rounded-lg shadow-lg mb-3" data-testid="taste-report-image" />
-                <div className="flex gap-2">
-                  <Button onClick={downloadImage} className="flex-1 bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2" data-testid="taste-report-download">
-                    <Download className="w-4 h-4" /> Save to Camera Roll
-                  </Button>
-                </div>
-                <p className="text-[10px] text-white/40 text-center mt-2">1080 × 1920 · designed for Instagram Stories</p>
-              </>
-            ) : null}
+          <div>
+            <p className="font-heading text-base" style={{ color: '#2A1A06' }}>your week in wax</p>
+            <p className="text-[11px]" style={{ color: '#8A6B4A' }}>weekly report · shareable card</p>
           </div>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
-};
+        </div>
+        <span className="text-xs font-medium group-hover:translate-x-0.5 transition-transform" style={{ color: '#C8861A' }}>View &rarr;</span>
+      </div>
+    </Card>
+  </Link>
+);
 
 export default CollectionPage;
