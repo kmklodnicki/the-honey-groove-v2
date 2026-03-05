@@ -302,6 +302,8 @@ TRADE_STATUSES = ["PROPOSED", "COUNTERED", "ACCEPTED", "DECLINED", "CANCELLED",
 class TradePropose(BaseModel):
     listing_id: str
     offered_record_id: str
+    offered_condition: Optional[str] = None
+    offered_photo_urls: Optional[List[str]] = None
     boot_amount: Optional[float] = None
     boot_direction: Optional[str] = None
     message: Optional[str] = None
@@ -318,6 +320,8 @@ class TradeResponse(BaseModel):
     initiator_id: str
     responder_id: str
     offered_record_id: str
+    offered_condition: Optional[str] = None
+    offered_photo_urls: Optional[List[str]] = None
     listing_record_id: Optional[str] = None
     boot_amount: Optional[float] = None
     boot_direction: Optional[str] = None

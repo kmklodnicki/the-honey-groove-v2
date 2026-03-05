@@ -149,6 +149,8 @@ async def propose_trade(data: TradePropose, user: Dict = Depends(require_auth)):
         "initiator_id": user["id"],
         "responder_id": listing["user_id"],
         "offered_record_id": data.offered_record_id,
+        "offered_condition": data.offered_condition,
+        "offered_photo_urls": data.offered_photo_urls or [],
         "listing_record_id": listing.get("record_id"),
         "boot_amount": data.boot_amount,
         "boot_direction": data.boot_direction,

@@ -56,12 +56,18 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const [isoPriceMin, setIsoPriceMin] = useState('');
   const [isoPriceMax, setIsoPriceMax] = useState('');
   const [isoCaption, setIsoCaption] = useState('');
+  const [isoDiscogsQuery, setIsoDiscogsQuery] = useState('');
+  const [isoDiscogsResults, setIsoDiscogsResults] = useState([]);
+  const [isoSearchLoading, setIsoSearchLoading] = useState(false);
+  const [isoSelectedRelease, setIsoSelectedRelease] = useState(null);
+  const [isoManualMode, setIsoManualMode] = useState(false);
 
   const resetAll = () => {
     setSpinRecordId(''); setSpinTrack(''); setSpinCaption(''); setSpinMood('');
     setHaulStoreName(''); setHaulCaption(''); setHaulItems([]); setHaulSearch(''); setHaulResults([]);
     setIsoArtist(''); setIsoAlbum(''); setIsoPressing(''); setIsoCondition('');
     setIsoPriceMin(''); setIsoPriceMax(''); setIsoCaption('');
+    setIsoDiscogsQuery(''); setIsoDiscogsResults([]); setIsoSelectedRelease(null); setIsoManualMode(false);
   };
 
   const openModal = (type) => { resetAll(); setActiveModal(type); };
@@ -78,6 +84,23 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     } catch { setHaulResults([]); }
     finally { setSearchLoading(false); }
   }, [API, token]);
+
+  const searchDiscogsForISO = useCallback(async (query) => {
+    if (!query || query.length < 2) { setIsoDiscogsResults([]); return; }
+    setIsoSearchLoading(true);
+    try {
+      const resp = await axios.get(`${API}/discogs/search?q=${encodeURIComponent(query)}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setIsoDiscogsResults(resp.data.slice(0, 8));
+    } catch { setIsoDiscogsResults([]); }
+    finally { setIsoSearchLoading(false); }
+  }, [API, token]);
+
+  const selectIsoRelease = (release) => {
+    setIsoSelectedRelease(release); setIsoDiscogsResults([]); setIsoDiscogsQuery('');
+    setIsoArtist(release.artist); setIsoAlbum(release.title);
+  };
 
   const addHaulItem = (item) => {
     if (haulItems.find(h => h.discogs_id === item.discogs_id)) return;
@@ -116,11 +139,17 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   };
 
   const submitISO = async () => {
-    if (!isoArtist || !isoAlbum) { toast.error('Artist and album are required'); return; }
+    const artist = isoArtist || isoSelectedRelease?.artist;
+    const album = isoAlbum || isoSelectedRelease?.title;
+    if (!artist || !album) { toast.error('Artist and album are required'); return; }
     setSubmitting(true);
     try {
       await axios.post(`${API}/composer/iso`, {
-        artist: isoArtist, album: isoAlbum, pressing_notes: isoPressing || null,
+        artist, album,
+        discogs_id: isoSelectedRelease?.discogs_id || null,
+        cover_url: isoSelectedRelease?.cover_url || null,
+        year: isoSelectedRelease?.year || null,
+        pressing_notes: isoPressing || null,
         condition_pref: isoCondition || null,
         target_price_min: isoPriceMin ? parseFloat(isoPriceMin) : null,
         target_price_max: isoPriceMax ? parseFloat(isoPriceMax) : null,
@@ -295,24 +324,64 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
 
       {/* ═══ ISO Modal ═══ */}
       <Dialog open={activeModal === 'ISO'} onOpenChange={(open) => !open && closeModal()}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-heading flex items-center gap-2"><Search className="w-5 h-5 text-blue-600" /> In Search Of</DialogTitle>
             <DialogDescription>Let the community know what you're looking for</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-2">
-            <Input placeholder="Artist *" value={isoArtist} onChange={e => setIsoArtist(e.target.value)} className="border-honey/50" data-testid="iso-artist-input" />
-            <Input placeholder="Album *" value={isoAlbum} onChange={e => setIsoAlbum(e.target.value)} className="border-honey/50" data-testid="iso-album-input" />
-            <Input placeholder="Press / condition preference" value={isoPressing} onChange={e => setIsoPressing(e.target.value)} className="border-honey/50" />
-            <div className="grid grid-cols-2 gap-3">
-              <Input placeholder="Min budget ($)" type="number" value={isoPriceMin} onChange={e => setIsoPriceMin(e.target.value)} className="border-honey/50" />
-              <Input placeholder="Max budget ($)" type="number" value={isoPriceMax} onChange={e => setIsoPriceMax(e.target.value)} className="border-honey/50" />
-            </div>
-            <Textarea placeholder="Caption (optional)" value={isoCaption} onChange={e => setIsoCaption(e.target.value)} className="border-honey/50 resize-none" rows={2} data-testid="iso-caption-input" />
-            <Button onClick={submitISO} disabled={submitting || !isoArtist || !isoAlbum} className="w-full bg-blue-100 text-blue-800 hover:bg-blue-200 rounded-full" data-testid="iso-submit-btn">
-              {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Search className="w-4 h-4 mr-2" />}
-              Post ISO
-            </Button>
+            {/* Discogs search / selected / manual */}
+            {!isoSelectedRelease && !isoManualMode ? (
+              <>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input placeholder="Search Discogs for an album..." value={isoDiscogsQuery}
+                    onChange={e => { setIsoDiscogsQuery(e.target.value); searchDiscogsForISO(e.target.value); }}
+                    className="pl-9 border-honey/50" data-testid="iso-discogs-search" autoFocus />
+                  {isoSearchLoading && <Loader2 className="w-4 h-4 animate-spin absolute right-3 top-3 text-muted-foreground" />}
+                </div>
+                {isoDiscogsResults.length > 0 && (
+                  <div className="border border-honey/30 rounded-lg max-h-48 overflow-y-auto bg-white">
+                    {isoDiscogsResults.map(r => (
+                      <button key={r.discogs_id} onClick={() => selectIsoRelease(r)} className="w-full text-left px-3 py-2 hover:bg-honey/10 flex items-center gap-3 text-sm border-b border-honey/10 last:border-0" data-testid={`iso-discogs-result-${r.discogs_id}`}>
+                        {r.cover_url ? <img src={r.cover_url} alt="" className="w-10 h-10 rounded object-cover" /> : <Disc className="w-10 h-10 text-honey/30" />}
+                        <div className="min-w-0 flex-1"><p className="font-medium truncate">{r.title}</p><p className="text-xs text-muted-foreground truncate">{r.artist} {r.year ? `(${r.year})` : ''}</p></div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <button onClick={() => setIsoManualMode(true)} className="text-sm text-honey-amber hover:underline" data-testid="iso-manual-entry-btn">Or enter manually</button>
+              </>
+            ) : isoSelectedRelease ? (
+              <div className="flex items-center gap-3 bg-blue-50 rounded-lg p-3">
+                {isoSelectedRelease.cover_url ? <img src={isoSelectedRelease.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow" /> : <Disc className="w-14 h-14 text-blue-300" />}
+                <div className="flex-1 min-w-0"><p className="font-heading text-base">{isoSelectedRelease.title}</p><p className="text-sm text-muted-foreground">{isoSelectedRelease.artist} {isoSelectedRelease.year ? `(${isoSelectedRelease.year})` : ''}</p></div>
+                <button onClick={() => { setIsoSelectedRelease(null); setIsoArtist(''); setIsoAlbum(''); }} className="text-xs text-muted-foreground hover:text-red-500">Change</button>
+              </div>
+            ) : null}
+
+            {/* Manual or selected — show remaining fields */}
+            {(isoManualMode || isoSelectedRelease) && (
+              <>
+                {isoManualMode && (
+                  <>
+                    <Input placeholder="Artist *" value={isoArtist} onChange={e => setIsoArtist(e.target.value)} className="border-honey/50" data-testid="iso-artist-input" />
+                    <Input placeholder="Album *" value={isoAlbum} onChange={e => setIsoAlbum(e.target.value)} className="border-honey/50" data-testid="iso-album-input" />
+                  </>
+                )}
+                <Input placeholder="Press / condition preference" value={isoPressing} onChange={e => setIsoPressing(e.target.value)} className="border-honey/50" />
+                <div className="grid grid-cols-2 gap-3">
+                  <Input placeholder="Min budget ($)" type="number" value={isoPriceMin} onChange={e => setIsoPriceMin(e.target.value)} className="border-honey/50" />
+                  <Input placeholder="Max budget ($)" type="number" value={isoPriceMax} onChange={e => setIsoPriceMax(e.target.value)} className="border-honey/50" />
+                </div>
+                <Textarea placeholder="Caption (optional)" value={isoCaption} onChange={e => setIsoCaption(e.target.value)} className="border-honey/50 resize-none" rows={2} data-testid="iso-caption-input" />
+                <Button onClick={submitISO} disabled={submitting || (isoManualMode && (!isoArtist || !isoAlbum)) || (!isoManualMode && !isoSelectedRelease)}
+                  className="w-full bg-blue-100 text-blue-800 hover:bg-blue-200 rounded-full" data-testid="iso-submit-btn">
+                  {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Search className="w-4 h-4 mr-2" />}
+                  Post ISO
+                </Button>
+              </>
+            )}
           </div>
         </DialogContent>
       </Dialog>

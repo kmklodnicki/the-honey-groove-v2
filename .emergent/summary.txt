@@ -2,66 +2,74 @@
 The user wants to build a web app called **The HoneyGroove**, a social platform for vinyl collectors.
 
 **PRODUCT REQUIREMENTS (Synthesized from initial request and subsequent user directives):**
--   **Core App:** A full-stack application for vinyl collectors to track their collection, log spins, and interact socially.
--   **Branding:** A warm, honey-inspired theme with specific colors (Honey Gold, Cream, Amber) and fonts (DM Serif Display, Inter).
--   **User System:** User accounts with profiles (avatar, bio, stats), and a following system. The  user has admin privileges. Users can add their city/region to their profile.
--   **The Hive (Feed):** A central social feed with different post types (Now Spinning, New Haul, ISO, Vinyl Mood) and a Friends filter.
--   **Explore Page:** A discovery page surfacing: Trending Records, Taste Match (user suggestions), Fresh Pressings (new releases), Most Wanted records, and users/listings Near You.
--   **Collection Management:** Users can add records to their collection. A Discogs import feature is planned.
--   **The Honeypot (Marketplace):** A three-tab marketplace: Shop (buy/sell), Trade (record swaps), and ISO (browsing community wantlists). Renamed from Marketplace.
--   **Wantlist:** A user's list of desired records (formerly Hunt List). The app provides notifications for matches.
--   **Trade System:** A complete, multi-step trade flow with offers, shipping tracking, confirmation, and disputes. Trades can include a cash Sweetener (formerly boot).
--   **Payments:** Stripe Connect integration for sellers. Buy It Now and Make Offer functionality. A 4% application fee is taken on all sales and Sweetener payments.
--   **Direct Messaging (DM):** A private messaging system with an inbox, conversation threads, and context cards for DMs initiated from trades or wantlists.
--   **Notifications:** An in-app notification center for social and transactional events.
--   **FAQ Page:** A dedicated page explaining the app's features in the brand's voice.
+*   **Core App:** A full-stack application for vinyl collectors to track their collection, log spins, and interact socially.
+*   **Branding & Pages:** A warm, honey-inspired theme. Includes an **About Page** and an **FAQ Page**.
+*   **User System:** User accounts with profiles (avatar, bio, stats, city/region), and a following system.
+*   **The Hive (Feed):** A central social feed. The Now Spinning and Vinyl Mood post types have been merged into a single, enhanced Now Spinning flow.
+*   **Explore Page:** A discovery page with Trending, Taste Match, Fresh Pressings, Most Wanted, and Near You sections, each with its own See All page.
+*   **Collection Management & Valuation:** Users can add records to their collection. The app integrates **Discogs market data** to display:
+    *   Total collection value on profile and collection pages.
+    *   Hidden Gems (most valuable records).
+    *   Pricing assistance when listing records for sale.
+*   **Your Week in Wax Report:** A comprehensive weekly activity report, replacing the old Taste Report. It's generated every Sunday via a background job, stored permanently, and includes a shareable Instagram Story-sized PNG image.
+*   **The Honeypot (Marketplace):** A three-tab marketplace (Shop, Trade, ISO).
+    *   **Trade System:** A multi-step trade flow. **Trade proposals and trade-only listings now require condition selection and photo uploads.**
+    *   **Wantlist:** A user's list of desired records with price alert notifications.
+    *   **ISO Posts:** When creating an In Search Of post, users can search Discogs or add a record manually.
+*   **Payments:** Stripe Connect integration for sales, with a 4% application fee.
+*   **Direct Messaging (DM):** A private messaging system.
+*   **Notifications:** An in-app notification center.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A mature full-stack React/FastAPI/MongoDB application. The backend has been refactored from a monolith into a scalable, modular structure with separate route files. The frontend features a redesigned landing page, a comprehensive DM system, a fully-featured three-tab marketplace called The Honeypot, and a new advanced Explore page. Stripe payments are correctly implemented to take a 4% application fee and transfer funds to sellers via Stripe Connect.
+A mature full-stack React/FastAPI/MongoDB application. The backend is modular, featuring scheduled background jobs () and server-side image generation (). The frontend includes a comprehensive set of features: a redesigned landing page, a full DM system, The Honeypot marketplace, an advanced Explore page with See All views, an About page, and a rich, beautifully styled Your Week in Wax weekly report page. The Now Spinning and Vinyl Mood post types have been successfully merged, and Discogs valuation data is integrated throughout the user's collection.
 
 **Last working item**:
--   **Last item agent was working:** Building a new, advanced **Explore page** with five distinct sections: Trending in the Hive, Taste Match, Fresh Pressings, Most Wanted, and Near You. This involved adding new backend endpoints and completely rewriting the frontend component.
+-   **Last item agent was working:** Implementing a large user request to enhance the trade system and the In Search Of (ISO) posting flow. This involves:
+    1.  Requiring condition selection and photo uploads for all trade proposals and trade-only listings.
+    2.  Displaying this information in the trade detail view.
+    3.  Integrating Discogs search into the ISO creation modal.
 -   **Status:** IN PROGRESS
 -   **Agent Testing Done:** N
 -   **Which testing method agent to use?** both
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1 (P0):** The implementation of the new Explore page is incomplete. The agent has implemented the backend and frontend code but has only performed a partial visual verification via screenshot. The full functionality and layout need to be checked and tested.
+-   **Issue 1: (P0)** The implementation of the enhanced trade system and Discogs ISO search is incomplete. The agent has only just begun the backend work, specifically by updating the Pydantic model and starting to modify the  endpoint. All frontend work and the remainder of the backend logic are still pending.
 
 **In progress Task List**:
--   **Task 1: Finalize and Test the New Explore Page** (Priority: P0)
-    -   **Where to resume:** The agent has taken a screenshot of the top half of the new Explore page. The next step is to scroll down and visually verify the remaining sections (Most Wanted, Near You). After visual confirmation, a comprehensive test run using the testing agent is required to validate all new backend endpoints and frontend components.
-    -   **What will be achieved with this?** A fully functional and engaging Explore page that improves content discovery and user interaction, fulfilling a key user request.
+-   **Task 1: Complete Trade System Enhancements & Discogs ISO Search** (Priority: P0)
+    -   **Where to resume:** The agent has modified the  model in  and started updating the  function in . The next steps are:
+        1.  Finish the backend logic in  to correctly save and retrieve the new  and  fields.
+        2.  Implement all frontend changes: add condition pills and photo uploaders to the  and the List for Trade modal within .
+        3.  Update the  to display the condition and photos of the offered record.
+        4.  Integrate Discogs search functionality into the  ISO modal.
+    -   **What will be achieved with this?** A more robust and transparent trading system with photo evidence, and a more powerful ISO creation flow connected to the Discogs database.
     -   **Status:** IN PROGRESS
     -   **Should Test frontend/backend/both after fix?** both
     -   **Blocked on something:** None
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
-    -   **P1: Build See All Pages for Explore Sections:** The new Explore page has See All links for each section. These currently do not lead anywhere and need corresponding full-page views to be built.
-    -   **P1: Implement Frontend for Sweetener Payments:** The backend endpoint () for making cash payments in trades exists, but the frontend UI to trigger this flow from the trade negotiation screen is missing.
-    -   **P1: Push Notifications:** Enhance the existing in-app notification system with browser push notifications using a service worker.
+    -   **P1: Implement Frontend for Sweetener Payments:** The backend endpoint () for making cash payments in trades exists, but the frontend UI to trigger this flow is missing.
+    -   **P1: Push Notifications:** Enhance the existing in-app notification system with browser push notifications.
 -   **Future Tasks:**
-    -   **P2: Implement Discogs Collection Import:** The FAQ page mentions this feature is coming soon. This is a high-value feature for serious collectors.
-    -   **P2: Refactor :** The component for The Honeypot is now a large, multi-tab monolith and should be broken down into smaller components for better maintainability.
+    -   **P2: Implement Discogs Collection Import:** The FAQ page mentions this feature is coming soon.
+    -   **P2: Refactor :** This monolithic component still manages three tabs and has grown in complexity.
     -   **P2: Monetization Features:** Implement Pro memberships or a Verified Seller badge.
     -   **P2: Enhance Hauls Feature:** Develop a dedicated page and more functionality for New Haul posts.
 
 **Completed work in this session**
--   **Backend Refactor:** Split the monolithic  into a modular structure with a  directory, , and . (DONE)
--   **Explore Page v2:** Implemented a new advanced Explore page with 5 sections (Trending, Taste Match, Fresh Pressings, Most Wanted, Near You). (IN PROGRESS)
--   **Direct Messaging (DM) Feature:** Implemented a full DM system with an inbox, threads, unread badges, and context cards. (DONE)
--   **Stripe Application Fee:** Correctly implemented a 4% application fee for marketplace sales and trade sweeteners by switching to the direct  SDK. (DONE)
--   **The Honeypot Rewrite:** Renamed Marketplace to The Honeypot and rebuilt it with a three-tab structure (Shop, ISO, Trade). (DONE)
--   **FAQ Page:** Created a comprehensive, styled FAQ page with an accordion UI. (DONE)
--   **Landing Page Redesign:** Overhauled the landing page content and layout per user specifications. (DONE)
--   **UI/UX Polish:** Renamed boot to Sweetener, Hunt List to Wantlist, increased navbar logo size, and enforced conditions/photos for trade listings. (DONE)
+-   **Your Week in Wax Report:** Replaced the Taste Report with a comprehensive, beautifully designed weekly user activity report, generated via a scheduled background job and including a shareable PNG. (DONE)
+-   **Discogs Valuation Feature:** Integrated Discogs market data to show collection value, hidden gems, and pricing assistance when listing records. (DONE)
+-   **Merged Post Types:** Combined Now Spinning and Vinyl Mood into a single Now Spinning post type, simplifying the UI and feed. (DONE)
+-   **Explore See All Pages:** Built dynamic See All pages for all five sections of the Explore page. (DONE)
+-   **About Page:** Created a new About page with brand story and linked it in the footer. (DONE)
+-   **Explore Page v2 Completion:** Finalized and tested the new Explore page. (DONE)
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1:** The  was noted as being overly complex. It was replaced by , which is even more complex due to the 3-tab structure, so the underlying technical debt of a monolithic frontend component remains.
+-   **Issue 1:** The  was noted as being overly complex. This technical debt remains and has increased with recent additions.
 
 **Known issue recurrence from previous fork**
 -   N/A
@@ -73,80 +81,76 @@ A mature full-stack React/FastAPI/MongoDB application. The backend has been refa
 -   **Frontend:** React, Tailwind CSS, Axios, Shadcn UI
 -   **Backend:** FastAPI, Pydantic, Motor (async MongoDB)
 -   **Database:** MongoDB
--   **Integrations:** Discogs API, Stripe SDK (for Connect payments)
+-   **Image Generation:** Pillow library on the backend for creating dynamic PNGs.
+-   **Background Jobs:**  scheduler in FastAPI for running weekly tasks.
+-   **Integrations:** Discogs API, Stripe SDK
 
 **key DB schema**
--   **users:** {..., , , , }
--   **conversations:** {participant_ids, last_message_at, context_type, context_data}
--   **messages:** {conversation_id, sender_id, text, read_by}
--   (Other collections remain as per the initial handoff)
+-   **collection_values:** 
+-   **wax_reports:** 
+-   **posts:** Added optional  field to  post types.
+-   **trades:** Will add  and  to trade proposals.
 
 **changes in tech stack**
--   The implementation for Stripe checkouts was switched from  to the native  Python SDK to properly support Stripe Connect  and  parameters.
+-   **Pillow:** Added for server-side image generation.
+-   **asyncio:** Used within FastAPI to schedule the weekly report generation.
 
 **All files of reference**
--   : Rewritten to be a slim app runner.
--   , : New shared modules.
--   : New modular route files created from the refactor.
--   : Completely rewritten for the new layout.
--   : Rewritten to become The Honeypot.
--   , : New pages.
--   : Rewritten.
--   : Modified for DM icon and larger logo/height.
--   : Modified with new routes for DMs, FAQ, etc.
+*   **New Backend:** , , 
+*   **Modified Backend:** , , , 
+*   **New Frontend:** , , , 
+*   **Modified Frontend:** , , , , , , 
 
 **Areas that need refactoring**:
--   : This component manages the state and UI for all three tabs of The Honeypot and is critically monolithic. It should be broken down into smaller components (e.g., , , ).
--   : This is one of the largest route modules after the refactor and could be a candidate for further simplification, potentially by extracting business logic into a  layer.
+-    remains a critical monolithic component managing three tabs and multiple complex modals. It is the top candidate for refactoring.
 
 **key api endpoints**
--   **DMs:** , , , 
--   **Explore:** , , , , 
--   **Payments:** 
+-   **Valuation:** , 
+-   **Wax Reports:** , , 
+-   **Image Gen:**  (legacy), 
+-   **Hive:**  (updated to accept )
+-   **Trades:**  (being updated for condition/photos)
 
 **Critical Info for New Agent**
--   The current priority is to complete and test the new Explore page. It is partially implemented and verified.
--   The backend has been significantly refactored. Do not look for logic in the root ; it is now in the  directory. Shared utilities are in .
--   All Stripe payment logic now uses the  SDK directly, not , to handle Connect application fees. The fee is hardcoded at 4%.
--   The Marketplace is now called The Honeypot and is managed by the  file.
+-   The current task is large and unfinished. The agent must first complete the backend changes for trade proposals (saving condition/photos) before moving to the extensive frontend modifications on , , , and .
+-   The feature Your Week in Wax is a core part of the app now. It relies on a scheduler started in  and has its own routes in .
+-   All image generation happens on the backend using the Pillow library, with fonts stored in .
+-   The  was significantly refactored to merge Now Spinning and Vinyl Mood posts. Any changes to posting flow should be made there.
 
 **documents and test reports created in this job**
 -    (updated multiple times)
--   Multiple test reports in  ending with  for DMs and  for the backend refactor.
+-   Multiple test reports in  generated by the testing agent for each completed feature.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **user:** Requests a major refactor of  before building the new Explore page.
-2.  **agent:** Completes the massive backend refactor.
-3.  **agent:** Verifies the app is working post-refactor and starts work on the Explore page.
-4.  **user:** Scraps some previously requested Explore features (RSD tracker) and provides clarification on others (Geo search, See All pages, Modals).
-5.  **user:** Specifies using a simple city/region text field for Near You feature.
-6.  **user:** Approves a plan to label Recent Releases as Fresh Pressings and fetch them from Discogs.
-7.  **user:** Confirms that See All pages should be deferred until after the main Explore page is validated.
-8.  **user:** Confirms that tapping a trending record should open a modal with its Now Spinning posts.
-9.  **agent:** Acknowledges the plan and starts implementing backend changes for the new Explore page.
-10. **agent:** Starts implementing the frontend for the new Explore page and takes a screenshot of the top half.
+1.  **user:** Defines the full Wax Report feature, replacing Taste Report with a detailed weekly summary. Specifies layout, stats, and a shareable export card.
+2.  **agent:** Confirms understanding and plans the implementation.
+3.  **user:** Merges Now Spinning and Vinyl Mood post types into a single modal, removing the Vinyl Mood button. Specifies the new modal flow, mood-based UI changes, and feed display.
+4.  **agent:** Confirms understanding and plans the implementation.
+5.  **user:** Defines the requirement to add mandatory condition selection and photo uploads for trade proposals.
+6.  **user:** Clarifies the requirement should also apply to the other side (trade detail view) and to trade-only listings in The Honeypot.
+7.  **user:** Adds a requirement for the ISO selection modal to connect to Discogs search.
+8.  **agent:** Asks for confirmation on the combined task.
+9.  **user:** yes
+10. **agent:** Starts exploring the relevant files to begin implementation.
 
 **Project Health Check:**
 -   **Broken:** None known.
--   **Mocked:**
-    -   See All links on the new Explore page are placeholders and do not navigate anywhere.
-    -   The UI to initiate a Sweetener payment during a trade does not exist, although the backend endpoint is ready.
+-   **Mocked:** The UI for the new trade requirements (condition/photos) and the Discogs ISO search has not been built yet.
 
 **3rd Party Integrations**
--   **Discogs API** — Used for collection import and now for the Fresh Pressings section on the Explore page.
--   **Pillow** — Installed but not actively used.
--   **Stripe Connect** — Integrated for seller onboarding and processing payments with application fees using the  SDK.
+-   **Discogs API** — Used for collection data, Fresh Pressings, market valuation, and soon for ISO search.
+-   **Stripe Connect** — Integrated for seller onboarding and payments with application fees.
+-   **Pillow** — Installed and used for backend image generation.
 
 **Testing status**
--   **Testing agent used after significant changes:** YES. The backend refactor and DM feature were tested.
+-   **Testing agent used after significant changes:** YES, for all completed features.
 -   **Troubleshoot agent used after agent stuck in loop:** NO
 -   **Test files created:** []
--   **Known regressions:** None. The new Explore page has not been fully tested yet.
+-   **Known regressions:** None.
 
 **Credentials to test flow:**
 -   **Email:** 
 -   **Password:** 
 
 **What agent forgot to execute**
--   The agent correctly deferred building the See All pages as per user instruction, but this remains the next logical task.
--   The frontend UI for initiating a Sweetener payment for trades has not been built.</analysis>
+-   The agent is in the middle of a large, user-directed feature implementation. Nothing has been forgotten, but the task is complex and only partially started.</analysis>

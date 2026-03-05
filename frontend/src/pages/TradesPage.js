@@ -352,12 +352,12 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
             <div className="flex items-start gap-3">
               <div className="flex-1">
                 <p className="text-[10px] text-muted-foreground mb-1">@{trade.initiator?.username} {isInitiator ? '(you)' : ''} offers</p>
-                <RecordDetail record={trade.offered_record} />
+                <RecordDetail record={trade.offered_record} condition={trade.offered_condition} photoUrls={trade.offered_photo_urls} />
               </div>
               <div className="flex flex-col items-center pt-6"><ArrowRightLeft className="w-5 h-5 text-honey" /></div>
               <div className="flex-1">
                 <p className="text-[10px] text-muted-foreground mb-1">@{trade.responder?.username} {!isInitiator ? '(you)' : ''} has</p>
-                <RecordDetail record={trade.listing_record} />
+                <RecordDetail record={trade.listing_record} condition={trade.listing_record?.condition} photoUrls={trade.listing_record?.photo_urls} />
               </div>
             </div>
           </div>
@@ -684,23 +684,40 @@ const PhotoUploadMini = ({ photos, setPhotos, label }) => {
   );
 };
 
-const RecordDetail = ({ record }) => (
+const RecordDetail = ({ record, condition, photoUrls }) => (
   <div className="bg-white rounded-lg p-2 border border-honey/20">
-    {record?.cover_url ? (
+    {photoUrls?.length > 0 ? (
+      <div className="relative">
+        <img src={photoUrls[0]} alt="" className="w-full aspect-square rounded-lg object-cover mb-2" />
+        {photoUrls.length > 1 && (
+          <div className="flex gap-1 mt-1 overflow-x-auto pb-1">
+            {photoUrls.slice(1).map((url, i) => (
+              <img key={i} src={url} alt="" className="w-10 h-10 rounded object-cover border border-honey/20 shrink-0" />
+            ))}
+          </div>
+        )}
+      </div>
+    ) : record?.cover_url ? (
       <img src={record.cover_url} alt="" className="w-full aspect-square rounded-lg object-cover mb-2" />
     ) : (
       <div className="w-full aspect-square rounded-lg bg-honey/10 flex items-center justify-center mb-2"><Disc className="w-8 h-8 text-honey" /></div>
     )}
     <p className="text-sm font-heading truncate">{record?.title || record?.album || 'Unknown'}</p>
     <p className="text-xs text-muted-foreground truncate">{record?.artist || ''}</p>
+    {condition && <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-honey/20 text-honey-amber">{condition}</span>}
   </div>
 );
 
 // ======= Propose Trade Modal (exported for ISOPage) =======
+const OFFER_CONDITIONS = ['Mint', 'Near Mint', 'Very Good Plus', 'Very Good', 'Good Plus', 'Good', 'Fair'];
+
 export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onSuccess }) => {
   const { user: currentUser } = useAuth();
   const [records, setRecords] = useState([]);
   const [selectedRecordId, setSelectedRecordId] = useState('');
+  const [offeredCondition, setOfferedCondition] = useState('');
+  const [offeredPhotos, setOfferedPhotos] = useState([]);
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [bootAmount, setBootAmount] = useState('');
   const [bootDirection, setBootDirection] = useState('TO_SELLER');
   const [message, setMessage] = useState('');
@@ -715,22 +732,52 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
     }
   }, [open, API, token, currentUser?.username]);
 
+  const handlePhotoSelect = (e) => {
+    const files = Array.from(e.target.files || []);
+    const remaining = 5 - offeredPhotos.length;
+    if (remaining <= 0) { toast.error('Maximum 5 photos'); return; }
+    const toAdd = files.slice(0, remaining).map(f => ({ file: f, preview: URL.createObjectURL(f) }));
+    setOfferedPhotos(prev => [...prev, ...toAdd]);
+  };
+
+  const removePhoto = (idx) => {
+    setOfferedPhotos(prev => { const r = prev[idx]; if (r.preview) URL.revokeObjectURL(r.preview); return prev.filter((_, i) => i !== idx); });
+  };
+
   const handlePropose = async () => {
     if (!selectedRecordId) { toast.error('Select a record to offer'); return; }
+    if (!offeredCondition) { toast.error('Select the condition of your record'); return; }
+    if (offeredPhotos.length === 0) { toast.error('Add at least 1 photo of your record'); return; }
     setLoading(true);
     try {
+      // Upload photos first
+      setUploadingPhotos(true);
+      const photoUrls = [];
+      for (const photo of offeredPhotos) {
+        const fd = new FormData(); fd.append('file', photo.file);
+        const r = await axios.post(`${API}/upload`, fd, { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } });
+        photoUrls.push(r.data.path);
+      }
+      setUploadingPhotos(false);
+
       await axios.post(`${API}/trades`, {
         listing_id: listing.id, offered_record_id: selectedRecordId,
+        offered_condition: offeredCondition,
+        offered_photo_urls: photoUrls,
         boot_amount: bootAmount ? parseFloat(bootAmount) : null,
         boot_direction: bootAmount ? bootDirection : null,
         message: message || null,
       }, { headers: { Authorization: `Bearer ${token}` } });
       toast.success('Trade proposed!'); onOpenChange(false); onSuccess?.();
-    } catch (err) { toast.error(err.response?.data?.detail || 'Failed'); }
+    } catch (err) { toast.error(err.response?.data?.detail || 'Failed'); setUploadingPhotos(false); }
     finally { setLoading(false); }
   };
 
-  const reset = () => { setSelectedRecordId(''); setBootAmount(''); setBootDirection('TO_SELLER'); setMessage(''); };
+  const reset = () => {
+    setSelectedRecordId(''); setOfferedCondition(''); setBootAmount(''); setBootDirection('TO_SELLER'); setMessage('');
+    offeredPhotos.forEach(p => p.preview && URL.revokeObjectURL(p.preview));
+    setOfferedPhotos([]);
+  };
 
   return (
     <Dialog open={open} onOpenChange={(o) => { if (!o) reset(); onOpenChange(o); }}>
@@ -764,6 +811,41 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
               </Select>
             )}
           </div>
+
+          {/* Condition selection */}
+          <div>
+            <p className="text-xs font-medium text-muted-foreground mb-2">CONDITION <span className="text-red-400">*</span></p>
+            <div className="flex flex-wrap gap-1.5">
+              {OFFER_CONDITIONS.map(c => (
+                <button key={c} onClick={() => setOfferedCondition(c)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${offeredCondition === c ? 'bg-honey text-vinyl-black shadow-sm ring-2 ring-honey/50' : 'bg-honey/10 text-muted-foreground hover:bg-honey/20'}`}
+                  data-testid={`offer-condition-${c.toLowerCase().replace(/\s+/g, '-')}`}>{c}</button>
+              ))}
+            </div>
+          </div>
+
+          {/* Photo upload */}
+          <div>
+            <p className="text-xs font-medium text-muted-foreground mb-2">PHOTOS <span className="text-red-400">*</span> <span className="font-normal">(1-5 of your record)</span></p>
+            <div className="flex gap-2 flex-wrap">
+              {offeredPhotos.map((p, i) => (
+                <div key={i} className="relative w-16 h-16 rounded-lg overflow-hidden border border-honey/30 group">
+                  <img src={p.preview} alt="" className="w-full h-full object-cover" />
+                  <button onClick={() => removePhoto(i)} className="absolute top-0.5 right-0.5 bg-black/60 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity" data-testid={`remove-offer-photo-${i}`}>
+                    <X className="w-3 h-3 text-white" />
+                  </button>
+                </div>
+              ))}
+              {offeredPhotos.length < 5 && (
+                <label className="w-16 h-16 rounded-lg border-2 border-dashed border-honey/40 flex flex-col items-center justify-center cursor-pointer hover:border-honey hover:bg-honey/5 transition-all" data-testid="add-offer-photo-btn">
+                  <Camera className="w-4 h-4 text-honey mb-0.5" />
+                  <span className="text-[9px] text-muted-foreground">{offeredPhotos.length}/5</span>
+                  <input type="file" accept="image/*" multiple onChange={handlePhotoSelect} className="hidden" />
+                </label>
+              )}
+            </div>
+          </div>
+
           <div>
             <p className="text-xs font-medium text-muted-foreground mb-2">SWEETENER <span className="font-normal">(cash on top, optional)</span></p>
             <div className="grid grid-cols-2 gap-2">
@@ -779,12 +861,11 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
                 </SelectContent>
               </Select>
             </div>
-            <p className="text-[10px] text-muted-foreground mt-1">add a sweetener to the trade.</p>
           </div>
           <Textarea placeholder="Message to seller (optional)" value={message} onChange={e => setMessage(e.target.value)} className="border-honey/50 resize-none" rows={2} data-testid="trade-message-input" />
-          <Button onClick={handlePropose} disabled={loading || !selectedRecordId} className="w-full bg-honey text-vinyl-black hover:bg-honey-amber rounded-full" data-testid="trade-propose-btn">
+          <Button onClick={handlePropose} disabled={loading || !selectedRecordId || !offeredCondition || offeredPhotos.length === 0} className="w-full bg-honey text-vinyl-black hover:bg-honey-amber rounded-full" data-testid="trade-propose-btn">
             {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <ArrowRightLeft className="w-4 h-4 mr-2" />}
-            Propose Trade
+            {uploadingPhotos ? 'Uploading photos...' : 'Propose Trade'}
           </Button>
         </div>
       </DialogContent>
