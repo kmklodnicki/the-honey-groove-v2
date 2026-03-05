@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
 import { toast } from 'sonner';
+import DiscogsImport from '../components/DiscogsImport';
 
 const SORT_OPTIONS = [
   { value: 'artist_asc', label: 'Artist A → Z' },
@@ -44,11 +45,7 @@ const CollectionPage = () => {
   const [sortBy, setSortBy] = useState('newest');
   const [spinningRecordId, setSpinningRecordId] = useState(null);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [recordsRes, spinsRes] = await Promise.all([
         axios.get(`${API}/records`, {
@@ -66,7 +63,11 @@ const CollectionPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [API, token]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleLogSpin = async (record) => {
     setSpinningRecordId(record.id);
@@ -199,7 +200,7 @@ const CollectionPage = () => {
       </div>
 
       {/* Search and Sort Controls */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
@@ -223,6 +224,11 @@ const CollectionPage = () => {
             ))}
           </SelectContent>
         </Select>
+      </div>
+
+      {/* Discogs Import */}
+      <div className="mb-6">
+        <DiscogsImport onImportComplete={fetchData} />
       </div>
 
       {records.length === 0 ? (

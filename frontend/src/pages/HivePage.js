@@ -11,6 +11,7 @@ import { Heart, MessageCircle, Share2, Disc, Package, BarChart3, Send, ChevronDo
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '../components/ui/dialog';
@@ -452,6 +453,7 @@ const PostCard = ({ post, onLike, onCommentCountChange, getPostIcon, getPostLabe
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="font-heading">Share This Spin</DialogTitle>
+            <DialogDescription>Choose a format for your shareable graphic</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <p className="text-sm text-muted-foreground">Choose a format for your shareable graphic:</p>
