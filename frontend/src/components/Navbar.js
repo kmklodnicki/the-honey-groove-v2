@@ -57,13 +57,13 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-honey/30">
       <div className="max-w-6xl mx-auto px-4 md:px-8">
-        <div className="flex items-center justify-between h-[66px]">
+        <div className="flex items-center justify-between h-[88px]">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group" data-testid="nav-logo">
             <img 
               src="/logo-wordmark.png" 
               alt="the Honey Groove" 
-              className="h-[52px] group-hover:scale-105 transition-transform"
+              className="h-[104px] group-hover:scale-105 transition-transform"
             />
           </Link>
 
@@ -132,14 +132,6 @@ const Navbar = () => {
                   <DropdownMenuItem onClick={() => navigate(`/profile/${user.username}`)} data-testid="menu-profile">
                     <User className="mr-2 h-4 w-4" />
                     Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/collection')} data-testid="menu-collection">
-                    <Library className="mr-2 h-4 w-4" />
-                    My Collection
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/trades')} data-testid="menu-trades">
-                    <ArrowRightLeft className="mr-2 h-4 w-4" />
-                    My Trades
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/settings')} data-testid="menu-settings">
                     <Settings className="mr-2 h-4 w-4" />
