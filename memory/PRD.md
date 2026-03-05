@@ -54,6 +54,12 @@ The Hive — Explore — Collection — The Honeypot
 42. **The Mood Board** — Auto-generated 3x3 album art grid from most-spun records. Manual generation with time range pills (This Week, This Month, All Time). Profile page tab. 1080x1080 PNG export via Pillow. Weekly scheduler. Discogs cover caching. Backend: /api/mood-boards/* endpoints. (Mar 2026)
 43. **Collector Bingo** — Weekly 5x5 bingo card with collector-themed challenges. Interactive marking, bingo detection (rows/cols/diagonals), celebration animation, free center space. 1080x1920 PNG export (Instagram Story). Friday-to-Sunday weekly cycle. 25 seed squares. Admin square pool manager. Community stats (% of the hive) after lock. Compact preview widget + full-screen modal. Locked state: greyed card + countdown to next Friday. Active state: countdown strip with urgency styling (24h/1h thresholds). Auto-lock animation. Backend: /api/bingo/* endpoints. Explore page section. (Mar 2026)
 44. **A Note Post Type** — Free-form 280-char text post on The Hive. Minimal composer with optional record tag and single image upload. No category badge on feed. Fourth chip on composer bar (outlined pill, feather icon). Backend: POST /api/composer/note. Likeable, commentable, shareable. (Mar 2026)
+45. **Global Search** — Nav search dialog with 3 tabs (Records via Discogs, Collectors via user search, Posts via caption search). Live search after 2 chars, recent searches (localStorage, max 8). Desktop: Explore button opens dialog. (Mar 2026)
+46. **Onboarding Flow** — 3-step modal for new users: Step 1 (add 3 records from Discogs), Step 2 (follow 1 collector from suggestions), Step 3 (optional first Now Spinning post). Welcome banner on first Hive visit. (Mar 2026)
+47. **Profile Fields** — Bio (160 chars), Setup (100 chars, turntable/gear), Location (city/country), Favorite Genre (20 genres dropdown). Editable from Settings, displayed on public profile. (Mar 2026)
+48. **Founding Member Badge** — Auto-assigned to first 500 users. Honeycomb icon next to username in Hive posts. Founding member italic badge on profile. Permanent. (Mar 2026)
+49. **Report & Block System** — POST /api/reports with type (post/listing/user), reason, notes. Admin queue at GET /api/reports/admin with status toggle. (Mar 2026)
+50. **Empty States** — Thoughtful empty states for Hive, Collection, Wantlist, Honeypot, Notifications, DMs, Search with CTAs. (Mar 2026)
 
 ## Code Architecture
 ```
@@ -94,17 +100,21 @@ COMPLETED → Mandatory rating before next trade
 ```
 
 ## Upcoming Tasks
-- **P1: Admin Panel** — UI for managing Daily Prompts and Bingo Squares. Streak tracking logic and nudge notifications for Daily Prompt. Integrate Daily Prompt data into Week in Wax report.
-- **P1: Sweetener UI** — Frontend for trade cash payments (backend endpoint exists at /api/trades/{id}/pay-sweetener)
+- **P1: Record Detail Page** — New page with Discogs art header, market value, community ownership, Now Spinning posts, active Honeypot listings
+- **P1: Phase B — Mood Board to Hive sharing** (post to feed, composer modal, mood board post type)
+- **P1: Phase C — Mobile nav overhaul** (top header 56px + bottom nav 64px + safe area inset)
+- **P1: Admin Panel** — UI for managing Daily Prompts, Bingo Squares, and Reports queue
+- **P1: Sweetener UI** — Frontend for trade cash payments
 - **P1: Push Notifications** — Service worker-based browser push
 - **P2: Discogs Import** — Bulk collection import
-- **P2: Refactor ISOPage.js** — Break monolithic 3-tab component into ShopTab/TradeTab/ISOTab
+- **P2: Refactor ISOPage.js** — Break monolithic 3-tab component
 - **P2: Monetization** — Pro membership, Verified Seller badge
 - **P2: Hauls Enhancement** — Dedicated hauls page
 
 ## Data Model
 ```
-users, posts, records, spins, hauls, iso_items,
+users (bio, setup, location, favorite_genre, founding_member, onboarding_completed),
+posts, records, spins, hauls, iso_items,
 listings (photo_urls[], condition),
 likes, comments, followers,
 trades (offered_condition, offered_photo_urls[]),
@@ -115,7 +125,8 @@ collection_values, wax_reports,
 prompts, prompt_responses, image_cache,
 newsletter_subscribers,
 bingo_squares, bingo_cards, bingo_marks,
-mood_boards
+mood_boards,
+reports (type, target_id, reason, status)
 ```
 
 ## Test Credentials
