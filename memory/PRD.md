@@ -12,10 +12,12 @@ A social platform for vinyl collectors called **The HoneyGroove** — the vinyl 
 2. **The Hive** — Social feed with composer bar (Now Spinning, New Haul, ISO, Vinyl Mood)
 3. **Explore** — Discovery page with Feed/People tabs
 4. **Collection** — Personal vinyl library with sorting + Discogs import + Add Record
-5. **ISO & Market** — Vinyl wish list, peer-to-peer marketplace with required photos, Stripe payments
-6. **My Trades** — Full trade management (Active/History tabs, detail modal)
-7. **Profile** — 4 tabs: Collection, ISO, Spinning, Trades + Stripe Connect status
-8. **Admin Disputes** — Admin-only dispute review dashboard with resolve modal
+5. **The Honeypot** — 3-tab marketplace: Shop (Buy/Offer), ISO (Hunt List + Community Hunt), Trade (Active Trades + Browse Trades)
+6. **Profile** — 4 tabs: Collection, ISO, Spinning, Trades + Stripe Connect status
+7. **Admin Disputes** — Admin-only dispute review dashboard with resolve modal
+
+## Navigation
+The Hive — Explore — Collection — The Honeypot
 
 ## Implemented Features
 1-14: Auth, Collection, Discogs Import, Feed, Composer, Post Cards, Comments/Likes, Shareable Graphics, Sorting, Profile Photos, ISO Page, Profile Tabs, Following System, Explore
@@ -28,6 +30,7 @@ A social platform for vinyl collectors called **The HoneyGroove** — the vinyl 
 21. **Stripe Payment Execution** — Buy Now & Make Offer checkout flow with return handling
 22. **Admin Dispute Dashboard** — Full UI with Open/Resolved tabs, dispute cards, resolve modal
 23. **Browser Push Notifications** — Desktop notifications via Notification API for real-time alerts
+24. **The Honeypot Rebrand** — Renamed Marketplace → The Honeypot, restructured into 3-tab layout (Shop/ISO/Trade), dynamic CTA/modal titles, community ISO feed with "I have this" button, active trades with status badges
 
 ## Trade Status Machine
 ```
