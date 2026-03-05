@@ -143,6 +143,7 @@ const LandingPage = () => {
               className="h-12"
             />
             <div className="flex items-center gap-6">
+              <Link to="/about" className="text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors" data-testid="footer-about-link">About</Link>
               <Link to="/faq" className="text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors" data-testid="footer-faq-link">FAQ</Link>
               <p className="text-sm text-vinyl-black/50">
                 &copy; 2026 the Honey Groove. Made with love for vinyl collectors.

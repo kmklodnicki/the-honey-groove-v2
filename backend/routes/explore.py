@@ -254,6 +254,125 @@ async def get_trending_records(limit: int = 12, user: Dict = Depends(require_aut
     return result
 
 
+@router.get("/explore/trending/{record_id}/posts")
+async def get_trending_record_posts(record_id: str, limit: int = 20, user: Dict = Depends(require_auth)):
+    """Get Now Spinning posts for a specific record"""
+    record = await db.records.find_one({"id": record_id}, {"_id": 0})
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found")
+    # Find all records with same discogs_id or same artist+title
+    query = {"$or": [{"id": record_id}]}
+    if record.get("discogs_id"):
+        sibling_ids = await db.records.find({"discogs_id": record["discogs_id"]}, {"_id": 0, "id": 1}).to_list(200)
+        query = {"$or": [{"id": {"$in": [s["id"] for s in sibling_ids]}}]}
+    else:
+        sibling_ids = await db.records.find(
+            {"artist": record["artist"], "title": record["title"]}, {"_id": 0, "id": 1}
+        ).to_list(200)
+        query = {"$or": [{"id": {"$in": [s["id"] for s in sibling_ids]}}]}
+    all_ids = [s["id"] for s in sibling_ids] if sibling_ids else [record_id]
+    posts = await db.posts.find(
+        {"post_type": "NOW_SPINNING", "record_id": {"$in": all_ids}}, {"_id": 0}
+    ).sort("created_at", -1).limit(limit).to_list(limit)
+    user_ids = list({p["user_id"] for p in posts})
+    users_map = {}
+    if user_ids:
+        ul = await db.users.find({"id": {"$in": user_ids}}, {"_id": 0, "password_hash": 0}).to_list(200)
+        users_map = {u["id"]: {"id": u["id"], "username": u.get("username"), "avatar_url": u.get("avatar_url")} for u in ul}
+    for p in posts:
+        p["user"] = users_map.get(p["user_id"])
+    return {"record": record, "posts": posts}
+
+
+@router.get("/explore/fresh-pressings")
+async def get_fresh_pressings(limit: int = 12, user: Dict = Depends(require_auth)):
+    """Search Discogs for current year vinyl releases"""
+    import datetime as dt
+    year = dt.datetime.now().year
+    results = search_discogs(f"year:{year}", search_type="release")
+    # Filter to vinyl format
+    vinyl_results = []
+    for r in results:
+        formats = r.get("format", [])
+        if isinstance(formats, list) and any("vinyl" in f.lower() for f in formats):
+            vinyl_results.append(r)
+        elif not formats or len(vinyl_results) < limit:
+            vinyl_results.append(r)
+        if len(vinyl_results) >= limit:
+            break
+    return vinyl_results[:limit]
+
+
+@router.get("/explore/most-wanted")
+async def get_most_wanted(limit: int = 20, user: Dict = Depends(require_auth)):
+    """Top 20 most wanted records across all wantlists"""
+    pipeline = [
+        {"$match": {"status": "OPEN"}},
+        {"$group": {
+            "_id": {"artist": "$artist", "album": "$album"},
+            "count": {"$sum": 1},
+            "cover_url": {"$first": "$cover_url"},
+            "discogs_id": {"$first": "$discogs_id"},
+            "year": {"$first": "$year"},
+        }},
+        {"$sort": {"count": -1}},
+        {"$limit": limit},
+    ]
+    agg = await db.iso_items.aggregate(pipeline).to_list(limit)
+    results = []
+    for item in agg:
+        results.append({
+            "artist": item["_id"]["artist"],
+            "album": item["_id"]["album"],
+            "cover_url": item.get("cover_url"),
+            "discogs_id": item.get("discogs_id"),
+            "year": item.get("year"),
+            "want_count": item["count"],
+        })
+    return results
+
+
+@router.get("/explore/near-you")
+async def get_near_you(user: Dict = Depends(require_auth)):
+    """Get collectors and listings in the same city/region"""
+    my_city = user.get("city", "").strip().lower()
+    my_region = user.get("region", "").strip().lower()
+    if not my_city and not my_region:
+        return {"collectors": [], "listings": [], "needs_location": True}
+
+    query = {"id": {"$ne": user["id"]}}
+    conditions = []
+    if my_city:
+        conditions.append({"city": {"$regex": f"^{my_city}$", "$options": "i"}})
+    if my_region:
+        conditions.append({"region": {"$regex": f"^{my_region}$", "$options": "i"}})
+    if conditions:
+        query["$or"] = conditions
+
+    nearby_users = await db.users.find(query, {"_id": 0, "password_hash": 0}).limit(20).to_list(20)
+    collectors = []
+    for u in nearby_users:
+        rec_count = await db.records.count_documents({"user_id": u["id"]})
+        listing_count = await db.listings.count_documents({"user_id": u["id"], "status": "ACTIVE"})
+        collectors.append({
+            "id": u["id"], "username": u.get("username"), "avatar_url": u.get("avatar_url"),
+            "city": u.get("city"), "region": u.get("region"),
+            "collection_count": rec_count, "active_listings": listing_count,
+        })
+
+    nearby_ids = [u["id"] for u in nearby_users]
+    listings = []
+    if nearby_ids:
+        listings = await db.listings.find(
+            {"user_id": {"$in": nearby_ids}, "status": "ACTIVE"}, {"_id": 0}
+        ).sort("created_at", -1).limit(10).to_list(10)
+        for l in listings:
+            seller = next((u for u in collectors if u["id"] == l["user_id"]), None)
+            l["user"] = {"username": seller["username"], "city": seller.get("city")} if seller else None
+
+    return {"collectors": collectors, "listings": listings, "needs_location": False}
+
+
 @router.get("/explore/recent-hauls")
 async def get_recent_hauls(limit: int = 10, user: Dict = Depends(require_auth)):
     """Recent haul posts from the community"""
@@ -293,6 +412,7 @@ async def get_suggested_collectors(limit: int = 10, user: Dict = Depends(require
     pipeline = [
         {"$match": {"artist": {"$in": my_artists[:20]}, "user_id": {"$nin": list(following_ids)}}},
         {"$group": {"_id": "$user_id", "overlap": {"$sum": 1}}},
+        {"$match": {"overlap": {"$gte": 3}}},
         {"$sort": {"overlap": -1}},
         {"$limit": limit},
     ]

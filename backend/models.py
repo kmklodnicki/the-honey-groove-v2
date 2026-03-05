@@ -19,6 +19,8 @@ class UserResponse(BaseModel):
     username: str
     avatar_url: Optional[str] = None
     bio: Optional[str] = None
+    city: Optional[str] = None
+    region: Optional[str] = None
     created_at: str
     collection_count: int = 0
     spin_count: int = 0
@@ -29,6 +31,8 @@ class UserUpdate(BaseModel):
     username: Optional[str] = None
     bio: Optional[str] = None
     avatar_url: Optional[str] = None
+    city: Optional[str] = None
+    region: Optional[str] = None
 
 class TokenResponse(BaseModel):
     access_token: str

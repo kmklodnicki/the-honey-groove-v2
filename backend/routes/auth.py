@@ -85,6 +85,8 @@ async def login(credentials: UserLogin):
             username=user["username"],
             avatar_url=user.get("avatar_url"),
             bio=user.get("bio"),
+            city=user.get("city"),
+            region=user.get("region"),
             created_at=user["created_at"],
             collection_count=collection_count,
             spin_count=spin_count,
@@ -106,6 +108,8 @@ async def get_me(user: Dict = Depends(require_auth)):
         username=user["username"],
         avatar_url=user.get("avatar_url"),
         bio=user.get("bio"),
+        city=user.get("city"),
+        region=user.get("region"),
         created_at=user["created_at"],
         collection_count=collection_count,
         spin_count=spin_count,
@@ -125,6 +129,10 @@ async def update_me(update_data: UserUpdate, user: Dict = Depends(require_auth))
         update_fields["bio"] = update_data.bio
     if update_data.avatar_url is not None:
         update_fields["avatar_url"] = update_data.avatar_url
+    if update_data.city is not None:
+        update_fields["city"] = update_data.city
+    if update_data.region is not None:
+        update_fields["region"] = update_data.region
     
     if update_fields:
         await db.users.update_one({"id": user["id"]}, {"$set": update_fields})
@@ -142,6 +150,8 @@ async def update_me(update_data: UserUpdate, user: Dict = Depends(require_auth))
         username=updated_user["username"],
         avatar_url=updated_user.get("avatar_url"),
         bio=updated_user.get("bio"),
+        city=updated_user.get("city"),
+        region=updated_user.get("region"),
         created_at=updated_user["created_at"],
         collection_count=collection_count,
         spin_count=spin_count,
@@ -214,6 +224,8 @@ async def get_user_profile(username: str, current_user: Optional[Dict] = Depends
         username=user["username"],
         avatar_url=user.get("avatar_url"),
         bio=user.get("bio"),
+        city=user.get("city"),
+        region=user.get("region"),
         created_at=user["created_at"],
         collection_count=collection_count,
         spin_count=spin_count,

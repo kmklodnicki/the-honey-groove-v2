@@ -22,6 +22,7 @@ import TradesPage from "./pages/TradesPage";
 import AdminDisputesPage from "./pages/AdminDisputesPage";
 import MessagesPage from "./pages/MessagesPage";
 import FAQPage from "./pages/FAQPage";
+import AboutPage from "./pages/AboutPage";
 
 // Protected Route wrapper
 const ProtectedRoute = ({ children }) => {
@@ -165,6 +166,7 @@ function AppContent() {
 
       {/* Public pages */}
       <Route path="/faq" element={<FAQPage />} />
+      <Route path="/about" element={<AboutPage />} />
 
       {/* Catch all */}
       <Route path="*" element={<Navigate to="/" replace />} />
