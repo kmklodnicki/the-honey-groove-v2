@@ -46,6 +46,11 @@ The Hive — Explore — Collection — The Honeypot
 34. **Trade Condition & Photo Requirements** — Trade proposals and trade-only listings now require condition selection (7 grades) and photo uploads (1-5). TradeDetailModal displays condition badges and photo galleries for both records in the exchange. (Feb 2026)
 35. **ComposerBar Discogs ISO Search** — The ISO posting modal in ComposerBar now has Discogs search integration. Users can search Discogs for albums, select a result (with cover art), or enter manually. Discogs data (discogs_id, cover_url, year) is sent with ISO posts. (Feb 2026)
 36. **Official Logo & Branding Update** — Replaced all HoneyGroove wordmarks with official logo assets. Full drip logo on hero + loading screen, wordmark on navbar/login/signup/footer. Updated favicon and page title. Updated all 6 feature card descriptions with final copy. (Feb 2026)
+37. **Daily Prompt** — Daily rotating prompt card at top of Hive feed, buzz-in flow with Discogs high-res art, export card generation (1080x1080 Pillow), streak tracking with profile badge, admin prompt manager. 30 prompts seeded. (Mar 2026)
+38. **Newsletter System** — Landing page newsletter section ("stay in the loop"), 30s delayed popup for non-logged-in visitors, Settings page toggle ("The Weekly Wax"), newsletter_subscribers collection. No 3rd party email integration yet. (Mar 2026)
+39. **Landing Page Enhancements** — CTA "join the hive" (lowercase), bee bridge emoji, tightened logo-headline spacing, larger footer wordmark (180-200px). (Mar 2026)
+40. **Nav Sizing Update** — Wordmark increased to h-[52px], nav height to h-[66px] for visual presence. (Mar 2026)
+41. **Wax Report Story Card** — Export card updated from 1080x1080 to 1080x1920 vertical format (Instagram Stories). Redistributed layout: header, personality label, top 5 artists, stats, eras, vinyl moods, collection value, closing line, footer. Playfair Display + Cormorant Garamond typography. Warm cream background with subtle amber radial glows. (Mar 2026)
 
 ## Code Architecture
 ```
@@ -106,7 +111,8 @@ trade_messages, trade_shippings, trade_disputes, trade_ratings,
 notifications, payment_transactions,
 dm_conversations, dm_messages,
 collection_values, wax_reports,
-prompts, prompt_responses, image_cache
+prompts, prompt_responses, image_cache,
+newsletter_subscribers
 ```
 
 ## Test Credentials
