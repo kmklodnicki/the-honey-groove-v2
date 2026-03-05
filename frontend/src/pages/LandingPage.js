@@ -14,32 +14,32 @@ const LandingPage = () => {
     {
       icon: <Disc className="w-6 h-6" />,
       title: "Track Your Collection",
-      description: "Add records with album art from Discogs. Keep notes, track spins, and watch your collection grow.",
+      description: "Add records with album art pulled from Discogs. Log every press, note conditions, and watch your collection grow — and appreciate in value.",
     },
     {
       icon: <Music2 className="w-6 h-6" />,
       title: "Now Spinning",
-      description: "Record every time you drop the needle. Build your listening history and share the moment with your people.",
+      description: "Drop the needle, share the moment. Log your spin, pick a mood, and let your people know exactly what you're feeling right now.",
     },
     {
       icon: <ShoppingBag className="w-6 h-6" />,
       title: "New Haul",
-      description: "Show off every find to people who actually understand what it means. Record store day never felt so good.",
+      description: "Record store day. Thrift score. eBay win. Show off every find to people who actually understand why it matters.",
     },
     {
       icon: <Search className="w-6 h-6" />,
       title: "ISO",
-      description: "Post what you've been searching for years. Get matched with collectors who have it.",
+      description: "Been hunting something for years? Post it. Get matched with collectors who have it and reach out directly.",
     },
     {
       icon: <ArrowLeftRight className="w-6 h-6" />,
       title: "Trade",
-      description: "Swap records directly with collectors. Propose a trade, negotiate, ship, confirm. No fees. Just the community.",
+      description: "Offer a record from your collection, add a sweetener if needed, and swap directly with collectors. No middleman. Just the community.",
     },
     {
       icon: <Share2 className="w-6 h-6" />,
       title: "Shareable Graphics",
-      description: "Create beautiful Now Spinning and Haul cards to share on Instagram and social media.",
+      description: "Generate beautiful Now Spinning and Haul cards built for Instagram. One tap, ready to post.",
     },
   ];
 
@@ -54,7 +54,7 @@ const LandingPage = () => {
             {/* Logo */}
             <div className="flex justify-center mb-8">
               <img
-                src="https://customer-assets.emergentagent.com/job_vinyl-social-2/artifacts/n8vjxmsv_honey-groove-transparent.png"
+                src="/logo-drip.png"
                 alt="the Honey Groove"
                 className="h-48 md:h-56 lg:h-64"
               />
@@ -138,7 +138,7 @@ const LandingPage = () => {
         <div className="max-w-6xl mx-auto px-4 md:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <img
-              src="https://customer-assets.emergentagent.com/job_vinyl-social-2/artifacts/n8vjxmsv_honey-groove-transparent.png"
+              src="/logo-wordmark.png"
               alt="the Honey Groove"
               className="h-12"
             />

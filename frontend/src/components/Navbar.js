@@ -61,9 +61,9 @@ const Navbar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group" data-testid="nav-logo">
             <img 
-              src="https://customer-assets.emergentagent.com/job_vinyl-social-2/artifacts/n8vjxmsv_honey-groove-transparent.png" 
+              src="/logo-wordmark.png" 
               alt="the Honey Groove" 
-              className="h-20 group-hover:scale-105 transition-transform"
+              className="h-14 group-hover:scale-105 transition-transform"
             />
           </Link>
 
@@ -250,7 +250,7 @@ const NotificationBell = () => {
             const n = latest.data[0];
             new Notification('The HoneyGroove', {
               body: n.body || n.title || 'You have a new notification',
-              icon: 'https://customer-assets.emergentagent.com/job_vinyl-social-2/artifacts/n8vjxmsv_honey-groove-transparent.png',
+              icon: '/favicon.png',
               tag: n.id,
             });
           }
