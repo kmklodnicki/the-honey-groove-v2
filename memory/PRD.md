@@ -12,7 +12,7 @@ A social platform for vinyl collectors called **The Honey Groove** — the vinyl
 1. **The Hive** — Social feed with composer bar (Now Spinning, New Haul, ISO, Vinyl Mood)
 2. **Explore** — Discovery page with Feed tab and People tab (search + suggestions)
 3. **Collection** — Personal vinyl library with sorting + Discogs import
-4. **ISO** — Standalone vinyl wish list with tags, filters, stats
+4. **ISO & Market** — Vinyl wish list (ISO), peer-to-peer marketplace listings with photos
 5. **Profile** — 4 tabs: Collection, ISO, Spinning, Trades
 
 ## Implemented Features
@@ -30,13 +30,18 @@ A social platform for vinyl collectors called **The Honey Groove** — the vinyl
 12. Profile 4 tabs (Collection, ISO, Spinning, Trades)
 13. Friends/Following — follow/unfollow, follower/following list modals, suggested users, user search
 14. Explore People tab with search and suggestions
+15. **Vinyl Mood Overhaul** — 12 moods with emojis, dynamic modal background colors, animated selection (scale bounce), mood-specific button text/color/placeholder, mood-colored feed cards
+16. **Marketplace Photo Upload** — Listings require 1-10 uploaded photos with gallery carousel in listing cards
 
 ## Upcoming
-- **P3: The Market** — Peer-to-peer marketplace (ISO Matches, Browse All, Buy/Offer/Trade)
-- **P3: Design Overhaul** — New color palette, fonts (Playfair Display, Cormorant Garamond), color-coded badges
-- **P4: Stripe Connect** — Escrow payments, identity verification, tracking, disputes
-- **P5: Notifications** — ISO matches, likes, offers, payouts
-- **P5: Monetization** — Pro membership flag, 4% transaction fee, verified seller badge
+- **P0: Stripe Connect** — Escrow payments, seller identity verification, payout release for marketplace
+- **P1: Trades Feature** — Full backend + UI for Trades tab (propose, accept/decline, history)
+- **P1: Notifications** — ISO matches, likes, offers, payouts
+- **P2: Explore Enhancements** — Trending records, active ISO listings alongside People tab
+- **P2: Hauls Feature** — Dedicated hauls page beyond the composer post
+- **P2: HoneyGroove Weekly** — Weekly summary aggregation + display
+- **P2: Monetization** — Pro membership, 4% transaction fee, Verified Seller badge
+- **P2: Design Overhaul** — New color palette, fonts (Playfair Display, Cormorant Garamond), color-coded badges
 
 ## Data Model
 ```
@@ -45,6 +50,7 @@ records: id, user_id, discogs_id, artist, title, cover_url, year, format, notes,
 spins: id, user_id, record_id, notes, created_at
 hauls: id, user_id, store_name, title, description, image_url, items[], created_at
 iso_items: id, user_id, artist, album, tags[], pressing_notes, condition_pref, target_price_min, target_price_max, status, created_at, found_at
+listings: id, user_id, artist, album, discogs_id, cover_url, year, condition, pressing_notes, listing_type, price, description, photo_urls[], status, created_at
 likes: id, user_id, post_id, created_at
 comments: id, user_id, post_id, content, created_at
 followers: follower_id, following_id, created_at
@@ -52,4 +58,20 @@ followers: follower_id, following_id, created_at
 
 ## Test Credentials
 - Email: demo@example.com / Password: password123
-- Demo user: 148 records, 7 spins, 5+ ISOs, following 3 users
+- Demo user: 148 records, 7 spins, 5+ ISOs, following 5 users
+
+## Vinyl Mood Config (12 Moods)
+| Mood | Emoji | Background | Button Color | Placeholder |
+|------|-------|-----------|-------------|-------------|
+| Late Night | 🕯️ | #1a1230 | #6a3a9a | what are you listening to at this hour? |
+| Sunday Morning | ☀️ | #fff8e8 | #e8a820 | slow mornings, good records, nowhere to be... |
+| Rainy Day | 🌧️ | #1a2a3a | #4a7aaa | set the scene... |
+| Road Trip | 🚗 | #1a2a1a | #4a8a4a | where are you headed? |
+| Golden Hour | 🌅 | #2a1a08 | #c8861a | the light is perfect right now... |
+| Deep Focus | 🎧 | #0a1a0a | #2a6a2a | what are you working on? |
+| Party Mode | 🥂 | #1a0a2a | #aa3a8a | who's coming over? |
+| Lazy Afternoon | 🛋️ | #2a1a0a | #aa7a3a | not moving from this spot... |
+| Melancholy | 💔 | #1a1a2a | #5a5a8a | some records just hit different... |
+| Upbeat Vibes | ✨ | #1a2a1a | #3a9a5a | what's got you feeling good? |
+| Cozy Evening | 🧸 | #2a1808 | #aa5a2a | candles lit, record spinning... |
+| Workout | 🔥 | #2a0a0a | #cc3a2a | what's keeping you going? |
