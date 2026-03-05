@@ -57,7 +57,7 @@ const BetaSignupPage = () => {
         <div className="w-full max-w-lg mx-auto px-6" style={{ paddingTop: '80px' }}>
           {/* Logo */}
           <div className="flex justify-center mb-10">
-            <img src="/logo-drip.png" alt="the Honey Groove" className="h-20 md:h-24" data-testid="beta-logo" />
+            <img src="/logo-drip.png" alt="the Honey Groove" className="w-[85vw] max-w-[520px] md:max-w-[560px] lg:max-w-[600px]" data-testid="beta-logo" />
           </div>
 
           {!submitted ? (
@@ -74,7 +74,7 @@ const BetaSignupPage = () => {
               {/* Subhead */}
               <div className="text-center mb-6" style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: '28px', lineHeight: 1.4, color: '#C8861A' }}>
                 <p>the Honey Groove is almost ready.</p>
-                <p>we're looking for founding members to test it first.</p>
+                <p>We're looking for founding members to test it first.</p>
               </div>
 
               {/* Body copy */}
