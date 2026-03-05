@@ -140,7 +140,7 @@ const TradeCard = ({ trade, currentUserId, onClick }) => {
       </div>
       {trade.boot_amount > 0 && (
         <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
-          <DollarSign className="w-3 h-3" />${trade.boot_amount} boot
+          <DollarSign className="w-3 h-3" />${trade.boot_amount} sweetener
           <span className="text-honey-amber ml-1">(settled directly)</span>
         </div>
       )}
@@ -366,7 +366,7 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
           {trade.boot_amount > 0 && (
             <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 rounded-lg text-sm">
               <DollarSign className="w-4 h-4 text-amber-600" />
-              <span><strong>${trade.boot_amount}</strong> boot {trade.boot_direction === 'TO_SELLER' ? `to @${trade.responder?.username}` : `to @${trade.initiator?.username}`}</span>
+              <span><strong>${trade.boot_amount}</strong> sweetener {trade.boot_direction === 'TO_SELLER' ? `to @${trade.responder?.username}` : `to @${trade.initiator?.username}`}</span>
               <span className="text-xs text-amber-600 ml-auto">settled directly</span>
             </div>
           )}
@@ -609,12 +609,12 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
                 )}
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <Input placeholder="Boot amount ($)" type="number" value={counterBoot} onChange={e => setCounterBoot(e.target.value)} className="text-sm border-blue-200" />
+                <Input placeholder="Sweetener amount ($)" type="number" value={counterBoot} onChange={e => setCounterBoot(e.target.value)} className="text-sm border-blue-200" />
                 <Select value={counterBootDir} onValueChange={setCounterBootDir}>
                   <SelectTrigger className="text-sm border-blue-200"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="TO_SELLER">Boot to seller</SelectItem>
-                    <SelectItem value="TO_BUYER">Boot to buyer</SelectItem>
+                    <SelectItem value="TO_SELLER">Sweetener to seller</SelectItem>
+                    <SelectItem value="TO_BUYER">Sweetener to buyer</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -765,21 +765,21 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
             )}
           </div>
           <div>
-            <p className="text-xs font-medium text-muted-foreground mb-2">BOOT <span className="font-normal">(cash on top, optional)</span></p>
+            <p className="text-xs font-medium text-muted-foreground mb-2">SWEETENER <span className="font-normal">(cash on top, optional)</span></p>
             <div className="grid grid-cols-2 gap-2">
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input placeholder="Amount" type="number" value={bootAmount} onChange={e => setBootAmount(e.target.value)} className="pl-9 border-honey/50" data-testid="trade-boot-amount" />
+                <Input placeholder="Amount" type="number" value={bootAmount} onChange={e => setBootAmount(e.target.value)} className="pl-9 border-honey/50" data-testid="trade-sweetener-amount" />
               </div>
               <Select value={bootDirection} onValueChange={setBootDirection}>
                 <SelectTrigger className="border-honey/50"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="TO_SELLER">You pay boot</SelectItem>
-                  <SelectItem value="TO_BUYER">They pay boot</SelectItem>
+                  <SelectItem value="TO_SELLER">You pay sweetener</SelectItem>
+                  <SelectItem value="TO_BUYER">They pay sweetener</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <p className="text-[10px] text-muted-foreground mt-1">Boot is settled directly between traders</p>
+            <p className="text-[10px] text-muted-foreground mt-1">add a sweetener to the trade.</p>
           </div>
           <Textarea placeholder="Message to seller (optional)" value={message} onChange={e => setMessage(e.target.value)} className="border-honey/50 resize-none" rows={2} data-testid="trade-message-input" />
           <Button onClick={handlePropose} disabled={loading || !selectedRecordId} className="w-full bg-honey text-vinyl-black hover:bg-honey-amber rounded-full" data-testid="trade-propose-btn">

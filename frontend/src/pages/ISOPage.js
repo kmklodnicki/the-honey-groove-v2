@@ -283,7 +283,7 @@ const ISOPage = () => {
   const foundCount = isos.filter(i => i.status === 'FOUND').length;
 
   // Dynamic labels
-  const ctaLabels = { shop: '+ List a Record', trade: '+ List for Trade', iso: '+ Add to Hunt List' };
+  const ctaLabels = { shop: 'List a Record', trade: 'List for Trade', iso: 'Add to Hunt List' };
   const modalTitles = { shop: 'List a Record', trade: 'List for Trade', iso: 'Add to Hunt List' };
 
   // Discogs picker
@@ -337,7 +337,6 @@ const ISOPage = () => {
         </div>
         <Button onClick={() => openModal(activeTab === 'iso' ? 'iso' : 'listing')}
           className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2" data-testid="honeypot-cta-btn">
-          <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">{ctaLabels[activeTab]}</span>
           <span className="sm:hidden">New</span>
         </Button>
