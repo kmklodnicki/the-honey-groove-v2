@@ -23,6 +23,7 @@ import AdminDisputesPage from "./pages/AdminDisputesPage";
 import MessagesPage from "./pages/MessagesPage";
 import FAQPage from "./pages/FAQPage";
 import AboutPage from "./pages/AboutPage";
+import ExploreSeeAllPage from "./pages/ExploreSeeAllPage";
 
 // Protected Route wrapper
 const ProtectedRoute = ({ children }) => {
@@ -90,6 +91,13 @@ function AppContent() {
         <AppLayout>
           <ExplorePage />
         </AppLayout>
+      } />
+      <Route path="/explore/:section" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <ExploreSeeAllPage />
+          </AppLayout>
+        </ProtectedRoute>
       } />
 
       {/* Protected routes */}

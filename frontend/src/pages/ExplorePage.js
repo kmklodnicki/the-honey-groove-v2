@@ -129,7 +129,7 @@ const ExplorePage = () => {
       <p className="text-sm text-muted-foreground mb-8">discover what the community is into.</p>
 
       {/* 1. Trending in the Hive */}
-      <ExploreSection icon={<TrendingUp className="w-4 h-4 text-honey-amber" />} title="Trending in the Hive" testId="trending-section">
+      <ExploreSection icon={<TrendingUp className="w-4 h-4 text-honey-amber" />} title="Trending in the Hive" testId="trending-section" seeAllTo="/explore/trending">
         {trending.length === 0 ? (
           <EmptyCard text="No trending records yet. Start spinning!" />
         ) : (
@@ -154,7 +154,7 @@ const ExplorePage = () => {
       </ExploreSection>
 
       {/* 2. Taste Match */}
-      <ExploreSection icon={<Users className="w-4 h-4 text-honey-amber" />} title="Taste Match" testId="taste-match-section">
+      <ExploreSection icon={<Users className="w-4 h-4 text-honey-amber" />} title="Taste Match" testId="taste-match-section" seeAllTo="/explore/taste-match">
         {suggested.length === 0 ? (
           <EmptyCard text="Add more records to your collection to find taste matches." />
         ) : (
@@ -184,7 +184,7 @@ const ExplorePage = () => {
       </ExploreSection>
 
       {/* 3. Fresh Pressings */}
-      <ExploreSection icon={<Disc className="w-4 h-4 text-honey-amber" />} title="Fresh Pressings" testId="fresh-pressings-section">
+      <ExploreSection icon={<Disc className="w-4 h-4 text-honey-amber" />} title="Fresh Pressings" testId="fresh-pressings-section" seeAllTo="/explore/fresh-pressings">
         {freshPressings.length === 0 ? (
           <EmptyCard text="No fresh pressings found right now." />
         ) : (
@@ -211,7 +211,7 @@ const ExplorePage = () => {
       </ExploreSection>
 
       {/* 4. Most Wanted */}
-      <ExploreSection icon={<Heart className="w-4 h-4 text-red-400" />} title="Most Wanted" testId="most-wanted-section">
+      <ExploreSection icon={<Heart className="w-4 h-4 text-red-400" />} title="Most Wanted" testId="most-wanted-section" seeAllTo="/explore/most-wanted">
         {mostWanted.length === 0 ? (
           <EmptyCard text="No wantlist data yet. Add records to your Wantlist!" />
         ) : (
@@ -239,7 +239,7 @@ const ExplorePage = () => {
       </ExploreSection>
 
       {/* 5. Near You */}
-      <ExploreSection icon={<MapPin className="w-4 h-4 text-honey-amber" />} title="Near You" testId="near-you-section">
+      <ExploreSection icon={<MapPin className="w-4 h-4 text-honey-amber" />} title="Near You" testId="near-you-section" seeAllTo="/explore/near-you">
         {nearYou.needs_location ? (
           <Card className="p-6 text-center border-honey/30">
             <MapPin className="w-10 h-10 text-honey/40 mx-auto mb-3" />
@@ -377,11 +377,18 @@ const ExplorePage = () => {
   );
 };
 
-const ExploreSection = ({ icon, title, testId, children }) => (
+const ExploreSection = ({ icon, title, testId, seeAllTo, children }) => (
   <section className="mb-10" data-testid={testId}>
-    <div className="flex items-center gap-2 mb-3">
-      {icon}
-      <h2 className="font-heading text-lg text-vinyl-black">{title}</h2>
+    <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center gap-2">
+        {icon}
+        <h2 className="font-heading text-lg text-vinyl-black">{title}</h2>
+      </div>
+      {seeAllTo && (
+        <Link to={seeAllTo} className="text-xs text-honey-amber hover:text-amber-600 font-medium transition-colors" data-testid={`${testId}-see-all`}>
+          See All &rarr;
+        </Link>
+      )}
     </div>
     {children}
   </section>

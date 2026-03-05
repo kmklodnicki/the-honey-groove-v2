@@ -333,7 +333,7 @@ async def get_most_wanted(limit: int = 20, user: Dict = Depends(require_auth)):
 
 
 @router.get("/explore/near-you")
-async def get_near_you(user: Dict = Depends(require_auth)):
+async def get_near_you(user: Dict = Depends(require_auth), collector_limit: int = 20, listing_limit: int = 10):
     """Get collectors and listings in the same city/region"""
     my_city = user.get("city", "").strip().lower()
     my_region = user.get("region", "").strip().lower()
@@ -349,7 +349,7 @@ async def get_near_you(user: Dict = Depends(require_auth)):
     if conditions:
         query["$or"] = conditions
 
-    nearby_users = await db.users.find(query, {"_id": 0, "password_hash": 0}).limit(20).to_list(20)
+    nearby_users = await db.users.find(query, {"_id": 0, "password_hash": 0}).limit(collector_limit).to_list(collector_limit)
     collectors = []
     for u in nearby_users:
         rec_count = await db.records.count_documents({"user_id": u["id"]})
@@ -365,7 +365,7 @@ async def get_near_you(user: Dict = Depends(require_auth)):
     if nearby_ids:
         listings = await db.listings.find(
             {"user_id": {"$in": nearby_ids}, "status": "ACTIVE"}, {"_id": 0}
-        ).sort("created_at", -1).limit(10).to_list(10)
+        ).sort("created_at", -1).limit(listing_limit).to_list(listing_limit)
         for l in listings:
             seller = next((u for u in collectors if u["id"] == l["user_id"]), None)
             l["user"] = {"username": seller["username"], "city": seller.get("city")} if seller else None
