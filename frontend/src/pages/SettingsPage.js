@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -8,15 +8,18 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
-import { ArrowLeft, Save, LogOut } from 'lucide-react';
+import { ArrowLeft, Save, LogOut, Camera, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const SettingsPage = () => {
   const { user, token, API, updateUser, logout } = useAuth();
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
   const [username, setUsername] = useState(user?.username || '');
   const [bio, setBio] = useState(user?.bio || '');
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState(user?.avatar_url);
 
   const handleSave = async () => {
     setSaving(true);
@@ -24,7 +27,8 @@ const SettingsPage = () => {
       const response = await axios.put(`${API}/auth/me`, 
         { 
           username: username !== user.username ? username : undefined,
-          bio: bio 
+          bio: bio,
+          avatar_url: avatarPreview !== user.avatar_url ? avatarPreview : undefined
         },
         { headers: { Authorization: `Bearer ${token}` }}
       );
@@ -38,10 +42,60 @@ const SettingsPage = () => {
     }
   };
 
+  const handlePhotoClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handlePhotoChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be less than 5MB');
+      return;
+    }
+
+    setUploading(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await axios.post(`${API}/upload`, formData, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      // Get the public URL from the response
+      const uploadedPath = response.data.path;
+      const publicUrl = `https://integrations.emergentagent.com/objstore/api/v1/storage/public/${uploadedPath}`;
+      
+      setAvatarPreview(publicUrl);
+      toast.success('Photo uploaded! Click Save to apply changes.');
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast.error('Failed to upload photo. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate('/');
   };
+
+  const firstLetter = user?.username?.charAt(0).toUpperCase() || '?';
+  const hasCustomAvatar = avatarPreview && !avatarPreview.includes('dicebear');
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 pt-24 pb-24 md:pb-8">
@@ -62,17 +116,61 @@ const SettingsPage = () => {
           <CardDescription>Update your profile information</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Avatar */}
-          <div className="flex items-center gap-4">
-            <Avatar className="w-20 h-20 border-4 border-honey">
-              <AvatarImage src={user?.avatar_url} />
-              <AvatarFallback className="text-2xl bg-honey text-vinyl-black">
-                {user?.username?.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+          {/* Avatar with Upload */}
+          <div className="flex items-center gap-6">
+            <div className="relative group">
+              <Avatar className="w-24 h-24 border-4 border-honey">
+                {hasCustomAvatar && <AvatarImage src={avatarPreview} alt={user?.username} />}
+                <AvatarFallback className="text-3xl bg-honey-soft text-vinyl-black relative">
+                  <span className="font-heading">{firstLetter}</span>
+                  <svg 
+                    viewBox="0 0 24 24" 
+                    className="absolute bottom-0 right-0 w-6 h-6"
+                    fill="none"
+                  >
+                    <ellipse cx="12" cy="14" rx="5" ry="4" fill="#1F1F1F"/>
+                    <ellipse cx="12" cy="13" rx="3.5" ry="2" fill="#F4B942"/>
+                    <ellipse cx="12" cy="15" rx="3" ry="1.5" fill="#F4B942"/>
+                    <circle cx="12" cy="9" r="2.5" fill="#1F1F1F"/>
+                    <ellipse cx="8" cy="11" rx="2" ry="3" fill="#1F1F1F" opacity="0.3"/>
+                    <ellipse cx="16" cy="11" rx="2" ry="3" fill="#1F1F1F" opacity="0.3"/>
+                  </svg>
+                </AvatarFallback>
+              </Avatar>
+              
+              {/* Upload overlay */}
+              <button
+                onClick={handlePhotoClick}
+                disabled={uploading}
+                className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                data-testid="upload-avatar-btn"
+              >
+                {uploading ? (
+                  <Loader2 className="w-6 h-6 text-white animate-spin" />
+                ) : (
+                  <Camera className="w-6 h-6 text-white" />
+                )}
+              </button>
+              
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoChange}
+                className="hidden"
+                data-testid="avatar-file-input"
+              />
+            </div>
+            
             <div>
               <p className="font-medium">@{user?.username}</p>
               <p className="text-sm text-muted-foreground">{user?.email}</p>
+              <button 
+                onClick={handlePhotoClick}
+                className="text-sm text-honey-amber hover:underline mt-1"
+              >
+                {uploading ? 'Uploading...' : 'Change photo'}
+              </button>
             </div>
           </div>
 

@@ -43,7 +43,7 @@ const LandingPage = () => {
               <img 
                 src="https://customer-assets.emergentagent.com/job_vinyl-social-2/artifacts/n8vjxmsv_honey-groove-transparent.png" 
                 alt="the Honey Groove" 
-                className="h-32 md:h-40"
+                className="h-48 md:h-56 lg:h-64"
               />
             </div>
 

@@ -10,7 +10,35 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
-import { Disc, Home, Search, PlusCircle, User, LogOut, Settings, Library } from 'lucide-react';
+import { Home, Search, PlusCircle, User, LogOut, Settings, Library } from 'lucide-react';
+
+// Bee icon SVG component
+const BeeIcon = ({ className = "w-4 h-4" }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="none">
+    <ellipse cx="12" cy="14" rx="5" ry="4" fill="#1F1F1F"/>
+    <ellipse cx="12" cy="13" rx="3.5" ry="2" fill="#F4B942"/>
+    <ellipse cx="12" cy="15" rx="3" ry="1.5" fill="#F4B942"/>
+    <circle cx="12" cy="9" r="2.5" fill="#1F1F1F"/>
+    <ellipse cx="8" cy="11" rx="2" ry="3" fill="#1F1F1F" opacity="0.3"/>
+    <ellipse cx="16" cy="11" rx="2" ry="3" fill="#1F1F1F" opacity="0.3"/>
+  </svg>
+);
+
+// Avatar with bee fallback
+const BeeAvatar = ({ user, className = "h-10 w-10" }) => {
+  const firstLetter = user?.username?.charAt(0).toUpperCase() || '?';
+  const hasCustomAvatar = user?.avatar_url && !user.avatar_url.includes('dicebear');
+
+  return (
+    <Avatar className={`${className} border-2 border-honey`}>
+      {hasCustomAvatar && <AvatarImage src={user.avatar_url} alt={user?.username} />}
+      <AvatarFallback className="bg-honey-soft text-vinyl-black relative">
+        <span className="font-heading">{firstLetter}</span>
+        <BeeIcon className="absolute -bottom-0.5 -right-0.5 w-4 h-4" />
+      </AvatarFallback>
+    </Avatar>
+  );
+};
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -23,17 +51,6 @@ const Navbar = () => {
   };
 
   const isActive = (path) => location.pathname === path;
-
-  // Bee SVG Icon
-  const BeeIcon = () => (
-    <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
-      <ellipse cx="12" cy="12" rx="6" ry="5" fill="#1F1F1F"/>
-      <ellipse cx="12" cy="12" rx="4" ry="3" fill="#F4B942"/>
-      <line x1="8" y1="12" x2="16" y2="12" stroke="#1F1F1F" strokeWidth="1"/>
-      <ellipse cx="8" cy="9" rx="2" ry="3" fill="#1F1F1F" opacity="0.3"/>
-      <ellipse cx="16" cy="9" rx="2" ry="3" fill="#1F1F1F" opacity="0.3"/>
-    </svg>
-  );
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-honey/30">
@@ -96,20 +113,12 @@ const Navbar = () => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-10 w-10 rounded-full" data-testid="user-menu-trigger">
-                    <Avatar className="h-10 w-10 border-2 border-honey">
-                      <AvatarImage src={user.avatar_url} alt={user.username} />
-                      <AvatarFallback className="bg-honey text-vinyl-black">
-                        {user.username?.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
+                    <BeeAvatar user={user} className="h-10 w-10" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
                   <div className="flex items-center gap-2 p-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.avatar_url} />
-                      <AvatarFallback>{user.username?.charAt(0).toUpperCase()}</AvatarFallback>
-                    </Avatar>
+                    <BeeAvatar user={user} className="h-8 w-8" />
                     <div className="flex flex-col">
                       <p className="text-sm font-medium">@{user.username}</p>
                       <p className="text-xs text-muted-foreground">{user.email}</p>
