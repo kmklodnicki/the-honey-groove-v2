@@ -62,7 +62,7 @@ async def send_beta_notification_email(signup: dict):
 
         params = {
             "from": SENDER_EMAIL,
-            "to": ["hello@thehoneygroove.com"],
+            "to": ["contact@kathrynklodnicki.com"],
             "subject": "new beta signup \U0001F41D",
             "html": html,
         }
