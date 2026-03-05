@@ -215,6 +215,7 @@ class WeeklySummaryResponse(BaseModel):
 # Share Graphic Models
 class ShareGraphicRequest(BaseModel):
     graphic_type: str  # now_spinning, new_haul, weekly_summary
+    format: str = "square"  # square (1080x1080) or story (1080x1920)
     record_id: Optional[str] = None
     haul_id: Optional[str] = None
     summary_id: Optional[str] = None
@@ -378,13 +379,16 @@ def get_discogs_release(release_id: int) -> Optional[Dict]:
         return None
 
 # Image Generation Functions - HoneyGroove themed
-def generate_share_graphic(graphic_type: str, data: Dict) -> bytes:
+def generate_share_graphic(graphic_type: str, data: Dict, format_type: str = "square") -> bytes:
     try:
         from PIL import Image, ImageDraw, ImageFont
         import io
         
-        # Create 1080x1080 image
-        width, height = 1080, 1080
+        # Set dimensions based on format
+        if format_type == "story":
+            width, height = 1080, 1920
+        else:
+            width, height = 1080, 1080
         
         # HoneyGroove Colors
         bg_cream = (255, 246, 230)  # Cream background
@@ -399,10 +403,16 @@ def generate_share_graphic(graphic_type: str, data: Dict) -> bytes:
         
         # Try to load fonts, fallback to default
         try:
-            title_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf", 56)
-            subtitle_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 36)
-            body_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 28)
-            small_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 24)
+            if format_type == "story":
+                title_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf", 72)
+                subtitle_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 48)
+                body_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 36)
+                small_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 30)
+            else:
+                title_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf", 56)
+                subtitle_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 36)
+                body_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 28)
+                small_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 24)
         except:
             title_font = ImageFont.load_default()
             subtitle_font = title_font
@@ -421,105 +431,174 @@ def generate_share_graphic(graphic_type: str, data: Dict) -> bytes:
             draw.polygon(points, outline=color)
         
         # Draw subtle honeycomb pattern
-        hex_color = (244, 185, 66, 30)  # Very light honey
         for row in range(0, height + 60, 60):
             offset = 35 if (row // 60) % 2 else 0
             for col in range(-30 + offset, width + 60, 70):
                 draw_hexagon(draw, col, row, 20, (*honey, 40))
         
         # Draw header bar
-        draw.rectangle([0, 0, width, 180], fill=honey)
+        header_height = 220 if format_type == "story" else 180
+        draw.rectangle([0, 0, width, header_height], fill=honey)
         
         # Draw footer bar
-        draw.rectangle([0, height-80, width, height], fill=honey)
+        footer_height = 100 if format_type == "story" else 80
+        draw.rectangle([0, height-footer_height, width, height], fill=honey)
         
         if graphic_type == "now_spinning":
             # Header
-            draw.text((width//2, 90), "NOW SPINNING", font=title_font, fill=black, anchor="mm")
-            
-            # Draw bee icon (simple representation)
-            bee_x, bee_y = 180, 90
-            draw.ellipse([bee_x-15, bee_y-10, bee_x+15, bee_y+10], fill=black)
-            draw.ellipse([bee_x-8, bee_y-6, bee_x+8, bee_y+6], fill=honey_soft)
+            header_y = 110 if format_type == "story" else 90
+            draw.text((width//2, header_y), "NOW SPINNING", font=title_font, fill=black, anchor="mm")
             
             # Album info
             artist = data.get("artist", "Unknown Artist")
             album = data.get("title", "Unknown Album")
             
-            # Draw vinyl record circle
-            center_y = 520
-            # Outer vinyl
-            draw.ellipse([290, center_y-250, 790, center_y+250], fill=(18, 18, 18))
-            # Grooves
-            for r in range(200, 50, -30):
-                draw.ellipse([540-r, center_y-r, 540+r, center_y+r], outline=(40, 40, 40), width=1)
-            # Label (honey colored)
-            draw.ellipse([480, center_y-60, 600, center_y+60], fill=honey)
-            draw.ellipse([500, center_y-40, 580, center_y+40], fill=amber)
-            draw.ellipse([525, center_y-15, 555, center_y+15], fill=black)
-            
-            # Artist and album text
-            draw.text((width//2, 830), artist, font=subtitle_font, fill=black, anchor="mm")
-            draw.text((width//2, 890), album, font=body_font, fill=amber, anchor="mm")
+            if format_type == "story":
+                # Story format - larger vinyl, more space
+                center_y = 850
+                vinyl_size = 350
+                
+                # Outer vinyl
+                draw.ellipse([width//2-vinyl_size, center_y-vinyl_size, width//2+vinyl_size, center_y+vinyl_size], fill=(18, 18, 18))
+                # Grooves
+                for r in range(300, 80, -40):
+                    draw.ellipse([width//2-r, center_y-r, width//2+r, center_y+r], outline=(40, 40, 40), width=1)
+                # Label (honey colored)
+                draw.ellipse([width//2-80, center_y-80, width//2+80, center_y+80], fill=honey)
+                draw.ellipse([width//2-55, center_y-55, width//2+55, center_y+55], fill=amber)
+                draw.ellipse([width//2-20, center_y-20, width//2+20, center_y+20], fill=black)
+                
+                # Artist and album text
+                draw.text((width//2, 1400), artist, font=subtitle_font, fill=black, anchor="mm")
+                draw.text((width//2, 1500), album, font=body_font, fill=amber, anchor="mm")
+                
+                # Decorative bees
+                bee_positions = [(150, 400), (930, 400), (150, 1650), (930, 1650)]
+                for bx, by in bee_positions:
+                    draw.ellipse([bx-12, by-8, bx+12, by+8], fill=black)
+                    draw.ellipse([bx-6, by-4, bx+6, by+4], fill=honey_soft)
+            else:
+                # Square format
+                center_y = 520
+                draw.ellipse([290, center_y-250, 790, center_y+250], fill=(18, 18, 18))
+                for r in range(200, 50, -30):
+                    draw.ellipse([540-r, center_y-r, 540+r, center_y+r], outline=(40, 40, 40), width=1)
+                draw.ellipse([480, center_y-60, 600, center_y+60], fill=honey)
+                draw.ellipse([500, center_y-40, 580, center_y+40], fill=amber)
+                draw.ellipse([525, center_y-15, 555, center_y+15], fill=black)
+                
+                draw.text((width//2, 830), artist, font=subtitle_font, fill=black, anchor="mm")
+                draw.text((width//2, 890), album, font=body_font, fill=amber, anchor="mm")
             
         elif graphic_type == "new_haul":
-            draw.text((width//2, 90), "NEW HAUL", font=title_font, fill=black, anchor="mm")
+            header_y = 110 if format_type == "story" else 90
+            draw.text((width//2, header_y), "NEW HAUL", font=title_font, fill=black, anchor="mm")
             
             title = data.get("title", "My Vinyl Haul")
             items = data.get("items", [])
             count = len(items)
             
-            # Decorative hexagon
-            draw.regular_polygon((540, 350), 80, 6, fill=honey_soft, outline=amber)
-            draw.text((540, 350), str(count), font=title_font, fill=black, anchor="mm")
-            
-            draw.text((width//2, 480), title, font=subtitle_font, fill=black, anchor="mm")
-            draw.text((width//2, 540), "records added", font=body_font, fill=amber, anchor="mm")
-            
-            # List first few items
-            y_pos = 620
-            for i, item in enumerate(items[:4]):
-                text = f"{item.get('artist', '')} - {item.get('title', '')}"
-                if len(text) > 42:
-                    text = text[:39] + "..."
-                draw.text((width//2, y_pos), text, font=small_font, fill=black, anchor="mm")
-                y_pos += 45
-            
-            if count > 4:
-                draw.text((width//2, y_pos), f"+ {count - 4} more...", font=small_font, fill=amber, anchor="mm")
+            if format_type == "story":
+                # Decorative hexagon with count
+                draw.regular_polygon((540, 500), 120, 6, fill=honey_soft, outline=amber)
+                draw.text((540, 480), str(count), font=title_font, fill=black, anchor="mm")
+                draw.text((540, 560), "RECORDS", font=small_font, fill=amber, anchor="mm")
+                
+                draw.text((width//2, 720), title, font=subtitle_font, fill=black, anchor="mm")
+                
+                # List items with more space
+                y_pos = 850
+                for i, item in enumerate(items[:8]):
+                    text = f"{item.get('artist', '')} - {item.get('title', '')}"
+                    if len(text) > 40:
+                        text = text[:37] + "..."
+                    draw.text((width//2, y_pos), text, font=body_font, fill=black, anchor="mm")
+                    y_pos += 70
+                
+                if count > 8:
+                    draw.text((width//2, y_pos), f"+ {count - 8} more...", font=body_font, fill=amber, anchor="mm")
+            else:
+                draw.regular_polygon((540, 350), 80, 6, fill=honey_soft, outline=amber)
+                draw.text((540, 350), str(count), font=title_font, fill=black, anchor="mm")
+                
+                draw.text((width//2, 480), title, font=subtitle_font, fill=black, anchor="mm")
+                draw.text((width//2, 540), "records added", font=body_font, fill=amber, anchor="mm")
+                
+                y_pos = 620
+                for i, item in enumerate(items[:4]):
+                    text = f"{item.get('artist', '')} - {item.get('title', '')}"
+                    if len(text) > 42:
+                        text = text[:39] + "..."
+                    draw.text((width//2, y_pos), text, font=small_font, fill=black, anchor="mm")
+                    y_pos += 45
+                
+                if count > 4:
+                    draw.text((width//2, y_pos), f"+ {count - 4} more...", font=small_font, fill=amber, anchor="mm")
                 
         elif graphic_type == "weekly_summary":
-            draw.text((width//2, 90), "HONEYGROOVE WEEKLY", font=title_font, fill=black, anchor="mm")
+            header_y = 110 if format_type == "story" else 90
+            draw.text((width//2, header_y), "HONEY GROOVE WEEKLY", font=title_font, fill=black, anchor="mm")
             
             spins = data.get("total_spins", 0)
             top_artist = data.get("top_artist", "No data")
             top_album = data.get("top_album", "No data")
             mood = data.get("listening_mood", "Eclectic")
             
-            # Big spin count with hexagon background
-            draw.regular_polygon((540, 320), 100, 6, fill=honey_soft, outline=amber)
-            draw.text((540, 300), str(spins), font=title_font, fill=black, anchor="mm")
-            draw.text((540, 360), "SPINS", font=small_font, fill=amber, anchor="mm")
-            
-            # Stats cards
-            card_y = 520
-            draw.rounded_rectangle([100, card_y, 500, card_y+120], radius=20, fill=white, outline=honey)
-            draw.text((300, card_y+30), "TOP ARTIST", font=small_font, fill=amber, anchor="mm")
-            artist_text = top_artist if len(top_artist) < 25 else top_artist[:22] + "..."
-            draw.text((300, card_y+75), artist_text, font=body_font, fill=black, anchor="mm")
-            
-            draw.rounded_rectangle([580, card_y, 980, card_y+120], radius=20, fill=white, outline=honey)
-            draw.text((780, card_y+30), "TOP ALBUM", font=small_font, fill=amber, anchor="mm")
-            album_text = top_album if top_album and len(top_album) < 25 else (top_album[:22] + "..." if top_album else "N/A")
-            draw.text((780, card_y+75), album_text, font=body_font, fill=black, anchor="mm")
-            
-            # Mood
-            draw.rounded_rectangle([250, 700, 830, 800], radius=20, fill=honey_soft, outline=amber)
-            draw.text((540, 730), "LISTENING MOOD", font=small_font, fill=amber, anchor="mm")
-            draw.text((540, 770), mood, font=subtitle_font, fill=black, anchor="mm")
+            if format_type == "story":
+                # Big spin count with hexagon background
+                draw.regular_polygon((540, 480), 140, 6, fill=honey_soft, outline=amber)
+                draw.text((540, 450), str(spins), font=title_font, fill=black, anchor="mm")
+                draw.text((540, 530), "SPINS", font=body_font, fill=amber, anchor="mm")
+                
+                # Stats cards - stacked vertically
+                card_width = 800
+                card_x = (width - card_width) // 2
+                
+                # Top Artist card
+                draw.rounded_rectangle([card_x, 700, card_x+card_width, 850], radius=25, fill=white, outline=honey)
+                draw.text((width//2, 740), "TOP ARTIST", font=small_font, fill=amber, anchor="mm")
+                artist_text = top_artist if len(str(top_artist)) < 30 else str(top_artist)[:27] + "..."
+                draw.text((width//2, 800), artist_text, font=subtitle_font, fill=black, anchor="mm")
+                
+                # Top Album card
+                draw.rounded_rectangle([card_x, 900, card_x+card_width, 1050], radius=25, fill=white, outline=honey)
+                draw.text((width//2, 940), "TOP ALBUM", font=small_font, fill=amber, anchor="mm")
+                album_text = top_album if top_album and len(str(top_album)) < 30 else (str(top_album)[:27] + "..." if top_album else "N/A")
+                draw.text((width//2, 1000), album_text, font=subtitle_font, fill=black, anchor="mm")
+                
+                # Mood card
+                draw.rounded_rectangle([card_x, 1100, card_x+card_width, 1280], radius=25, fill=honey_soft, outline=amber)
+                draw.text((width//2, 1150), "LISTENING MOOD", font=small_font, fill=amber, anchor="mm")
+                draw.text((width//2, 1220), mood, font=subtitle_font, fill=black, anchor="mm")
+                
+                # Decorative bees
+                bee_positions = [(150, 350), (930, 350), (150, 1500), (930, 1500)]
+                for bx, by in bee_positions:
+                    draw.ellipse([bx-12, by-8, bx+12, by+8], fill=black)
+                    draw.ellipse([bx-6, by-4, bx+6, by+4], fill=honey_soft)
+            else:
+                draw.regular_polygon((540, 320), 100, 6, fill=honey_soft, outline=amber)
+                draw.text((540, 300), str(spins), font=title_font, fill=black, anchor="mm")
+                draw.text((540, 360), "SPINS", font=small_font, fill=amber, anchor="mm")
+                
+                card_y = 520
+                draw.rounded_rectangle([100, card_y, 500, card_y+120], radius=20, fill=white, outline=honey)
+                draw.text((300, card_y+30), "TOP ARTIST", font=small_font, fill=amber, anchor="mm")
+                artist_text = top_artist if len(str(top_artist)) < 25 else str(top_artist)[:22] + "..."
+                draw.text((300, card_y+75), artist_text, font=body_font, fill=black, anchor="mm")
+                
+                draw.rounded_rectangle([580, card_y, 980, card_y+120], radius=20, fill=white, outline=honey)
+                draw.text((780, card_y+30), "TOP ALBUM", font=small_font, fill=amber, anchor="mm")
+                album_text = top_album if top_album and len(str(top_album)) < 25 else (str(top_album)[:22] + "..." if top_album else "N/A")
+                draw.text((780, card_y+75), album_text, font=body_font, fill=black, anchor="mm")
+                
+                draw.rounded_rectangle([250, 700, 830, 800], radius=20, fill=honey_soft, outline=amber)
+                draw.text((540, 730), "LISTENING MOOD", font=small_font, fill=amber, anchor="mm")
+                draw.text((540, 770), mood, font=subtitle_font, fill=black, anchor="mm")
         
-        # HoneyGroove branding with bee
-        draw.text((width//2, height-40), "honeygroove", font=body_font, fill=black, anchor="mm")
+        # HoneyGroove branding
+        footer_y = height - 50 if format_type == "story" else height - 40
+        draw.text((width//2, footer_y), "the honey groove", font=body_font, fill=black, anchor="mm")
         
         # Save to bytes
         buffer = io.BytesIO()
@@ -1342,12 +1421,14 @@ async def generate_share_graphic_endpoint(request: ShareGraphicRequest, user: Di
         summary = await get_weekly_summary(user)
         data = summary.model_dump()
     
-    image_bytes = generate_share_graphic(request.graphic_type, data)
+    format_type = request.format if request.format in ["square", "story"] else "square"
+    image_bytes = generate_share_graphic(request.graphic_type, data, format_type)
     
+    format_suffix = "_story" if format_type == "story" else ""
     return Response(
         content=image_bytes,
         media_type="image/png",
-        headers={"Content-Disposition": f"attachment; filename={request.graphic_type}_{datetime.now().strftime('%Y%m%d')}.png"}
+        headers={"Content-Disposition": f"attachment; filename={request.graphic_type}{format_suffix}_{datetime.now().strftime('%Y%m%d')}.png"}
     )
 
 # ============== FILE UPLOAD ROUTES ==============
