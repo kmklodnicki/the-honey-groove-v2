@@ -31,9 +31,26 @@ The Hive — Explore — Collection — The Honeypot
 22. **Admin Dispute Dashboard** — Full UI with Open/Resolved tabs, dispute cards, resolve modal
 23. **Browser Push Notifications** — Desktop notifications via Notification API for real-time alerts
 24. **The Honeypot Rebrand** — Renamed Marketplace → The Honeypot, restructured into 3-tab layout (Shop/ISO/Trade), dynamic CTA/modal titles, community ISO feed with "I have this" button, active trades with status badges
-25. **Direct Messages** — Full 1:1 DM system: inbox with unread badge in nav, conversation list (avatar, username, preview, timestamp), clean text-only threads, context cards for ISO/trade-initiated convos (e.g., "re: your ISO for Mazzy Star — So Tonight That I Might See"), entry points from profiles, Wantlist cards, and username taps
+25. **Direct Messages** — Full 1:1 DM system with context cards, inbox badge, entry points from profiles/wantlist
+26. **Backend Refactor** — Split 3700-line server.py into 8 route modules + database.py + models.py
+27. **Explore Page** — Trending records (14-day spin count), recent hauls, suggested collectors (collection overlap), wantlist matches
 
-## Trade Status Machine
+## Code Architecture
+```
+/app/backend/
+├── server.py          # Slim FastAPI app, registers routers, startup/shutdown
+├── database.py        # Shared: db client, config, auth, storage, notifications
+├── models.py          # All Pydantic models
+└── routes/
+    ├── auth.py        # Auth, user profiles, search, discovery
+    ├── hive.py        # Feed, composer, likes, comments, share graphics
+    ├── collection.py  # Records, spins, hauls, Discogs, upload, weekly
+    ├── honeypot.py    # ISO, listings, Stripe Connect & payments
+    ├── trades.py      # Trade lifecycle, admin disputes
+    ├── notifications.py # Notification CRUD
+    ├── dms.py         # DM conversations & messages
+    └── explore.py     # Trending, hauls, suggested, follow, stats
+```
 ```
 PROPOSED → (Counter) → COUNTERED → (Accept/Decline)
 PROPOSED/COUNTERED → ACCEPTED → SHIPPING (5-day deadline)
@@ -43,11 +60,8 @@ COMPLETED → Mandatory rating before next trade
 ```
 
 ## Upcoming (User's Roadmap)
-- **P2: Explore Enhancements** — Trending records, active ISO listings
-- **P2: Hauls Feature** — Dedicated hauls page
-- **P2: HoneyGroove Weekly** — Weekly summary aggregation + display
 - **P2: Monetization** — Pro membership, 4% transaction fee, Verified Seller badge
-- **P2: Backend Refactor** — Split monolithic server.py into /routes, /models, /services
+- **P2: HoneyGroove Weekly** — Weekly summary aggregation + display
 
 ## Data Model
 ```
