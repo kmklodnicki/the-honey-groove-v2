@@ -41,9 +41,9 @@ const LandingPage = () => {
             {/* Logo */}
             <div className="flex justify-center mb-8">
               <img 
-                src="https://customer-assets.emergentagent.com/job_vinyl-social-2/artifacts/x2y55r8k_honey-groove-bee2.png" 
+                src="https://customer-assets.emergentagent.com/job_vinyl-social-2/artifacts/n8vjxmsv_honey-groove-transparent.png" 
                 alt="the Honey Groove" 
-                className="h-20 md:h-24"
+                className="h-32 md:h-40"
               />
             </div>
 
@@ -187,9 +187,9 @@ const LandingPage = () => {
         <div className="max-w-6xl mx-auto px-4 md:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <img 
-              src="https://customer-assets.emergentagent.com/job_vinyl-social-2/artifacts/x2y55r8k_honey-groove-bee2.png" 
+              src="https://customer-assets.emergentagent.com/job_vinyl-social-2/artifacts/n8vjxmsv_honey-groove-transparent.png" 
               alt="the Honey Groove" 
-              className="h-10"
+              className="h-12"
             />
             <p className="text-sm text-vinyl-black/50">
               © 2024 the Honey Groove. Made with love for vinyl collectors.

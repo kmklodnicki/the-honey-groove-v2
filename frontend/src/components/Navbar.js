@@ -42,9 +42,9 @@ const Navbar = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group" data-testid="nav-logo">
             <img 
-              src="https://customer-assets.emergentagent.com/job_vinyl-social-2/artifacts/x2y55r8k_honey-groove-bee2.png" 
+              src="https://customer-assets.emergentagent.com/job_vinyl-social-2/artifacts/n8vjxmsv_honey-groove-transparent.png" 
               alt="the Honey Groove" 
-              className="h-10 group-hover:scale-105 transition-transform"
+              className="h-12 group-hover:scale-105 transition-transform"
             />
           </Link>
 

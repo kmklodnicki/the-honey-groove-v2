@@ -40,9 +40,9 @@ const LoginPage = () => {
         <CardHeader className="text-center">
           <Link to="/" className="flex justify-center mb-4">
             <img 
-              src="https://customer-assets.emergentagent.com/job_vinyl-social-2/artifacts/x2y55r8k_honey-groove-bee2.png" 
+              src="https://customer-assets.emergentagent.com/job_vinyl-social-2/artifacts/n8vjxmsv_honey-groove-transparent.png" 
               alt="the Honey Groove" 
-              className="h-16"
+              className="h-20"
             />
           </Link>
           <CardTitle className="font-heading text-2xl">Welcome Back</CardTitle>
