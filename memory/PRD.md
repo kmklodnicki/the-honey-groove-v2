@@ -34,13 +34,20 @@ SHIPPING/CONFIRMING → DISPUTED → Admin resolves (COMPLETED/CANCELLED/PARTIAL
 COMPLETED → Mandatory rating before next trade
 ```
 
+## Recently Completed
+18. **Landing Page Redesign (Feb 2026)**: Updated hero ("the vinyl social club, finally."), features ("built for the obsessed." with 6 cards), CTA ("Ready to Join The Hive?"), footer (© 2026, no vinyl artwork). Removed test credentials and secondary button.
+19. **Stripe Connect Onboarding** — Seller onboarding via Stripe Connect Express
+20. **In-App Notifications** — Notification bell with dropdown for social/trade alerts
+
 ## Upcoming (User's Roadmap)
-- **P1: Stripe Connect** — Escrow payments for Buy Now / Make Offer marketplace listings
-- **P1: Notifications** — ISO matches, trade updates, likes, follows
+- **P0: Stripe Payment Execution** — Client-side payment flow via Stripe.js for Buy Now / Make Offer
+- **P1: Admin Dispute Dashboard UI** — Build out the admin interface for dispute resolution
+- **P1: Push Notifications** — Browser push notifications via service worker
 - **P2: Explore Enhancements** — Trending records, active ISO listings
 - **P2: Hauls Feature** — Dedicated hauls page
 - **P2: HoneyGroove Weekly** — Weekly summary aggregation + display
 - **P2: Monetization** — Pro membership, 4% transaction fee, Verified Seller badge
+- **P2: Backend Refactor** — Split monolithic server.py into /routes, /models, /services
 
 ## Data Model
 ```
