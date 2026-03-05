@@ -86,6 +86,9 @@ COMPLETED → Mandatory rating before next trade
 ```
 
 ## Upcoming Tasks
+- **P0: The Mood Board** — Auto-generated 3x3 album art grid (Sunday), manual generation with time range pills, profile tab, 1080x1080 export
+- **P0: Collector Bingo** — Weekly 5x5 bingo card (Friday), interactive marking, bingo detection, celebration animation, export, Explore section
+- **P0: Admin Panel — Bingo Square Pool Manager** — Table of all squares with activate/deactivate toggle
 - **P1: Sweetener UI** — Frontend for trade cash payments (backend endpoint exists at /api/trades/{id}/pay-sweetener)
 - **P1: Push Notifications** — Service worker-based browser push
 - **P2: Discogs Import** — Bulk collection import
@@ -102,7 +105,8 @@ trades (offered_condition, offered_photo_urls[]),
 trade_messages, trade_shippings, trade_disputes, trade_ratings,
 notifications, payment_transactions,
 dm_conversations, dm_messages,
-collection_values, wax_reports
+collection_values, wax_reports,
+prompts, prompt_responses, image_cache
 ```
 
 ## Test Credentials
