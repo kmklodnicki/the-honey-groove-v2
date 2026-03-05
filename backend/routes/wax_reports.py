@@ -831,6 +831,12 @@ async def run_weekly_generation():
             logger.error(f"Wax Report gen failed for {u['id']}: {e}")
 
     logger.info("Wax Report: weekly generation complete")
+    # Also generate mood boards
+    try:
+        from routes.mood_boards import generate_weekly_mood_boards
+        await generate_weekly_mood_boards()
+    except Exception as e:
+        logger.error(f"Mood board weekly gen failed: {e}")
 
 
 async def schedule_weekly_reports():

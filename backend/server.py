@@ -17,8 +17,11 @@ from routes.dms import router as dms_router
 from routes.explore import router as explore_router
 from routes.valuation import router as valuation_router
 from routes.wax_reports import router as wax_reports_router, schedule_weekly_reports
+from routes.mood_boards import generate_weekly_mood_boards as gen_mood_boards
 from routes.daily_prompts import router as daily_prompts_router, seed_prompts
 from routes.newsletter import router as newsletter_router
+from routes.mood_boards import router as mood_boards_router, generate_weekly_mood_boards
+from routes.bingo import router as bingo_router, seed_bingo_squares
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -27,7 +30,8 @@ app = FastAPI(title="HoneyGroove API")
 # Register all route modules under /api prefix
 for r in [auth_router, hive_router, collection_router, honeypot_router,
           trades_router, notifications_router, dms_router, explore_router,
-          valuation_router, wax_reports_router, daily_prompts_router, newsletter_router]:
+          valuation_router, wax_reports_router, daily_prompts_router, newsletter_router,
+          mood_boards_router, bingo_router]:
     app.include_router(r, prefix="/api")
 
 app.add_middleware(
@@ -83,6 +87,14 @@ async def startup_event():
     asyncio.create_task(schedule_weekly_reports())
     # Seed prompts
     await seed_prompts()
+    # Seed bingo squares
+    await seed_bingo_squares()
+    # Mood board indexes
+    await db.mood_boards.create_index([("user_id", 1), ("created_at", -1)])
+    # Bingo indexes
+    await db.bingo_cards.create_index("week_start", unique=True)
+    await db.bingo_marks.create_index([("user_id", 1), ("card_id", 1)], unique=True)
+    await db.bingo_squares.create_index("id", unique=True)
 
     await db.users.update_one({"email": "demo@example.com"}, {"$set": {"is_admin": True}})
 

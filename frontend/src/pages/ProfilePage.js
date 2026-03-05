@@ -13,6 +13,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { FollowListModal } from '../components/FollowList';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { StreakBadge } from '../components/DailyPrompt';
+import { MoodBoardTab } from '../components/MoodBoardTab';
 
 const ProfilePage = () => {
   usePageTitle('Profile');
@@ -268,7 +269,7 @@ const ProfilePage = () => {
 
       {/* 4 Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-honey/10 mb-6 w-full grid grid-cols-4">
+        <TabsList className="bg-honey/10 mb-6 w-full grid grid-cols-5">
           <TabsTrigger value="collection" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-collection">
             Collection
           </TabsTrigger>
@@ -280,6 +281,9 @@ const ProfilePage = () => {
           </TabsTrigger>
           <TabsTrigger value="trades" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-trades">
             Trades
+          </TabsTrigger>
+          <TabsTrigger value="mood" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-mood">
+            Mood Board
           </TabsTrigger>
         </TabsList>
 
@@ -453,6 +457,11 @@ const ProfilePage = () => {
               </Button>
             </Link>
           )}
+        </TabsContent>
+
+        {/* Mood Board Tab */}
+        <TabsContent value="mood">
+          <MoodBoardTab username={username} />
         </TabsContent>
       </Tabs>
 
