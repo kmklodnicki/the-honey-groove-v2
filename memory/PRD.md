@@ -59,6 +59,8 @@ The Hive — Explore — Collection — The Honeypot
     ├── dms.py         # DM conversations & messages
     └── explore.py     # Trending, fresh pressings, most wanted, near you, follow, stats
 
+## Upcoming Tasks
+
 /app/frontend/src/pages/
 ├── WaxReportPage.js   # Full weekly report view
 ├── WaxReportHistory.js # Past reports list
@@ -81,7 +83,7 @@ SHIPPING/CONFIRMING → DISPUTED → Admin resolves (COMPLETED/CANCELLED/PARTIAL
 COMPLETED → Mandatory rating before next trade
 ```
 
-## Upcoming Tasks
+33. **Now Spinning + Mood Merge** — Combined Now Spinning and Vinyl Mood into single modal. Flow: Record → Track → "how does it feel?" 12-mood grid (optional) → Note → Post. Modal background/button shifts to mood color. Composer bar: 3 buttons (Now Spinning, New Haul, ISO). Feed shows mood pill badge on posts with mood. Renamed "Sunday Morning" → "Good Morning".
 - **P1: Sweetener UI** — Frontend for trade cash payments (backend endpoint exists)
 - **P1: Push Notifications** — Service worker-based browser push
 - **P2: Discogs Import** — Bulk collection import
