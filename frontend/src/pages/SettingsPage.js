@@ -20,6 +20,9 @@ const SettingsPage = () => {
   const fileInputRef = useRef(null);
   const [username, setUsername] = useState(user?.username || '');
   const [bio, setBio] = useState(user?.bio || '');
+  const [setup, setSetup] = useState(user?.setup || '');
+  const [location, setLocation] = useState(user?.location || '');
+  const [favoriteGenre, setFavoriteGenre] = useState(user?.favorite_genre || '');
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState(user?.avatar_url);
@@ -55,6 +58,9 @@ const SettingsPage = () => {
         { 
           username: username !== user.username ? username : undefined,
           bio: bio,
+          setup: setup,
+          location: location,
+          favorite_genre: favoriteGenre || undefined,
           avatar_url: avatarPreview !== user.avatar_url ? avatarPreview : undefined
         },
         { headers: { Authorization: `Bearer ${token}` }}
@@ -218,13 +224,58 @@ const SettingsPage = () => {
             <Label htmlFor="bio">Bio</Label>
             <Textarea
               id="bio"
-              placeholder="Tell us about your vinyl journey..."
+              placeholder="tell the hive who you are."
               value={bio}
-              onChange={(e) => setBio(e.target.value)}
+              onChange={(e) => { if (e.target.value.length <= 160) setBio(e.target.value); }}
               className="border-honey/50"
-              rows={4}
+              rows={3}
               data-testid="settings-bio"
             />
+            <p className="text-xs text-muted-foreground text-right">{bio.length}/160</p>
+          </div>
+
+          {/* Setup */}
+          <div className="space-y-2">
+            <Label htmlFor="setup">Setup</Label>
+            <Input
+              id="setup"
+              placeholder="your turntable, needle, speakers..."
+              value={setup}
+              onChange={(e) => { if (e.target.value.length <= 100) setSetup(e.target.value); }}
+              className="border-honey/50"
+              data-testid="settings-setup"
+            />
+            <p className="text-xs text-muted-foreground text-right">{setup.length}/100</p>
+          </div>
+
+          {/* Location */}
+          <div className="space-y-2">
+            <Label htmlFor="location">Location</Label>
+            <Input
+              id="location"
+              placeholder="city, country"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className="border-honey/50"
+              data-testid="settings-location"
+            />
+          </div>
+
+          {/* Favorite Genre */}
+          <div className="space-y-2">
+            <Label htmlFor="genre">Favorite Genre</Label>
+            <select
+              id="genre"
+              value={favoriteGenre}
+              onChange={(e) => setFavoriteGenre(e.target.value)}
+              className="flex h-10 w-full rounded-md border border-honey/50 bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              data-testid="settings-genre"
+            >
+              <option value="">Select a genre</option>
+              {['Jazz', 'Soul', 'Funk', 'R&B', 'Hip Hop', 'Rock', 'Indie', 'Electronic', 'House', 'Techno', 'Ambient', 'Classical', 'Folk', 'Country', 'Reggae', 'Punk', 'Metal', 'Blues', 'Latin', 'World'].map(g => (
+                <option key={g} value={g}>{g}</option>
+              ))}
+            </select>
           </div>
 
           <Button

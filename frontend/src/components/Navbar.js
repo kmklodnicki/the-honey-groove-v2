@@ -11,8 +11,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
+import { Dialog, DialogContent } from '../components/ui/dialog';
 import { Home, Search, User, LogOut, Settings, Library, Disc, ArrowRightLeft, Bell, Check, MessageCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import GlobalSearch from './GlobalSearch';
 
 // Bee icon SVG component
 const BeeIcon = ({ className = "w-4 h-4" }) => (
@@ -46,6 +48,7 @@ const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -55,6 +58,7 @@ const Navbar = () => {
   const isActive = (path) => location.pathname === path;
 
   return (
+    <>
     <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-honey/30">
       <div className="max-w-6xl mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between h-[88px]">
@@ -79,15 +83,15 @@ const Navbar = () => {
                   The Hive
                 </Button>
               </Link>
-              <Link to="/explore" data-testid="nav-explore">
-                <Button 
-                  variant="ghost" 
-                  className={`gap-2 ${isActive('/explore') ? 'bg-honey/20' : ''}`}
-                >
-                  <Search className="w-4 h-4" />
-                  Explore
-                </Button>
-              </Link>
+              <Button 
+                variant="ghost" 
+                className={`gap-2 ${isActive('/explore') ? 'bg-honey/20' : ''}`}
+                onClick={() => setSearchOpen(true)}
+                data-testid="nav-search-btn"
+              >
+                <Search className="w-4 h-4" />
+                Explore
+              </Button>
               <Link to="/collection" data-testid="nav-collection">
                 <Button 
                   variant="ghost" 
@@ -183,6 +187,15 @@ const Navbar = () => {
         </div>
       )}
     </nav>
+
+    {/* Global Search Dialog */}
+    <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
+      <DialogContent className="sm:max-w-2xl max-h-[80vh] p-0 overflow-hidden" aria-describedby="global-search-desc">
+        <span id="global-search-desc" className="sr-only">Search records, collectors, and posts</span>
+        <GlobalSearch onClose={() => setSearchOpen(false)} />
+      </DialogContent>
+    </Dialog>
+    </>
   );
 };
 

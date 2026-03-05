@@ -16,6 +16,34 @@ from models import *
 
 router = APIRouter()
 
+async def _build_user_response(user: dict) -> UserResponse:
+    """Build UserResponse with computed counts."""
+    uid = user["id"]
+    collection_count = await db.records.count_documents({"user_id": uid})
+    spin_count = await db.spins.count_documents({"user_id": uid})
+    followers_count = await db.followers.count_documents({"following_id": uid})
+    following_count = await db.followers.count_documents({"follower_id": uid})
+    return UserResponse(
+        id=uid,
+        email=user.get("email", ""),
+        username=user["username"],
+        avatar_url=user.get("avatar_url"),
+        bio=user.get("bio"),
+        setup=user.get("setup"),
+        location=user.get("location"),
+        favorite_genre=user.get("favorite_genre"),
+        city=user.get("city"),
+        region=user.get("region"),
+        created_at=user.get("created_at", ""),
+        collection_count=collection_count,
+        spin_count=spin_count,
+        followers_count=followers_count,
+        following_count=following_count,
+        onboarding_completed=user.get("onboarding_completed", False),
+        founding_member=user.get("founding_member", False),
+        is_admin=user.get("is_admin", False),
+    )
+
 # ============== AUTH ROUTES ==============
 
 @router.post("/auth/register", response_model=TokenResponse)
@@ -40,8 +68,19 @@ async def register(user_data: UserCreate):
         "password_hash": hash_password(user_data.password),
         "avatar_url": f"https://api.dicebear.com/7.x/miniavs/svg?seed={user_data.username}",
         "bio": None,
+        "setup": None,
+        "location": None,
+        "favorite_genre": None,
+        "onboarding_completed": False,
         "created_at": now
     }
+    
+    # Founding member check (first 500 users)
+    total_users = await db.users.count_documents({})
+    if total_users < 500:
+        user_doc["founding_member"] = True
+    else:
+        user_doc["founding_member"] = False
     
     await db.users.insert_one(user_doc)
     
@@ -55,11 +94,16 @@ async def register(user_data: UserCreate):
             username=user_data.username.lower(),
             avatar_url=user_doc["avatar_url"],
             bio=None,
+            setup=None,
+            location=None,
+            favorite_genre=None,
             created_at=now,
             collection_count=0,
             spin_count=0,
             followers_count=0,
-            following_count=0
+            following_count=0,
+            onboarding_completed=False,
+            founding_member=user_doc.get("founding_member", False),
         )
     )
 
@@ -68,54 +112,12 @@ async def login(credentials: UserLogin):
     user = await db.users.find_one({"email": credentials.email}, {"_id": 0})
     if not user or not verify_password(credentials.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")
-    
     token = create_token(user["id"])
-    
-    # Get counts
-    collection_count = await db.records.count_documents({"user_id": user["id"]})
-    spin_count = await db.spins.count_documents({"user_id": user["id"]})
-    followers_count = await db.followers.count_documents({"following_id": user["id"]})
-    following_count = await db.followers.count_documents({"follower_id": user["id"]})
-    
-    return TokenResponse(
-        access_token=token,
-        user=UserResponse(
-            id=user["id"],
-            email=user["email"],
-            username=user["username"],
-            avatar_url=user.get("avatar_url"),
-            bio=user.get("bio"),
-            city=user.get("city"),
-            region=user.get("region"),
-            created_at=user["created_at"],
-            collection_count=collection_count,
-            spin_count=spin_count,
-            followers_count=followers_count,
-            following_count=following_count
-        )
-    )
+    return TokenResponse(access_token=token, user=await _build_user_response(user))
 
 @router.get("/auth/me", response_model=UserResponse)
 async def get_me(user: Dict = Depends(require_auth)):
-    collection_count = await db.records.count_documents({"user_id": user["id"]})
-    spin_count = await db.spins.count_documents({"user_id": user["id"]})
-    followers_count = await db.followers.count_documents({"following_id": user["id"]})
-    following_count = await db.followers.count_documents({"follower_id": user["id"]})
-    
-    return UserResponse(
-        id=user["id"],
-        email=user["email"],
-        username=user["username"],
-        avatar_url=user.get("avatar_url"),
-        bio=user.get("bio"),
-        city=user.get("city"),
-        region=user.get("region"),
-        created_at=user["created_at"],
-        collection_count=collection_count,
-        spin_count=spin_count,
-        followers_count=followers_count,
-        following_count=following_count
-    )
+    return await _build_user_response(user)
 
 @router.put("/auth/me", response_model=UserResponse)
 async def update_me(update_data: UserUpdate, user: Dict = Depends(require_auth)):
@@ -125,39 +127,16 @@ async def update_me(update_data: UserUpdate, user: Dict = Depends(require_auth))
         if existing:
             raise HTTPException(status_code=400, detail="Username already taken")
         update_fields["username"] = update_data.username.lower()
-    if update_data.bio is not None:
-        update_fields["bio"] = update_data.bio
-    if update_data.avatar_url is not None:
-        update_fields["avatar_url"] = update_data.avatar_url
-    if update_data.city is not None:
-        update_fields["city"] = update_data.city
-    if update_data.region is not None:
-        update_fields["region"] = update_data.region
-    
+    for field in ("bio", "avatar_url", "city", "region", "setup", "location", "favorite_genre"):
+        val = getattr(update_data, field, None)
+        if val is not None:
+            update_fields[field] = val
+    if update_data.onboarding_completed is not None:
+        update_fields["onboarding_completed"] = update_data.onboarding_completed
     if update_fields:
         await db.users.update_one({"id": user["id"]}, {"$set": update_fields})
-    
-    updated_user = await db.users.find_one({"id": user["id"]}, {"_id": 0, "password_hash": 0})
-    
-    collection_count = await db.records.count_documents({"user_id": user["id"]})
-    spin_count = await db.spins.count_documents({"user_id": user["id"]})
-    followers_count = await db.followers.count_documents({"following_id": user["id"]})
-    following_count = await db.followers.count_documents({"follower_id": user["id"]})
-    
-    return UserResponse(
-        id=updated_user["id"],
-        email=updated_user["email"],
-        username=updated_user["username"],
-        avatar_url=updated_user.get("avatar_url"),
-        bio=updated_user.get("bio"),
-        city=updated_user.get("city"),
-        region=updated_user.get("region"),
-        created_at=updated_user["created_at"],
-        collection_count=collection_count,
-        spin_count=spin_count,
-        followers_count=followers_count,
-        following_count=following_count
-    )
+    updated = await db.users.find_one({"id": user["id"]}, {"_id": 0, "password_hash": 0})
+    return await _build_user_response(updated)
 
 
 # ============== USER ROUTES ==============
@@ -213,23 +192,8 @@ async def get_user_profile(username: str, current_user: Optional[Dict] = Depends
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    collection_count = await db.records.count_documents({"user_id": user["id"]})
-    spin_count = await db.spins.count_documents({"user_id": user["id"]})
-    followers_count = await db.followers.count_documents({"following_id": user["id"]})
-    following_count = await db.followers.count_documents({"follower_id": user["id"]})
-    
-    return UserResponse(
-        id=user["id"],
-        email=user["email"] if current_user and current_user["id"] == user["id"] else "",
-        username=user["username"],
-        avatar_url=user.get("avatar_url"),
-        bio=user.get("bio"),
-        city=user.get("city"),
-        region=user.get("region"),
-        created_at=user["created_at"],
-        collection_count=collection_count,
-        spin_count=spin_count,
-        followers_count=followers_count,
-        following_count=following_count
-    )
+    resp = await _build_user_response(user)
+    if not (current_user and current_user["id"] == user["id"]):
+        resp.email = ""
+    return resp
 

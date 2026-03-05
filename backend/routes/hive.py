@@ -258,7 +258,7 @@ def normalize_post_type(post_type: str) -> str:
 async def build_post_response(post: Dict, current_user_id: Optional[str] = None) -> Dict:
     """Build a full post response with user, record, haul, iso data"""
     post_user = await db.users.find_one({"id": post["user_id"]}, {"_id": 0, "password_hash": 0})
-    user_data = {"id": post_user["id"], "username": post_user["username"], "avatar_url": post_user.get("avatar_url")} if post_user else None
+    user_data = {"id": post_user["id"], "username": post_user["username"], "avatar_url": post_user.get("avatar_url"), "founding_member": post_user.get("founding_member", False)} if post_user else None
     
     record_data = None
     if post.get("record_id"):
@@ -525,6 +525,29 @@ async def composer_note(data: NoteCreate, user: Dict = Depends(require_auth)):
     }
     await db.posts.insert_one(post_doc)
     return await build_post_response(post_doc, user["id"])
+
+
+# ============== SEARCH ROUTES ==============
+
+@router.get("/search/posts")
+async def search_posts(q: str = Query(..., min_length=2), user: Dict = Depends(require_auth)):
+    """Search posts by keyword in caption/content"""
+    regex = {"$regex": q, "$options": "i"}
+    posts = await db.posts.find(
+        {"$or": [{"caption": regex}, {"content": regex}]},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(20).to_list(20)
+    results = []
+    for p in posts:
+        poster = await db.users.find_one({"id": p.get("user_id")}, {"_id": 0, "id": 1, "username": 1, "avatar_url": 1})
+        results.append({
+            "id": p.get("id"),
+            "post_type": p.get("post_type"),
+            "caption": (p.get("caption") or p.get("content") or "")[:120],
+            "created_at": p.get("created_at"),
+            "user": poster,
+        })
+    return results
 
 
 # ============== LIKES ROUTES ==============

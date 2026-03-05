@@ -21,6 +21,7 @@ import ComposerBar from '../components/ComposerBar';
 import { PostTypeBadge, PostCardBody } from '../components/PostCards';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { DailyPromptCard } from '../components/DailyPrompt';
+import OnboardingModal from '../components/OnboardingModal';
 
 // Bee Avatar Component
 const BeeAvatar = ({ user, className = "h-10 w-10" }) => {
@@ -124,6 +125,9 @@ const PostCard = ({ post, onLike, onCommentCountChange, token, API }) => {
               <Link to={`/profile/${post.user?.username}`} className="font-medium hover:underline">
                 @{post.user?.username}
               </Link>
+              {post.user?.founding_member && (
+                <span title="founding member of the Honey Groove 🐝" className="inline-block ml-1 cursor-help" style={{ color: '#C8861A', fontSize: '12px' }}>🍯</span>
+              )}
               <PostTypeBadge type={post.post_type} mood={post.mood} />
             </div>
             <p className="text-xs text-muted-foreground">{timeAgo}</p>
@@ -255,6 +259,8 @@ const HivePage = () => {
   const [posts, setPosts] = useState([]);
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
 
   const fetchFeed = useCallback(async () => {
     try {
@@ -281,7 +287,11 @@ const HivePage = () => {
   useEffect(() => {
     fetchFeed();
     fetchRecords();
-  }, [fetchFeed, fetchRecords]);
+    // Check if onboarding needed
+    if (user && !user.onboarding_completed) {
+      setShowOnboarding(true);
+    }
+  }, [fetchFeed, fetchRecords, user]);
 
   const handleLike = async (postId, isLiked) => {
     try {
@@ -311,6 +321,14 @@ const HivePage = () => {
     fetchRecords();
   };
 
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    setShowWelcome(true);
+    fetchFeed();
+    fetchRecords();
+    setTimeout(() => setShowWelcome(false), 4000);
+  };
+
   if (loading) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-8 pt-24">
@@ -333,6 +351,21 @@ const HivePage = () => {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 pt-24 pb-24 md:pb-8">
+      {/* Onboarding Modal */}
+      <OnboardingModal open={showOnboarding} onComplete={handleOnboardingComplete} />
+
+      {/* Welcome Banner */}
+      {showWelcome && (
+        <div className="mb-4 px-4 py-3 rounded-xl bg-amber-50 border border-amber-200/50 text-center"
+          style={{ animation: 'bingoCelebFadeIn 300ms ease-out' }}
+          data-testid="welcome-banner"
+        >
+          <p className="text-amber-700 font-medium italic" style={{ fontFamily: '"DM Serif Display", serif' }}>
+            welcome to the hive. 🐝 you're in.
+          </p>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-heading text-3xl text-vinyl-black">The Hive</h1>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -348,17 +381,14 @@ const HivePage = () => {
       <DailyPromptCard records={records} onPostCreated={handlePostCreated} />
 
       {posts.length === 0 ? (
-        <Card className="p-8 text-center border-honey/30">
-          <div className="w-16 h-16 bg-honey/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Disc className="w-8 h-8 text-honey-amber" />
-          </div>
-          <h3 className="font-heading text-xl mb-2">The Hive is quiet</h3>
-          <p className="text-muted-foreground mb-4">Use the composer above to share what you're spinning!</p>
-          <Link to="/explore">
-            <Button className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full">
-              Explore Collectors
-            </Button>
-          </Link>
+        <Card className="p-8 text-center border-honey/30" data-testid="hive-empty-state">
+          <span className="text-4xl block mb-3">🐝</span>
+          <p className="italic text-muted-foreground mb-4" style={{ fontFamily: '"DM Serif Display", serif', color: '#8A6B4A' }}>
+            the hive is just getting started. be the first to post.
+          </p>
+          <Button onClick={() => {}} className="bg-amber-500 text-white hover:bg-amber-600 rounded-full" data-testid="hive-empty-cta">
+            post something
+          </Button>
         </Card>
       ) : (
         <div className="space-y-4">

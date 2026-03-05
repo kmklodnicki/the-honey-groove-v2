@@ -22,6 +22,7 @@ from routes.daily_prompts import router as daily_prompts_router, seed_prompts
 from routes.newsletter import router as newsletter_router
 from routes.mood_boards import router as mood_boards_router, generate_weekly_mood_boards
 from routes.bingo import router as bingo_router, seed_bingo_squares
+from routes.reports import router as reports_router
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -31,7 +32,7 @@ app = FastAPI(title="HoneyGroove API")
 for r in [auth_router, hive_router, collection_router, honeypot_router,
           trades_router, notifications_router, dms_router, explore_router,
           valuation_router, wax_reports_router, daily_prompts_router, newsletter_router,
-          mood_boards_router, bingo_router]:
+          mood_boards_router, bingo_router, reports_router]:
     app.include_router(r, prefix="/api")
 
 app.add_middleware(

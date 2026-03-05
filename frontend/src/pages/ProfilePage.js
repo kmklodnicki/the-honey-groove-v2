@@ -201,10 +201,27 @@ const ProfilePage = () => {
               )}
             </div>
             {profile.bio && <p className="text-sm text-muted-foreground mt-1">{profile.bio}</p>}
-            {(profile.city || profile.region) && (
-              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                <MapPin className="w-3 h-3" /> {profile.city}{profile.region ? `, ${profile.region}` : ''}
+            {profile.setup && (
+              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1" data-testid="profile-setup">
+                🎚️ {profile.setup}
               </p>
+            )}
+            {(profile.location || profile.city || profile.region) && (
+              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                <MapPin className="w-3 h-3" /> {profile.location || `${profile.city || ''}${profile.region ? `, ${profile.region}` : ''}`}
+              </p>
+            )}
+            {profile.favorite_genre && (
+              <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 text-xs font-medium" data-testid="profile-genre">
+                {profile.favorite_genre}
+              </span>
+            )}
+            {profile.founding_member && (
+              <div className="mt-1.5 inline-block" data-testid="founding-badge">
+                <span className="italic text-xs" style={{ color: '#C8861A', fontFamily: '"DM Serif Display", serif' }}>
+                  🐝 founding member
+                </span>
+              </div>
             )}
 
             {/* Stats */}

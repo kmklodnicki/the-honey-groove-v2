@@ -19,6 +19,9 @@ class UserResponse(BaseModel):
     username: str
     avatar_url: Optional[str] = None
     bio: Optional[str] = None
+    setup: Optional[str] = None
+    location: Optional[str] = None
+    favorite_genre: Optional[str] = None
     city: Optional[str] = None
     region: Optional[str] = None
     created_at: str
@@ -26,13 +29,20 @@ class UserResponse(BaseModel):
     spin_count: int = 0
     followers_count: int = 0
     following_count: int = 0
+    onboarding_completed: bool = False
+    founding_member: bool = False
+    is_admin: bool = False
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None
     bio: Optional[str] = None
+    setup: Optional[str] = None
+    location: Optional[str] = None
+    favorite_genre: Optional[str] = None
     avatar_url: Optional[str] = None
     city: Optional[str] = None
     region: Optional[str] = None
+    onboarding_completed: Optional[bool] = None
 
 class TokenResponse(BaseModel):
     access_token: str
