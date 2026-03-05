@@ -24,7 +24,7 @@ import {
 import { Search, Plus, CheckCircle2, Loader2, Trash2, Filter, Tag, DollarSign, Disc, ArrowRightLeft, ShoppingBag, Camera, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { ProposeTradeModal } from './TradesPage';
 
 const ISO_TAGS = ['OG Press', 'Factory Sealed', 'Any', 'Promo'];
@@ -46,6 +46,41 @@ const ISOPage = () => {
   const [offerTarget, setOfferTarget] = useState(null); // listing to make offer on
   const [offerAmount, setOfferAmount] = useState('');
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Handle Stripe payment return
+  useEffect(() => {
+    const paymentStatus = searchParams.get('payment');
+    const sessionId = searchParams.get('session_id');
+    if (!paymentStatus) return;
+
+    // Clear params from URL immediately
+    setSearchParams({}, { replace: true });
+
+    if (paymentStatus === 'cancelled') {
+      toast.info('Payment cancelled');
+      return;
+    }
+
+    if (paymentStatus === 'success' && sessionId) {
+      const checkStatus = async () => {
+        try {
+          const resp = await axios.get(`${API}/payments/status/${sessionId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (resp.data.status === 'PAID') {
+            toast.success(`Payment of $${resp.data.amount} confirmed!`);
+            fetchData();
+          } else {
+            toast.info('Payment is being processed. You\'ll be notified when complete.');
+          }
+        } catch {
+          toast.error('Could not verify payment status');
+        }
+      };
+      checkStatus();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Shared Discogs search state
   const [discogsQuery, setDiscogsQuery] = useState('');

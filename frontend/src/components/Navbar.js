@@ -200,13 +200,38 @@ const NotificationBell = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
   const [open, setOpen] = useState(false);
+  const prevCountRef = React.useRef(0);
+  const [pushEnabled, setPushEnabled] = React.useState(Notification.permission === 'granted');
+
+  // Request browser notification permission on mount
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().then(p => setPushEnabled(p === 'granted'));
+    }
+  }, []);
 
   const fetchCount = useCallback(async () => {
     try {
       const resp = await axios.get(`${API}/notifications/unread-count`, { headers: { Authorization: `Bearer ${token}` } });
-      setUnreadCount(resp.data.count);
+      const newCount = resp.data.count;
+      // Show browser notification if count increased
+      if (pushEnabled && newCount > prevCountRef.current && prevCountRef.current >= 0) {
+        try {
+          const latest = await axios.get(`${API}/notifications?limit=1`, { headers: { Authorization: `Bearer ${token}` } });
+          if (latest.data.length > 0 && !latest.data[0].read) {
+            const n = latest.data[0];
+            new Notification('The HoneyGroove', {
+              body: n.body || n.title || 'You have a new notification',
+              icon: 'https://customer-assets.emergentagent.com/job_vinyl-social-2/artifacts/n8vjxmsv_honey-groove-transparent.png',
+              tag: n.id,
+            });
+          }
+        } catch { /* ignore */ }
+      }
+      prevCountRef.current = newCount;
+      setUnreadCount(newCount);
     } catch { /* ignore */ }
-  }, [API, token]);
+  }, [API, token, pushEnabled]);
 
   const fetchNotifications = useCallback(async () => {
     try {
