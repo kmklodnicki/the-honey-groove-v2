@@ -31,6 +31,7 @@ The Hive — Explore — Collection — The Honeypot
 22. **Admin Dispute Dashboard** — Full UI with Open/Resolved tabs, dispute cards, resolve modal
 23. **Browser Push Notifications** — Desktop notifications via Notification API for real-time alerts
 24. **The Honeypot Rebrand** — Renamed Marketplace → The Honeypot, restructured into 3-tab layout (Shop/ISO/Trade), dynamic CTA/modal titles, community ISO feed with "I have this" button, active trades with status badges
+25. **Direct Messages** — Full 1:1 DM system: inbox with unread badge in nav, conversation list (avatar, username, preview, timestamp), clean text-only threads, context cards for ISO/trade-initiated convos (e.g., "re: your ISO for Mazzy Star — So Tonight That I Might See"), entry points from profiles, Wantlist cards, and username taps
 
 ## Trade Status Machine
 ```
@@ -54,7 +55,9 @@ users, posts, records, spins, hauls, iso_items,
 listings (photo_urls[]),
 likes, comments, followers,
 trades, trade_messages, trade_shippings, trade_disputes, trade_ratings,
-notifications, payment_transactions
+notifications, payment_transactions,
+dm_conversations (participant_ids[], context, last_message),
+dm_messages (conversation_id, sender_id, text, read)
 ```
 
 ## Test Credentials
