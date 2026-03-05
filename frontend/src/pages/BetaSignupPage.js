@@ -53,7 +53,7 @@ const BetaSignupPage = () => {
         <meta property="og:type" content="website" />
       </Helmet>
 
-      <div className="min-h-screen bg-[#FAF6EE] flex flex-col items-center" data-testid="beta-signup-page">
+      <div className="min-h-screen bg-[#FAF6EE] flex flex-col items-center pb-16" data-testid="beta-signup-page">
         <div className="w-full max-w-lg mx-auto px-6" style={{ paddingTop: '80px' }}>
           {/* Logo */}
           <div className="flex justify-center mb-4">
