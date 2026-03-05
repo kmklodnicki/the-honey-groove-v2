@@ -21,6 +21,7 @@ import ISOPage from "./pages/ISOPage";
 import TradesPage from "./pages/TradesPage";
 import AdminDisputesPage from "./pages/AdminDisputesPage";
 import MessagesPage from "./pages/MessagesPage";
+import FAQPage from "./pages/FAQPage";
 
 // Protected Route wrapper
 const ProtectedRoute = ({ children }) => {
@@ -161,6 +162,9 @@ function AppContent() {
           <RecordDetailPage />
         </AppLayout>
       } />
+
+      {/* Public pages */}
+      <Route path="/faq" element={<FAQPage />} />
 
       {/* Catch all */}
       <Route path="*" element={<Navigate to="/" replace />} />

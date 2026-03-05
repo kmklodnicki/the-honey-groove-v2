@@ -289,7 +289,7 @@ const ProfilePage = () => {
         {/* ISO Tab */}
         <TabsContent value="iso">
           {isos.length === 0 ? (
-            <EmptyState icon={Search} title="No ISOs yet" sub={isOwnProfile ? 'Post an ISO from The Hive to start hunting!' : `@${username} isn't searching for anything right now`} />
+            <EmptyState icon={Search} title="No ISOs yet" sub={isOwnProfile ? 'Post an ISO from The Hive to start searching!' : `@${username} isn't searching for anything right now`} />
           ) : (
             <div className="space-y-3">
               {isos.map(iso => (

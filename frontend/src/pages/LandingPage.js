@@ -29,7 +29,7 @@ const LandingPage = () => {
     {
       icon: <Search className="w-6 h-6" />,
       title: "ISO",
-      description: "Post what you've been hunting for years. Get matched with collectors who have it.",
+      description: "Post what you've been searching for years. Get matched with collectors who have it.",
     },
     {
       icon: <ArrowLeftRight className="w-6 h-6" />,
@@ -142,9 +142,12 @@ const LandingPage = () => {
               alt="the Honey Groove"
               className="h-12"
             />
-            <p className="text-sm text-vinyl-black/50">
-              &copy; 2026 the Honey Groove. Made with love for vinyl collectors.
-            </p>
+            <div className="flex items-center gap-6">
+              <Link to="/faq" className="text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors" data-testid="footer-faq-link">FAQ</Link>
+              <p className="text-sm text-vinyl-black/50">
+                &copy; 2026 the Honey Groove. Made with love for vinyl collectors.
+              </p>
+            </div>
           </div>
         </div>
       </footer>
