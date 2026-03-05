@@ -48,7 +48,7 @@ storage_key = None
 
 # Stripe
 STRIPE_API_KEY = os.environ.get("STRIPE_API_KEY")
-PLATFORM_FEE_PERCENT = 4.0
+PLATFORM_FEE_PERCENT = 6.0  # Default, overridden by platform_settings collection
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "")
 
 # Auth

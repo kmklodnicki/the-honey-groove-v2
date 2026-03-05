@@ -698,7 +698,7 @@ const ISOPage = () => {
               <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input placeholder="Your offer amount" type="number" value={offerAmount} onChange={e => setOfferAmount(e.target.value)} className="pl-9 border-honey/50 text-lg" data-testid="offer-amount-input" />
             </div>
-            <p className="text-xs text-muted-foreground">4% platform fee applies. You'll be redirected to secure checkout.</p>
+            <p className="text-xs text-muted-foreground">6% platform fee applies. You'll be redirected to secure checkout.</p>
             <Button onClick={handleMakeOfferSubmit} disabled={paymentLoading || !offerAmount}
               className="w-full bg-blue-600 text-white hover:bg-blue-700 rounded-full" data-testid="submit-offer-btn">
               {paymentLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <DollarSign className="w-4 h-4 mr-2" />}

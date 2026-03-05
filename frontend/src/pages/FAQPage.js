@@ -85,7 +85,7 @@ const faqSections = [
       },
       {
         q: 'What are the fees?',
-        a: 'We take 4% on completed sales. Trades with no cash component are free. If your trade includes a sweetener (cash added to balance an unequal swap) we take 4% of the sweetener amount only.',
+        a: 'The Honey Groove charges a 6% fee on completed sales — lower than any major vinyl marketplace. Trades with no cash component are free. If your trade includes a sweetener (cash added to balance an unequal swap) we take 6% of the sweetener amount only.',
       },
       {
         q: 'What is a sweetener?',

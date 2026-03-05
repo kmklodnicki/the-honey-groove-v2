@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
 import { Dialog, DialogContent } from '../components/ui/dialog';
-import { Home, Search, User, LogOut, Settings, Library, Disc, ArrowRightLeft, Bell, Check, MessageCircle } from 'lucide-react';
+import { Home, Search, User, LogOut, Settings, Library, Disc, ArrowRightLeft, Bell, Check, MessageCircle, Globe } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import GlobalSearch from './GlobalSearch';
 
@@ -83,15 +83,15 @@ const Navbar = () => {
                   The Hive
                 </Button>
               </Link>
-              <Button 
-                variant="ghost" 
-                className={`gap-2 ${isActive('/explore') ? 'bg-honey/20' : ''}`}
-                onClick={() => setSearchOpen(true)}
-                data-testid="nav-search-btn"
-              >
-                <Search className="w-4 h-4" />
-                Explore
-              </Button>
+              <Link to="/explore" data-testid="nav-explore">
+                <Button 
+                  variant="ghost" 
+                  className={`gap-2 ${isActive('/explore') ? 'bg-honey/20' : ''}`}
+                >
+                  <Globe className="w-4 h-4" />
+                  Explore
+                </Button>
+              </Link>
               <Link to="/collection" data-testid="nav-collection">
                 <Button 
                   variant="ghost" 
@@ -110,6 +110,14 @@ const Navbar = () => {
                   The Honeypot
                 </Button>
               </Link>
+              <Button 
+                variant="ghost" 
+                className="gap-2"
+                onClick={() => setSearchOpen(true)}
+                data-testid="nav-search-btn"
+              >
+                <Search className="w-4 h-4" />
+              </Button>
             </div>
           )}
 
@@ -172,7 +180,7 @@ const Navbar = () => {
               <Home className="w-6 h-6" />
             </Link>
             <Link to="/explore" className={`p-2 rounded-lg ${isActive('/explore') ? 'bg-honey/20' : ''}`} data-testid="mobile-explore">
-              <Search className="w-6 h-6" />
+              <Globe className="w-6 h-6" />
             </Link>
             <Link to="/collection" className={`p-2 rounded-lg ${isActive('/collection') ? 'bg-honey/20' : ''}`} data-testid="mobile-collection">
               <Library className="w-6 h-6" />

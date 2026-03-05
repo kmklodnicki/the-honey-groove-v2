@@ -17,6 +17,13 @@ from fastapi.responses import Response
 
 router = APIRouter()
 
+async def _get_platform_fee_percent() -> float:
+    """Get the current platform fee % from settings, fallback to default."""
+    settings = await db.platform_settings.find_one({"key": "platform_fee_percent"}, {"_id": 0})
+    if settings and settings.get("value") is not None:
+        return float(settings["value"])
+    return PLATFORM_FEE_PERCENT
+
 # ============== ISO ROUTES ==============
 
 @router.get("/iso", response_model=List[ISOResponse])
@@ -258,7 +265,8 @@ async def create_payment_checkout(request: Request, body: Dict, user: Dict = Dep
     if not seller or not seller.get("stripe_account_id"):
         raise HTTPException(status_code=400, detail="Seller has not connected their Stripe account")
 
-    platform_fee = round(amount * PLATFORM_FEE_PERCENT / 100, 2)
+    fee_pct = await _get_platform_fee_percent()
+    platform_fee = round(amount * fee_pct / 100, 2)
     amount_cents = int(round(amount * 100))
     fee_cents = int(round(platform_fee * 100))
 
@@ -396,7 +404,8 @@ async def pay_trade_sweetener(trade_id: str, request: Request, body: Dict, user:
         raise HTTPException(status_code=400, detail="Recipient has not connected their Stripe account")
 
     amount = float(boot_amount)
-    platform_fee = round(amount * PLATFORM_FEE_PERCENT / 100, 2)
+    fee_pct = await _get_platform_fee_percent()
+    platform_fee = round(amount * fee_pct / 100, 2)
     amount_cents = int(round(amount * 100))
     fee_cents = int(round(platform_fee * 100))
 
@@ -458,3 +467,28 @@ async def get_my_sales(user: Dict = Depends(require_auth)):
     }
 
 
+
+
+# ============== ADMIN PLATFORM SETTINGS ==============
+
+@router.get("/admin/platform-settings")
+async def admin_get_settings(user: Dict = Depends(require_auth)):
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin only")
+    fee = await _get_platform_fee_percent()
+    return {"platform_fee_percent": fee}
+
+
+@router.put("/admin/platform-settings")
+async def admin_update_settings(data: dict, user: Dict = Depends(require_auth)):
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin only")
+    fee = data.get("platform_fee_percent")
+    if fee is None or not (0 <= float(fee) <= 50):
+        raise HTTPException(status_code=400, detail="Fee must be between 0 and 50")
+    await db.platform_settings.update_one(
+        {"key": "platform_fee_percent"},
+        {"$set": {"key": "platform_fee_percent", "value": float(fee)}},
+        upsert=True,
+    )
+    return {"platform_fee_percent": float(fee), "message": "Fee updated successfully"}
