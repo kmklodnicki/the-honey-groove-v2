@@ -1699,6 +1699,10 @@ async def get_community_isos(limit: int = 50, user: Dict = Depends(require_auth)
 @api_router.post("/listings", response_model=ListingResponse)
 async def create_listing(data: ListingCreate, user: Dict = Depends(require_auth)):
     """Create a marketplace listing"""
+    if not data.photo_urls or len(data.photo_urls) == 0:
+        raise HTTPException(status_code=400, detail="At least 1 photo is required")
+    if not data.condition:
+        raise HTTPException(status_code=400, detail="Condition is required")
     now = datetime.now(timezone.utc).isoformat()
     listing_id = str(uuid.uuid4())
     

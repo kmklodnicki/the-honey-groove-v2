@@ -216,6 +216,7 @@ const ISOPage = () => {
     if (!artist || !album) { toast.error('Artist and album required'); return; }
     if (listType !== 'TRADE' && !listPrice) { toast.error('Price required for Buy/Offer listings'); return; }
     if (listPhotos.length === 0) { toast.error('At least 1 photo is required'); return; }
+    if (!listCondition) { toast.error('Condition is required'); return; }
     setSubmitting(true);
     try {
       setUploadingPhotos(true);
