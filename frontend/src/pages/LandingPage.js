@@ -40,12 +40,11 @@ const LandingPage = () => {
           <div className="text-center max-w-4xl mx-auto">
             {/* Logo */}
             <div className="flex justify-center mb-8">
-              <div className="flex items-center gap-3 bg-white/50 backdrop-blur-sm px-6 py-3 rounded-full border border-honey/30">
-                <div className="w-12 h-12 bg-honey rounded-full flex items-center justify-center">
-                  <Disc className="w-7 h-7 text-vinyl-black" />
-                </div>
-                <span className="font-heading text-3xl text-vinyl-black">HoneyGroove</span>
-              </div>
+              <img 
+                src="https://customer-assets.emergentagent.com/job_vinyl-social-2/artifacts/x2y55r8k_honey-groove-bee2.png" 
+                alt="the Honey Groove" 
+                className="h-20 md:h-24"
+              />
             </div>
 
             {/* Tagline */}
@@ -56,6 +55,9 @@ const LandingPage = () => {
 
             <p className="text-lg md:text-xl text-vinyl-black/70 mb-10 max-w-2xl mx-auto animate-slide-up">
               Track your records, log your spins, share your hauls, and connect with fellow collectors in a warm, welcoming community.
+            </p>
+            <p className="text-sm text-honey-amber mb-6">
+              <strong>Test Account:</strong> demo@honeygroove.com / demo123
             </p>
 
             {/* CTA Buttons */}
@@ -116,7 +118,7 @@ const LandingPage = () => {
               Everything You Need to <span className="text-honey-amber italic">Groove</span>
             </h2>
             <p className="text-vinyl-black/70 max-w-xl mx-auto">
-              HoneyGroove is designed by collectors, for collectors. Here's what makes our hive special.
+              the Honey Groove is designed by collectors, for collectors. Here's what makes our hive special.
             </p>
           </div>
 
@@ -184,14 +186,13 @@ const LandingPage = () => {
       <footer className="py-8 border-t border-honey/20">
         <div className="max-w-6xl mx-auto px-4 md:px-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-honey rounded-full flex items-center justify-center">
-                <Disc className="w-5 h-5 text-vinyl-black" />
-              </div>
-              <span className="font-heading text-xl text-vinyl-black">HoneyGroove</span>
-            </div>
+            <img 
+              src="https://customer-assets.emergentagent.com/job_vinyl-social-2/artifacts/x2y55r8k_honey-groove-bee2.png" 
+              alt="the Honey Groove" 
+              className="h-10"
+            />
             <p className="text-sm text-vinyl-black/50">
-              © 2024 HoneyGroove. Made with love for vinyl collectors.
+              © 2024 the Honey Groove. Made with love for vinyl collectors.
             </p>
           </div>
         </div>

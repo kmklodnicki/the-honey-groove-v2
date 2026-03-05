@@ -41,10 +41,11 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group" data-testid="nav-logo">
-            <div className="w-8 h-8 bg-honey rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-              <Disc className="w-5 h-5 text-vinyl-black" />
-            </div>
-            <span className="font-heading text-xl text-vinyl-black">HoneyGroove</span>
+            <img 
+              src="https://customer-assets.emergentagent.com/job_vinyl-social-2/artifacts/x2y55r8k_honey-groove-bee2.png" 
+              alt="the Honey Groove" 
+              className="h-10 group-hover:scale-105 transition-transform"
+            />
           </Link>
 
           {/* Navigation Links */}

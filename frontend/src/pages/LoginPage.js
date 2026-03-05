@@ -22,7 +22,7 @@ const LoginPage = () => {
 
     try {
       await login(email, password);
-      toast.success('Welcome back to HoneyGroove!');
+      toast.success('Welcome back to the Honey Groove!');
       navigate('/hive');
     } catch (error) {
       const message = error.response?.data?.detail || 'Invalid email or password';
@@ -39,12 +39,14 @@ const LoginPage = () => {
       <Card className="w-full max-w-md relative z-10 border-honey/30 bg-white/80 backdrop-blur-sm">
         <CardHeader className="text-center">
           <Link to="/" className="flex justify-center mb-4">
-            <div className="w-14 h-14 bg-honey rounded-full flex items-center justify-center">
-              <Disc className="w-8 h-8 text-vinyl-black" />
-            </div>
+            <img 
+              src="https://customer-assets.emergentagent.com/job_vinyl-social-2/artifacts/x2y55r8k_honey-groove-bee2.png" 
+              alt="the Honey Groove" 
+              className="h-16"
+            />
           </Link>
           <CardTitle className="font-heading text-2xl">Welcome Back</CardTitle>
-          <CardDescription>Sign in to your HoneyGroove account</CardDescription>
+          <CardDescription>Sign in to your account</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
