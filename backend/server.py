@@ -1677,6 +1677,23 @@ async def delete_iso(iso_id: str, user: Dict = Depends(require_auth)):
     await db.iso_items.delete_one({"id": iso_id})
     return {"message": "ISO deleted"}
 
+
+@api_router.get("/iso/community")
+async def get_community_isos(limit: int = 50, user: Dict = Depends(require_auth)):
+    """Get ISO items from all users except the current user"""
+    isos = await db.iso_items.find(
+        {"user_id": {"$ne": user["id"]}, "status": "OPEN"}, {"_id": 0}
+    ).sort("created_at", -1).limit(limit).to_list(limit)
+    user_ids = list({iso["user_id"] for iso in isos})
+    users = {u["id"]: u for u in await db.users.find({"id": {"$in": user_ids}}, {"_id": 0, "password_hash": 0}).to_list(100)} if user_ids else {}
+    result = []
+    for iso in isos:
+        iso_user = users.get(iso["user_id"])
+        iso["user"] = {"id": iso_user["id"], "username": iso_user.get("username"), "avatar_url": iso_user.get("avatar_url")} if iso_user else None
+        result.append(iso)
+    return result
+
+
 # ============== MARKETPLACE LISTING ROUTES ==============
 
 @api_router.post("/listings", response_model=ListingResponse)
@@ -2515,8 +2532,8 @@ async def create_payment_checkout(request: Request, body: Dict, user: Dict = Dep
 
     platform_fee = round(amount * PLATFORM_FEE_PERCENT / 100, 2)
     host_url = body.get("origin_url", str(request.base_url).rstrip("/"))
-    success_url = f"{host_url}/iso?payment=success&session_id={{CHECKOUT_SESSION_ID}}"
-    cancel_url = f"{host_url}/iso?payment=cancelled"
+    success_url = f"{host_url}/honeypot?payment=success&session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = f"{host_url}/honeypot?payment=cancelled"
     webhook_url = f"{str(request.base_url).rstrip('/')}/api/webhook/stripe"
     stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
     metadata = {

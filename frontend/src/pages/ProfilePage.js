@@ -352,7 +352,7 @@ const ProfilePage = () => {
         {/* Trades Tab */}
         <TabsContent value="trades">
           {trades.length === 0 ? (
-            <EmptyState icon={ArrowRightLeft} title="No trades yet" sub={isOwnProfile ? 'Propose a trade from the Market tab!' : `@${username} hasn't completed any trades yet`} />
+            <EmptyState icon={ArrowRightLeft} title="No trades yet" sub={isOwnProfile ? 'Propose a trade from The Honeypot!' : `@${username} hasn't completed any trades yet`} />
           ) : (
             <div className="space-y-3">
               {trades.map(trade => {

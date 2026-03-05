@@ -85,8 +85,8 @@ const TradesPage = () => {
             <Card className="p-8 text-center border-honey/30">
               <ArrowRightLeft className="w-12 h-12 text-honey mx-auto mb-4" />
               <h3 className="font-heading text-xl mb-2">No active trades</h3>
-              <p className="text-muted-foreground text-sm mb-4">Browse TRADE listings in the Market to propose a trade!</p>
-              <Link to="/iso"><Button className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full">Go to Market</Button></Link>
+              <p className="text-muted-foreground text-sm mb-4">Browse TRADE listings in The Honeypot to propose a trade!</p>
+              <Link to="/honeypot"><Button className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full">Go to The Honeypot</Button></Link>
             </Card>
           ) : (
             <div className="space-y-3">{activeTrades.map(t => <TradeCard key={t.id} trade={t} currentUserId={user?.id} onClick={() => openDetail(t)} />)}</div>

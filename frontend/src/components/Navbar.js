@@ -97,13 +97,13 @@ const Navbar = () => {
                   Collection
                 </Button>
               </Link>
-              <Link to="/iso" data-testid="nav-iso">
+              <Link to="/honeypot" data-testid="nav-honeypot">
                 <Button 
                   variant="ghost" 
-                  className={`gap-2 ${isActive('/iso') ? 'bg-honey/20' : ''}`}
+                  className={`gap-2 ${isActive('/honeypot') ? 'bg-honey/20' : ''}`}
                 >
                   <Disc className="w-4 h-4" />
-                  ISO
+                  The Honeypot
                 </Button>
               </Link>
             </div>
@@ -180,7 +180,7 @@ const Navbar = () => {
             <Link to="/collection" className={`p-2 rounded-lg ${isActive('/collection') ? 'bg-honey/20' : ''}`} data-testid="mobile-collection">
               <Library className="w-6 h-6" />
             </Link>
-            <Link to="/iso" className={`p-2 rounded-lg ${isActive('/iso') ? 'bg-honey/20' : ''}`} data-testid="mobile-iso">
+            <Link to="/honeypot" className={`p-2 rounded-lg ${isActive('/honeypot') ? 'bg-honey/20' : ''}`} data-testid="mobile-honeypot">
               <Disc className="w-6 h-6" />
             </Link>
             <Link to={`/profile/${user.username}`} className={`p-2 rounded-lg ${isActive(`/profile/${user.username}`) ? 'bg-honey/20' : ''}`} data-testid="mobile-profile">
@@ -265,7 +265,7 @@ const NotificationBell = () => {
     const d = notif.data || {};
     if (d.trade_id) navigate('/trades');
     else if (d.follower_username) navigate(`/profile/${d.follower_username}`);
-    else if (d.listing_id) navigate('/iso');
+    else if (d.listing_id) navigate('/honeypot');
     else if (d.post_id) navigate('/hive');
   };
 

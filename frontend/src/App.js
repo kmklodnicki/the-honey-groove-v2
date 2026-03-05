@@ -118,20 +118,15 @@ function AppContent() {
           </AppLayout>
         </ProtectedRoute>
       } />
-      <Route path="/iso" element={
+      <Route path="/honeypot" element={
         <ProtectedRoute>
           <AppLayout>
             <ISOPage />
           </AppLayout>
         </ProtectedRoute>
       } />
-      <Route path="/trades" element={
-        <ProtectedRoute>
-          <AppLayout>
-            <TradesPage />
-          </AppLayout>
-        </ProtectedRoute>
-      } />
+      <Route path="/iso" element={<Navigate to="/honeypot" replace />} />
+      <Route path="/trades" element={<Navigate to="/honeypot" replace />} />
       <Route path="/admin/disputes" element={
         <ProtectedRoute>
           <AppLayout>
