@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import {
@@ -10,7 +11,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
-import { Home, Search, User, LogOut, Settings, Library, Disc, ArrowRightLeft } from 'lucide-react';
+import { Home, Search, User, LogOut, Settings, Library, Disc, ArrowRightLeft, Bell, Check } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
 
 // Bee icon SVG component
 const BeeIcon = ({ className = "w-4 h-4" }) => (
@@ -108,7 +110,8 @@ const Navbar = () => {
           )}
 
           {/* Right Side */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            {user && <NotificationBell />}
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -187,6 +190,105 @@ const Navbar = () => {
         </div>
       )}
     </nav>
+  );
+};
+
+// Notification Bell Component
+const NotificationBell = () => {
+  const { token, API } = useAuth();
+  const navigate = useNavigate();
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notifications, setNotifications] = useState([]);
+  const [open, setOpen] = useState(false);
+
+  const fetchCount = useCallback(async () => {
+    try {
+      const resp = await axios.get(`${API}/notifications/unread-count`, { headers: { Authorization: `Bearer ${token}` } });
+      setUnreadCount(resp.data.count);
+    } catch { /* ignore */ }
+  }, [API, token]);
+
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const resp = await axios.get(`${API}/notifications?limit=15`, { headers: { Authorization: `Bearer ${token}` } });
+      setNotifications(resp.data);
+    } catch { /* ignore */ }
+  }, [API, token]);
+
+  useEffect(() => {
+    fetchCount();
+    const interval = setInterval(fetchCount, 15000);
+    return () => clearInterval(interval);
+  }, [fetchCount]);
+
+  useEffect(() => { if (open) fetchNotifications(); }, [open, fetchNotifications]);
+
+  const markAllRead = async () => {
+    try {
+      await axios.put(`${API}/notifications/read-all`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      setUnreadCount(0);
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    } catch { /* ignore */ }
+  };
+
+  const handleClick = async (notif) => {
+    if (!notif.read) {
+      await axios.put(`${API}/notifications/${notif.id}/read`, {}, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+      setUnreadCount(c => Math.max(0, c - 1));
+    }
+    setOpen(false);
+    const d = notif.data || {};
+    if (d.trade_id) navigate('/trades');
+    else if (d.follower_username) navigate(`/profile/${d.follower_username}`);
+    else if (d.listing_id) navigate('/iso');
+    else if (d.post_id) navigate('/hive');
+  };
+
+  const NOTIF_ICONS = {
+    NEW_FOLLOWER: '👤', POST_LIKED: '❤️', NEW_COMMENT: '💬',
+    TRADE_PROPOSED: '🤝', TRADE_ACCEPTED: '✅', TRADE_SHIPPED: '📦',
+    TRADE_CONFIRMED: '🎉', SALE_COMPLETED: '💰', PURCHASE_COMPLETED: '🛒',
+    STRIPE_CONNECTED: '💳', ISO_MATCH: '🔍',
+  };
+
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="relative h-9 w-9 rounded-full" data-testid="notification-bell">
+          <Bell className="w-5 h-5" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1" data-testid="notification-badge">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-80 max-h-96 overflow-y-auto" align="end" forceMount>
+        <div className="flex items-center justify-between p-2">
+          <p className="text-sm font-heading">Notifications</p>
+          {unreadCount > 0 && (
+            <button onClick={markAllRead} className="text-xs text-honey-amber hover:underline flex items-center gap-1" data-testid="mark-all-read">
+              <Check className="w-3 h-3" /> Mark all read
+            </button>
+          )}
+        </div>
+        <DropdownMenuSeparator />
+        {notifications.length === 0 ? (
+          <div className="p-4 text-center text-sm text-muted-foreground">No notifications yet</div>
+        ) : (
+          notifications.map(n => (
+            <DropdownMenuItem key={n.id} onClick={() => handleClick(n)} className={`flex items-start gap-2 p-2 cursor-pointer ${!n.read ? 'bg-honey/5' : ''}`} data-testid={`notif-${n.id}`}>
+              <span className="text-lg mt-0.5 shrink-0">{NOTIF_ICONS[n.type] || '🔔'}</span>
+              <div className="flex-1 min-w-0">
+                <p className={`text-sm truncate ${!n.read ? 'font-medium' : ''}`}>{n.body}</p>
+                <p className="text-[10px] text-muted-foreground">{formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}</p>
+              </div>
+              {!n.read && <span className="w-2 h-2 rounded-full bg-honey shrink-0 mt-2" />}
+            </DropdownMenuItem>
+          ))
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 

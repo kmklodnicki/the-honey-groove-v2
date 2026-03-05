@@ -7,7 +7,7 @@ import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Skeleton } from '../components/ui/skeleton';
-import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, CheckCircle2, ArrowRightLeft } from 'lucide-react';
+import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, CheckCircle2, ArrowRightLeft, CreditCard, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { FollowListModal } from '../components/FollowList';
@@ -25,6 +25,9 @@ const ProfilePage = () => {
   const [followLoading, setFollowLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('collection');
   const [followListType, setFollowListType] = useState(null);
+  const [stripeStatus, setStripeStatus] = useState(null);
+  const [stripeLoading, setStripeLoading] = useState(false);
+  const [ratings, setRatings] = useState(null);
 
   const isOwnProfile = user?.username === username;
 
@@ -42,6 +45,10 @@ const ProfilePage = () => {
         const followRes = await axios.get(`${API}/follow/check/${username}`, { headers: { Authorization: `Bearer ${token}` }});
         setIsFollowing(followRes.data.is_following);
       }
+      if (token && isOwnProfile) {
+        axios.get(`${API}/stripe/status`, { headers: { Authorization: `Bearer ${token}` }}).then(r => setStripeStatus(r.data)).catch(() => {});
+      }
+      axios.get(`${API}/users/${username}/ratings`).then(r => setRatings(r.data)).catch(() => {});
     } catch {
       toast.error('Failed to load profile');
     } finally {
@@ -107,6 +114,15 @@ const ProfilePage = () => {
       setIsos(prev => prev.filter(i => i.id !== isoId));
       toast.success('ISO removed');
     } catch { toast.error('Failed'); }
+  };
+
+  const handleStripeConnect = async () => {
+    setStripeLoading(true);
+    try {
+      const resp = await axios.post(`${API}/stripe/connect`, {}, { headers: { Authorization: `Bearer ${token}` }});
+      if (resp.data.url) window.location.href = resp.data.url;
+    } catch (err) { toast.error(err.response?.data?.detail || 'Failed'); }
+    finally { setStripeLoading(false); }
   };
 
   if (loading) {
@@ -184,6 +200,31 @@ const ProfilePage = () => {
                 <div className="text-xs text-muted-foreground">Followers</div>
               </button>
             </div>
+
+            {/* Trade rating */}
+            {ratings && ratings.count > 0 && (
+              <div className="flex items-center gap-1 mt-2" data-testid="profile-trade-rating">
+                <div className="flex gap-0.5">{[1,2,3,4,5].map(v => <Star key={v} className={`w-3.5 h-3.5 ${v <= Math.round(ratings.average) ? 'fill-honey text-honey' : 'text-gray-300'}`} />)}</div>
+                <span className="text-xs text-muted-foreground ml-1">{ratings.average} ({ratings.count} trade{ratings.count !== 1 ? 's' : ''})</span>
+              </div>
+            )}
+
+            {/* Stripe Connect */}
+            {isOwnProfile && stripeStatus && (
+              <div className="mt-3">
+                {stripeStatus.stripe_connected ? (
+                  <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700" data-testid="stripe-connected-badge">
+                    <CreditCard className="w-3 h-3" /> Stripe Connected
+                  </span>
+                ) : (
+                  <Button size="sm" onClick={handleStripeConnect} disabled={stripeLoading}
+                    className="rounded-full bg-[#635bff] text-white hover:bg-[#5146e0] gap-1" data-testid="stripe-connect-btn">
+                    {stripeLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <CreditCard className="w-3 h-3" />}
+                    Connect with Stripe
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </Card>

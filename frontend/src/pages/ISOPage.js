@@ -43,6 +43,9 @@ const ISOPage = () => {
   const [filter, setFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [tradeTarget, setTradeTarget] = useState(null); // listing to trade against
+  const [offerTarget, setOfferTarget] = useState(null); // listing to make offer on
+  const [offerAmount, setOfferAmount] = useState('');
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   // Shared Discogs search state
   const [discogsQuery, setDiscogsQuery] = useState('');
@@ -253,6 +256,36 @@ const ISOPage = () => {
     } catch { toast.error('Failed'); }
   };
 
+  // Buy Now - redirect to Stripe Checkout
+  const handleBuyNow = async (listing) => {
+    setPaymentLoading(true);
+    try {
+      const resp = await axios.post(`${API}/payments/checkout`, {
+        listing_id: listing.id,
+        origin_url: window.location.origin,
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      if (resp.data.url) window.location.href = resp.data.url;
+      else toast.error('Failed to create checkout');
+    } catch (err) { toast.error(err.response?.data?.detail || 'Payment failed'); }
+    finally { setPaymentLoading(false); }
+  };
+
+  // Make Offer - enter amount then checkout
+  const handleMakeOfferSubmit = async () => {
+    if (!offerTarget || !offerAmount) return;
+    setPaymentLoading(true);
+    try {
+      const resp = await axios.post(`${API}/payments/checkout`, {
+        listing_id: offerTarget.id,
+        offer_amount: parseFloat(offerAmount),
+        origin_url: window.location.origin,
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      if (resp.data.url) window.location.href = resp.data.url;
+      else toast.error('Failed to create checkout');
+    } catch (err) { toast.error(err.response?.data?.detail || 'Payment failed'); }
+    finally { setPaymentLoading(false); setOfferTarget(null); setOfferAmount(''); }
+  };
+
   const filteredIsos = isos.filter(iso => {
     if (filter !== 'All' && iso.status !== filter) return false;
     if (searchQuery) {
@@ -430,7 +463,10 @@ const ISOPage = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {listings.map(listing => (
-                <ListingCard key={listing.id} listing={listing} currentUserId={user?.id} onProposeTrade={(l) => setTradeTarget(l)} />
+                <ListingCard key={listing.id} listing={listing} currentUserId={user?.id}
+                  onProposeTrade={(l) => setTradeTarget(l)}
+                  onBuyNow={handleBuyNow}
+                  onMakeOffer={(l) => setOfferTarget(l)} />
               ))}
             </div>
           )}
@@ -620,6 +656,32 @@ const ISOPage = () => {
         API={API}
         onSuccess={fetchData}
       />
+
+      {/* Make Offer Modal */}
+      <Dialog open={!!offerTarget} onOpenChange={(open) => { if (!open) { setOfferTarget(null); setOfferAmount(''); } }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-heading">Make an Offer</DialogTitle>
+            <DialogDescription>
+              {offerTarget?.album} by {offerTarget?.artist}
+              {offerTarget?.price && <span className="block text-xs mt-1">Listed at ${offerTarget.price}</span>}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="relative">
+              <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input placeholder="Your offer amount" type="number" value={offerAmount} onChange={e => setOfferAmount(e.target.value)}
+                className="pl-9 border-honey/50 text-lg" data-testid="offer-amount-input" />
+            </div>
+            <p className="text-xs text-muted-foreground">4% platform fee applies. You'll be redirected to secure checkout.</p>
+            <Button onClick={handleMakeOfferSubmit} disabled={paymentLoading || !offerAmount}
+              className="w-full bg-blue-600 text-white hover:bg-blue-700 rounded-full" data-testid="submit-offer-btn">
+              {paymentLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <DollarSign className="w-4 h-4 mr-2" />}
+              Pay ${offerAmount || '0'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
@@ -671,7 +733,7 @@ const ISOCard = ({ iso, isOwn, onMarkFound, onDelete }) => (
 );
 
 // Listing Card Component
-const ListingCard = ({ listing, currentUserId, onProposeTrade }) => {
+const ListingCard = ({ listing, currentUserId, onProposeTrade, onBuyNow, onMakeOffer }) => {
   const [photoIdx, setPhotoIdx] = useState(0);
   const photos = listing.photo_urls || [];
   const typeConfig = {
@@ -684,6 +746,8 @@ const ListingCard = ({ listing, currentUserId, onProposeTrade }) => {
   const mainImage = photos.length > 0 ? photos[photoIdx] : listing.cover_url;
   const isOwn = listing.user_id === currentUserId || listing.user?.id === currentUserId;
   const isTrade = listing.listing_type === 'TRADE';
+  const isBuyNow = listing.listing_type === 'BUY_NOW';
+  const isMakeOffer = listing.listing_type === 'MAKE_OFFER';
 
   return (
     <Card className="border-honey/30 overflow-hidden hover:shadow-md transition-all" data-testid={`listing-${listing.id}`}>
@@ -733,14 +797,30 @@ const ListingCard = ({ listing, currentUserId, onProposeTrade }) => {
             @{listing.user.username}
           </Link>
         )}
-        {isTrade && !isOwn && onProposeTrade && (
-          <button
-            onClick={() => onProposeTrade(listing)}
-            className="mt-2 w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 hover:bg-purple-200 transition-all"
-            data-testid={`propose-trade-${listing.id}`}
-          >
-            <ArrowRightLeft className="w-3 h-3" /> Propose Trade
-          </button>
+        {!isOwn && (
+          <div className="mt-2 space-y-1.5">
+            {isBuyNow && onBuyNow && (
+              <button onClick={() => onBuyNow(listing)}
+                className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-green-600 text-white hover:bg-green-700 transition-all"
+                data-testid={`buy-now-${listing.id}`}>
+                <DollarSign className="w-3 h-3" /> Buy Now — ${listing.price}
+              </button>
+            )}
+            {isMakeOffer && onMakeOffer && (
+              <button onClick={() => onMakeOffer(listing)}
+                className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-blue-600 text-white hover:bg-blue-700 transition-all"
+                data-testid={`make-offer-${listing.id}`}>
+                <DollarSign className="w-3 h-3" /> Make an Offer
+              </button>
+            )}
+            {isTrade && onProposeTrade && (
+              <button onClick={() => onProposeTrade(listing)}
+                className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 hover:bg-purple-200 transition-all"
+                data-testid={`propose-trade-${listing.id}`}>
+                <ArrowRightLeft className="w-3 h-3" /> Propose Trade
+              </button>
+            )}
+          </div>
         )}
       </div>
     </Card>

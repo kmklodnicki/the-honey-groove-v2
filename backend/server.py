@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, UploadFile, File, Query
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, UploadFile, File, Query, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.responses import Response
 from dotenv import load_dotenv
@@ -17,6 +17,7 @@ import requests
 from requests_oauthlib import OAuth1Session
 from io import BytesIO
 import asyncio
+from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionRequest
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -1312,6 +1313,11 @@ async def follow_user(username: str, user: Dict = Depends(require_auth)):
     
     await db.followers.insert_one(follow_doc)
     
+    u = await db.users.find_one({"id": user["id"]}, {"_id": 0})
+    await create_notification(target_user["id"], "NEW_FOLLOWER", "New follower",
+                              f"@{u.get('username','?')} started following you",
+                              {"follower_username": u.get("username")})
+
     return {"message": f"Now following {username}"}
 
 @api_router.delete("/follow/{username}")
@@ -1931,6 +1937,12 @@ async def propose_trade(data: TradePropose, user: Dict = Depends(require_auth)):
         "updated_at": now,
     }
     await db.trades.insert_one(trade_doc)
+
+    u = await db.users.find_one({"id": user["id"]}, {"_id": 0})
+    await create_notification(listing["user_id"], "TRADE_PROPOSED", "New trade proposal",
+                              f"@{u.get('username','?')} wants to trade for your {listing.get('album','listing')}",
+                              {"trade_id": trade_id})
+
     return await build_trade_response(trade_doc)
 
 
@@ -2020,6 +2032,14 @@ async def accept_trade(trade_id: str, user: Dict = Depends(require_auth)):
     }})
 
     updated = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+
+    # Notify the other party
+    other_id = trade["initiator_id"] if user["id"] == trade["responder_id"] else trade["responder_id"]
+    u = await db.users.find_one({"id": user["id"]}, {"_id": 0})
+    await create_notification(other_id, "TRADE_ACCEPTED", "Trade accepted!",
+                              f"@{u.get('username','?')} accepted the trade. Ship within 5 days!",
+                              {"trade_id": trade_id})
+
     return await build_trade_response(updated)
 
 
@@ -2409,6 +2429,215 @@ async def get_user_trades(username: str):
         result.append(await build_trade_response(trade))
     return result
 
+
+# ============== STRIPE CONNECT & PAYMENTS ==============
+
+STRIPE_API_KEY = os.environ.get("STRIPE_API_KEY")
+PLATFORM_FEE_PERCENT = 4.0
+
+# --- Notification helper ---
+async def create_notification(user_id: str, ntype: str, title: str, body: str, data: Dict = None):
+    now = datetime.now(timezone.utc).isoformat()
+    doc = {
+        "id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "type": ntype,
+        "title": title,
+        "body": body,
+        "data": data or {},
+        "read": False,
+        "created_at": now,
+    }
+    await db.notifications.insert_one(doc)
+
+
+@api_router.post("/stripe/connect")
+async def stripe_connect_onboarding(request: Request, user: Dict = Depends(require_auth)):
+    u = await db.users.find_one({"id": user["id"]}, {"_id": 0})
+    if u.get("stripe_connected"):
+        raise HTTPException(status_code=400, detail="Stripe already connected")
+
+    host_url = str(request.base_url).rstrip("/")
+    account_id = f"acct_sim_{uuid.uuid4().hex[:16]}"
+    now = datetime.now(timezone.utc).isoformat()
+
+    await db.users.update_one({"id": user["id"]}, {"$set": {
+        "stripe_account_id": account_id,
+        "stripe_connected": False,
+        "stripe_onboarding_started": now,
+    }})
+
+    return_url = f"{host_url}/api/stripe/connect/return?user_id={user['id']}"
+    return {"url": return_url, "account_id": account_id}
+
+
+@api_router.get("/stripe/connect/return")
+async def stripe_connect_return(user_id: str):
+    u = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not u:
+        raise HTTPException(status_code=404, detail="User not found")
+    now = datetime.now(timezone.utc).isoformat()
+    await db.users.update_one({"id": user_id}, {"$set": {
+        "stripe_connected": True,
+        "stripe_connected_at": now,
+    }})
+    await create_notification(user_id, "STRIPE_CONNECTED", "Stripe Connected!",
+                              "Your Stripe account is now active. You can receive payments for marketplace sales.")
+    frontend_url = os.environ.get("FRONTEND_URL", "")
+    from starlette.responses import RedirectResponse
+    return RedirectResponse(url=f"{frontend_url}/profile/{u['username']}?stripe=connected")
+
+
+@api_router.get("/stripe/status")
+async def stripe_connect_status(user: Dict = Depends(require_auth)):
+    u = await db.users.find_one({"id": user["id"]}, {"_id": 0})
+    return {
+        "stripe_connected": u.get("stripe_connected", False),
+        "stripe_account_id": u.get("stripe_account_id"),
+    }
+
+
+@api_router.post("/payments/checkout")
+async def create_payment_checkout(request: Request, body: Dict, user: Dict = Depends(require_auth)):
+    listing_id = body.get("listing_id")
+    offer_amount = body.get("offer_amount")
+    listing = await db.listings.find_one({"id": listing_id, "status": "ACTIVE"}, {"_id": 0})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found or not active")
+    if listing["user_id"] == user["id"]:
+        raise HTTPException(status_code=400, detail="Cannot buy your own listing")
+    if listing["listing_type"] == "BUY_NOW":
+        amount = float(listing["price"])
+    elif listing["listing_type"] == "MAKE_OFFER" and offer_amount:
+        amount = float(offer_amount)
+    else:
+        raise HTTPException(status_code=400, detail="Invalid listing type or missing offer amount")
+
+    platform_fee = round(amount * PLATFORM_FEE_PERCENT / 100, 2)
+    host_url = body.get("origin_url", str(request.base_url).rstrip("/"))
+    success_url = f"{host_url}/iso?payment=success&session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = f"{host_url}/iso?payment=cancelled"
+    webhook_url = f"{str(request.base_url).rstrip('/')}/api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    metadata = {
+        "listing_id": listing_id, "buyer_id": user["id"],
+        "seller_id": listing["user_id"], "platform_fee": str(platform_fee),
+        "type": "marketplace_purchase",
+    }
+    checkout_req = CheckoutSessionRequest(
+        amount=amount, currency="usd",
+        success_url=success_url, cancel_url=cancel_url, metadata=metadata,
+    )
+    session = await stripe_checkout.create_checkout_session(checkout_req)
+
+    now = datetime.now(timezone.utc).isoformat()
+    await db.payment_transactions.insert_one({
+        "id": str(uuid.uuid4()), "session_id": session.session_id,
+        "listing_id": listing_id, "buyer_id": user["id"],
+        "seller_id": listing["user_id"], "amount": amount,
+        "platform_fee": platform_fee, "seller_payout": round(amount - platform_fee, 2),
+        "currency": "usd", "payment_status": "PENDING",
+        "metadata": metadata, "created_at": now, "updated_at": now,
+    })
+    return {"url": session.url, "session_id": session.session_id}
+
+
+@api_router.get("/payments/status/{session_id}")
+async def get_payment_status(session_id: str, request: Request, user: Dict = Depends(require_auth)):
+    txn = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0})
+    if not txn:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    if txn["payment_status"] in ["PAID", "FAILED", "EXPIRED"]:
+        return {"status": txn["payment_status"], "amount": txn["amount"], "session_id": session_id}
+
+    webhook_url = f"{str(request.base_url).rstrip('/')}/api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    checkout_status = await stripe_checkout.get_checkout_status(session_id)
+    now = datetime.now(timezone.utc).isoformat()
+    new_status = "PENDING"
+    if checkout_status.payment_status == "paid":
+        new_status = "PAID"
+    elif checkout_status.status == "expired":
+        new_status = "EXPIRED"
+
+    if new_status != txn["payment_status"]:
+        await db.payment_transactions.update_one({"session_id": session_id}, {"$set": {
+            "payment_status": new_status, "updated_at": now,
+        }})
+        if new_status == "PAID":
+            await db.listings.update_one({"id": txn["listing_id"]}, {"$set": {"status": "SOLD"}})
+            listing = await db.listings.find_one({"id": txn["listing_id"]}, {"_id": 0})
+            buyer = await db.users.find_one({"id": txn["buyer_id"]}, {"_id": 0})
+            await create_notification(txn["seller_id"], "SALE_COMPLETED", "You made a sale!",
+                                      f"@{buyer.get('username','?')} bought {listing.get('album','?')} for ${txn['amount']}. Payout: ${txn['seller_payout']}",
+                                      {"listing_id": txn["listing_id"], "amount": txn["amount"]})
+            await create_notification(txn["buyer_id"], "PURCHASE_COMPLETED", "Purchase confirmed!",
+                                      f"Your payment of ${txn['amount']} for {listing.get('album','?')} is confirmed.",
+                                      {"listing_id": txn["listing_id"]})
+
+    return {"status": new_status, "amount": txn["amount"], "session_id": session_id}
+
+
+@api_router.post("/webhook/stripe")
+async def stripe_webhook(request: Request):
+    body_bytes = await request.body()
+    sig = request.headers.get("Stripe-Signature", "")
+    webhook_url = f"{str(request.base_url).rstrip('/')}/api/webhook/stripe"
+    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+    try:
+        event = await stripe_checkout.handle_webhook(body_bytes, sig)
+        if event.payment_status == "paid" and event.session_id:
+            now = datetime.now(timezone.utc).isoformat()
+            txn = await db.payment_transactions.find_one({"session_id": event.session_id}, {"_id": 0})
+            if txn and txn["payment_status"] != "PAID":
+                await db.payment_transactions.update_one({"session_id": event.session_id}, {"$set": {
+                    "payment_status": "PAID", "updated_at": now,
+                }})
+                await db.listings.update_one({"id": txn["listing_id"]}, {"$set": {"status": "SOLD"}})
+    except Exception as e:
+        logging.error(f"Webhook error: {e}")
+    return {"received": True}
+
+
+@api_router.get("/payments/my-sales")
+async def get_my_sales(user: Dict = Depends(require_auth)):
+    txns = await db.payment_transactions.find({"seller_id": user["id"]}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    total_earned = sum(t.get("seller_payout", 0) for t in txns if t.get("payment_status") == "PAID")
+    total_fees = sum(t.get("platform_fee", 0) for t in txns if t.get("payment_status") == "PAID")
+    return {
+        "transactions": txns,
+        "total_earned": round(total_earned, 2),
+        "total_fees": round(total_fees, 2),
+        "total_sales": sum(1 for t in txns if t.get("payment_status") == "PAID"),
+    }
+
+
+# ============== NOTIFICATION ROUTES ==============
+
+@api_router.get("/notifications")
+async def get_notifications(limit: int = 30, user: Dict = Depends(require_auth)):
+    notifs = await db.notifications.find({"user_id": user["id"]}, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+    return notifs
+
+
+@api_router.get("/notifications/unread-count")
+async def get_unread_count(user: Dict = Depends(require_auth)):
+    count = await db.notifications.count_documents({"user_id": user["id"], "read": False})
+    return {"count": count}
+
+
+@api_router.put("/notifications/{notification_id}/read")
+async def mark_notification_read(notification_id: str, user: Dict = Depends(require_auth)):
+    await db.notifications.update_one({"id": notification_id, "user_id": user["id"]}, {"$set": {"read": True}})
+    return {"message": "Marked as read"}
+
+
+@api_router.put("/notifications/read-all")
+async def mark_all_read(user: Dict = Depends(require_auth)):
+    await db.notifications.update_many({"user_id": user["id"], "read": False}, {"$set": {"read": True}})
+    return {"message": "All marked as read"}
+
+
 # ============== PROFILE DATA ROUTES ==============
 
 @api_router.get("/users/{username}/spins")
@@ -2498,6 +2727,12 @@ async def like_post(post_id: str, user: Dict = Depends(require_auth)):
         "created_at": now
     })
     
+    if post.get("user_id") != user["id"]:
+        u = await db.users.find_one({"id": user["id"]}, {"_id": 0})
+        await create_notification(post["user_id"], "POST_LIKED", "Someone liked your post",
+                                  f"@{u.get('username','?')} liked your post",
+                                  {"post_id": post_id})
+
     return {"message": "Post liked"}
 
 @api_router.delete("/posts/{post_id}/like")
@@ -2529,6 +2764,11 @@ async def add_comment(post_id: str, comment_data: CommentCreate, user: Dict = De
     
     await db.comments.insert_one(comment_doc)
     
+    if post.get("user_id") != user["id"]:
+        await create_notification(post["user_id"], "NEW_COMMENT", "New comment on your post",
+                                  f"@{user.get('username','?')} commented on your post",
+                                  {"post_id": post_id})
+
     user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url")}
     
     return CommentResponse(**comment_doc, user=user_data)
@@ -3204,6 +3444,9 @@ async def startup_event():
     await db.trades.create_index([("responder_id", 1)])
     await db.trades.create_index("status")
     await db.trade_ratings.create_index("rated_user_id")
+    await db.notifications.create_index([("user_id", 1), ("created_at", -1)])
+    await db.notifications.create_index([("user_id", 1), ("read", 1)])
+    await db.payment_transactions.create_index("session_id")
 
     # Mark demo user as admin
     await db.users.update_one({"email": "demo@example.com"}, {"$set": {"is_admin": True}})
