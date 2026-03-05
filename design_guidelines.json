@@ -1,0 +1,150 @@
+{
+  "identity": {
+    "name": "WaxLog",
+    "description": "The Social Network for Vinyl Collectors",
+    "aesthetic_theme": "Romantic Analog",
+    "tone": "Soft, Nostalgic, tactile, premium but accessible"
+  },
+  "typography": {
+    "font_family_heading": "\"DM Serif Display\", serif",
+    "font_family_body": "\"Inter\", sans-serif",
+    "import_url": "@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&display=swap');",
+    "usage_rules": {
+      "headings": "Use DM Serif Display for all H1-H3. Italicize key emotional words for emphasis. Letter-spacing: normal.",
+      "body": "Use Inter for all UI text, labels, and paragraphs. Use 'tracking-wide' for uppercase labels to add elegance.",
+      "hero_title": "text-5xl md:text-7xl font-normal tracking-tight text-[#1F1F1F]",
+      "section_title": "text-3xl md:text-4xl font-normal text-[#1F1F1F] mb-6"
+    }
+  },
+  "colors": {
+    "palette": {
+      "primary_pink": "#F6D6DE",
+      "cream_bg": "#FAF7F2",
+      "dusty_rose": "#D98FA1",
+      "black_text": "#1F1F1F",
+      "champagne_accent": "#E6C98B",
+      "white": "#FFFFFF",
+      "vinyl_black": "#121212",
+      "success_sage": "#8BA88E",
+      "error_muted": "#D96C6C"
+    },
+    "token_mapping": {
+      "background": "#FAF7F2",
+      "foreground": "#1F1F1F",
+      "primary": "#1F1F1F",
+      "primary_foreground": "#FFFFFF",
+      "secondary": "#F6D6DE",
+      "secondary_foreground": "#1F1F1F",
+      "accent": "#E6C98B",
+      "accent_foreground": "#1F1F1F",
+      "muted": "#F2EBE0",
+      "muted_foreground": "#8A8A8A",
+      "card": "#FFFFFF",
+      "card_foreground": "#1F1F1F",
+      "border": "#E6C98B",
+      "input": "#EDE5D8",
+      "ring": "#D98FA1"
+    },
+    "gradients": {
+      "hero_overlay": "linear-gradient(180deg, rgba(250,247,242,0) 0%, #FAF7F2 100%)",
+      "vinyl_sheen": "linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.1) 100%)"
+    }
+  },
+  "visual_enhancers": {
+    "radius": {
+      "default": "0.75rem",
+      "card": "1rem",
+      "button": "9999px"
+    },
+    "shadows": {
+      "soft": "0 4px 20px -2px rgba(217, 143, 161, 0.15)",
+      "vinyl": "0 10px 30px -5px rgba(0, 0, 0, 0.3)",
+      "float": "0 20px 40px -5px rgba(230, 201, 139, 0.2)"
+    },
+    "textures": {
+      "grain_url": "url('https://grainy-gradients.vercel.app/noise.svg')",
+      "usage": "Overlay noise texture with opacity 0.4 on the main background to give a paper/analog feel."
+    },
+    "borders": {
+      "subtle": "1px solid rgba(230, 201, 139, 0.3)"
+    }
+  },
+  "layout": {
+    "container": {
+      "max_width": "max-w-6xl",
+      "padding": "px-4 md:px-8",
+      "center": "mx-auto"
+    },
+    "grid_system": {
+      "gallery": "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6",
+      "dashboard": "grid grid-cols-1 md:grid-cols-12 gap-6"
+    },
+    "spacing_scale": {
+      "section_gap": "py-20 md:py-32",
+      "element_gap": "gap-4"
+    }
+  },
+  "components": {
+    "Button": {
+      "base": "inline-flex items-center justify-center rounded-full text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 h-10 px-8 py-2",
+      "variants": {
+        "default": "bg-[#1F1F1F] text-white hover:bg-[#1F1F1F]/90 hover:scale-105 transition-transform duration-200",
+        "secondary": "bg-[#F6D6DE] text-[#1F1F1F] hover:bg-[#D98FA1] hover:text-white transition-colors duration-200",
+        "outline": "border-2 border-[#1F1F1F] bg-transparent hover:bg-[#1F1F1F] hover:text-white",
+        "ghost": "hover:bg-[#F6D6DE]/30 text-[#1F1F1F]"
+      }
+    },
+    "Card": {
+      "base": "rounded-2xl border border-[#E6C98B]/30 bg-white/50 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow duration-300",
+      "vinyl_card": "aspect-square relative group overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-all duration-300 bg-black"
+    },
+    "Input": {
+      "base": "flex h-12 w-full rounded-xl border border-[#E6C98B]/50 bg-white/80 px-4 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D98FA1] focus-visible:border-transparent disabled:cursor-not-allowed disabled:opacity-50"
+    }
+  },
+  "motion": {
+    "spin": "animate-spin-slow (define as 3s linear infinite for 'playing' state)",
+    "fade_in": "animate-in fade-in duration-500",
+    "slide_up": "animate-in slide-in-from-bottom-4 duration-700",
+    "hover_lift": "hover:-translate-y-1 transition-transform duration-300 ease-out"
+  },
+  "image_urls": {
+    "hero_bg": "https://images.unsplash.com/photo-1602216056096-3b40cc0c994b?q=80&w=3270&auto=format&fit=crop",
+    "texture_noise": "https://grainy-gradients.vercel.app/noise.svg",
+    "default_avatar": "https://api.dicebear.com/7.x/miniavs/svg?seed=waxlog",
+    "placeholder_album": "https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=3000&auto=format&fit=crop",
+    "spin_icon": "https://cdn-icons-png.flaticon.com/512/109/109602.png"
+  },
+  "icons": {
+    "library": "lucide-react",
+    "preferred_icons": {
+      "disc": "Disc",
+      "music": "Music2",
+      "user": "UserCircle",
+      "heart": "Heart",
+      "share": "Share2",
+      "collection": "Library",
+      "search": "Search"
+    }
+  },
+  "instructions_to_main_agent": [
+    "1. Setup Fonts: Add the Google Fonts import to /app/frontend/src/index.css immediately.",
+    "2. Configure Tailwind: Update /app/frontend/tailwind.config.js with the colors and borderRadius defined above. Extend the theme, don't just overwrite.",
+    "3. Global CSS: Add a body rule in index.css to set bg-[#FAF7F2] and text-[#1F1F1F]. Add the noise texture as a pseudo-element on the body if possible.",
+    "4. Component Customization: When using Shadcn, override the default 'radius' variable to 0.75rem or 1rem.",
+    "5. Layouts: For the 'Feed', use a single column layout with max-width-xl. For 'Collection', use a responsive grid (2 cols mobile, 4-5 cols desktop).",
+    "6. Animations: Create a 'spin-slow' utility in tailwind config: animation: { 'spin-slow': 'spin 8s linear infinite' }.",
+    "7. Data Test IDs: Ensure every interactive element has a data-testid attribute."
+  ],
+  "universal_guidelines": [
+    "Dark colors look good when used independently without gradients.",
+    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use glass-morphism effects with backdrop filters (12-24px blur).",
+    "You MUST NOT apply universal transition. Eg: transition: all. This results in breaking transforms.",
+    "You MUST NOT center align the app container, ie do not add .App { text-align: center; }.",
+    "Every interaction needs micro-animations - hover states, transitions, parallax effects.",
+    "Prioritize using pre-existing components from src/components/ui when applicable.",
+    "Use sonner for toasts."
+  ]
+}
