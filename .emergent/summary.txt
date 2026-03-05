@@ -3,80 +3,88 @@ The user wants to build a web app called **The HoneyGroove**, a social platform 
 
 **PRODUCT REQUIREMENTS (Synthesized from initial request and subsequent user directives):**
 *   **Core App:** A full-stack application for vinyl collectors to track their collection, log spins, and interact socially.
-*   **Branding & Pages:** A warm, honey-inspired theme. Includes a landing page, About Page, FAQ Page, and an official logo/favicon.
-*   **User System & Profile:** User accounts with profiles featuring avatar, bio, setup, location, favorite genre, stats, and a following system. Includes a permanent Founding Member badge for the first 500 users.
+*   **Branding & Pages:** A warm, honey-inspired theme. Includes a landing page, About Page, FAQ Page, and an official logo/favicon. Includes a public beta signup page.
+*   **User System & Profile:** Invite-only user accounts with profiles featuring avatar, bio, setup, location, favorite genre, stats, and a following system. Includes a permanent Founding Member badge for the first 500 users. The app is locked down behind authentication.
 *   **Onboarding:** A mandatory 3-step onboarding flow for new users to build their initial collection and follow other collectors.
 *   **Social & Engagement Features:**
-    *   **The Hive (Feed):** A central social feed for user posts, supporting types like Now Spinning, New Haul, ISO, and a new free-form A Note.
-    *   **Daily Prompt:** A daily community prompt with a 'buzz in' flow, streak tracking, and a shareable export card.
+    *   **The Hive (Feed):** A central social feed for user posts, supporting types like Now Spinning, New Haul, ISO, and a free-form A Note.
+    *   **Daily Prompt:** A daily community prompt with a 'buzz in' flow, streak tracking (with profile display and nudge notifications), and a shareable export card.
     *   **The Mood Board:** A weekly auto-generated 3x3 grid of a user's most-spun album covers, exportable and shareable to The Hive.
-    *   **Collector Bingo:** A weekly 5x5 bingo card with tactile animations, real-time bingo detection, community stats on locked cards, and a compact preview on the Explore page that opens into a full-screen modal. Features both active and locked countdown timers.
+    *   **Collector Bingo:** A weekly 5x5 bingo card with tactile animations, real-time bingo detection, community stats on locked cards, and a compact preview on the Explore page that opens into a full-screen modal.
 *   **Search & Discovery:**
     *   **Global Search:** A global, live-updating search for records, collectors, and posts, accessible from the main navigation.
     *   **Explore Page:** A discovery page with Trending, Taste Match, Fresh Pressings, Most Wanted, and Near You sections.
     *   **Record Detail Page:** A dedicated page for each record showing Discogs data, market value, community ownership stats, and related Hive posts.
 *   **Collection Management & Valuation:** Integrates Discogs market data for collection value, Hidden Gems, and pricing assistance. All album art is cached.
-*   **The Honeypot (Marketplace):** A marketplace with a configurable platform fee (currently 6%) on all transactions.
-*   **Admin & Safety:** Admin panel sections for managing social features and a new configurable platform fee. A user-driven report and block system for posts, listings, and profiles.
+*   **The Honeypot (Marketplace):** A marketplace with a configurable platform fee (currently 6%) on all transactions, including sweetener cash additions to trades.
+*   **Admin & Safety:** A unified admin panel for managing beta signups, invite codes, social features (Daily Prompts, Bingo), user reports, and the platform fee. A user-driven report and block system for posts, listings, and profiles.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A feature-rich full-stack application. Major recent additions include a global search system, a comprehensive 3-step user onboarding flow, expanded user profiles (bio, setup, location), and a Founding Member badge system. The platform fee for the marketplace has been updated from a hardcoded 4% to a dynamic, admin-configurable 6%. The main navigation has been fixed to provide separate, distinct access to the Explore page and the new Global Search functionality. All previously implemented features like the Daily Prompt, Mood Board, and highly interactive Collector Bingo are complete and integrated.
+The application is a feature-rich, full-stack platform in a closed beta state. The entire app, except for the landing and new beta signup pages, is locked down and requires user authentication. New user registration is disabled and works on an invite-only basis, managed through a new section in the admin panel.
+
+Major completed features include:
+- A unified admin panel at  that consolidates management of Beta Signups, Invite Codes, Daily Prompts, Bingo Squares, User Reports, and Platform Settings.
+- A fully implemented Record Detail Page that aggregates and displays record info, community ownership stats, and related Hive posts.
+- A Daily Prompt streak tracking system with nudge notifications and a UI counter on user profiles.
+- A Week in Wax shareable card that has been completely redesigned.
+- A dynamic platform fee (6%) that is correctly applied to both marketplace sales and sweetener payments in trades.
+- Numerous UI fixes and enhancements based on direct user feedback.
 
 **Last working item**:
--   **Last item agent was working:** The agent completed a batch of high-priority user requests:
-    1.  **Navigation Fix:** Separated the Explore page icon (globe) from the Global Search icon (magnifying glass) in the main navigation bar to resolve user confusion.
-    2.  **Dynamic Platform Fee:** Refactored the marketplace transaction fee. It was changed from a hardcoded 4% to a dynamic value (defaulting to 6%) fetched from a new  collection in the database.
-    3.  **Admin Fee Management:** Created backend API endpoints for an administrator to get and set the platform fee percentage.
-    4.  **Copy Updates:** Updated all user-facing text (e.g., in the FAQ) to reflect the new 6% fee.
+-   **Last item agent was working:** The agent was correcting the sweetener payment fee to ensure it used the same dynamic, admin-configurable platform fee as the main marketplace, rather than a hardcoded 4%. This involved updating the backend to use the shared fee logic and creating a new public API endpoint to expose the fee percentage to the frontend. The frontend was then refactored to fetch and display this dynamic fee across the trade proposal and detail views.
 -   **Status:** USER VERIFICATION PENDING
 -   **Agent Testing Done:** Y
 -   **Which testing method agent to use?** both
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   There are no outstanding issues. The previous work is complete and awaiting user verification.
+-   There are no outstanding issues. The last task addressed a user-_reported_ inconsistency and is now complete.
 
 **In progress Task List**:
 -   There are no tasks currently in progress.
 
 **Upcoming and Future Tasks**
--   **Upcoming Tasks:**
-    -   **P1: Admin Panel UI Development:**
-        -   Build the UI for managing Daily Prompts and Bingo Squares.
-        -   Build the UI for managing the new configurable platform fee.
-        -   Build the UI for the report review queue.
-    -   **P1: Complete Record Detail Page:** The page exists but needs to be fully populated with all specified data sections (Discogs value, community owners, related posts, etc.).
-    -   **P1: Daily Prompt Enhancements:**
-        -   Implement backend logic for streak tracking.
-        -   Implement scheduled nudge notifications.
-    -   **P1: Browser Push Notifications:** Enhance the existing in-app notification system.
-    -   **P1: Sweetener Payments UI:** Implement the frontend for the existing Sweetener payment endpoint.
+-   **Upcoming Tasks (P2):**
+    -   **P2 (Highest Priority): Discogs Collection Import:** Allow users to connect their Discogs account (via OAuth or username) to bulk import their existing collection. The implementation should handle duplicates gracefully and show a summary upon completion.
 -   **Future Tasks:**
-    -   **P2: Discogs Collection Import:** A planned feature mentioned in the FAQ.
+    -   **P2: Hauls Enhancement:** Develop a dedicated page and more functionality for Haul posts.
     -   **P2: Refactor :** Address known technical debt in this complex component.
     -   **P2: Monetization Features:** Implement Pro memberships or a Verified Seller badge.
-    -   **P2: Enhance Hauls Feature:** Develop a dedicated page and more functionality.
 
 **Completed work in this session**
--   **Platform Fee & Navigation Overhaul:**
-    -   Separated Explore and Search in the main navigation.
-    -   Made the platform fee dynamic (defaulting to 6%) and manageable via new admin APIs.
-    -   Updated all user-facing copy to reflect the new fee.
--   **Global Search:** Implemented a multi-tabbed search for Records, Collectors, and Posts, accessible from the navbar.
--   **User Onboarding Flow:** Created a mandatory, 3-step modal flow for all new users.
--   **Expanded Profile & Badges:** Added Bio, Setup, Location, and Genre fields to profiles and implemented a Founding Member badge for early users.
--   **Empty States:** Added thoughtful empty state messages and CTAs across all major app sections.
--   **Record Detail Page:** Created the route and basic page structure.
--   **Report/Block System:** Implemented backend models and API endpoints for user-driven reporting.
--   **A Note Post Type:** Added a new free-form text post type to The Hive feed.
--   **Collector Bingo Enhancements:** Made the component highly interactive with animations, countdowns, community stats, and a compact preview/modal design.
--   **Mobile Navigation Fix:** Implemented a fixed top/bottom nav bar layout for mobile to prevent content overlap.
--   **1080x1920 Exports:** Updated all image exports (Bingo, Mood Board) to a vertical Instagram Story format.
+-   **Auth Lockdown & Invite-Only System:**
+    -   Implemented  and  components to lock down the application.
+    -   Disabled public signup and replaced all CTAs with a waitlist modal that directs users to the  page.
+    -   Created an invite-only system where new accounts can only be created via a unique code at .
+-   **Beta Signup Page & Notifications:**
+    -   Built a public beta signup page at  to capture user interest.
+    -   Integrated the Resend SDK to send email notifications to an admin address for every new beta signup.
+-   **Unified Admin Panel:**
+    -   Created a single, comprehensive admin dashboard at  with a sidebar for navigation.
+    -   Built UI sections for: Beta Signups & Invite Codes, Daily Prompts, Bingo Squares, User Reports, and Platform Settings.
+-   **Record Detail Page Completion:**
+    -   Created a new backend endpoint () to aggregate all necessary data for the page.
+    -   Rebuilt the  frontend to display album info, community stats (owners, spin counts), and related Hive posts.
+-   **Daily Prompt Streaks & Notifications:**
+    -   Implemented backend logic and a new user model field for tracking daily prompt streaks.
+    -   Set up a scheduled background task () to send nudge notifications to users to maintain their streaks.
+    -   Added a streak counter display (🔥 icon) to the user profile page.
+    -   Enhanced the Week in Wax report to mention perfect weekly streaks.
+-   **Sweetener Payments & Dynamic Fee Fix:**
+    -   Enhanced the UI for sweetener payments in the trade flow.
+    -   Corrected the sweetener fee to use the dynamic platform fee (6%) from settings, removing a hardcoded 4%.
+-   **Week in Wax Redesign:**
+    -   Completely rewrote the  function in  to match detailed design specifications, including a new layout, data-driven labels, elegant bar charts, and a Top Record hero section.
+-   **UI/UX Fixes:**
+    -   Removed the 'x' button from the global search dialog.
+    -   Adjusted the logo size, capitalization, and spacing on the beta signup page per user feedback.
+-   **Stripe Key Update:**
+    -   Replaced placeholder Stripe keys with new live test keys provided by the user and stored them in environment variables.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1:** The  was noted as being overly complex and a candidate for future refactoring.
+-   **Issue 1:**  was noted as being overly complex and a candidate for future refactoring.
 
 **Known issue recurrence from previous fork**
 -   N/A
@@ -88,67 +96,81 @@ A feature-rich full-stack application. Major recent additions include a global s
 -   **Frontend:** React, Tailwind CSS, Shadcn UI
 -   **Backend:** FastAPI, Pydantic, Motor (async MongoDB)
 -   **Database:** MongoDB
--   **Dynamic Configuration:** The platform fee is now stored in a  collection in MongoDB and fetched at runtime, rather than being hardcoded.
--   **Image Generation:** Pillow library for server-side PNG exports.
+-   **Authentication:** Implemented protected routes () and admin-only routes () in React to lock down the application based on auth state and user role.
+-   **Invite System:** Server-side validation of single-use invite codes stored in a dedicated MongoDB collection.
+-   **Scheduled Tasks:** Using  within the FastAPI application to run daily background jobs for sending streak nudge notifications.
+-   **Transactional Emails:** Integrated the Resend SDK to send email notifications for new beta signups.
+-   **Dynamic Configuration:** Refactored frontend components to fetch configuration (platform fee) from a dedicated API endpoint instead of using hardcoded values.
 
 **key DB schema**
--   **users:** 
--   **platform_settings:**  (NEW)
--   **reports:**  (NEW)
+-   **users:**  (MODIFIED)
+-   **beta_signups:**  (NEW)
+-   **invite_codes:**  (NEW)
+-   **platform_settings:** 
+-   **reports:** 
 
 **changes in tech stack**
--   None.
+-   **Resend:** Added for transactional email notifications.
+-   **APScheduler:** Added for running scheduled background tasks on the backend.
+-   **react-helmet-async:** Added to the frontend for managing page metadata (SEO).
 
 **All files of reference**
-*   **New Backend Routes:** , 
-*   **New Frontend Components:** , , , 
-*   **Modified Core Files:** , , , , , , 
+*   **New Backend Routes:**  (significantly expanded),  ().
+*   **New Frontend Pages:** , , .
+*   **New Core Components:** , .
+*   **Modified Core Files:** , , , , , , , , , .
 
 **Areas that need refactoring**:
--    is a known complex component that could be simplified.
+-    remains a known complex component that could be simplified.
 
 **key api endpoints**
 -   
--    (for onboarding)
+-   
+-   
+-   
+-   (All other admin endpoints under )
+-   
 -   
 -   
 -   
 
 **Critical Info for New Agent**
--   The last task was to fix the main navigation and convert the platform fee into a dynamic, admin-configurable variable. This work is complete but pending user verification.
--   The platform fee is no longer hardcoded anywhere. It's fetched from the  collection via a helper function . The admin panel to manage this has a backend but no UI.
--   A very large number of features were added in this session. A full regression test would be a good idea after getting user approval on the latest changes and before starting the next phase of work (Admin Panel UI).
+-   The application is now in a closed beta state. Public signup is disabled, and most routes are protected by authentication. New users can only join with an admin-generated invite code.
+-   A new, unified admin panel exists at , providing a single interface for managing all administrative tasks.
+-   The platform fee is now correctly and dynamically applied to both marketplace transactions and sweetener payments. A new public endpoint () was created for the frontend to fetch this value.
+-   The user has provided new Stripe keys which have been set in . However, the user was asked to provide the  and has not yet done so. The corresponding environment variable is present but empty.
+-   The next major priority is implementing the **Discogs Collection Import** feature.
 
 **documents and test reports created in this job**
 -    (updated multiple times)
--   Multiple test reports in , including the latest reports verifying all newly implemented features.
+-   Multiple test reports in , including the latest reports verifying the Admin Panel, Record Detail Page, and P1 features.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **user:** Requested A Note post type and an active countdown for the Collector Bingo card.
-2.  **agent:** Implemented the A Note feature and the active countdown for bingo, ran tests, and finished.
-3.  **user:** Submitted a massive 7-point feature request: Global Search, Onboarding Flow, Profile Fields, Empty States, Record Detail Page, Report/Block, and Founding Member Badge.
-4.  **agent:** Acknowledged the large scope and created a structured plan, which the user approved.
-5.  **agent:** Began work on Global Search.
-6.  **agent:** Implemented the full 7-feature batch, ran tests, and finished.
-7.  **user:** Pointed out a bug: the Global Search had replaced the Explore page in the navigation. Also requested the platform fee be updated from 4% to 6% and made configurable from an admin panel.
-8.  **agent:** Acknowledged the feedback and created a plan to fix the navigation and implement the dynamic fee system.
-9.  **agent:** Implemented the navigation fix and the dynamic fee system.
-10. **agent:** Ran tests, verified the changes with a screenshot, and called the testing agent. The work is now complete and awaiting user verification.
+1.  **user:** Quick confirmation before moving to P2 — please verify that the sweetener payment fee is set to 6% to match the marketplace transaction fee.
+2.  **agent:** Acknowledged the discrepancy and implemented the fix.
+3.  **user:** Approved plan for P1 tasks (Daily Prompt Streaks & Sweetener UI) followed by P2 (Discogs Import).
+4.  **agent:** Acknowledged and started exploration.
+5.  **user:** Approved plan to build a unified admin panel.
+6.  **agent:** Acknowledged and started implementation.
+7.  **user:** lets work on the admin panel
+8.  **agent:** Acknowledged and presented a plan.
+9.  **user:** cool (in response to UI fixes)
+10. **user:** there should be space at the bottom of the page under the cta
 
 **Project Health Check:**
 -   **Broken:** None known.
 -   **Mocked:**
-    -   The Admin Panel UI for managing the platform fee is non-existent (backend is ready).
-    -   The Admin Panel UI for reviewing user reports is non-existent (backend is ready).
-    -   The  is a placeholder and does not yet display the required data sections.
+    -   The  environment variable in  is empty. The agent requested this value from the user, but it has not been provided yet.
 
 **3rd Party Integrations**
--   **Discogs API:** Used for record data, market valuation, and high-resolution album art.
--   **Stripe Connect:** Used for marketplace payments (now with a dynamic 6% fee).
--   **Pillow:** Python library used for all server-side image generation.
+-   **Discogs API:** Used for record data and album art.
+-   **Stripe Connect:** Used for marketplace and sweetener payments. Keys have been updated to user-provided values.
+-   **Pillow:** Python library for server-side image generation.
+-   **Resend:** (New) Used for sending transactional emails (e.g., beta signup notifications).
+-   **APScheduler:** (New) Used for backend scheduled tasks (e.g., streak notifications).
 
 **Testing status**
--   **Testing agent used after significant changes:** YES. The agent was used multiple times to validate large feature batches.
+-   **Testing agent used after significant changes:** YES. The testing agent was used successfully to validate the auth lockdown, the unified admin panel, the completed record detail page, and the daily prompt/sweetener features.
 -   **Troubleshoot agent used after agent stuck in loop:** NO
 -   **Test files created:** []
 -   **Known regressions:** None.
@@ -156,6 +178,7 @@ A feature-rich full-stack application. Major recent additions include a global s
 **Credentials to test flow:**
 -   **Email:** 
 -   **Password:** 
+    *(This user has admin privileges)*
 
 **What agent forgot to execute**
--   The agent successfully implemented all items from the user's latest requests. The next steps are clearly defined in the Upcoming Tasks based on the user's overall project plan.</analysis>
+-   The agent successfully implemented all requested features. The only pending action is waiting for the user to provide the  value, which the agent explicitly requested.</analysis>

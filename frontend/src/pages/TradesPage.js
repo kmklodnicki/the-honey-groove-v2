@@ -48,6 +48,7 @@ const TradesPage = () => {
   const [activeTab, setActiveTab] = useState('active');
   const [selectedTrade, setSelectedTrade] = useState(null);
   const [showDetail, setShowDetail] = useState(false);
+  const [platformFee, setPlatformFee] = useState(6);
 
   const fetchTrades = useCallback(async () => {
     try {
@@ -58,6 +59,9 @@ const TradesPage = () => {
   }, [API, token]);
 
   useEffect(() => { fetchTrades(); }, [fetchTrades]);
+  useEffect(() => {
+    axios.get(`${API}/platform-fee`).then(r => setPlatformFee(r.data.platform_fee_percent)).catch(() => {});
+  }, [API]);
 
   const activeTrades = trades.filter(t => ['PROPOSED', 'COUNTERED', 'SHIPPING', 'CONFIRMING', 'DISPUTED'].includes(t.status));
   const completedTrades = trades.filter(t => ['COMPLETED', 'DECLINED', 'CANCELLED'].includes(t.status));
@@ -91,7 +95,7 @@ const TradesPage = () => {
               <Link to="/honeypot"><Button className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full">Go to The Honeypot</Button></Link>
             </Card>
           ) : (
-            <div className="space-y-3">{activeTrades.map(t => <TradeCard key={t.id} trade={t} currentUserId={user?.id} onClick={() => openDetail(t)} />)}</div>
+            <div className="space-y-3">{activeTrades.map(t => <TradeCard key={t.id} trade={t} currentUserId={user?.id} onClick={() => openDetail(t)} feePct={platformFee} />)}</div>
           )}
         </TabsContent>
         <TabsContent value="history">
@@ -102,20 +106,20 @@ const TradesPage = () => {
               <p className="text-muted-foreground text-sm">Completed and declined trades will appear here.</p>
             </Card>
           ) : (
-            <div className="space-y-3">{completedTrades.map(t => <TradeCard key={t.id} trade={t} currentUserId={user?.id} onClick={() => openDetail(t)} />)}</div>
+            <div className="space-y-3">{completedTrades.map(t => <TradeCard key={t.id} trade={t} currentUserId={user?.id} onClick={() => openDetail(t)} feePct={platformFee} />)}</div>
           )}
         </TabsContent>
       </Tabs>
       {selectedTrade && (
         <TradeDetailModal open={showDetail} onOpenChange={(o) => { if (!o) { setShowDetail(false); setSelectedTrade(null); } }}
-          trade={selectedTrade} currentUserId={user?.id} token={token} API={API} onUpdate={() => { fetchTrades(); setShowDetail(false); setSelectedTrade(null); }} />
+          trade={selectedTrade} currentUserId={user?.id} token={token} API={API} feePct={platformFee} onUpdate={() => { fetchTrades(); setShowDetail(false); setSelectedTrade(null); }} />
       )}
     </div>
   );
 };
 
 // ======= Trade Card =======
-const TradeCard = ({ trade, currentUserId, onClick }) => {
+const TradeCard = ({ trade, currentUserId, onClick, feePct = 6 }) => {
   const isInitiator = trade.initiator_id === currentUserId;
   const otherUser = isInitiator ? trade.responder : trade.initiator;
   const sc = STATUS_CONFIG[trade.status] || STATUS_CONFIG.PROPOSED;
@@ -150,7 +154,7 @@ const TradeCard = ({ trade, currentUserId, onClick }) => {
               : `${trade.responder_id === currentUserId ? 'you pay' : 'they pay'}`
             }
           </span>
-          <span className="ml-auto text-[10px] text-muted-foreground" title="4% platform fee on sweetener amount only">4% fee</span>
+          <span className="ml-auto text-[10px] text-muted-foreground" title={`${feePct}% platform fee on sweetener amount only`}>{feePct}% fee</span>
         </div>
       )}
       {/* Shipping status summary */}
@@ -214,7 +218,7 @@ const RecordMini = ({ record, label }) => (
 );
 
 // ======= Trade Detail Modal =======
-const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API, onUpdate }) => {
+const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API, feePct = 6, onUpdate }) => {
   const [loading, setLoading] = useState(false);
   const [showCounter, setShowCounter] = useState(false);
   const [counterMessage, setCounterMessage] = useState('');
@@ -277,7 +281,7 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
       const payerIsMe = payer?.id === currentUserId;
       const confirmed = window.confirm(
         payerIsMe
-          ? `By accepting, a $${trade.boot_amount} sweetener payment will be initiated (4% platform fee applies). Proceed?`
+          ? `By accepting, a $${trade.boot_amount} sweetener payment will be initiated (${feePct}% platform fee applies). Proceed?`
           : `This trade includes a $${trade.boot_amount} sweetener. The other party will be charged upon acceptance. Proceed?`
       );
       if (!confirmed) return;
@@ -416,12 +420,12 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
                 }
               </p>
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                <span>4% platform fee (${(trade.boot_amount * 0.04).toFixed(2)})</span>
+                <span>{feePct}% platform fee (${(trade.boot_amount * feePct / 100).toFixed(2)})</span>
                 <span>&middot;</span>
-                <span>Recipient gets ${(trade.boot_amount * 0.96).toFixed(2)}</span>
+                <span>Recipient gets ${(trade.boot_amount * (100 - feePct) / 100).toFixed(2)}</span>
               </div>
               <p className="text-[10px] text-muted-foreground mt-2 italic">
-                A sweetener is cash added to one side of a trade to balance value. Charged via Stripe when both parties accept.
+                A sweetener is cash added to one side of a trade to balance value. Charged via Stripe when both parties accept. {feePct}% platform fee applies.
               </p>
             </div>
           )}
@@ -766,7 +770,7 @@ const RecordDetail = ({ record, condition, photoUrls }) => (
 // ======= Propose Trade Modal (exported for ISOPage) =======
 const OFFER_CONDITIONS = ['Mint', 'Near Mint', 'Very Good Plus', 'Very Good', 'Good Plus', 'Good', 'Fair'];
 
-export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onSuccess }) => {
+export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onSuccess, feePct = 6 }) => {
   const { user: currentUser } = useAuth();
   const [records, setRecords] = useState([]);
   const [selectedRecordId, setSelectedRecordId] = useState('');
@@ -903,7 +907,7 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
 
           <div>
             <p className="text-xs font-medium text-muted-foreground mb-1">SWEETENER <span className="font-normal">(cash on top, optional)</span></p>
-            <p className="text-[10px] text-muted-foreground mb-2 italic">A sweetener balances value between records. 4% platform fee applies to the sweetener amount only.</p>
+            <p className="text-[10px] text-muted-foreground mb-2 italic">A sweetener balances value between records. {feePct}% platform fee applies to the sweetener amount only.</p>
             <div className="grid grid-cols-2 gap-2">
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -919,7 +923,7 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
             </div>
             {bootAmount && parseFloat(bootAmount) > 0 && (
               <p className="text-xs text-muted-foreground mt-1.5">
-                Fee: ${(parseFloat(bootAmount) * 0.04).toFixed(2)} &middot; Recipient gets ${(parseFloat(bootAmount) * 0.96).toFixed(2)}
+                Fee: ${(parseFloat(bootAmount) * feePct / 100).toFixed(2)} &middot; Recipient gets ${(parseFloat(bootAmount) * (100 - feePct) / 100).toFixed(2)}
               </p>
             )}
           </div>
