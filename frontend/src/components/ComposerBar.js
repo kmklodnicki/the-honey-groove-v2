@@ -21,11 +21,21 @@ import {
 import { Disc, Package, Search, Moon, Loader2, Plus, X } from 'lucide-react';
 import { toast } from 'sonner';
 
-const MOOD_PRESETS = [
-  'Late Night', 'Sunday Morning', 'Rainy Day', 'Road Trip',
-  'Golden Hour', 'Deep Focus', 'Party Mode', 'Lazy Afternoon',
-  'Melancholy', 'Upbeat Vibes', 'Cozy Evening', 'Workout',
-];
+const MOOD_CONFIG = {
+  'Late Night': { emoji: '\u{1F56F}\uFE0F', bg: '#1a1230', btnColor: '#6a3a9a', btnText: 'Post your Late Night mood', placeholder: 'what are you listening to at this hour?' },
+  'Sunday Morning': { emoji: '\u2600\uFE0F', bg: '#fff8e8', btnColor: '#e8a820', btnText: 'Post your Sunday Morning mood', placeholder: 'slow mornings, good records, nowhere to be...' },
+  'Rainy Day': { emoji: '\u{1F327}\uFE0F', bg: '#1a2a3a', btnColor: '#4a7aaa', btnText: 'Post your Rainy Day mood', placeholder: 'set the scene...' },
+  'Road Trip': { emoji: '\u{1F697}', bg: '#1a2a1a', btnColor: '#4a8a4a', btnText: 'Post your Road Trip mood', placeholder: 'where are you headed?' },
+  'Golden Hour': { emoji: '\u{1F305}', bg: '#2a1a08', btnColor: '#c8861a', btnText: 'Post your Golden Hour mood', placeholder: 'the light is perfect right now...' },
+  'Deep Focus': { emoji: '\u{1F3A7}', bg: '#0a1a0a', btnColor: '#2a6a2a', btnText: 'Post your Deep Focus mood', placeholder: 'what are you working on?' },
+  'Party Mode': { emoji: '\u{1F942}', bg: '#1a0a2a', btnColor: '#aa3a8a', btnText: 'Post your Party Mode mood', placeholder: "who's coming over?" },
+  'Lazy Afternoon': { emoji: '\u{1F6CB}\uFE0F', bg: '#2a1a0a', btnColor: '#aa7a3a', btnText: 'Post your Lazy Afternoon mood', placeholder: 'not moving from this spot...' },
+  'Melancholy': { emoji: '\u{1F494}', bg: '#1a1a2a', btnColor: '#5a5a8a', btnText: 'Post your Melancholy mood', placeholder: 'some records just hit different...' },
+  'Upbeat Vibes': { emoji: '\u2728', bg: '#1a2a1a', btnColor: '#3a9a5a', btnText: 'Post your Upbeat Vibes mood', placeholder: "what's got you feeling good?" },
+  'Cozy Evening': { emoji: '\u{1F9F8}', bg: '#2a1808', btnColor: '#aa5a2a', btnText: 'Post your Cozy Evening mood', placeholder: 'candles lit, record spinning...' },
+  'Workout': { emoji: '\u{1F525}', bg: '#2a0a0a', btnColor: '#cc3a2a', btnText: 'Post your Workout mood', placeholder: "what's keeping you going?" },
+};
+const MOOD_PRESETS = Object.keys(MOOD_CONFIG);
 
 const ComposerBar = ({ onPostCreated, records = [] }) => {
   const { token, API } = useAuth();
@@ -322,35 +332,50 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
 
       {/* Vinyl Mood Modal */}
       <Dialog open={activeModal === 'VINYL_MOOD'} onOpenChange={(open) => !open && closeModal()}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent
+          className="sm:max-w-md transition-colors duration-300"
+          style={moodPreset && MOOD_CONFIG[moodPreset] ? {
+            backgroundColor: MOOD_CONFIG[moodPreset].bg,
+            borderColor: MOOD_CONFIG[moodPreset].btnColor + '40',
+          } : {}}
+        >
           <DialogHeader>
-            <DialogTitle className="font-heading flex items-center gap-2"><Moon className="w-5 h-5 text-purple-600" /> Vinyl Mood</DialogTitle>
-            <DialogDescription>What's the vibe tonight?</DialogDescription>
+            <DialogTitle className="font-heading flex items-center gap-2" style={moodPreset && MOOD_CONFIG[moodPreset] ? { color: MOOD_CONFIG[moodPreset].btnColor } : { color: '#7e22ce' }}>
+              <Moon className="w-5 h-5" /> Vinyl Mood
+            </DialogTitle>
+            <DialogDescription style={moodPreset ? { color: '#aaa' } : {}}>What's the vibe tonight?</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <div>
-              <label className="text-sm font-medium mb-2 block">Pick a mood</label>
+              <label className="text-sm font-medium mb-2 block" style={moodPreset && MOOD_CONFIG[moodPreset] ? { color: MOOD_CONFIG[moodPreset].btnColor } : {}}>Pick a mood</label>
               <div className="grid grid-cols-3 gap-2">
-                {MOOD_PRESETS.map(m => (
-                  <button
-                    key={m}
-                    onClick={() => setMoodPreset(m)}
-                    className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
-                      moodPreset === m
-                        ? 'bg-purple-600 text-white shadow-md scale-105'
-                        : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
-                    }`}
-                    data-testid={`mood-${m.toLowerCase().replace(/\s/g, '-')}`}
-                  >
-                    {m}
-                  </button>
-                ))}
+                {MOOD_PRESETS.map(m => {
+                  const mc = MOOD_CONFIG[m];
+                  const isSelected = moodPreset === m;
+                  return (
+                    <button
+                      key={m}
+                      onClick={() => setMoodPreset(m)}
+                      className="px-3 py-2 rounded-lg text-xs font-medium transition-all"
+                      style={{
+                        background: isSelected ? mc.btnColor + '26' : (moodPreset ? 'rgba(255,255,255,0.08)' : '#faf5ff'),
+                        color: isSelected ? mc.btnColor : (moodPreset ? '#ccc' : '#7e22ce'),
+                        border: isSelected ? `2px solid ${mc.btnColor}` : '2px solid transparent',
+                        transform: isSelected ? 'scale(1.06)' : 'scale(1)',
+                        transition: 'transform 180ms ease-in-out, background 200ms, border 200ms, color 200ms',
+                      }}
+                      data-testid={`mood-${m.toLowerCase().replace(/\s/g, '-')}`}
+                    >
+                      {mc.emoji} {m}
+                    </button>
+                  );
+                })}
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Playing (optional)</label>
+              <label className="text-sm font-medium mb-1 block" style={moodPreset && MOOD_CONFIG[moodPreset] ? { color: MOOD_CONFIG[moodPreset].btnColor } : {}}>Playing (optional)</label>
               <Select value={moodRecordId} onValueChange={setMoodRecordId}>
-                <SelectTrigger className="border-honey/50">
+                <SelectTrigger className="border-honey/50" style={moodPreset ? { background: 'rgba(255,255,255,0.08)', color: '#ddd', borderColor: MOOD_CONFIG[moodPreset]?.btnColor + '60' } : {}}>
                   <SelectValue placeholder="Link a record from your collection" />
                 </SelectTrigger>
                 <SelectContent>
@@ -361,10 +386,30 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                 </SelectContent>
               </Select>
             </div>
-            <Textarea placeholder="Note (optional)" value={moodCaption} onChange={e => setMoodCaption(e.target.value)} className="border-honey/50 resize-none" rows={2} data-testid="mood-caption-input" />
-            <Button onClick={submitVinylMood} disabled={submitting || !moodPreset} className="w-full bg-purple-100 text-purple-800 hover:bg-purple-200 rounded-full" data-testid="mood-submit-btn">
+            <Textarea
+              placeholder={moodPreset && MOOD_CONFIG[moodPreset] ? MOOD_CONFIG[moodPreset].placeholder : 'Note (optional)'}
+              value={moodCaption}
+              onChange={e => setMoodCaption(e.target.value)}
+              className="resize-none"
+              style={moodPreset ? { background: 'rgba(255,255,255,0.08)', color: '#eee', borderColor: MOOD_CONFIG[moodPreset]?.btnColor + '60' } : { borderColor: 'rgba(200,134,26,0.5)' }}
+              rows={2}
+              data-testid="mood-caption-input"
+            />
+            <Button
+              onClick={submitVinylMood}
+              disabled={submitting || !moodPreset}
+              className="w-full rounded-full transition-all duration-200"
+              style={moodPreset && MOOD_CONFIG[moodPreset] ? {
+                backgroundColor: MOOD_CONFIG[moodPreset].btnColor,
+                color: '#fff',
+              } : {
+                backgroundColor: '#cccccc',
+                color: '#666',
+              }}
+              data-testid="mood-submit-btn"
+            >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
-              Post Mood
+              {moodPreset && MOOD_CONFIG[moodPreset] ? MOOD_CONFIG[moodPreset].btnText : 'pick a mood first'}
             </Button>
           </div>
         </DialogContent>

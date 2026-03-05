@@ -141,15 +141,29 @@ const WeeklyWrapCard = ({ post }) => {
 };
 
 // VINYL_MOOD card body
+const MOOD_EMOJI_MAP = {
+  'Late Night': '\u{1F56F}\uFE0F', 'Sunday Morning': '\u2600\uFE0F', 'Rainy Day': '\u{1F327}\uFE0F',
+  'Road Trip': '\u{1F697}', 'Golden Hour': '\u{1F305}', 'Deep Focus': '\u{1F3A7}',
+  'Party Mode': '\u{1F942}', 'Lazy Afternoon': '\u{1F6CB}\uFE0F', 'Melancholy': '\u{1F494}',
+  'Upbeat Vibes': '\u2728', 'Cozy Evening': '\u{1F9F8}', 'Workout': '\u{1F525}',
+};
+const MOOD_COLOR_MAP = {
+  'Late Night': '#6a3a9a', 'Sunday Morning': '#e8a820', 'Rainy Day': '#4a7aaa',
+  'Road Trip': '#4a8a4a', 'Golden Hour': '#c8861a', 'Deep Focus': '#2a6a2a',
+  'Party Mode': '#aa3a8a', 'Lazy Afternoon': '#aa7a3a', 'Melancholy': '#5a5a8a',
+  'Upbeat Vibes': '#3a9a5a', 'Cozy Evening': '#aa5a2a', 'Workout': '#cc3a2a',
+};
 const VinylMoodCard = ({ post }) => {
   const record = post.record;
+  const emoji = MOOD_EMOJI_MAP[post.mood] || '';
+  const color = MOOD_COLOR_MAP[post.mood] || '#7e22ce';
   return (
     <div data-testid="vinyl-mood-card">
-      <div className="inline-block bg-purple-100 text-purple-700 px-4 py-2 rounded-full text-lg font-heading mb-2">
-        {post.mood}
+      <div className="inline-block px-4 py-2 rounded-full text-lg font-heading mb-2" style={{ backgroundColor: color + '26', color }}>
+        {emoji} {post.mood}
       </div>
       {record && (
-        <div className="flex gap-3 items-center mt-2 bg-purple-50 rounded-lg p-2">
+        <div className="flex gap-3 items-center mt-2 rounded-lg p-2" style={{ backgroundColor: color + '15' }}>
           {record.cover_url && <img src={record.cover_url} alt="" className="w-10 h-10 rounded object-cover" />}
           <div>
             <p className="text-sm font-medium">{record.title}</p>

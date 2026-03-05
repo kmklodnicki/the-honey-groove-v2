@@ -317,6 +317,7 @@ class ListingCreate(BaseModel):
     listing_type: str  # BUY_NOW, MAKE_OFFER, TRADE
     price: Optional[float] = None
     description: Optional[str] = None
+    photo_urls: List[str] = Field(..., min_length=1, max_length=10)
 
 class ListingResponse(BaseModel):
     id: str
@@ -332,6 +333,7 @@ class ListingResponse(BaseModel):
     listing_type: str
     price: Optional[float] = None
     description: Optional[str] = None
+    photo_urls: List[str] = []
     status: str = "ACTIVE"
     created_at: str
     user: Optional[Dict[str, Any]] = None
@@ -1624,6 +1626,7 @@ async def create_listing(data: ListingCreate, user: Dict = Depends(require_auth)
         "listing_type": data.listing_type,
         "price": data.price,
         "description": data.description,
+        "photo_urls": data.photo_urls,
         "status": "ACTIVE",
         "created_at": now
     }

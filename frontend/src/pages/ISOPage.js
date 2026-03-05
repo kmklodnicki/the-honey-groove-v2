@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { Search, Plus, CheckCircle2, Loader2, Trash2, Filter, Tag, DollarSign, Disc, ArrowRightLeft, ShoppingBag } from 'lucide-react';
+import { Search, Plus, CheckCircle2, Loader2, Trash2, Filter, Tag, DollarSign, Disc, ArrowRightLeft, ShoppingBag, Camera, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
@@ -67,6 +67,8 @@ const ISOPage = () => {
   const [listType, setListType] = useState('BUY_NOW');
   const [listPrice, setListPrice] = useState('');
   const [listDesc, setListDesc] = useState('');
+  const [listPhotos, setListPhotos] = useState([]); // [{file, preview, uploading, url}]
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
 
@@ -123,6 +125,8 @@ const ISOPage = () => {
     setIsoPriceMin(''); setIsoPriceMax(''); setIsoTags([]); setIsoCaption('');
     setListArtist(''); setListAlbum(''); setListCondition(''); setListPressing('');
     setListType('BUY_NOW'); setListPrice(''); setListDesc('');
+    listPhotos.forEach(p => p.preview && URL.revokeObjectURL(p.preview));
+    setListPhotos([]); setUploadingPhotos(false);
   };
 
   const openModal = (type) => { resetForm(); setShowCreate(type); };
@@ -156,14 +160,53 @@ const ISOPage = () => {
     finally { setSubmitting(false); }
   };
 
+  // Photo upload helpers
+  const handlePhotoSelect = (e) => {
+    const files = Array.from(e.target.files || []);
+    const remaining = 10 - listPhotos.length;
+    if (remaining <= 0) { toast.error('Maximum 10 photos'); return; }
+    const toAdd = files.slice(0, remaining).map(file => ({
+      file,
+      preview: URL.createObjectURL(file),
+      url: null,
+    }));
+    setListPhotos(prev => [...prev, ...toAdd]);
+  };
+
+  const removePhoto = (idx) => {
+    setListPhotos(prev => {
+      const removed = prev[idx];
+      if (removed.preview) URL.revokeObjectURL(removed.preview);
+      return prev.filter((_, i) => i !== idx);
+    });
+  };
+
+  const uploadAllPhotos = async () => {
+    const urls = [];
+    for (const photo of listPhotos) {
+      if (photo.url) { urls.push(photo.url); continue; }
+      const formData = new FormData();
+      formData.append('file', photo.file);
+      const resp = await axios.post(`${API}/upload`, formData, {
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+      });
+      urls.push(resp.data.path);
+    }
+    return urls;
+  };
+
   // Submit Listing
   const submitListing = async () => {
     const artist = listArtist || selectedRelease?.artist;
     const album = listAlbum || selectedRelease?.title;
     if (!artist || !album) { toast.error('Artist and album required'); return; }
     if (listType !== 'TRADE' && !listPrice) { toast.error('Price required for Buy/Offer listings'); return; }
+    if (listPhotos.length === 0) { toast.error('At least 1 photo is required'); return; }
     setSubmitting(true);
     try {
+      setUploadingPhotos(true);
+      const photoUrls = await uploadAllPhotos();
+      setUploadingPhotos(false);
       await axios.post(`${API}/listings`, {
         artist, album,
         discogs_id: selectedRelease?.discogs_id || null,
@@ -174,11 +217,12 @@ const ISOPage = () => {
         listing_type: listType,
         price: listPrice ? parseFloat(listPrice) : null,
         description: listDesc || null,
+        photo_urls: photoUrls,
       }, { headers: { Authorization: `Bearer ${token}` }});
       toast.success('Listing posted!');
       closeModal();
       fetchData();
-    } catch (err) { toast.error(err.response?.data?.detail || 'Failed'); }
+    } catch (err) { toast.error(err.response?.data?.detail || 'Failed'); setUploadingPhotos(false); }
     finally { setSubmitting(false); }
   };
 
@@ -518,10 +562,46 @@ const ISOPage = () => {
 
                 <Textarea placeholder="Description (optional)" value={listDesc} onChange={e => setListDesc(e.target.value)} className="border-honey/50 resize-none" rows={2} />
 
-                <Button onClick={submitListing} disabled={submitting || (manualMode && (!listArtist || !listAlbum)) || (!manualMode && !selectedRelease)}
+                {/* Photo Upload */}
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Photos <span className="text-muted-foreground font-normal">(1-10 required)</span></label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {listPhotos.map((photo, idx) => (
+                      <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-honey/30 group">
+                        <img src={photo.preview} alt="" className="w-full h-full object-cover" />
+                        <button
+                          onClick={() => removePhoto(idx)}
+                          className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                          data-testid={`remove-photo-${idx}`}
+                        >
+                          <X className="w-3 h-3 text-white" />
+                        </button>
+                        {idx === 0 && <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">Cover</span>}
+                      </div>
+                    ))}
+                    {listPhotos.length < 10 && (
+                      <label className="aspect-square rounded-lg border-2 border-dashed border-honey/40 flex flex-col items-center justify-center cursor-pointer hover:border-honey hover:bg-honey/5 transition-all" data-testid="add-photo-btn">
+                        <Camera className="w-5 h-5 text-honey mb-1" />
+                        <span className="text-[10px] text-muted-foreground">{listPhotos.length === 0 ? 'Add photos' : `${listPhotos.length}/10`}</span>
+                        <input type="file" accept="image/*" multiple onChange={handlePhotoSelect} className="hidden" />
+                      </label>
+                    )}
+                  </div>
+                </div>
+
+                <Button onClick={submitListing} disabled={submitting || listPhotos.length === 0 || (manualMode && (!listArtist || !listAlbum)) || (!manualMode && !selectedRelease)}
                   className="w-full bg-honey text-vinyl-black hover:bg-honey-amber rounded-full" data-testid="list-form-submit">
-                  {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Tag className="w-4 h-4 mr-2" />}
-                  {listType === 'TRADE' ? 'List for Trade' : `List for $${listPrice || '0'}`}
+                  {submitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                      {uploadingPhotos ? 'Uploading photos...' : 'Posting...'}
+                    </>
+                  ) : (
+                    <>
+                      <Tag className="w-4 h-4 mr-2" />
+                      {listType === 'TRADE' ? 'List for Trade' : `List for $${listPrice || '0'}`}
+                    </>
+                  )}
                 </Button>
               </>
             )}
@@ -580,6 +660,8 @@ const ISOCard = ({ iso, isOwn, onMarkFound, onDelete }) => (
 
 // Listing Card Component
 const ListingCard = ({ listing }) => {
+  const [photoIdx, setPhotoIdx] = useState(0);
+  const photos = listing.photo_urls || [];
   const typeConfig = {
     BUY_NOW: { label: 'Buy Now', color: 'bg-green-100 text-green-700' },
     MAKE_OFFER: { label: 'Make Offer', color: 'bg-blue-100 text-blue-700' },
@@ -587,30 +669,56 @@ const ListingCard = ({ listing }) => {
   };
   const tc = typeConfig[listing.listing_type] || typeConfig.BUY_NOW;
 
+  const mainImage = photos.length > 0 ? photos[photoIdx] : listing.cover_url;
+
   return (
     <Card className="border-honey/30 overflow-hidden hover:shadow-md transition-all" data-testid={`listing-${listing.id}`}>
-      <div className="flex gap-3 p-4">
-        {listing.cover_url ? (
-          <img src={listing.cover_url} alt="" className="w-20 h-20 rounded-lg object-cover shadow" />
+      {/* Photo area */}
+      <div className="relative aspect-square bg-honey/10">
+        {mainImage ? (
+          <img src={mainImage} alt="" className="w-full h-full object-cover" />
         ) : (
-          <div className="w-20 h-20 rounded-lg bg-honey/20 flex items-center justify-center shrink-0">
-            <Disc className="w-8 h-8 text-honey" />
+          <div className="w-full h-full flex items-center justify-center">
+            <Disc className="w-12 h-12 text-honey" />
           </div>
         )}
-        <div className="flex-1 min-w-0">
-          <h4 className="font-heading text-base truncate">{listing.album}</h4>
-          <p className="text-sm text-muted-foreground truncate">{listing.artist}{listing.year ? ` (${listing.year})` : ''}</p>
-          <div className="flex items-center gap-2 mt-2">
-            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${tc.color}`}>{tc.label}</span>
-            {listing.price && <span className="text-sm font-heading">${listing.price}</span>}
-            {listing.condition && <span className="text-xs text-muted-foreground">{listing.condition}</span>}
-          </div>
-          {listing.user && (
-            <Link to={`/profile/${listing.user.username}`} className="text-xs text-muted-foreground hover:underline mt-1 block">
-              @{listing.user.username}
-            </Link>
-          )}
+        {photos.length > 1 && (
+          <>
+            <button
+              onClick={(e) => { e.stopPropagation(); setPhotoIdx(i => (i - 1 + photos.length) % photos.length); }}
+              className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-1 hover:bg-black/70"
+              data-testid={`listing-photo-prev-${listing.id}`}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); setPhotoIdx(i => (i + 1) % photos.length); }}
+              className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-1 hover:bg-black/70"
+              data-testid={`listing-photo-next-${listing.id}`}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+              {photos.map((_, i) => (
+                <span key={i} className={`w-1.5 h-1.5 rounded-full ${i === photoIdx ? 'bg-white' : 'bg-white/50'}`} />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+      <div className="p-3">
+        <h4 className="font-heading text-base truncate">{listing.album}</h4>
+        <p className="text-sm text-muted-foreground truncate">{listing.artist}{listing.year ? ` (${listing.year})` : ''}</p>
+        <div className="flex items-center gap-2 mt-2">
+          <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${tc.color}`}>{tc.label}</span>
+          {listing.price && <span className="text-sm font-heading">${listing.price}</span>}
+          {listing.condition && <span className="text-xs text-muted-foreground">{listing.condition}</span>}
         </div>
+        {listing.user && (
+          <Link to={`/profile/${listing.user.username}`} className="text-xs text-muted-foreground hover:underline mt-1 block">
+            @{listing.user.username}
+          </Link>
+        )}
       </div>
     </Card>
   );
