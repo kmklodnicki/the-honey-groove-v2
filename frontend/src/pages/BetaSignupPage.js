@@ -56,7 +56,7 @@ const BetaSignupPage = () => {
       <div className="min-h-screen bg-[#FAF6EE] flex flex-col items-center" data-testid="beta-signup-page">
         <div className="w-full max-w-lg mx-auto px-6" style={{ paddingTop: '80px' }}>
           {/* Logo */}
-          <div className="flex justify-center mb-10">
+          <div className="flex justify-center mb-4">
             <img src="/logo-drip.png" alt="the Honey Groove" className="w-[85vw] max-w-[520px] md:max-w-[560px] lg:max-w-[600px]" data-testid="beta-logo" />
           </div>
 
