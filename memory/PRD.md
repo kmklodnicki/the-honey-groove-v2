@@ -72,6 +72,8 @@ The Hive — Explore — Collection — The Honeypot
 60. **Record Detail Page** — Fully populated page at /record/:recordId. Hero with album art, title, artist, year, format, Discogs external link. Log a Spin button (owner-only). Stats grid: Your Spins, Community Spins, Collectors, Wanted. Market value card (low/median/high from Discogs cache). Community owners list with avatars. Hive Activity feed showing related posts with type badges. Backend: GET /records/{record_id}/detail aggregates record, owner, community stats, market value, and related posts. (Mar 2026)
 61. **Daily Prompt Streak Tracking** — Streak counter on profile page with fire icon in stats row. Backend: GET /prompts/streak/{username} returns streak and longest_streak. Nudge notification scheduler runs hourly at 19:00 UTC (streak >= 3, first nudge) and 22:00 UTC (streak >= 7, urgent nudge). Wax Report closing line appends "and a perfect prompt streak to prove it" for perfect weekly streaks (7/7). (Mar 2026)
 62. **Sweetener Payments UI** — Enhanced sweetener display on trade cards (prominent badge with amount, payer label, 4% fee indicator). Trade detail modal shows full breakdown (amount, payer, fee, recipient amount, explanation tooltip). Propose modal includes fee preview and tooltip explanation. Accept flow triggers confirmation dialog with fee disclosure. Stripe charge via POST /trades/{id}/pay-sweetener with 4% platform fee on sweetener amount only. (Mar 2026)
+63. **Dynamic Sweetener Fee Fix** — Sweetener fee corrected from hardcoded 4% to dynamic platform fee (6%) from settings. New public endpoint GET /api/platform-fee. ISOPage.js fee text now fetches dynamically. STRIPE_WEBHOOK_SECRET configured. (Mar 2026)
+64. **Discogs Collection Import (Enhanced)** — Full-featured import with two entry points: Collection page header (DiscogsImport card) and Onboarding Step 1. Username-based connection with validation (rejects invalid users, private collections). Background import with real-time progress polling. Duplicate handling by discogs_id. Summary modal on completion showing: stats grid (imported/skipped/total), sample album covers, collection value. Post-import background task fetches Discogs market values for all new records. New endpoints: GET /api/discogs/import/summary, enhanced /api/discogs/connect-token with collection accessibility check. (Mar 2026)
 
 ## Code Architecture
 ```
@@ -119,16 +121,9 @@ COMPLETED → Mandatory rating before next trade
 ```
 
 ## Upcoming Tasks
-- **P1: Record Detail Page** — New page with Discogs art header, market value, community ownership, Now Spinning posts, active Honeypot listings
-- **P1: Phase B — Mood Board to Hive sharing** (post to feed, composer modal, mood board post type)
-- **P1: Phase C — Mobile nav overhaul** (top header 56px + bottom nav 64px + safe area inset)
-- **P1: Admin Panel** — UI for managing Daily Prompts, Bingo Squares, and Reports queue
-- **P1: Sweetener UI** — Frontend for trade cash payments
-- **P1: Push Notifications** — Service worker-based browser push
-- **P2: Discogs Import** — Bulk collection import
+- **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
 - **P2: Refactor ISOPage.js** — Break monolithic 3-tab component
 - **P2: Monetization** — Pro membership, Verified Seller badge
-- **P2: Hauls Enhancement** — Dedicated hauls page
 
 ## Data Model
 ```
