@@ -40,7 +40,8 @@ The Hive — Explore — Collection — The Honeypot
 28. **About Page** — Founder story by Katie, social links (Instagram, TikTok, Email), linked from landing footer
 29. **FAQ Page** — Comprehensive FAQ with accordion UI covering all features
 30. **Explore "See All" Pages** — Full-page views for each Explore section (/explore/trending, /explore/taste-match, /explore/fresh-pressings, /explore/most-wanted, /explore/near-you) with grid/list layouts and higher data limits
-31. **Discogs Market Valuation** — Collection Value banner ($7,603 est.), Hidden Gems (top 3 most valuable), Taste Report card, value badges on record cards, "Highest Value" sort, pricing assist in listing modal ("recent sales: $X — $Y on Discogs"), wantlist price alerts, background 24h refresh with rate limiting. Cache in collection_values table.
+31. **Discogs Market Valuation** — Collection Value banner, Hidden Gems (top 3 most valuable), value badges on record cards, "Highest Value" sort, pricing assist in listing modal ("recent sales: $X — $Y on Discogs"), wantlist price alerts, background 24h refresh with rate limiting. Cache in collection_values table.
+32. **Taste Report PNG** — Shareable 1080×1920 Instagram Story image generated via Pillow. Includes: total collection value, most valuable record with cover art, hidden gems top 3, stats, HoneyGroove branding. Downloadable via modal on Collection page.
 
 ## Code Architecture
 ```
