@@ -1,15 +1,20 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, UploadFile, File, Query
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.responses import Response
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
 from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List
+from pydantic import BaseModel, Field, EmailStr
+from typing import List, Optional, Dict, Any
 import uuid
-from datetime import datetime, timezone
-
+from datetime import datetime, timezone, timedelta
+import bcrypt
+import jwt
+import requests
+from io import BytesIO
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -19,54 +24,1399 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Create the main app without a prefix
-app = FastAPI()
+# JWT Configuration
+JWT_SECRET = os.environ.get('JWT_SECRET', 'default_secret')
+JWT_ALGORITHM = os.environ.get('JWT_ALGORITHM', 'HS256')
+JWT_EXPIRATION_HOURS = int(os.environ.get('JWT_EXPIRATION_HOURS', 168))
 
-# Create a router with the /api prefix
+# Discogs Configuration
+DISCOGS_TOKEN = os.environ.get('DISCOGS_TOKEN', '')
+DISCOGS_USER_AGENT = os.environ.get('DISCOGS_USER_AGENT', 'HoneyGroove/1.0')
+
+# Storage Configuration
+STORAGE_URL = "https://integrations.emergentagent.com/objstore/api/v1/storage"
+EMERGENT_KEY = os.environ.get("EMERGENT_LLM_KEY", "")
+APP_NAME = "honeygroove"
+storage_key = None
+
+# Create the main app
+app = FastAPI(title="HoneyGroove API", version="1.0.0")
+
+# Create routers
 api_router = APIRouter(prefix="/api")
+security = HTTPBearer(auto_error=False)
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
+# ============== PYDANTIC MODELS ==============
+
+# Auth Models
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=6)
+    username: str = Field(min_length=3, max_length=30)
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class UserResponse(BaseModel):
+    id: str
+    email: str
+    username: str
+    avatar_url: Optional[str] = None
+    bio: Optional[str] = None
+    created_at: str
+    collection_count: int = 0
+    spin_count: int = 0
+    followers_count: int = 0
+    following_count: int = 0
+
+class UserUpdate(BaseModel):
+    username: Optional[str] = None
+    bio: Optional[str] = None
+    avatar_url: Optional[str] = None
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse
+
+# Record Models
+class RecordCreate(BaseModel):
+    discogs_id: Optional[int] = None
+    title: str
+    artist: str
+    cover_url: Optional[str] = None
+    year: Optional[int] = None
+    format: Optional[str] = "Vinyl"
+    notes: Optional[str] = None
+
+class RecordResponse(BaseModel):
+    id: str
+    discogs_id: Optional[int] = None
+    title: str
+    artist: str
+    cover_url: Optional[str] = None
+    year: Optional[int] = None
+    format: Optional[str] = None
+    notes: Optional[str] = None
+    user_id: str
+    created_at: str
+    spin_count: int = 0
+
+class DiscogsSearchResult(BaseModel):
+    discogs_id: int
+    title: str
+    artist: str
+    cover_url: Optional[str] = None
+    year: Optional[int] = None
+    format: Optional[str] = None
+    country: Optional[str] = None
+
+# Spin Models
+class SpinCreate(BaseModel):
+    record_id: str
+    notes: Optional[str] = None
+
+class SpinResponse(BaseModel):
+    id: str
+    record_id: str
+    user_id: str
+    notes: Optional[str] = None
+    created_at: str
+    record: Optional[RecordResponse] = None
+
+# Haul Models
+class HaulItemCreate(BaseModel):
+    discogs_id: Optional[int] = None
+    title: str
+    artist: str
+    cover_url: Optional[str] = None
+    year: Optional[int] = None
+    notes: Optional[str] = None
+
+class HaulCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+    items: List[HaulItemCreate]
+
+class HaulResponse(BaseModel):
+    id: str
+    user_id: str
+    title: str
+    description: Optional[str] = None
+    image_url: Optional[str] = None
+    items: List[Dict[str, Any]]
+    created_at: str
+    user: Optional[Dict[str, Any]] = None
+
+# Follow Models
+class FollowResponse(BaseModel):
+    id: str
+    follower_id: str
+    following_id: str
+    created_at: str
+
+# Post/Activity Models
+class PostCreate(BaseModel):
+    post_type: str  # spin, haul, record_added, weekly_summary
+    content: Optional[str] = None
+    record_id: Optional[str] = None
+    haul_id: Optional[str] = None
+
+class PostResponse(BaseModel):
+    id: str
+    user_id: str
+    post_type: str
+    content: Optional[str] = None
+    record_id: Optional[str] = None
+    haul_id: Optional[str] = None
+    created_at: str
+    likes_count: int = 0
+    comments_count: int = 0
+    user: Optional[Dict[str, Any]] = None
+    record: Optional[Dict[str, Any]] = None
+    haul: Optional[Dict[str, Any]] = None
+    is_liked: bool = False
+
+# Comment Models
+class CommentCreate(BaseModel):
+    post_id: str
+    content: str
+
+class CommentResponse(BaseModel):
+    id: str
+    post_id: str
+    user_id: str
+    content: str
+    created_at: str
+    user: Optional[Dict[str, Any]] = None
+
+# Weekly Summary Models
+class WeeklySummaryResponse(BaseModel):
+    id: str
+    user_id: str
+    week_start: str
+    week_end: str
+    total_spins: int
+    top_artist: Optional[str] = None
+    top_album: Optional[str] = None
+    listening_mood: Optional[str] = None
+    records_added: int = 0
+    created_at: str
+
+# Share Graphic Models
+class ShareGraphicRequest(BaseModel):
+    graphic_type: str  # now_spinning, new_haul, weekly_summary
+    record_id: Optional[str] = None
+    haul_id: Optional[str] = None
+    summary_id: Optional[str] = None
+
+# ============== UTILITY FUNCTIONS ==============
+
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+def verify_password(password: str, hashed: str) -> bool:
+    return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+
+def create_token(user_id: str) -> str:
+    expiration = datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRATION_HOURS)
+    payload = {
+        "sub": user_id,
+        "exp": expiration,
+        "iat": datetime.now(timezone.utc)
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Optional[Dict]:
+    if not credentials:
+        return None
+    try:
+        payload = jwt.decode(credentials.credentials, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        user_id = payload.get("sub")
+        if not user_id:
+            return None
+        user = await db.users.find_one({"id": user_id}, {"_id": 0, "password_hash": 0})
+        return user
+    except jwt.ExpiredSignatureError:
+        return None
+    except jwt.InvalidTokenError:
+        return None
+
+async def require_auth(credentials: HTTPAuthorizationCredentials = Depends(security)) -> Dict:
+    user = await get_current_user(credentials)
+    if not user:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    return user
+
+# Storage Functions
+def init_storage():
+    global storage_key
+    if storage_key:
+        return storage_key
+    if not EMERGENT_KEY:
+        logger.warning("EMERGENT_LLM_KEY not set, storage disabled")
+        return None
+    try:
+        resp = requests.post(f"{STORAGE_URL}/init", json={"emergent_key": EMERGENT_KEY}, timeout=30)
+        resp.raise_for_status()
+        storage_key = resp.json()["storage_key"]
+        return storage_key
+    except Exception as e:
+        logger.error(f"Storage init failed: {e}")
+        return None
+
+def put_object(path: str, data: bytes, content_type: str) -> dict:
+    key = init_storage()
+    if not key:
+        raise HTTPException(status_code=500, detail="Storage not available")
+    resp = requests.put(
+        f"{STORAGE_URL}/objects/{path}",
+        headers={"X-Storage-Key": key, "Content-Type": content_type},
+        data=data, timeout=120
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+def get_object(path: str) -> tuple:
+    key = init_storage()
+    if not key:
+        raise HTTPException(status_code=500, detail="Storage not available")
+    resp = requests.get(
+        f"{STORAGE_URL}/objects/{path}",
+        headers={"X-Storage-Key": key}, timeout=60
+    )
+    resp.raise_for_status()
+    return resp.content, resp.headers.get("Content-Type", "application/octet-stream")
+
+# Discogs API Functions
+def search_discogs(query: str, search_type: str = "release") -> List[Dict]:
+    if not DISCOGS_TOKEN:
+        logger.warning("Discogs token not configured")
+        return []
     
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    headers = {
+        "Authorization": f"Discogs token={DISCOGS_TOKEN}",
+        "User-Agent": DISCOGS_USER_AGENT
+    }
+    
+    try:
+        response = requests.get(
+            "https://api.discogs.com/database/search",
+            params={"q": query, "type": search_type, "per_page": 20},
+            headers=headers,
+            timeout=10
+        )
+        response.raise_for_status()
+        data = response.json()
+        
+        results = []
+        for item in data.get("results", []):
+            # Parse title - Discogs format is "Artist - Title"
+            title_parts = item.get("title", "").split(" - ", 1)
+            artist = title_parts[0] if title_parts else "Unknown Artist"
+            title = title_parts[1] if len(title_parts) > 1 else title_parts[0]
+            
+            results.append({
+                "discogs_id": item.get("id"),
+                "title": title,
+                "artist": artist,
+                "cover_url": item.get("cover_image"),
+                "year": item.get("year"),
+                "format": item.get("format", ["Vinyl"])[0] if item.get("format") else "Vinyl",
+                "country": item.get("country")
+            })
+        
+        return results
+    except Exception as e:
+        logger.error(f"Discogs search error: {e}")
+        return []
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
+def get_discogs_release(release_id: int) -> Optional[Dict]:
+    if not DISCOGS_TOKEN:
+        return None
+    
+    headers = {
+        "Authorization": f"Discogs token={DISCOGS_TOKEN}",
+        "User-Agent": DISCOGS_USER_AGENT
+    }
+    
+    try:
+        response = requests.get(
+            f"https://api.discogs.com/releases/{release_id}",
+            headers=headers,
+            timeout=10
+        )
+        response.raise_for_status()
+        data = response.json()
+        
+        artists = data.get("artists", [])
+        artist_name = artists[0].get("name", "Unknown Artist") if artists else "Unknown Artist"
+        
+        images = data.get("images", [])
+        cover_url = images[0].get("uri") if images else None
+        
+        return {
+            "discogs_id": data.get("id"),
+            "title": data.get("title"),
+            "artist": artist_name,
+            "cover_url": cover_url,
+            "year": data.get("year"),
+            "format": data.get("formats", [{}])[0].get("name", "Vinyl") if data.get("formats") else "Vinyl",
+            "country": data.get("country")
+        }
+    except Exception as e:
+        logger.error(f"Discogs release fetch error: {e}")
+        return None
 
-# Add your routes to the router instead of directly to app
+# Image Generation Functions - HoneyGroove themed
+def generate_share_graphic(graphic_type: str, data: Dict) -> bytes:
+    try:
+        from PIL import Image, ImageDraw, ImageFont
+        import io
+        
+        # Create 1080x1080 image
+        width, height = 1080, 1080
+        
+        # HoneyGroove Colors
+        bg_cream = (255, 246, 230)  # Cream background
+        honey = (244, 185, 66)  # Primary honey gold
+        honey_soft = (249, 215, 118)  # Soft honey
+        amber = (217, 140, 47)  # Warm amber
+        black = (31, 31, 31)  # Vinyl black text
+        white = (255, 255, 255)
+        
+        img = Image.new('RGB', (width, height), bg_cream)
+        draw = ImageDraw.Draw(img)
+        
+        # Try to load fonts, fallback to default
+        try:
+            title_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf", 56)
+            subtitle_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 36)
+            body_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 28)
+            small_font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 24)
+        except:
+            title_font = ImageFont.load_default()
+            subtitle_font = title_font
+            body_font = title_font
+            small_font = title_font
+        
+        # Draw honeycomb pattern in background (subtle hexagons)
+        def draw_hexagon(draw, x, y, size, color):
+            import math
+            points = []
+            for i in range(6):
+                angle = math.pi / 3 * i - math.pi / 6
+                px = x + size * math.cos(angle)
+                py = y + size * math.sin(angle)
+                points.append((px, py))
+            draw.polygon(points, outline=color)
+        
+        # Draw subtle honeycomb pattern
+        hex_color = (244, 185, 66, 30)  # Very light honey
+        for row in range(0, height + 60, 60):
+            offset = 35 if (row // 60) % 2 else 0
+            for col in range(-30 + offset, width + 60, 70):
+                draw_hexagon(draw, col, row, 20, (*honey, 40))
+        
+        # Draw header bar
+        draw.rectangle([0, 0, width, 180], fill=honey)
+        
+        # Draw footer bar
+        draw.rectangle([0, height-80, width, height], fill=honey)
+        
+        if graphic_type == "now_spinning":
+            # Header
+            draw.text((width//2, 90), "NOW SPINNING", font=title_font, fill=black, anchor="mm")
+            
+            # Draw bee icon (simple representation)
+            bee_x, bee_y = 180, 90
+            draw.ellipse([bee_x-15, bee_y-10, bee_x+15, bee_y+10], fill=black)
+            draw.ellipse([bee_x-8, bee_y-6, bee_x+8, bee_y+6], fill=honey_soft)
+            
+            # Album info
+            artist = data.get("artist", "Unknown Artist")
+            album = data.get("title", "Unknown Album")
+            
+            # Draw vinyl record circle
+            center_y = 520
+            # Outer vinyl
+            draw.ellipse([290, center_y-250, 790, center_y+250], fill=(18, 18, 18))
+            # Grooves
+            for r in range(200, 50, -30):
+                draw.ellipse([540-r, center_y-r, 540+r, center_y+r], outline=(40, 40, 40), width=1)
+            # Label (honey colored)
+            draw.ellipse([480, center_y-60, 600, center_y+60], fill=honey)
+            draw.ellipse([500, center_y-40, 580, center_y+40], fill=amber)
+            draw.ellipse([525, center_y-15, 555, center_y+15], fill=black)
+            
+            # Artist and album text
+            draw.text((width//2, 830), artist, font=subtitle_font, fill=black, anchor="mm")
+            draw.text((width//2, 890), album, font=body_font, fill=amber, anchor="mm")
+            
+        elif graphic_type == "new_haul":
+            draw.text((width//2, 90), "NEW HAUL", font=title_font, fill=black, anchor="mm")
+            
+            title = data.get("title", "My Vinyl Haul")
+            items = data.get("items", [])
+            count = len(items)
+            
+            # Decorative hexagon
+            draw.regular_polygon((540, 350), 80, 6, fill=honey_soft, outline=amber)
+            draw.text((540, 350), str(count), font=title_font, fill=black, anchor="mm")
+            
+            draw.text((width//2, 480), title, font=subtitle_font, fill=black, anchor="mm")
+            draw.text((width//2, 540), "records added", font=body_font, fill=amber, anchor="mm")
+            
+            # List first few items
+            y_pos = 620
+            for i, item in enumerate(items[:4]):
+                text = f"{item.get('artist', '')} - {item.get('title', '')}"
+                if len(text) > 42:
+                    text = text[:39] + "..."
+                draw.text((width//2, y_pos), text, font=small_font, fill=black, anchor="mm")
+                y_pos += 45
+            
+            if count > 4:
+                draw.text((width//2, y_pos), f"+ {count - 4} more...", font=small_font, fill=amber, anchor="mm")
+                
+        elif graphic_type == "weekly_summary":
+            draw.text((width//2, 90), "HONEYGROOVE WEEKLY", font=title_font, fill=black, anchor="mm")
+            
+            spins = data.get("total_spins", 0)
+            top_artist = data.get("top_artist", "No data")
+            top_album = data.get("top_album", "No data")
+            mood = data.get("listening_mood", "Eclectic")
+            
+            # Big spin count with hexagon background
+            draw.regular_polygon((540, 320), 100, 6, fill=honey_soft, outline=amber)
+            draw.text((540, 300), str(spins), font=title_font, fill=black, anchor="mm")
+            draw.text((540, 360), "SPINS", font=small_font, fill=amber, anchor="mm")
+            
+            # Stats cards
+            card_y = 520
+            draw.rounded_rectangle([100, card_y, 500, card_y+120], radius=20, fill=white, outline=honey)
+            draw.text((300, card_y+30), "TOP ARTIST", font=small_font, fill=amber, anchor="mm")
+            artist_text = top_artist if len(top_artist) < 25 else top_artist[:22] + "..."
+            draw.text((300, card_y+75), artist_text, font=body_font, fill=black, anchor="mm")
+            
+            draw.rounded_rectangle([580, card_y, 980, card_y+120], radius=20, fill=white, outline=honey)
+            draw.text((780, card_y+30), "TOP ALBUM", font=small_font, fill=amber, anchor="mm")
+            album_text = top_album if top_album and len(top_album) < 25 else (top_album[:22] + "..." if top_album else "N/A")
+            draw.text((780, card_y+75), album_text, font=body_font, fill=black, anchor="mm")
+            
+            # Mood
+            draw.rounded_rectangle([250, 700, 830, 800], radius=20, fill=honey_soft, outline=amber)
+            draw.text((540, 730), "LISTENING MOOD", font=small_font, fill=amber, anchor="mm")
+            draw.text((540, 770), mood, font=subtitle_font, fill=black, anchor="mm")
+        
+        # HoneyGroove branding with bee
+        draw.text((width//2, height-40), "honeygroove", font=body_font, fill=black, anchor="mm")
+        
+        # Save to bytes
+        buffer = io.BytesIO()
+        img.save(buffer, format='PNG', quality=95)
+        buffer.seek(0)
+        return buffer.getvalue()
+        
+    except Exception as e:
+        logger.error(f"Image generation error: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate image")
+
+# ============== AUTH ROUTES ==============
+
+@api_router.post("/auth/register", response_model=TokenResponse)
+async def register(user_data: UserCreate):
+    # Check if email exists
+    existing_email = await db.users.find_one({"email": user_data.email})
+    if existing_email:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    # Check if username exists
+    existing_username = await db.users.find_one({"username": user_data.username.lower()})
+    if existing_username:
+        raise HTTPException(status_code=400, detail="Username already taken")
+    
+    user_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    
+    user_doc = {
+        "id": user_id,
+        "email": user_data.email,
+        "username": user_data.username.lower(),
+        "password_hash": hash_password(user_data.password),
+        "avatar_url": f"https://api.dicebear.com/7.x/miniavs/svg?seed={user_data.username}",
+        "bio": None,
+        "created_at": now
+    }
+    
+    await db.users.insert_one(user_doc)
+    
+    token = create_token(user_id)
+    
+    return TokenResponse(
+        access_token=token,
+        user=UserResponse(
+            id=user_id,
+            email=user_data.email,
+            username=user_data.username.lower(),
+            avatar_url=user_doc["avatar_url"],
+            bio=None,
+            created_at=now,
+            collection_count=0,
+            spin_count=0,
+            followers_count=0,
+            following_count=0
+        )
+    )
+
+@api_router.post("/auth/login", response_model=TokenResponse)
+async def login(credentials: UserLogin):
+    user = await db.users.find_one({"email": credentials.email}, {"_id": 0})
+    if not user or not verify_password(credentials.password, user["password_hash"]):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    
+    token = create_token(user["id"])
+    
+    # Get counts
+    collection_count = await db.records.count_documents({"user_id": user["id"]})
+    spin_count = await db.spins.count_documents({"user_id": user["id"]})
+    followers_count = await db.followers.count_documents({"following_id": user["id"]})
+    following_count = await db.followers.count_documents({"follower_id": user["id"]})
+    
+    return TokenResponse(
+        access_token=token,
+        user=UserResponse(
+            id=user["id"],
+            email=user["email"],
+            username=user["username"],
+            avatar_url=user.get("avatar_url"),
+            bio=user.get("bio"),
+            created_at=user["created_at"],
+            collection_count=collection_count,
+            spin_count=spin_count,
+            followers_count=followers_count,
+            following_count=following_count
+        )
+    )
+
+@api_router.get("/auth/me", response_model=UserResponse)
+async def get_me(user: Dict = Depends(require_auth)):
+    collection_count = await db.records.count_documents({"user_id": user["id"]})
+    spin_count = await db.spins.count_documents({"user_id": user["id"]})
+    followers_count = await db.followers.count_documents({"following_id": user["id"]})
+    following_count = await db.followers.count_documents({"follower_id": user["id"]})
+    
+    return UserResponse(
+        id=user["id"],
+        email=user["email"],
+        username=user["username"],
+        avatar_url=user.get("avatar_url"),
+        bio=user.get("bio"),
+        created_at=user["created_at"],
+        collection_count=collection_count,
+        spin_count=spin_count,
+        followers_count=followers_count,
+        following_count=following_count
+    )
+
+@api_router.put("/auth/me", response_model=UserResponse)
+async def update_me(update_data: UserUpdate, user: Dict = Depends(require_auth)):
+    update_fields = {}
+    if update_data.username:
+        existing = await db.users.find_one({"username": update_data.username.lower(), "id": {"$ne": user["id"]}})
+        if existing:
+            raise HTTPException(status_code=400, detail="Username already taken")
+        update_fields["username"] = update_data.username.lower()
+    if update_data.bio is not None:
+        update_fields["bio"] = update_data.bio
+    if update_data.avatar_url is not None:
+        update_fields["avatar_url"] = update_data.avatar_url
+    
+    if update_fields:
+        await db.users.update_one({"id": user["id"]}, {"$set": update_fields})
+    
+    updated_user = await db.users.find_one({"id": user["id"]}, {"_id": 0, "password_hash": 0})
+    
+    collection_count = await db.records.count_documents({"user_id": user["id"]})
+    spin_count = await db.spins.count_documents({"user_id": user["id"]})
+    followers_count = await db.followers.count_documents({"following_id": user["id"]})
+    following_count = await db.followers.count_documents({"follower_id": user["id"]})
+    
+    return UserResponse(
+        id=updated_user["id"],
+        email=updated_user["email"],
+        username=updated_user["username"],
+        avatar_url=updated_user.get("avatar_url"),
+        bio=updated_user.get("bio"),
+        created_at=updated_user["created_at"],
+        collection_count=collection_count,
+        spin_count=spin_count,
+        followers_count=followers_count,
+        following_count=following_count
+    )
+
+# ============== USER ROUTES ==============
+
+@api_router.get("/users/{username}", response_model=UserResponse)
+async def get_user_profile(username: str, current_user: Optional[Dict] = Depends(get_current_user)):
+    user = await db.users.find_one({"username": username.lower()}, {"_id": 0, "password_hash": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    collection_count = await db.records.count_documents({"user_id": user["id"]})
+    spin_count = await db.spins.count_documents({"user_id": user["id"]})
+    followers_count = await db.followers.count_documents({"following_id": user["id"]})
+    following_count = await db.followers.count_documents({"follower_id": user["id"]})
+    
+    return UserResponse(
+        id=user["id"],
+        email=user["email"] if current_user and current_user["id"] == user["id"] else "",
+        username=user["username"],
+        avatar_url=user.get("avatar_url"),
+        bio=user.get("bio"),
+        created_at=user["created_at"],
+        collection_count=collection_count,
+        spin_count=spin_count,
+        followers_count=followers_count,
+        following_count=following_count
+    )
+
+@api_router.get("/users/search/{query}")
+async def search_users(query: str, user: Dict = Depends(require_auth)):
+    users = await db.users.find(
+        {"username": {"$regex": query, "$options": "i"}},
+        {"_id": 0, "password_hash": 0}
+    ).limit(20).to_list(20)
+    return users
+
+# ============== DISCOGS ROUTES ==============
+
+@api_router.get("/discogs/search", response_model=List[DiscogsSearchResult])
+async def search_records_discogs(q: str = Query(..., min_length=2), user: Dict = Depends(require_auth)):
+    results = search_discogs(q)
+    return [DiscogsSearchResult(**r) for r in results]
+
+@api_router.get("/discogs/release/{release_id}")
+async def get_discogs_release_info(release_id: int, user: Dict = Depends(require_auth)):
+    result = get_discogs_release(release_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Release not found")
+    return result
+
+# ============== COLLECTION/RECORDS ROUTES ==============
+
+@api_router.post("/records", response_model=RecordResponse)
+async def add_record(record_data: RecordCreate, user: Dict = Depends(require_auth)):
+    record_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    
+    record_doc = {
+        "id": record_id,
+        "user_id": user["id"],
+        "discogs_id": record_data.discogs_id,
+        "title": record_data.title,
+        "artist": record_data.artist,
+        "cover_url": record_data.cover_url,
+        "year": record_data.year,
+        "format": record_data.format,
+        "notes": record_data.notes,
+        "created_at": now
+    }
+    
+    await db.records.insert_one(record_doc)
+    
+    # Create activity post
+    post_id = str(uuid.uuid4())
+    post_doc = {
+        "id": post_id,
+        "user_id": user["id"],
+        "post_type": "record_added",
+        "content": f"Added {record_data.title} by {record_data.artist} to their collection",
+        "record_id": record_id,
+        "haul_id": None,
+        "created_at": now
+    }
+    await db.posts.insert_one(post_doc)
+    
+    return RecordResponse(
+        id=record_id,
+        discogs_id=record_data.discogs_id,
+        title=record_data.title,
+        artist=record_data.artist,
+        cover_url=record_data.cover_url,
+        year=record_data.year,
+        format=record_data.format,
+        notes=record_data.notes,
+        user_id=user["id"],
+        created_at=now,
+        spin_count=0
+    )
+
+@api_router.get("/records", response_model=List[RecordResponse])
+async def get_my_records(user: Dict = Depends(require_auth)):
+    records = await db.records.find({"user_id": user["id"]}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    
+    result = []
+    for record in records:
+        spin_count = await db.spins.count_documents({"record_id": record["id"]})
+        result.append(RecordResponse(
+            **record,
+            spin_count=spin_count
+        ))
+    
+    return result
+
+@api_router.get("/records/{record_id}", response_model=RecordResponse)
+async def get_record(record_id: str, current_user: Optional[Dict] = Depends(get_current_user)):
+    record = await db.records.find_one({"id": record_id}, {"_id": 0})
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found")
+    
+    spin_count = await db.spins.count_documents({"record_id": record_id})
+    
+    return RecordResponse(**record, spin_count=spin_count)
+
+@api_router.get("/users/{username}/records", response_model=List[RecordResponse])
+async def get_user_records(username: str, current_user: Optional[Dict] = Depends(get_current_user)):
+    user = await db.users.find_one({"username": username.lower()}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    records = await db.records.find({"user_id": user["id"]}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    
+    result = []
+    for record in records:
+        spin_count = await db.spins.count_documents({"record_id": record["id"]})
+        result.append(RecordResponse(**record, spin_count=spin_count))
+    
+    return result
+
+@api_router.delete("/records/{record_id}")
+async def delete_record(record_id: str, user: Dict = Depends(require_auth)):
+    record = await db.records.find_one({"id": record_id, "user_id": user["id"]})
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found")
+    
+    await db.records.delete_one({"id": record_id})
+    await db.spins.delete_many({"record_id": record_id})
+    await db.posts.delete_many({"record_id": record_id})
+    
+    return {"message": "Record deleted"}
+
+# ============== SPIN ROUTES ==============
+
+@api_router.post("/spins", response_model=SpinResponse)
+async def log_spin(spin_data: SpinCreate, user: Dict = Depends(require_auth)):
+    record = await db.records.find_one({"id": spin_data.record_id, "user_id": user["id"]}, {"_id": 0})
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found in your collection")
+    
+    spin_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    
+    spin_doc = {
+        "id": spin_id,
+        "user_id": user["id"],
+        "record_id": spin_data.record_id,
+        "notes": spin_data.notes,
+        "created_at": now
+    }
+    
+    await db.spins.insert_one(spin_doc)
+    
+    # Create activity post
+    post_id = str(uuid.uuid4())
+    post_doc = {
+        "id": post_id,
+        "user_id": user["id"],
+        "post_type": "spin",
+        "content": f"Spinning {record['title']} by {record['artist']}",
+        "record_id": spin_data.record_id,
+        "haul_id": None,
+        "created_at": now
+    }
+    await db.posts.insert_one(post_doc)
+    
+    return SpinResponse(
+        id=spin_id,
+        record_id=spin_data.record_id,
+        user_id=user["id"],
+        notes=spin_data.notes,
+        created_at=now,
+        record=RecordResponse(**record, spin_count=0)
+    )
+
+@api_router.get("/spins", response_model=List[SpinResponse])
+async def get_my_spins(user: Dict = Depends(require_auth), limit: int = 50):
+    spins = await db.spins.find({"user_id": user["id"]}, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+    
+    result = []
+    for spin in spins:
+        record = await db.records.find_one({"id": spin["record_id"]}, {"_id": 0})
+        result.append(SpinResponse(
+            **spin,
+            record=RecordResponse(**record, spin_count=0) if record else None
+        ))
+    
+    return result
+
+# ============== HAUL ROUTES ==============
+
+@api_router.post("/hauls", response_model=HaulResponse)
+async def create_haul(haul_data: HaulCreate, user: Dict = Depends(require_auth)):
+    haul_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Add each record to collection
+    items_with_ids = []
+    for item in haul_data.items:
+        record_id = str(uuid.uuid4())
+        record_doc = {
+            "id": record_id,
+            "user_id": user["id"],
+            "discogs_id": item.discogs_id,
+            "title": item.title,
+            "artist": item.artist,
+            "cover_url": item.cover_url,
+            "year": item.year,
+            "format": "Vinyl",
+            "notes": item.notes,
+            "created_at": now
+        }
+        await db.records.insert_one(record_doc)
+        items_with_ids.append({**item.model_dump(), "record_id": record_id})
+    
+    haul_doc = {
+        "id": haul_id,
+        "user_id": user["id"],
+        "title": haul_data.title,
+        "description": haul_data.description,
+        "image_url": haul_data.image_url,
+        "items": items_with_ids,
+        "created_at": now
+    }
+    
+    await db.hauls.insert_one(haul_doc)
+    
+    # Create activity post
+    post_id = str(uuid.uuid4())
+    post_doc = {
+        "id": post_id,
+        "user_id": user["id"],
+        "post_type": "haul",
+        "content": f"Added {len(haul_data.items)} new records: {haul_data.title}",
+        "record_id": None,
+        "haul_id": haul_id,
+        "created_at": now
+    }
+    await db.posts.insert_one(post_doc)
+    
+    user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url")}
+    
+    return HaulResponse(
+        id=haul_id,
+        user_id=user["id"],
+        title=haul_data.title,
+        description=haul_data.description,
+        image_url=haul_data.image_url,
+        items=items_with_ids,
+        created_at=now,
+        user=user_data
+    )
+
+@api_router.get("/hauls", response_model=List[HaulResponse])
+async def get_my_hauls(user: Dict = Depends(require_auth)):
+    hauls = await db.hauls.find({"user_id": user["id"]}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url")}
+    
+    return [HaulResponse(**haul, user=user_data) for haul in hauls]
+
+@api_router.get("/hauls/{haul_id}", response_model=HaulResponse)
+async def get_haul(haul_id: str, current_user: Optional[Dict] = Depends(get_current_user)):
+    haul = await db.hauls.find_one({"id": haul_id}, {"_id": 0})
+    if not haul:
+        raise HTTPException(status_code=404, detail="Haul not found")
+    
+    user = await db.users.find_one({"id": haul["user_id"]}, {"_id": 0, "password_hash": 0})
+    user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url")} if user else None
+    
+    return HaulResponse(**haul, user=user_data)
+
+# ============== FOLLOW ROUTES ==============
+
+@api_router.post("/follow/{username}")
+async def follow_user(username: str, user: Dict = Depends(require_auth)):
+    target_user = await db.users.find_one({"username": username.lower()}, {"_id": 0})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    if target_user["id"] == user["id"]:
+        raise HTTPException(status_code=400, detail="Cannot follow yourself")
+    
+    existing = await db.followers.find_one({
+        "follower_id": user["id"],
+        "following_id": target_user["id"]
+    })
+    
+    if existing:
+        raise HTTPException(status_code=400, detail="Already following this user")
+    
+    follow_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    
+    follow_doc = {
+        "id": follow_id,
+        "follower_id": user["id"],
+        "following_id": target_user["id"],
+        "created_at": now
+    }
+    
+    await db.followers.insert_one(follow_doc)
+    
+    return {"message": f"Now following {username}"}
+
+@api_router.delete("/follow/{username}")
+async def unfollow_user(username: str, user: Dict = Depends(require_auth)):
+    target_user = await db.users.find_one({"username": username.lower()}, {"_id": 0})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    result = await db.followers.delete_one({
+        "follower_id": user["id"],
+        "following_id": target_user["id"]
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=400, detail="Not following this user")
+    
+    return {"message": f"Unfollowed {username}"}
+
+@api_router.get("/follow/check/{username}")
+async def check_following(username: str, user: Dict = Depends(require_auth)):
+    target_user = await db.users.find_one({"username": username.lower()}, {"_id": 0})
+    if not target_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    existing = await db.followers.find_one({
+        "follower_id": user["id"],
+        "following_id": target_user["id"]
+    })
+    
+    return {"is_following": existing is not None}
+
+@api_router.get("/users/{username}/followers")
+async def get_followers(username: str, current_user: Optional[Dict] = Depends(get_current_user)):
+    user = await db.users.find_one({"username": username.lower()}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    followers = await db.followers.find({"following_id": user["id"]}, {"_id": 0}).to_list(1000)
+    
+    result = []
+    for f in followers:
+        follower_user = await db.users.find_one({"id": f["follower_id"]}, {"_id": 0, "password_hash": 0})
+        if follower_user:
+            result.append({
+                "id": follower_user["id"],
+                "username": follower_user["username"],
+                "avatar_url": follower_user.get("avatar_url")
+            })
+    
+    return result
+
+@api_router.get("/users/{username}/following")
+async def get_following(username: str, current_user: Optional[Dict] = Depends(get_current_user)):
+    user = await db.users.find_one({"username": username.lower()}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    following = await db.followers.find({"follower_id": user["id"]}, {"_id": 0}).to_list(1000)
+    
+    result = []
+    for f in following:
+        following_user = await db.users.find_one({"id": f["following_id"]}, {"_id": 0, "password_hash": 0})
+        if following_user:
+            result.append({
+                "id": following_user["id"],
+                "username": following_user["username"],
+                "avatar_url": following_user.get("avatar_url")
+            })
+    
+    return result
+
+# ============== FEED/POSTS ROUTES ==============
+
+@api_router.get("/feed", response_model=List[PostResponse])
+async def get_feed(user: Dict = Depends(require_auth), limit: int = 50, skip: int = 0):
+    # Get users I'm following
+    following = await db.followers.find({"follower_id": user["id"]}, {"_id": 0}).to_list(1000)
+    following_ids = [f["following_id"] for f in following]
+    following_ids.append(user["id"])  # Include own posts
+    
+    posts = await db.posts.find(
+        {"user_id": {"$in": following_ids}},
+        {"_id": 0}
+    ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    result = []
+    for post in posts:
+        post_user = await db.users.find_one({"id": post["user_id"]}, {"_id": 0, "password_hash": 0})
+        user_data = {"id": post_user["id"], "username": post_user["username"], "avatar_url": post_user.get("avatar_url")} if post_user else None
+        
+        record_data = None
+        if post.get("record_id"):
+            record = await db.records.find_one({"id": post["record_id"]}, {"_id": 0})
+            record_data = record
+        
+        haul_data = None
+        if post.get("haul_id"):
+            haul = await db.hauls.find_one({"id": post["haul_id"]}, {"_id": 0})
+            haul_data = haul
+        
+        likes_count = await db.likes.count_documents({"post_id": post["id"]})
+        comments_count = await db.comments.count_documents({"post_id": post["id"]})
+        
+        is_liked = await db.likes.find_one({"post_id": post["id"], "user_id": user["id"]}) is not None
+        
+        result.append(PostResponse(
+            **post,
+            user=user_data,
+            record=record_data,
+            haul=haul_data,
+            likes_count=likes_count,
+            comments_count=comments_count,
+            is_liked=is_liked
+        ))
+    
+    return result
+
+@api_router.get("/explore", response_model=List[PostResponse])
+async def get_explore_feed(current_user: Optional[Dict] = Depends(get_current_user), limit: int = 50, skip: int = 0):
+    posts = await db.posts.find({}, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    
+    result = []
+    for post in posts:
+        post_user = await db.users.find_one({"id": post["user_id"]}, {"_id": 0, "password_hash": 0})
+        user_data = {"id": post_user["id"], "username": post_user["username"], "avatar_url": post_user.get("avatar_url")} if post_user else None
+        
+        record_data = None
+        if post.get("record_id"):
+            record = await db.records.find_one({"id": post["record_id"]}, {"_id": 0})
+            record_data = record
+        
+        haul_data = None
+        if post.get("haul_id"):
+            haul = await db.hauls.find_one({"id": post["haul_id"]}, {"_id": 0})
+            haul_data = haul
+        
+        likes_count = await db.likes.count_documents({"post_id": post["id"]})
+        comments_count = await db.comments.count_documents({"post_id": post["id"]})
+        
+        is_liked = False
+        if current_user:
+            is_liked = await db.likes.find_one({"post_id": post["id"], "user_id": current_user["id"]}) is not None
+        
+        result.append(PostResponse(
+            **post,
+            user=user_data,
+            record=record_data,
+            haul=haul_data,
+            likes_count=likes_count,
+            comments_count=comments_count,
+            is_liked=is_liked
+        ))
+    
+    return result
+
+# ============== BUZZING NOW (Trending) ROUTES ==============
+
+@api_router.get("/buzzing")
+async def get_buzzing_records(current_user: Optional[Dict] = Depends(get_current_user), limit: int = 10):
+    """Get trending/buzzing records based on recent spins"""
+    # Get spins from last 7 days
+    week_ago = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
+    
+    pipeline = [
+        {"$match": {"created_at": {"$gte": week_ago}}},
+        {"$group": {"_id": "$record_id", "spin_count": {"$sum": 1}}},
+        {"$sort": {"spin_count": -1}},
+        {"$limit": limit}
+    ]
+    
+    trending = await db.spins.aggregate(pipeline).to_list(limit)
+    
+    result = []
+    for item in trending:
+        record = await db.records.find_one({"id": item["_id"]}, {"_id": 0})
+        if record:
+            result.append({
+                **record,
+                "buzz_count": item["spin_count"]
+            })
+    
+    return result
+
+# ============== LIKES ROUTES ==============
+
+@api_router.post("/posts/{post_id}/like")
+async def like_post(post_id: str, user: Dict = Depends(require_auth)):
+    post = await db.posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    existing = await db.likes.find_one({"post_id": post_id, "user_id": user["id"]})
+    if existing:
+        raise HTTPException(status_code=400, detail="Already liked")
+    
+    like_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    
+    await db.likes.insert_one({
+        "id": like_id,
+        "post_id": post_id,
+        "user_id": user["id"],
+        "created_at": now
+    })
+    
+    return {"message": "Post liked"}
+
+@api_router.delete("/posts/{post_id}/like")
+async def unlike_post(post_id: str, user: Dict = Depends(require_auth)):
+    result = await db.likes.delete_one({"post_id": post_id, "user_id": user["id"]})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=400, detail="Not liked")
+    
+    return {"message": "Post unliked"}
+
+# ============== COMMENTS ROUTES ==============
+
+@api_router.post("/posts/{post_id}/comments", response_model=CommentResponse)
+async def add_comment(post_id: str, comment_data: CommentCreate, user: Dict = Depends(require_auth)):
+    post = await db.posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    
+    comment_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    
+    comment_doc = {
+        "id": comment_id,
+        "post_id": post_id,
+        "user_id": user["id"],
+        "content": comment_data.content,
+        "created_at": now
+    }
+    
+    await db.comments.insert_one(comment_doc)
+    
+    user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url")}
+    
+    return CommentResponse(**comment_doc, user=user_data)
+
+@api_router.get("/posts/{post_id}/comments", response_model=List[CommentResponse])
+async def get_comments(post_id: str, current_user: Optional[Dict] = Depends(get_current_user)):
+    comments = await db.comments.find({"post_id": post_id}, {"_id": 0}).sort("created_at", 1).to_list(100)
+    
+    result = []
+    for comment in comments:
+        comment_user = await db.users.find_one({"id": comment["user_id"]}, {"_id": 0, "password_hash": 0})
+        user_data = {"id": comment_user["id"], "username": comment_user["username"], "avatar_url": comment_user.get("avatar_url")} if comment_user else None
+        result.append(CommentResponse(**comment, user=user_data))
+    
+    return result
+
+# ============== WEEKLY SUMMARY ROUTES ==============
+
+@api_router.get("/weekly-summary", response_model=WeeklySummaryResponse)
+async def get_weekly_summary(user: Dict = Depends(require_auth)):
+    now = datetime.now(timezone.utc)
+    week_start = (now - timedelta(days=7)).isoformat()
+    week_end = now.isoformat()
+    
+    # Get spins from last week
+    spins = await db.spins.find({
+        "user_id": user["id"],
+        "created_at": {"$gte": week_start}
+    }, {"_id": 0}).to_list(1000)
+    
+    total_spins = len(spins)
+    
+    # Calculate top artist and album
+    artist_counts = {}
+    album_counts = {}
+    
+    for spin in spins:
+        record = await db.records.find_one({"id": spin["record_id"]}, {"_id": 0})
+        if record:
+            artist = record.get("artist", "Unknown")
+            album = record.get("title", "Unknown")
+            artist_counts[artist] = artist_counts.get(artist, 0) + 1
+            album_key = f"{artist} - {album}"
+            album_counts[album_key] = album_counts.get(album_key, 0) + 1
+    
+    top_artist = max(artist_counts, key=artist_counts.get) if artist_counts else None
+    top_album_key = max(album_counts, key=album_counts.get) if album_counts else None
+    top_album = top_album_key.split(" - ", 1)[1] if top_album_key and " - " in top_album_key else top_album_key
+    
+    # Determine listening mood (honey themed)
+    moods = ["Buzzing", "Mellow", "Golden", "Sweet", "Warm", "Groovy"]
+    listening_mood = moods[total_spins % len(moods)] if total_spins > 0 else "Quiet week"
+    
+    # Count records added
+    records_added = await db.records.count_documents({
+        "user_id": user["id"],
+        "created_at": {"$gte": week_start}
+    })
+    
+    summary_id = str(uuid.uuid4())
+    
+    # Check if summary already exists for this week
+    existing = await db.weekly_summaries.find_one({
+        "user_id": user["id"],
+        "week_start": {"$gte": week_start}
+    }, {"_id": 0})
+    
+    if existing:
+        return WeeklySummaryResponse(**existing)
+    
+    summary_doc = {
+        "id": summary_id,
+        "user_id": user["id"],
+        "week_start": week_start,
+        "week_end": week_end,
+        "total_spins": total_spins,
+        "top_artist": top_artist,
+        "top_album": top_album,
+        "listening_mood": listening_mood,
+        "records_added": records_added,
+        "created_at": now.isoformat()
+    }
+    
+    await db.weekly_summaries.insert_one(summary_doc)
+    
+    # Create activity post for weekly summary
+    if total_spins > 0:
+        post_id = str(uuid.uuid4())
+        post_doc = {
+            "id": post_id,
+            "user_id": user["id"],
+            "post_type": "weekly_summary",
+            "content": f"HoneyGroove Weekly: {total_spins} spins this week. Top artist: {top_artist or 'N/A'}",
+            "record_id": None,
+            "haul_id": None,
+            "created_at": now.isoformat()
+        }
+        await db.posts.insert_one(post_doc)
+    
+    return WeeklySummaryResponse(**summary_doc)
+
+# ============== SHARE GRAPHICS ROUTES ==============
+
+@api_router.post("/share/generate")
+async def generate_share_graphic_endpoint(request: ShareGraphicRequest, user: Dict = Depends(require_auth)):
+    data = {}
+    
+    if request.graphic_type == "now_spinning" and request.record_id:
+        record = await db.records.find_one({"id": request.record_id}, {"_id": 0})
+        if not record:
+            raise HTTPException(status_code=404, detail="Record not found")
+        data = record
+        
+    elif request.graphic_type == "new_haul" and request.haul_id:
+        haul = await db.hauls.find_one({"id": request.haul_id}, {"_id": 0})
+        if not haul:
+            raise HTTPException(status_code=404, detail="Haul not found")
+        data = haul
+        
+    elif request.graphic_type == "weekly_summary":
+        summary = await get_weekly_summary(user)
+        data = summary.model_dump()
+    
+    image_bytes = generate_share_graphic(request.graphic_type, data)
+    
+    return Response(
+        content=image_bytes,
+        media_type="image/png",
+        headers={"Content-Disposition": f"attachment; filename={request.graphic_type}_{datetime.now().strftime('%Y%m%d')}.png"}
+    )
+
+# ============== FILE UPLOAD ROUTES ==============
+
+@api_router.post("/upload")
+async def upload_file(file: UploadFile = File(...), user: Dict = Depends(require_auth)):
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Only image files are allowed")
+    
+    ext = file.filename.split(".")[-1] if "." in file.filename else "jpg"
+    path = f"{APP_NAME}/uploads/{user['id']}/{uuid.uuid4()}.{ext}"
+    
+    data = await file.read()
+    
+    try:
+        result = put_object(path, data, file.content_type or "image/jpeg")
+        
+        # Store file reference
+        file_id = str(uuid.uuid4())
+        await db.files.insert_one({
+            "id": file_id,
+            "user_id": user["id"],
+            "storage_path": result["path"],
+            "original_filename": file.filename,
+            "content_type": file.content_type,
+            "size": result.get("size", len(data)),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+        return {"file_id": file_id, "path": result["path"]}
+    except Exception as e:
+        logger.error(f"Upload failed: {e}")
+        raise HTTPException(status_code=500, detail="Upload failed")
+
+@api_router.get("/files/{file_id}")
+async def get_file(file_id: str, user: Dict = Depends(require_auth)):
+    file_record = await db.files.find_one({"id": file_id}, {"_id": 0})
+    if not file_record:
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    try:
+        data, content_type = get_object(file_record["storage_path"])
+        return Response(content=data, media_type=content_type)
+    except Exception as e:
+        logger.error(f"File download failed: {e}")
+        raise HTTPException(status_code=500, detail="Download failed")
+
+# ============== STATS ROUTES ==============
+
+@api_router.get("/stats")
+async def get_global_stats():
+    users_count = await db.users.count_documents({})
+    records_count = await db.records.count_documents({})
+    spins_count = await db.spins.count_documents({})
+    hauls_count = await db.hauls.count_documents({})
+    
+    return {
+        "users": users_count,
+        "records": records_count,
+        "spins": spins_count,
+        "hauls": hauls_count
+    }
+
+# Root endpoint
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Welcome to HoneyGroove API", "version": "1.0.0"}
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
-
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
-
-# Include the router in the main app
+# Include the router
 app.include_router(api_router)
 
 app.add_middleware(
@@ -77,12 +1427,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+@app.on_event("startup")
+async def startup_event():
+    # Create indexes
+    await db.users.create_index("email", unique=True)
+    await db.users.create_index("username", unique=True)
+    await db.users.create_index("id", unique=True)
+    await db.records.create_index("user_id")
+    await db.records.create_index("id", unique=True)
+    await db.spins.create_index("user_id")
+    await db.spins.create_index("record_id")
+    await db.posts.create_index("user_id")
+    await db.posts.create_index("created_at")
+    await db.followers.create_index([("follower_id", 1), ("following_id", 1)], unique=True)
+    await db.likes.create_index([("post_id", 1), ("user_id", 1)], unique=True)
+    
+    # Initialize storage
+    try:
+        init_storage()
+        logger.info("Storage initialized")
+    except Exception as e:
+        logger.warning(f"Storage initialization skipped: {e}")
+    
+    logger.info("HoneyGroove API started")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

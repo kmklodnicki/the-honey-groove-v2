@@ -9,7 +9,7 @@ body {
     font-family: "Inter", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #FAF7F2;
+    background-color: #FFF6E6;
     color: #1F1F1F;
 }
 
@@ -22,7 +22,7 @@ body::before {
     height: 100%;
     pointer-events: none;
     background-image: url('https://grainy-gradients.vercel.app/noise.svg');
-    opacity: 0.4;
+    opacity: 0.3;
     z-index: 0;
 }
 
@@ -37,29 +37,29 @@ h1, h2, h3, h4, h5, h6 {
 
 @layer base {
     :root {
-        --background: 38 47% 96%;
+        --background: 42 100% 95%;
         --foreground: 0 0% 12%;
         --card: 0 0% 100%;
         --card-foreground: 0 0% 12%;
         --popover: 0 0% 100%;
         --popover-foreground: 0 0% 12%;
-        --primary: 0 0% 12%;
-        --primary-foreground: 0 0% 100%;
-        --secondary: 344 56% 91%;
+        --primary: 40 90% 61%;
+        --primary-foreground: 0 0% 12%;
+        --secondary: 45 90% 72%;
         --secondary-foreground: 0 0% 12%;
-        --muted: 38 30% 90%;
+        --muted: 42 60% 90%;
         --muted-foreground: 0 0% 45%;
-        --accent: 40 57% 72%;
-        --accent-foreground: 0 0% 12%;
+        --accent: 35 72% 52%;
+        --accent-foreground: 0 0% 100%;
         --destructive: 0 50% 64%;
         --destructive-foreground: 0 0% 98%;
-        --border: 40 57% 72%;
-        --input: 38 30% 90%;
-        --ring: 346 46% 70%;
-        --chart-1: 346 46% 70%;
-        --chart-2: 40 57% 72%;
-        --chart-3: 130 20% 61%;
-        --chart-4: 344 56% 91%;
+        --border: 40 60% 80%;
+        --input: 42 60% 92%;
+        --ring: 40 90% 61%;
+        --chart-1: 40 90% 61%;
+        --chart-2: 45 90% 72%;
+        --chart-3: 35 72% 52%;
+        --chart-4: 42 100% 95%;
         --chart-5: 0 0% 12%;
         --radius: 0.75rem;
     }
@@ -114,17 +114,20 @@ h1, h2, h3, h4, h5, h6 {
         font-family: "Inter", sans-serif;
     }
     .glass-card {
-        background: rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.7);
         backdrop-filter: blur(12px);
-        border: 1px solid rgba(230, 201, 139, 0.3);
+        border: 1px solid rgba(244, 185, 66, 0.3);
     }
     .vinyl-shadow {
         box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3);
     }
-    .soft-shadow {
-        box-shadow: 0 4px 20px -2px rgba(217, 143, 161, 0.15);
+    .honey-shadow {
+        box-shadow: 0 4px 20px -2px rgba(244, 185, 66, 0.25);
     }
     .float-shadow {
-        box-shadow: 0 20px 40px -5px rgba(230, 201, 139, 0.2);
+        box-shadow: 0 20px 40px -5px rgba(217, 140, 47, 0.2);
+    }
+    .honeycomb-bg {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23f4b942' fill-opacity='0.08'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     }
 }

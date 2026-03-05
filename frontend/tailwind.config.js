@@ -12,14 +12,13 @@ module.exports = {
                 body: ['"Inter"', 'sans-serif'],
             },
             colors: {
-                'wax-pink': '#F6D6DE',
-                'wax-cream': '#FAF7F2',
-                'wax-rose': '#D98FA1',
-                'wax-black': '#1F1F1F',
-                'wax-champagne': '#E6C98B',
-                'wax-vinyl': '#121212',
-                'wax-sage': '#8BA88E',
-                'wax-muted': '#F2EBE0',
+                'honey': '#F4B942',
+                'honey-soft': '#F9D776',
+                'honey-cream': '#FFF6E6',
+                'honey-amber': '#D98C2F',
+                'honey-dark': '#C4922A',
+                'vinyl-black': '#1F1F1F',
+                'honey-muted': '#FFF0D6',
                 background: 'hsl(var(--background))',
                 foreground: 'hsl(var(--foreground))',
                 card: {
@@ -89,9 +88,14 @@ module.exports = {
                     from: { opacity: '0', transform: 'translateY(10px)' },
                     to: { opacity: '1', transform: 'translateY(0)' }
                 },
-                'pulse-soft': {
-                    '0%, 100%': { opacity: '1' },
-                    '50%': { opacity: '0.7' }
+                'buzz': {
+                    '0%, 100%': { transform: 'translateX(0)' },
+                    '25%': { transform: 'translateX(-2px)' },
+                    '75%': { transform: 'translateX(2px)' }
+                },
+                'float': {
+                    '0%, 100%': { transform: 'translateY(0)' },
+                    '50%': { transform: 'translateY(-5px)' }
                 }
             },
             animation: {
@@ -100,12 +104,13 @@ module.exports = {
                 'spin-slow': 'spin-slow 8s linear infinite',
                 'fade-in': 'fade-in 0.5s ease-out',
                 'slide-up': 'slide-up 0.7s ease-out',
-                'pulse-soft': 'pulse-soft 2s ease-in-out infinite'
+                'buzz': 'buzz 0.3s ease-in-out',
+                'float': 'float 3s ease-in-out infinite'
             },
             boxShadow: {
-                'soft': '0 4px 20px -2px rgba(217, 143, 161, 0.15)',
+                'honey': '0 4px 20px -2px rgba(244, 185, 66, 0.25)',
                 'vinyl': '0 10px 30px -5px rgba(0, 0, 0, 0.3)',
-                'float': '0 20px 40px -5px rgba(230, 201, 139, 0.2)',
+                'float': '0 20px 40px -5px rgba(217, 140, 47, 0.2)',
             }
         }
     },

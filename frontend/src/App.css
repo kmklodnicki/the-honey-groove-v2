@@ -1,59 +1,60 @@
-/* WaxLog App Styles */
+/* HoneyGroove App Styles */
 
 /* Button Variants */
 .btn-primary {
     @apply inline-flex items-center justify-center rounded-full text-sm font-medium h-10 px-8 py-2;
-    @apply bg-wax-black text-white;
+    @apply bg-honey text-vinyl-black;
     transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 .btn-primary:hover {
-    @apply bg-wax-black/90;
+    @apply bg-honey-amber;
     transform: scale(1.05);
 }
 
 .btn-secondary {
     @apply inline-flex items-center justify-center rounded-full text-sm font-medium h-10 px-8 py-2;
-    @apply bg-wax-pink text-wax-black;
+    @apply bg-honey-soft text-vinyl-black;
     transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .btn-secondary:hover {
-    @apply bg-wax-rose text-white;
+    @apply bg-honey;
 }
 
 .btn-outline {
     @apply inline-flex items-center justify-center rounded-full text-sm font-medium h-10 px-8 py-2;
-    @apply border-2 border-wax-black bg-transparent text-wax-black;
+    @apply border-2 border-vinyl-black bg-transparent text-vinyl-black;
     transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .btn-outline:hover {
-    @apply bg-wax-black text-white;
+    @apply bg-vinyl-black text-white;
 }
 
 .btn-ghost {
     @apply inline-flex items-center justify-center rounded-full text-sm font-medium h-10 px-8 py-2;
-    @apply bg-transparent text-wax-black;
+    @apply bg-transparent text-vinyl-black;
     transition: background-color 0.2s ease;
 }
 
 .btn-ghost:hover {
-    @apply bg-wax-pink/30;
+    @apply bg-honey-soft/50;
 }
 
 /* Card Styles */
-.wax-card {
-    @apply rounded-2xl border border-wax-champagne/30 bg-white/50 backdrop-blur-sm;
-    transition: box-shadow 0.3s ease;
+.honey-card {
+    @apply rounded-2xl border border-honey/30 bg-white/70 backdrop-blur-sm;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
 
-.wax-card:hover {
-    @apply shadow-md;
+.honey-card:hover {
+    @apply shadow-honey;
+    transform: translateY(-2px);
 }
 
 .vinyl-card {
-    @apply aspect-square relative group overflow-hidden rounded-lg bg-black;
+    @apply aspect-square relative overflow-hidden rounded-lg bg-black;
     transition: box-shadow 0.3s ease, transform 0.3s ease;
 }
 
@@ -63,10 +64,10 @@
 }
 
 /* Input Styles */
-.wax-input {
-    @apply flex h-12 w-full rounded-xl border border-wax-champagne/50 bg-white/80 px-4 py-2 text-sm;
+.honey-input {
+    @apply flex h-12 w-full rounded-xl border border-honey/50 bg-white/80 px-4 py-2 text-sm;
     @apply placeholder:text-muted-foreground;
-    @apply focus:outline-none focus:ring-2 focus:ring-wax-rose focus:border-transparent;
+    @apply focus:outline-none focus:ring-2 focus:ring-honey focus:border-transparent;
     @apply disabled:cursor-not-allowed disabled:opacity-50;
 }
 
@@ -80,29 +81,29 @@
     to { transform: rotate(360deg); }
 }
 
-/* Vinyl Sheen Effect */
-.vinyl-sheen {
-    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0.1) 100%);
+/* Honeycomb Pattern */
+.honeycomb-pattern {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23f4b942' fill-opacity='0.1'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
 
 /* Activity Feed Post */
 .feed-post {
-    @apply p-6 border-b border-wax-champagne/20;
+    @apply p-6 border-b border-honey/20;
     transition: background-color 0.2s ease;
 }
 
 .feed-post:hover {
-    @apply bg-wax-pink/5;
+    @apply bg-honey-soft/10;
 }
 
 /* Glass Effect */
 .glass {
-    @apply bg-white/50 backdrop-blur-lg border border-wax-champagne/30;
+    @apply bg-white/60 backdrop-blur-lg border border-honey/30;
 }
 
 /* Hero Gradient Overlay */
 .hero-gradient {
-    background: linear-gradient(180deg, rgba(250,247,242,0) 0%, #FAF7F2 100%);
+    background: linear-gradient(180deg, rgba(255,246,230,0) 0%, #FFF6E6 100%);
 }
 
 /* Hover Lift Effect */
@@ -112,6 +113,11 @@
 
 .hover-lift:hover {
     transform: translateY(-4px);
+}
+
+/* Bee Animation */
+.bee-float {
+    animation: float 3s ease-in-out infinite;
 }
 
 /* Page Transitions */
@@ -132,16 +138,16 @@
 }
 
 ::-webkit-scrollbar-track {
-    background: #FAF7F2;
+    background: #FFF6E6;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #D98FA1;
+    background: #F4B942;
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #E6C98B;
+    background: #D98C2F;
 }
 
 /* Staggered Animation Delays */
@@ -150,3 +156,8 @@
 .stagger-3 { animation-delay: 0.3s; }
 .stagger-4 { animation-delay: 0.4s; }
 .stagger-5 { animation-delay: 0.5s; }
+
+/* Hexagon Badge */
+.hex-badge {
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
