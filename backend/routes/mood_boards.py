@@ -73,65 +73,70 @@ async def _get_cover_url(record: dict) -> str:
 
 
 def _generate_mood_board_image(covers: list, username: str) -> bytes:
-    """Generate 1080x1080 mood board PNG."""
+    """Generate 1080x1920 mood board PNG (Instagram Story format)."""
     from PIL import Image, ImageDraw, ImageFont
 
-    W = 1080
-    GRID = 1000
-    STRIP = 80
-    H = GRID + STRIP
+    W, H = 1080, 1920
     BG = (250, 246, 238)
     AMBER = (200, 134, 26)
+    TEXT_DARK = (42, 26, 6)
+    TEXT_MUTED = (138, 107, 74)
 
     img = Image.new("RGB", (W, H), BG)
+    draw = ImageDraw.Draw(img)
+
+    try:
+        playfair_bold = ImageFont.truetype(str(FONTS_DIR / "PlayfairDisplay-Bold2.ttf"), 48)
+        cormorant_italic = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Italic2.ttf"), 30)
+        playfair_italic = ImageFont.truetype(str(FONTS_DIR / "PlayfairDisplay-Italic2.ttf"), 22)
+    except Exception:
+        playfair_bold = ImageFont.load_default()
+        cormorant_italic = playfair_italic = playfair_bold
+
+    # Header: "my week in wax"
+    title = "my week in wax"
+    bbox = draw.textbbox((0, 0), title, font=playfair_bold)
+    draw.text(((W - (bbox[2] - bbox[0])) / 2, 200), title, fill=TEXT_DARK, font=playfair_bold)
+
+    # Handle
+    handle = f"@{username}"
+    bbox = draw.textbbox((0, 0), handle, font=cormorant_italic)
+    draw.text(((W - (bbox[2] - bbox[0])) / 2, 268), handle, fill=AMBER, font=cormorant_italic)
+
+    # 3x3 grid centered
+    GRID = 960
     cell = GRID // 3
+    grid_left = (W - GRID) // 2
+    grid_top = 360
 
     for i, cover_url in enumerate(covers[:9]):
         row, col = divmod(i, 3)
+        x = grid_left + col * cell
+        y = grid_top + row * cell
         try:
             if cover_url:
                 resp = requests.get(cover_url, timeout=10)
                 if resp.status_code == 200:
                     art = Image.open(BytesIO(resp.content)).convert("RGB")
                     art = art.resize((cell, cell), Image.LANCZOS)
-                    x = col * cell + (W - GRID) // 2
-                    y = row * cell
                     img.paste(art, (x, y))
                     continue
         except Exception as e:
             logger.warning(f"Mood board cover fetch failed: {e}")
         # Fallback: amber placeholder
-        x = col * cell + (W - GRID) // 2
-        y = row * cell
-        draw = ImageDraw.Draw(img)
         draw.rectangle([(x, y), (x + cell, y + cell)], fill=(232, 220, 200))
 
-    draw = ImageDraw.Draw(img)
-    strip_y = GRID
+    # Footer
+    fy = grid_top + GRID + 60
 
-    try:
-        cormorant_italic = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Italic2.ttf"), 30)
-        playfair_italic = ImageFont.truetype(str(FONTS_DIR / "PlayfairDisplay-Italic2.ttf"), 18)
-    except Exception:
-        cormorant_italic = ImageFont.load_default()
-        playfair_italic = cormorant_italic
-
-    # "my week in wax" left
-    draw.text((40, strip_y + 22), "my week in wax", fill=AMBER, font=cormorant_italic)
-    # Handle right
-    handle = f"@{username}"
-    bbox = draw.textbbox((0, 0), handle, font=cormorant_italic)
-    draw.text((W - 40 - (bbox[2] - bbox[0]), strip_y + 22), handle, fill=AMBER, font=cormorant_italic)
-    # "HoneyGroove" centered small below
     hg = "the Honey Groove"
     bbox = draw.textbbox((0, 0), hg, font=playfair_italic)
     overlay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     od = ImageDraw.Draw(overlay)
-    od.text(((W - (bbox[2] - bbox[0])) / 2, strip_y + 56), hg, fill=(200, 134, 26, 102), font=playfair_italic)
+    od.text(((W - (bbox[2] - bbox[0])) / 2, fy), hg, fill=(200, 134, 26, 102), font=playfair_italic)
     img = Image.alpha_composite(img.convert("RGBA"), overlay).convert("RGB")
 
-    from io import BytesIO as BIO
-    buf = BIO()
+    buf = BytesIO()
     img.save(buf, format="PNG", optimize=True)
     return buf.getvalue()
 

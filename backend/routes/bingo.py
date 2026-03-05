@@ -118,6 +118,40 @@ def _check_bingo(marks: list) -> bool:
     return False
 
 
+def _count_bingos(marks: list) -> int:
+    """Count how many bingo lines (rows, cols, diagonals) are completed."""
+    marked = set(marks)
+    count = 0
+    for r in range(5):
+        if all((r * 5 + c) in marked for c in range(5)):
+            count += 1
+    for c in range(5):
+        if all((r * 5 + c) in marked for r in range(5)):
+            count += 1
+    if all((i * 5 + i) in marked for i in range(5)):
+        count += 1
+    if all((i * 5 + (4 - i)) in marked for i in range(5)):
+        count += 1
+    return count
+
+
+async def _get_community_stats(card_id: str) -> dict:
+    """Compute percentage of players who marked each square."""
+    all_marks = await db.bingo_marks.find({"card_id": card_id}, {"_id": 0, "marks": 1}).to_list(100000)
+    total_players = len(all_marks)
+    if total_players == 0:
+        return {"total_players": 0, "percentages": {}}
+    counts = {}
+    for m in all_marks:
+        for idx in m.get("marks", []):
+            counts[idx] = counts.get(idx, 0) + 1
+    percentages = {}
+    for i in range(25):
+        pct = round((counts.get(i, 0) / total_players) * 100)
+        percentages[str(i)] = pct
+    return {"total_players": total_players, "percentages": percentages}
+
+
 # ─── Endpoints ───
 
 @router.get("/bingo/current")
@@ -132,15 +166,22 @@ async def get_current_bingo(user: Dict = Depends(require_auth)):
     )
     marks = user_marks.get("marks", [12]) if user_marks else [12]  # 12 = free space
     has_bingo = _check_bingo(marks)
+    bingo_count = _count_bingos(marks)
 
-    return {
+    result = {
         "card": card,
         "marks": marks,
         "has_bingo": has_bingo,
+        "bingo_count": bingo_count,
         "is_locked": is_locked,
         "week_start": card["week_start"],
         "week_end": card["week_end"],
     }
+
+    if is_locked:
+        result["community_stats"] = await _get_community_stats(card["id"])
+
+    return result
 
 
 @router.post("/bingo/mark")
@@ -170,7 +211,8 @@ async def toggle_mark(data: dict, user: Dict = Depends(require_auth)):
         upsert=True,
     )
     has_bingo = _check_bingo(marks)
-    return {"marks": marks, "has_bingo": has_bingo}
+    bingo_count = _count_bingos(marks)
+    return {"marks": marks, "has_bingo": has_bingo, "bingo_count": bingo_count}
 
 
 @router.get("/bingo/export")
@@ -181,20 +223,20 @@ async def export_bingo_card(user: Dict = Depends(require_auth)):
     has_bingo = _check_bingo(marks)
     username = user.get("username", "collector")
 
-    image_bytes = _generate_bingo_image(card, marks, has_bingo, username)
+    friday, sunday = _get_current_week()
+    is_locked = datetime.now(timezone.utc) > sunday
+    community_stats = await _get_community_stats(card["id"]) if is_locked else None
+
+    image_bytes = _generate_bingo_image(card, marks, has_bingo, username, community_stats)
     return Response(content=image_bytes, media_type="image/png")
 
 
-def _generate_bingo_image(card: dict, marks: list, has_bingo: bool, username: str) -> bytes:
+def _generate_bingo_image(card: dict, marks: list, has_bingo: bool, username: str, community_stats: dict = None) -> bytes:
     from PIL import Image, ImageDraw, ImageFont
 
-    W, H = 1080, 1080
+    W, H = 1080, 1920
     BG = (250, 246, 238)
-    CARD_BG = (255, 255, 255)
     AMBER = (200, 134, 26)
-    AMBER_FILL = (232, 168, 32, 64)
-    AMBER_BORDER_MUTED = (200, 134, 26, 38)
-    AMBER_BORDER_FULL = (200, 134, 26, 255)
     TEXT_DARK = (42, 26, 6)
     TEXT_MUTED = (138, 107, 74)
 
@@ -202,19 +244,46 @@ def _generate_bingo_image(card: dict, marks: list, has_bingo: bool, username: st
     draw = ImageDraw.Draw(img)
 
     try:
-        playfair_bold = ImageFont.truetype(str(FONTS_DIR / "PlayfairDisplay-Bold2.ttf"), 32)
-        cormorant_italic = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Italic2.ttf"), 18)
-        cormorant_sm = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Regular2.ttf"), 20)
-        emoji_font = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Regular2.ttf"), 24)
+        playfair_bold = ImageFont.truetype(str(FONTS_DIR / "PlayfairDisplay-Bold2.ttf"), 48)
+        playfair_sm = ImageFont.truetype(str(FONTS_DIR / "PlayfairDisplay-Bold2.ttf"), 28)
+        cormorant_italic = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Italic2.ttf"), 22)
+        cormorant_sm = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Regular2.ttf"), 24)
+        cormorant_xs = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Italic2.ttf"), 18)
+        emoji_font = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Regular2.ttf"), 28)
     except Exception:
         playfair_bold = ImageFont.load_default()
-        cormorant_italic = cormorant_sm = emoji_font = playfair_bold
+        playfair_sm = cormorant_italic = cormorant_sm = cormorant_xs = emoji_font = playfair_bold
 
-    grid_top = 60
-    grid_size = 900
+    # Header
+    title = "collector bingo"
+    bbox = draw.textbbox((0, 0), title, font=playfair_bold)
+    draw.text(((W - (bbox[2] - bbox[0])) / 2, 100), title, fill=TEXT_DARK, font=playfair_bold)
+
+    try:
+        ws = datetime.fromisoformat(card["week_start"])
+        we = datetime.fromisoformat(card["week_end"])
+        date_range = f"{ws.strftime('%b %d')} — {we.strftime('%b %d')}"
+    except Exception:
+        date_range = ""
+    bbox = draw.textbbox((0, 0), date_range, font=cormorant_sm)
+    draw.text(((W - (bbox[2] - bbox[0])) / 2, 165), date_range, fill=TEXT_MUTED, font=cormorant_sm)
+
+    # Bingo badge
+    if has_bingo:
+        badge_text = "BINGO 🍯"
+        bbox = draw.textbbox((0, 0), badge_text, font=cormorant_sm)
+        bw = bbox[2] - bbox[0] + 40
+        bx = (W - bw) / 2
+        draw.rounded_rectangle([(bx, 210), (bx + bw, 250)], radius=20, fill=AMBER)
+        draw.text((bx + 20, 216), badge_text, fill=(255, 255, 255), font=cormorant_sm)
+
+    # Grid
+    grid_top = 290
+    grid_size = 980
     cell = grid_size // 5
     grid_left = (W - grid_size) // 2
     marked_set = set(marks)
+    percentages = community_stats.get("percentages", {}) if community_stats else {}
 
     for row in range(5):
         for col in range(5):
@@ -231,7 +300,7 @@ def _generate_bingo_image(card: dict, marks: list, has_bingo: bool, username: st
                 od.rectangle([(0, 0), (cell, cell)], fill=(232, 168, 32, 64))
                 od.rectangle([(0, 0), (cell - 1, cell - 1)], outline=AMBER)
             else:
-                od.rectangle([(0, 0), (cell, cell)], fill=CARD_BG)
+                od.rectangle([(0, 0), (cell, cell)], fill=(255, 255, 255))
                 od.rectangle([(0, 0), (cell - 1, cell - 1)], outline=(200, 134, 26, 38))
 
             img.paste(Image.alpha_composite(Image.new("RGBA", (cell, cell), (0, 0, 0, 0)), overlay), (x, y), overlay)
@@ -240,50 +309,49 @@ def _generate_bingo_image(card: dict, marks: list, has_bingo: bool, username: st
             text = sq["text"]
             emoji = sq.get("emoji", "")
             if sq.get("is_free"):
-                draw.text((x + cell // 2 - 12, y + cell // 2 - 36), "🍯", fill=TEXT_DARK, font=emoji_font)
+                draw.text((x + cell // 2 - 14, y + cell // 2 - 42), "🍯", fill=TEXT_DARK, font=emoji_font)
                 lines = textwrap.wrap("sweet spot", width=12)
-                ty = y + cell // 2
+                ty = y + cell // 2 - 4
                 for line in lines:
                     bbox = draw.textbbox((0, 0), line, font=cormorant_italic)
                     tw = bbox[2] - bbox[0]
                     draw.text((x + (cell - tw) // 2, ty), line, fill=AMBER, font=cormorant_italic)
-                    ty += 20
+                    ty += 24
             else:
-                ty = y + 12
+                ty = y + 14
                 if emoji:
                     bbox = draw.textbbox((0, 0), emoji, font=emoji_font)
                     draw.text((x + (cell - (bbox[2] - bbox[0])) // 2, ty), emoji, fill=TEXT_DARK, font=emoji_font)
-                    ty += 28
+                    ty += 32
                 lines = textwrap.wrap(text, width=14)
                 for line in lines[:4]:
                     bbox = draw.textbbox((0, 0), line, font=cormorant_italic)
                     tw = bbox[2] - bbox[0]
                     draw.text((x + (cell - tw) // 2, ty), line, fill=TEXT_DARK if is_marked else TEXT_MUTED, font=cormorant_italic)
-                    ty += 20
+                    ty += 24
 
-    # Bingo badge
-    if has_bingo:
-        badge_x, badge_y = W - 130, grid_top - 10
-        draw.rounded_rectangle([(badge_x, badge_y), (badge_x + 100, badge_y + 40)], radius=20, fill=AMBER)
-        draw.text((badge_x + 12, badge_y + 6), "BINGO 🍯", fill=(255, 255, 255), font=cormorant_sm)
+            # Community stat percentage (only when locked)
+            pct = percentages.get(str(idx))
+            if pct is not None and not sq.get("is_free"):
+                stat_text = f"{pct}% of the hive"
+                bbox = draw.textbbox((0, 0), stat_text, font=cormorant_xs)
+                tw = bbox[2] - bbox[0]
+                stat_overlay = Image.new("RGBA", (tw + 4, 20), (0, 0, 0, 0))
+                sd = ImageDraw.Draw(stat_overlay)
+                sd.text((0, 0), stat_text, fill=(138, 107, 74, 153), font=cormorant_xs)
+                sx = x + (cell - tw) // 2
+                sy = y + cell - 22
+                img.paste(stat_overlay, (sx, sy), stat_overlay)
 
-    # Footer
-    fy = grid_top + grid_size + 16
-    draw.text((grid_left, fy), "collector bingo", fill=TEXT_DARK, font=playfair_bold)
-    try:
-        ws = datetime.fromisoformat(card["week_start"])
-        we = datetime.fromisoformat(card["week_end"])
-        date_range = f"{ws.strftime('%b %d')} — {we.strftime('%b %d')}"
-    except Exception:
-        date_range = ""
-    bbox = draw.textbbox((0, 0), date_range, font=cormorant_sm)
-    draw.text(((W - (bbox[2] - bbox[0])) / 2, fy + 8), date_range, fill=TEXT_MUTED, font=cormorant_sm)
+    # Footer area
+    fy = grid_top + grid_size + 40
     handle = f"@{username}"
-    hg = "the Honey Groove"
     bbox = draw.textbbox((0, 0), handle, font=cormorant_sm)
-    draw.text((W - grid_left - (bbox[2] - bbox[0]), fy), handle, fill=AMBER, font=cormorant_sm)
+    draw.text(((W - (bbox[2] - bbox[0])) / 2, fy), handle, fill=AMBER, font=cormorant_sm)
+
+    hg = "the Honey Groove"
     bbox = draw.textbbox((0, 0), hg, font=cormorant_italic)
-    draw.text((W - grid_left - (bbox[2] - bbox[0]), fy + 24), hg, fill=TEXT_MUTED, font=cormorant_italic)
+    draw.text(((W - (bbox[2] - bbox[0])) / 2, fy + 36), hg, fill=TEXT_MUTED, font=cormorant_italic)
 
     buf = BytesIO()
     img.convert("RGB").save(buf, format="PNG", optimize=True)
