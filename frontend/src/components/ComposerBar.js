@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
@@ -10,7 +10,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '../components/ui/select';
-import { Disc, Package, Search, Loader2, X } from 'lucide-react';
+import { Disc, Package, Search, Loader2, X, Feather, ImagePlus, Tag } from 'lucide-react';
 import { toast } from 'sonner';
 
 const MOOD_CONFIG = {
@@ -62,12 +62,21 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const [isoSelectedRelease, setIsoSelectedRelease] = useState(null);
   const [isoManualMode, setIsoManualMode] = useState(false);
 
+  // A Note
+  const [noteText, setNoteText] = useState('');
+  const [noteRecordId, setNoteRecordId] = useState('');
+  const [noteShowRecordPicker, setNoteShowRecordPicker] = useState(false);
+  const [noteImageUrl, setNoteImageUrl] = useState('');
+  const [noteUploading, setNoteUploading] = useState(false);
+  const noteFileRef = useRef(null);
+
   const resetAll = () => {
     setSpinRecordId(''); setSpinTrack(''); setSpinCaption(''); setSpinMood('');
     setHaulStoreName(''); setHaulCaption(''); setHaulItems([]); setHaulSearch(''); setHaulResults([]);
     setIsoArtist(''); setIsoAlbum(''); setIsoPressing(''); setIsoCondition('');
     setIsoPriceMin(''); setIsoPriceMax(''); setIsoCaption('');
     setIsoDiscogsQuery(''); setIsoDiscogsResults([]); setIsoSelectedRelease(null); setIsoManualMode(false);
+    setNoteText(''); setNoteRecordId(''); setNoteShowRecordPicker(false); setNoteImageUrl(''); setNoteUploading(false);
   };
 
   const openModal = (type) => { resetAll(); setActiveModal(type); };
@@ -161,7 +170,40 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     finally { setSubmitting(false); }
   };
 
+  const handleNoteImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast.error('Images only'); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error('Max 5MB'); return; }
+    setNoteUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const r = await axios.post(`${API}/upload`, formData, {
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+      });
+      setNoteImageUrl(r.data.url);
+    } catch { toast.error('Upload failed'); }
+    finally { setNoteUploading(false); }
+  };
+
+  const submitNote = async () => {
+    if (!noteText.trim()) { toast.error('Write something first'); return; }
+    setSubmitting(true);
+    try {
+      await axios.post(`${API}/composer/note`, {
+        text: noteText.trim(),
+        record_id: noteRecordId || null,
+        image_url: noteImageUrl || null,
+      }, { headers: { Authorization: `Bearer ${token}` }});
+      toast.success('Note posted!');
+      closeModal(); onPostCreated?.();
+    } catch (err) { toast.error(err.response?.data?.detail || 'Failed to post'); }
+    finally { setSubmitting(false); }
+  };
+
   const moodCfg = spinMood ? MOOD_CONFIG[spinMood] : null;
+  const noteRecord = records.find(r => r.id === noteRecordId);
 
   const chips = [
     { key: 'NOW_SPINNING', label: 'Now Spinning', icon: Disc, color: 'bg-honey text-vinyl-black' },
@@ -182,6 +224,12 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               <chip.icon className="w-4 h-4" /> {chip.label}
             </button>
           ))}
+          {/* A Note — outlined pill, lighter visual weight */}
+          <button onClick={() => openModal('NOTE')}
+            className="px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition-all hover:scale-105 hover:shadow-sm border border-stone-300 text-stone-500 hover:border-amber-400 hover:text-amber-700 bg-transparent"
+            data-testid="composer-chip-note">
+            <Feather className="w-4 h-4" /> A Note
+          </button>
         </div>
       </div>
 
@@ -201,7 +249,6 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-2">
-            {/* Record (required) */}
             <div>
               <label className="text-sm font-medium mb-1 block" style={moodCfg ? { color: moodCfg.btnColor } : {}}>Record</label>
               <Select value={spinRecordId} onValueChange={setSpinRecordId}>
@@ -219,13 +266,11 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               </Select>
             </div>
 
-            {/* Track (optional) */}
             <Input placeholder="Track (optional)" value={spinTrack} onChange={e => setSpinTrack(e.target.value)}
               className="border-honey/50"
               style={moodCfg ? { background: 'rgba(255,255,255,0.08)', color: '#eee', borderColor: moodCfg.btnColor + '60' } : {}}
               data-testid="spin-track-input" />
 
-            {/* Mood grid (optional) */}
             <div>
               <label className="text-sm font-medium mb-2 block" style={moodCfg ? { color: moodCfg.btnColor } : { color: '#8A6B4A' }}>
                 how does it feel?
@@ -253,7 +298,6 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               </div>
             </div>
 
-            {/* Note (optional) */}
             <Textarea
               placeholder={moodCfg ? moodCfg.placeholder : 'add a note...'}
               value={spinCaption} onChange={e => setSpinCaption(e.target.value)}
@@ -261,7 +305,6 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               style={moodCfg ? { background: 'rgba(255,255,255,0.08)', color: '#eee', borderColor: moodCfg.btnColor + '60' } : { borderColor: 'rgba(200,134,26,0.5)' }}
               rows={2} data-testid="spin-caption-input" />
 
-            {/* Post button */}
             <Button onClick={submitNowSpinning} disabled={submitting || !spinRecordId}
               className="w-full rounded-full transition-all duration-200"
               style={moodCfg ? { backgroundColor: moodCfg.btnColor, color: '#fff' } : { backgroundColor: '#F4B942', color: '#1F1F1F' }}
@@ -330,7 +373,6 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
             <DialogDescription>Let the community know what you're looking for</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-2">
-            {/* Discogs search / selected / manual */}
             {!isoSelectedRelease && !isoManualMode ? (
               <>
                 <div className="relative">
@@ -360,7 +402,6 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               </div>
             ) : null}
 
-            {/* Manual or selected — show remaining fields */}
             {(isoManualMode || isoSelectedRelease) && (
               <>
                 {isoManualMode && (
@@ -382,6 +423,103 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                 </Button>
               </>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ═══ A Note Modal ═══ */}
+      <Dialog open={activeModal === 'NOTE'} onOpenChange={(open) => !open && closeModal()}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="sr-only">A Note</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Textarea
+              placeholder="what's on your mind?"
+              value={noteText}
+              onChange={e => { if (e.target.value.length <= 280) setNoteText(e.target.value); }}
+              className="border-stone-200 resize-none text-base min-h-[120px] focus-visible:ring-amber-300"
+              rows={4}
+              autoFocus
+              data-testid="note-text-input"
+            />
+            <div className="flex items-center justify-between">
+              <span className={`text-xs ${noteText.length > 260 ? 'text-amber-600 font-medium' : 'text-muted-foreground'}`}>
+                {noteText.length}/280
+              </span>
+              <div className="flex items-center gap-3">
+                {/* Tag a record */}
+                <button
+                  onClick={() => setNoteShowRecordPicker(!noteShowRecordPicker)}
+                  className="text-xs text-stone-400 hover:text-amber-600 flex items-center gap-1 transition-colors"
+                  data-testid="note-tag-record-btn"
+                >
+                  <Tag className="w-3.5 h-3.5" /> tag a record
+                </button>
+                {/* Image upload */}
+                <button
+                  onClick={() => noteFileRef.current?.click()}
+                  className="text-xs text-stone-400 hover:text-amber-600 flex items-center gap-1 transition-colors"
+                  data-testid="note-add-image-btn"
+                >
+                  <ImagePlus className="w-3.5 h-3.5" /> add image
+                </button>
+                <input ref={noteFileRef} type="file" accept="image/*" className="hidden" onChange={handleNoteImageUpload} />
+              </div>
+            </div>
+
+            {/* Record picker dropdown */}
+            {noteShowRecordPicker && (
+              <Select value={noteRecordId} onValueChange={v => { setNoteRecordId(v); setNoteShowRecordPicker(false); }}>
+                <SelectTrigger className="border-stone-200" data-testid="note-record-select">
+                  <SelectValue placeholder="Choose from your collection" />
+                </SelectTrigger>
+                <SelectContent>
+                  {records.map(r => (
+                    <SelectItem key={r.id} value={r.id}>{r.artist} — {r.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+
+            {/* Tagged record preview */}
+            {noteRecord && (
+              <div className="flex items-center gap-2 bg-stone-50 rounded-lg px-3 py-2" data-testid="note-tagged-record">
+                {noteRecord.cover_url ? (
+                  <img src={noteRecord.cover_url} alt="" className="w-8 h-8 rounded object-cover" />
+                ) : (
+                  <div className="w-8 h-8 rounded bg-stone-200 flex items-center justify-center"><Disc className="w-4 h-4 text-stone-400" /></div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium truncate">{noteRecord.title}</p>
+                  <p className="text-xs text-muted-foreground truncate">{noteRecord.artist}</p>
+                </div>
+                <button onClick={() => setNoteRecordId('')} className="text-muted-foreground hover:text-red-500"><X className="w-3.5 h-3.5" /></button>
+              </div>
+            )}
+
+            {/* Image preview */}
+            {noteUploading && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="w-4 h-4 animate-spin" /> uploading...</div>
+            )}
+            {noteImageUrl && (
+              <div className="relative inline-block" data-testid="note-image-preview">
+                <img src={noteImageUrl} alt="" className="max-h-40 rounded-lg object-cover" />
+                <button onClick={() => setNoteImageUrl('')} className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5 text-white hover:bg-black/80">
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
+            <Button
+              onClick={submitNote}
+              disabled={submitting || !noteText.trim()}
+              className="w-full rounded-full bg-amber-500 hover:bg-amber-600 text-white"
+              data-testid="note-submit-btn"
+            >
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Feather className="w-4 h-4 mr-2" />}
+              post to the hive
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

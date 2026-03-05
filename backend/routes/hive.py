@@ -497,6 +497,36 @@ async def composer_vinyl_mood(data: VinylMoodCreate, user: Dict = Depends(requir
     return await build_post_response(post_doc, user["id"])
 
 
+@router.post("/composer/note", response_model=PostResponse)
+async def composer_note(data: NoteCreate, user: Dict = Depends(require_auth)):
+    """Create a free-form text Note post"""
+    if not data.text or not data.text.strip():
+        raise HTTPException(status_code=400, detail="Text is required")
+    if len(data.text) > 280:
+        raise HTTPException(status_code=400, detail="Text must be 280 characters or less")
+
+    now = datetime.now(timezone.utc).isoformat()
+
+    # Validate record if tagged
+    if data.record_id:
+        record = await db.records.find_one({"id": data.record_id, "user_id": user["id"]}, {"_id": 0})
+        if not record:
+            raise HTTPException(status_code=404, detail="Record not found in your collection")
+
+    post_id = str(uuid.uuid4())
+    post_doc = {
+        "id": post_id,
+        "user_id": user["id"],
+        "post_type": "NOTE",
+        "caption": data.text.strip(),
+        "record_id": data.record_id,
+        "image_url": data.image_url,
+        "created_at": now,
+    }
+    await db.posts.insert_one(post_doc)
+    return await build_post_response(post_doc, user["id"])
+
+
 # ============== LIKES ROUTES ==============
 
 @router.post("/posts/{post_id}/like")

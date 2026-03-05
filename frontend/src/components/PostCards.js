@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Disc, Package, Search, Moon, Plus, Music } from 'lucide-react';
+import { Disc, Package, Search, Moon, Plus, Music, Feather } from 'lucide-react';
 
 const MOOD_EMOJI_MAP = {
   'Late Night': '\u{1F56F}\uFE0F', 'Good Morning': '\u2600\uFE0F', 'Sunday Morning': '\u2600\uFE0F',
@@ -17,6 +17,9 @@ const MOOD_COLOR_MAP = {
 
 // Badge showing post type
 const PostTypeBadge = ({ type, mood }) => {
+  // NOTE posts have no badge
+  if (type === 'NOTE') return null;
+
   const config = {
     NOW_SPINNING: { label: 'Now Spinning', icon: Disc, bg: 'bg-honey/20 text-honey-amber' },
     NEW_HAUL: { label: 'New Haul', icon: Package, bg: 'bg-amber-100/60 text-amber-700' },
@@ -198,12 +201,38 @@ const DailyPromptPostCard = ({ post }) => (
   </div>
 );
 
+// NOTE card body — free-form text, optional record tag, optional image
+const NoteCard = ({ post }) => (
+  <div data-testid="note-card">
+    <p className="text-sm whitespace-pre-wrap">{post.caption || post.content}</p>
+    {/* Tagged record inline card */}
+    {post.record && (
+      <div className="flex items-center gap-2.5 bg-stone-50 rounded-lg px-3 py-2 mt-3" data-testid="note-record-tag">
+        {post.record.cover_url ? (
+          <img src={post.record.cover_url} alt="" className="w-10 h-10 rounded object-cover shadow-sm" />
+        ) : (
+          <div className="w-10 h-10 rounded bg-stone-200 flex items-center justify-center"><Disc className="w-5 h-5 text-stone-400" /></div>
+        )}
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium truncate">{post.record.title}</p>
+          <p className="text-xs text-muted-foreground truncate">{post.record.artist}</p>
+        </div>
+      </div>
+    )}
+    {/* Optional image */}
+    {post.image_url && (
+      <img src={post.image_url} alt="" className="w-full rounded-lg mt-3 object-cover max-h-80" />
+    )}
+  </div>
+);
+
 // Main renderer
 const PostCardBody = ({ post }) => {
   switch (post.post_type) {
     case 'NOW_SPINNING': return <NowSpinningCard post={post} />;
     case 'NEW_HAUL': return <NewHaulCard post={post} />;
     case 'ISO': return <ISOCard post={post} />;
+    case 'NOTE': return <NoteCard post={post} />;
     case 'ADDED_TO_COLLECTION': return <AddedToCollectionCard post={post} />;
     case 'WEEKLY_WRAP': return <WeeklyWrapCard post={post} />;
     case 'VINYL_MOOD': return <VinylMoodCard post={post} />;

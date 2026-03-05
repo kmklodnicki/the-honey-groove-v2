@@ -59,6 +59,9 @@ const CollectorBingo = () => {
   const [recentlyUnmarked, setRecentlyUnmarked] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [countdown, setCountdown] = useState('');
+  const [activeCountdown, setActiveCountdown] = useState('');
+  const [activeUrgency, setActiveUrgency] = useState('normal'); // normal | urgent | critical
+  const [showLockBanner, setShowLockBanner] = useState(false);
   const celebrationTimer = useRef(null);
 
   const fetchBingo = useCallback(async () => {
@@ -76,25 +79,75 @@ const CollectorBingo = () => {
 
   useEffect(() => { fetchBingo(); }, [fetchBingo]);
 
-  // Live countdown timer — updates every 30s, auto-refreshes on drop
+  // Live countdown timer — works for both locked and active states
   useEffect(() => {
-    if (!isLocked) { setCountdown(''); return; }
     const tick = () => {
-      const target = getNextFridayDrop();
-      const cd = formatCountdown(target);
-      if (!cd) {
-        // Countdown reached zero — fetch the new card
+      if (isLocked) {
+        const target = getNextFridayDrop();
+        const cd = formatCountdown(target);
+        if (!cd) {
+          setCountdown('');
+          setShowLockBanner(false);
+          fetchBingo();
+          return true;
+        }
+        setCountdown(cd);
+        setActiveCountdown('');
+      } else if (card?.week_end) {
+        // Active state: count down to card lock (Sunday midnight)
+        const lockTime = new Date(card.week_end);
+        const diff = lockTime.getTime() - Date.now();
+        if (diff <= 0) {
+          // Card just locked!
+          setIsLocked(true);
+          setActiveCountdown('');
+          setShowLockBanner(true);
+          setTimeout(() => setShowLockBanner(false), 3000);
+          fetchBingo();
+          return true;
+        }
+        const d = Math.floor(diff / 86400000);
+        const h = Math.floor((diff % 86400000) / 3600000);
+        const m = Math.floor((diff % 3600000) / 60000);
+        const s = Math.floor((diff % 60000) / 1000);
+        // Under 1 hour: show minutes + seconds
+        if (diff < 3600000) {
+          setActiveCountdown(`${m}m ${s}s`);
+        } else {
+          const parts = [];
+          if (d > 0) parts.push(`${d}d`);
+          parts.push(`${h}h`);
+          parts.push(`${m}m`);
+          setActiveCountdown(parts.join(' '));
+        }
+        setActiveUrgency(diff < 3600000 ? 'critical' : diff < 86400000 ? 'urgent' : 'normal');
         setCountdown('');
-        fetchBingo();
-        return true; // signal to clear interval
       }
-      setCountdown(cd);
       return false;
     };
     tick();
-    const id = setInterval(() => { if (tick()) clearInterval(id); }, 30000);
-    return () => clearInterval(id);
-  }, [isLocked, fetchBingo]);
+    // Under 1 hour: update every second; otherwise every 30s
+    const getInterval = () => {
+      if (!isLocked && card?.week_end) {
+        const diff = new Date(card.week_end).getTime() - Date.now();
+        if (diff < 3600000 && diff > 0) return 1000;
+      }
+      return 30000;
+    };
+    let id = setInterval(() => { if (tick()) clearInterval(id); }, getInterval());
+    // Re-check interval when urgency changes
+    const recheckId = setInterval(() => {
+      if (!isLocked && card?.week_end) {
+        const diff = new Date(card.week_end).getTime() - Date.now();
+        if (diff < 3600000 && diff > 0) {
+          clearInterval(id);
+          id = setInterval(() => { if (tick()) clearInterval(id); }, 1000);
+          clearInterval(recheckId);
+        }
+      }
+    }, 10000);
+    return () => { clearInterval(id); clearInterval(recheckId); };
+  }, [isLocked, card?.week_end, fetchBingo]);
 
   const toggleMark = async (index) => {
     if (isLocked || index === 12) return;
@@ -269,10 +322,55 @@ const CollectorBingo = () => {
   }
 
   /* ── Active state: compact preview + play now ── */
+  const urgentBorder = activeUrgency === 'normal' ? 'rgba(200,134,26,0.15)' : '#C8861A';
+  const urgentBg = activeUrgency === 'normal' ? '#FAF6EE' : 'rgba(232,168,32,0.08)';
+  const urgentTimeColor = activeUrgency === 'normal' ? '#996012' : '#C8861A';
+
   return (
     <div data-testid="collector-bingo">
       <div className="flex justify-center">
-        <Card className="p-4 border-amber-200/50 w-full" style={{ maxWidth: '500px' }} data-testid="bingo-preview">
+        <div className="w-full" style={{ maxWidth: '500px' }}>
+          {/* Lock banner — shows briefly when card just locked */}
+          {showLockBanner && (
+            <div className="flex items-center justify-center gap-2 mb-2 px-4 rounded-xl bg-amber-50 border border-amber-300/40 text-amber-700 text-sm font-medium"
+              style={{ height: '44px', animation: 'bingoCelebFadeIn 300ms ease-out' }}
+              data-testid="bingo-lock-banner"
+            >
+              <Lock className="w-4 h-4" /> your card has been saved 🍯
+            </div>
+          )}
+
+          {/* Active countdown strip */}
+          {activeCountdown && (
+            <div
+              className="flex items-center px-4 w-full mb-3"
+              style={{
+                background: urgentBg,
+                border: `1px solid ${urgentBorder}`,
+                borderRadius: '12px',
+                height: '48px',
+                transition: 'background 400ms ease, border-color 400ms ease',
+              }}
+              data-testid="bingo-active-countdown"
+            >
+              <span className="shrink-0" style={{ fontSize: '16px' }}>🐝</span>
+              <span
+                className="flex-1 text-center"
+                style={{ fontFamily: '"DM Serif Display", serif', fontSize: '13px', color: '#8A6B4A' }}
+              >
+                card locks in{' '}
+                <span style={{ fontWeight: 700, color: urgentTimeColor, transition: 'color 400ms ease' }} data-testid="bingo-active-countdown-time">{activeCountdown}</span>
+              </span>
+              <span
+                className="shrink-0 text-right"
+                style={{ fontFamily: '"DM Serif Display", serif', fontSize: '11px', color: '#8A6B4A', opacity: 0.7 }}
+              >
+                locks Sunday at midnight
+              </span>
+            </div>
+          )}
+
+          <Card className="p-4 border-amber-200/50 w-full" data-testid="bingo-preview">
           <div className="flex items-center justify-between mb-3">
             <div>
               <h3 className="font-heading text-base">Collector Bingo</h3>
@@ -319,6 +417,7 @@ const CollectorBingo = () => {
             play now
           </Button>
         </Card>
+        </div>
       </div>
 
       {/* Interactive modal */}

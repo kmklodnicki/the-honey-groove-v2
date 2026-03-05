@@ -234,6 +234,11 @@ class VinylMoodCreate(BaseModel):
     caption: Optional[str] = None
     record_id: Optional[str] = None
 
+class NoteCreate(BaseModel):
+    text: str
+    record_id: Optional[str] = None
+    image_url: Optional[str] = None
+
 # Marketplace Listing Models
 LISTING_TYPES = ["BUY_NOW", "MAKE_OFFER", "TRADE"]
 LISTING_CONDITIONS = ["Mint", "Near Mint", "Very Good Plus", "Very Good", "Good Plus", "Good", "Fair"]
