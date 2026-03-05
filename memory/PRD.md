@@ -13,7 +13,7 @@ A social platform for vinyl collectors called **The HoneyGroove** — the vinyl 
 3. **Explore** — Advanced discovery page with 5 sections: Trending in the Hive, Taste Match, Fresh Pressings, Most Wanted, Near You
 4. **Collection** — Personal vinyl library with sorting + Discogs import + Add Record
 5. **The Honeypot** — 3-tab marketplace: Shop (Buy/Offer), ISO (Hunt List + Community Hunt), Trade (Active Trades + Browse Trades)
-6. **Profile** — 4 tabs: Collection, ISO, Spinning, Trades + Stripe Connect status
+6. **Profile** — 5 tabs: Collection, ISO, Spinning, Trades, Mood Board + Stripe Connect status
 7. **Admin Disputes** — Admin-only dispute review dashboard with resolve modal
 8. **Messages** — Full 1:1 DM system with inbox, threads, context cards
 9. **FAQ** — Accordion-style FAQ page with all feature explanations
@@ -51,6 +51,8 @@ The Hive — Explore — Collection — The Honeypot
 39. **Landing Page Enhancements** — CTA "join the hive" (lowercase), bee bridge emoji, tightened logo-headline spacing, larger footer wordmark (180-200px). (Mar 2026)
 40. **Nav Sizing Update** — Wordmark increased to h-[52px], nav height to h-[66px] for visual presence. (Mar 2026)
 41. **Wax Report Story Card** — Export card updated from 1080x1080 to 1080x1920 vertical format (Instagram Stories). Redistributed layout: header, personality label, top 5 artists, stats, eras, vinyl moods, collection value, closing line, footer. Playfair Display + Cormorant Garamond typography. Warm cream background with subtle amber radial glows. (Mar 2026)
+42. **The Mood Board** — Auto-generated 3x3 album art grid from most-spun records. Manual generation with time range pills (This Week, This Month, All Time). Profile page tab. 1080x1080 PNG export via Pillow. Weekly scheduler. Discogs cover caching. Backend: /api/mood-boards/* endpoints. (Mar 2026)
+43. **Collector Bingo** — Weekly 5x5 bingo card with collector-themed challenges. Interactive marking, bingo detection (rows/cols/diagonals), celebration animation, free center space. 1080x1080 PNG export. Friday-to-Sunday weekly cycle. 25 seed squares. Admin square pool manager. Backend: /api/bingo/* endpoints. Explore page section. (Mar 2026)
 
 ## Code Architecture
 ```
@@ -91,9 +93,7 @@ COMPLETED → Mandatory rating before next trade
 ```
 
 ## Upcoming Tasks
-- **P0: The Mood Board** — Auto-generated 3x3 album art grid (Sunday), manual generation with time range pills, profile tab, 1080x1080 export
-- **P0: Collector Bingo** — Weekly 5x5 bingo card (Friday), interactive marking, bingo detection, celebration animation, export, Explore section
-- **P0: Admin Panel — Bingo Square Pool Manager** — Table of all squares with activate/deactivate toggle
+- **P1: Admin Panel** — UI for managing Daily Prompts and Bingo Squares. Streak tracking logic and nudge notifications for Daily Prompt. Integrate Daily Prompt data into Week in Wax report.
 - **P1: Sweetener UI** — Frontend for trade cash payments (backend endpoint exists at /api/trades/{id}/pay-sweetener)
 - **P1: Push Notifications** — Service worker-based browser push
 - **P2: Discogs Import** — Bulk collection import
@@ -112,7 +112,9 @@ notifications, payment_transactions,
 dm_conversations, dm_messages,
 collection_values, wax_reports,
 prompts, prompt_responses, image_cache,
-newsletter_subscribers
+newsletter_subscribers,
+bingo_squares, bingo_cards, bingo_marks,
+mood_boards
 ```
 
 ## Test Credentials
