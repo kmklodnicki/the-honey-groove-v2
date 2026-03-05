@@ -372,6 +372,7 @@ async def composer_now_spinning(data: NowSpinningCreate, user: Dict = Depends(re
         "caption": data.caption,
         "record_id": data.record_id,
         "track": data.track,
+        "mood": data.mood,
         "created_at": now
     }
     await db.posts.insert_one(post_doc)

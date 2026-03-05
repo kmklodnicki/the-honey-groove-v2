@@ -2,8 +2,21 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Disc, Package, Search, Moon, Plus, Music } from 'lucide-react';
 
+const MOOD_EMOJI_MAP = {
+  'Late Night': '\u{1F56F}\uFE0F', 'Good Morning': '\u2600\uFE0F', 'Sunday Morning': '\u2600\uFE0F',
+  'Rainy Day': '\u{1F327}\uFE0F', 'Road Trip': '\u{1F697}', 'Golden Hour': '\u{1F305}',
+  'Deep Focus': '\u{1F3A7}', 'Party Mode': '\u{1F942}', 'Lazy Afternoon': '\u{1F6CB}\uFE0F',
+  'Melancholy': '\u{1F494}', 'Upbeat Vibes': '\u2728', 'Cozy Evening': '\u{1F9F8}', 'Workout': '\u{1F525}',
+};
+const MOOD_COLOR_MAP = {
+  'Late Night': '#6a3a9a', 'Good Morning': '#e8a820', 'Sunday Morning': '#e8a820',
+  'Rainy Day': '#4a7aaa', 'Road Trip': '#4a8a4a', 'Golden Hour': '#c8861a',
+  'Deep Focus': '#2a6a2a', 'Party Mode': '#aa3a8a', 'Lazy Afternoon': '#aa7a3a',
+  'Melancholy': '#5a5a8a', 'Upbeat Vibes': '#3a9a5a', 'Cozy Evening': '#aa5a2a', 'Workout': '#cc3a2a',
+};
+
 // Badge showing post type
-const PostTypeBadge = ({ type }) => {
+const PostTypeBadge = ({ type, mood }) => {
   const config = {
     NOW_SPINNING: { label: 'Now Spinning', icon: Disc, bg: 'bg-honey/20 text-honey-amber' },
     NEW_HAUL: { label: 'New Haul', icon: Package, bg: 'bg-amber-100/60 text-amber-700' },
@@ -15,9 +28,29 @@ const PostTypeBadge = ({ type }) => {
   const c = config[type] || config.NOW_SPINNING;
   const Icon = c.icon;
   return (
-    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${c.bg}`}>
-      <Icon className="w-3 h-3" />
-      {c.label}
+    <span className="inline-flex items-center gap-1.5">
+      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${c.bg}`}>
+        <Icon className="w-3 h-3" />
+        {c.label}
+      </span>
+      {/* Mood pill badge for Now Spinning posts */}
+      {type === 'NOW_SPINNING' && mood && (
+        <MoodPill mood={mood} />
+      )}
+    </span>
+  );
+};
+
+// Small mood pill badge
+const MoodPill = ({ mood }) => {
+  const emoji = MOOD_EMOJI_MAP[mood] || '';
+  const color = MOOD_COLOR_MAP[mood] || '#7e22ce';
+  if (!mood) return null;
+  return (
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
+      style={{ backgroundColor: color + '20', color }}
+      data-testid="mood-pill-badge">
+      {emoji} {mood}
     </span>
   );
 };
@@ -52,20 +85,13 @@ const NewHaulCard = ({ post }) => {
   const items = haul.items || [];
   return (
     <div data-testid="new-haul-card">
-      {haul.store_name && (
-        <p className="text-sm text-amber-700 font-medium mb-2">Found at {haul.store_name}</p>
-      )}
+      {haul.store_name && <p className="text-sm text-amber-700 font-medium mb-2">Found at {haul.store_name}</p>}
       {post.caption && <p className="text-sm mb-3">{post.caption}</p>}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {items.slice(0, 6).map((item, idx) => (
           <div key={idx} className="flex items-center gap-2 bg-amber-50 rounded-lg p-2">
-            {item.cover_url ? (
-              <img src={item.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
-            ) : (
-              <div className="w-10 h-10 rounded bg-amber-200 flex items-center justify-center">
-                <Disc className="w-5 h-5 text-amber-700" />
-              </div>
-            )}
+            {item.cover_url ? <img src={item.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
+              : <div className="w-10 h-10 rounded bg-amber-200 flex items-center justify-center"><Disc className="w-5 h-5 text-amber-700" /></div>}
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium truncate">{item.title}</p>
               <p className="text-xs text-muted-foreground truncate">{item.artist}</p>
@@ -73,9 +99,7 @@ const NewHaulCard = ({ post }) => {
           </div>
         ))}
       </div>
-      {items.length > 6 && (
-        <p className="text-xs text-muted-foreground mt-2">+ {items.length - 6} more records</p>
-      )}
+      {items.length > 6 && <p className="text-xs text-muted-foreground mt-2">+ {items.length - 6} more records</p>}
     </div>
   );
 };
@@ -91,18 +115,12 @@ const ISOCard = ({ post }) => {
           <p className="font-heading text-lg">{iso.album}</p>
           <p className="text-sm text-muted-foreground">{iso.artist}</p>
         </div>
-        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-          iso.status === 'FOUND' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
-        }`}>
-          {iso.status}
-        </span>
+        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${iso.status === 'FOUND' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>{iso.status}</span>
       </div>
       {iso.pressing_notes && <p className="text-xs mt-2 text-blue-700">Pressing: {iso.pressing_notes}</p>}
       {iso.condition_pref && <p className="text-xs text-blue-600">Condition: {iso.condition_pref}</p>}
       {(iso.target_price_min || iso.target_price_max) && (
-        <p className="text-xs text-blue-600 mt-1">
-          Budget: {iso.target_price_min ? `$${iso.target_price_min}` : '?'} – {iso.target_price_max ? `$${iso.target_price_max}` : '?'}
-        </p>
+        <p className="text-xs text-blue-600 mt-1">Budget: {iso.target_price_min ? `$${iso.target_price_min}` : '?'} – {iso.target_price_max ? `$${iso.target_price_max}` : '?'}</p>
       )}
       {post.caption && <p className="text-sm mt-3">{post.caption}</p>}
     </div>
@@ -115,13 +133,8 @@ const AddedToCollectionCard = ({ post }) => {
   if (!record) return <p className="text-sm">{post.caption}</p>;
   return (
     <div className="flex gap-3 items-center" data-testid="added-card">
-      {record.cover_url ? (
-        <img src={record.cover_url} alt="" className="w-16 h-16 rounded-lg object-cover shadow" />
-      ) : (
-        <div className="w-16 h-16 rounded-lg bg-green-100 flex items-center justify-center">
-          <Plus className="w-6 h-6 text-green-600" />
-        </div>
-      )}
+      {record.cover_url ? <img src={record.cover_url} alt="" className="w-16 h-16 rounded-lg object-cover shadow" />
+        : <div className="w-16 h-16 rounded-lg bg-green-100 flex items-center justify-center"><Plus className="w-6 h-6 text-green-600" /></div>}
       <div>
         <p className="font-medium">{record.title}</p>
         <p className="text-sm text-muted-foreground">{record.artist}</p>
@@ -140,27 +153,16 @@ const WeeklyWrapCard = ({ post }) => {
   );
 };
 
-// VINYL_MOOD card body
-const MOOD_EMOJI_MAP = {
-  'Late Night': '\u{1F56F}\uFE0F', 'Sunday Morning': '\u2600\uFE0F', 'Rainy Day': '\u{1F327}\uFE0F',
-  'Road Trip': '\u{1F697}', 'Golden Hour': '\u{1F305}', 'Deep Focus': '\u{1F3A7}',
-  'Party Mode': '\u{1F942}', 'Lazy Afternoon': '\u{1F6CB}\uFE0F', 'Melancholy': '\u{1F494}',
-  'Upbeat Vibes': '\u2728', 'Cozy Evening': '\u{1F9F8}', 'Workout': '\u{1F525}',
-};
-const MOOD_COLOR_MAP = {
-  'Late Night': '#6a3a9a', 'Sunday Morning': '#e8a820', 'Rainy Day': '#4a7aaa',
-  'Road Trip': '#4a8a4a', 'Golden Hour': '#c8861a', 'Deep Focus': '#2a6a2a',
-  'Party Mode': '#aa3a8a', 'Lazy Afternoon': '#aa7a3a', 'Melancholy': '#5a5a8a',
-  'Upbeat Vibes': '#3a9a5a', 'Cozy Evening': '#aa5a2a', 'Workout': '#cc3a2a',
-};
+// VINYL_MOOD card body (legacy — kept for old posts)
 const VinylMoodCard = ({ post }) => {
   const record = post.record;
-  const emoji = MOOD_EMOJI_MAP[post.mood] || '';
-  const color = MOOD_COLOR_MAP[post.mood] || '#7e22ce';
+  const mood = post.mood || '';
+  const emoji = MOOD_EMOJI_MAP[mood] || '';
+  const color = MOOD_COLOR_MAP[mood] || '#7e22ce';
   return (
     <div data-testid="vinyl-mood-card">
       <div className="inline-block px-4 py-2 rounded-full text-lg font-heading mb-2" style={{ backgroundColor: color + '26', color }}>
-        {emoji} {post.mood}
+        {emoji} {mood}
       </div>
       {record && (
         <div className="flex gap-3 items-center mt-2 rounded-lg p-2" style={{ backgroundColor: color + '15' }}>
@@ -186,7 +188,6 @@ const PostCardBody = ({ post }) => {
     case 'WEEKLY_WRAP': return <WeeklyWrapCard post={post} />;
     case 'VINYL_MOOD': return <VinylMoodCard post={post} />;
     default:
-      // Legacy fallback
       return (
         <div>
           {post.record && (

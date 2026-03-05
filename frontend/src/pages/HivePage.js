@@ -122,7 +122,7 @@ const PostCard = ({ post, onLike, onCommentCountChange, token, API }) => {
               <Link to={`/profile/${post.user?.username}`} className="font-medium hover:underline">
                 @{post.user?.username}
               </Link>
-              <PostTypeBadge type={post.post_type} />
+              <PostTypeBadge type={post.post_type} mood={post.mood} />
             </div>
             <p className="text-xs text-muted-foreground">{timeAgo}</p>
           </div>

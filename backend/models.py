@@ -204,6 +204,7 @@ class NowSpinningCreate(BaseModel):
     record_id: str
     track: Optional[str] = None
     caption: Optional[str] = None
+    mood: Optional[str] = None
 
 class NewHaulCreate(BaseModel):
     store_name: Optional[str] = None
