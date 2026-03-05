@@ -390,11 +390,11 @@ async def pay_trade_sweetener(trade_id: str, request: Request, body: Dict, user:
 
     # Determine payer and recipient
     if boot_direction == "TO_SELLER":
-        payer_id = trade["proposer_id"]
-        recipient_id = trade["receiver_id"]
+        payer_id = trade["initiator_id"]
+        recipient_id = trade["responder_id"]
     else:
-        payer_id = trade["receiver_id"]
-        recipient_id = trade["proposer_id"]
+        payer_id = trade["responder_id"]
+        recipient_id = trade["initiator_id"]
 
     if user["id"] != payer_id:
         raise HTTPException(status_code=403, detail="You are not the sweetener payer for this trade")
@@ -404,8 +404,7 @@ async def pay_trade_sweetener(trade_id: str, request: Request, body: Dict, user:
         raise HTTPException(status_code=400, detail="Recipient has not connected their Stripe account")
 
     amount = float(boot_amount)
-    fee_pct = await _get_platform_fee_percent()
-    platform_fee = round(amount * fee_pct / 100, 2)
+    platform_fee = round(amount * 4 / 100, 2)  # 4% fee on sweetener
     amount_cents = int(round(amount * 100))
     fee_cents = int(round(platform_fee * 100))
 

@@ -222,7 +222,15 @@ def _generate_closing_line(stats: dict) -> str:
 
     # Pick shortest template that still has personality
     templates.sort(key=len)
-    return templates[min(1, len(templates) - 1)]
+    line = templates[min(1, len(templates) - 1)]
+
+    # Add perfect weekly streak mention
+    weekly_prompts = stats.get("weekly_prompt_streak", 0)
+    if weekly_prompts >= 7:
+        line = line.rstrip(".")
+        line += " — and a perfect prompt streak to prove it."
+
+    return line
 
 
 # ─────────────────── Report Generation ───────────────────
@@ -482,6 +490,13 @@ async def generate_wax_report(user_id: str, week_start: datetime, week_end: date
     # Personality
     personality = _assign_personality(report_data)
     report_data["personality"] = personality
+
+    # Check for perfect weekly prompt streak (7/7 days)
+    prompt_responses_this_week = await db.prompt_responses.count_documents({
+        "user_id": user_id,
+        "created_at": {"$gte": week_start.isoformat(), "$lt": week_end.isoformat()},
+    })
+    report_data["weekly_prompt_streak"] = prompt_responses_this_week
 
     # Closing line
     closing = _generate_closing_line(report_data)

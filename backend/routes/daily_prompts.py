@@ -393,7 +393,115 @@ async def get_user_streak(username: str):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     streak = await _calculate_streak(user["id"])
-    return {"streak": streak, "username": username}
+    longest = await _calculate_longest_streak(user["id"])
+    return {"streak": streak, "longest_streak": longest, "username": username}
+
+
+async def _calculate_longest_streak(user_id: str) -> int:
+    """Calculate the longest ever buzz-in streak for a user."""
+    responses = await db.prompt_responses.find(
+        {"user_id": user_id}, {"_id": 0, "created_at": 1}
+    ).sort("created_at", 1).to_list(5000)
+    if not responses:
+        return 0
+
+    dates = set()
+    for r in responses:
+        try:
+            dt = datetime.fromisoformat(r["created_at"].replace("Z", "+00:00") if "Z" in r["created_at"] else r["created_at"])
+            dates.add(dt.date())
+        except Exception:
+            continue
+
+    if not dates:
+        return 0
+
+    sorted_dates = sorted(dates)
+    longest = 1
+    current = 1
+    for i in range(1, len(sorted_dates)):
+        if (sorted_dates[i] - sorted_dates[i - 1]).days == 1:
+            current += 1
+            longest = max(longest, current)
+        else:
+            current = 1
+    return longest
+
+
+# ─────────── Streak Nudge Notifications Scheduler ───────────
+
+async def send_streak_nudge_notifications():
+    """
+    Send nudge notifications to users with active streaks:
+    - 7pm: Users with streak >= 3 who haven't buzzed in today
+    - 10pm: Users with streak >= 7 who haven't buzzed in today (urgent)
+    """
+    now = datetime.now(timezone.utc)
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    today_end = today_start + timedelta(days=1)
+
+    # Find all users who have buzzed in within the last 30 days
+    recent_responders = await db.prompt_responses.distinct(
+        "user_id",
+        {"created_at": {"$gte": (now - timedelta(days=30)).isoformat()}}
+    )
+
+    for user_id in recent_responders:
+        streak = await _calculate_streak(user_id)
+        if streak < 3:
+            continue
+
+        # Check if they've already buzzed in today
+        today_response = await db.prompt_responses.find_one({
+            "user_id": user_id,
+            "created_at": {"$gte": today_start.isoformat(), "$lt": today_end.isoformat()},
+        })
+        if today_response:
+            continue  # Already buzzed in today
+
+        # Check if we've already sent a nudge today
+        existing_nudge = await db.notifications.find_one({
+            "user_id": user_id,
+            "type": "streak_nudge",
+            "created_at": {"$gte": today_start.isoformat()},
+        })
+
+        if not existing_nudge and streak >= 3:
+            # First nudge (7pm style)
+            await create_notification(
+                user_id, "streak_nudge",
+                f"don't break your {streak}-day streak!",
+                f"you've buzzed in {streak} days in a row. today's prompt is waiting for you.",
+                {"streak": streak}
+            )
+
+        if existing_nudge and not await db.notifications.find_one({
+            "user_id": user_id,
+            "type": "streak_nudge_urgent",
+            "created_at": {"$gte": today_start.isoformat()},
+        }) and streak >= 7:
+            # Second urgent nudge (10pm style)
+            await create_notification(
+                user_id, "streak_nudge_urgent",
+                f"your {streak}-day streak is about to break!",
+                f"last chance — buzz in before midnight to keep your {streak}-day streak alive.",
+                {"streak": streak, "urgent": True}
+            )
+
+
+async def schedule_streak_nudges():
+    """Run streak nudge checks every hour."""
+    while True:
+        try:
+            now = datetime.now(timezone.utc)
+            hour = now.hour
+            # Run at approximately 19:00 and 22:00 UTC (adjustable)
+            if hour in (19, 22):
+                logger.info(f"Running streak nudge notifications (hour={hour})")
+                await send_streak_nudge_notifications()
+        except Exception as e:
+            logger.error(f"Streak nudge error: {e}")
+        await asyncio.sleep(3600)  # Check every hour
 
 
 # ─────────── Admin: Prompt Manager ───────────

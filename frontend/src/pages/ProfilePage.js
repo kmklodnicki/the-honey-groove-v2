@@ -7,7 +7,7 @@ import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Skeleton } from '../components/ui/skeleton';
-import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, CheckCircle2, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin } from 'lucide-react';
+import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, CheckCircle2, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin, Flame } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { FollowListModal } from '../components/FollowList';
@@ -34,6 +34,7 @@ const ProfilePage = () => {
   const [stripeLoading, setStripeLoading] = useState(false);
   const [ratings, setRatings] = useState(null);
   const [collectionValue, setCollectionValue] = useState(null);
+  const [promptStreak, setPromptStreak] = useState(null);
 
   const isOwnProfile = user?.username === username;
 
@@ -56,6 +57,7 @@ const ProfilePage = () => {
       }
       axios.get(`${API}/users/${username}/ratings`).then(r => setRatings(r.data)).catch(() => {});
       axios.get(`${API}/valuation/collection/${username}`).then(r => setCollectionValue(r.data)).catch(() => {});
+      axios.get(`${API}/prompts/streak/${username}`).then(r => setPromptStreak(r.data)).catch(() => {});
     } catch {
       toast.error('Failed to load profile');
     } finally {
@@ -244,6 +246,14 @@ const ProfilePage = () => {
                     ${collectionValue.total_value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                   </div>
                   <div className="text-xs text-muted-foreground">Est. Value</div>
+                </div>
+              )}
+              {promptStreak && promptStreak.streak > 0 && (
+                <div className="text-center" data-testid="profile-streak">
+                  <div className="font-heading text-2xl text-orange-500 flex items-center justify-center gap-1">
+                    <Flame className="w-5 h-5" /> {promptStreak.streak}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Day Streak</div>
                 </div>
               )}
             </div>

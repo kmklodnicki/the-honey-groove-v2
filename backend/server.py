@@ -87,6 +87,9 @@ async def startup_event():
     await db.image_cache.create_index("release_id", unique=True)
     # Start weekly report scheduler
     asyncio.create_task(schedule_weekly_reports())
+    # Start streak nudge scheduler
+    from routes.daily_prompts import schedule_streak_nudges
+    asyncio.create_task(schedule_streak_nudges())
     # Seed prompts
     await seed_prompts()
     # Seed bingo squares

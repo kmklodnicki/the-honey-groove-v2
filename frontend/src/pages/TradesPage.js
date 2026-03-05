@@ -141,9 +141,16 @@ const TradeCard = ({ trade, currentUserId, onClick }) => {
         <RecordMini record={trade.listing_record} label={isInitiator ? `@${trade.responder?.username}'s` : 'Your listing'} />
       </div>
       {trade.boot_amount > 0 && (
-        <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
-          <DollarSign className="w-3 h-3" />${trade.boot_amount} sweetener
-          <span className="text-honey-amber ml-1">(settled directly)</span>
+        <div className="mt-2.5 flex items-center gap-2 px-3 py-2 rounded-lg bg-honey/8 border border-honey/15" data-testid="trade-sweetener-badge">
+          <DollarSign className="w-4 h-4 text-honey-amber shrink-0" />
+          <span className="text-sm font-medium text-vinyl-black">${trade.boot_amount} sweetener</span>
+          <span className="text-xs text-muted-foreground">
+            {trade.boot_direction === 'TO_SELLER'
+              ? `${trade.initiator_id === currentUserId ? 'you pay' : 'they pay'}`
+              : `${trade.responder_id === currentUserId ? 'you pay' : 'they pay'}`
+            }
+          </span>
+          <span className="ml-auto text-[10px] text-muted-foreground" title="4% platform fee on sweetener amount only">4% fee</span>
         </div>
       )}
       {/* Shipping status summary */}
@@ -263,7 +270,38 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
     finally { setLoading(false); }
   };
 
-  const handleAccept = async () => { if (await apiCall('put', `${API}/trades/${trade.id}/accept`)) { toast.success('Trade accepted! Ship within 5 days.'); onUpdate(); } };
+  const handleAccept = async () => {
+    // If there's a sweetener, show confirmation first
+    if (trade.boot_amount > 0) {
+      const payer = trade.boot_direction === 'TO_SELLER' ? trade.initiator : trade.responder;
+      const payerIsMe = payer?.id === currentUserId;
+      const confirmed = window.confirm(
+        payerIsMe
+          ? `By accepting, a $${trade.boot_amount} sweetener payment will be initiated (4% platform fee applies). Proceed?`
+          : `This trade includes a $${trade.boot_amount} sweetener. The other party will be charged upon acceptance. Proceed?`
+      );
+      if (!confirmed) return;
+    }
+    if (await apiCall('put', `${API}/trades/${trade.id}/accept`)) {
+      // Trigger sweetener payment if applicable
+      if (trade.boot_amount > 0) {
+        try {
+          const payRes = await axios.post(`${API}/trades/${trade.id}/pay-sweetener`,
+            { origin_url: window.location.origin },
+            { headers: { Authorization: `Bearer ${token}` } });
+          if (payRes.data.url) {
+            toast.success('Trade accepted! Redirecting to sweetener payment...');
+            window.location.href = payRes.data.url;
+            return;
+          }
+        } catch {
+          // Payment may not apply to this user (they may be the recipient)
+        }
+      }
+      toast.success('Trade accepted! Ship within 5 days.');
+      onUpdate();
+    }
+  };
   const handleDecline = async () => { if (await apiCall('put', `${API}/trades/${trade.id}/decline`)) { toast.success('Trade declined'); onUpdate(); } };
 
   const handleCounter = async () => {
@@ -366,10 +404,25 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
 
           {/* Boot info */}
           {trade.boot_amount > 0 && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 rounded-lg text-sm">
-              <DollarSign className="w-4 h-4 text-amber-600" />
-              <span><strong>${trade.boot_amount}</strong> sweetener {trade.boot_direction === 'TO_SELLER' ? `to @${trade.responder?.username}` : `to @${trade.initiator?.username}`}</span>
-              <span className="text-xs text-amber-600 ml-auto">settled directly</span>
+            <div className="bg-honey/8 border border-honey/20 rounded-xl p-4" data-testid="trade-sweetener-detail">
+              <div className="flex items-center gap-2 mb-2">
+                <DollarSign className="w-5 h-5 text-honey-amber" />
+                <span className="font-heading text-lg">${trade.boot_amount} Sweetener</span>
+              </div>
+              <p className="text-sm text-muted-foreground mb-1">
+                {trade.boot_direction === 'TO_SELLER'
+                  ? <><strong>@{trade.initiator?.username}</strong> pays <strong>@{trade.responder?.username}</strong></>
+                  : <><strong>@{trade.responder?.username}</strong> pays <strong>@{trade.initiator?.username}</strong></>
+                }
+              </p>
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <span>4% platform fee (${(trade.boot_amount * 0.04).toFixed(2)})</span>
+                <span>&middot;</span>
+                <span>Recipient gets ${(trade.boot_amount * 0.96).toFixed(2)}</span>
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-2 italic">
+                A sweetener is cash added to one side of a trade to balance value. Charged via Stripe when both parties accept.
+              </p>
             </div>
           )}
 
@@ -849,7 +902,8 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
           </div>
 
           <div>
-            <p className="text-xs font-medium text-muted-foreground mb-2">SWEETENER <span className="font-normal">(cash on top, optional)</span></p>
+            <p className="text-xs font-medium text-muted-foreground mb-1">SWEETENER <span className="font-normal">(cash on top, optional)</span></p>
+            <p className="text-[10px] text-muted-foreground mb-2 italic">A sweetener balances value between records. 4% platform fee applies to the sweetener amount only.</p>
             <div className="grid grid-cols-2 gap-2">
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -863,6 +917,11 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
                 </SelectContent>
               </Select>
             </div>
+            {bootAmount && parseFloat(bootAmount) > 0 && (
+              <p className="text-xs text-muted-foreground mt-1.5">
+                Fee: ${(parseFloat(bootAmount) * 0.04).toFixed(2)} &middot; Recipient gets ${(parseFloat(bootAmount) * 0.96).toFixed(2)}
+              </p>
+            )}
           </div>
           <Textarea placeholder="Message to seller (optional)" value={message} onChange={e => setMessage(e.target.value)} className="border-honey/50 resize-none" rows={2} data-testid="trade-message-input" />
           <Button onClick={handlePropose} disabled={loading || !selectedRecordId || !offeredCondition || offeredPhotos.length === 0} className="w-full bg-honey text-vinyl-black hover:bg-honey-amber rounded-full" data-testid="trade-propose-btn">
