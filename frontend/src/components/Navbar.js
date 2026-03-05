@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
-import { Home, Search, PlusCircle, User, LogOut, Settings, Library, Disc } from 'lucide-react';
+import { Home, Search, User, LogOut, Settings, Library, Disc, ArrowRightLeft } from 'lucide-react';
 
 // Bee icon SVG component
 const BeeIcon = ({ className = "w-4 h-4" }) => (
@@ -104,15 +104,6 @@ const Navbar = () => {
                   ISO
                 </Button>
               </Link>
-              <Link to="/add-record" data-testid="nav-add-record">
-                <Button 
-                  variant="ghost" 
-                  className={`gap-2 ${isActive('/add-record') ? 'bg-honey/20' : ''}`}
-                >
-                  <PlusCircle className="w-4 h-4" />
-                  Add
-                </Button>
-              </Link>
             </div>
           )}
 
@@ -141,6 +132,10 @@ const Navbar = () => {
                   <DropdownMenuItem onClick={() => navigate('/collection')} data-testid="menu-collection">
                     <Library className="mr-2 h-4 w-4" />
                     My Collection
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/trades')} data-testid="menu-trades">
+                    <ArrowRightLeft className="mr-2 h-4 w-4" />
+                    My Trades
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/settings')} data-testid="menu-settings">
                     <Settings className="mr-2 h-4 w-4" />

@@ -369,6 +369,44 @@ class DiscogsImportStatus(BaseModel):
     discogs_username: Optional[str] = None
     last_synced: Optional[str] = None
 
+# Trade Models
+TRADE_STATUSES = ["PROPOSED", "COUNTERED", "ACCEPTED", "DECLINED", "CANCELLED",
+                  "SHIPPING", "CONFIRMING", "COMPLETED", "DISPUTED"]
+
+class TradePropose(BaseModel):
+    listing_id: str
+    offered_record_id: str
+    boot_amount: Optional[float] = None
+    boot_direction: Optional[str] = None  # TO_SELLER or TO_BUYER
+    message: Optional[str] = None
+
+class TradeCounter(BaseModel):
+    requested_record_id: Optional[str] = None
+    boot_amount: Optional[float] = None
+    boot_direction: Optional[str] = None
+    message: Optional[str] = None
+
+class TradeResponse(BaseModel):
+    id: str
+    listing_id: str
+    initiator_id: str
+    responder_id: str
+    offered_record_id: str
+    listing_record_id: Optional[str] = None
+    boot_amount: Optional[float] = None
+    boot_direction: Optional[str] = None
+    status: str
+    messages: List[Dict[str, Any]] = []
+    counter: Optional[Dict[str, Any]] = None
+    created_at: str
+    updated_at: str
+    initiator: Optional[Dict[str, Any]] = None
+    responder: Optional[Dict[str, Any]] = None
+    offered_record: Optional[Dict[str, Any]] = None
+    listing_record: Optional[Dict[str, Any]] = None
+    counter_record: Optional[Dict[str, Any]] = None
+    listing: Optional[Dict[str, Any]] = None
+
 # ============== UTILITY FUNCTIONS ==============
 
 def hash_password(password: str) -> str:
@@ -1720,6 +1758,253 @@ async def delete_listing(listing_id: str, user: Dict = Depends(require_auth)):
         raise HTTPException(status_code=404, detail="Listing not found")
     await db.listings.delete_one({"id": listing_id})
     return {"message": "Listing deleted"}
+
+# ============== TRADE ROUTES ==============
+
+async def build_trade_response(trade: Dict) -> Dict:
+    """Populate a trade document with user and record data"""
+    initiator = await db.users.find_one({"id": trade["initiator_id"]}, {"_id": 0, "password_hash": 0})
+    responder = await db.users.find_one({"id": trade["responder_id"]}, {"_id": 0, "password_hash": 0})
+    offered_record = await db.records.find_one({"id": trade["offered_record_id"]}, {"_id": 0})
+    listing = await db.listings.find_one({"id": trade["listing_id"]}, {"_id": 0})
+
+    listing_record = None
+    if listing:
+        listing_record = {
+            "artist": listing.get("artist"),
+            "album": listing.get("album"),
+            "cover_url": listing.get("cover_url"),
+            "year": listing.get("year"),
+            "condition": listing.get("condition"),
+            "photo_urls": listing.get("photo_urls", []),
+        }
+
+    counter_record = None
+    if trade.get("counter") and trade["counter"].get("record_id"):
+        counter_record = await db.records.find_one({"id": trade["counter"]["record_id"]}, {"_id": 0})
+
+    def user_summary(u):
+        if not u:
+            return None
+        return {"id": u["id"], "username": u["username"], "avatar_url": u.get("avatar_url")}
+
+    return {
+        **{k: v for k, v in trade.items() if k != "_id"},
+        "initiator": user_summary(initiator),
+        "responder": user_summary(responder),
+        "offered_record": offered_record,
+        "listing_record": listing_record,
+        "counter_record": counter_record,
+        "listing": listing,
+    }
+
+
+@api_router.post("/trades", response_model=TradeResponse)
+async def propose_trade(data: TradePropose, user: Dict = Depends(require_auth)):
+    """Propose a trade against a TRADE listing"""
+    listing = await db.listings.find_one({"id": data.listing_id, "status": "ACTIVE"}, {"_id": 0})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found or no longer active")
+    if listing["listing_type"] != "TRADE":
+        raise HTTPException(status_code=400, detail="This listing is not open for trades")
+    if listing["user_id"] == user["id"]:
+        raise HTTPException(status_code=400, detail="Cannot trade with yourself")
+
+    # Verify offered record belongs to the initiator
+    record = await db.records.find_one({"id": data.offered_record_id, "user_id": user["id"]}, {"_id": 0})
+    if not record:
+        raise HTTPException(status_code=404, detail="Offered record not found in your collection")
+
+    # Check for existing pending trade on this listing by this user
+    existing = await db.trades.find_one({
+        "listing_id": data.listing_id,
+        "initiator_id": user["id"],
+        "status": {"$in": ["PROPOSED", "COUNTERED"]}
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail="You already have a pending trade on this listing")
+
+    now = datetime.now(timezone.utc).isoformat()
+    trade_id = str(uuid.uuid4())
+
+    messages = []
+    if data.message:
+        messages.append({"user_id": user["id"], "text": data.message, "created_at": now})
+
+    trade_doc = {
+        "id": trade_id,
+        "listing_id": data.listing_id,
+        "initiator_id": user["id"],
+        "responder_id": listing["user_id"],
+        "offered_record_id": data.offered_record_id,
+        "listing_record_id": listing.get("record_id"),
+        "boot_amount": data.boot_amount,
+        "boot_direction": data.boot_direction,
+        "status": "PROPOSED",
+        "messages": messages,
+        "counter": None,
+        "created_at": now,
+        "updated_at": now,
+    }
+    await db.trades.insert_one(trade_doc)
+    return await build_trade_response(trade_doc)
+
+
+@api_router.get("/trades")
+async def get_my_trades(status_filter: Optional[str] = None, user: Dict = Depends(require_auth)):
+    """Get all trades where user is initiator or responder"""
+    query = {"$or": [{"initiator_id": user["id"]}, {"responder_id": user["id"]}]}
+    if status_filter and status_filter in TRADE_STATUSES:
+        query["status"] = status_filter
+    trades = await db.trades.find(query, {"_id": 0}).sort("updated_at", -1).to_list(100)
+    result = []
+    for trade in trades:
+        result.append(await build_trade_response(trade))
+    return result
+
+
+@api_router.get("/trades/{trade_id}")
+async def get_trade(trade_id: str, user: Dict = Depends(require_auth)):
+    """Get trade detail"""
+    trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade not found")
+    if trade["initiator_id"] != user["id"] and trade["responder_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Not authorized to view this trade")
+    return await build_trade_response(trade)
+
+
+@api_router.put("/trades/{trade_id}/accept")
+async def accept_trade(trade_id: str, user: Dict = Depends(require_auth)):
+    """Accept a trade proposal or counter"""
+    trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade not found")
+
+    # Determine who can accept
+    if trade["status"] == "PROPOSED":
+        if trade["responder_id"] != user["id"]:
+            raise HTTPException(status_code=403, detail="Only the listing owner can accept")
+    elif trade["status"] == "COUNTERED":
+        if trade["initiator_id"] != user["id"]:
+            raise HTTPException(status_code=403, detail="Only the trade proposer can accept a counter")
+    else:
+        raise HTTPException(status_code=400, detail=f"Cannot accept a trade with status {trade['status']}")
+
+    now = datetime.now(timezone.utc).isoformat()
+
+    # If accepting a counter, apply counter terms
+    update = {"$set": {"status": "ACCEPTED", "updated_at": now}}
+    if trade["status"] == "COUNTERED" and trade.get("counter"):
+        counter = trade["counter"]
+        set_fields = {"status": "ACCEPTED", "updated_at": now}
+        if counter.get("record_id"):
+            set_fields["offered_record_id"] = counter["record_id"]
+        if counter.get("boot_amount") is not None:
+            set_fields["boot_amount"] = counter["boot_amount"]
+        if counter.get("boot_direction"):
+            set_fields["boot_direction"] = counter["boot_direction"]
+        update = {"$set": set_fields}
+
+    await db.trades.update_one({"id": trade_id}, update)
+
+    # Mark the listing as IN_TRADE
+    await db.listings.update_one({"id": trade["listing_id"]}, {"$set": {"status": "IN_TRADE"}})
+
+    updated = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    return await build_trade_response(updated)
+
+
+@api_router.put("/trades/{trade_id}/counter")
+async def counter_trade(trade_id: str, data: TradeCounter, user: Dict = Depends(require_auth)):
+    """Counter a trade - responder suggests different record or boot"""
+    trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade not found")
+
+    if trade["status"] not in ["PROPOSED", "COUNTERED"]:
+        raise HTTPException(status_code=400, detail=f"Cannot counter a trade with status {trade['status']}")
+
+    # Only the current "other party" can counter
+    if trade["status"] == "PROPOSED" and trade["responder_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Only the listing owner can counter a proposal")
+    if trade["status"] == "COUNTERED" and trade["initiator_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Only the proposer can counter back")
+
+    # If requesting a different record, verify it belongs to the other party
+    if data.requested_record_id:
+        other_id = trade["initiator_id"] if user["id"] == trade["responder_id"] else trade["responder_id"]
+        rec = await db.records.find_one({"id": data.requested_record_id, "user_id": other_id}, {"_id": 0})
+        if not rec:
+            raise HTTPException(status_code=404, detail="Requested record not found in the other party's collection")
+
+    now = datetime.now(timezone.utc).isoformat()
+    counter_obj = {
+        "record_id": data.requested_record_id,
+        "boot_amount": data.boot_amount,
+        "boot_direction": data.boot_direction,
+        "by_user_id": user["id"],
+        "created_at": now,
+    }
+
+    messages_update = {}
+    if data.message:
+        messages_update = {"$push": {"messages": {"user_id": user["id"], "text": data.message, "created_at": now}}}
+
+    await db.trades.update_one({"id": trade_id}, {
+        "$set": {"status": "COUNTERED", "counter": counter_obj, "updated_at": now},
+        **(messages_update if messages_update else {})
+    })
+
+    updated = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    return await build_trade_response(updated)
+
+
+@api_router.put("/trades/{trade_id}/decline")
+async def decline_trade(trade_id: str, user: Dict = Depends(require_auth)):
+    """Decline a trade"""
+    trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade not found")
+    if trade["status"] not in ["PROPOSED", "COUNTERED"]:
+        raise HTTPException(status_code=400, detail=f"Cannot decline a trade with status {trade['status']}")
+    if trade["initiator_id"] != user["id"] and trade["responder_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    now = datetime.now(timezone.utc).isoformat()
+    await db.trades.update_one({"id": trade_id}, {"$set": {"status": "DECLINED", "updated_at": now}})
+    return {"message": "Trade declined"}
+
+
+@api_router.post("/trades/{trade_id}/message")
+async def add_trade_message(trade_id: str, data: Dict, user: Dict = Depends(require_auth)):
+    """Add a message to a trade"""
+    trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade not found")
+    if trade["initiator_id"] != user["id"] and trade["responder_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    now = datetime.now(timezone.utc).isoformat()
+    msg = {"user_id": user["id"], "text": data.get("text", ""), "created_at": now}
+    await db.trades.update_one({"id": trade_id}, {"$push": {"messages": msg}, "$set": {"updated_at": now}})
+    return {"message": "Message added"}
+
+
+@api_router.get("/users/{username}/trades")
+async def get_user_trades(username: str):
+    """Get completed/active trades for a user profile"""
+    target = await db.users.find_one({"username": username.lower()}, {"_id": 0})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+    trades = await db.trades.find({
+        "$or": [{"initiator_id": target["id"]}, {"responder_id": target["id"]}],
+        "status": {"$in": ["ACCEPTED", "COMPLETED", "SHIPPING", "CONFIRMING"]}
+    }, {"_id": 0}).sort("updated_at", -1).to_list(50)
+    result = []
+    for trade in trades:
+        result.append(await build_trade_response(trade))
+    return result
 
 # ============== PROFILE DATA ROUTES ==============
 

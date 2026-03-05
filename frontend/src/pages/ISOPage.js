@@ -25,6 +25,7 @@ import { Search, Plus, CheckCircle2, Loader2, Trash2, Filter, Tag, DollarSign, D
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
+import { ProposeTradeModal } from './TradesPage';
 
 const ISO_TAGS = ['OG Press', 'Factory Sealed', 'Any', 'Promo'];
 const FILTER_OPTIONS = ['All', 'OPEN', 'FOUND'];
@@ -41,6 +42,7 @@ const ISOPage = () => {
   const [showCreate, setShowCreate] = useState(null); // 'iso' or 'listing'
   const [filter, setFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [tradeTarget, setTradeTarget] = useState(null); // listing to trade against
 
   // Shared Discogs search state
   const [discogsQuery, setDiscogsQuery] = useState('');
@@ -428,7 +430,7 @@ const ISOPage = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {listings.map(listing => (
-                <ListingCard key={listing.id} listing={listing} />
+                <ListingCard key={listing.id} listing={listing} currentUserId={user?.id} onProposeTrade={(l) => setTradeTarget(l)} />
               ))}
             </div>
           )}
@@ -608,6 +610,16 @@ const ISOPage = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Propose Trade Modal */}
+      <ProposeTradeModal
+        open={!!tradeTarget}
+        onOpenChange={(open) => { if (!open) setTradeTarget(null); }}
+        listing={tradeTarget}
+        token={token}
+        API={API}
+        onSuccess={fetchData}
+      />
     </div>
   );
 };
@@ -659,7 +671,7 @@ const ISOCard = ({ iso, isOwn, onMarkFound, onDelete }) => (
 );
 
 // Listing Card Component
-const ListingCard = ({ listing }) => {
+const ListingCard = ({ listing, currentUserId, onProposeTrade }) => {
   const [photoIdx, setPhotoIdx] = useState(0);
   const photos = listing.photo_urls || [];
   const typeConfig = {
@@ -670,6 +682,8 @@ const ListingCard = ({ listing }) => {
   const tc = typeConfig[listing.listing_type] || typeConfig.BUY_NOW;
 
   const mainImage = photos.length > 0 ? photos[photoIdx] : listing.cover_url;
+  const isOwn = listing.user_id === currentUserId || listing.user?.id === currentUserId;
+  const isTrade = listing.listing_type === 'TRADE';
 
   return (
     <Card className="border-honey/30 overflow-hidden hover:shadow-md transition-all" data-testid={`listing-${listing.id}`}>
@@ -718,6 +732,15 @@ const ListingCard = ({ listing }) => {
           <Link to={`/profile/${listing.user.username}`} className="text-xs text-muted-foreground hover:underline mt-1 block">
             @{listing.user.username}
           </Link>
+        )}
+        {isTrade && !isOwn && onProposeTrade && (
+          <button
+            onClick={() => onProposeTrade(listing)}
+            className="mt-2 w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 hover:bg-purple-200 transition-all"
+            data-testid={`propose-trade-${listing.id}`}
+          >
+            <ArrowRightLeft className="w-3 h-3" /> Propose Trade
+          </button>
         )}
       </div>
     </Card>

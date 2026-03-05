@@ -18,6 +18,7 @@ import RecordDetailPage from "./pages/RecordDetailPage";
 import SettingsPage from "./pages/SettingsPage";
 import CreateHaulPage from "./pages/CreateHaulPage";
 import ISOPage from "./pages/ISOPage";
+import TradesPage from "./pages/TradesPage";
 
 // Protected Route wrapper
 const ProtectedRoute = ({ children }) => {
@@ -120,6 +121,13 @@ function AppContent() {
         <ProtectedRoute>
           <AppLayout>
             <ISOPage />
+          </AppLayout>
+        </ProtectedRoute>
+      } />
+      <Route path="/trades" element={
+        <ProtectedRoute>
+          <AppLayout>
+            <TradesPage />
           </AppLayout>
         </ProtectedRoute>
       } />
