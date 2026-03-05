@@ -179,26 +179,52 @@ class FollowResponse(BaseModel):
     created_at: str
 
 # Post/Activity Models
+POST_TYPES = ["NOW_SPINNING", "NEW_HAUL", "ISO", "ADDED_TO_COLLECTION", "WEEKLY_WRAP", "VINYL_MOOD"]
+# Mapping from old post types to new ones
+POST_TYPE_MAP = {
+    "spin": "NOW_SPINNING",
+    "haul": "NEW_HAUL",
+    "record_added": "ADDED_TO_COLLECTION",
+    "weekly_summary": "WEEKLY_WRAP",
+}
+
 class PostCreate(BaseModel):
-    post_type: str  # spin, haul, record_added, weekly_summary
-    content: Optional[str] = None
+    post_type: str  # NOW_SPINNING, NEW_HAUL, ISO, ADDED_TO_COLLECTION, WEEKLY_WRAP, VINYL_MOOD
+    caption: Optional[str] = None
+    image_url: Optional[str] = None
     record_id: Optional[str] = None
     haul_id: Optional[str] = None
+    iso_id: Optional[str] = None
+    weekly_wrap_id: Optional[str] = None
+    # For NOW_SPINNING inline creation
+    track: Optional[str] = None
+    # For VINYL_MOOD inline creation
+    mood: Optional[str] = None
 
 class PostResponse(BaseModel):
     id: str
     user_id: str
     post_type: str
-    content: Optional[str] = None
+    caption: Optional[str] = None
+    image_url: Optional[str] = None
+    share_card_square_url: Optional[str] = None
+    share_card_story_url: Optional[str] = None
     record_id: Optional[str] = None
     haul_id: Optional[str] = None
+    iso_id: Optional[str] = None
+    weekly_wrap_id: Optional[str] = None
+    track: Optional[str] = None
+    mood: Optional[str] = None
     created_at: str
     likes_count: int = 0
     comments_count: int = 0
     user: Optional[Dict[str, Any]] = None
     record: Optional[Dict[str, Any]] = None
     haul: Optional[Dict[str, Any]] = None
+    iso: Optional[Dict[str, Any]] = None
     is_liked: bool = False
+    # Legacy compat
+    content: Optional[str] = None
 
 # Comment Models
 class CommentCreate(BaseModel):
@@ -212,6 +238,59 @@ class CommentResponse(BaseModel):
     content: str
     created_at: str
     user: Optional[Dict[str, Any]] = None
+
+# ISO Models
+class ISOCreate(BaseModel):
+    artist: str
+    album: str
+    record_id: Optional[str] = None
+    priority: str = "MED"  # HIGH, MED, LOW
+    pressing_notes: Optional[str] = None
+    condition_pref: Optional[str] = None
+    target_price_min: Optional[float] = None
+    target_price_max: Optional[float] = None
+
+class ISOResponse(BaseModel):
+    id: str
+    user_id: str
+    artist: str
+    album: str
+    record_id: Optional[str] = None
+    priority: str = "MED"
+    pressing_notes: Optional[str] = None
+    condition_pref: Optional[str] = None
+    target_price_min: Optional[float] = None
+    target_price_max: Optional[float] = None
+    status: str = "OPEN"
+    created_at: str
+    found_at: Optional[str] = None
+    record: Optional[Dict[str, Any]] = None
+
+# Composer Models (one-shot post creation)
+class NowSpinningCreate(BaseModel):
+    record_id: str
+    track: Optional[str] = None
+    caption: Optional[str] = None
+
+class NewHaulCreate(BaseModel):
+    store_name: Optional[str] = None
+    caption: Optional[str] = None
+    image_url: Optional[str] = None
+    items: List[HaulItemCreate]
+
+class ISOPostCreate(BaseModel):
+    artist: str
+    album: str
+    pressing_notes: Optional[str] = None
+    condition_pref: Optional[str] = None
+    target_price_min: Optional[float] = None
+    target_price_max: Optional[float] = None
+    caption: Optional[str] = None
+
+class VinylMoodCreate(BaseModel):
+    mood: str  # Late Night, Sunday Morning, Rainy Day, etc.
+    caption: Optional[str] = None
+    record_id: Optional[str] = None
 
 # Weekly Summary Models
 class WeeklySummaryResponse(BaseModel):
@@ -842,10 +921,9 @@ async def add_record(record_data: RecordCreate, user: Dict = Depends(require_aut
     post_doc = {
         "id": post_id,
         "user_id": user["id"],
-        "post_type": "record_added",
-        "content": f"Added {record_data.title} by {record_data.artist} to their collection",
+        "post_type": "ADDED_TO_COLLECTION",
+        "caption": f"Added {record_data.title} by {record_data.artist} to their collection",
         "record_id": record_id,
-        "haul_id": None,
         "created_at": now
     }
     await db.posts.insert_one(post_doc)
@@ -941,10 +1019,9 @@ async def log_spin(spin_data: SpinCreate, user: Dict = Depends(require_auth)):
     post_doc = {
         "id": post_id,
         "user_id": user["id"],
-        "post_type": "spin",
-        "content": f"Spinning {record['title']} by {record['artist']}",
+        "post_type": "NOW_SPINNING",
+        "caption": f"Spinning {record['title']} by {record['artist']}",
         "record_id": spin_data.record_id,
-        "haul_id": None,
         "created_at": now
     }
     await db.posts.insert_one(post_doc)
@@ -1015,9 +1092,8 @@ async def create_haul(haul_data: HaulCreate, user: Dict = Depends(require_auth))
     post_doc = {
         "id": post_id,
         "user_id": user["id"],
-        "post_type": "haul",
-        "content": f"Added {len(haul_data.items)} new records: {haul_data.title}",
-        "record_id": None,
+        "post_type": "NEW_HAUL",
+        "caption": f"Added {len(haul_data.items)} new records: {haul_data.title}",
         "haul_id": haul_id,
         "created_at": now
     }
@@ -1159,6 +1235,65 @@ async def get_following(username: str, current_user: Optional[Dict] = Depends(ge
 
 # ============== FEED/POSTS ROUTES ==============
 
+def normalize_post_type(post_type: str) -> str:
+    """Map legacy post types to new enum values"""
+    return POST_TYPE_MAP.get(post_type, post_type)
+
+async def build_post_response(post: Dict, current_user_id: Optional[str] = None) -> Dict:
+    """Build a full post response with user, record, haul, iso data"""
+    post_user = await db.users.find_one({"id": post["user_id"]}, {"_id": 0, "password_hash": 0})
+    user_data = {"id": post_user["id"], "username": post_user["username"], "avatar_url": post_user.get("avatar_url")} if post_user else None
+    
+    record_data = None
+    if post.get("record_id"):
+        record = await db.records.find_one({"id": post["record_id"]}, {"_id": 0})
+        record_data = record
+    
+    haul_data = None
+    if post.get("haul_id"):
+        haul = await db.hauls.find_one({"id": post["haul_id"]}, {"_id": 0})
+        haul_data = haul
+    
+    iso_data = None
+    if post.get("iso_id"):
+        iso = await db.iso_items.find_one({"id": post["iso_id"]}, {"_id": 0})
+        iso_data = iso
+    
+    likes_count = await db.likes.count_documents({"post_id": post["id"]})
+    comments_count = await db.comments.count_documents({"post_id": post["id"]})
+    
+    is_liked = False
+    if current_user_id:
+        is_liked = await db.likes.find_one({"post_id": post["id"], "user_id": current_user_id}) is not None
+    
+    # Normalize post type
+    pt = normalize_post_type(post.get("post_type", ""))
+    
+    return PostResponse(
+        id=post["id"],
+        user_id=post["user_id"],
+        post_type=pt,
+        caption=post.get("caption") or post.get("content"),
+        image_url=post.get("image_url"),
+        share_card_square_url=post.get("share_card_square_url"),
+        share_card_story_url=post.get("share_card_story_url"),
+        record_id=post.get("record_id"),
+        haul_id=post.get("haul_id"),
+        iso_id=post.get("iso_id"),
+        weekly_wrap_id=post.get("weekly_wrap_id"),
+        track=post.get("track"),
+        mood=post.get("mood"),
+        created_at=post["created_at"],
+        likes_count=likes_count,
+        comments_count=comments_count,
+        user=user_data,
+        record=record_data,
+        haul=haul_data,
+        iso=iso_data,
+        is_liked=is_liked,
+        content=post.get("content")
+    )
+
 @api_router.get("/feed", response_model=List[PostResponse])
 async def get_feed(user: Dict = Depends(require_auth), limit: int = 50, skip: int = 0):
     # Get users I'm following
@@ -1173,33 +1308,8 @@ async def get_feed(user: Dict = Depends(require_auth), limit: int = 50, skip: in
     
     result = []
     for post in posts:
-        post_user = await db.users.find_one({"id": post["user_id"]}, {"_id": 0, "password_hash": 0})
-        user_data = {"id": post_user["id"], "username": post_user["username"], "avatar_url": post_user.get("avatar_url")} if post_user else None
-        
-        record_data = None
-        if post.get("record_id"):
-            record = await db.records.find_one({"id": post["record_id"]}, {"_id": 0})
-            record_data = record
-        
-        haul_data = None
-        if post.get("haul_id"):
-            haul = await db.hauls.find_one({"id": post["haul_id"]}, {"_id": 0})
-            haul_data = haul
-        
-        likes_count = await db.likes.count_documents({"post_id": post["id"]})
-        comments_count = await db.comments.count_documents({"post_id": post["id"]})
-        
-        is_liked = await db.likes.find_one({"post_id": post["id"], "user_id": user["id"]}) is not None
-        
-        result.append(PostResponse(
-            **post,
-            user=user_data,
-            record=record_data,
-            haul=haul_data,
-            likes_count=likes_count,
-            comments_count=comments_count,
-            is_liked=is_liked
-        ))
+        resp = await build_post_response(post, user["id"])
+        result.append(resp)
     
     return result
 
@@ -1209,37 +1319,179 @@ async def get_explore_feed(current_user: Optional[Dict] = Depends(get_current_us
     
     result = []
     for post in posts:
-        post_user = await db.users.find_one({"id": post["user_id"]}, {"_id": 0, "password_hash": 0})
-        user_data = {"id": post_user["id"], "username": post_user["username"], "avatar_url": post_user.get("avatar_url")} if post_user else None
-        
-        record_data = None
-        if post.get("record_id"):
-            record = await db.records.find_one({"id": post["record_id"]}, {"_id": 0})
-            record_data = record
-        
-        haul_data = None
-        if post.get("haul_id"):
-            haul = await db.hauls.find_one({"id": post["haul_id"]}, {"_id": 0})
-            haul_data = haul
-        
-        likes_count = await db.likes.count_documents({"post_id": post["id"]})
-        comments_count = await db.comments.count_documents({"post_id": post["id"]})
-        
-        is_liked = False
-        if current_user:
-            is_liked = await db.likes.find_one({"post_id": post["id"], "user_id": current_user["id"]}) is not None
-        
-        result.append(PostResponse(
-            **post,
-            user=user_data,
-            record=record_data,
-            haul=haul_data,
-            likes_count=likes_count,
-            comments_count=comments_count,
-            is_liked=is_liked
-        ))
+        uid = current_user["id"] if current_user else None
+        resp = await build_post_response(post, uid)
+        result.append(resp)
     
     return result
+
+# ============== COMPOSER ENDPOINTS (one-shot post creation) ==============
+
+@api_router.post("/composer/now-spinning", response_model=PostResponse)
+async def composer_now_spinning(data: NowSpinningCreate, user: Dict = Depends(require_auth)):
+    """Create a Now Spinning post + log a spin in one flow"""
+    record = await db.records.find_one({"id": data.record_id, "user_id": user["id"]}, {"_id": 0})
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found in your collection")
+    
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Log the spin
+    spin_id = str(uuid.uuid4())
+    await db.spins.insert_one({
+        "id": spin_id,
+        "user_id": user["id"],
+        "record_id": data.record_id,
+        "notes": data.track,
+        "created_at": now
+    })
+    
+    # Create post
+    post_id = str(uuid.uuid4())
+    post_doc = {
+        "id": post_id,
+        "user_id": user["id"],
+        "post_type": "NOW_SPINNING",
+        "caption": data.caption,
+        "record_id": data.record_id,
+        "track": data.track,
+        "created_at": now
+    }
+    await db.posts.insert_one(post_doc)
+    
+    return await build_post_response(post_doc, user["id"])
+
+@api_router.post("/composer/new-haul", response_model=PostResponse)
+async def composer_new_haul(data: NewHaulCreate, user: Dict = Depends(require_auth)):
+    """Create a New Haul post + add records to collection in one flow"""
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Add each record to collection and build haul items
+    items_with_ids = []
+    for item in data.items:
+        record_id = str(uuid.uuid4())
+        record_doc = {
+            "id": record_id,
+            "user_id": user["id"],
+            "discogs_id": item.discogs_id,
+            "title": item.title,
+            "artist": item.artist,
+            "cover_url": item.cover_url,
+            "year": item.year,
+            "format": "Vinyl",
+            "notes": item.notes,
+            "source": "haul",
+            "created_at": now
+        }
+        await db.records.insert_one(record_doc)
+        items_with_ids.append({**item.model_dump(), "record_id": record_id})
+    
+    # Create haul
+    haul_id = str(uuid.uuid4())
+    haul_doc = {
+        "id": haul_id,
+        "user_id": user["id"],
+        "store_name": data.store_name,
+        "title": data.store_name or "New Haul",
+        "description": data.caption,
+        "image_url": data.image_url,
+        "items": items_with_ids,
+        "purchased_at": now,
+        "created_at": now
+    }
+    await db.hauls.insert_one(haul_doc)
+    
+    # Create post
+    post_id = str(uuid.uuid4())
+    post_doc = {
+        "id": post_id,
+        "user_id": user["id"],
+        "post_type": "NEW_HAUL",
+        "caption": data.caption,
+        "image_url": data.image_url,
+        "haul_id": haul_id,
+        "created_at": now
+    }
+    await db.posts.insert_one(post_doc)
+    
+    return await build_post_response(post_doc, user["id"])
+
+@api_router.post("/composer/iso", response_model=PostResponse)
+async def composer_iso(data: ISOPostCreate, user: Dict = Depends(require_auth)):
+    """Create an ISO (In Search Of) post in one flow"""
+    now = datetime.now(timezone.utc).isoformat()
+    
+    # Create ISO item
+    iso_id = str(uuid.uuid4())
+    iso_doc = {
+        "id": iso_id,
+        "user_id": user["id"],
+        "artist": data.artist,
+        "album": data.album,
+        "pressing_notes": data.pressing_notes,
+        "condition_pref": data.condition_pref,
+        "target_price_min": data.target_price_min,
+        "target_price_max": data.target_price_max,
+        "status": "OPEN",
+        "created_at": now
+    }
+    await db.iso_items.insert_one(iso_doc)
+    
+    # Create post
+    post_id = str(uuid.uuid4())
+    post_doc = {
+        "id": post_id,
+        "user_id": user["id"],
+        "post_type": "ISO",
+        "caption": data.caption,
+        "iso_id": iso_id,
+        "created_at": now
+    }
+    await db.posts.insert_one(post_doc)
+    
+    return await build_post_response(post_doc, user["id"])
+
+@api_router.post("/composer/vinyl-mood", response_model=PostResponse)
+async def composer_vinyl_mood(data: VinylMoodCreate, user: Dict = Depends(require_auth)):
+    """Create a Vinyl Mood post"""
+    now = datetime.now(timezone.utc).isoformat()
+    
+    post_id = str(uuid.uuid4())
+    post_doc = {
+        "id": post_id,
+        "user_id": user["id"],
+        "post_type": "VINYL_MOOD",
+        "caption": data.caption,
+        "mood": data.mood,
+        "record_id": data.record_id,
+        "created_at": now
+    }
+    await db.posts.insert_one(post_doc)
+    
+    return await build_post_response(post_doc, user["id"])
+
+# ============== ISO ROUTES ==============
+
+@api_router.get("/iso", response_model=List[ISOResponse])
+async def get_my_isos(user: Dict = Depends(require_auth)):
+    isos = await db.iso_items.find({"user_id": user["id"]}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    result = []
+    for iso in isos:
+        record_data = None
+        if iso.get("record_id"):
+            record_data = await db.records.find_one({"id": iso["record_id"]}, {"_id": 0})
+        result.append(ISOResponse(**iso, record=record_data))
+    return result
+
+@api_router.put("/iso/{iso_id}/found")
+async def mark_iso_found(iso_id: str, user: Dict = Depends(require_auth)):
+    iso = await db.iso_items.find_one({"id": iso_id, "user_id": user["id"]})
+    if not iso:
+        raise HTTPException(status_code=404, detail="ISO not found")
+    
+    now = datetime.now(timezone.utc).isoformat()
+    await db.iso_items.update_one({"id": iso_id}, {"$set": {"status": "FOUND", "found_at": now}})
+    return {"message": "ISO marked as found"}
 
 # ============== BUZZING NOW (Trending) ROUTES ==============
 
@@ -1413,10 +1665,9 @@ async def get_weekly_summary(user: Dict = Depends(require_auth)):
         post_doc = {
             "id": post_id,
             "user_id": user["id"],
-            "post_type": "weekly_summary",
-            "content": f"HoneyGroove Weekly: {total_spins} spins this week. Top artist: {top_artist or 'N/A'}",
-            "record_id": None,
-            "haul_id": None,
+            "post_type": "WEEKLY_WRAP",
+            "caption": f"HoneyGroove Weekly: {total_spins} spins this week. Top artist: {top_artist or 'N/A'}",
+            "weekly_wrap_id": summary_id,
             "created_at": now.isoformat()
         }
         await db.posts.insert_one(post_doc)
@@ -1990,6 +2241,8 @@ async def startup_event():
     await db.likes.create_index([("post_id", 1), ("user_id", 1)], unique=True)
     await db.records.create_index([("user_id", 1), ("discogs_id", 1)])
     await db.discogs_tokens.create_index("user_id", unique=True)
+    await db.iso_items.create_index("user_id")
+    await db.iso_items.create_index("status")
     
     # Initialize storage
     try:
