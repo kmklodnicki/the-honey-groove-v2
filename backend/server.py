@@ -500,7 +500,7 @@ def generate_share_graphic(graphic_type: str, data: Dict, format_type: str = "sq
             
             if format_type == "story":
                 # Decorative hexagon with count
-                draw.regular_polygon((540, 500), 120, 6, fill=honey_soft, outline=amber)
+                draw.regular_polygon(((540, 500), 120), 6, fill=honey_soft, outline=amber)
                 draw.text((540, 480), str(count), font=title_font, fill=black, anchor="mm")
                 draw.text((540, 560), "RECORDS", font=small_font, fill=amber, anchor="mm")
                 
@@ -518,7 +518,7 @@ def generate_share_graphic(graphic_type: str, data: Dict, format_type: str = "sq
                 if count > 8:
                     draw.text((width//2, y_pos), f"+ {count - 8} more...", font=body_font, fill=amber, anchor="mm")
             else:
-                draw.regular_polygon((540, 350), 80, 6, fill=honey_soft, outline=amber)
+                draw.regular_polygon(((540, 350), 80), 6, fill=honey_soft, outline=amber)
                 draw.text((540, 350), str(count), font=title_font, fill=black, anchor="mm")
                 
                 draw.text((width//2, 480), title, font=subtitle_font, fill=black, anchor="mm")
@@ -546,7 +546,7 @@ def generate_share_graphic(graphic_type: str, data: Dict, format_type: str = "sq
             
             if format_type == "story":
                 # Big spin count with hexagon background
-                draw.regular_polygon((540, 480), 140, 6, fill=honey_soft, outline=amber)
+                draw.regular_polygon(((540, 480), 140), 6, fill=honey_soft, outline=amber)
                 draw.text((540, 450), str(spins), font=title_font, fill=black, anchor="mm")
                 draw.text((540, 530), "SPINS", font=body_font, fill=amber, anchor="mm")
                 
@@ -577,7 +577,7 @@ def generate_share_graphic(graphic_type: str, data: Dict, format_type: str = "sq
                     draw.ellipse([bx-12, by-8, bx+12, by+8], fill=black)
                     draw.ellipse([bx-6, by-4, bx+6, by+4], fill=honey_soft)
             else:
-                draw.regular_polygon((540, 320), 100, 6, fill=honey_soft, outline=amber)
+                draw.regular_polygon(((540, 320), 100), 6, fill=honey_soft, outline=amber)
                 draw.text((540, 300), str(spins), font=title_font, fill=black, anchor="mm")
                 draw.text((540, 360), "SPINS", font=small_font, fill=amber, anchor="mm")
                 

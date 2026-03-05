@@ -57,7 +57,7 @@ const LandingPage = () => {
               Track your records, log your spins, share your hauls, and connect with fellow collectors in a warm, welcoming community.
             </p>
             <p className="text-sm text-honey-amber mb-6">
-              <strong>Test Account:</strong> demo@honeygroove.com / demo123
+              <strong>Test Account:</strong> demo@example.com / password123
             </p>
 
             {/* CTA Buttons */}

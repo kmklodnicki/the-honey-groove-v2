@@ -26,6 +26,7 @@ const SORT_OPTIONS = [
   { value: 'artist_asc', label: 'Artist A → Z' },
   { value: 'artist_desc', label: 'Artist Z → A' },
   { value: 'title_asc', label: 'Album Title A → Z' },
+  { value: 'title_desc', label: 'Album Title Z → A' },
   { value: 'newest', label: 'Newest Added' },
   { value: 'oldest', label: 'Oldest Added' },
   { value: 'most_spins', label: 'Most Spins' },
@@ -124,6 +125,9 @@ const CollectionPage = () => {
         break;
       case 'title_asc':
         filtered.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case 'title_desc':
+        filtered.sort((a, b) => b.title.localeCompare(a.title));
         break;
       case 'newest':
         filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
