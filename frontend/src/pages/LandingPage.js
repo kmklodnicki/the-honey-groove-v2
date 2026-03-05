@@ -13,6 +13,7 @@ const LandingPage = () => {
   const navigate = useNavigate();
   const { user, API } = useAuth();
   const [popupOpen, setPopupOpen] = useState(false);
+  const [waitlistOpen, setWaitlistOpen] = useState(false);
   const [nlEmail, setNlEmail] = useState('');
   const [nlLoading, setNlLoading] = useState(false);
   const [nlSuccess, setNlSuccess] = useState(false);
@@ -92,18 +93,18 @@ const LandingPage = () => {
             {/* CTA */}
             <div className="flex flex-col items-center gap-4 animate-slide-up" style={{ animationDelay: '0.2s' }}>
               <Button
-                onClick={() => navigate('/signup')}
+                onClick={() => setWaitlistOpen(true)}
                 className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full px-8 py-6 text-lg font-medium hover:scale-105 transition-transform"
                 data-testid="hero-signup-btn"
               >
                 join the hive
               </Button>
               <Link
-                to="/explore"
+                to="/login"
                 className="text-sm text-vinyl-black/60 hover:text-honey-amber transition-colors"
-                data-testid="hero-explore-link"
+                data-testid="hero-login-link"
               >
-                or explore the hive &rarr;
+                already a member? sign in &rarr;
               </Link>
             </div>
           </div>
@@ -175,7 +176,7 @@ const LandingPage = () => {
               you've been waiting for this. so have we.
             </p>
             <Button
-              onClick={() => navigate('/signup')}
+              onClick={() => setWaitlistOpen(true)}
               className="bg-vinyl-black text-white hover:bg-vinyl-black/90 rounded-full px-10 py-6 text-lg font-medium hover:scale-105 transition-transform"
               data-testid="cta-signup-btn"
             >
@@ -204,6 +205,28 @@ const LandingPage = () => {
           </div>
         </div>
       </footer>
+
+      {/* Waitlist Modal */}
+      {waitlistOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 animate-fade-in" data-testid="waitlist-modal">
+          <div className="bg-honey-cream rounded-2xl p-8 max-w-md mx-4 relative shadow-2xl border border-amber-200/50">
+            <button onClick={() => setWaitlistOpen(false)} className="absolute top-3 right-3 text-vinyl-black/40 hover:text-vinyl-black" data-testid="waitlist-close-btn">
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="font-heading text-2xl text-vinyl-black mb-3 text-center">closed beta</h3>
+            <p className="text-sm text-vinyl-black/60 mb-6 text-center leading-relaxed">
+              the honey groove is currently in closed beta. join the waitlist to get early access.
+            </p>
+            <Button
+              onClick={() => { setWaitlistOpen(false); navigate('/beta'); }}
+              className="w-full bg-honey text-vinyl-black hover:bg-honey-amber rounded-full py-5 text-base font-medium"
+              data-testid="waitlist-beta-btn"
+            >
+              join the waitlist 🐝
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Newsletter Popup */}
       {popupOpen && (

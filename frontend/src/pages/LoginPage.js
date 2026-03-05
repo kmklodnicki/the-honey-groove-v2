@@ -98,9 +98,9 @@ const LoginPage = () => {
           </form>
 
           <div className="mt-6 text-center text-sm">
-            <span className="text-muted-foreground">Don't have an account? </span>
-            <Link to="/signup" className="text-honey-amber hover:underline font-medium" data-testid="login-signup-link">
-              Sign up
+            <span className="text-muted-foreground">Need an account? </span>
+            <Link to="/beta" className="text-honey-amber hover:underline font-medium" data-testid="login-waitlist-link">
+              Join the waitlist
             </Link>
           </div>
         </CardContent>

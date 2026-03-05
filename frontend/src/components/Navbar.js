@@ -149,6 +149,19 @@ const Navbar = () => {
                     <Settings className="mr-2 h-4 w-4" />
                     Settings
                   </DropdownMenuItem>
+                  {user.is_admin && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => navigate('/admin/beta')} data-testid="menu-admin-beta">
+                        <User className="mr-2 h-4 w-4" />
+                        Beta & Invites
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/admin/disputes')} data-testid="menu-admin-disputes">
+                        <ArrowRightLeft className="mr-2 h-4 w-4" />
+                        Disputes
+                      </DropdownMenuItem>
+                    </>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="text-red-600" data-testid="menu-logout">
                     <LogOut className="mr-2 h-4 w-4" />
@@ -160,11 +173,6 @@ const Navbar = () => {
               <div className="flex items-center gap-2">
                 <Link to="/login">
                   <Button variant="ghost" data-testid="nav-login">Log in</Button>
-                </Link>
-                <Link to="/signup">
-                  <Button className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full" data-testid="nav-signup">
-                    Sign up
-                  </Button>
                 </Link>
               </div>
             )}
