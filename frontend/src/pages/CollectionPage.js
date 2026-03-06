@@ -462,7 +462,7 @@ const WaxReportCTA = () => (
           </div>
           <div>
             <p className="font-heading text-base" style={{ color: '#2A1A06' }}>your week in wax</p>
-            <p className="text-[11px]" style={{ color: '#8A6B4A' }}>weekly report · shareable card</p>
+            <p className="text-[11px]" style={{ color: '#8A6B4A' }}>weekly report</p>
           </div>
         </div>
         <span className="text-xs font-medium group-hover:translate-x-0.5 transition-transform" style={{ color: '#C8861A' }}>View &rarr;</span>

@@ -430,11 +430,7 @@ const BingoModal = ({
           })}
         </div>
 
-        <Button onClick={handleExport} disabled={exporting} variant="outline"
-          className="w-full rounded-full border-amber-300 text-amber-700 hover:bg-amber-50" data-testid="bingo-export-btn">
-          {exporting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Download className="w-4 h-4 mr-2" />}
-          save & share card
-        </Button>
+        {/* save & share card — hidden until feature is ready */}
       </div>
     </DialogContent>
   </Dialog>

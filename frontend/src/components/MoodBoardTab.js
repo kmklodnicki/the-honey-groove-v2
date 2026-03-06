@@ -116,10 +116,7 @@ const MoodBoardCard = ({ board, isPinned, onExport }) => {
           <p className="text-xs text-muted-foreground">{rangeLabel} · {dateStr}</p>
           {isPinned && <p className="text-[10px] text-amber-600 font-medium">Latest</p>}
         </div>
-        <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); onExport(); }}
-          className="text-amber-600 hover:text-amber-800 h-8 px-2" data-testid="mood-export-btn">
-          <Download className="w-3.5 h-3.5" />
-        </Button>
+        {/* export button — hidden until feature is ready */}
       </div>
     </Card>
   );

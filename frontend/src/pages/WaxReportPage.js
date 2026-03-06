@@ -332,13 +332,7 @@ const WaxReportPage = () => {
           </WaxCard>
         )}
 
-        {/* ═══ Share Button ═══ */}
-        <div className="flex gap-3 mt-4">
-          <Button onClick={handleShare} className="flex-1 rounded-full gap-2 h-12 text-sm font-medium"
-            style={{ background: C.amberAccent, color: '#fff' }} data-testid="wax-share-btn">
-            <Share2 className="w-4 h-4" /> Share your Week in Wax
-          </Button>
-        </div>
+        {/* ═══ Share Button — hidden until feature is ready ═══ */}
 
         {/* ═══ History Link ═══ */}
         <Link to="/wax-reports/history" className="flex items-center justify-center gap-1 mt-4 text-sm transition-colors"
@@ -347,33 +341,7 @@ const WaxReportPage = () => {
         </Link>
       </div>
 
-      {/* ═══ Share Card Modal ═══ */}
-      <Dialog open={shareModal} onOpenChange={(o) => { if (!o) { setShareModal(false); if (shareImg) URL.revokeObjectURL(shareImg); setShareImg(null); }}}>
-        <DialogContent className="sm:max-w-sm p-0 overflow-hidden" style={{ background: C.bg, border: `1px solid ${C.border}` }} aria-describedby="share-desc">
-          <DialogHeader className="px-4 pt-4">
-            <DialogTitle className="font-heading flex items-center gap-2" style={{ color: C.textDark }}>
-              <Share2 className="w-4 h-4" style={{ color: C.amberAccent }} /> Share Card
-            </DialogTitle>
-            <p id="share-desc" className="sr-only">Your shareable week in wax card</p>
-          </DialogHeader>
-          <div className="px-4 pb-4">
-            {shareLoading ? (
-              <div className="flex flex-col items-center justify-center py-16">
-                <Loader2 className="w-8 h-8 animate-spin mb-3" style={{ color: C.amberAccent }} />
-                <p className="text-sm" style={{ color: C.textMuted }}>Generating card...</p>
-              </div>
-            ) : shareImg ? (
-              <>
-                <img src={shareImg} alt="Share card" className="w-full rounded-xl shadow-lg mb-3" data-testid="wax-share-image" />
-                <Button onClick={downloadShare} className="w-full rounded-full gap-2" style={{ background: C.amberAccent, color: '#fff' }} data-testid="wax-share-download">
-                  <Download className="w-4 h-4" /> Save to Camera Roll
-                </Button>
-                <p className="text-[10px] text-center mt-2" style={{ color: C.textMuted }}>1080 × 1080 · designed for Instagram</p>
-              </>
-            ) : null}
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* ═══ Share Card Modal — hidden until feature is ready ═══ */}
     </div>
   );
 };

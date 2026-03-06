@@ -159,15 +159,7 @@ const PostCard = ({ post, onLike, onCommentCountChange, token, API }) => {
           {post.comments_count > 0 && post.comments_count}
           {showComments ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
         </button>
-        {post.record && (
-          <button
-            onClick={() => setShareDialogOpen(true)}
-            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-vinyl-black transition-colors ml-auto"
-            data-testid={`share-btn-${post.id}`}
-          >
-            <Share2 className="w-4 h-4" />
-          </button>
-        )}
+        {/* Share button — hidden until feature is ready */}
       </div>
 
       {/* Comments */}
@@ -224,31 +216,7 @@ const PostCard = ({ post, onLike, onCommentCountChange, token, API }) => {
         </div>
       )}
 
-      {/* Share Dialog */}
-      <Dialog open={shareDialogOpen} onOpenChange={setShareDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="font-heading">Share This Post</DialogTitle>
-            <DialogDescription>Choose a format for your shareable graphic</DialogDescription>
-          </DialogHeader>
-          <div className="grid grid-cols-2 gap-4 py-4">
-            <button onClick={() => handleShare('square')} className="p-4 border-2 border-honey/30 rounded-xl hover:border-honey hover:bg-honey/10 transition-all text-center" data-testid="share-square-btn">
-              <div className="w-16 h-16 bg-honey/20 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                <div className="w-10 h-10 border-2 border-honey-amber rounded" />
-              </div>
-              <p className="font-medium">Square</p>
-              <p className="text-xs text-muted-foreground">1080 × 1080</p>
-            </button>
-            <button onClick={() => handleShare('story')} className="p-4 border-2 border-honey/30 rounded-xl hover:border-honey hover:bg-honey/10 transition-all text-center" data-testid="share-story-btn">
-              <div className="w-16 h-16 bg-honey/20 rounded-lg mx-auto mb-2 flex items-center justify-center">
-                <div className="w-6 h-10 border-2 border-honey-amber rounded" />
-              </div>
-              <p className="font-medium">Story</p>
-              <p className="text-xs text-muted-foreground">1080 × 1920</p>
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Share Dialog — hidden until feature is ready */}
     </Card>
   );
 };

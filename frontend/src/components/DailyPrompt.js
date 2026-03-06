@@ -214,35 +214,26 @@ const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
                 data-testid="buzz-caption"
               />
 
-              <div className="grid grid-cols-2 gap-2">
-                <Button onClick={() => handleSubmit(false)} disabled={submitting || !selectedRecordId}
-                  variant="outline" className="rounded-full border-amber-300 text-amber-700 hover:bg-amber-50" data-testid="buzz-share-only-btn">
-                  {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Share2 className="w-4 h-4 mr-1" />}
-                  share to instagram
-                </Button>
+              <div className="flex justify-center">
                 <Button onClick={() => handleSubmit(true)} disabled={submitting || !selectedRecordId}
-                  className="rounded-full bg-amber-500 hover:bg-amber-600 text-white" data-testid="buzz-post-hive-btn">
+                  className="rounded-full bg-amber-500 hover:bg-amber-600 text-white w-full" data-testid="buzz-post-hive-btn">
                   {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Send className="w-4 h-4 mr-1" />}
                   post to the hive
                 </Button>
               </div>
             </>
           ) : (
-            /* Post-submit: export card */
+            /* Post-submit: success message */
             <div className="text-center space-y-4">
               <div className="bg-amber-50 rounded-xl p-4">
-                <p className="text-amber-700 font-medium mb-1">buzzed in! 🐝</p>
+                <p className="text-amber-700 font-medium mb-1">buzzed in!</p>
                 {responseData.streak > 0 && (
                   <p className="flex items-center justify-center gap-1 text-amber-600 font-bold text-lg">
-                    🐝 {responseData.streak} day streak
+                    {responseData.streak} day streak
                   </p>
                 )}
               </div>
-              <Button onClick={handleExport} disabled={exporting}
-                className="w-full rounded-full bg-amber-500 hover:bg-amber-600 text-white" data-testid="buzz-export-btn">
-                {exporting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Download className="w-4 h-4 mr-2" />}
-                save & share card
-              </Button>
+              {/* save & share card — hidden until feature is ready */}
               <Button variant="ghost" onClick={() => onOpenChange(false)} className="w-full text-muted-foreground">
                 done
               </Button>

@@ -226,6 +226,8 @@ COMPLETED → Mandatory rating before next trade
 
 118. **Trending in Collections (replaced Fresh Pressings)** — Replaced Fresh Pressings on Explore page with "Trending in Collections" section. Fetches most-collected vinyl records from Discogs API (sort=have, desc). Shows album art, title, artist, and "owned by X collectors" stat. 24h MongoDB cache. See All page at /explore/trending-in-collections. (Mar 2026)
 
+119. **Share/Export Buttons Hidden** — All Instagram shareable export options temporarily removed from user-facing views: Hive post share button & dialog, Wax Report share button & modal, Collector Bingo "save & share card" button, Daily Prompt "share to instagram" + post-submit "save & share card", Mood Board export button, Collection Page "shareable card" label. Code preserved via comments for quick re-enable. (Mar 2026)
+
 - **P1: Admin User Management tab** — grant/revoke admin access
 - **P2: Weekly Wax welcome email** — first edition with custom copy
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
