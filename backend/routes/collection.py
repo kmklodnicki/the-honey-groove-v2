@@ -517,7 +517,7 @@ async def discogs_oauth_start(user: Dict = Depends(require_auth)):
     if not DISCOGS_CONSUMER_KEY or not DISCOGS_CONSUMER_SECRET:
         raise HTTPException(status_code=400, detail="Discogs OAuth not configured. Please add Consumer Key and Secret in settings.")
     
-    frontend_url = os.environ.get('FRONTEND_URL', '')
+    frontend_url = "https://thehoneygroove.com"
     callback_url = f"{frontend_url}/api/discogs/oauth/callback"
     
     try:
@@ -628,12 +628,12 @@ async def discogs_oauth_callback(oauth_token: str = Query(...), oauth_verifier: 
         
         # Redirect to frontend import page with success
         from fastapi.responses import RedirectResponse
-        frontend_base = os.environ.get('FRONTEND_URL', '')
+        frontend_base = "https://thehoneygroove.com"
         return RedirectResponse(url=f"{frontend_base}/collection?discogs=connected&username={discogs_username}")
     
     except Exception as e:
         logger.error(f"Discogs OAuth callback failed: {e}")
-        frontend_base = os.environ.get('FRONTEND_URL', '')
+        frontend_base = "https://thehoneygroove.com"
         return RedirectResponse(url=f"{frontend_base}/collection?discogs=error&message={str(e)}")
 
 

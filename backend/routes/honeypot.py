@@ -370,7 +370,7 @@ async def stripe_connect_return(user_id: str):
     }})
     await create_notification(user_id, "STRIPE_CONNECTED", "Stripe Connected!",
                               "Your Stripe account is now active. You can receive payments for marketplace sales.")
-    frontend_url = os.environ.get("FRONTEND_URL", "")
+    frontend_url = "https://thehoneygroove.com"
     from starlette.responses import RedirectResponse
     return RedirectResponse(url=f"{frontend_url}/profile/{u['username']}?stripe=connected")
 
