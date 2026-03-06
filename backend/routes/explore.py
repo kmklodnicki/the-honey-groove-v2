@@ -86,7 +86,7 @@ async def follow_user(username: str, user: Dict = Depends(require_auth)):
                               f"@{u.get('username','?')} started following you",
                               {"follower_username": u.get("username")})
     if target_user.get("email"):
-        tpl = email_tpl.new_follow(u.get("username", "?"), f"https://thehoneygroove.com/profile/{u.get('username','')}")
+        tpl = email_tpl.new_follow(u.get("username", "?"), f"{FRONTEND_URL}/profile/{u.get('username','')}")
         await send_email_fire_and_forget(target_user["email"], tpl["subject"], tpl["html"])
 
     return {"message": f"Now following {username}"}

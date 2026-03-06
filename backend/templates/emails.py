@@ -2,7 +2,9 @@
 
 from templates.base import wrap_email
 
-FRONTEND = "https://thehoneygroove.com"
+import os
+
+FRONTEND = os.environ.get("FRONTEND_URL", "https://thehoneygroove.com")
 
 H = "font-family:'Playfair Display',Georgia,serif;font-weight:700;color:#2A1A06;"
 AMBER = "color:#C8861A;"
