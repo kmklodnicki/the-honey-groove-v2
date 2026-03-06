@@ -68,7 +68,7 @@ def weekly_wax_ready(username: str, personality_label: str, top_artist: str, top
 # ──────────── TRANSACTIONAL EMAILS (no unsubscribe) ────────────
 
 def invite_code(first_name: str, invite_code: str) -> dict:
-    join_url = f"{FRONTEND}/join?code={invite_code}"
+    join_url = f"https://thehoneygroove.com/join?code={invite_code}"
     body = f"""
     <p style="{GREETING}">Hey {first_name},</p>
     <p>You're officially in. Your founding member invite for the Honey Groove is ready.</p>
@@ -76,7 +76,6 @@ def invite_code(first_name: str, invite_code: str) -> dict:
     <div style="text-align:center;margin:24px 0;">
         <a href="{join_url}" style="{BTN}">Join the Honey Groove &rarr;</a>
     </div>
-    <p style="{MUTED}">{join_url}</p>
     <p style="margin:20px 0 6px 0;"><strong>Here's all you need to get started once you're in:</strong></p>
     <p><strong style="{AMBER}">Add at least 3 records to your collection</strong> &mdash; search by artist or album and Discogs pulls everything in automatically.</p>
     <p><strong style="{AMBER}">Drop your first Now Spinning</strong> from the composer bar at the top of the Hive. Takes 10 seconds.</p>
