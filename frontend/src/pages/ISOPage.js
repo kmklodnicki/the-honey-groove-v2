@@ -29,6 +29,18 @@ const ISO_TAGS = ['OG Press', 'Factory Sealed', 'Any', 'Promo'];
 const FILTER_OPTIONS = ['All', 'OPEN', 'FOUND'];
 const LISTING_CONDITIONS = ['Mint', 'Near Mint', 'Very Good Plus', 'Very Good', 'Good Plus', 'Good', 'Fair'];
 
+const IsoMatchCover = ({ coverUrl }) => {
+  const [failed, setFailed] = useState(false);
+  if (coverUrl && !failed) {
+    return <img src={coverUrl} alt="" className="w-8 h-8 rounded object-cover shrink-0" onError={() => setFailed(true)} />;
+  }
+  return (
+    <div className="w-8 h-8 rounded bg-amber-50 border border-[#C8861A]/20 flex items-center justify-center shrink-0">
+      <Disc className="w-4 h-4 text-[#C8861A]" />
+    </div>
+  );
+};
+
 const STATUS_CONFIG = {
   PROPOSED: { label: 'Proposed', color: 'bg-amber-100 text-amber-700' },
   COUNTERED: { label: 'Countered', color: 'bg-blue-100 text-blue-700' },
@@ -422,17 +434,19 @@ const ISOPage = () => {
         <TabsContent value="shop">
           {/* ISO Matches */}
           {isoMatches.length > 0 && (
-            <Card className="p-4 border-purple-200 bg-purple-50/50 mb-6" data-testid="iso-matches-banner">
-              <p className="text-sm font-medium text-purple-700 mb-2">ISO Matches Found!</p>
+            <Card className="p-4 border-[#C8861A]/15 bg-amber-50/30 mb-6" data-testid="iso-matches-banner">
+              <p className="text-sm font-medium text-[#C8861A] mb-2">ISO Matches Found!</p>
               <div className="flex gap-3 overflow-x-auto pb-2">
                 {isoMatches.map(m => (
-                  <div key={m.id} className="flex-shrink-0 bg-white rounded-lg p-3 border border-purple-200 w-48">
+                  <div key={m.id} className="flex-shrink-0 bg-white rounded-lg p-3 border border-[#C8861A]/15 w-48 cursor-pointer hover:shadow-md hover:border-[#C8861A]/30 transition-all"
+                    onClick={() => setSelectedListingId(m.id)} data-testid={`iso-match-card-${m.id}`}>
                     <div className="flex items-center gap-2 mb-1">
-                      {m.cover_url ? <img src={m.cover_url} alt="" className="w-8 h-8 rounded object-cover" /> : <Disc className="w-8 h-8 text-purple-400" />}
+                      <IsoMatchCover coverUrl={m.cover_url} />
                       <div className="min-w-0 flex-1"><p className="text-xs font-medium truncate">{m.album}</p><p className="text-xs text-muted-foreground truncate">{m.artist}</p></div>
                     </div>
-                    <span className="text-xs text-purple-600 font-medium">{m.listing_type === 'TRADE' ? 'Trade' : `$${m.price}`}</span>
-                    <span className="text-xs text-muted-foreground ml-1">by @{m.user?.username}</span>
+                    <span className="text-xs text-[#C8861A] font-medium bg-amber-50 px-2 py-0.5 rounded-full border border-[#C8861A]/20">{m.listing_type === 'TRADE' ? 'Trade' : `$${m.price}`}</span>
+                    <Link to={`/profile/${m.user?.username}`} onClick={e => e.stopPropagation()}
+                      className="text-xs text-muted-foreground hover:text-[#C8861A] hover:underline ml-1" data-testid={`iso-match-seller-${m.id}`}>by @{m.user?.username}</Link>
                   </div>
                 ))}
               </div>
