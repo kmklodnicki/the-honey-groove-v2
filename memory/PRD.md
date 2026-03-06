@@ -208,7 +208,7 @@ COMPLETED → Mandatory rating before next trade
 
 108. **Mobile Wordmark Fix** — Top bar height increased to 52px, wordmark min-width 140px for legibility. (Mar 2026)
 
-109. **ISO Composer Button Fix** — Changed from blue to amber (bg-amber-100 text-amber-800 border-amber-300). (Mar 2026)
+110. **Zero Loading Gate Architecture** — AuthContext.loading is now ALWAYS false. JWT decoded client-side for instant user hydration (decodeTokenPayload + initUserFromToken). fetchUser runs in background after page renders. ProtectedRoute has no loading check — only checks user existence. Fallback timeout increased to 15s. CORS expose_headers added. Login→Hive renders in <0.5s. (Mar 2026)
 - **P1: Add 50 New Daily Prompts + 50 Bingo Squares** — User-provided content batch
 - **P2: Safari CSS Compatibility Audit** — Check for missing -webkit- prefixes across the app
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
