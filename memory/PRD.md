@@ -178,6 +178,18 @@ COMPLETED → Mandatory rating before next trade
 
 95. **ISO Card & Toast Fixes** — Toast constrained to 320px max-width floating pill. ISO card: rounded-xl (12px), outlined amber OPEN badge (transparent bg, amber border/text). Beta page dropdown bg fixed to cream. (Mar 2026)
 
+96. **Toast Position Fix** — Toast offset set to 96px so it appears below the desktop nav bar, not overlapping it. (Mar 2026)
+
+97. **Notification Badge Global Fix** — Confirmed all notification badges use amber #C8861A. No remaining red badges outside of destructive/error actions. (Mar 2026)
+
+98. **Buzz Emoji Fix** — All Flame icon imports removed. Every streak display and buzz-in count now uses literal 🐝 emoji. FAQ page text updated to reference bee icon. (Mar 2026)
+
+99. **Placeholder Post Cleanup** — Deleted 148 placeholder posts with no type or record data from the posts collection. (Mar 2026)
+
+100. **Content: 50 Daily Prompts** — Added 50 curated daily prompts to the daily_prompts collection. Total: 50 prompts. (Mar 2026)
+
+101. **Content: 50 Bingo Squares** — Added 48 new bingo squares (2 were duplicates). Total: 76 active squares. (Mar 2026)
+
 ## Upcoming Tasks
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
 - **P2: Refactor ISOPage.js** — Break monolithic 3-tab component
