@@ -58,7 +58,7 @@ const faqSections = [
       },
       {
         q: 'What is a buzz in streak?',
-        a: 'Answer the daily prompt every day and build a streak. Your streak count shows on your profile with a fire icon. Miss a day and it resets. The longer your streak the more the community notices.',
+        a: 'Answer the daily prompt every day and build a streak. Your streak count shows on your profile with a 🐝 bee icon. Miss a day and it resets. The longer your streak the more the community notices.',
       },
       {
         q: 'Can I see posts from everyone or just people I follow?',
