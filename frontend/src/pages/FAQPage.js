@@ -340,6 +340,14 @@ const FAQPage = () => {
           <br />We're collectors too. We get it.
         </p>
       </div>
+
+      <div className="mt-12 pt-8 border-t border-honey/20 flex items-center justify-between">
+        <Link to="/" className="text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors">Back to Home</Link>
+        <div className="flex gap-4">
+          <Link to="/terms" className="text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors">Terms</Link>
+          <Link to="/privacy" className="text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors">Privacy Policy</Link>
+        </div>
+      </div>
     </div>
   </div>
   );
