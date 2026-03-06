@@ -35,7 +35,7 @@ const SORT_OPTIONS = [
   { value: 'most_spins', label: 'Most Spins' },
   { value: 'least_spins', label: 'Least Spins' },
   { value: 'recently_spun', label: 'Recently Spun' },
-  { value: 'never_spun', label: 'Never Spun' },
+  { value: 'never_spun', label: 'No Logged Spins' },
   { value: 'highest_value', label: 'Highest Value' },
 ];
 
@@ -387,8 +387,8 @@ const RecordCard = ({ record, onSpin, onDelete, isSpinning, value }) => {
 
           {/* Never spun indicator */}
           {record.spin_count === 0 && (
-            <div className="absolute bottom-2 left-2 bg-white/80 text-vinyl-black text-xs px-2 py-1 rounded-full font-medium">
-              Unspun
+            <div className="absolute bottom-2 left-2 bg-white/80 text-muted-foreground text-xs px-2 py-1 rounded-full">
+              no logged spins
             </div>
           )}
 

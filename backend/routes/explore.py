@@ -4,7 +4,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone, timedelta
 import uuid
 
-from database import db, require_auth, get_current_user, security, logger, create_notification
+from database import db, require_auth, get_current_user, security, logger, create_notification, get_hidden_user_ids
 from services.email_service import send_email_fire_and_forget
 import templates.emails as email_tpl
 from database import hash_password, verify_password, create_token, search_discogs, get_discogs_release
@@ -23,11 +23,15 @@ router = APIRouter()
 @router.get("/buzzing")
 async def get_buzzing_records(current_user: Optional[Dict] = Depends(get_current_user), limit: int = 10):
     """Get trending/buzzing records based on recent spins"""
-    # Get spins from last 7 days
+    hidden_ids = await get_hidden_user_ids()
     week_ago = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
     
+    match_filter = {"created_at": {"$gte": week_ago}}
+    if hidden_ids:
+        match_filter["user_id"] = {"$nin": hidden_ids}
+    
     pipeline = [
-        {"$match": {"created_at": {"$gte": week_ago}}},
+        {"$match": match_filter},
         {"$group": {"_id": "$record_id", "spin_count": {"$sum": 1}}},
         {"$sort": {"spin_count": -1}},
         {"$limit": limit},

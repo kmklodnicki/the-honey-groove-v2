@@ -91,6 +91,12 @@ async def require_auth(credentials: HTTPAuthorizationCredentials = Depends(secur
     return user
 
 
+async def get_hidden_user_ids() -> list:
+    """Return IDs of users with is_hidden=True (e.g. demo accounts)."""
+    hidden = await db.users.find({"is_hidden": True}, {"_id": 0, "id": 1}).to_list(100)
+    return [u["id"] for u in hidden]
+
+
 def init_storage():
     global storage_key
     if not EMERGENT_KEY:

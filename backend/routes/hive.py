@@ -4,7 +4,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone, timedelta
 import uuid
 
-from database import db, require_auth, get_current_user, security, logger, create_notification
+from database import db, require_auth, get_current_user, security, logger, create_notification, get_hidden_user_ids
 from services.email_service import send_email_fire_and_forget
 import templates.emails as email_tpl
 from database import hash_password, verify_password, create_token, search_discogs, get_discogs_release
@@ -323,8 +323,11 @@ async def get_feed(user: Dict = Depends(require_auth), limit: int = 50, skip: in
     following_ids = [f["following_id"] for f in following]
     following_ids.append(user["id"])  # Include own posts
     
+    hidden_ids = await get_hidden_user_ids()
+    visible_ids = [uid for uid in following_ids if uid not in hidden_ids]
+    
     posts = await db.posts.find(
-        {"user_id": {"$in": following_ids}},
+        {"user_id": {"$in": visible_ids}},
         {"_id": 0}
     ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
     
@@ -337,7 +340,9 @@ async def get_feed(user: Dict = Depends(require_auth), limit: int = 50, skip: in
 
 @router.get("/explore", response_model=List[PostResponse])
 async def get_explore_feed(current_user: Optional[Dict] = Depends(get_current_user), limit: int = 50, skip: int = 0):
-    posts = await db.posts.find({}, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
+    hidden_ids = await get_hidden_user_ids()
+    query = {"user_id": {"$nin": hidden_ids}} if hidden_ids else {}
+    posts = await db.posts.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
     
     result = []
     for post in posts:
@@ -534,9 +539,13 @@ async def composer_note(data: NoteCreate, user: Dict = Depends(require_auth)):
 @router.get("/search/posts")
 async def search_posts(q: str = Query(..., min_length=2), user: Dict = Depends(require_auth)):
     """Search posts by keyword in caption/content"""
+    hidden_ids = await get_hidden_user_ids()
     regex = {"$regex": q, "$options": "i"}
+    match_filter = {"$or": [{"caption": regex}, {"content": regex}]}
+    if hidden_ids:
+        match_filter["user_id"] = {"$nin": hidden_ids}
     posts = await db.posts.find(
-        {"$or": [{"caption": regex}, {"content": regex}]},
+        match_filter,
         {"_id": 0}
     ).sort("created_at", -1).limit(20).to_list(20)
     results = []

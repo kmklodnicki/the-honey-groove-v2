@@ -6,7 +6,7 @@ import uuid
 import os
 import logging
 
-from database import db, require_auth, get_current_user, security, logger, create_notification
+from database import db, require_auth, get_current_user, security, logger, create_notification, get_hidden_user_ids
 from services.email_service import send_email_fire_and_forget
 from database import hash_password, verify_password, create_token, search_discogs, get_discogs_release
 from database import put_object, get_object, init_storage, storage_key
@@ -86,8 +86,10 @@ async def delete_iso(iso_id: str, user: Dict = Depends(require_auth)):
 @router.get("/iso/community")
 async def get_community_isos(limit: int = 50, user: Dict = Depends(require_auth)):
     """Get ISO items from all users except the current user"""
+    hidden_ids = await get_hidden_user_ids()
+    exclude_ids = list(set([user["id"]] + hidden_ids))
     isos = await db.iso_items.find(
-        {"user_id": {"$ne": user["id"]}, "status": "OPEN"}, {"_id": 0}
+        {"user_id": {"$nin": exclude_ids}, "status": "OPEN"}, {"_id": 0}
     ).sort("created_at", -1).limit(limit).to_list(limit)
     user_ids = list({iso["user_id"] for iso in isos})
     users = {u["id"]: u for u in await db.users.find({"id": {"$in": user_ids}}, {"_id": 0, "password_hash": 0}).to_list(100)} if user_ids else {}
@@ -208,7 +210,10 @@ async def create_listing(data: ListingCreate, user: Dict = Depends(require_auth)
 @router.get("/listings", response_model=List[ListingResponse])
 async def get_listings(listing_type: Optional[str] = None, search: Optional[str] = None, limit: int = 50, skip: int = 0):
     """Browse marketplace listings"""
+    hidden_ids = await get_hidden_user_ids()
     query = {"status": "ACTIVE"}
+    if hidden_ids:
+        query["user_id"] = {"$nin": hidden_ids}
     if listing_type and listing_type in LISTING_TYPES:
         query["listing_type"] = listing_type
     if search:

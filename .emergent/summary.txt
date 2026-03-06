@@ -3,197 +3,176 @@ The user wants to build a web app called **The HoneyGroove**, a social platform 
 
 **PRODUCT REQUIREMENTS (Synthesized from initial request and subsequent user directives):**
 *   **Core App:** A full-stack application for vinyl collectors to track their collection, log spins, and interact socially.
-*   **Branding & Pages:** A warm, honey-inspired theme. Includes a landing page, About Page, FAQ Page, and an official logo/favicon. Includes a public beta signup page.
-*   **User System & Profile:** Invite-only user accounts with profiles featuring avatar, bio, setup, location, favorite genre, stats, and a following system. Includes a permanent Founding Member badge for the first 50 users. The app is locked down behind authentication, with email verification required for new users.
-*   **Onboarding:** A mandatory 3-step onboarding flow for new users to build their initial collection and follow other collectors.
-*   **Social & Engagement Features:**
-    *   **The Hive (Feed):** A central social feed for user posts.
-    *   **Daily Prompt:** A daily community prompt with streak tracking and a shareable export card.
-    *   **The Mood Board:** A weekly auto-generated 3x3 grid of a user's most-spun album covers.
-    *   **Collector Bingo:** A weekly 5x5 bingo card.
-*   **Search & Discovery:**
-    *   **Global Search:** Live-updating search for records, collectors, and posts.
-    *   **Explore Page:** A discovery page with various sections.
-    *   **Record Detail Page:** A dedicated page for each record showing Discogs data and community stats.
-*   **Collection Management & Valuation:** Integrates Discogs market data for collection value.
-*   **The Honeypot (Marketplace):** A marketplace with a configurable platform fee.
-    *   **Mutual Hold Trades:** A mandatory trade system where both parties place a refundable hold, equal to the records' value, to ensure transaction safety. Includes a dispute resolution system managed via the admin panel.
-*   **Admin & Safety:** A unified admin panel for managing signups, invites, social features, user reports, platform fees, and trade disputes. A comprehensive buyer protection system is in development.
-*   **Analytics & Notifications:**
-    *   Google Tag Manager and custom event tracking.
-    *   A comprehensive system of transactional and marketing emails sent via Resend.
-*   **Trust & Security:**
-    *   **Buyer Protection:** Seller transaction counts, new seller listing limits, off-platform payment detection, and shipping insurance prompts.
-    *   **Platform Security:** Public Terms of Service and Privacy Policy pages, rate limiting on forms, and a honeypot field on the beta signup form.
+*   **Branding & UI/UX:** A warm, honey-inspired theme is paramount. The UI should be clean, modern, and consistent with the brand's amber color palette (, ) and specific fonts (, ).
+*   **User System & Onboarding:** Invite-only, email-verified accounts. The onboarding process has been simplified to remove mandatory steps.
+*   **Social & Engagement Features:** A social feed (The Hive), daily prompts, and weekly Collector Bingo.
+*   **Search & Discovery:** Global search and dedicated pages for records, leveraging the Discogs API.
+*   **Admin Panel:** For managing beta signups, including sending and tracking invites.
+*   **Mobile-First Experience:** The application must be fully functional and performant on mobile browsers, especially Safari on iOS, which has been a major source of critical bugs.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a feature-rich, full-stack platform in a closed beta state. Most features from the PRD are implemented. The last session focused on adding a 4-point Buyer Protection plan, extensive trust and security enhancements (ToS/Privacy pages, rate limiting, honeypot fields, email verification), and a major redesign of the landing, about, and beta pages based on user feedback. A global scroll-to-top on navigation was also added. The app is stable for verified users, but a critical bug was discovered affecting new, unverified users on mobile.
+The application is a feature-rich full-stack platform (React, FastAPI, MongoDB). In this session, the agent performed a series of critical, deep-level bug fixes that finally resolved a persistent, show-stopping blank screen bug on Safari mobile. This involved refactoring the entire authentication flow to be non-blocking and client-side first, removing the problematic loading screen, and conducting a comprehensive Safari CSS compatibility audit.
+
+Additionally, the agent implemented a full invite management system in the admin panel, updated numerous email templates with correct branding and production URLs, simplified the user onboarding flow, added new content, and fixed the Discogs import and add to collection mobile failures.
 
 **Last working item**:
--   **Last item agent was working:** Debugging a critical bug where new, unverified users see a blank page after logging in on mobile. The agent identified the root cause in the  logic, where unverified users are incorrectly set as fully authenticated, leading to routing and state issues. A fix was planned but not yet implemented.
+-   **Last item agent was working:** The agent was implementing two user requests in parallel:
+    1.  Fixing a bug where adding a record to a user's collection was failing silently on mobile.
+    2.  Ensuring the Fresh Pressings section on the Explore page refreshes with new data from the Discogs API every 24 hours.
 -   **Status:** IN PROGRESS
 -   **Agent Testing Done:** N
--   **Which testing method agent to use?** both
+-   **Which testing method agent to use?** both.
+    -   Use the frontend testing agent to simulate adding a record on a mobile viewport, verifying success/error toasts and immediate UI updates.
+    -   Use backend testing methods (e.g.,  and ) to verify the new caching logic for the Fresh Pressings endpoint.
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Blank page on mobile for unverified users (P0)**
-    -   **Description:** New users who sign up but have not yet verified their email see a blank page when they log in, specifically on mobile devices. The app fails to handle the state of an authenticated but unverified user correctly.
-    -   **Attempted fixes:** The agent identified that the  function in  prematurely authenticates the user before email verification, causing a redirect loop or state mismatch.
+-   **Issue 1: Hide demo account content from all public views (P1)**
+    -   **Description:** The user wants to ensure that no content (posts, listings, etc.) from the  account is visible to any real, non-admin users.
+    -   **Attempted fixes:** The agent has implemented a backend filter on all relevant API endpoints (e.g., , ) to exclude content from users with an  flag, which has been set on the demo account.
     -   **Next debug checklist:**
-        1.  Modify :
-            -   In the  function, if the API response shows , save the auth token but **do not** set the  state. This will prevent the app from treating the user as fully authenticated.
-            -   In the  function (used on page refresh), if the fetched user has , clear the user state to ensure they are not considered authenticated.
-        2.  Verify the  correctly shows the Please verify your email banner and that the Resend verification link works using the temporarily stored token.
-        3.  Test the login flow for a **newly created, unverified user** on both mobile and desktop viewports to confirm they remain on the login page with the verification banner.
-        4.  Test the login flow for an **existing, verified user** (e.g., ) to ensure there are no regressions and they can log in successfully.
-    -   **Why fix this issue and what will be achieved with the fix?** This is a critical bug blocking new user registration and onboarding. Fixing it will restore the core signup flow.
-    -   **Status:** IN PROGRESS
+        1.  Log in as a new, non-admin user.
+        2.  Thoroughly check all public-facing areas: The Hive feed, Explore page (community hauls, trending), search results, and The Honeypot marketplace.
+        3.  Confirm that absolutely no content created by  appears anywhere.
+    -   **Why fix this issue and what will be achieved with the fix?** To ensure real beta users have a clean experience and are not exposed to test data.
+    -   **Status:** TESTING PENDING
     -   **Is recurring issue?** N
-    -   **Should Test frontend/backend/both after fix?** Both (primarily frontend auth flow).
-    -   **Blocked on other issue:** None.
+    -   **Should Test frontend/backend/both after fix?** Both.
 
 **In progress Task List**:
--   None.
+-   **Task 1: Verify fixes for mobile Add to Collection failure (P0)**
+    -   **Where to resume:** The agent has added a 15-second timeout and specific success/error toasts to the  API calls in , , , and .
+    -   **What will be achieved with this?** Adding a record from anywhere in the app on a mobile device will be a reliable, non-blocking action with clear user feedback.
+    -   **Status:** TESTING PENDING
+    -   **Should Test frontend/backend/both after fix?** Frontend.
+    -   **Blocked on something:** None.
+
+-   **Task 2: Verify Fresh Pressings daily data refresh (P1)**
+    -   **Where to resume:** The agent implemented a Redis cache with a 24-hour TTL (Time To Live) on the  endpoint in .
+    -   **What will be achieved with this?** The Fresh Pressings section will always display current new releases, fetching fresh data from Discogs once per day.
+    -   **Status:** TESTING PENDING
+    -   **Should Test frontend/backend/both after fix?** Backend.
+    -   **Blocked on something:** None.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
     -   **P2: Hauls Enhancement:** Develop a dedicated page and more functionality for Haul posts.
     -   **P2: Refactor :** Address known technical debt in this complex component.
-    -   **P2: Monetization Features:** Implement Pro memberships or a Verified Seller badge.
 -   **Future Tasks:**
-    -   **Implement deferred Buyer Protection features:** Structured dispute flow and auto fraud detection.
+    -   Re-implement a new, fully Safari-compatible loading animation.
+    -   Implement Pro memberships or a Verified Seller badge.
+    -   Implement deferred Buyer Protection features (structured dispute flow, auto fraud detection).
 
 **Completed work in this session**
--   **Buyer Protection Features (Implemented):**
-    -   Displayed seller transaction count on profiles and listings.
-    -   Enforced listing restrictions for new sellers (max 50).
-    -   Implemented off-platform payment keyword detection in listing descriptions with admin alerts.
-    -   Added a shipping insurance prompt for listings over 5.
--   **Trust & Security Enhancements (Implemented):**
-    -   Created  and  pages with full content and added links to the site footer.
-    -   Implemented backend rate limiting () on login and beta signup forms.
-    -   Added an invisible honeypot field to the beta signup form to deter bots.
-    -   Implemented a complete email verification flow for new users, including backend logic, email template (), API endpoints, and a frontend banner with a resend link.
--   **Content & UI Overhaul (Implemented):**
-    -   **Landing & Beta Pages:** Major redesign of the hero section to use separate logo and honey drip images, with the final layout placing the drip at the very top of the viewport. Added three new sections: a stats strip, a Mutual Hold spotlight, and a fee comparison table.
-    -   **FAQ Page:** Replaced all content with extensive new copy and added a proper footer.
-    -   **About Page:** Redesigned the page with new content, a founder photo placeholder, a 2x2 feature grid, and a CTA button.
-    -   **ISO Match Card:** Fixed multiple UI/UX bugs, making the card clickable, fixing links, correcting branding, and resolving a broken image placeholder.
--   **Technical Improvements & Bug Fixes:**
-    -   **Stripe Webhook Verified:** Confirmed the previously untested Stripe webhook signature verification works correctly.
-    -   **Global Scroll-to-Top:** Added a  component to  to ensure users land at the top of the page on every navigation.
-    -   **Deployment Readiness:** Resolved compilation blockers and hardcoded URLs found by the health check agent.
-    -   **Hero Image Fixes:** Addressed deployment issues with new static images by restarting the frontend, and fixed visual artifacts on the honey drip image using  and later by baking the background color into the image.
+-   **Critical Safari Bug Resolution:**
+    -   Finally identified and fixed the root cause of the recurring blank screen crash on Safari iOS: an unguarded call to the  API in .
+    -   Auth flow completely refactored to be non-blocking by decoding the JWT on the client-side for instant page renders ().
+    -   Removed the buggy loading screen component and all intermediate loading gates.
+    -   Replaced all  usage with a safe utility () that falls back to  to prevent crashes in Safari's private browsing mode.
+-   **Admin Panel & Invite System:**
+    -   Implemented a full invite management system in the admin panel, allowing admins to send/resend invites and track their status (, ).
+-   **Onboarding & Discogs:**
+    -   Removed the follow users step entirely from the onboarding flow ().
+    -   Fixed the Discogs import flow with increased timeouts, background processing, and proper user feedback.
+-   **UI/UX and Content:**
+    -   Redesigned the Collector Bingo section on the Explore page into a compact teaser card.
+    -   Added 50 new Daily Prompts and 50 Bingo Squares to the database.
+    -   Added the  symbol after HoneyGroove text instances site-wide.
+    -   Cleaned all test listings from the Honeypot marketplace.
+-   **Email Templates:**
+    -   Updated all email templates to use the production domain () for all links and images, resolving spam filter warnings.
+    -   Corrected the email header layout and updated the copy for the invite email.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1:  Complexity:** This frontend component was noted as being overly complex and a candidate for future refactoring. It is on the upcoming task list.
+-   None. All raised issues in the session were addressed.
 
 **Known issue recurrence from previous fork**
--   N/A
+-   **Blank screen on mobile (Safari):** This issue, which manifested in several different ways (on initial load, on route changes), was the primary focus of this session. It has been **RESOLVED** by identifying the root cause in the  API and completely refactoring the auth flow.
+-   **Email links pointing to preview domain:** This recurred and was definitively fixed by hardcoding the production domain in . **Status: RESOLVED**.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Frontend:** React, Tailwind CSS, Shadcn UI, Lucide Icons, React Router ( for scroll-to-top).
--   **Backend:** FastAPI, Pydantic, Motor (async MongoDB),  for rate limiting.
--   **Database:** MongoDB.
--   **Security:** Honeypot field for spam prevention, email verification flow with secure tokens.
--   **Email System:** Resend SDK with HTML templates.
--   **Payment Processing:** Stripe Connect.
+-   **Safari Debugging:** A deep investigation into Safari-specific bugs, including issues with the  API,  in private mode, and silent hangs in authentication flows.
+-   **Client-Side Authentication:** The auth flow was refactored to be non-blocking. The app now renders instantly by decoding the JWT on the client, fetching full user data in the background. This eliminated all loading gates and dramatically improved perceived performance.
+-   **Redis Caching:** Implemented Redis caching on a backend endpoint () to improve performance and ensure data is refreshed daily.
+-   **Defensive Programming:** Introduced a  utility for safe access to browser storage and added  guards for browser-specific APIs like  to prevent crashes.
 
 **key DB schema**
--   **users:** 
--   **listings:** 
--   **off_platform_alerts:**  (New Collection)
--   **rate_limits:** Managed by  in memory/Redis.
+-   **users:** An  boolean field was added and set to  for the demo account.
+-   **beta_signups:** Implicitly updated to support , , and  fields to track invite status.
+-   **listings:** All test listings were deleted.
 
 **changes in tech stack**
--   Added  Python library to the backend for API rate limiting.
+-   **** and its Python client **** were added to the backend for caching.
 
 **All files of reference**
-*   **Core Logic (Heavily Modified):**
-    *    (Email verification, rate limiting, user model)
-    *    (Beta signup rate limit/honeypot, user registration)
-    *    (New listing restrictions, off-platform detection)
-    *    (Massive redesign with new sections and hero)
-    *    (Hero redesign, honeypot field)
-    *    (Verification banner, rate limit handling)
-    *    (Complete content replacement, new footer)
-    *    (Complete redesign)
-    *    (ISO Match card fixes, new listing modal logic)
-    *    (New routes, global  component)
-    *    (Investigated for bug, needs modification)
-*   **New Files:**
-    *   
-    *   
-    *   
-    *   
-    *   
+*   **Files for Current Tasks:**
+    *    (Redis cache logic, hide demo user logic)
+    *    (Add to collection fix)
+    *    (Add to collection fix)
+*   **Key Files Modified in Session:**
+    *    (Auth flow refactor)
+    *    (Critical Safari bug fix)
+    *    (New file for safe storage)
+    *    (Invite management UI)
+    *    (Email link fix)
 
 **Areas that need refactoring**:
--    remains a known complex component that could be simplified in the future.
+-    remains a complex component that could benefit from being broken down into smaller, more manageable pieces.
 
 **key api endpoints**
--    (New)
--    (New)
--    (New)
--    (New)
--    (Updated: rate limiting, honeypot)
--    (Updated: rate limiting)
--    (Updated: seller restrictions, off-platform detection, insurance)
+-   : **New** endpoint to generate and send an email invite for a specific beta signup.
+-   : **Updated** with Redis caching (24h TTL).
+-   : **Updated** via frontend with longer timeouts and better error handling.
+-   , , , etc.: All public data endpoints were **Updated** to filter out content from hidden users.
 
 **Critical Info for New Agent**
--   **Your immediate priority is to fix the mobile blank page bug for unverified users.** The root cause has been located in . Follow the  in the All Pending/In progress Issue list section to implement the fix.
--   The Resend email system is code-complete but non-functional until the user verifies their domain. This now blocks the new user registration flow.
--   The landing page and beta page hero designs are very specific and have been iterated on multiple times. Avoid changing them unless explicitly requested.
+-   **The critical Safari blank screen bug is resolved.** The root cause was an unguarded call to the  API. The entire authentication flow has been hardened and refactored to be non-blocking and client-side first. Do not re-introduce any app-level loading gates.
+-   Your immediate priorities are to **test and verify the last set of changes**:
+    1.  Confirm the add to collection flow works flawlessly on mobile.
+    2.  Confirm the Fresh Pressings data refresh logic is working as expected with Redis.
+    3.  Confirm content from the  account is completely hidden from public view for non-admin users.
 
 **documents and test reports created in this job**
--    (Updated)
--   
--   
+-   Multiple test reports in , with the latest ones confirming the Safari bug fixes.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **user:** Reported red artifacts around the honey drip image.
-2.  **agent:** Fixed the artifacts by baking the cream background color into the PNG image itself, removing the need for .
-3.  **user:** Requested to add a global scroll-to-top behavior on every route change.
-4.  **agent:** Implemented the  component and wrapped the app's router with it.
-5.  **user:** Reported that the website is not working on mobile, showing a blank page after sign-in.
-6.  **agent:** Attempted to reproduce the issue but was unsuccessful using the verified demo account. Concluded it might be a caching issue for the user.
-7.  **user:** Clarified they were signed in as the demo account, asking if that was the reason.
-8.  **agent:** Realized the issue is specific to *new, unverified users*. Investigated the auth flow and identified the root cause in  where unverified users are incorrectly treated as fully authenticated.
-9.  **agent:** Proposed a fix to modify  to handle the unverified state correctly.
-10. **(No further user messages)**. Agent was in the middle of implementing the proposed fix.
+1.  **User:** Add  to all HoneyGroove mentions. (Status: Completed)
+2.  **User:** Link the logo on the  page to the homepage. (Status: Completed)
+3.  **User:** Fix email images to use the production domain. (Status: Completed)
+4.  **User:** Add a full invite management system to the admin panel. (Status: Completed)
+5.  **User:** Update the invite email copy. (Status: Completed)
+6.  **User:** Update the invite email copy again with more details. (Status: Completed)
+7.  **User:** Fix the invite link URL (still points to preview domain) and remove the raw URL text from the email template. (Status: Completed)
+8.  **User:** How often does Fresh Pressings refresh? Make it daily. Also, add to collection is failing on mobile. (Status: In Progress)
+9.  **User:** Delete all test listings from the Honeypot and hide the demo account from all public views. (Status: In Progress)
+10. **User:** None pending. Awaiting completion of the last two requests.
 
 **Project Health Check:**
--   **Broken:**
-    -   The authentication flow for new, unverified users is broken, resulting in a blank page on mobile after login. This is a critical blocker for user acquisition.
--   **Mocked:**
-    -   All email sending via Resend (including the now-critical account verification emails) is blocked until the user verifies their  domain in their Resend account.
+-   **Broken:** None. The critical launch blockers have been resolved. The remaining in-progress items are standard feature work and bug fixes.
+-   **Mocked:** Email sending via Resend is functional, but final deliverability relies on the user's production DNS configuration.
 
 **3rd Party Integrations**
--   **Discogs API:** For record data and album art.
--   **Stripe Connect:** For marketplace payments and Mutual Hold fund holding. (Webhook verified).
--   **Resend:** For all transactional and marketing emails. (Domain verification pending by user).
--   **Google Tag Manager / Google Analytics:** For custom event tracking.
--   **Pillow:** Python library for server-side image generation.
--   **APScheduler:** For backend scheduled tasks.
--   **slowapi:** For backend API rate limiting.
+-   **Discogs API:** For record data and new releases.
+-   **Stripe Connect:** For payments.
+-   **Resend:** For transactional emails.
+-   **Google Tag Manager / Google Analytics:** For analytics.
+-   : For backend rate limiting.
+-   : For caching API responses.
 
 **Testing status**
--   **Testing agent used after significant changes:** YES. Used successfully to test the buyer protection and trust/security features.
+-   **Testing agent used after significant changes:** YES. Used extensively and successfully to verify the series of critical Safari bug fixes.
 -   **Troubleshoot agent used after agent stuck in loop:** NO
 -   **Test files created:** []
--   **Known regressions:** The login flow for new users broke after implementing the email verification feature.
+-   **Known regressions:** None. The session successfully resolved a major regression (Safari functionality).
 
 **Credentials to test flow:**
 -   **Email:** 
 -   **Password:** 
-    *(This user has admin privileges and is already email-verified. Use this to test for regressions.)*
-    *(To test the bug, you must create a new user account via the invite flow.)*
 
 **What agent forgot to execute**
--   The agent was in the middle of a critical bug fix and did not complete it. All other planned tasks were addressed.</analysis>
+-   The agent has not yet performed the final verification testing for the add to collection and Fresh Pressings daily refresh features. These are the immediate next steps.</analysis>

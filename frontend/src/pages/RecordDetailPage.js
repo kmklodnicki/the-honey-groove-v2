@@ -138,7 +138,7 @@ const RecordDetailPage = () => {
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8" data-testid="stats-grid">
-        <StatCard icon={Play} label="Your Spins" value={record.spin_count || 0} />
+        <StatCard icon={Play} label="Your Spins" value={record.spin_count || 0} noSpinsLabel />
         <StatCard icon={BarChart3} label="Community Spins" value={community.total_spins || 0} />
         <StatCard icon={Users} label="Collectors" value={community.total_owners || 0} />
         <StatCard icon={Heart} label="Wanted" value={community.wantlist_count || 0} />
@@ -242,10 +242,14 @@ const RecordDetailPage = () => {
 
 // ── Helper components ──
 
-const StatCard = ({ icon: Icon, label, value }) => (
+const StatCard = ({ icon: Icon, label, value, noSpinsLabel }) => (
   <Card className="p-4 border-honey/15 text-center">
     <Icon className="w-5 h-5 text-honey-amber mx-auto mb-1.5" />
-    <p className="font-heading text-2xl text-vinyl-black">{value}</p>
+    {noSpinsLabel && value === 0 ? (
+      <p className="text-sm text-muted-foreground mt-1">no logged spins</p>
+    ) : (
+      <p className="font-heading text-2xl text-vinyl-black">{value}</p>
+    )}
     <p className="text-xs text-muted-foreground">{label}</p>
   </Card>
 );
