@@ -76,12 +76,16 @@ def invite_code(first_name: str, invite_code: str) -> dict:
     <div style="text-align:center;margin:24px 0;">
         <a href="{join_url}" style="{BTN}">Join the Honey Groove &rarr;</a>
     </div>
-    <p style="margin:20px 0 6px 0;"><strong>Here's all you need to get started once you're in:</strong></p>
-    <p><strong style="{AMBER}">Add at least 3 records to your collection</strong> &mdash; search by artist or album and Discogs pulls everything in automatically.</p>
-    <p><strong style="{AMBER}">Drop your first Now Spinning</strong> from the composer bar at the top of the Hive. Takes 10 seconds.</p>
-    <p><strong style="{AMBER}">Add anything you've been hunting to your Wantlist</strong> so we can match you with other collectors.</p>
+    <p style="{MUTED}text-align:center;margin:-8px 0 20px 0;">thehoneygroove.com/invite/{invite_code}</p>
+    <p>Quick note before you dive in &mdash; this is our first round of beta testing, which means you're getting in before everything is perfectly polished. If something doesn't work as expected or feels off please tell me immediately. That's exactly why you're here and every piece of feedback goes directly to fixing it.</p>
+    <p>One thing to know &mdash; Instagram story sharing is still being worked on and isn't ready yet. Everything else is fair game.</p>
+    <p style="margin:20px 0 6px 0;"><strong>Here's all you need to get started:</strong></p>
+    <p><strong style="{AMBER}">1. Add at least 3 records to your collection</strong> &mdash; search by artist or album and Discogs pulls everything in automatically.</p>
+    <p><strong style="{AMBER}">2. Drop your first Now Spinning</strong> from the composer bar at the top of the Hive. Takes 10 seconds.</p>
+    <p><strong style="{AMBER}">3. Add anything you've been hunting to your Wantlist</strong> so we can match you with other collectors.</p>
+    <p style="margin:20px 0 6px 0;"><strong>Got feedback? We want it all.</strong> Join the Discord and drop anything and everything in the #thehoneygroove channel &mdash; bugs, suggestions, first impressions, things you love, things that confused you. Nothing is too small. <a href="https://discord.gg/PKSkMhqGPv" target="_blank" style="{AMBER}text-decoration:underline;">discord.gg/PKSkMhqGPv</a> \U0001F41D</p>
     <p>You're a founding member. Your badge is permanent and will never go away no matter how big this gets.</p>
-    <p>DM me on Instagram <a href="https://www.instagram.com/thehoneygroove" style="{AMBER}text-decoration:underline;">@thehoneygroove</a> or reply to this email if anything feels off or confusing. I want to know everything.</p>
+    <p>DM us on Instagram <a href="https://www.instagram.com/thehoneygroove" target="_blank" style="{AMBER}text-decoration:underline;">@thehoneygroove</a> or reply to this email if anything feels urgent.</p>
     <p>Welcome to the hive. \U0001F41D</p>
     {SIG}
     """
