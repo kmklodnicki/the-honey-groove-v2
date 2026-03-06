@@ -128,6 +128,8 @@ COMPLETED → Mandatory rating before next trade
 
 70. **Listing & Sale Confirmed Emails** — 3 new transactional emails via Resend: (1) Listing Confirmed sent to seller on listing creation with album/artist/condition/price/type, (2) Sale Confirmed Seller with dynamic fee calculation and payout amount, (3) Sale Confirmed Buyer with seller info and amount. Triggered on both Stripe webhook and polling fallback. (Mar 2026)
 
+71. **Mutual Hold Trade — Phase 1 Backend** — 9 new endpoints: hold-suggestion (100% avg Discogs value, $50 fallback, $10 min), hold/respond (accept/counter/decline), hold/checkout (Stripe), hold/status, enhanced confirm-receipt (auto-refund), enhanced dispute (freeze holds), admin hold-disputes (list + resolve with 4 options). 4 hold email templates. Auto-reversal scheduler (10 min interval). 19/19 tests passed. (Mar 2026)
+
 ## Upcoming Tasks
 - **P0: Complete Email System** — Wire remaining 2 email triggers (newsletter_signup, weekly_wax_ready), verify all 13 existing triggers
 - **P1: Stripe Webhook Verification** — Test /api/webhook/stripe with real Stripe event
