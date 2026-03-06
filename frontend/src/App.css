@@ -180,6 +180,10 @@
   margin: 0 auto;
   animation: toastSlideIn 0.3s ease-out;
 }
+/* Safari <14.1 flex-gap fallback */
+.honey-toast > * + * {
+  margin-left: 10px;
+}
 .honey-toast-icon {
   font-size: 18px;
   flex-shrink: 0;
