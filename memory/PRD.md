@@ -140,8 +140,17 @@ COMPLETED → Mandatory rating before next trade
 
 76. **Admin Hold Disputes Redesign** — Full brand-aligned restyle: amber palette, cream backgrounds, Cormorant Garamond italic, amber-bordered HOLD FROZEN pill, 4 resolution buttons renamed (Refund Both, Proposer/Recipient Forfeits Hold, Custom Split) with specific confirmation dialogs. Admin tabs restyled to white pills with amber active state. (Mar 2026)
 
+77. **Buyer Protection — Seller Transaction Count** — Completed transactions (trades + sales) displayed on: user profiles (stats row with ShoppingBag icon), listing cards ("X sales · Y ★" next to seller username), and listing detail modals. Backend: _build_user_response computes count from trades + listings collections. GET /api/seller/stats endpoint for current user. (Mar 2026)
+
+78. **Buyer Protection — New Seller Listing Restrictions** — Sellers with < 3 completed transactions cannot list items priced above $150. Backend enforced on POST /api/listings. Frontend shows inline amber warning below price field in listing creation modal. Restriction lifts automatically at 3 completed transactions. (Mar 2026)
+
+79. **Buyer Protection — Off-Platform Payment Detection** — Listing descriptions scanned for 7 keywords (Venmo, PayPal, CashApp, Zelle, wire transfer, Western Union, bank transfer). Case-insensitive. Flagged listings: offplatform_flagged=true stored on listing, yellow warning banner shown to buyers on listing detail. Admin: new "Off-Platform Alerts" tab showing username, flagged keywords, description snippet, dismiss action. Backend: offplatform_alerts collection, GET/PUT admin endpoints. (Mar 2026)
+
+80. **Buyer Protection — Shipping Insurance Prompt** — Listings priced > $75 show insurance prompt before final submit: "Got it, I'll add insurance" / "Skip for now". Response stored as insured boolean on listing. Listing detail shows green "Seller added shipping insurance" or amber "No shipping insurance" indicator. (Mar 2026)
+
+81. **Help & Support Integration** — Three access points: (1) Settings page "Help & Support" section with FAQ (external link), Contact Us (mailto), Report a Problem links. (2) Navbar dropdown "Help" link between Settings and Log out. (3) "How does this work?" explainer modal on Mutual Hold amount field in trade proposal modal with 4-step walkthrough. (Mar 2026)
+
 ## Upcoming Tasks
-- **P0: Complete Email System** — Wire remaining 2 email triggers (newsletter_signup, weekly_wax_ready), verify all 13 existing triggers
 - **P1: Stripe Webhook Verification** — Test /api/webhook/stripe with real Stripe event
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
 - **P2: Refactor ISOPage.js** — Break monolithic 3-tab component
@@ -149,9 +158,9 @@ COMPLETED → Mandatory rating before next trade
 
 ## Data Model
 ```
-users (bio, setup, location, favorite_genre, founding_member, onboarding_completed),
+users (bio, setup, location, favorite_genre, founding_member, onboarding_completed, completed_transactions),
 posts, records, spins, hauls, iso_items,
-listings (photo_urls[], condition),
+listings (photo_urls[], condition, insured, offplatform_flagged),
 likes, comments, followers,
 trades (offered_condition, offered_photo_urls[]),
 trade_messages, trade_shippings, trade_disputes, trade_ratings,
@@ -162,7 +171,8 @@ prompts, prompt_responses, image_cache,
 newsletter_subscribers,
 bingo_squares, bingo_cards, bingo_marks,
 mood_boards,
-reports (type, target_id, reason, status)
+reports (type, target_id, reason, status),
+offplatform_alerts (listing_id, user_id, username, keywords, status)
 ```
 
 ## Test Credentials
