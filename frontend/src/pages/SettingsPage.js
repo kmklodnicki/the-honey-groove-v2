@@ -9,9 +9,12 @@ import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Switch } from '../components/ui/switch';
-import { ArrowLeft, Save, LogOut, Camera, Loader2, Mail, HelpCircle, ExternalLink, MessageSquare, Flag } from 'lucide-react';
+import { ArrowLeft, Save, LogOut, Camera, Loader2, Mail, HelpCircle, ExternalLink, MessageSquare, Flag, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from '../components/ui/dialog';
 
 const SettingsPage = () => {
   usePageTitle('Settings');
@@ -28,6 +31,8 @@ const SettingsPage = () => {
   const [avatarPreview, setAvatarPreview] = useState(user?.avatar_url);
   const [nlSubscribed, setNlSubscribed] = useState(false);
   const [nlLoading, setNlLoading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     axios.get(`${API}/newsletter/status`, { headers: { Authorization: `Bearer ${token}` } })
@@ -125,6 +130,23 @@ const SettingsPage = () => {
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    try {
+      await axios.delete(`${API}/auth/account`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success('your account has been deleted.');
+      logout();
+      navigate('/');
+    } catch {
+      toast.error('could not delete account. try again.');
+    } finally {
+      setDeleting(false);
+      setShowDeleteModal(false);
+    }
   };
 
   const firstLetter = user?.username?.charAt(0).toUpperCase() || '?';
@@ -363,7 +385,7 @@ const SettingsPage = () => {
           <CardTitle className="text-red-600">Account</CardTitle>
           <CardDescription>Account actions</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <Button
             variant="outline"
             onClick={handleLogout}
@@ -373,8 +395,50 @@ const SettingsPage = () => {
             <LogOut className="w-4 h-4" />
             Log Out
           </Button>
+
+          <div className="border-t border-honey/20 pt-4">
+            <button
+              onClick={() => setShowDeleteModal(true)}
+              className="flex items-center gap-2 text-sm text-[#8A6B4A] hover:text-[#6B5238] transition-colors"
+              data-testid="delete-account-btn"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete Account
+            </button>
+          </div>
         </CardContent>
       </Card>
+
+      {/* Delete Account Confirmation Modal */}
+      <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
+        <DialogContent className="sm:max-w-md bg-[#FAF6EE] border-honey/30 rounded-2xl" data-testid="delete-account-modal">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-2xl text-vinyl-black">Are you sure?</DialogTitle>
+            <DialogDescription className="font-serif italic text-base text-vinyl-black/70 leading-relaxed mt-3">
+              Deleting your account is permanent and cannot be undone. Your collection, posts, wantlist, and trade history will be removed immediately. This action cannot be reversed and your account cannot be reactivated.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 mt-4">
+            <Button
+              variant="outline"
+              onClick={handleDeleteAccount}
+              disabled={deleting}
+              className="w-full border-vinyl-black/30 text-vinyl-black hover:bg-vinyl-black/5 rounded-full"
+              data-testid="confirm-delete-btn"
+            >
+              {deleting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Yes, delete my account
+            </Button>
+            <Button
+              onClick={() => setShowDeleteModal(false)}
+              className="w-full bg-[#E8A820] text-vinyl-black hover:bg-[#C8861A] rounded-full font-medium"
+              data-testid="cancel-delete-btn"
+            >
+              Cancel
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

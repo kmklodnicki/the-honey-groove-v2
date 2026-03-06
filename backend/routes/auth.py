@@ -273,3 +273,68 @@ async def get_user_profile(username: str, current_user: Optional[Dict] = Depends
         resp.email = ""
     return resp
 
+
+@router.delete("/auth/account")
+async def delete_account(user: Dict = Depends(require_auth)):
+    """Permanently delete a user account and all associated data."""
+    uid = user["id"]
+    now = datetime.now(timezone.utc).isoformat()
+
+    # Log deletion for admin records
+    await db.account_deletions.insert_one({
+        "id": str(uuid.uuid4()),
+        "user_id": uid,
+        "username": user.get("username"),
+        "email": user.get("email"),
+        "deleted_at": now,
+    })
+
+    # Cancel any active Stripe holds
+    if STRIPE_API_KEY:
+        try:
+            import stripe
+            stripe.api_key = STRIPE_API_KEY
+            active_trades = await db.trades.find(
+                {"$or": [{"initiator_id": uid}, {"responder_id": uid}],
+                 "status": {"$in": ["HOLD_PENDING", "SHIPPING", "CONFIRMING"]}},
+                {"_id": 0}
+            ).to_list(100)
+            for trade in active_trades:
+                for hold in (trade.get("holds") or []):
+                    pi_id = hold.get("payment_intent_id")
+                    if pi_id:
+                        try:
+                            stripe.PaymentIntent.cancel(pi_id)
+                        except Exception:
+                            pass
+        except Exception as e:
+            logger.warning(f"Stripe hold cancellation error during account deletion: {e}")
+
+    # Delete all user data across collections
+    await db.records.delete_many({"user_id": uid})
+    await db.posts.delete_many({"user_id": uid})
+    await db.spins.delete_many({"user_id": uid})
+    await db.iso_items.delete_many({"user_id": uid})
+    await db.listings.delete_many({"user_id": uid})
+    await db.likes.delete_many({"user_id": uid})
+    await db.comments.delete_many({"user_id": uid})
+    await db.followers.delete_many({"$or": [{"follower_id": uid}, {"following_id": uid}]})
+    await db.notifications.delete_many({"$or": [{"user_id": uid}, {"from_user_id": uid}]})
+    await db.trades.delete_many({"$or": [{"initiator_id": uid}, {"responder_id": uid}]})
+    await db.trade_messages.delete_many({"user_id": uid})
+    await db.dm_conversations.delete_many({"$or": [{"user1_id": uid}, {"user2_id": uid}]})
+    await db.dm_messages.delete_many({"sender_id": uid})
+    await db.hauls.delete_many({"user_id": uid})
+    await db.prompt_responses.delete_many({"user_id": uid})
+    await db.bingo_cards.delete_many({"user_id": uid})
+    await db.bingo_marks.delete_many({"user_id": uid})
+    await db.mood_boards.delete_many({"user_id": uid})
+    await db.wax_reports.delete_many({"user_id": uid})
+    await db.collection_values.delete_many({"user_id": uid})
+    await db.newsletter_subscribers.delete_many({"email": user.get("email")})
+
+    # Finally delete the user
+    await db.users.delete_one({"id": uid})
+
+    return {"detail": "account deleted"}
+

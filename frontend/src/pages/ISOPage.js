@@ -13,7 +13,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '../components/ui/select';
-import { Search, Plus, CheckCircle2, Loader2, Trash2, Tag, DollarSign, Disc, ArrowRightLeft, ShoppingBag, Camera, X, ChevronLeft, ChevronRight, MessageSquare, Shield } from 'lucide-react';
+import { Search, Plus, CheckCircle2, Loader2, Trash2, Tag, DollarSign, Disc, ArrowRightLeft, ShoppingBag, Camera, X, MessageSquare, Shield } from 'lucide-react';
 import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from '../components/ui/tooltip';
@@ -457,7 +457,7 @@ const ISOPage = () => {
               </Button>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="divide-y divide-[#C8861A]/10 border border-honey/20 rounded-xl overflow-hidden bg-white">
               {shopListings.map(listing => (
                 <ListingCard key={listing.id} listing={listing} currentUserId={user?.id}
                   onBuyNow={handleBuyNow} onMakeOffer={(l) => setOfferTarget(l)}
@@ -470,7 +470,7 @@ const ISOPage = () => {
           {myListings.filter(l => l.listing_type !== 'TRADE').length > 0 && (
             <div className="mt-8">
               <h3 className="font-heading text-lg text-vinyl-black mb-3">Your Listings</h3>
-              <div className="space-y-3">
+              <div className="divide-y divide-[#C8861A]/10 border border-honey/20 rounded-xl overflow-hidden bg-white">
                 {myListings.filter(l => l.listing_type !== 'TRADE').map(listing => (
                   <div key={listing.id} className="relative">
                     <ListingCard listing={listing} />
@@ -567,7 +567,7 @@ const ISOPage = () => {
               <p className="text-muted-foreground text-sm">No trade listings yet. Be the first!</p>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="divide-y divide-[#C8861A]/10 border border-honey/20 rounded-xl overflow-hidden bg-white">
               {tradeListings.map(listing => (
                 <ListingCard key={listing.id} listing={listing} currentUserId={user?.id} onProposeTrade={(l) => setTradeTarget(l)}
                   onClick={() => setSelectedListingId(listing.id)} />
@@ -579,7 +579,7 @@ const ISOPage = () => {
           {myListings.filter(l => l.listing_type === 'TRADE').length > 0 && (
             <div className="mt-8">
               <h3 className="font-heading text-lg text-vinyl-black mb-3">Your Trade Listings</h3>
-              <div className="space-y-3">
+              <div className="divide-y divide-[#C8861A]/10 border border-honey/20 rounded-xl overflow-hidden bg-white">
                 {myListings.filter(l => l.listing_type === 'TRADE').map(listing => (
                   <div key={listing.id} className="relative">
                     <ListingCard listing={listing} />
@@ -898,7 +898,7 @@ const ActiveTradeCard = ({ trade, currentUserId }) => {
       <Card className="p-4 border-honey/30 hover:shadow-md transition-all cursor-pointer">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <AlbumArt src={trade.offered_record.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
+            <AlbumArt src={trade.offered_record?.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
             <div className="min-w-0">
               <p className="text-sm font-medium truncate">{trade.offered_record?.title || 'Your record'}</p>
               <p className="text-xs text-muted-foreground">with @{otherUser?.username || '?'}</p>
@@ -927,61 +927,42 @@ const ActiveTradeCard = ({ trade, currentUserId }) => {
 };
 
 // Listing Card Component
+// Compact Listing Row Component
 const ListingCard = ({ listing, currentUserId, onProposeTrade, onBuyNow, onMakeOffer, onClick }) => {
-  const [photoIdx, setPhotoIdx] = useState(0);
-  const photos = listing.photo_urls || [];
   const typeConfig = {
     BUY_NOW: { label: 'Buy Now', color: 'bg-amber-100/60 text-[#C8861A]' },
-    MAKE_OFFER: { label: 'Make Offer', color: 'bg-amber-100/60 text-[#C8861A]' },
+    MAKE_OFFER: { label: 'Offer', color: 'bg-amber-100/60 text-[#C8861A]' },
     TRADE: { label: 'Trade', color: 'bg-[#E8A820]/15 text-[#C8861A] border border-[#C8861A]/30' },
   };
   const tc = typeConfig[listing.listing_type] || typeConfig.BUY_NOW;
-  const mainImage = photos.length > 0 ? photos[photoIdx] : listing.cover_url;
+  const mainImage = (listing.photo_urls?.length > 0) ? listing.photo_urls[0] : listing.cover_url;
 
   return (
-    <Card className="border-honey/30 overflow-hidden hover:shadow-md transition-all cursor-pointer" data-testid={`listing-${listing.id}`}
-      onClick={onClick}>
-      <div className="relative aspect-square bg-honey/10">
+    <div className="flex items-center gap-3 py-3 px-2 cursor-pointer hover:bg-honey/5 transition-colors"
+      onClick={onClick} data-testid={`listing-${listing.id}`}>
+      <div className="w-16 h-16 rounded-lg overflow-hidden bg-honey/10 shrink-0">
         {mainImage ? <AlbumArt src={mainImage} alt="" className="w-full h-full" />
-          : <div className="w-full h-full flex items-center justify-center"><Disc className="w-12 h-12 text-honey" /></div>}
-        {photos.length > 1 && (
-          <>
-            <button onClick={(e) => { e.stopPropagation(); setPhotoIdx(i => (i - 1 + photos.length) % photos.length); }}
-              className="absolute left-1 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-1 hover:bg-black/70" data-testid={`listing-photo-prev-${listing.id}`}>
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <button onClick={(e) => { e.stopPropagation(); setPhotoIdx(i => (i + 1) % photos.length); }}
-              className="absolute right-1 top-1/2 -translate-y-1/2 bg-black/50 text-white rounded-full p-1 hover:bg-black/70" data-testid={`listing-photo-next-${listing.id}`}>
-              <ChevronRight className="w-4 h-4" />
-            </button>
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
-              {photos.map((_, i) => <span key={i} className={`w-1.5 h-1.5 rounded-full ${i === photoIdx ? 'bg-white' : 'bg-white/50'}`} />)}
-            </div>
-          </>
-        )}
+          : <div className="w-full h-full flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>}
       </div>
-      <div className="p-3">
-        <h4 className="font-heading text-base truncate">{listing.album}</h4>
-        <p className="text-sm text-muted-foreground truncate">{listing.artist}{listing.year ? ` (${listing.year})` : ''}</p>
-        <div className="flex items-center gap-2 mt-2">
-          <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${tc.color}`}>{tc.label}</span>
-          {listing.price && <span className="text-sm font-heading">${listing.price}</span>}
-          {listing.condition && <span className="text-xs text-muted-foreground">{listing.condition}</span>}
+      <div className="flex-1 min-w-0">
+        <p className="font-heading text-sm font-bold truncate leading-tight">{listing.album}</p>
+        <p className="text-xs text-muted-foreground truncate">{listing.artist}{listing.year ? ` (${listing.year})` : ''}</p>
+        <div className="flex items-center gap-1.5 mt-1">
+          {listing.condition && <span className="text-[10px] text-muted-foreground bg-honey/10 px-1.5 py-0.5 rounded-full">{listing.condition}</span>}
+          <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${tc.color}`}>{tc.label}</span>
         </div>
         {listing.user && (
-          <div className="flex items-center gap-1.5 mt-1">
+          <div className="flex items-center gap-1 mt-0.5">
             <Link to={`/profile/${listing.user.username}`} onClick={e => e.stopPropagation()}
-              className="text-xs text-muted-foreground hover:underline">@{listing.user.username}</Link>
-            {listing.user.completed_sales > 0 && (
-              <span className="text-xs text-muted-foreground" data-testid={`seller-stats-${listing.id}`}>
-                · {listing.user.completed_sales} sale{listing.user.completed_sales !== 1 ? 's' : ''}
-                {listing.user.rating ? ` · ${listing.user.rating.toFixed(1)} ★` : ''}
-              </span>
-            )}
+              className="text-[11px] text-muted-foreground hover:underline">@{listing.user.username}</Link>
+            {listing.user.rating > 0 && <span className="text-[11px] text-muted-foreground">· {listing.user.rating.toFixed(1)} ★</span>}
           </div>
         )}
       </div>
-    </Card>
+      {listing.price && (
+        <span className="font-heading text-base text-[#C8861A] font-bold shrink-0">${listing.price}</span>
+      )}
+    </div>
   );
 };
 
