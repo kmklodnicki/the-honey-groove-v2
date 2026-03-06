@@ -41,7 +41,7 @@ const STATUS_CONFIG = {
   DECLINED: { label: 'Declined', color: 'bg-red-100 text-red-700' },
   CANCELLED: { label: 'Cancelled', color: 'bg-gray-100 text-gray-600' },
   HOLD_PENDING: { label: 'Hold Pending', color: 'bg-amber-100 text-amber-700' },
-  SHIPPING: { label: 'Shipping', color: 'bg-purple-100 text-purple-700' },
+  SHIPPING: { label: 'Shipping', color: 'bg-[#E8A820]/15 text-[#C8861A] border border-[#C8861A]/30' },
   CONFIRMING: { label: 'Confirming', color: 'bg-cyan-100 text-cyan-700' },
   COMPLETED: { label: 'Completed', color: 'bg-green-100 text-green-700' },
   DISPUTED: { label: 'Disputed', color: 'bg-red-100 text-red-700' },
@@ -475,7 +475,7 @@ const ISOPage = () => {
                   <div key={listing.id} className="relative">
                     <ListingCard listing={listing} />
                     <Button size="sm" variant="ghost" onClick={() => handleDeleteListing(listing.id)}
-                      className="absolute top-3 right-3 text-red-400 hover:bg-red-50 h-8 w-8 p-0" data-testid={`delete-listing-${listing.id}`}>
+                      className="absolute top-3 right-3 text-[#8A6B4A]/60 hover:bg-[#8A6B4A]/10 h-8 w-8 p-0" data-testid={`delete-listing-${listing.id}`}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -489,13 +489,13 @@ const ISOPage = () => {
         <TabsContent value="iso">
           {/* Stats */}
           <div className="flex gap-4 mb-4">
-            <div className="bg-purple-50 px-4 py-2 rounded-lg">
-              <span className="text-2xl font-heading text-purple-700">{openCount}</span>
-              <span className="text-xs text-purple-600 ml-1">searching</span>
+            <div className="bg-[#FAF6EE] border border-[#C8861A]/20 px-4 py-2 rounded-lg">
+              <span className="text-2xl font-heading text-[#C8861A]">{openCount}</span>
+              <span className="text-xs text-[#C8861A] ml-1">searching</span>
             </div>
-            <div className="bg-green-50 px-4 py-2 rounded-lg">
-              <span className="text-2xl font-heading text-green-700">{foundCount}</span>
-              <span className="text-xs text-green-600 ml-1">found</span>
+            <div className="bg-[#FAF6EE] border border-[#C8861A]/20 px-4 py-2 rounded-lg">
+              <span className="text-2xl font-heading text-[#C8861A]">{foundCount}</span>
+              <span className="text-xs text-[#C8861A] ml-1">found</span>
             </div>
           </div>
 
@@ -515,7 +515,7 @@ const ISOPage = () => {
           </div>
           {filteredIsos.length === 0 ? (
             <Card className="p-6 text-center border-honey/30 mb-8">
-              <Search className="w-10 h-10 text-purple-300 mx-auto mb-3" />
+              <Search className="w-10 h-10 text-[#C8861A]/30 mx-auto mb-3" />
               <h3 className="font-heading text-lg mb-1">{isos.length === 0 ? 'No ISOs yet' : 'No results'}</h3>
               <p className="text-muted-foreground text-sm">{isos.length === 0 ? 'Tap "Add to Wantlist" to start your vinyl hunt!' : 'Try a different filter.'}</p>
             </Card>
@@ -529,7 +529,7 @@ const ISOPage = () => {
           <h3 className="font-heading text-lg text-vinyl-black mb-3" data-testid="community-hunt-title">The Community Hunt</h3>
           {communityIsos.length === 0 ? (
             <Card className="p-6 text-center border-honey/30">
-              <Search className="w-10 h-10 text-purple-300 mx-auto mb-3" />
+              <Search className="w-10 h-10 text-[#C8861A]/30 mx-auto mb-3" />
               <p className="text-muted-foreground text-sm">No community ISOs right now. Check back later!</p>
             </Card>
           ) : (
@@ -584,7 +584,7 @@ const ISOPage = () => {
                   <div key={listing.id} className="relative">
                     <ListingCard listing={listing} />
                     <Button size="sm" variant="ghost" onClick={() => handleDeleteListing(listing.id)}
-                      className="absolute top-3 right-3 text-red-400 hover:bg-red-50 h-8 w-8 p-0" data-testid={`delete-listing-${listing.id}`}>
+                      className="absolute top-3 right-3 text-[#8A6B4A]/60 hover:bg-[#8A6B4A]/10 h-8 w-8 p-0" data-testid={`delete-listing-${listing.id}`}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -599,7 +599,7 @@ const ISOPage = () => {
       <Dialog open={showCreate === 'iso'} onOpenChange={(open) => !open && closeModal()}>
         <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-heading flex items-center gap-2"><Search className="w-5 h-5 text-purple-600" /> {modalTitles.iso}</DialogTitle>
+            <DialogTitle className="font-heading flex items-center gap-2"><Search className="w-5 h-5 text-[#C8861A]" /> {modalTitles.iso}</DialogTitle>
             <DialogDescription>What vinyl are you searching for?</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-2">
@@ -630,7 +630,7 @@ const ISOPage = () => {
                 </div>
                 <Textarea placeholder="Caption for The Hive (optional)" value={isoCaption} onChange={e => setIsoCaption(e.target.value)} className="border-honey/50 resize-none" rows={2} />
                 <Button onClick={submitISO} disabled={submitting || (manualMode && (!isoArtist || !isoAlbum)) || (!manualMode && !selectedRelease)}
-                  className="w-full bg-purple-100 text-purple-800 hover:bg-purple-200 rounded-full" data-testid="iso-form-submit">
+                  className="w-full bg-[#E8A820]/15 text-[#C8861A] hover:bg-[#E8A820]/25 rounded-full" data-testid="iso-form-submit">
                   {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Search className="w-4 h-4 mr-2" />}
                   Add to Wantlist
                 </Button>
@@ -668,9 +668,9 @@ const ISOPage = () => {
                     <label className="text-sm font-medium mb-2 block">Listing Type</label>
                     <div className="grid grid-cols-3 gap-2">
                       {[
-                        { key: 'BUY_NOW', label: 'Buy Now', icon: DollarSign, color: 'bg-green-100 text-green-700' },
-                        { key: 'MAKE_OFFER', label: 'Offer', icon: ShoppingBag, color: 'bg-blue-100 text-blue-700' },
-                        { key: 'TRADE', label: 'Trade', icon: ArrowRightLeft, color: 'bg-purple-100 text-purple-700' },
+                        { key: 'BUY_NOW', label: 'Buy Now', icon: DollarSign, color: 'bg-amber-100/60 text-[#C8861A]' },
+                        { key: 'MAKE_OFFER', label: 'Offer', icon: ShoppingBag, color: 'bg-amber-100/60 text-[#C8861A]' },
+                        { key: 'TRADE', label: 'Trade', icon: ArrowRightLeft, color: 'bg-[#E8A820]/15 text-[#C8861A] border border-[#C8861A]/30' },
                       ].map(t => (
                         <button key={t.key} onClick={() => setListType(t.key)}
                           className={`px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-1 justify-center transition-all ${listType === t.key ? `${t.color} ring-2 ring-offset-1 ring-current shadow-sm` : 'bg-gray-50 text-muted-foreground hover:bg-gray-100'}`}
@@ -732,7 +732,7 @@ const ISOPage = () => {
                     <div className="flex gap-2">
                       <Button
                         onClick={() => { setInsuranceChoice(true); setShowInsurancePrompt(false); }}
-                        className="flex-1 bg-green-100 text-green-800 hover:bg-green-200 rounded-full text-xs"
+                        className="flex-1 bg-[#E8A820]/15 text-[#C8861A] hover:bg-[#E8A820]/25 rounded-full text-xs"
                         data-testid="insurance-add-btn"
                       >
                         Got it, I'll add insurance
@@ -803,13 +803,13 @@ const ISOCard = ({ iso, isOwn, onMarkFound, onDelete, onSetPriceAlert }) => {
   const [showAlertInput, setShowAlertInput] = React.useState(false);
 
   return (
-    <Card className={`p-4 border-honey/30 transition-all ${iso.status === 'FOUND' ? 'opacity-60 bg-green-50/30' : 'hover:shadow-md'}`} data-testid={`iso-item-${iso.id}`}>
+    <Card className={`p-4 border-honey/30 transition-all ${iso.status === 'FOUND' ? 'opacity-60 bg-amber-50/30' : 'hover:shadow-md'}`} data-testid={`iso-item-${iso.id}`}>
       <div className="flex items-start gap-3">
         <AlbumArt src={iso.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h4 className="font-heading text-base">{iso.album}</h4>
-            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${iso.status === 'FOUND' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'}`}>{iso.status}</span>
+            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${iso.status === 'FOUND' ? 'bg-amber-100 text-[#C8861A]' : 'bg-[#E8A820]/15 text-[#C8861A] border border-[#C8861A]/30'}`}>{iso.status}</span>
           </div>
           <p className="text-sm text-muted-foreground">{iso.artist}{iso.year ? ` (${iso.year})` : ''}</p>
           <div className="flex flex-wrap gap-1.5 mt-1">
@@ -818,7 +818,7 @@ const ISOCard = ({ iso, isOwn, onMarkFound, onDelete, onSetPriceAlert }) => {
           <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
             {iso.pressing_notes && <span>Press: {iso.pressing_notes}</span>}
             {iso.condition_pref && <span>Cond: {iso.condition_pref}</span>}
-            {(iso.target_price_min || iso.target_price_max) && <span>Budget: {iso.target_price_min ? `$${iso.target_price_min}` : '?'} – {iso.target_price_max ? `$${iso.target_price_max}` : '?'}</span>}
+            {(iso.target_price_min || iso.target_price_max) && <span>Budget: {iso.target_price_min ? `$${iso.target_price_min}` : ''}{iso.target_price_min && iso.target_price_max ? ' – ' : ''}{iso.target_price_max ? (iso.target_price_min ? `$${iso.target_price_max}` : `up to $${iso.target_price_max}`) : ''}</span>}
           </div>
           {/* Price Alert */}
           {isOwn && iso.status === 'OPEN' && (
@@ -850,7 +850,7 @@ const ISOCard = ({ iso, isOwn, onMarkFound, onDelete, onSetPriceAlert }) => {
         {isOwn && iso.status === 'OPEN' && (
           <div className="flex gap-1 shrink-0">
             <Button size="sm" variant="ghost" className="text-green-600 hover:bg-green-50 h-8 px-2" onClick={() => onMarkFound(iso.id)} data-testid={`mark-found-${iso.id}`}><CheckCircle2 className="w-4 h-4" /></Button>
-            <Button size="sm" variant="ghost" className="text-red-400 hover:bg-red-50 h-8 px-2" onClick={() => onDelete(iso.id)}><Trash2 className="w-4 h-4" /></Button>
+            <Button size="sm" variant="ghost" className="text-[#8A6B4A]/60 hover:bg-[#8A6B4A]/10 h-8 px-2" onClick={() => onDelete(iso.id)}><Trash2 className="w-4 h-4" /></Button>
           </div>
         )}
       </div>
@@ -878,7 +878,7 @@ const CommunityISOCard = ({ iso, onHaveThis }) => (
         <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
           {iso.pressing_notes && <span>Press: {iso.pressing_notes}</span>}
           {iso.condition_pref && <span>Cond: {iso.condition_pref}</span>}
-          {(iso.target_price_min || iso.target_price_max) && <span>Budget: {iso.target_price_min ? `$${iso.target_price_min}` : '?'} – {iso.target_price_max ? `$${iso.target_price_max}` : '?'}</span>}
+          {(iso.target_price_min || iso.target_price_max) && <span>Budget: {iso.target_price_min ? `$${iso.target_price_min}` : ''}{iso.target_price_min && iso.target_price_max ? ' – ' : ''}{iso.target_price_max ? (iso.target_price_min ? `$${iso.target_price_max}` : `up to $${iso.target_price_max}`) : ''}</span>}
         </div>
       </div>
       <Button size="sm" className="bg-green-100 text-green-700 hover:bg-green-200 rounded-full gap-1 shrink-0" onClick={() => onHaveThis(iso)} data-testid={`i-have-this-${iso.id}`}>
@@ -932,8 +932,8 @@ const ListingCard = ({ listing, currentUserId, onProposeTrade, onBuyNow, onMakeO
   const photos = listing.photo_urls || [];
   const typeConfig = {
     BUY_NOW: { label: 'Buy Now', color: 'bg-green-100 text-green-700' },
-    MAKE_OFFER: { label: 'Make Offer', color: 'bg-blue-100 text-blue-700' },
-    TRADE: { label: 'Trade', color: 'bg-purple-100 text-purple-700' },
+    MAKE_OFFER: { label: 'Make Offer', color: 'bg-amber-100/60 text-[#C8861A]' },
+    TRADE: { label: 'Trade', color: 'bg-[#E8A820]/15 text-[#C8861A] border border-[#C8861A]/30' },
   };
   const tc = typeConfig[listing.listing_type] || typeConfig.BUY_NOW;
   const mainImage = photos.length > 0 ? photos[photoIdx] : listing.cover_url;

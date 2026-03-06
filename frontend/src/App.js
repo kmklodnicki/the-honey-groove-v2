@@ -56,27 +56,8 @@ const AdminRoute = ({ children }) => {
 };
 
 const LoadingScreen = () => (
-  <div className="min-h-screen bg-[#FAF6EE] flex flex-col items-center justify-center">
-    <img src="/logo-wordmark.png" alt="the Honey Groove" className="h-10 mb-8" />
-    <svg width="140" height="180" viewBox="0 0 140 180" fill="none" className="overflow-visible">
-      <path d="M25 55 C25 55 15 65 12 90 C9 115 12 145 20 158 C28 170 40 175 70 175 C100 175 112 170 120 158 C128 145 131 115 128 90 C125 65 115 55 115 55 Z" fill="#FAF6EE" stroke="#C8861A" strokeWidth="3" strokeOpacity="0.3"/>
-      <clipPath id="jar-clip-r">
-        <path d="M25 55 C25 55 15 65 12 90 C9 115 12 145 20 158 C28 170 40 175 70 175 C100 175 112 170 120 158 C128 145 131 115 128 90 C125 65 115 55 115 55 Z"/>
-      </clipPath>
-      <g clipPath="url(#jar-clip-r)">
-        <rect x="0" y="180" width="140" height="140" fill="url(#honey-grad-r)" className="animate-jar-fill"/>
-      </g>
-      <defs>
-        <linearGradient id="honey-grad-r" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#E8A820"/>
-          <stop offset="100%" stopColor="#C8861A"/>
-        </linearGradient>
-      </defs>
-      <path d="M30 55 L30 42 C30 38 35 35 40 35 L100 35 C105 35 110 38 110 42 L110 55" fill="#FAF6EE" stroke="#C8861A" strokeWidth="3" strokeOpacity="0.3"/>
-      <rect x="28" y="28" width="84" height="10" rx="4" fill="#FAF6EE" stroke="#C8861A" strokeWidth="3" strokeOpacity="0.3"/>
-      <path d="M28 55 C28 55 22 58 20 70 C19 76 22 78 25 75 C27 73 28 65 28 55 Z" fill="#E8A820" opacity="0.6"/>
-    </svg>
-    <p className="mt-6 text-[#8A6B4A] text-base italic" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}>filling the hive...</p>
+  <div className="min-h-screen bg-[#FAF6EE] flex items-center justify-center">
+    <img src="/logo-wordmark.png" alt="the Honey Groove" className="h-9 opacity-70" />
   </div>
 );
 

@@ -189,11 +189,11 @@ const Navbar = () => {
     {/* Mobile Slim Top Bar */}
     {user && (
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 h-14 bg-[#FAF6EE] border-b border-[#C8861A]/10" data-testid="mobile-top-bar">
-        <div className="relative flex items-center h-full px-4">
-          <Link to="/hive" className="absolute left-1/2 -translate-x-1/2">
-            <img src="/logo-wordmark.png" alt="the Honey Groove" className="h-auto w-[130px]" />
+        <div className="flex items-center h-full px-3">
+          <Link to="/hive" className="shrink-0 mr-auto">
+            <img src="/logo-wordmark.png" alt="the Honey Groove" className="h-auto w-[110px]" />
           </Link>
-          <div className="ml-auto flex items-center gap-4">
+          <div className="flex items-center gap-3 shrink-0">
             <DMBadge />
             <NotificationBell />
             <DropdownMenu>
