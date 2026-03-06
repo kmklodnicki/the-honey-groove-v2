@@ -203,6 +203,12 @@ COMPLETED → Mandatory rating before next trade
 105. **Added 50 Daily Prompts + 50 Bingo Squares** — Added to DB (total: 80 prompts, 124 bingo squares). Cleaned TEST entries from prompts, bingo squares, and records. Fixed 49 bingo squares missing emoji field. (Mar 2026)
 
 106. **Redesigned Collector Bingo Teaser** — Replaced full 5x5 grid preview on Explore page with compact teaser card (~160px): countdown line + italic Cormorant Garamond teaser text + full-width amber "play now" CTA. Clicking opens full bingo modal with interactive 5x5 grid unchanged. Both active and locked states redesigned. (Mar 2026)
+
+107. **Safari Route Navigation Fix** — ProtectedRoute/AdminRoute render visible bg-honey-cream div during loading instead of null. AuthContext uses loadingResolved ref to prevent loading from ever resetting to true. Safety timeout 3s. (Mar 2026)
+
+108. **Mobile Wordmark Fix** — Top bar height increased to 52px, wordmark min-width 140px for legibility. (Mar 2026)
+
+109. **ISO Composer Button Fix** — Changed from blue to amber (bg-amber-100 text-amber-800 border-amber-300). (Mar 2026)
 - **P1: Add 50 New Daily Prompts + 50 Bingo Squares** — User-provided content batch
 - **P2: Safari CSS Compatibility Audit** — Check for missing -webkit- prefixes across the app
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
