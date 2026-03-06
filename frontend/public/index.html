@@ -36,16 +36,14 @@
         <div id="loading-screen" style="position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#FAF6EE;transition:opacity 0.4s ease">
           <img src="%PUBLIC_URL%/logo-wordmark.png" alt="the Honey Groove" style="height:40px;margin-bottom:32px" />
           <svg width="140" height="180" viewBox="0 0 140 180" fill="none" style="overflow:visible">
-            <!-- Jar body (glass) -->
             <path d="M25 55 C25 55 15 65 12 90 C9 115 12 145 20 158 C28 170 40 175 70 175 C100 175 112 170 120 158 C128 145 131 115 128 90 C125 65 115 55 115 55 Z" fill="#FAF6EE" stroke="#C8861A" stroke-width="3" stroke-opacity="0.3"/>
-            <!-- Honey fill (animated) -->
             <clipPath id="jar-clip">
               <path d="M25 55 C25 55 15 65 12 90 C9 115 12 145 20 158 C28 170 40 175 70 175 C100 175 112 170 120 158 C128 145 131 115 128 90 C125 65 115 55 115 55 Z"/>
             </clipPath>
             <g clip-path="url(#jar-clip)">
-              <rect x="0" y="180" width="140" height="140" fill="url(#honey-grad)" class="honey-fill"/>
-              <!-- Wave at top of fill -->
-              <path d="M0 0 Q15 -6 35 0 Q55 6 70 0 Q85 -6 105 0 Q125 6 140 0 L140 10 L0 10 Z" fill="url(#honey-grad)" class="honey-fill honey-wave" opacity="0.7"/>
+              <rect x="0" y="180" width="140" height="140" fill="url(#honey-grad)">
+                <animate attributeName="y" from="180" to="40" dur="1.5s" fill="freeze" calcMode="spline" keySplines="0.42 0 0.58 1"/>
+              </rect>
             </g>
             <defs>
               <linearGradient id="honey-grad" x1="0" y1="0" x2="0" y2="1">
@@ -53,27 +51,22 @@
                 <stop offset="100%" stop-color="#C8861A"/>
               </linearGradient>
             </defs>
-            <!-- Jar neck -->
             <path d="M30 55 L30 42 C30 38 35 35 40 35 L100 35 C105 35 110 38 110 42 L110 55" fill="#FAF6EE" stroke="#C8861A" stroke-width="3" stroke-opacity="0.3"/>
-            <!-- Lid -->
             <rect x="28" y="28" width="84" height="10" rx="4" fill="#FAF6EE" stroke="#C8861A" stroke-width="3" stroke-opacity="0.3"/>
-            <!-- Drip on left side -->
             <path d="M28 55 C28 55 22 58 20 70 C19 76 22 78 25 75 C27 73 28 65 28 55 Z" fill="#E8A820" opacity="0.6"/>
           </svg>
           <p id="loading-phrase" style="margin-top:24px;font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;color:#8A6B4A;font-size:16px;transition:opacity 0.3s ease">filling the hive...</p>
         </div>
-        <style>
-          @keyframes fillJar{0%{y:180}100%{y:40}}
-          @keyframes waveMotion{0%{transform:translateX(-10px) translateY(0)}50%{transform:translateX(10px) translateY(-3px)}100%{transform:translateX(-10px) translateY(0)}}
-          .honey-fill{animation:fillJar 1.5s ease-in-out forwards}
-          .honey-wave{animation:fillJar 1.5s ease-in-out forwards, waveMotion 2s ease-in-out infinite}
-        </style>
         <script>
           (function(){
             var phrases=['filling the hive...','warming up the wax...','finding your records...','the needle is dropping...','almost there...'];
             var el=document.getElementById('loading-phrase');
             var i=0;
             if(el){setInterval(function(){el.style.opacity='0';setTimeout(function(){i=(i+1)%phrases.length;el.textContent=phrases[i];el.style.opacity='1'},300)},800)}
+            setTimeout(function(){
+              var ls=document.getElementById('loading-screen');
+              if(ls){ls.style.opacity='0';setTimeout(function(){ls.remove()},400)}
+            },6000);
           })();
         </script>
         <div id="root"></div>

@@ -156,7 +156,7 @@ const TradeCard = ({ trade, currentUserId, onClick, feePct = 6 }) => {
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="bg-vinyl-black text-white text-xs max-w-[200px]">
-                  <p>Mutual hold trade — both parties have skin in the game.</p>
+                  <p>Mutual hold trade · both parties have skin in the game.</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -188,9 +188,9 @@ const TradeCard = ({ trade, currentUserId, onClick, feePct = 6 }) => {
         <div className="mt-2.5 flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200/50" data-testid="trade-hold-badge">
           <Shield className="w-4 h-4 text-honey-amber shrink-0" />
           <span className="text-sm font-medium text-vinyl-black">
-            {trade.hold_status === 'active' ? `Hold active — $${trade.hold_amount} held from each party`
-              : trade.hold_status === 'frozen' ? `Hold frozen — $${trade.hold_amount}`
-              : trade.hold_status === 'refunded' ? `Hold reversed — $${trade.hold_amount} refunded`
+            {trade.hold_status === 'active' ? `Hold active · $${trade.hold_amount} held from each party`
+              : trade.hold_status === 'frozen' ? `Hold frozen · $${trade.hold_amount}`
+              : trade.hold_status === 'refunded' ? `Hold reversed · $${trade.hold_amount} refunded`
               : `$${trade.hold_amount} mutual hold`}
           </span>
         </div>
@@ -477,29 +477,29 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
                 <span className="text-xs font-medium text-honey-amber">MUTUAL HOLD</span>
               </div>
               {trade.hold_status === 'active' && (
-                <p className="text-sm font-medium text-amber-800">Hold active — ${trade.hold_amount} held from each party</p>
+                <p className="text-sm font-medium text-amber-800">Hold active · ${trade.hold_amount} held from each party</p>
               )}
               {trade.hold_status === 'frozen' && (
-                <p className="text-sm font-medium text-red-700">Hold frozen — ${trade.hold_amount} per party. Dispute in progress.</p>
+                <p className="text-sm font-medium text-red-700">Hold frozen · ${trade.hold_amount} per party. Dispute in progress.</p>
               )}
               {trade.hold_status === 'refunded' && (
-                <p className="text-sm font-medium text-green-700">Hold reversed — ${trade.hold_amount} refunded to both parties</p>
+                <p className="text-sm font-medium text-green-700">Hold reversed · ${trade.hold_amount} refunded to both parties</p>
               )}
               {trade.hold_status === 'awaiting_payment' && (
                 <div>
                   <p className="text-sm text-amber-700 mb-2">Both parties must pay the ${trade.hold_amount} hold to start shipping.</p>
                   <div className="flex items-center gap-2 text-xs mb-1">
                     {trade.hold_charges?.initiator?.status === 'paid' ? <CheckCircle2 className="w-3 h-3 text-green-500" /> : <Clock className="w-3 h-3 text-amber-500" />}
-                    <span>@{trade.initiator?.username} {isInitiator ? '(you)' : ''} — {trade.hold_charges?.initiator?.status === 'paid' ? 'Paid' : 'Waiting'}</span>
+                    <span>@{trade.initiator?.username} {isInitiator ? '(you)' : ''} · {trade.hold_charges?.initiator?.status === 'paid' ? 'Paid' : 'Waiting'}</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs">
                     {trade.hold_charges?.responder?.status === 'paid' ? <CheckCircle2 className="w-3 h-3 text-green-500" /> : <Clock className="w-3 h-3 text-amber-500" />}
-                    <span>@{trade.responder?.username} {!isInitiator ? '(you)' : ''} — {trade.hold_charges?.responder?.status === 'paid' ? 'Paid' : 'Waiting'}</span>
+                    <span>@{trade.responder?.username} {!isInitiator ? '(you)' : ''} · {trade.hold_charges?.responder?.status === 'paid' ? 'Paid' : 'Waiting'}</span>
                   </div>
                 </div>
               )}
               {!trade.hold_status && (
-                <p className="text-sm text-amber-700">${trade.hold_amount} mutual hold — charged when both parties accept.</p>
+                <p className="text-sm text-amber-700">${trade.hold_amount} mutual hold · charged when both parties accept.</p>
               )}
               <p className="text-[10px] text-muted-foreground mt-2 italic">
                 Fully reversed within 24 hours of confirmed delivery. The hold is not subject to platform fees.
@@ -537,7 +537,7 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
                   <div key={role} className={`flex items-center gap-2 py-2 ${role === 'responder' ? 'border-t border-purple-200' : ''}`}>
                     {s ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Clock className="w-4 h-4 text-amber-500" />}
                     <span className="text-sm flex-1">
-                      <strong>@{name}</strong> {isMe ? '(you)' : ''} — {s ? `Shipped via ${s.carrier || 'carrier'}` : 'Waiting to ship'}
+                      <strong>@{name}</strong> {isMe ? '(you)' : ''} · {s ? `Shipped via ${s.carrier || 'carrier'}` : 'Waiting to ship'}
                     </span>
                     {s && <span className="text-xs text-purple-600 font-mono">{s.tracking_number}</span>}
                   </div>
@@ -571,7 +571,7 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
           {/* Cancel shipping (if overdue) */}
           {trade.status === 'SHIPPING' && trade.shipping_overdue && hasShipped(trade, currentUserId) && (
             <Button onClick={handleCancelShipping} disabled={loading} variant="outline" className="w-full rounded-full text-red-600 border-red-200 hover:bg-red-50" data-testid="cancel-shipping-btn">
-              <XCircle className="w-4 h-4 mr-1" /> Cancel — Partner hasn't shipped
+              <XCircle className="w-4 h-4 mr-1" /> Cancel · Partner hasn't shipped
             </Button>
           )}
 
@@ -761,7 +761,7 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
                 {otherRecords.length > 0 && (
                   <Select value={counterRecordId} onValueChange={setCounterRecordId}>
                     <SelectTrigger className="text-sm border-blue-200"><SelectValue placeholder="Pick a different record..." /></SelectTrigger>
-                    <SelectContent>{otherRecords.map(r => <SelectItem key={r.id} value={r.id}>{r.artist} — {r.title}</SelectItem>)}</SelectContent>
+                    <SelectContent>{otherRecords.map(r => <SelectItem key={r.id} value={r.id}>{r.artist} · {r.title}</SelectItem>)}</SelectContent>
                   </Select>
                 )}
               </div>
@@ -902,7 +902,7 @@ const HoldExplainerLink = () => {
               </div>
               <div className="flex gap-3 items-start">
                 <span className="w-6 h-6 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xs font-bold shrink-0">!</span>
-                <p><strong className="text-vinyl-black">Disputes.</strong> If something goes wrong, either party can open a dispute. An admin will review and decide how to resolve it — including potentially releasing funds to the affected party.</p>
+                <p><strong className="text-vinyl-black">Disputes.</strong> If something goes wrong, either party can open a dispute. An admin will review and decide how to resolve it · including potentially releasing funds to the affected party.</p>
               </div>
             </div>
             <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
@@ -1017,7 +1017,7 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
             ) : (
               <Select value={selectedRecordId} onValueChange={setSelectedRecordId}>
                 <SelectTrigger className="border-honey/50" data-testid="trade-offer-select"><SelectValue placeholder="Choose a record from your collection" /></SelectTrigger>
-                <SelectContent>{records.map(r => <SelectItem key={r.id} value={r.id}>{r.artist} — {r.title}</SelectItem>)}</SelectContent>
+                <SelectContent>{records.map(r => <SelectItem key={r.id} value={r.id}>{r.artist} · {r.title}</SelectItem>)}</SelectContent>
               </Select>
             )}
           </div>

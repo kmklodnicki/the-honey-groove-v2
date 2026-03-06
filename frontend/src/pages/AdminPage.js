@@ -223,7 +223,7 @@ const BetaSection = ({ API, headers, token }) => {
                         <StatusBadge status={c.status} colors={c.status === 'unused' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'} />
                       </td>
                       <td className="px-3 py-2.5 text-muted-foreground text-xs">{fmtDate(c.created_at)}</td>
-                      <td className="px-3 py-2.5 text-xs">{c.used_by_username ? `@${c.used_by_username}` : '—'}</td>
+                      <td className="px-3 py-2.5 text-xs">{c.used_by_username ? `@${c.used_by_username}` : '·'}</td>
                       <td className="px-3 py-2.5">
                         {c.status === 'unused' && (
                           <Button size="sm" variant="ghost" onClick={() => copyCode(c.code)} className="h-7 text-xs">
@@ -351,7 +351,7 @@ const PromptRow = ({ prompt, editing, onEdit, onCancel, onSave, onToggle, form, 
         <>
           <p className={`text-sm ${prompt.active ? 'text-vinyl-black' : 'text-muted-foreground line-through'}`}>{prompt.text}</p>
           <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{prompt.scheduled_date?.split('T')[0] || '—'}</span>
+            <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{prompt.scheduled_date?.split('T')[0] || '·'}</span>
             <span className="flex items-center gap-1"><Hash className="w-3 h-3" />{prompt.response_count || 0} responses</span>
           </div>
         </>
@@ -610,7 +610,7 @@ const HoldDisputesSection = ({ API, headers }) => {
 
                 {/* Resolution notes */}
                 <Textarea
-                  placeholder="Resolution notes (required) — explain your decision..."
+                  placeholder="Resolution notes (required) · explain your decision..."
                   value={notes[trade.id] || ''}
                   onChange={e => setNotes(p => ({ ...p, [trade.id]: e.target.value }))}
                   className="bg-[#FAF6EE] border-[#C8861A]/20 rounded-xl text-sm resize-none focus:ring-[#C8861A]/30 focus:border-[#C8861A]/40"
@@ -647,7 +647,7 @@ const HoldDisputesSection = ({ API, headers }) => {
                   </div>
                 )}
 
-                {/* Action buttons — brand-aligned */}
+                {/* Action buttons · brand-aligned */}
                 <div className="grid grid-cols-2 gap-2.5">
                   <Button size="sm"
                     className="h-10 rounded-xl bg-[#E8A820] text-[#2A1A06] font-medium hover:bg-[#D49A18] border-0"

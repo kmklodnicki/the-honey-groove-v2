@@ -274,7 +274,7 @@ const CollectionPage = () => {
                     ${gem.median_value.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     {gem.low_value && gem.high_value && (
                       <span className="text-[10px] text-muted-foreground font-normal ml-1">
-                        (${gem.low_value.toFixed(0)} — ${gem.high_value.toFixed(0)})
+                        (${gem.low_value.toFixed(0)} · ${gem.high_value.toFixed(0)})
                       </span>
                     )}
                   </p>

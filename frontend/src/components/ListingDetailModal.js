@@ -297,7 +297,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                     <Button onClick={handleBuyNowClick}
                       className="w-full h-12 rounded-full bg-[#E8A820] hover:bg-[#d49a1a] text-[#2A1A06] text-base font-semibold"
                       data-testid="listing-buy-now-btn">
-                      buy now — ${listing.price}
+                      buy now · ${listing.price}
                     </Button>
                   )}
                   {isMakeOffer && !showOfferInput && (
@@ -310,7 +310,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                       <Button onClick={handleBuyNowClick} variant="outline"
                         className="w-full h-12 rounded-full border-[#E8A820] text-[#996012] hover:bg-amber-50 text-base"
                         data-testid="listing-buy-asking-btn">
-                        buy at asking price — ${listing.price}
+                        buy at asking price · ${listing.price}
                       </Button>
                     </>
                   )}

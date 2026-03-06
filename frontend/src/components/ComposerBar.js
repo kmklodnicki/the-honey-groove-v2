@@ -229,7 +229,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               <chip.icon className="w-4 h-4" /> {chip.label}
             </button>
           ))}
-          {/* A Note — outlined pill, lighter visual weight */}
+          {/* A Note · outlined pill, lighter visual weight */}
           <button onClick={() => openModal('NOTE')}
             className="px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition-all hover:scale-105 hover:shadow-sm border border-stone-300 text-stone-500 hover:border-amber-400 hover:text-amber-700 bg-transparent"
             data-testid="composer-chip-note">
@@ -265,7 +265,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                 </SelectTrigger>
                 <SelectContent>
                   {records.map(r => (
-                    <SelectItem key={r.id} value={r.id}>{r.artist} — {r.title}</SelectItem>
+                    <SelectItem key={r.id} value={r.id}>{r.artist} · {r.title}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -343,7 +343,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                   {haulResults.map(r => (
                     <button key={r.discogs_id} onClick={() => addHaulItem(r)} className="w-full text-left px-3 py-2 hover:bg-honey/10 flex items-center gap-2 text-sm border-b border-honey/10 last:border-0">
                       <AlbumArt src={r.cover_url} alt="" className="w-8 h-8 rounded object-cover" />
-                      <span className="truncate">{r.artist} — {r.title}</span>
+                      <span className="truncate">{r.artist} · {r.title}</span>
                     </button>
                   ))}
                 </div>
@@ -354,7 +354,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                 {haulItems.map((item, idx) => (
                   <div key={idx} className="flex items-center gap-2 bg-honey/10 rounded-lg px-3 py-2">
                     <AlbumArt src={item.cover_url} alt="" className="w-8 h-8 rounded object-cover" />
-                    <span className="flex-1 text-sm truncate">{item.artist} — {item.title}</span>
+                    <span className="flex-1 text-sm truncate">{item.artist} · {item.title}</span>
                     <button onClick={() => setHaulItems(prev => prev.filter((_, i) => i !== idx))} className="text-muted-foreground hover:text-red-500"><X className="w-4 h-4" /></button>
                   </div>
                 ))}
@@ -481,7 +481,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                 </SelectTrigger>
                 <SelectContent>
                   {records.map(r => (
-                    <SelectItem key={r.id} value={r.id}>{r.artist} — {r.title}</SelectItem>
+                    <SelectItem key={r.id} value={r.id}>{r.artist} · {r.title}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

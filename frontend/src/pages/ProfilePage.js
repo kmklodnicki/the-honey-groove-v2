@@ -536,7 +536,7 @@ const WaxReportPin = ({ username, API, token }) => {
     const ws = new Date(report.week_start);
     const we = new Date(report.week_end);
     we.setDate(we.getDate() - 1);
-    weekRange = `${ws.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} — ${we.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+    weekRange = `${ws.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · ${we.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
   } catch { weekRange = ''; }
 
   return (

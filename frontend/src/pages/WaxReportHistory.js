@@ -47,7 +47,7 @@ const WaxReportHistory = () => {
                 const ws = new Date(r.week_start);
                 const we = new Date(r.week_end);
                 we.setDate(we.getDate() - 1);
-                weekRange = `${ws.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} — ${we.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+                weekRange = `${ws.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · ${we.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
               } catch { weekRange = ''; }
 
               return (

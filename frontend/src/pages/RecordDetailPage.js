@@ -154,15 +154,15 @@ const RecordDetailPage = () => {
           <div className="grid grid-cols-3 gap-4">
             <div>
               <p className="text-xs text-muted-foreground mb-0.5">Low</p>
-              <p className="font-heading text-lg text-vinyl-black">${market_value.low?.toFixed(2) || '—'}</p>
+              <p className="font-heading text-lg text-vinyl-black">${market_value.low?.toFixed(2) || '·'}</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground mb-0.5">Median</p>
-              <p className="font-heading text-xl text-honey-amber font-bold">${market_value.median?.toFixed(2) || '—'}</p>
+              <p className="font-heading text-xl text-honey-amber font-bold">${market_value.median?.toFixed(2) || '·'}</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground mb-0.5">High</p>
-              <p className="font-heading text-lg text-vinyl-black">${market_value.high?.toFixed(2) || '—'}</p>
+              <p className="font-heading text-lg text-vinyl-black">${market_value.high?.toFixed(2) || '·'}</p>
             </div>
           </div>
           <p className="text-xs text-muted-foreground mt-2">Based on Discogs marketplace data</p>

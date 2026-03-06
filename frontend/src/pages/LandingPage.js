@@ -65,7 +65,7 @@ const LandingPage = () => {
 
       {/* Hero Section */}
       <section className="relative pb-24 overflow-hidden">
-        {/* Honey drip — pinned to very top of viewport */}
+        {/* Honey drip · pinned to very top of viewport */}
         <div className="w-screen relative left-1/2 -translate-x-1/2 z-0" data-testid="hero-drip"
           style={{
             backgroundImage: 'url(/honey-drip.png)',
@@ -78,7 +78,7 @@ const LandingPage = () => {
 
         <div className="max-w-6xl mx-auto px-4 md:px-8">
           <div className="text-center max-w-4xl mx-auto">
-            {/* Logo wordmark — below the drip */}
+            {/* Logo wordmark · below the drip */}
             <div className="flex justify-center pt-[40px] pb-[24px] relative z-10">
               <img
                 src="/logo-wordmark-clean.png"
@@ -120,7 +120,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* SECTION 1 — Stats Strip */}
+      {/* SECTION 1 · Stats Strip */}
       <section className="py-12 md:py-16 relative" style={{ background: '#F0E8D8' }} data-testid="stats-strip">
         <div className="max-w-5xl mx-auto px-4 md:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0">
@@ -143,11 +143,11 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* SECTION 2 — Mutual Hold Feature Spotlight */}
+      {/* SECTION 2 · Mutual Hold Feature Spotlight */}
       <section className="py-20 md:py-28 bg-honey-cream relative" data-testid="mutual-hold-spotlight">
         <div className="max-w-6xl mx-auto px-4 md:px-8">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-            {/* Left column — Text */}
+            {/* Left column · Text */}
             <div>
               <p className="text-xs font-semibold tracking-[0.2em] uppercase mb-4" style={{ color: '#C8861A' }}>
                 TRADE WITH CONFIDENCE
@@ -163,7 +163,7 @@ const LandingPage = () => {
                 Learn how it works <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
-            {/* Right column — Visual diagram */}
+            {/* Right column · Visual diagram */}
             <div className="flex justify-center">
               <div className="w-full max-w-[400px] rounded-3xl border-2 border-[#C8861A]/15 bg-white/60 p-8 md:p-10" data-testid="hold-diagram">
                 <div className="flex items-center justify-between mb-8">
@@ -196,7 +196,7 @@ const LandingPage = () => {
                 <div className="border-t border-dashed border-[#C8861A]/20 pt-5">
                   <div className="flex items-center justify-center gap-2">
                     <CheckCircle2 className="w-5 h-5 text-[#C8861A]" />
-                    <span className="text-sm font-medium text-[#C8861A]">Delivery Confirmed — Holds Released</span>
+                    <span className="text-sm font-medium text-[#C8861A]">Delivery Confirmed · Holds Released</span>
                   </div>
                 </div>
               </div>
@@ -205,7 +205,7 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* SECTION 3 — Fee Comparison */}
+      {/* SECTION 3 · Fee Comparison */}
       <section className="py-16 md:py-20 relative" style={{ background: '#F0E8D8' }} data-testid="fee-comparison">
         <div className="max-w-xl mx-auto px-4 md:px-8 text-center">
           <h2 className="font-heading text-3xl md:text-4xl text-vinyl-black mb-3">

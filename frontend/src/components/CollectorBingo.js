@@ -209,7 +209,7 @@ const CollectorBingo = () => {
   try {
     const ws = new Date(card.week_start);
     const we = new Date(card.week_end);
-    dateRange = `${ws.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} — ${we.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+    dateRange = `${ws.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · ${we.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
   } catch { /* ignore */ }
 
   /* ── Locked state: countdown + greyed card ── */
@@ -224,7 +224,7 @@ const CollectorBingo = () => {
               <Lock className="w-3.5 h-3.5 text-muted-foreground" />
             </div>
 
-            {/* Previous card at 60% opacity — only if user played */}
+            {/* Previous card at 60% opacity · only if user played */}
             {userPlayed && (
               <Card
                 className="p-3 border-amber-200/50 mb-3 relative cursor-pointer"
@@ -332,7 +332,7 @@ const CollectorBingo = () => {
     <div data-testid="collector-bingo">
       <div className="flex justify-center">
         <div className="w-full" style={{ maxWidth: '500px' }}>
-          {/* Lock banner — shows briefly when card just locked */}
+          {/* Lock banner · shows briefly when card just locked */}
           {showLockBanner && (
             <div className="flex items-center justify-center gap-2 mb-2 px-4 rounded-xl bg-amber-50 border border-amber-300/40 text-amber-700 text-sm font-medium"
               style={{ height: '44px', animation: 'bingoCelebFadeIn 300ms ease-out' }}
@@ -383,7 +383,7 @@ const CollectorBingo = () => {
             </div>
           </div>
 
-          {/* Mini 5x5 grid — read-only preview */}
+          {/* Mini 5x5 grid · read-only preview */}
           <div className="grid grid-cols-5 mx-auto mb-3" style={{ gap: '4px', maxWidth: '468px' }} data-testid="bingo-grid-preview">
             {grid.map((sq, i) => {
               const isMarked = markedSet.has(i);
@@ -401,7 +401,7 @@ const CollectorBingo = () => {
                   <span className="leading-none mb-0.5" style={{ fontSize: '16px' }}>{sq.emoji}</span>
                   <span
                     className={`leading-tight px-0.5 ${isMarked ? 'text-amber-900 font-medium' : 'text-muted-foreground'}`}
-                    style={{ fontSize: '8px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+                    style={{ fontSize: '7px', wordBreak: 'break-word', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
                   >
                     {isFree ? 'sweet spot 🍯' : sq.text}
                   </span>
@@ -510,8 +510,9 @@ const BingoModal = ({
                 )}
                 {toggling === i && <Loader2 className="w-3 h-3 animate-spin absolute top-1 right-1 text-amber-400 z-10" />}
                 <span className="text-lg leading-none mb-0.5 relative z-10">{sq.emoji}</span>
-                <span className={`text-[10px] sm:text-[11px] leading-tight relative z-10 ${isMarked ? 'text-amber-900 font-medium' : 'text-muted-foreground'}`}>
-                  {isFree ? 'sweet spot 🍯' : sq.text?.length > 45 ? sq.text.slice(0, 45) + '...' : sq.text}
+                <span className={`text-[9px] leading-tight relative z-10 px-0.5 ${isMarked ? 'text-amber-900 font-medium' : 'text-muted-foreground'}`}
+                  style={{ wordBreak: 'break-word', hyphens: 'auto', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  {isFree ? 'sweet spot 🍯' : sq.text}
                 </span>
                 {isLocked && pct !== undefined && !isFree && (
                   <span className="text-[8px] sm:text-[9px] leading-none mt-0.5 relative z-10 italic"

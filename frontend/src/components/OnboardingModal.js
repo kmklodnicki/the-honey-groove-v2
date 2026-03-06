@@ -408,7 +408,7 @@ const OnboardingModal = ({ open, onComplete }) => {
               </SelectTrigger>
               <SelectContent>
                 {addedRecords.map(r => (
-                  <SelectItem key={r.discogs_id} value={String(r.discogs_id)}>{r.artist} — {r.title}</SelectItem>
+                  <SelectItem key={r.discogs_id} value={String(r.discogs_id)}>{r.artist} · {r.title}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

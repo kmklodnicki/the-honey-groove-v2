@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
 
 const AdminBetaPage = () => {
-  usePageTitle('Admin — Beta & Invites');
+  usePageTitle('Admin · Beta & Invites');
   const { token, API } = useAuth();
   const [tab, setTab] = useState('signups');
 
@@ -230,7 +230,7 @@ const AdminBetaPage = () => {
                         {c.used_by_username ? (
                           <span>@{c.used_by_username} ({c.used_by_email})</span>
                         ) : (
-                          <span className="text-muted-foreground">—</span>
+                          <span className="text-muted-foreground">·</span>
                         )}
                       </td>
                       <td className="px-4 py-3">

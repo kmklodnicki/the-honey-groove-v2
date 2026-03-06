@@ -179,7 +179,7 @@ const DisputeCard = ({ trade, onSelect, resolved }) => {
       )}
 
       {!d.response && !resolved && (
-        <p className="text-xs text-red-500 flex items-center gap-1"><Clock className="w-3 h-3" /> Awaiting response — due {formatDistanceToNow(new Date(d.response_deadline), { addSuffix: true })}</p>
+        <p className="text-xs text-red-500 flex items-center gap-1"><Clock className="w-3 h-3" /> Awaiting response · due {formatDistanceToNow(new Date(d.response_deadline), { addSuffix: true })}</p>
       )}
 
       {/* Resolution details */}
@@ -220,7 +220,7 @@ const ResolveModal = ({ open, onOpenChange, trade, token, API, onResolved }) => 
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="font-heading flex items-center gap-2"><AlertTriangle className="w-5 h-5 text-red-500" /> Resolve Dispute</DialogTitle>
-          <DialogDescription>Trade #{trade.id.slice(0, 8)} — @{trade.initiator?.username} vs @{trade.responder?.username}</DialogDescription>
+          <DialogDescription>Trade #{trade.id.slice(0, 8)} · @{trade.initiator?.username} vs @{trade.responder?.username}</DialogDescription>
         </DialogHeader>
         <div className="space-y-4 pt-2">
           <div>
@@ -230,7 +230,7 @@ const ResolveModal = ({ open, onOpenChange, trade, token, API, onResolved }) => 
               <SelectContent>
                 <SelectItem value="COMPLETED"><CheckCircle2 className="w-4 h-4 inline mr-1 text-green-500" /> Force Complete</SelectItem>
                 <SelectItem value="CANCELLED"><XCircle className="w-4 h-4 inline mr-1 text-red-500" /> Full Cancellation</SelectItem>
-                <SelectItem value="PARTIAL">Partial — Cash Difference</SelectItem>
+                <SelectItem value="PARTIAL">Partial · Cash Difference</SelectItem>
               </SelectContent>
             </Select>
           </div>

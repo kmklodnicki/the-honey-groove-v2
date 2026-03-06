@@ -161,8 +161,8 @@ const MessagesPage = () => {
               <Disc className="w-4 h-4 shrink-0" />
               <span>
                 {convContext.type === 'iso' && `re: your ISO for `}
-                {convContext.type === 'trade' && `re: trade listing — `}
-                {convContext.type === 'listing' && `re: listing — `}
+                {convContext.type === 'trade' && `re: trade listing · `}
+                {convContext.type === 'listing' && `re: listing · `}
                 <strong>{convContext.record_name}</strong>
                 {convContext.action_text && <span className="text-purple-500 ml-1">· {convContext.action_text}</span>}
               </span>

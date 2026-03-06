@@ -125,7 +125,7 @@ const WaxReportPage = () => {
     const ws = new Date(report.week_start);
     const we = new Date(report.week_end);
     we.setDate(we.getDate() - 1);
-    weekRange = `${ws.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} — ${we.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+    weekRange = `${ws.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · ${we.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
   } catch { weekRange = ''; }
 
   return (
@@ -298,12 +298,12 @@ const WaxReportPage = () => {
           <div className="grid grid-cols-3 gap-4">
             <StatBlock value={wp.total} label="on wantlist" color={C.purple} />
             <StatBlock value={wp.matches_found} label="matches found" color={C.purple} />
-            <StatBlock value={wp.longest_hunt_days ? `${wp.longest_hunt_days}d` : '—'} label="longest hunt" color={C.purple} />
+            <StatBlock value={wp.longest_hunt_days ? `${wp.longest_hunt_days}d` : '·'} label="longest hunt" color={C.purple} />
           </div>
           {wp.trending && (
             <div className="mt-3 px-3 py-2 rounded-lg" style={{ background: 'rgba(107,71,173,0.06)' }}>
               <p className="text-[11px]" style={{ color: C.textMuted }}>trending on wantlists</p>
-              <p className="text-sm" style={{ color: C.textDark }}>{wp.trending.artist} — {wp.trending.album} <span style={{ color: C.purple }}>({wp.trending.want_count} wants)</span></p>
+              <p className="text-sm" style={{ color: C.textDark }}>{wp.trending.artist} · {wp.trending.album} <span style={{ color: C.purple }}>({wp.trending.want_count} wants)</span></p>
             </div>
           )}
         </WaxCard>
@@ -395,7 +395,7 @@ const SectionTitle = ({ icon, title }) => (
 
 const StatBlock = ({ value, label, color, small }) => (
   <div>
-    <p className={`font-heading ${small ? 'text-base' : 'text-xl'}`} style={{ color: color || C.amber }}>{value ?? '—'}</p>
+    <p className={`font-heading ${small ? 'text-base' : 'text-xl'}`} style={{ color: color || C.amber }}>{value ?? '·'}</p>
     <p className="text-[11px]" style={{ color: C.textMuted }}>{label}</p>
   </div>
 );

@@ -38,12 +38,12 @@ const AboutPage = () => {
           <p className="font-medium text-vinyl-black">So I built it.</p>
           <p>The Honey Groove is the app I always wanted. Track what you own, share what you're spinning, post the finds that made your week, hunt down records you've been chasing for years, and trade directly with people who get it. Every trade protected by a Mutual Hold so you never have to trust a stranger on faith alone.</p>
           <p>It started as a personal problem. It became something I think a lot of us needed.</p>
-          <p className="text-vinyl-black font-medium italic">If you collect vinyl — casually, obsessively, or somewhere in between — you belong here.</p>
+          <p className="text-vinyl-black font-medium italic">If you collect vinyl · casually, obsessively, or somewhere in between · you belong here.</p>
         </div>
 
         {/* Signature */}
         <div className="mt-12 pt-8 border-t border-honey/30">
-          <p className="text-vinyl-black/70 text-sm">— <strong className="text-vinyl-black">Katie Klodnicki</strong>, founder</p>
+          <p className="text-vinyl-black/70 text-sm">· <strong className="text-vinyl-black">Katie Klodnicki</strong>, founder</p>
           <p className="text-honey-amber text-sm mt-1">@katieintheafterglow</p>
         </div>
 

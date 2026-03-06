@@ -51,16 +51,16 @@ const BetaSignupPage = () => {
   return (
     <>
       <Helmet>
-        <title>Join the Beta — the Honey Groove</title>
+        <title>Join the Beta · the Honey Groove</title>
         <meta name="description" content="Get early access to the Honey Groove before public launch. Founding members get a permanent badge and a direct line to the founder." />
-        <meta property="og:title" content="Join the Beta — the Honey Groove" />
+        <meta property="og:title" content="Join the Beta · the Honey Groove" />
         <meta property="og:description" content="Get early access to the Honey Groove before public launch. Founding members get a permanent badge and a direct line to the founder." />
         <meta property="og:image" content="/logo-drip.png" />
         <meta property="og:type" content="website" />
       </Helmet>
 
       <div className="min-h-screen bg-[#FAF6EE] flex flex-col items-center pb-16" data-testid="beta-signup-page">
-        {/* Honey drip — pinned to top */}
+        {/* Honey drip · pinned to top */}
         <div className="w-screen" data-testid="beta-drip"
           style={{
             backgroundImage: 'url(/honey-drip.png)',
@@ -175,7 +175,7 @@ const BetaSignupPage = () => {
 
                 {error && <p className="text-red-600 text-sm text-center font-serif" data-testid="beta-error">{error}</p>}
 
-                {/* Honeypot field — invisible to humans, visible to bots */}
+                {/* Honeypot field · invisible to humans, visible to bots */}
                 <input
                   type="text"
                   name="website"

@@ -173,7 +173,7 @@ const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
                 </SelectTrigger>
                 <SelectContent>
                   {records?.map(r => (
-                    <SelectItem key={r.id} value={r.id}>{r.artist} — {r.title}</SelectItem>
+                    <SelectItem key={r.id} value={r.id}>{r.artist} · {r.title}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

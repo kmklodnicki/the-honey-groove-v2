@@ -536,7 +536,7 @@ const ISOPage = () => {
             <div className="space-y-3">
               {communityIsos.map(iso => (
                 <CommunityISOCard key={iso.id} iso={iso} onHaveThis={(l) => {
-                  navigate(`/messages?to=${l.user_id}&contextType=iso&contextRecord=${encodeURIComponent(l.artist + ' — ' + l.album)}&contextAction=I have this`);
+                  navigate(`/messages?to=${l.user_id}&contextType=iso&contextRecord=${encodeURIComponent(l.artist + ' · ' + l.album)}&contextAction=I have this`);
                 }} />
               ))}
             </div>
@@ -690,7 +690,7 @@ const ISOPage = () => {
                     </div>
                     {pricingAssist && pricingAssist.low !== null && (
                       <p className="text-[11px] text-muted-foreground mt-1 pl-1" data-testid="pricing-assist-hint">
-                        recent sales: ${pricingAssist.low?.toFixed(2)} — ${pricingAssist.high?.toFixed(2)} on Discogs
+                        recent sales: ${pricingAssist.low?.toFixed(2)} · ${pricingAssist.high?.toFixed(2)} on Discogs
                       </p>
                     )}
                     {sellerStats && sellerStats.completed_transactions < 3 && parseFloat(listPrice) > 150 && (
@@ -914,7 +914,7 @@ const ActiveTradeCard = ({ trade, currentUserId }) => {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild><span data-testid="hold-shield-icon"><Shield className="w-3.5 h-3.5 text-honey-amber" /></span></TooltipTrigger>
-                  <TooltipContent className="bg-vinyl-black text-white text-xs max-w-[200px]"><p>Mutual hold trade — both parties have skin in the game.</p></TooltipContent>
+                  <TooltipContent className="bg-vinyl-black text-white text-xs max-w-[200px]"><p>Mutual hold trade · both parties have skin in the game.</p></TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             )}

@@ -241,7 +241,7 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
                     <span>
                       {progress.imported > 0
                         ? `Last import: ${progress.imported} records imported${progress.skipped > 0 ? `, ${progress.skipped} skipped (duplicates)` : ''}`
-                        : `Collection in sync — ${progress.skipped} records already imported`}
+                        : `Collection in sync · ${progress.skipped} records already imported`}
                     </span>
                   </div>
                   <Button variant="ghost" size="sm" onClick={fetchSummary} className="text-xs text-honey-amber ml-2" data-testid="view-summary-btn">
@@ -316,7 +316,7 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
                   <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wide">Recently Imported</p>
                   <div className="grid grid-cols-6 gap-1.5" data-testid="import-sample-covers">
                     {summary.sample_covers.slice(0, 12).map((c, i) => (
-                      <div key={i} className="aspect-square rounded-lg overflow-hidden bg-stone-100" title={`${c.artist} — ${c.title}`}>
+                      <div key={i} className="aspect-square rounded-lg overflow-hidden bg-stone-100" title={`${c.artist} · ${c.title}`}>
                         {c.cover_url ? (
                           <AlbumArt src={c.cover_url} alt={c.title} className="w-full h-full object-cover" />
                         ) : (
