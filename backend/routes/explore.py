@@ -5,6 +5,8 @@ from datetime import datetime, timezone, timedelta
 import uuid
 
 from database import db, require_auth, get_current_user, security, logger, create_notification
+from services.email_service import send_email_fire_and_forget
+import templates.emails as email_tpl
 from database import hash_password, verify_password, create_token, search_discogs, get_discogs_release
 from database import put_object, get_object, init_storage, storage_key
 from database import STRIPE_API_KEY, PLATFORM_FEE_PERCENT, FRONTEND_URL
@@ -83,6 +85,9 @@ async def follow_user(username: str, user: Dict = Depends(require_auth)):
     await create_notification(target_user["id"], "NEW_FOLLOWER", "New follower",
                               f"@{u.get('username','?')} started following you",
                               {"follower_username": u.get("username")})
+    if target_user.get("email"):
+        tpl = email_tpl.new_follow(u.get("username", "?"), f"https://thehoneygroove.com/profile/{u.get('username','')}")
+        await send_email_fire_and_forget(target_user["email"], tpl["subject"], tpl["html"])
 
     return {"message": f"Now following {username}"}
 

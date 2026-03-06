@@ -16,72 +16,73 @@ The user wants to build a web app called **The HoneyGroove**, a social platform 
     *   **Explore Page:** A discovery page with Trending, Taste Match, Fresh Pressings, Most Wanted, and Near You sections.
     *   **Record Detail Page:** A dedicated page for each record showing Discogs data, market value, community ownership stats, and related Hive posts.
 *   **Collection Management & Valuation:** Integrates Discogs market data for collection value, Hidden Gems, and pricing assistance. All album art is cached.
-*   **The Honeypot (Marketplace):** A marketplace with a configurable platform fee (currently 6%) on all transactions, including sweetener cash additions to trades.
+*   **The Honeypot (Marketplace):** A marketplace with a configurable platform fee (currently 6%) on all transactions, including sweetener cash additions to trades. The marketplace features a detail modal for listings.
 *   **Admin & Safety:** A unified admin panel for managing beta signups, invite codes, social features (Daily Prompts, Bingo), user reports, and the platform fee. A user-driven report and block system for posts, listings, and profiles.
+*   **Analytics & Notifications:**
+    *   Google Tag Manager and custom event tracking for key user actions.
+    *   A comprehensive system of transactional and marketing emails for user engagement and notifications, sent via Resend.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a feature-rich, full-stack platform in a closed beta state. The entire app, except for the landing and new beta signup pages, is locked down and requires user authentication. New user registration is disabled and works on an invite-only basis, managed through a new section in the admin panel.
+The application is a feature-rich full-stack platform in a closed beta state, with most of the app requiring authentication. New user registration is invite-only.
 
-Major completed features include:
-- A unified admin panel at  that consolidates management of Beta Signups, Invite Codes, Daily Prompts, Bingo Squares, User Reports, and Platform Settings.
-- A fully implemented Record Detail Page that aggregates and displays record info, community ownership stats, and related Hive posts.
-- A Daily Prompt streak tracking system with nudge notifications and a UI counter on user profiles.
-- A Week in Wax shareable card that has been completely redesigned.
-- A dynamic platform fee (6%) that is correctly applied to both marketplace sales and sweetener payments in trades.
-- Numerous UI fixes and enhancements based on direct user feedback.
+Key completed features include a unified admin panel, a Record Detail Page, Daily Prompt streaks, a dynamic platform fee, a redesigned Week in Wax shareable card, and a rich Honeypot listing detail modal with deep-linking.
+
+Recent major additions include:
+-   **Google Analytics:** Full integration of Google Tag Manager and 13 custom GA events for tracking user engagement.
+-   **Performance Optimization:** Fixed two major N+1 query issues on the collection and explore pages using MongoDB aggregation pipelines.
+-   **Email System Foundation:** An email templating system and a centralized sending service () have been created to support a wide range of notifications. Several email triggers have been implemented.
 
 **Last working item**:
--   **Last item agent was working:** The agent was correcting the sweetener payment fee to ensure it used the same dynamic, admin-configurable platform fee as the main marketplace, rather than a hardcoded 4%. This involved updating the backend to use the shared fee logic and creating a new public API endpoint to expose the fee percentage to the frontend. The frontend was then refactored to fetch and display this dynamic fee across the trade proposal and detail views.
--   **Status:** USER VERIFICATION PENDING
--   **Agent Testing Done:** Y
--   **Which testing method agent to use?** both
+-   **Last item agent was working:** The agent was implementing a comprehensive email notification system based on a large user specification. This involved creating 15 distinct HTML email templates, a centralized  to handle rendering and sending via Resend, and then wiring up the triggers for each of these 15 events throughout the backend codebase. The agent had created the templates and the service and was in the middle of modifying numerous route files to add the email-sending logic when the session ended.
+-   **Status:** IN PROGRESS
+-   **Agent Testing Done:** N
+-   **Which testing method agent to use?** backend testing agent
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   There are no outstanding issues. The last task addressed a user-_reported_ inconsistency and is now complete.
+-   **Issue 1: Complete and Verify the Email Notification System (P0)**
+    -   **Description:** The previous agent began a large-scale implementation of 15 different email notifications. The work is incomplete and completely untested. The implementation spans multiple files (, , , , , , , , ). The immediate priority is to finish wiring up all triggers and then create a comprehensive test plan to validate each one.
+    -   **Status:** IN PROGRESS
+-   **Issue 2: Verify Stripe Webhook Endpoint (P1)**
+    -   **Description:** The  was added to the  file and passed to the webhook handler. However, the agent's simple  test failed with a 500 error, which was dismissed as expected without proper verification. The endpoint's ability to correctly process a signed event from Stripe has not been confirmed.
+    -   **Status:** TESTING PENDING
 
 **In progress Task List**:
--   There are no tasks currently in progress.
+-   **Task 1: Finalize Email System Implementation (P0)**
+    -   **Where to resume:** Review all files modified in the last session related to email sending. The agent created  and the  directory. It then started adding  calls to various route files. Resume by checking the implementation status of each of the 15 required emails, completing any missing logic, and ensuring all necessary data is passed to the templates.
+    -   **What will be achieved with this?** A fully functional email notification system that sends 15 different transactional and marketing emails as per the user's detailed specification, significantly improving user engagement.
+    -   **Status:** IN PROGRESS
+    -   **Should Test frontend/backend/both after fix?** Backend. Use the testing agent to create a test plan that simulates the conditions for each of the 15 email triggers and verifies that the  function is called with the correct template, recipient, and context data.
 
 **Upcoming and Future Tasks**
--   **Upcoming Tasks (P2):**
-    -   **P2 (Highest Priority): Discogs Collection Import:** Allow users to connect their Discogs account (via OAuth or username) to bulk import their existing collection. The implementation should handle duplicates gracefully and show a summary upon completion.
--   **Future Tasks:**
+-   **Upcoming Tasks:**
     -   **P2: Hauls Enhancement:** Develop a dedicated page and more functionality for Haul posts.
     -   **P2: Refactor :** Address known technical debt in this complex component.
-    -   **P2: Monetization Features:** Implement Pro memberships or a Verified Seller badge.
+    -   **P2: Monetization Features:** Implement Pro memberships or a Verified Seller badge, which is implied by the request for a Verified Seller renewal reminder email.
+-   **Future Tasks:**
+    -   No other future tasks have been specified beyond the current backlog.
 
 **Completed work in this session**
--   **Auth Lockdown & Invite-Only System:**
-    -   Implemented  and  components to lock down the application.
-    -   Disabled public signup and replaced all CTAs with a waitlist modal that directs users to the  page.
-    -   Created an invite-only system where new accounts can only be created via a unique code at .
--   **Beta Signup Page & Notifications:**
-    -   Built a public beta signup page at  to capture user interest.
-    -   Integrated the Resend SDK to send email notifications to an admin address for every new beta signup.
--   **Unified Admin Panel:**
-    -   Created a single, comprehensive admin dashboard at  with a sidebar for navigation.
-    -   Built UI sections for: Beta Signups & Invite Codes, Daily Prompts, Bingo Squares, User Reports, and Platform Settings.
--   **Record Detail Page Completion:**
-    -   Created a new backend endpoint () to aggregate all necessary data for the page.
-    -   Rebuilt the  frontend to display album info, community stats (owners, spin counts), and related Hive posts.
--   **Daily Prompt Streaks & Notifications:**
-    -   Implemented backend logic and a new user model field for tracking daily prompt streaks.
-    -   Set up a scheduled background task () to send nudge notifications to users to maintain their streaks.
-    -   Added a streak counter display (🔥 icon) to the user profile page.
-    -   Enhanced the Week in Wax report to mention perfect weekly streaks.
--   **Sweetener Payments & Dynamic Fee Fix:**
-    -   Enhanced the UI for sweetener payments in the trade flow.
-    -   Corrected the sweetener fee to use the dynamic platform fee (6%) from settings, removing a hardcoded 4%.
--   **Week in Wax Redesign:**
-    -   Completely rewrote the  function in  to match detailed design specifications, including a new layout, data-driven labels, elegant bar charts, and a Top Record hero section.
--   **UI/UX Fixes:**
-    -   Removed the 'x' button from the global search dialog.
-    -   Adjusted the logo size, capitalization, and spacing on the beta signup page per user feedback.
--   **Stripe Key Update:**
-    -   Replaced placeholder Stripe keys with new live test keys provided by the user and stored them in environment variables.
+-   **Stripe & Fee Fixes:**
+    -   Corrected a hardcoded 6% fee display in  to use the dynamic fee from the API.
+    -   Added the  to  and wired it into the  handler.
+-   **Discogs Collection Import:**
+    -   Fully implemented and tested the Discogs import feature, enhancing both backend logic (error handling, value refresh) and frontend UI (onboarding entry point, summary modal).
+-   **Deployment Readiness & Performance:**
+    -   Resolved user query on custom domain mapping.
+    -   Fixed two critical N+1 query performance bottlenecks in  and  using MongoDB aggregations.
+-   **Google Analytics Integration:**
+    -   Successfully integrated Google Tag Manager and implemented 13 different custom GA events for key user actions, with the Measurement ID stored in an environment variable.
+-   **Honeypot Listing Detail Modal:**
+    -   Built and tested a feature-rich listing detail modal, including backend data enrichment, a new component , and URL deep-linking ().
+-   **Week in Wax Enhancements:**
+    -   Vastly improved the closing line generation algorithm in  to be more poetic and personal.
+    -   Implemented a Resend email notification for when the Week in Wax report is ready.
+-   **UI & Admin:**
+    -   Removed the Made by Emergent badge from the UI.
+    -   Updated beta signup email recipient and sender address.
 
 **Earlier issues found/mentioned but not fixed**
 -   **Issue 1:**  was noted as being overly complex and a candidate for future refactoring.
@@ -96,81 +97,90 @@ Major completed features include:
 -   **Frontend:** React, Tailwind CSS, Shadcn UI
 -   **Backend:** FastAPI, Pydantic, Motor (async MongoDB)
 -   **Database:** MongoDB
--   **Authentication:** Implemented protected routes () and admin-only routes () in React to lock down the application based on auth state and user role.
--   **Invite System:** Server-side validation of single-use invite codes stored in a dedicated MongoDB collection.
--   **Scheduled Tasks:** Using  within the FastAPI application to run daily background jobs for sending streak nudge notifications.
--   **Transactional Emails:** Integrated the Resend SDK to send email notifications for new beta signups.
--   **Dynamic Configuration:** Refactored frontend components to fetch configuration (platform fee) from a dedicated API endpoint instead of using hardcoded values.
+-   **Email System:** A new service-oriented architecture for sending emails via the Resend SDK, using a repository of HTML templates for different events.
+-   **Analytics:** Google Tag Manager and Google Analytics custom event tracking, implemented via a frontend utility helper.
+-   **Performance Tuning:** Use of MongoDB aggregation pipelines (, ) to resolve N+1 query patterns.
+-   **Scheduled Tasks:**  for running daily/weekly jobs like streak nudges and report generation.
 
 **key DB schema**
--   **users:**  (MODIFIED)
--   **beta_signups:**  (NEW)
--   **invite_codes:**  (NEW)
+-   **users:** 
+-   **beta_signups:** 
+-   **invite_codes:** 
 -   **platform_settings:** 
--   **reports:** 
+-   No new collections were added, but many existing collections are now used as triggers for the new email notification system.
 
 **changes in tech stack**
--   **Resend:** Added for transactional email notifications.
--   **APScheduler:** Added for running scheduled background tasks on the backend.
--   **react-helmet-async:** Added to the frontend for managing page metadata (SEO).
+-   **Google Tag Manager / Analytics:** Added for sitewide event tracking.
+-   The use of **Resend** has been formalized into a scalable service with HTML templates, which is a significant architectural change.
 
 **All files of reference**
-*   **New Backend Routes:**  (significantly expanded),  ().
-*   **New Frontend Pages:** , , .
-*   **New Core Components:** , .
-*   **Modified Core Files:** , , , , , , , , , .
+*   **New Service & Templates:**
+    *   
+    *    (directory with 15 HTML files)
+*   **New Components/Utils:**
+    *   
+    *   
+*   **Heavily Modified Backend Routes (for email triggers):**
+    *   
+    *   
+    *   
+    *   
+    *   
+    *   
+    *   
+    *   
+    *   
+*   **Heavily Modified Frontend Files (for GA events & Listing Modal):**
+    *   Too many to list individually, but includes , , , , , , , , and various export card components.
 
 **Areas that need refactoring**:
--    remains a known complex component that could be simplified.
+-    remains a known complex component that could be simplified in the future.
 
 **key api endpoints**
--   
--   
--   
--   
--   (All other admin endpoints under )
--   
--   
--   
--   
+-    (Optimized)
+-    (Optimized)
+-    (Enhanced for modal)
+-    (Needs real-world testing)
+-    (New endpoint for sending invite emails)
 
 **Critical Info for New Agent**
--   The application is now in a closed beta state. Public signup is disabled, and most routes are protected by authentication. New users can only join with an admin-generated invite code.
--   A new, unified admin panel exists at , providing a single interface for managing all administrative tasks.
--   The platform fee is now correctly and dynamically applied to both marketplace transactions and sweetener payments. A new public endpoint () was created for the frontend to fetch this value.
--   The user has provided new Stripe keys which have been set in . However, the user was asked to provide the  and has not yet done so. The corresponding environment variable is present but empty.
--   The next major priority is implementing the **Discogs Collection Import** feature.
+-   **Priority #1 is completing the email system.** The previous agent left this large task half-finished. You must review the 15 required emails, complete the implementation for all triggers across the backend, and then thoroughly test each one.
+-   **Remind the user about Resend domain verification.** The new email system () will not work until the user verifies their domain in their Resend dashboard. This is a critical blocker for the feature.
+-   The Stripe webhook endpoint () is configured but has **never been properly tested**. This is a high-risk area that needs verification with a real Stripe test event to ensure it doesn't fail silently in production.
 
 **documents and test reports created in this job**
--    (updated multiple times)
--   Multiple test reports in , including the latest reports verifying the Admin Panel, Record Detail Page, and P1 features.
+-    (updated)
+-    contain reports for the Discogs Import and Honeypot Listing Modal features.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **user:** Quick confirmation before moving to P2 — please verify that the sweetener payment fee is set to 6% to match the marketplace transaction fee.
-2.  **agent:** Acknowledged the discrepancy and implemented the fix.
-3.  **user:** Approved plan for P1 tasks (Daily Prompt Streaks & Sweetener UI) followed by P2 (Discogs Import).
-4.  **agent:** Acknowledged and started exploration.
-5.  **user:** Approved plan to build a unified admin panel.
-6.  **agent:** Acknowledged and started implementation.
-7.  **user:** lets work on the admin panel
-8.  **agent:** Acknowledged and presented a plan.
-9.  **user:** cool (in response to UI fixes)
-10. **user:** there should be space at the bottom of the page under the cta
+1.  **user:** Confirmed the mood board export size is correct. Provided a very detailed spec for a Honeypot listing detail modal. (DONE)
+2.  **agent:** Implemented and tested the listing detail modal.
+3.  **user:** Provided a detailed spec to improve the Week in Wax closing line algorithm to be more poetic. (DONE)
+4.  **agent:** Implemented the new closing line algorithm.
+5.  **user:** Requested that the Week in Wax notification be an email with the new closing line as the hero element. (DONE)
+6.  **agent:** Implemented the Week in Wax email.
+7.  **user:** Provided a very large and detailed specification for 15 different transactional and marketing emails to be built with Resend and HTML templates. (**IN PROGRESS**)
+8.  **agent:** Acknowledged the task and started implementation.
+9.  **user:** (Implicit) Agent continued work on the email system.
+10. **agent:** (Implicit) Agent's work was cut off mid-implementation of the email system.
 
 **Project Health Check:**
--   **Broken:** None known.
+-   **Broken:**
+    -   The email notification system is partially implemented and non-functional.
 -   **Mocked:**
-    -   The  environment variable in  is empty. The agent requested this value from the user, but it has not been provided yet.
+    -   All Resend email sending will fail until the user verifies the  domain in their Resend account.
+    -   The Stripe webhook's signature verification is untested and its functionality is unconfirmed.
 
 **3rd Party Integrations**
 -   **Discogs API:** Used for record data and album art.
--   **Stripe Connect:** Used for marketplace and sweetener payments. Keys have been updated to user-provided values.
+-   **Stripe Connect:** Used for marketplace payments. Keys are set, but webhook is unverified.
+-   **Resend:** Used for all transactional and marketing emails. API key is set, but domain verification is pending on the user's side.
+-   **Google Tag Manager / Google Analytics:** Implemented for custom event tracking.  is set.
 -   **Pillow:** Python library for server-side image generation.
--   **Resend:** (New) Used for sending transactional emails (e.g., beta signup notifications).
--   **APScheduler:** (New) Used for backend scheduled tasks (e.g., streak notifications).
+-   **APScheduler:** Used for backend scheduled tasks.
 
 **Testing status**
--   **Testing agent used after significant changes:** YES. The testing agent was used successfully to validate the auth lockdown, the unified admin panel, the completed record detail page, and the daily prompt/sweetener features.
+-   **Testing agent used after significant changes:** YES. Used for the Discogs Import and Honeypot Listing Modal features.
 -   **Troubleshoot agent used after agent stuck in loop:** NO
 -   **Test files created:** []
 -   **Known regressions:** None.
@@ -181,4 +191,5 @@ Major completed features include:
     *(This user has admin privileges)*
 
 **What agent forgot to execute**
--   The agent successfully implemented all requested features. The only pending action is waiting for the user to provide the  value, which the agent explicitly requested.</analysis>
+-   The agent did not complete the implementation of the 15-email notification system. It started the task but was unable to finish before the session ended.
+-   The agent did not perform a valid end-to-end test of the Stripe webhook handler after adding the webhook secret. It dismissed a 500 error as expected without proper verification.</analysis>

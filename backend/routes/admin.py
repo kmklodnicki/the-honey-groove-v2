@@ -14,11 +14,12 @@ import os
 import logging
 
 from database import db, require_auth, logger
+from services.email_service import send_email, send_email_fire_and_forget
+from templates.emails import beta_waitlist, invite_code as invite_code_tpl
 
 router = APIRouter()
 
-RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
-SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "onboarding@resend.dev")
+ADMIN_NOTIFY_EMAIL = "contact@kathrynklodnicki.com"
 
 
 # ─── Helpers ───
@@ -35,41 +36,23 @@ def generate_invite_code() -> str:
 
 
 async def send_beta_notification_email(signup: dict):
-    """Send email notification for new beta signup via Resend."""
-    if not RESEND_API_KEY:
-        logger.warning("RESEND_API_KEY not set, skipping email notification")
-        return
-    try:
-        import resend
-        resend.api_key = RESEND_API_KEY
+    """Send admin notification + user confirmation for beta signup."""
+    # Admin notification (keep original format)
+    from templates.base import wrap_email
+    admin_html = f"""
+    <p style="font-size:13px;color:#8A6B4A;"><strong>new beta signup</strong></p>
+    <table style="width:100%;border-collapse:collapse;margin:8px 0;">
+        <tr><td style="padding:6px 0;color:#8A6B4A;font-size:13px;">name</td><td style="padding:6px 0;color:#2A1A06;">{signup['first_name']}</td></tr>
+        <tr><td style="padding:6px 0;color:#8A6B4A;font-size:13px;">email</td><td style="padding:6px 0;color:#2A1A06;">{signup['email']}</td></tr>
+        <tr><td style="padding:6px 0;color:#8A6B4A;font-size:13px;">instagram</td><td style="padding:6px 0;color:#2A1A06;">@{signup['instagram_handle']}</td></tr>
+        <tr><td style="padding:6px 0;color:#8A6B4A;font-size:13px;">interested in</td><td style="padding:6px 0;color:#2A1A06;">{signup['feature_interest']}</td></tr>
+    </table>
+    """
+    await send_email(ADMIN_NOTIFY_EMAIL, "new beta signup \U0001F41D", wrap_email(admin_html))
 
-        html = f"""
-        <div style="font-family: Georgia, serif; max-width: 500px; margin: 0 auto; padding: 24px;">
-            <h2 style="color: #2A1A06; font-size: 24px;">new beta signup</h2>
-            <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
-                <tr><td style="padding: 8px 0; color: #8A6B4A; font-size: 14px;">name</td>
-                    <td style="padding: 8px 0; color: #2A1A06; font-size: 16px;">{signup['first_name']}</td></tr>
-                <tr><td style="padding: 8px 0; color: #8A6B4A; font-size: 14px;">email</td>
-                    <td style="padding: 8px 0; color: #2A1A06; font-size: 16px;">{signup['email']}</td></tr>
-                <tr><td style="padding: 8px 0; color: #8A6B4A; font-size: 14px;">instagram</td>
-                    <td style="padding: 8px 0; color: #2A1A06; font-size: 16px;">@{signup['instagram_handle']}</td></tr>
-                <tr><td style="padding: 8px 0; color: #8A6B4A; font-size: 14px;">most excited about</td>
-                    <td style="padding: 8px 0; color: #2A1A06; font-size: 16px;">{signup['feature_interest']}</td></tr>
-            </table>
-            <p style="color: #8A6B4A; font-size: 13px; font-style: italic;">the honey groove beta</p>
-        </div>
-        """
-
-        params = {
-            "from": SENDER_EMAIL,
-            "to": ["contact@kathrynklodnicki.com"],
-            "subject": "new beta signup \U0001F41D",
-            "html": html,
-        }
-        await asyncio.to_thread(resend.Emails.send, params)
-        logger.info(f"Beta signup notification sent for {signup['email']}")
-    except Exception as e:
-        logger.error(f"Failed to send beta notification email: {e}")
+    # User confirmation
+    tpl = beta_waitlist(signup["first_name"])
+    await send_email(signup["email"], tpl["subject"], tpl["html"])
 
 
 # ════════════════════════════════════════════
@@ -144,6 +127,24 @@ async def delete_invite_code(code_id: str, user: Dict = Depends(require_admin)):
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Code not found or already used")
     return {"status": "deleted"}
+
+
+class InviteSend(BaseModel):
+    code_id: str
+    email: str
+    first_name: str = "there"
+
+
+@router.post("/admin/invite-codes/send")
+async def send_invite_code_email(data: InviteSend, user: Dict = Depends(require_admin)):
+    """Send an invite code email to a specific person."""
+    code_doc = await db.invite_codes.find_one({"id": data.code_id, "status": "unused"}, {"_id": 0})
+    if not code_doc:
+        raise HTTPException(status_code=404, detail="Code not found or already used")
+    tpl = invite_code_tpl(data.first_name, code_doc["code"])
+    await send_email(data.email, tpl["subject"], tpl["html"], reply_to="hello@thehoneygroove.com")
+    await db.invite_codes.update_one({"id": data.code_id}, {"$set": {"sent_to": data.email, "sent_at": datetime.now(timezone.utc).isoformat()}})
+    return {"status": "sent", "email": data.email}
 
 
 # ════════════════════════════════════════════
@@ -271,6 +272,11 @@ async def register_with_invite(data: InviteRegister):
     )
 
     token = create_token(user_id)
+
+    # Send welcome email
+    from templates.emails import welcome as welcome_tpl
+    asyncio.create_task(send_email(data.email.lower(), **(lambda t: {"subject": t["subject"], "html": t["html"]})(welcome_tpl(data.username.lower()))))
+
     return {
         "access_token": token,
         "token_type": "bearer",

@@ -5,6 +5,8 @@ from datetime import datetime, timezone, timedelta
 import uuid
 
 from database import db, require_auth, get_current_user, security, logger, create_notification
+from services.email_service import send_email_fire_and_forget
+import templates.emails as email_tpl
 from database import hash_password, verify_password, create_token, search_discogs, get_discogs_release
 from database import put_object, get_object, init_storage, storage_key
 from database import STRIPE_API_KEY, PLATFORM_FEE_PERCENT, FRONTEND_URL
@@ -574,6 +576,15 @@ async def like_post(post_id: str, user: Dict = Depends(require_auth)):
     
     if post.get("user_id") != user["id"]:
         u = await db.users.find_one({"id": user["id"]}, {"_id": 0})
+        # Only email on first like for this post
+        like_count = await db.likes.count_documents({"post_id": post_id})
+        if like_count == 1:
+            post_owner = await db.users.find_one({"id": post["user_id"]}, {"_id": 0})
+            if post_owner and post_owner.get("email"):
+                post_type = post.get("post_type", "post").replace("_", " ").title()
+                preview = post.get("content", post.get("caption", ""))[:80] or post_type
+                tpl = email_tpl.new_like(u.get("username", "?"), post_type, preview, f"https://thehoneygroove.com/hive")
+                await send_email_fire_and_forget(post_owner["email"], tpl["subject"], tpl["html"])
         await create_notification(post["user_id"], "POST_LIKED", "Someone liked your post",
                                   f"@{u.get('username','?')} liked your post",
                                   {"post_id": post_id})
@@ -614,6 +625,11 @@ async def add_comment(post_id: str, comment_data: CommentCreate, user: Dict = De
         await create_notification(post["user_id"], "NEW_COMMENT", "New comment on your post",
                                   f"@{user.get('username','?')} commented on your post",
                                   {"post_id": post_id})
+        post_owner = await db.users.find_one({"id": post["user_id"]}, {"_id": 0})
+        if post_owner and post_owner.get("email"):
+            post_type = post.get("post_type", "post").replace("_", " ").title()
+            tpl = email_tpl.new_comment(user.get("username", "?"), post_type, comment_data.content[:200], "https://thehoneygroove.com/hive")
+            await send_email_fire_and_forget(post_owner["email"], tpl["subject"], tpl["html"])
 
     user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url")}
     

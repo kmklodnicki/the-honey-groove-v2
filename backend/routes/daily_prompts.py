@@ -12,6 +12,8 @@ import requests
 
 from database import db, require_auth, get_current_user, logger, create_notification
 from database import get_discogs_release, DISCOGS_TOKEN, DISCOGS_USER_AGENT, DISCOGS_API_BASE
+from services.email_service import send_email_fire_and_forget
+import templates.emails as email_tpl
 
 router = APIRouter()
 FONTS_DIR = Path(__file__).parent.parent / "fonts"
@@ -474,6 +476,16 @@ async def send_streak_nudge_notifications():
                 f"you've buzzed in {streak} days in a row. today's prompt is waiting for you.",
                 {"streak": streak}
             )
+            # Send email
+            nudge_user = await db.users.find_one({"id": user_id}, {"_id": 0})
+            if nudge_user and nudge_user.get("email"):
+                today_prompt = await db.daily_prompts.find_one(
+                    {"active_date": {"$gte": today_start.isoformat(), "$lt": today_end.isoformat()}},
+                    {"_id": 0}
+                )
+                prompt_text = today_prompt.get("prompt_text", "check the hive") if today_prompt else "check the hive"
+                tpl = email_tpl.streak_nudge(nudge_user.get("username", ""), streak, prompt_text)
+                await send_email_fire_and_forget(nudge_user["email"], tpl["subject"], tpl["html"])
 
         if existing_nudge and not await db.notifications.find_one({
             "user_id": user_id,

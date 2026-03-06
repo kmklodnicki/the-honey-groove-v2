@@ -5,6 +5,8 @@ from datetime import datetime, timezone, timedelta
 import uuid
 
 from database import db, require_auth, get_current_user, security, logger, create_notification
+from services.email_service import send_email_fire_and_forget
+import templates.emails as email_tpl
 from database import hash_password, verify_password, create_token, search_discogs, get_discogs_release
 from database import put_object, get_object, init_storage, storage_key
 from database import STRIPE_API_KEY, PLATFORM_FEE_PERCENT, FRONTEND_URL
@@ -166,6 +168,11 @@ async def propose_trade(data: TradePropose, user: Dict = Depends(require_auth)):
     await create_notification(listing["user_id"], "TRADE_PROPOSED", "New trade proposal",
                               f"@{u.get('username','?')} wants to trade for your {listing.get('album','listing')}",
                               {"trade_id": trade_id})
+    responder = await db.users.find_one({"id": listing["user_id"]}, {"_id": 0})
+    if responder and responder.get("email"):
+        sweetener = str(data.boot_amount) if data.boot_amount else ""
+        tpl = email_tpl.new_trade_offer(responder.get("username", ""), u.get("username", ""), listing.get("album", "your listing"), record.get("title", "a record"), sweetener, "https://thehoneygroove.com/honeypot")
+        await send_email_fire_and_forget(responder["email"], tpl["subject"], tpl["html"])
 
     return await build_trade_response(trade_doc)
 
@@ -263,6 +270,11 @@ async def accept_trade(trade_id: str, user: Dict = Depends(require_auth)):
     await create_notification(other_id, "TRADE_ACCEPTED", "Trade accepted!",
                               f"@{u.get('username','?')} accepted the trade. Ship within 5 days!",
                               {"trade_id": trade_id})
+    other_user = await db.users.find_one({"id": other_id}, {"_id": 0})
+    if other_user and other_user.get("email"):
+        listing = await db.listings.find_one({"id": trade["listing_id"]}, {"_id": 0})
+        tpl = email_tpl.trade_accepted(other_user.get("username", ""), u.get("username", ""), listing.get("album", "the record") if listing else "your record", "https://thehoneygroove.com/honeypot")
+        await send_email_fire_and_forget(other_user["email"], tpl["subject"], tpl["html"])
 
     return await build_trade_response(updated)
 
@@ -380,6 +392,15 @@ async def ship_trade(trade_id: str, data: TradeShipInput, user: Dict = Depends(r
 
     await db.trades.update_one({"id": trade_id}, {"$set": update_fields})
     updated = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+
+    # Email the other party about shipment
+    other_id = trade["initiator_id"] if role == "responder" else trade["responder_id"]
+    u = await db.users.find_one({"id": user["id"]}, {"_id": 0})
+    other_user = await db.users.find_one({"id": other_id}, {"_id": 0})
+    if other_user and other_user.get("email"):
+        tpl = email_tpl.trade_shipped(other_user.get("username", ""), u.get("username", ""), "https://thehoneygroove.com/honeypot")
+        await send_email_fire_and_forget(other_user["email"], tpl["subject"], tpl["html"])
+
     return await build_trade_response(updated)
 
 

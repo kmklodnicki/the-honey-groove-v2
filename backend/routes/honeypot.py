@@ -5,6 +5,7 @@ from datetime import datetime, timezone, timedelta
 import uuid
 
 from database import db, require_auth, get_current_user, security, logger, create_notification
+from services.email_service import send_email_fire_and_forget
 from database import hash_password, verify_password, create_token, search_discogs, get_discogs_release
 from database import put_object, get_object, init_storage, storage_key
 from database import STRIPE_API_KEY, STRIPE_WEBHOOK_SECRET, PLATFORM_FEE_PERCENT, FRONTEND_URL
@@ -114,7 +115,7 @@ async def create_listing(data: ListingCreate, user: Dict = Depends(require_auth)
     }
     await db.listings.insert_one(listing_doc)
     
-    # Check for ISO matches
+    # Check for ISO matches and notify
     iso_matches = await db.iso_items.find({
         "status": "OPEN",
         "user_id": {"$ne": user["id"]},
@@ -123,6 +124,17 @@ async def create_listing(data: ListingCreate, user: Dict = Depends(require_auth)
             {"artist": {"$regex": data.artist, "$options": "i"}, "album": {"$regex": data.album, "$options": "i"}}
         ]
     }, {"_id": 0}).to_list(100)
+
+    for iso in iso_matches:
+        iso_user = await db.users.find_one({"id": iso["user_id"]}, {"_id": 0})
+        if iso_user:
+            await create_notification(iso_user["id"], "WANTLIST_MATCH", "Record found!",
+                                      f"{data.album} by {data.artist} is now listed in the Honeypot",
+                                      {"listing_id": listing_id})
+            if iso_user.get("email"):
+                from templates.emails import wantlist_match
+                tpl = wantlist_match(iso_user.get("username", ""), data.album or "", data.artist or "", user.get("username", ""), str(data.price or ""), f"https://thehoneygroove.com/honeypot/listing/{listing_id}")
+                await send_email_fire_and_forget(iso_user["email"], tpl["subject"], tpl["html"])
     
     user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url")}
     return ListingResponse(**{k: v for k, v in listing_doc.items() if k != '_id'}, user=user_data)

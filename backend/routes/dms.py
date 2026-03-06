@@ -5,6 +5,8 @@ from datetime import datetime, timezone, timedelta
 import uuid
 
 from database import db, require_auth, get_current_user, security, logger, create_notification
+from services.email_service import send_email_fire_and_forget
+import templates.emails as email_tpl
 from database import hash_password, verify_password, create_token, search_discogs, get_discogs_release
 from database import put_object, get_object, init_storage, storage_key
 from database import STRIPE_API_KEY, PLATFORM_FEE_PERCENT, FRONTEND_URL
@@ -159,6 +161,18 @@ async def send_message(conversation_id: str, data: DMSend, user: Dict = Depends(
     if other_id:
         await create_notification(other_id[0], "dm", "New message",
             f"@{user['username']}: {data.text[:60]}", {"conversation_id": conversation_id, "sender_id": user["id"]})
+        # Email only on first unread message in this conversation
+        unread_count = await db.dm_messages.count_documents({
+            "conversation_id": conversation_id,
+            "sender_id": user["id"],
+            "read": False,
+        })
+        if unread_count == 1:
+            other_user = await db.users.find_one({"id": other_id[0]}, {"_id": 0})
+            if other_user and other_user.get("email"):
+                context = conv.get("context_record", "")
+                tpl = email_tpl.new_dm(other_user.get("username", ""), user.get("username", ""), context, "https://thehoneygroove.com/messages")
+                await send_email_fire_and_forget(other_user["email"], tpl["subject"], tpl["html"])
 
     return {"id": msg["id"], "text": msg["text"], "sender_id": msg["sender_id"], "created_at": msg["created_at"]}
 
