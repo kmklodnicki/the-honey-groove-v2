@@ -162,8 +162,11 @@ COMPLETED → Mandatory rating before next trade
 
 87. **Secured by Stripe Badge** — Small muted "Secured by Stripe" text badge with Stripe wordmark SVG shown below purchase buttons in ListingDetailModal and below Pay Hold button in TradesPage. (Mar 2026)
 
+88. **P0 Auth Fix — Unverified User Blank Page** — Fixed register() in AuthContext.js to not set user state for unverified emails (same pattern as login). Prevents blank page on mobile for new users who haven't verified email. fetchUser() also clears state for unverified users on page refresh. (Mar 2026)
+
+89. **Mobile Bottom Navigation** — Instagram/TikTok-style mobile nav. Desktop nav hidden on mobile (<768px). Replaced with: (1) 48px slim top bar with centered HoneyGroove wordmark, DM/notification/avatar icons on right. (2) 64px fixed bottom nav with 5 icon-only tabs: The Hive, Explore, Search, Collection, The Honeypot. Active icon: amber #C8861A, inactive: muted #8A6B4A at 50%. Safe area padding via env(safe-area-inset-bottom). Page padding updated to pt-16 md:pt-24. (Mar 2026)
+
 ## Upcoming Tasks
-- **P1: Stripe Webhook Verification** — Test /api/webhook/stripe with real Stripe event
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
 - **P2: Refactor ISOPage.js** — Break monolithic 3-tab component
 - **P2: Monetization** — Pro membership, Verified Seller badge
