@@ -209,8 +209,13 @@ COMPLETED → Mandatory rating before next trade
 108. **Mobile Wordmark Fix** — Top bar height increased to 52px, wordmark min-width 140px for legibility. (Mar 2026)
 
 110. **Zero Loading Gate Architecture** — AuthContext.loading is now ALWAYS false. JWT decoded client-side for instant user hydration (decodeTokenPayload + initUserFromToken). fetchUser runs in background after page renders. ProtectedRoute has no loading check — only checks user existence. Fallback timeout increased to 15s. CORS expose_headers added. Login→Hive renders in <0.5s. (Mar 2026)
-- **P1: Add 50 New Daily Prompts + 50 Bingo Squares** — User-provided content batch
-- **P2: Safari CSS Compatibility Audit** — Check for missing -webkit- prefixes across the app
+
+111. **Hide Demo Account from Public Views** — Added get_hidden_user_ids() helper in database.py. All public-facing endpoints now filter out posts/listings/ISOs from users with is_hidden=True: /explore feed, /feed, /search/posts, /listings, /iso/community, /buzzing. Demo account flagged with is_hidden=True in DB. (Mar 2026)
+
+112. **"Unspun" → "no logged spins" Label Change** — Collection album tiles now show "no logged spins" (muted text) instead of "Unspun" when spin_count is 0. RecordDetailPage StatCard shows "no logged spins" for Your Spins when value is 0. Collection sort dropdown option renamed from "Never Spun" to "No Logged Spins". (Mar 2026)
+
+113. **Fresh Pressings 24h Cache** — /api/explore/fresh-pressings uses MongoDB `cache` collection with 24-hour TTL. Fetches from Discogs API once per day, serves cached data otherwise. (Mar 2026)
+
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
 - **P2: Refactor ISOPage.js** — Break monolithic 3-tab component
 - **P2: Monetization** — Pro membership, Verified Seller badge
