@@ -15,17 +15,17 @@ def wrap_email(body_html: str, unsubscribe_url: str = "") -> str:
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head>
 <body style="margin:0;padding:0;background:#FAF6EE;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#FAF6EE;">
-<tr><td align="center" style="padding:32px 16px;">
+<tr><td align="center" style="padding:0 16px 32px 16px;">
 <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
 
-<!-- Logo -->
-<tr><td align="center" style="padding:0 0 4px 0;">
-<img src="{LOGO_URL}" alt="the Honey Groove" width="200" style="display:block;max-width:200px;height:auto;" />
+<!-- Honey Drip — flush to top, 0 padding -->
+<tr><td align="center" style="padding:0;">
+<img src="{DRIP_URL}" alt="" width="520" style="display:block;width:100%;max-width:520px;height:auto;" />
 </td></tr>
 
-<!-- Honey Drip -->
-<tr><td align="center" style="padding:0 0 8px 0;">
-<img src="{DRIP_URL}" alt="" width="520" style="display:block;width:100%;max-width:520px;height:auto;" />
+<!-- Logo — below drip -->
+<tr><td align="center" style="padding:16px 0 8px 0;">
+<img src="{LOGO_URL}" alt="the Honey Groove" width="200" style="display:block;max-width:200px;height:auto;" />
 </td></tr>
 
 <!-- Amber divider -->

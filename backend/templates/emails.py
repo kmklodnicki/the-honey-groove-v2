@@ -36,7 +36,7 @@ def beta_waitlist(first_name: str, unsub_url: str = "") -> dict:
     <p style="{GREETING}">Hey {first_name},</p>
     <p>You made it onto the founding member list for <strong>the Honey Groove</strong>.</p>
     <p>We're in the final stretch of beta testing and founding members get in first. When your invite is ready I'll send it directly to this email with everything you need to get started.</p>
-    <p>In the meantime follow <a href="https://instagram.com/katieintheafterglow" style="{AMBER}text-decoration:underline;">@katieintheafterglow</a> on Instagram for updates.</p>
+    <p>In the meantime follow <a href="https://www.instagram.com/thehoneygroove" style="{AMBER}text-decoration:underline;">@thehoneygroove</a> on Instagram for updates.</p>
     <p>Limited spots. You got one. \U0001F41D</p>
     {SIG}
     """
