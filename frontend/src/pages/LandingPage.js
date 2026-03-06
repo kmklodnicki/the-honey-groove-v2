@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { Disc, Music2, ShoppingBag, Search, ArrowLeftRight, Share2, X, Loader2 } from 'lucide-react';
+import { Disc, Music2, ShoppingBag, Search, ArrowLeftRight, Share2, X, Loader2, Shield, CheckCircle2, ArrowRight } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
@@ -51,12 +51,12 @@ const LandingPage = () => {
   );
 
   const features = [
-    { icon: <Disc className="w-6 h-6" />, title: "Track Your Collection", description: "Add records with album art pulled from Discogs. Log every press, note conditions, and watch your collection grow and appreciate in value. Import your existing Discogs collection in one click." },
-    { icon: <Music2 className="w-6 h-6" />, title: "Now Spinning", description: "Drop the needle, share the moment. Log your spin, pick a mood, and let the hive know exactly what's on the turntable right now." },
-    { icon: <ShoppingBag className="w-6 h-6" />, title: "The Honeypot", description: "A peer-to-peer marketplace built for collectors. Buy, sell, and trade records directly with people who understand what they're worth. Lower fees than any major vinyl marketplace." },
-    { icon: <Search className="w-6 h-6" />, title: "ISO", description: "Been hunting something for years? Post it. Get matched with collectors who have it and reach out directly. We notify you the moment your record appears in the marketplace." },
-    { icon: <ArrowLeftRight className="w-6 h-6" />, title: "Trade with Confidence", description: "Every trade on the Honey Groove uses a Mutual Hold \u2014 both parties put up a hold equal to the estimated record value. Fully reversed on confirmed delivery. No risk, no strangers, no trust issues." },
-    { icon: <Share2 className="w-6 h-6" />, title: "Your Week in Wax", description: "Every Sunday get a full breakdown of your listening week \u2014 top artists, moods, era breakdown, and a one-line summary of who you were as a listener. Shareable to Instagram Stories in one tap." },
+    { icon: <Disc className="w-6 h-6" />, title: "Track Your Collection", description: "Know exactly what you own and what it's worth. Every record in your collection shows its current Discogs market value, updated regularly." },
+    { icon: <Music2 className="w-6 h-6" />, title: "Now Spinning", description: "Drop the needle, share the moment. Log your spin, pick a mood, and let the hive know what's on the turntable right now." },
+    { icon: <ShoppingBag className="w-6 h-6" />, title: "The Honeypot", description: "A peer-to-peer marketplace where collectors buy, sell, and trade directly. Lower fees than any major vinyl marketplace \u2014 because you should keep more of what your records are worth." },
+    { icon: <Search className="w-6 h-6" />, title: "ISO", description: "Post what you've been hunting. Get matched with collectors who have it. We notify you the moment your record appears \u2014 so you never miss it again." },
+    { icon: <ArrowLeftRight className="w-6 h-6" />, title: "Trade with Confidence", description: "Every trade protected by a Mutual Hold. Both parties put up a hold equal to the estimated record value. Fully reversed on delivery. No risk, no blind trust." },
+    { icon: <Share2 className="w-6 h-6" />, title: "Your Week in Wax", description: "Every Sunday a full breakdown of your listening week \u2014 top artists, moods, eras, and a one-line summary of who you were as a listener. Shareable to Instagram Stories in one tap." },
   ];
 
   return (
@@ -108,6 +108,126 @@ const LandingPage = () => {
               </Link>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* SECTION 1 — Stats Strip */}
+      <section className="py-12 md:py-16 relative" style={{ background: '#F0E8D8' }} data-testid="stats-strip">
+        <div className="max-w-5xl mx-auto px-4 md:px-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0">
+            {[
+              { num: '6%', label: 'transaction fee. lower than everywhere else.' },
+              { num: 'Free', label: 'to join. always.' },
+              { num: '100%', label: 'of trade holds reversed on confirmed delivery.' },
+              { num: '500', label: 'founding member spots. limited.' },
+            ].map((stat, i) => (
+              <div key={i} className={`text-center ${i < 3 ? 'lg:border-r lg:border-[#C8861A]/20' : ''}`} data-testid={`stat-${i}`}>
+                <div className="text-5xl md:text-[64px] font-bold leading-none mb-3" style={{ fontFamily: "'Playfair Display', serif", color: '#996012' }}>
+                  {stat.num}
+                </div>
+                <p className="text-sm md:text-lg italic max-w-[200px] mx-auto leading-snug" style={{ fontFamily: "'Cormorant Garamond', serif", color: '#8A6B4A' }}>
+                  {stat.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 2 — Mutual Hold Feature Spotlight */}
+      <section className="py-20 md:py-28 bg-honey-cream relative" data-testid="mutual-hold-spotlight">
+        <div className="max-w-6xl mx-auto px-4 md:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+            {/* Left column — Text */}
+            <div>
+              <p className="text-xs font-semibold tracking-[0.2em] uppercase mb-4" style={{ color: '#C8861A' }}>
+                TRADE WITH CONFIDENCE
+              </p>
+              <h2 className="text-3xl sm:text-4xl lg:text-[52px] lg:leading-[1.1] font-bold text-vinyl-black mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
+                Both parties protected.{' '}
+                <span className="italic text-honey-amber">Every single trade.</span>
+              </h2>
+              <p className="text-base md:text-xl leading-relaxed mb-8" style={{ fontFamily: "'Cormorant Garamond', serif", color: '#8A6B4A' }}>
+                Every trade on the Honey Groove requires a Mutual Hold. Both collectors put up a hold equal to the estimated value of the records being traded. The hold is fully reversed within 24 hours of confirmed delivery on both sides. Nobody walks away ahead by scamming — the math makes it impossible.
+              </p>
+              <Link to="/faq#trades" className="inline-flex items-center gap-2 text-sm font-medium text-[#C8861A] hover:text-[#996012] transition-colors" data-testid="learn-hold-link">
+                Learn how it works <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+            {/* Right column — Visual diagram */}
+            <div className="flex justify-center">
+              <div className="w-full max-w-[400px] rounded-3xl border-2 border-[#C8861A]/15 bg-white/60 p-8 md:p-10" data-testid="hold-diagram">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="text-center">
+                    <div className="w-16 h-16 rounded-2xl bg-[#F0E8D8] border border-[#C8861A]/20 flex items-center justify-center mx-auto mb-2">
+                      <Disc className="w-7 h-7 text-[#C8861A]" />
+                    </div>
+                    <p className="text-xs font-medium text-vinyl-black/70">Collector A</p>
+                  </div>
+                  <div className="flex-1 flex flex-col items-center gap-1 px-2">
+                    <div className="flex items-center gap-1 text-[#C8861A]/50">
+                      <div className="h-px flex-1 bg-[#C8861A]/20" />
+                      <ArrowLeftRight className="w-4 h-4 shrink-0" />
+                      <div className="h-px flex-1 bg-[#C8861A]/20" />
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="w-16 h-16 rounded-2xl bg-[#F0E8D8] border border-[#C8861A]/20 flex items-center justify-center mx-auto mb-2">
+                      <Disc className="w-7 h-7 text-[#C8861A]" />
+                    </div>
+                    <p className="text-xs font-medium text-vinyl-black/70">Collector B</p>
+                  </div>
+                </div>
+                <div className="text-center mb-6">
+                  <div className="inline-flex items-center gap-2 bg-[#E8A820]/10 border border-[#C8861A]/20 rounded-full px-5 py-2.5">
+                    <Shield className="w-5 h-5 text-[#C8861A]" />
+                    <span className="text-sm font-semibold text-[#996012]">Hold Active</span>
+                  </div>
+                </div>
+                <div className="border-t border-dashed border-[#C8861A]/20 pt-5">
+                  <div className="flex items-center justify-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                    <span className="text-sm font-medium text-green-700">Delivery Confirmed — Holds Released</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 3 — Fee Comparison */}
+      <section className="py-16 md:py-20 relative" style={{ background: '#F0E8D8' }} data-testid="fee-comparison">
+        <div className="max-w-xl mx-auto px-4 md:px-8 text-center">
+          <h2 className="font-heading text-3xl md:text-4xl text-vinyl-black mb-3">
+            Finally. A marketplace that's <span className="text-honey-amber italic">on your side.</span>
+          </h2>
+          <p className="text-base md:text-lg italic mb-10" style={{ fontFamily: "'Cormorant Garamond', serif", color: '#8A6B4A' }}>
+            we charge less so you keep more.
+          </p>
+          <div className="max-w-[480px] mx-auto rounded-2xl overflow-hidden border border-[#C8861A]/15 bg-white/80" data-testid="fee-table">
+            {[
+              { name: 'eBay', fee: '12.9%', highlight: false },
+              { name: 'Discogs', fee: '8%', highlight: false },
+              { name: 'The Honey Groove', fee: '6%', highlight: true },
+            ].map((row) => (
+              <div
+                key={row.name}
+                className={`flex items-center justify-between px-6 py-4 ${
+                  row.highlight
+                    ? 'bg-[#E8A820]/15 border-l-[3px] border-l-[#E8A820] font-bold text-vinyl-black'
+                    : 'text-vinyl-black/50 border-b border-[#C8861A]/10'
+                }`}
+                data-testid={`fee-row-${row.name.toLowerCase().replace(/\s+/g, '-')}`}
+              >
+                <span className={row.highlight ? 'text-base' : 'text-sm'}>{row.name}</span>
+                <span className={row.highlight ? 'text-xl text-[#996012]' : 'text-sm'}>{row.fee}</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-sm italic mt-6" style={{ fontFamily: "'Cormorant Garamond', serif", color: '#8A6B4A' }}>
+            fees apply to completed sales only. trades with no sweetener are always free.
+          </p>
         </div>
       </section>
 
