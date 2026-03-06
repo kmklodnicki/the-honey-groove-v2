@@ -865,7 +865,7 @@ const ActiveTradeCard = ({ trade, currentUserId }) => {
             {trade.hold_enabled && (
               <TooltipProvider>
                 <Tooltip>
-                  <TooltipTrigger asChild><span><Shield className="w-3.5 h-3.5 text-honey-amber" /></span></TooltipTrigger>
+                  <TooltipTrigger asChild><span data-testid="hold-shield-icon"><Shield className="w-3.5 h-3.5 text-honey-amber" /></span></TooltipTrigger>
                   <TooltipContent className="bg-vinyl-black text-white text-xs max-w-[200px]"><p>Mutual hold trade — both parties have skin in the game.</p></TooltipContent>
                 </Tooltip>
               </TooltipProvider>
