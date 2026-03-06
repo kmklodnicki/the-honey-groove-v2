@@ -509,7 +509,7 @@ const ISOPage = () => {
             <div className="flex gap-1">
               {FILTER_OPTIONS.map(f => (
                 <Button key={f} size="sm" variant={filter === f ? 'default' : 'outline'} onClick={() => setFilter(f)}
-                  className={`rounded-full text-xs ${filter === f ? 'bg-vinyl-black text-white' : ''}`} data-testid={`iso-filter-${f.toLowerCase()}`}>{f}</Button>
+                  className={`rounded-full text-xs ${filter === f ? 'bg-[#E8A820] text-[#2A1A06] hover:bg-[#C8861A]' : ''}`} data-testid={`iso-filter-${f.toLowerCase()}`}>{f}</Button>
               ))}
             </div>
           </div>
