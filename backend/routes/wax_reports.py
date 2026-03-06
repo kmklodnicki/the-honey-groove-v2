@@ -13,6 +13,11 @@ import textwrap
 import math
 
 from database import db, require_auth, logger, create_notification
+import os
+
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
+SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "onboarding@resend.dev")
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "")
 
 router = APIRouter()
 FONTS_DIR = Path(__file__).parent.parent / "fonts"
@@ -1077,6 +1082,100 @@ async def get_share_card(report_id: str, user: Dict = Depends(require_auth)):
     return Response(content=png, media_type="image/png")
 
 
+async def _send_wax_report_email(user_email: str, username: str, report: dict):
+    """Send the 'Your Week in Wax is Ready' email via Resend."""
+    if not RESEND_API_KEY or not user_email:
+        return
+    try:
+        import resend
+        resend.api_key = RESEND_API_KEY
+
+        closing_line = report.get("closing_line", "")
+        total_spins = report.get("total_spins", 0)
+        top_artists = report.get("top_artists", [])
+        top_records = report.get("top_records", [])
+        top_artist = top_artists[0]["artist"] if top_artists else ""
+        top_record = f'{top_records[0]["artist"]} — {top_records[0]["title"]}' if top_records else ""
+        personality = report.get("personality", {})
+        personality_label = personality.get("label", "")
+        week_start = report.get("week_start", "")[:10]
+        week_end = report.get("week_end", "")[:10]
+        unique_artists = report.get("unique_artists_count", 0)
+
+        # Build top artists list HTML
+        artists_html = ""
+        for i, a in enumerate(top_artists[:3]):
+            artists_html += f'<tr><td style="padding:4px 0;color:#8A6B4A;font-size:13px;">{i+1}.</td><td style="padding:4px 8px;color:#2A1A06;font-size:15px;font-weight:600;">{a["artist"]}</td><td style="padding:4px 0;color:#C8861A;font-size:13px;">{a["spins"]} plays</td></tr>'
+
+        # Build conditional sections outside f-string
+        artists_section = ""
+        if artists_html:
+            artists_section = "<p style='color:#2A1A06;font-size:15px;font-weight:700;margin:20px 0 8px 0;'>top artists</p><table style='width:100%;border-collapse:collapse;'>" + artists_html + "</table>"
+
+        personality_section = ""
+        if personality_label:
+            personality_section = "<div style='text-align:center;margin:24px 0 16px 0;'><span style='display:inline-block;padding:6px 20px;border-radius:50px;background:#2A1A06;color:#E8A820;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;'>" + personality_label + "</span></div>"
+
+        html = f"""
+        <div style="font-family:Georgia,'Times New Roman',serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#FFFDF8;">
+            <p style="color:#8A6B4A;font-size:13px;text-transform:uppercase;letter-spacing:2px;margin:0 0 8px 0;">the honey groove</p>
+            <h1 style="color:#2A1A06;font-size:28px;font-weight:700;margin:0 0 4px 0;font-family:'Playfair Display',Georgia,serif;">your week in wax</h1>
+            <p style="color:#8A6B4A;font-size:13px;margin:0 0 24px 0;">{week_start} — {week_end}</p>
+
+            <p style="color:#996012;font-size:13px;margin:0 0 4px 0;">hey {username},</p>
+
+            <!-- Hero closing line -->
+            <div style="text-align:center;padding:28px 16px;margin:20px 0;background:linear-gradient(135deg,#FFF8EE,#FFF3E0);border-radius:16px;border:1px solid #F5E6CC;">
+                <p style="color:#996012;font-size:22px;font-style:italic;line-height:1.5;margin:0;font-family:'Playfair Display',Georgia,serif;font-weight:600;">
+                    "{closing_line}"
+                </p>
+            </div>
+
+            <!-- Stats -->
+            <table style="width:100%;border-collapse:collapse;margin:20px 0;">
+                <tr>
+                    <td style="text-align:center;padding:12px;">
+                        <p style="color:#2A1A06;font-size:32px;font-weight:700;margin:0;font-family:'Playfair Display',Georgia,serif;">{total_spins}</p>
+                        <p style="color:#8A6B4A;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin:4px 0 0 0;">total plays</p>
+                    </td>
+                    <td style="text-align:center;padding:12px;border-left:1px solid #F0E0C8;border-right:1px solid #F0E0C8;">
+                        <p style="color:#2A1A06;font-size:32px;font-weight:700;margin:0;font-family:'Playfair Display',Georgia,serif;">{unique_artists}</p>
+                        <p style="color:#8A6B4A;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin:4px 0 0 0;">artists</p>
+                    </td>
+                    <td style="text-align:center;padding:12px;">
+                        <p style="color:#2A1A06;font-size:32px;font-weight:700;margin:0;font-family:'Playfair Display',Georgia,serif;">{len(top_records)}</p>
+                        <p style="color:#8A6B4A;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin:4px 0 0 0;">records</p>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Top artists -->
+            {artists_section}
+
+            <!-- Personality label -->
+            {personality_section}
+
+            <!-- CTA -->
+            <div style="text-align:center;margin:24px 0;">
+                <a href="{FRONTEND_URL}/wax-report" style="display:inline-block;padding:14px 32px;background:#E8A820;color:#2A1A06;text-decoration:none;border-radius:50px;font-size:14px;font-weight:700;font-family:Georgia,serif;">view full report</a>
+            </div>
+
+            <p style="color:#C8861A;font-size:12px;font-style:italic;text-align:center;margin:24px 0 0 0;">keep the needle in the groove.</p>
+        </div>
+        """
+
+        params = {
+            "from": SENDER_EMAIL,
+            "to": [user_email],
+            "subject": "your week in wax is ready \U0001F36F",
+            "html": html,
+        }
+        await asyncio.to_thread(resend.Emails.send, params)
+        logger.info(f"Wax Report email sent to {user_email}")
+    except Exception as e:
+        logger.error(f"Failed to send Wax Report email to {user_email}: {e}")
+
+
 # ─────────────────── Background Job ───────────────────
 
 async def run_weekly_generation():
@@ -1085,7 +1184,7 @@ async def run_weekly_generation():
     week_start = (now - timedelta(days=now.weekday() + 7)).replace(hour=0, minute=0, second=0, microsecond=0)
     week_end = week_start + timedelta(days=7)
 
-    users = await db.users.find({}, {"_id": 0, "id": 1, "username": 1}).to_list(10000)
+    users = await db.users.find({}, {"_id": 0, "id": 1, "username": 1, "email": 1}).to_list(10000)
     logger.info(f"Wax Report: generating for {len(users)} users, week {week_start.date()} to {week_end.date()}")
 
     for u in users:
@@ -1095,12 +1194,15 @@ async def run_weekly_generation():
             )
             if existing:
                 continue
-            await generate_wax_report(u["id"], week_start, week_end)
+            report = await generate_wax_report(u["id"], week_start, week_end)
             await create_notification(
                 u["id"], "WAX_REPORT", "your week in wax is ready",
-                "your week in wax is ready 🍯",
+                "your week in wax is ready",
                 {"week_start": week_start.isoformat()}
             )
+            # Send email if user has an email address and report has data
+            if u.get("email") and report and report.get("total_spins", 0) > 0:
+                await _send_wax_report_email(u["email"], u.get("username", ""), report)
             await asyncio.sleep(0.1)
         except Exception as e:
             logger.error(f"Wax Report gen failed for {u['id']}: {e}")
