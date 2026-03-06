@@ -210,7 +210,9 @@ const BetaSignupPage = () => {
               <p
                 style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: '24px', lineHeight: 1.5, color: '#8A6B4A', maxWidth: '380px', margin: '0 auto' }}
               >
-                i'll be in touch soon with everything you need to know to get started testing. follow @katieintheafterglow for updates.
+                i'll be in touch soon with everything you need to know to get started testing. follow{' '}
+                <a href="https://www.instagram.com/thehoneygroove" target="_blank" rel="noopener noreferrer" style={{ color: '#C8861A', textDecoration: 'underline' }}>@thehoneygroove</a>
+                {' '}for updates.
               </p>
             </div>
           )}
