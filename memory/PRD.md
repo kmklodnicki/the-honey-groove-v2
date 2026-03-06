@@ -105,6 +105,8 @@ The Hive — Explore — Collection — The Honeypot
 │   ├── JoinPage.js          # Invite-only registration
 │   ├── AdminBetaPage.js     # Admin panel for beta/invites
 │   ├── TradesPage.js        # ProposeTradeModal (condition+photos), TradeDetailModal (condition+photos display)
+
+## Upcoming Tasks
 │   ├── ISOPage.js           # The Honeypot (3 tabs), listing modal with condition+photos
 │   ├── WaxReportPage.js     # Full weekly report view
 │   └── ...other pages
@@ -198,7 +200,9 @@ COMPLETED → Mandatory rating before next trade
 
 104. **ISO Page Brand Color Audit** — Changed all off-brand colors: SEARCHING badge purple→amber, 'I have this' button green→amber, BUY_NOW badge green→amber, Make Offer button blue→amber, Mark Found button green→amber. All using #C8861A/#E8A820 palette. (Mar 2026)
 
-## Upcoming Tasks
+105. **Added 50 Daily Prompts + 50 Bingo Squares** — Added to DB (total: 80 prompts, 124 bingo squares). Cleaned TEST entries from prompts, bingo squares, and records. Fixed 49 bingo squares missing emoji field. (Mar 2026)
+
+106. **Redesigned Collector Bingo Teaser** — Replaced full 5x5 grid preview on Explore page with compact teaser card (~160px): countdown line + italic Cormorant Garamond teaser text + full-width amber "play now" CTA. Clicking opens full bingo modal with interactive 5x5 grid unchanged. Both active and locked states redesigned. (Mar 2026)
 - **P1: Add 50 New Daily Prompts + 50 Bingo Squares** — User-provided content batch
 - **P2: Safari CSS Compatibility Audit** — Check for missing -webkit- prefixes across the app
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
