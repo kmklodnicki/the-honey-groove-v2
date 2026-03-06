@@ -199,7 +199,7 @@ const BetaSection = ({ API, headers, token }) => {
                     return (
                     <tr key={s.id} className="border-b border-honey/10 hover:bg-honey/5" data-testid={`signup-row-${s.id}`}>
                       <td className="px-3 py-2.5 font-medium">{s.first_name}</td>
-                      <td className="px-3 py-2.5 text-honey-amber">@{s.instagram_handle}</td>
+                      <td className="px-3 py-2.5 text-honey-amber">{s.instagram_handle?.startsWith('@') ? s.instagram_handle : `@${s.instagram_handle}`}</td>
                       <td className="px-3 py-2.5">{s.email}</td>
                       <td className="px-3 py-2.5 text-xs max-w-[120px] truncate">{s.feature_interest}</td>
                       <td className="px-3 py-2.5 text-muted-foreground text-xs whitespace-nowrap">{fmtDate(s.submitted_at)}</td>
