@@ -326,8 +326,7 @@ class TradePropose(BaseModel):
     boot_amount: Optional[float] = None
     boot_direction: Optional[str] = None
     message: Optional[str] = None
-    hold_enabled: Optional[bool] = False
-    hold_amount: Optional[float] = None
+    hold_amount: Optional[float] = None  # auto-suggested if not provided, $10 min enforced
 
 class TradeCounter(BaseModel):
     requested_record_id: Optional[str] = None
@@ -392,8 +391,8 @@ class AdminDisputeResolve(BaseModel):
     partial_amount: Optional[float] = None
 
 class HoldAccept(BaseModel):
-    """Accept or counter the proposed hold amount during trade acceptance."""
-    action: str  # "accept", "counter", "decline"
+    """Accept or counter the hold amount during trade negotiation."""
+    action: str  # "accept" or "counter"
     hold_amount: Optional[float] = None  # required if action is "counter"
 
 class AdminHoldResolve(BaseModel):

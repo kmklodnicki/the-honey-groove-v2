@@ -199,11 +199,15 @@ def new_dm(username: str, sender: str, context_record: str, dm_url: str) -> dict
     }
 
 
-def trade_accepted(username: str, acceptor: str, record_name: str, trade_url: str) -> dict:
+def trade_accepted(username: str, acceptor: str, record_name: str, trade_url: str, hold_amount: str = "0") -> dict:
     body = f"""
     <p style="{MUTED}">Hey {username},</p>
     <p><strong>{acceptor}</strong> accepted your trade offer for <strong>{record_name}</strong>.</p>
-    <p>Time to ship your end. Mark it as shipped once it's on its way so the trade can complete.</p>
+    <div style="padding:16px 20px;background:#FFF8EE;border-radius:12px;border:1px solid #F5E6CC;margin:16px 0;">
+        <p style="margin:0;">Both parties have been charged a hold of <strong style="{AMBER}">${hold_amount}</strong>.</p>
+        <p style="margin:8px 0 0 0;{MUTED}font-size:13px;">This will be fully reversed within 24 hours of confirmed delivery from both sides. It protects you and the person you are trading with.</p>
+    </div>
+    <p>Pay your hold to lock in the trade, then ship your record. Mark it as shipped once it's on its way so the trade can complete.</p>
     <div style="text-align:center;margin:20px 0;">
         <a href="{trade_url}" style="{BTN}">view the trade</a>
     </div>

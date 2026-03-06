@@ -186,8 +186,8 @@ async def propose_trade(data: TradePropose, user: Dict = Depends(require_auth)):
         "status": "PROPOSED",
         "messages": messages,
         "counter": None,
-        "hold_enabled": bool(data.hold_enabled),
-        "hold_amount": max(data.hold_amount, 10) if data.hold_enabled and data.hold_amount else None,
+        "hold_enabled": True,
+        "hold_amount": max(data.hold_amount or 10, 10),
         "hold_status": None,
         "hold_charges": None,
         "created_at": now,
@@ -248,8 +248,8 @@ async def get_trade(trade_id: str, user: Dict = Depends(require_auth)):
 
 
 @router.put("/trades/{trade_id}/accept")
-async def accept_trade(trade_id: str, request: Request, user: Dict = Depends(require_auth)):
-    """Accept a trade proposal or counter. For hold trades, optionally pass hold_action in body."""
+async def accept_trade(trade_id: str, user: Dict = Depends(require_auth)):
+    """Accept a trade proposal or counter. All trades require mutual hold."""
     trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
     if not trade:
         raise HTTPException(status_code=404, detail="Trade not found")
@@ -265,14 +265,6 @@ async def accept_trade(trade_id: str, request: Request, user: Dict = Depends(req
         raise HTTPException(status_code=400, detail=f"Cannot accept a trade with status {trade['status']}")
 
     now = datetime.now(timezone.utc).isoformat()
-
-    # Parse optional body for hold action
-    body = {}
-    try:
-        body = await request.json()
-    except Exception:
-        pass
-    hold_action = body.get("hold_action", "accept")  # accept / decline
 
     # If accepting a counter, apply counter terms
     set_fields = {"status": "ACCEPTED", "updated_at": now}
@@ -290,40 +282,26 @@ async def accept_trade(trade_id: str, request: Request, user: Dict = Depends(req
     # Mark the listing as IN_TRADE
     await db.listings.update_one({"id": trade["listing_id"]}, {"$set": {"status": "IN_TRADE"}})
 
-    # Branch: Mutual Hold or Standard
-    if trade.get("hold_enabled") and trade.get("hold_amount") and hold_action != "decline":
-        # Move to HOLD_PENDING — both parties must pay their hold
-        await db.trades.update_one({"id": trade_id}, {"$set": {
-            "status": "HOLD_PENDING",
-            "hold_status": "awaiting_payment",
-            "hold_charges": {"initiator": None, "responder": None},
-        }})
-    else:
-        # Standard flow: disable hold if declined, go straight to SHIPPING
-        shipping_deadline = (datetime.now(timezone.utc) + timedelta(days=5)).isoformat()
-        await db.trades.update_one({"id": trade_id}, {"$set": {
-            "status": "SHIPPING",
-            "hold_enabled": False,
-            "shipping_deadline": shipping_deadline,
-            "shipping": {"initiator": None, "responder": None},
-            "confirmations": {},
-        }})
+    # All trades require mutual hold — move to HOLD_PENDING
+    await db.trades.update_one({"id": trade_id}, {"$set": {
+        "status": "HOLD_PENDING",
+        "hold_enabled": True,
+        "hold_status": "awaiting_payment",
+        "hold_charges": {"initiator": None, "responder": None},
+    }})
 
     updated = await db.trades.find_one({"id": trade_id}, {"_id": 0})
 
     # Notify the other party
     other_id = trade["initiator_id"] if user["id"] == trade["responder_id"] else trade["responder_id"]
     u = await db.users.find_one({"id": user["id"]}, {"_id": 0})
-    msg = f"@{u.get('username','?')} accepted the trade."
-    if updated.get("status") == "HOLD_PENDING":
-        msg += " Pay your hold to start shipping."
-    else:
-        msg += " Ship within 5 days!"
+    msg = f"@{u.get('username','?')} accepted the trade. Pay your hold to start shipping."
     await create_notification(other_id, "TRADE_ACCEPTED", "Trade accepted!", msg, {"trade_id": trade_id})
     other_user = await db.users.find_one({"id": other_id}, {"_id": 0})
     if other_user and other_user.get("email"):
         listing = await db.listings.find_one({"id": trade["listing_id"]}, {"_id": 0})
-        tpl = email_tpl.trade_accepted(other_user.get("username", ""), u.get("username", ""), listing.get("album", "the record") if listing else "your record", TRADE_URL)
+        hold_amt = f"{trade.get('hold_amount', 0):.2f}"
+        tpl = email_tpl.trade_accepted(other_user.get("username", ""), u.get("username", ""), listing.get("album", "the record") if listing else "your record", TRADE_URL, hold_amt)
         await send_email_fire_and_forget(other_user["email"], tpl["subject"], tpl["html"])
 
     return await build_trade_response(updated)
@@ -587,14 +565,12 @@ async def get_hold_suggestion(trade_id: str, user: Dict = Depends(require_auth))
 
 @router.put("/trades/{trade_id}/hold/respond")
 async def respond_to_hold(trade_id: str, data: HoldAccept, user: Dict = Depends(require_auth)):
-    """Respond to a mutual hold proposal: accept, counter, or decline."""
+    """Respond to a mutual hold amount: accept or counter. All trades require a hold."""
     trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
     if not trade:
         raise HTTPException(status_code=404, detail="Trade not found")
     if trade["status"] not in ["PROPOSED", "COUNTERED"]:
         raise HTTPException(status_code=400, detail="Trade is not in a negotiable status")
-    if not trade.get("hold_enabled"):
-        raise HTTPException(status_code=400, detail="This trade does not have a mutual hold")
 
     now = datetime.now(timezone.utc).isoformat()
 
@@ -608,13 +584,8 @@ async def respond_to_hold(trade_id: str, data: HoldAccept, user: Dict = Depends(
             "updated_at": now,
         }})
         return {"message": f"Hold amount updated to ${data.hold_amount:.2f}", "hold_amount": data.hold_amount}
-    elif data.action == "decline":
-        await db.trades.update_one({"id": trade_id}, {"$set": {
-            "hold_enabled": False, "hold_amount": None, "updated_at": now,
-        }})
-        return {"message": "Hold declined. Trade will proceed as standard when accepted."}
     else:
-        raise HTTPException(status_code=400, detail="Invalid action. Use: accept, counter, decline")
+        raise HTTPException(status_code=400, detail="Invalid action. Use: accept, counter")
 
 
 @router.post("/trades/{trade_id}/hold/checkout")

@@ -130,6 +130,8 @@ COMPLETED → Mandatory rating before next trade
 
 71. **Mutual Hold Trade — Phase 1 Backend** — 9 new endpoints: hold-suggestion (100% avg Discogs value, $50 fallback, $10 min), hold/respond (accept/counter/decline), hold/checkout (Stripe), hold/status, enhanced confirm-receipt (auto-refund), enhanced dispute (freeze holds), admin hold-disputes (list + resolve with 4 options). 4 hold email templates. Auto-reversal scheduler (10 min interval). 19/19 tests passed. (Mar 2026)
 
+72. **Mandatory Mutual Hold** — All trades now require hold (no straight trades). Removed toggle/decline option. Accept always → HOLD_PENDING. Trade accepted email updated with hold explanation. FAQ updated: new "What is a Mutual Hold Trade?" entry, fee policy clarifies 6% on sweeteners only, hold not subject to fee. (Mar 2026)
+
 ## Upcoming Tasks
 - **P0: Complete Email System** — Wire remaining 2 email triggers (newsletter_signup, weekly_wax_ready), verify all 13 existing triggers
 - **P1: Stripe Webhook Verification** — Test /api/webhook/stripe with real Stripe event

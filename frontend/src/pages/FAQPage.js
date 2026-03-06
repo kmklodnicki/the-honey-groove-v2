@@ -85,7 +85,7 @@ const faqSections = [
       },
       {
         q: 'What are the fees?',
-        a: 'The Honey Groove charges a 6% fee on completed sales — lower than any major vinyl marketplace. Trades with no cash component are free. If your trade includes a sweetener (cash added to balance an unequal swap) we take 6% of the sweetener amount only.',
+        a: 'The Honey Groove charges a 6% fee on completed sales. All trades require a Mutual Hold — both parties put up a hold equal to the estimated value of the records being traded. The hold is fully reversed within 24 hours of both parties confirming receipt. If your trade includes a sweetener we take 6% of the sweetener amount only.',
       },
       {
         q: 'What is a sweetener?',
@@ -106,11 +106,15 @@ const faqSections = [
     items: [
       {
         q: 'How does a trade work?',
-        a: 'You find a listing marked for trade, propose an offer from your own collection, and optionally add a sweetener. The other collector accepts, counters, or declines. Once both sides agree the records are locked and both parties ship within 5 days. After both deliveries are confirmed the records transfer to each other\'s collections in the app automatically.',
+        a: 'You find a listing marked for trade, propose an offer from your own collection, and optionally add a sweetener. The other collector accepts, counters, or declines. Once both sides agree, both parties pay a Mutual Hold and then ship within 5 days. After both deliveries are confirmed and both parties confirm receipt, the holds are fully reversed and the records transfer to each other\'s collections automatically.',
+      },
+      {
+        q: 'What is a Mutual Hold Trade?',
+        a: 'Every trade on the Honey Groove requires a Mutual Hold. When you agree to a trade, both parties are charged a hold amount equal to the estimated value of the records being traded. This money is held by the platform and not transferred to either party. Once both records are delivered and both parties confirm receipt, both holds are fully reversed — refunded to your card within 2 to 5 business days. If something goes wrong, either party can open a dispute. Both holds are frozen until our team resolves it. The hold protects both sides and ensures everyone has skin in the game. The hold itself is not a sale and is not subject to the platform fee — it is fully reversed on every successful trade. The 6% fee applies only to sweetener amounts.',
       },
       {
         q: 'What if the other person doesn\'t ship?',
-        a: 'If either party hasn\'t entered a tracking number within 5 days the other can trigger a cancellation. Both records are released and the trade is voided.',
+        a: 'If either party hasn\'t entered a tracking number within 5 days the other can trigger a cancellation. Both holds are reversed and the trade is voided.',
       },
       {
         q: 'Can I cancel a trade after accepting?',
