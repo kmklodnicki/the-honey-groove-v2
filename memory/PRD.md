@@ -136,6 +136,8 @@ COMPLETED → Mandatory rating before next trade
 
 74. **Week in Wax Card Redesign** — Complete rewrite of share card to match Canva template. New layout: header, honey drip overlay, top album card, 3-column top artists bar, personality label, amber stat boxes, olive decade pills, amber closing line, footer. Generated honey drip asset. Verified via screenshot. (Mar 2026)
 
+75. **Admin Hold Disputes Panel (Phase 4)** — New "Hold Disputes" tab in admin panel. Dispute cards show: HOLD FROZEN header with amount, both parties, traded records, dispute reason + evidence photos, resolution notes. 4 action buttons: Full Reversal, Penalize Proposer, Penalize Recipient, Partial Split. Verified with real dispute data. (Mar 2026)
+
 ## Upcoming Tasks
 - **P0: Complete Email System** — Wire remaining 2 email triggers (newsletter_signup, weekly_wax_ready), verify all 13 existing triggers
 - **P1: Stripe Webhook Verification** — Test /api/webhook/stripe with real Stripe event

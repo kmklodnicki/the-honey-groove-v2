@@ -8,7 +8,7 @@ import { Textarea } from '../components/ui/textarea';
 import {
   Loader2, Copy, Download, Plus, Users, Key, Check, X,
   MessageSquare, Grid3X3, Flag, Settings, ChevronRight,
-  ToggleLeft, ToggleRight, Pencil, Calendar, Hash
+  ToggleLeft, ToggleRight, Pencil, Calendar, Hash, Shield, DollarSign, ArrowRightLeft
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -27,6 +27,7 @@ const AdminPage = () => {
     { key: 'beta', label: 'Beta & Invites', icon: Users },
     { key: 'prompts', label: 'Daily Prompts', icon: MessageSquare },
     { key: 'bingo', label: 'Bingo Squares', icon: Grid3X3 },
+    { key: 'holds', label: 'Hold Disputes', icon: Shield },
     { key: 'reports', label: 'Reports', icon: Flag },
     { key: 'settings', label: 'Platform Settings', icon: Settings },
   ];
@@ -56,6 +57,7 @@ const AdminPage = () => {
       {section === 'beta' && <BetaSection API={API} headers={headers} token={token} />}
       {section === 'prompts' && <PromptsSection API={API} headers={headers} />}
       {section === 'bingo' && <BingoSection API={API} headers={headers} />}
+      {section === 'holds' && <HoldDisputesSection API={API} headers={headers} />}
       {section === 'reports' && <ReportsSection API={API} headers={headers} />}
       {section === 'settings' && <SettingsSection API={API} headers={headers} />}
     </div>
@@ -461,6 +463,201 @@ const BingoSection = ({ API, headers }) => {
           </div>
         )}
       </Card>
+    </div>
+  );
+};
+
+
+// ═══════════════════════════════════════════════
+// MUTUAL HOLD DISPUTES SECTION
+// ═══════════════════════════════════════════════
+const HOLD_RESOLUTIONS = [
+  { key: 'full_reversal', label: 'Full Reversal', desc: 'Refund both parties, void trade', color: 'bg-green-600 hover:bg-green-700 text-white' },
+  { key: 'penalize_initiator', label: 'Penalize Proposer', desc: 'Keep proposer hold, refund recipient', color: 'bg-red-600 hover:bg-red-700 text-white' },
+  { key: 'penalize_responder', label: 'Penalize Recipient', desc: 'Keep recipient hold, refund proposer', color: 'bg-red-600 hover:bg-red-700 text-white' },
+  { key: 'partial', label: 'Partial Split', desc: 'Custom refund amounts', color: 'bg-amber-600 hover:bg-amber-700 text-white' },
+];
+
+const HoldDisputesSection = ({ API, headers }) => {
+  const [disputes, setDisputes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [resolving, setResolving] = useState(null);
+  const [notes, setNotes] = useState('');
+  const [partialInit, setPartialInit] = useState('');
+  const [partialResp, setPartialResp] = useState('');
+  const [showPartial, setShowPartial] = useState(null);
+
+  const fetchDisputes = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API}/admin/hold-disputes`, { headers });
+      setDisputes(res.data);
+    } catch {}
+    setLoading(false);
+  }, [API]);
+
+  useEffect(() => { fetchDisputes(); }, [fetchDisputes]);
+
+  const resolve = async (tradeId, resolution) => {
+    if (!notes.trim()) { toast.error('Resolution notes required'); return; }
+    setResolving(tradeId);
+    try {
+      const body = { resolution, notes };
+      if (resolution === 'partial') {
+        body.partial_refund_initiator = partialInit ? parseFloat(partialInit) : 0;
+        body.partial_refund_responder = partialResp ? parseFloat(partialResp) : 0;
+      }
+      await axios.put(`${API}/admin/hold-disputes/${tradeId}/resolve`, body, { headers });
+      toast.success('Dispute resolved');
+      setNotes(''); setPartialInit(''); setPartialResp(''); setShowPartial(null);
+      fetchDisputes();
+    } catch (err) { toast.error(err.response?.data?.detail || 'Failed to resolve'); }
+    setResolving(null);
+  };
+
+  if (loading) return <LoadingSkeleton />;
+
+  return (
+    <div data-testid="admin-holds-section">
+      <p className="text-sm text-muted-foreground mb-4">
+        {disputes.length} active dispute{disputes.length !== 1 ? 's' : ''} with frozen holds
+      </p>
+
+      {disputes.length === 0 ? (
+        <Card className="p-12 text-center border-honey/30">
+          <Shield className="w-10 h-10 text-honey/30 mx-auto mb-3" />
+          <p className="text-muted-foreground text-sm">No hold disputes. All clear.</p>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {disputes.map(trade => (
+            <Card key={trade.id} className="border-red-200 overflow-hidden" data-testid={`hold-dispute-${trade.id}`}>
+              {/* Header */}
+              <div className="bg-red-50 px-5 py-3 border-b border-red-200 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-red-500" />
+                  <span className="text-sm font-bold text-red-700">HOLD FROZEN</span>
+                  <span className="text-xs text-red-500 font-mono">{trade.id.slice(0, 8)}</span>
+                </div>
+                <span className="text-sm font-bold text-red-700">${trade.hold_amount} per party</span>
+              </div>
+
+              <div className="p-5 space-y-4">
+                {/* Parties */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-honey/5 rounded-lg p-3">
+                    <p className="text-[10px] text-muted-foreground mb-1">PROPOSER</p>
+                    <p className="text-sm font-medium">@{trade.initiator?.username || '?'}</p>
+                    <p className="text-xs text-muted-foreground">{trade.initiator?.email || ''}</p>
+                  </div>
+                  <div className="bg-honey/5 rounded-lg p-3">
+                    <p className="text-[10px] text-muted-foreground mb-1">RECIPIENT</p>
+                    <p className="text-sm font-medium">@{trade.responder?.username || '?'}</p>
+                    <p className="text-xs text-muted-foreground">{trade.responder?.email || ''}</p>
+                  </div>
+                </div>
+
+                {/* Records */}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    {trade.offered_record?.cover_url && <img src={trade.offered_record.cover_url} alt="" className="w-10 h-10 rounded object-cover" />}
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium truncate">{trade.offered_record?.title || '?'}</p>
+                      <p className="text-[10px] text-muted-foreground">{trade.offered_record?.artist}</p>
+                    </div>
+                  </div>
+                  <ArrowRightLeft className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    {trade.listing_record?.cover_url && <img src={trade.listing_record.cover_url} alt="" className="w-10 h-10 rounded object-cover" />}
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium truncate">{trade.listing_record?.album || '?'}</p>
+                      <p className="text-[10px] text-muted-foreground">{trade.listing_record?.artist}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dispute details */}
+                {trade.dispute && (
+                  <div className="bg-red-50 rounded-lg p-3 border border-red-100">
+                    <p className="text-[10px] text-red-600 font-medium mb-1">
+                      DISPUTE BY @{trade.dispute.opened_by === trade.initiator_id ? trade.initiator?.username : trade.responder?.username}
+                      {' '}&middot; {fmtDate(trade.dispute.opened_at)}
+                    </p>
+                    <p className="text-sm text-red-800">{trade.dispute.reason}</p>
+                    {trade.dispute.photo_urls?.length > 0 && (
+                      <div className="flex gap-2 mt-2">
+                        {trade.dispute.photo_urls.map((url, i) => (
+                          <a key={i} href={url} target="_blank" rel="noreferrer">
+                            <img src={url} alt={`evidence ${i + 1}`} className="w-16 h-16 rounded object-cover border border-red-200" />
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Resolution notes */}
+                <Textarea
+                  placeholder="Resolution notes (required) — explain your decision..."
+                  value={notes}
+                  onChange={e => setNotes(e.target.value)}
+                  className="border-honey/30 text-sm resize-none"
+                  rows={2}
+                  data-testid={`dispute-notes-${trade.id}`}
+                />
+
+                {/* Partial split inputs */}
+                {showPartial === trade.id && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[10px] text-muted-foreground">Refund to @{trade.initiator?.username}</label>
+                      <div className="relative">
+                        <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                        <Input type="number" min="0" max={trade.hold_amount} value={partialInit}
+                          onChange={e => setPartialInit(e.target.value)} className="pl-8 h-8 text-sm border-honey/30"
+                          placeholder="0.00" data-testid={`partial-init-${trade.id}`} />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[10px] text-muted-foreground">Refund to @{trade.responder?.username}</label>
+                      <div className="relative">
+                        <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                        <Input type="number" min="0" max={trade.hold_amount} value={partialResp}
+                          onChange={e => setPartialResp(e.target.value)} className="pl-8 h-8 text-sm border-honey/30"
+                          placeholder="0.00" data-testid={`partial-resp-${trade.id}`} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Action buttons */}
+                <div className="grid grid-cols-2 gap-2">
+                  {HOLD_RESOLUTIONS.map(r => (
+                    <Button key={r.key} size="sm"
+                      className={`text-xs rounded-lg ${r.color}`}
+                      disabled={resolving === trade.id}
+                      onClick={() => {
+                        if (r.key === 'partial') {
+                          if (showPartial === trade.id) resolve(trade.id, 'partial');
+                          else setShowPartial(trade.id);
+                        } else {
+                          if (window.confirm(`${r.label}: ${r.desc}. This cannot be undone.`)) resolve(trade.id, r.key);
+                        }
+                      }}
+                      data-testid={`resolve-${r.key}-${trade.id}`}
+                    >
+                      {resolving === trade.id ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                      {r.label}
+                    </Button>
+                  ))}
+                </div>
+                <p className="text-[10px] text-muted-foreground italic text-center">
+                  All resolutions are final. Stripe refunds take 2–5 business days.
+                </p>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
