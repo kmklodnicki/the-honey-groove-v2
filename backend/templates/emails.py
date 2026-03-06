@@ -71,19 +71,23 @@ def invite_code(first_name: str, invite_code: str) -> dict:
     join_url = f"{FRONTEND}/join?code={invite_code}"
     body = f"""
     <p style="{GREETING}">Hey {first_name},</p>
-    <p style="{H}font-size:24px;margin:16px 0 8px 0;">You're in.</p>
-    <p>Click the link below to create your founding member account. This link is yours and yours only — it expires after one use.</p>
+    <p>You're officially in. Your founding member invite for the Honey Groove is ready.</p>
+    <p>Use the link below to create your account &mdash; it's yours only and single use, so don't share it before you've signed up.</p>
     <div style="text-align:center;margin:24px 0;">
-        <a href="{join_url}" style="{BTN}">join the Honey Groove<sup style="font-size:0.6em">™</sup></a>
+        <a href="{join_url}" style="{BTN}">Join the Honey Groove &rarr;</a>
     </div>
     <p style="{MUTED}">{join_url}</p>
-    <p>Once you're in you'll get a permanent <strong>founding member badge</strong> on your profile that never goes away. You were here first and that means something.</p>
-    <p>I'll be watching for your first Now Spinning. \U0001F36F</p>
-    {SIG_SHORT}
-    <p style="{MUTED}margin-top:12px;">Questions? Reply to this email.</p>
+    <p style="margin:20px 0 6px 0;"><strong>Here's all you need to get started once you're in:</strong></p>
+    <p><strong style="{AMBER}">Add at least 3 records to your collection</strong> &mdash; search by artist or album and Discogs pulls everything in automatically.</p>
+    <p><strong style="{AMBER}">Drop your first Now Spinning</strong> from the composer bar at the top of the Hive. Takes 10 seconds.</p>
+    <p><strong style="{AMBER}">Add anything you've been hunting to your Wantlist</strong> so we can match you with other collectors.</p>
+    <p>You're a founding member. Your badge is permanent and will never go away no matter how big this gets.</p>
+    <p>DM me on Instagram <a href="https://www.instagram.com/thehoneygroove" style="{AMBER}text-decoration:underline;">@thehoneygroove</a> or reply to this email if anything feels off or confusing. I want to know everything.</p>
+    <p>Welcome to the hive. \U0001F41D</p>
+    {SIG}
     """
     return {
-        "subject": "Your invite to the Honey Groove\u2122 is here. \U0001F41D",
+        "subject": "you're in. here's your invite. \U0001F36F",
         "html": wrap_email(body),
     }
 
