@@ -65,7 +65,7 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen bg-honey-cream flex items-center justify-center px-4 py-12">
-      <div className="honeycomb-bg absolute inset-0 opacity-50" />
+      <div className="honeycomb-bg absolute inset-0 opacity-50 pointer-events-none" />
       
       <Card className="w-full max-w-md relative z-10 border-honey/30 bg-white/80 backdrop-blur-sm">
         <CardHeader className="text-center">

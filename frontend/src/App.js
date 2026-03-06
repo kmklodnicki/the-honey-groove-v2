@@ -99,11 +99,7 @@ const LandingWrapper = () => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-honey-cream flex items-center justify-center">
-        <div className="w-12 h-12 bg-honey rounded-full animate-pulse"></div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   if (user) {

@@ -118,7 +118,7 @@ async def register(user_data: UserCreate):
 @router.post("/auth/login", response_model=TokenResponse)
 async def login(credentials: UserLogin, request: Request):
     from services.rate_limiter import rate_limiter, get_client_ip
-    rate_limiter.check(f"login:{get_client_ip(request)}", max_requests=5, window_seconds=900)
+    rate_limiter.check(f"login:{get_client_ip(request)}", max_requests=15, window_seconds=300)
 
     user = await db.users.find_one({"email": credentials.email}, {"_id": 0})
     if not user or not verify_password(credentials.password, user["password_hash"]):

@@ -39,9 +39,9 @@ export const AuthProvider = ({ children }) => {
   const fetchUser = async () => {
     try {
       const response = await axios.get(`${API}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 10000
       });
-      // Don't authenticate unverified users
       if (response.data.email_verified === false) {
         logout();
         return;
