@@ -216,6 +216,13 @@ COMPLETED → Mandatory rating before next trade
 
 113. **Fresh Pressings 24h Cache** — /api/explore/fresh-pressings uses MongoDB `cache` collection with 24-hour TTL. Fetches from Discogs API once per day, serves cached data otherwise. (Mar 2026)
 
+114. **Compact Honeypot Listings** — Redesigned Shop and Trade tab listing cards from large cards with aspect-square images to compact ~80px rows. Each row: 64px album art thumbnail, album name (Playfair 14px bold), artist (muted 12px), condition pill + type badge inline, seller username + rating, price in amber on the right. Thin amber divider between rows. Both Shop and Trade tabs use divide-y layout. (Mar 2026)
+
+115. **Delete Account** — Settings page: muted "Delete Account" button with trash icon at bottom. Confirmation modal: "Are you sure?" (Playfair), descriptive body (Cormorant Garamond), "Yes, delete my account" (outlined) + "Cancel" (amber). Backend DELETE /api/auth/account deletes all user data across 25+ collections, cancels Stripe holds, logs deletion to account_deletions collection, logs out and redirects to landing. (Mar 2026)
+
+- **P1: Add Pop & Alternative to genre dropdown**
+- **P1: Admin User Management tab** — grant/revoke admin access
+- **P2: Weekly Wax welcome email** — first edition with custom copy
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
 - **P2: Refactor ISOPage.js** — Break monolithic 3-tab component
 - **P2: Monetization** — Pro membership, Verified Seller badge
