@@ -316,7 +316,7 @@ class DiscogsImportStatus(BaseModel):
 
 # Trade Models
 TRADE_STATUSES = ["PROPOSED", "COUNTERED", "ACCEPTED", "DECLINED", "CANCELLED",
-                  "SHIPPING", "CONFIRMING", "COMPLETED", "DISPUTED"]
+                  "HOLD_PENDING", "SHIPPING", "CONFIRMING", "COMPLETED", "DISPUTED"]
 
 class TradePropose(BaseModel):
     listing_id: str
@@ -326,6 +326,8 @@ class TradePropose(BaseModel):
     boot_amount: Optional[float] = None
     boot_direction: Optional[str] = None
     message: Optional[str] = None
+    hold_enabled: Optional[bool] = False
+    hold_amount: Optional[float] = None
 
 class TradeCounter(BaseModel):
     requested_record_id: Optional[str] = None
@@ -353,6 +355,12 @@ class TradeResponse(BaseModel):
     confirmations: Optional[Dict[str, Any]] = None
     dispute: Optional[Dict[str, Any]] = None
     ratings: Optional[Dict[str, Any]] = None
+    hold_enabled: Optional[bool] = False
+    hold_amount: Optional[float] = None
+    hold_status: Optional[str] = None
+    hold_suggested_amount: Optional[float] = None
+    hold_charges: Optional[Dict[str, Any]] = None
+    hold_confirmation_deadline: Optional[str] = None
     created_at: str
     updated_at: str
     initiator: Optional[Dict[str, Any]] = None
@@ -382,6 +390,18 @@ class AdminDisputeResolve(BaseModel):
     resolution: str
     notes: str
     partial_amount: Optional[float] = None
+
+class HoldAccept(BaseModel):
+    """Accept or counter the proposed hold amount during trade acceptance."""
+    action: str  # "accept", "counter", "decline"
+    hold_amount: Optional[float] = None  # required if action is "counter"
+
+class AdminHoldResolve(BaseModel):
+    """Admin resolves a mutual hold dispute."""
+    resolution: str  # "full_reversal", "penalize_initiator", "penalize_responder", "partial"
+    notes: str
+    partial_refund_initiator: Optional[float] = None
+    partial_refund_responder: Optional[float] = None
 
 class DiscogsTokenConnect(BaseModel):
     personal_token: str

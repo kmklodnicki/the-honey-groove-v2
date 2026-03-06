@@ -90,6 +90,9 @@ async def startup_event():
     # Start streak nudge scheduler
     from routes.daily_prompts import schedule_streak_nudges
     asyncio.create_task(schedule_streak_nudges())
+    # Start hold auto-reversal scheduler
+    from routes.trades import auto_reverse_expired_holds
+    asyncio.create_task(_schedule_hold_auto_reversal())
     # Seed prompts
     await seed_prompts()
     # Seed bingo squares
@@ -116,6 +119,17 @@ async def startup_event():
         logger.warning(f"Storage initialization skipped: {e}")
 
     logger.info("HoneyGroove API started")
+
+
+async def _schedule_hold_auto_reversal():
+    """Run hold auto-reversal check every 10 minutes."""
+    await asyncio.sleep(30)
+    while True:
+        try:
+            await auto_reverse_expired_holds()
+        except Exception as e:
+            logger.error(f"Hold auto-reversal error: {e}")
+        await asyncio.sleep(600)
 
 
 @app.on_event("shutdown")

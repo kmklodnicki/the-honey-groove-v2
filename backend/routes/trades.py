@@ -15,8 +15,35 @@ from database import DISCOGS_REQUEST_TOKEN_URL, DISCOGS_AUTHORIZE_URL, DISCOGS_A
 from database import oauth_request_tokens, import_progress, EMERGENT_KEY
 from models import *
 import stripe as stripe_sdk
+import asyncio
 
 router = APIRouter()
+
+TRADE_URL = "https://thehoneygroove.com/honeypot"
+
+
+async def _refund_hold(payment_intent_id: str) -> bool:
+    """Refund a captured hold payment via Stripe."""
+    if not payment_intent_id or not STRIPE_API_KEY:
+        return False
+    try:
+        stripe_sdk.api_key = STRIPE_API_KEY
+        stripe_sdk.Refund.create(payment_intent=payment_intent_id)
+        return True
+    except Exception as e:
+        logger.error(f"Hold refund failed for {payment_intent_id}: {e}")
+        return False
+
+
+async def _send_hold_emails(trade: Dict, template_fn, **extra_kwargs):
+    """Send a hold-related email to both parties of a trade."""
+    initiator = await db.users.find_one({"id": trade["initiator_id"]}, {"_id": 0})
+    responder = await db.users.find_one({"id": trade["responder_id"]}, {"_id": 0})
+    hold_amount = f"{trade.get('hold_amount', 0):.2f}"
+    for user_obj in [initiator, responder]:
+        if user_obj and user_obj.get("email"):
+            tpl = template_fn(user_obj.get("username", ""), hold_amount=hold_amount, **extra_kwargs)
+            await send_email_fire_and_forget(user_obj["email"], tpl["subject"], tpl["html"])
 
 # ============== TRADE ROUTES ==============
 
@@ -159,6 +186,10 @@ async def propose_trade(data: TradePropose, user: Dict = Depends(require_auth)):
         "status": "PROPOSED",
         "messages": messages,
         "counter": None,
+        "hold_enabled": bool(data.hold_enabled),
+        "hold_amount": max(data.hold_amount, 10) if data.hold_enabled and data.hold_amount else None,
+        "hold_status": None,
+        "hold_charges": None,
         "created_at": now,
         "updated_at": now,
     }
@@ -217,8 +248,8 @@ async def get_trade(trade_id: str, user: Dict = Depends(require_auth)):
 
 
 @router.put("/trades/{trade_id}/accept")
-async def accept_trade(trade_id: str, user: Dict = Depends(require_auth)):
-    """Accept a trade proposal or counter"""
+async def accept_trade(trade_id: str, request: Request, user: Dict = Depends(require_auth)):
+    """Accept a trade proposal or counter. For hold trades, optionally pass hold_action in body."""
     trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
     if not trade:
         raise HTTPException(status_code=404, detail="Trade not found")
@@ -235,45 +266,64 @@ async def accept_trade(trade_id: str, user: Dict = Depends(require_auth)):
 
     now = datetime.now(timezone.utc).isoformat()
 
+    # Parse optional body for hold action
+    body = {}
+    try:
+        body = await request.json()
+    except Exception:
+        pass
+    hold_action = body.get("hold_action", "accept")  # accept / decline
+
     # If accepting a counter, apply counter terms
-    update = {"$set": {"status": "ACCEPTED", "updated_at": now}}
+    set_fields = {"status": "ACCEPTED", "updated_at": now}
     if trade["status"] == "COUNTERED" and trade.get("counter"):
         counter = trade["counter"]
-        set_fields = {"status": "ACCEPTED", "updated_at": now}
         if counter.get("record_id"):
             set_fields["offered_record_id"] = counter["record_id"]
         if counter.get("boot_amount") is not None:
             set_fields["boot_amount"] = counter["boot_amount"]
         if counter.get("boot_direction"):
             set_fields["boot_direction"] = counter["boot_direction"]
-        update = {"$set": set_fields}
 
-    await db.trades.update_one({"id": trade_id}, update)
+    await db.trades.update_one({"id": trade_id}, {"$set": set_fields})
 
     # Mark the listing as IN_TRADE
     await db.listings.update_one({"id": trade["listing_id"]}, {"$set": {"status": "IN_TRADE"}})
 
-    # Set shipping deadline (5 days from now) and transition to SHIPPING
-    shipping_deadline = (datetime.now(timezone.utc) + timedelta(days=5)).isoformat()
-    await db.trades.update_one({"id": trade_id}, {"$set": {
-        "status": "SHIPPING",
-        "shipping_deadline": shipping_deadline,
-        "shipping": {"initiator": None, "responder": None},
-        "confirmations": {},
-    }})
+    # Branch: Mutual Hold or Standard
+    if trade.get("hold_enabled") and trade.get("hold_amount") and hold_action != "decline":
+        # Move to HOLD_PENDING — both parties must pay their hold
+        await db.trades.update_one({"id": trade_id}, {"$set": {
+            "status": "HOLD_PENDING",
+            "hold_status": "awaiting_payment",
+            "hold_charges": {"initiator": None, "responder": None},
+        }})
+    else:
+        # Standard flow: disable hold if declined, go straight to SHIPPING
+        shipping_deadline = (datetime.now(timezone.utc) + timedelta(days=5)).isoformat()
+        await db.trades.update_one({"id": trade_id}, {"$set": {
+            "status": "SHIPPING",
+            "hold_enabled": False,
+            "shipping_deadline": shipping_deadline,
+            "shipping": {"initiator": None, "responder": None},
+            "confirmations": {},
+        }})
 
     updated = await db.trades.find_one({"id": trade_id}, {"_id": 0})
 
     # Notify the other party
     other_id = trade["initiator_id"] if user["id"] == trade["responder_id"] else trade["responder_id"]
     u = await db.users.find_one({"id": user["id"]}, {"_id": 0})
-    await create_notification(other_id, "TRADE_ACCEPTED", "Trade accepted!",
-                              f"@{u.get('username','?')} accepted the trade. Ship within 5 days!",
-                              {"trade_id": trade_id})
+    msg = f"@{u.get('username','?')} accepted the trade."
+    if updated.get("status") == "HOLD_PENDING":
+        msg += " Pay your hold to start shipping."
+    else:
+        msg += " Ship within 5 days!"
+    await create_notification(other_id, "TRADE_ACCEPTED", "Trade accepted!", msg, {"trade_id": trade_id})
     other_user = await db.users.find_one({"id": other_id}, {"_id": 0})
     if other_user and other_user.get("email"):
         listing = await db.listings.find_one({"id": trade["listing_id"]}, {"_id": 0})
-        tpl = email_tpl.trade_accepted(other_user.get("username", ""), u.get("username", ""), listing.get("album", "the record") if listing else "your record", "https://thehoneygroove.com/honeypot")
+        tpl = email_tpl.trade_accepted(other_user.get("username", ""), u.get("username", ""), listing.get("album", "the record") if listing else "your record", TRADE_URL)
         await send_email_fire_and_forget(other_user["email"], tpl["subject"], tpl["html"])
 
     return await build_trade_response(updated)
@@ -389,6 +439,10 @@ async def ship_trade(trade_id: str, data: TradeShipInput, user: Dict = Depends(r
         confirmation_deadline = (datetime.now(timezone.utc) + timedelta(hours=48)).isoformat()
         update_fields["status"] = "CONFIRMING"
         update_fields["confirmation_deadline"] = confirmation_deadline
+        # For hold trades, set a 24h hold confirmation deadline
+        if trade.get("hold_enabled") and trade.get("hold_status") == "active":
+            hold_deadline = (datetime.now(timezone.utc) + timedelta(hours=24)).isoformat()
+            update_fields["hold_confirmation_deadline"] = hold_deadline
 
     await db.trades.update_one({"id": trade_id}, {"$set": update_fields})
     updated = await db.trades.find_one({"id": trade_id}, {"_id": 0})
@@ -398,15 +452,25 @@ async def ship_trade(trade_id: str, data: TradeShipInput, user: Dict = Depends(r
     u = await db.users.find_one({"id": user["id"]}, {"_id": 0})
     other_user = await db.users.find_one({"id": other_id}, {"_id": 0})
     if other_user and other_user.get("email"):
-        tpl = email_tpl.trade_shipped(other_user.get("username", ""), u.get("username", ""), "https://thehoneygroove.com/honeypot")
+        tpl = email_tpl.trade_shipped(other_user.get("username", ""), u.get("username", ""), TRADE_URL)
         await send_email_fire_and_forget(other_user["email"], tpl["subject"], tpl["html"])
+
+    # Send hold delivery-confirmed emails when both shipped (hold trades)
+    if updated.get("status") == "CONFIRMING" and trade.get("hold_enabled") and trade.get("hold_status") == "active":
+        hold_amt = f"{trade.get('hold_amount', 0):.2f}"
+        initiator = await db.users.find_one({"id": trade["initiator_id"]}, {"_id": 0})
+        responder = await db.users.find_one({"id": trade["responder_id"]}, {"_id": 0})
+        for u_obj in [initiator, responder]:
+            if u_obj and u_obj.get("email"):
+                tpl = email_tpl.hold_delivery_confirmed(u_obj.get("username", ""), hold_amt, TRADE_URL)
+                await send_email_fire_and_forget(u_obj["email"], tpl["subject"], tpl["html"])
 
     return await build_trade_response(updated)
 
 
 @router.put("/trades/{trade_id}/confirm-receipt")
 async def confirm_receipt(trade_id: str, user: Dict = Depends(require_auth)):
-    """Confirm record arrived as described"""
+    """Confirm record arrived as described. For hold trades, both confirmations trigger auto-refund."""
     trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
     if not trade:
         raise HTTPException(status_code=404, detail="Trade not found")
@@ -419,21 +483,29 @@ async def confirm_receipt(trade_id: str, user: Dict = Depends(require_auth)):
     confirmations = trade.get("confirmations") or {}
     confirmations[user["id"]] = True
 
-    # Check if both confirmed
     both_confirmed = (
         confirmations.get(trade["initiator_id"]) and
         confirmations.get(trade["responder_id"])
     )
 
+    await db.trades.update_one({"id": trade_id}, {"$set": {"confirmations": confirmations, "updated_at": now}})
+
     if both_confirmed:
-        await db.trades.update_one({"id": trade_id}, {"$set": {"confirmations": confirmations, "updated_at": now}})
         await complete_trade(trade)
-        updated = await db.trades.find_one({"id": trade_id}, {"_id": 0})
-        return await build_trade_response(updated)
-    else:
-        await db.trades.update_one({"id": trade_id}, {"$set": {"confirmations": confirmations, "updated_at": now}})
-        updated = await db.trades.find_one({"id": trade_id}, {"_id": 0})
-        return await build_trade_response(updated)
+        # If mutual hold trade, refund both holds
+        if trade.get("hold_enabled") and trade.get("hold_status") == "active":
+            charges = trade.get("hold_charges") or {}
+            for role in ["initiator", "responder"]:
+                pi_id = (charges.get(role) or {}).get("payment_intent_id")
+                if pi_id:
+                    await _refund_hold(pi_id)
+            await db.trades.update_one({"id": trade_id}, {"$set": {"hold_status": "refunded"}})
+            # Send hold reversed emails
+            updated_trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+            await _send_hold_emails(updated_trade, email_tpl.hold_reversed)
+
+    updated = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    return await build_trade_response(updated)
 
 
 @router.put("/trades/{trade_id}/cancel-shipping")
@@ -471,11 +543,211 @@ async def cancel_shipping(trade_id: str, user: Dict = Depends(require_auth)):
 
 
 
+# ============== MUTUAL HOLD TRADE ENDPOINTS ==============
+
+
+@router.get("/trades/{trade_id}/hold-suggestion")
+async def get_hold_suggestion(trade_id: str, user: Dict = Depends(require_auth)):
+    """Calculate suggested hold amount from Discogs median values of both records."""
+    trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade not found")
+
+    offered_record = await db.records.find_one({"id": trade["offered_record_id"]}, {"_id": 0})
+    listing = await db.listings.find_one({"id": trade["listing_id"]}, {"_id": 0})
+
+    val_a, val_b = 0, 0
+    if offered_record and offered_record.get("discogs_id"):
+        cv = await db.collection_values.find_one({"release_id": offered_record["discogs_id"]}, {"_id": 0})
+        if cv and cv.get("median_value"):
+            val_a = float(cv["median_value"])
+    if listing and listing.get("discogs_id"):
+        cv = await db.collection_values.find_one({"release_id": listing["discogs_id"]}, {"_id": 0})
+        if cv and cv.get("median_value"):
+            val_b = float(cv["median_value"])
+
+    if val_a > 0 and val_b > 0:
+        suggested = round((val_a + val_b) / 2, 2)
+    elif val_a > 0:
+        suggested = round(val_a, 2)
+    elif val_b > 0:
+        suggested = round(val_b, 2)
+    else:
+        suggested = 50.0  # fallback when no Discogs data
+
+    suggested = max(suggested, 10.0)  # enforce $10 minimum
+
+    return {
+        "suggested_hold": suggested,
+        "record_a_value": val_a,
+        "record_b_value": val_b,
+        "label": f"Suggested hold: ${suggested:.2f} — roughly the estimated value of the records being traded.",
+    }
+
+
+@router.put("/trades/{trade_id}/hold/respond")
+async def respond_to_hold(trade_id: str, data: HoldAccept, user: Dict = Depends(require_auth)):
+    """Respond to a mutual hold proposal: accept, counter, or decline."""
+    trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade not found")
+    if trade["status"] not in ["PROPOSED", "COUNTERED"]:
+        raise HTTPException(status_code=400, detail="Trade is not in a negotiable status")
+    if not trade.get("hold_enabled"):
+        raise HTTPException(status_code=400, detail="This trade does not have a mutual hold")
+
+    now = datetime.now(timezone.utc).isoformat()
+
+    if data.action == "accept":
+        return {"message": "Hold terms accepted. Accept the trade to proceed.", "hold_amount": trade.get("hold_amount")}
+    elif data.action == "counter":
+        if not data.hold_amount or data.hold_amount < 10:
+            raise HTTPException(status_code=400, detail="Hold amount must be at least $10")
+        await db.trades.update_one({"id": trade_id}, {"$set": {
+            "hold_amount": round(data.hold_amount, 2),
+            "updated_at": now,
+        }})
+        return {"message": f"Hold amount updated to ${data.hold_amount:.2f}", "hold_amount": data.hold_amount}
+    elif data.action == "decline":
+        await db.trades.update_one({"id": trade_id}, {"$set": {
+            "hold_enabled": False, "hold_amount": None, "updated_at": now,
+        }})
+        return {"message": "Hold declined. Trade will proceed as standard when accepted."}
+    else:
+        raise HTTPException(status_code=400, detail="Invalid action. Use: accept, counter, decline")
+
+
+@router.post("/trades/{trade_id}/hold/checkout")
+async def create_hold_checkout(trade_id: str, request: Request, user: Dict = Depends(require_auth)):
+    """Create a Stripe checkout session for a party's hold payment."""
+    trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade not found")
+    if trade["status"] != "HOLD_PENDING":
+        raise HTTPException(status_code=400, detail="Trade is not awaiting hold payment")
+    if trade["initiator_id"] != user["id"] and trade["responder_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    role = "initiator" if trade["initiator_id"] == user["id"] else "responder"
+    charges = trade.get("hold_charges") or {}
+    if charges.get(role) and charges[role].get("status") == "paid":
+        raise HTTPException(status_code=400, detail="You have already paid your hold")
+
+    hold_amount = float(trade.get("hold_amount", 0))
+    if hold_amount < 10:
+        raise HTTPException(status_code=400, detail="Hold amount is below $10 minimum")
+
+    amount_cents = int(round(hold_amount * 100))
+    body = {}
+    try:
+        body = await request.json()
+    except Exception:
+        pass
+    host_url = body.get("origin_url", str(request.base_url).rstrip("/"))
+    success_url = f"{host_url}/honeypot?hold_payment=success&trade_id={trade_id}&session_id={{CHECKOUT_SESSION_ID}}"
+    cancel_url = f"{host_url}/honeypot?hold_payment=cancelled&trade_id={trade_id}"
+
+    stripe_sdk.api_key = STRIPE_API_KEY
+    try:
+        listing = await db.listings.find_one({"id": trade["listing_id"]}, {"_id": 0})
+        album_name = listing.get("album", "Trade") if listing else "Trade"
+        session = stripe_sdk.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{
+                "price_data": {
+                    "currency": "usd",
+                    "product_data": {"name": f"Mutual Hold — {album_name}"},
+                    "unit_amount": amount_cents,
+                },
+                "quantity": 1,
+            }],
+            mode="payment",
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata={
+                "trade_id": trade_id, "role": role, "user_id": user["id"],
+                "type": "mutual_hold",
+            },
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Stripe checkout error: {str(e)}")
+
+    # Store the session in hold_charges
+    charges[role] = {"session_id": session.id, "payment_intent_id": None, "status": "pending"}
+    now = datetime.now(timezone.utc).isoformat()
+    await db.trades.update_one({"id": trade_id}, {"$set": {"hold_charges": charges, "updated_at": now}})
+
+    return {"url": session.url, "session_id": session.id}
+
+
+@router.get("/trades/{trade_id}/hold/status")
+async def check_hold_status(trade_id: str, user: Dict = Depends(require_auth)):
+    """Check hold payment status for both parties. If both paid, transition to SHIPPING."""
+    trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade not found")
+    if trade["status"] != "HOLD_PENDING":
+        return {"status": trade["status"], "hold_status": trade.get("hold_status")}
+
+    charges = trade.get("hold_charges") or {}
+    updated = False
+
+    stripe_sdk.api_key = STRIPE_API_KEY
+    for role in ["initiator", "responder"]:
+        charge = charges.get(role)
+        if charge and charge.get("session_id") and charge.get("status") != "paid":
+            try:
+                session = stripe_sdk.checkout.Session.retrieve(charge["session_id"])
+                if session.payment_status == "paid":
+                    charge["status"] = "paid"
+                    charge["payment_intent_id"] = session.payment_intent
+                    updated = True
+            except Exception:
+                pass
+
+    now = datetime.now(timezone.utc).isoformat()
+    if updated:
+        await db.trades.update_one({"id": trade_id}, {"$set": {"hold_charges": charges, "updated_at": now}})
+
+    # Check if both parties have paid
+    init_paid = (charges.get("initiator") or {}).get("status") == "paid"
+    resp_paid = (charges.get("responder") or {}).get("status") == "paid"
+
+    if init_paid and resp_paid:
+        # Both paid — transition to SHIPPING
+        shipping_deadline = (datetime.now(timezone.utc) + timedelta(days=5)).isoformat()
+        await db.trades.update_one({"id": trade_id}, {"$set": {
+            "status": "SHIPPING",
+            "hold_status": "active",
+            "shipping_deadline": shipping_deadline,
+            "shipping": {"initiator": None, "responder": None},
+            "confirmations": {},
+        }})
+        # Send hold activated emails
+        updated_trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+        initiator = await db.users.find_one({"id": trade["initiator_id"]}, {"_id": 0})
+        responder = await db.users.find_one({"id": trade["responder_id"]}, {"_id": 0})
+        hold_amt = f"{trade.get('hold_amount', 0):.2f}"
+        for u_obj, other_obj in [(initiator, responder), (responder, initiator)]:
+            if u_obj and u_obj.get("email"):
+                tpl = email_tpl.hold_activated(u_obj.get("username", ""), other_obj.get("username", ""), hold_amt, TRADE_URL)
+                await send_email_fire_and_forget(u_obj["email"], tpl["subject"], tpl["html"])
+
+        return {"status": "SHIPPING", "hold_status": "active", "initiator_paid": True, "responder_paid": True}
+
+    return {
+        "status": "HOLD_PENDING",
+        "hold_status": "awaiting_payment",
+        "initiator_paid": init_paid,
+        "responder_paid": resp_paid,
+    }
+
+
 # ============== TRADE PHASE 3: DISPUTES & RATINGS ==============
 
 @router.post("/trades/{trade_id}/dispute")
 async def open_dispute(trade_id: str, data: TradeDisputeInput, user: Dict = Depends(require_auth)):
-    """Open a dispute on a trade"""
+    """Open a dispute on a trade. For hold trades, freezes both holds instantly."""
     trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
     if not trade:
         raise HTTPException(status_code=404, detail="Trade not found")
@@ -499,9 +771,29 @@ async def open_dispute(trade_id: str, data: TradeDisputeInput, user: Dict = Depe
         "resolution": None,
     }
 
-    await db.trades.update_one({"id": trade_id}, {"$set": {
-        "status": "DISPUTED", "dispute": dispute, "updated_at": now,
-    }})
+    update_fields = {"status": "DISPUTED", "dispute": dispute, "updated_at": now}
+    # Freeze holds if mutual hold trade
+    if trade.get("hold_enabled") and trade.get("hold_status") == "active":
+        update_fields["hold_status"] = "frozen"
+
+    await db.trades.update_one({"id": trade_id}, {"$set": update_fields})
+
+    # Send hold dispute emails to both parties
+    if trade.get("hold_enabled") and trade.get("hold_amount"):
+        updated_trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+        initiator = await db.users.find_one({"id": trade["initiator_id"]}, {"_id": 0})
+        responder = await db.users.find_one({"id": trade["responder_id"]}, {"_id": 0})
+        hold_amt = f"{trade.get('hold_amount', 0):.2f}"
+        for u_obj, other_obj in [(initiator, responder), (responder, initiator)]:
+            if u_obj and u_obj.get("email"):
+                tpl = email_tpl.hold_dispute_filed(u_obj.get("username", ""), other_obj.get("username", ""), hold_amt, TRADE_URL)
+                await send_email_fire_and_forget(u_obj["email"], tpl["subject"], tpl["html"])
+
+    # Notify admin
+    await create_notification("admin", "HOLD_DISPUTE", "Mutual Hold dispute filed",
+                              f"Trade {trade_id[:8]} — hold frozen, admin review needed",
+                              {"trade_id": trade_id})
+
     updated = await db.trades.find_one({"id": trade_id}, {"_id": 0})
     return await build_trade_response(updated)
 
@@ -670,7 +962,7 @@ async def get_user_trades(username: str):
         raise HTTPException(status_code=404, detail="User not found")
     trades = await db.trades.find({
         "$or": [{"initiator_id": target["id"]}, {"responder_id": target["id"]}],
-        "status": {"$in": ["ACCEPTED", "COMPLETED", "SHIPPING", "CONFIRMING"]}
+        "status": {"$in": ["ACCEPTED", "COMPLETED", "SHIPPING", "CONFIRMING", "HOLD_PENDING"]}
     }, {"_id": 0}).sort("updated_at", -1).to_list(50)
     result = []
     for trade in trades:
@@ -678,3 +970,159 @@ async def get_user_trades(username: str):
     return result
 
 
+# ============== ADMIN: MUTUAL HOLD DISPUTES ==============
+
+@router.get("/admin/hold-disputes")
+async def get_hold_disputes(user: Dict = Depends(require_admin)):
+    """List all disputed trades with active/frozen mutual holds for admin review."""
+    trades = await db.trades.find({
+        "hold_enabled": True,
+        "hold_status": {"$in": ["frozen", "active"]},
+        "status": "DISPUTED",
+    }, {"_id": 0}).sort("updated_at", -1).to_list(100)
+    result = []
+    for trade in trades:
+        result.append(await build_trade_response(trade))
+    return result
+
+
+@router.put("/admin/hold-disputes/{trade_id}/resolve")
+async def resolve_hold_dispute(trade_id: str, data: AdminHoldResolve, user: Dict = Depends(require_admin)):
+    """Admin resolves a mutual hold dispute with one of three outcomes."""
+    trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade not found")
+    if trade["status"] != "DISPUTED":
+        raise HTTPException(status_code=400, detail="Trade is not disputed")
+    if not trade.get("hold_enabled"):
+        raise HTTPException(status_code=400, detail="This trade does not have a mutual hold")
+
+    now = datetime.now(timezone.utc).isoformat()
+    charges = trade.get("hold_charges") or {}
+    init_pi = (charges.get("initiator") or {}).get("payment_intent_id")
+    resp_pi = (charges.get("responder") or {}).get("payment_intent_id")
+
+    dispute = trade.get("dispute", {})
+    dispute["resolution"] = {
+        "outcome": data.resolution,
+        "notes": data.notes,
+        "resolved_by": user["id"],
+        "resolved_at": now,
+    }
+
+    initiator = await db.users.find_one({"id": trade["initiator_id"]}, {"_id": 0})
+    responder = await db.users.find_one({"id": trade["responder_id"]}, {"_id": 0})
+    hold_amt = f"{trade.get('hold_amount', 0):.2f}"
+
+    if data.resolution == "full_reversal":
+        # Refund both parties
+        if init_pi:
+            await _refund_hold(init_pi)
+        if resp_pi:
+            await _refund_hold(resp_pi)
+        await db.trades.update_one({"id": trade_id}, {"$set": {
+            "status": "CANCELLED", "hold_status": "refunded", "dispute": dispute, "updated_at": now,
+        }})
+        await db.listings.update_one({"id": trade["listing_id"]}, {"$set": {"status": "ACTIVE"}})
+        # Email both: hold reversed
+        for u_obj in [initiator, responder]:
+            if u_obj and u_obj.get("email"):
+                tpl = email_tpl.hold_reversed(u_obj.get("username", ""), hold_amt)
+                await send_email_fire_and_forget(u_obj["email"], tpl["subject"], tpl["html"])
+
+    elif data.resolution == "penalize_initiator":
+        # Keep initiator's hold (platform revenue), refund responder
+        if resp_pi:
+            await _refund_hold(resp_pi)
+        await db.trades.update_one({"id": trade_id}, {"$set": {
+            "status": "CANCELLED", "hold_status": "penalized_initiator", "dispute": dispute, "updated_at": now,
+        }})
+        await db.listings.update_one({"id": trade["listing_id"]}, {"$set": {"status": "ACTIVE"}})
+        if responder and responder.get("email"):
+            tpl = email_tpl.hold_reversed(responder.get("username", ""), hold_amt)
+            await send_email_fire_and_forget(responder["email"], tpl["subject"], tpl["html"])
+
+    elif data.resolution == "penalize_responder":
+        # Keep responder's hold, refund initiator
+        if init_pi:
+            await _refund_hold(init_pi)
+        await db.trades.update_one({"id": trade_id}, {"$set": {
+            "status": "CANCELLED", "hold_status": "penalized_responder", "dispute": dispute, "updated_at": now,
+        }})
+        await db.listings.update_one({"id": trade["listing_id"]}, {"$set": {"status": "ACTIVE"}})
+        if initiator and initiator.get("email"):
+            tpl = email_tpl.hold_reversed(initiator.get("username", ""), hold_amt)
+            await send_email_fire_and_forget(initiator["email"], tpl["subject"], tpl["html"])
+
+    elif data.resolution == "partial":
+        # Custom split — admin sets specific refund amounts
+        if data.partial_refund_initiator and init_pi:
+            try:
+                stripe_sdk.api_key = STRIPE_API_KEY
+                stripe_sdk.Refund.create(payment_intent=init_pi, amount=int(round(data.partial_refund_initiator * 100)))
+            except Exception as e:
+                logger.error(f"Partial refund failed for initiator: {e}")
+        if data.partial_refund_responder and resp_pi:
+            try:
+                stripe_sdk.api_key = STRIPE_API_KEY
+                stripe_sdk.Refund.create(payment_intent=resp_pi, amount=int(round(data.partial_refund_responder * 100)))
+            except Exception as e:
+                logger.error(f"Partial refund failed for responder: {e}")
+        await db.trades.update_one({"id": trade_id}, {"$set": {
+            "status": "CANCELLED", "hold_status": "partial_resolved", "dispute": dispute, "updated_at": now,
+        }})
+        await db.listings.update_one({"id": trade["listing_id"]}, {"$set": {"status": "ACTIVE"}})
+        for u_obj in [initiator, responder]:
+            if u_obj and u_obj.get("email"):
+                tpl = email_tpl.hold_reversed(u_obj.get("username", ""), hold_amt)
+                await send_email_fire_and_forget(u_obj["email"], tpl["subject"], tpl["html"])
+
+    updated = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    return await build_trade_response(updated)
+
+
+# ============== HOLD AUTO-REVERSAL (24h timeout) ==============
+
+async def auto_reverse_expired_holds():
+    """Background task: auto-reverse holds for parties that didn't confirm within 24h."""
+    now = datetime.now(timezone.utc)
+    # Find CONFIRMING trades with active holds past the confirmation deadline
+    trades = await db.trades.find({
+        "status": "CONFIRMING",
+        "hold_enabled": True,
+        "hold_status": "active",
+        "confirmation_deadline": {"$exists": True},
+    }, {"_id": 0}).to_list(100)
+
+    for trade in trades:
+        try:
+            deadline = datetime.fromisoformat(trade["confirmation_deadline"])
+            if now <= deadline:
+                continue
+
+            confirmations = trade.get("confirmations") or {}
+            charges = trade.get("hold_charges") or {}
+            hold_amt = f"{trade.get('hold_amount', 0):.2f}"
+
+            # Auto-reverse for any party that hasn't confirmed or disputed
+            for uid, role in [(trade["initiator_id"], "initiator"), (trade["responder_id"], "responder")]:
+                if not confirmations.get(uid):
+                    # Auto-confirm (release hold for unresponsive party)
+                    pi_id = (charges.get(role) or {}).get("payment_intent_id")
+                    if pi_id:
+                        await _refund_hold(pi_id)
+                    confirmations[uid] = "auto"
+                    user_obj = await db.users.find_one({"id": uid}, {"_id": 0})
+                    if user_obj and user_obj.get("email"):
+                        tpl = email_tpl.hold_reversed(user_obj.get("username", ""), hold_amt)
+                        await send_email_fire_and_forget(user_obj["email"], tpl["subject"], tpl["html"])
+
+            # Complete the trade
+            await db.trades.update_one({"id": trade["id"]}, {"$set": {
+                "confirmations": confirmations, "hold_status": "refunded",
+                "updated_at": now.isoformat(),
+            }})
+            await complete_trade(trade)
+            logger.info(f"Auto-reversed holds for trade {trade['id']}")
+        except Exception as e:
+            logger.error(f"Auto-reversal failed for trade {trade['id']}: {e}")

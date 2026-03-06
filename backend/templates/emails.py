@@ -322,6 +322,81 @@ def sale_confirmed_buyer(username: str, album: str, artist: str, seller_username
     }
 
 
+def hold_activated(username: str, other_username: str, hold_amount: str, trade_url: str) -> dict:
+    body = f"""
+    <p style="{MUTED}">Hey {username},</p>
+    <p>Both holds are now active on your Mutual Hold trade with <strong>@{other_username}</strong>.</p>
+    <div style="text-align:center;padding:20px;margin:16px 0;background:#FFF8EE;border-radius:12px;border:1px solid #F5E6CC;">
+        <p style="{H}font-size:28px;margin:0;">${hold_amount}</p>
+        <p style="{MUTED}margin:4px 0 0 0;">held from each party</p>
+    </div>
+    <p>Ship your record and confirm receipt to release the hold. Both parties are protected.</p>
+    <div style="text-align:center;margin:24px 0;">
+        <a href="{trade_url}" style="{BTN}">view the trade</a>
+    </div>
+    """
+    return {
+        "subject": "Hold activated — both parties protected. \U0001F6E1\uFE0F",
+        "html": wrap_email(body),
+    }
+
+
+def hold_delivery_confirmed(username: str, hold_amount: str, trade_url: str) -> dict:
+    body = f"""
+    <p style="{MUTED}">Hey {username},</p>
+    <p>Both records have been marked as delivered. You now have <strong>24 hours</strong> to confirm receipt.</p>
+    <div style="text-align:center;padding:16px;margin:16px 0;background:#FFF8EE;border-radius:12px;border:1px solid #F5E6CC;">
+        <p style="margin:0;"><strong style="{AMBER}">Your hold: ${hold_amount}</strong></p>
+        <p style="{MUTED}margin:4px 0 0 0;">will be released once you confirm</p>
+    </div>
+    <p>Confirm that the record arrived as described, or open a dispute if there's an issue.</p>
+    <div style="text-align:center;margin:24px 0;">
+        <a href="{trade_url}" style="{BTN}">confirm receipt</a>
+    </div>
+    """
+    return {
+        "subject": "Delivery confirmed — 24 hour window open. \U0001F4E6",
+        "html": wrap_email(body),
+    }
+
+
+def hold_reversed(username: str, hold_amount: str) -> dict:
+    body = f"""
+    <p style="{MUTED}">Hey {username},</p>
+    <p>Your hold has been released.</p>
+    <div style="text-align:center;padding:20px;margin:16px 0;background:#FFF8EE;border-radius:12px;border:1px solid #F5E6CC;">
+        <p style="{H}font-size:28px;margin:0;{AMBER}">${hold_amount}</p>
+        <p style="{MUTED}margin:4px 0 0 0;">refund on its way</p>
+    </div>
+    <p>The refund will appear on your card within 2 to 5 business days depending on your card issuer.</p>
+    <p>Thanks for keeping the trade safe. \U0001F36F</p>
+    <p style="margin:16px 0 0 0;{MUTED}">— The Honey Groove</p>
+    """
+    return {
+        "subject": "Hold reversed — refund on its way. \U0001F36F",
+        "html": wrap_email(body),
+    }
+
+
+def hold_dispute_filed(username: str, other_username: str, hold_amount: str, trade_url: str) -> dict:
+    body = f"""
+    <p style="{MUTED}">Hey {username},</p>
+    <p>A dispute has been filed on your Mutual Hold trade with <strong>@{other_username}</strong>.</p>
+    <div style="text-align:center;padding:16px;margin:16px 0;background:#FFF8EE;border-radius:12px;border:1px solid #F5E6CC;">
+        <p style="margin:0;font-weight:600;color:#B91C1C;">Hold frozen — ${hold_amount}</p>
+        <p style="{MUTED}margin:4px 0 0 0;">Neither hold will be released until the dispute is resolved</p>
+    </div>
+    <p>Our team has been notified and will review the details. We'll reach out if we need anything from you.</p>
+    <div style="text-align:center;margin:24px 0;">
+        <a href="{trade_url}" style="{BTN}">view the trade</a>
+    </div>
+    """
+    return {
+        "subject": "Hold frozen — dispute in progress. \U0001F6E1\uFE0F",
+        "html": wrap_email(body),
+    }
+
+
 def verified_seller_renewal(username: str, expiry_date: str, days_left: int) -> dict:
     body = f"""
     <p style="{MUTED}">Hey {username},</p>

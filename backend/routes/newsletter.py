@@ -4,6 +4,7 @@ from typing import Dict
 from datetime import datetime, timezone
 
 from database import db, require_auth
+from services.email_service import send_email_fire_and_forget
 
 router = APIRouter()
 
@@ -23,6 +24,13 @@ async def subscribe_newsletter(data: dict):
         return {"subscribed": True, "email": email}
     doc = {"email": email, "subscribed": True, "source": source, "subscribed_at": datetime.now(timezone.utc).isoformat()}
     await db.newsletter_subscribers.insert_one({k: v for k, v in doc.items()})
+
+    # Send newsletter signup confirmation email
+    first_name = email.split("@")[0].capitalize()
+    from templates.emails import newsletter_signup
+    tpl = newsletter_signup(first_name)
+    await send_email_fire_and_forget(email, tpl["subject"], tpl["html"])
+
     return {"subscribed": True, "email": email}
 
 
