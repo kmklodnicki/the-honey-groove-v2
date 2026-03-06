@@ -1,8 +1,10 @@
 from fastapi import APIRouter, HTTPException, Depends, Query, Request
 from fastapi.security import HTTPAuthorizationCredentials
+from fastapi.responses import Response
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone, timedelta
 import uuid
+import os
 
 from database import db, require_auth, get_current_user, security, logger, create_notification
 from database import hash_password, verify_password, create_token, search_discogs, get_discogs_release
@@ -10,7 +12,7 @@ from database import put_object, get_object, init_storage, storage_key
 from database import STRIPE_API_KEY, PLATFORM_FEE_PERCENT, FRONTEND_URL
 from database import DISCOGS_TOKEN, DISCOGS_USER_AGENT, DISCOGS_CONSUMER_KEY, DISCOGS_CONSUMER_SECRET
 from database import DISCOGS_REQUEST_TOKEN_URL, DISCOGS_AUTHORIZE_URL, DISCOGS_ACCESS_TOKEN_URL, DISCOGS_API_BASE
-from database import oauth_request_tokens, import_progress, EMERGENT_KEY
+from database import oauth_request_tokens, import_progress, EMERGENT_KEY, APP_NAME
 from models import *
 from fastapi import UploadFile, File
 from requests_oauthlib import OAuth1Session
