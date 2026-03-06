@@ -183,46 +183,150 @@ def _generate_personality_label_v2(stats: dict) -> str:
 
 
 def _generate_closing_line(stats: dict) -> str:
-    """Generate a poetic, data-driven closing line. Two lines max at display size."""
+    """Generate a poetic, personal, artist-specific closing line."""
+    import random
+
     top_artist = stats.get("top_artists", [{}])[0].get("artist", "") if stats.get("top_artists") else ""
+    top_record = stats.get("top_records", [{}])[0] if stats.get("top_records") else {}
+    top_record_title = top_record.get("title", "")
     era_breakdown = stats.get("era_breakdown", [])
     dominant_era = era_breakdown[0].get("decade", "") if era_breakdown else ""
     top_mood = stats.get("mood_breakdown", [{}])[0].get("mood", "").lower() if stats.get("mood_breakdown") else ""
-    active_time = stats.get("most_active_time", "").lower()
+    top_genres = stats.get("top_genres", [])
+    top_genre = top_genres[0].get("genre", "").lower() if top_genres else ""
 
-    mood_phrases = {
-        "chill": "records that slow the world down",
-        "nostalgic": "records that take you back",
-        "energized": "records that hit like caffeine",
-        "melancholy": "records that hit different after midnight",
-        "euphoric": "records that made the walls shake",
-        "focused": "records that sharpened every thought",
-        "rebellious": "records that broke the rules",
-        "romantic": "records that made the heart ache",
-        "peaceful": "records that made the silence sing",
-        "dark": "records that lived in the shadows",
-        "uplifting": "records that lifted everything",
-        "groovy": "records that moved the whole room",
+    # ── Opening phrases (rotate randomly) ──
+    openers = [
+        "this week's vibe was",
+        "something about this week called for",
+        "this was a week defined by",
+        "the needle kept finding its way back to",
+        "this week belonged to",
+        "a week that only made sense with",
+        "everything this week pointed back to",
+    ]
+
+    # ── Mood-specific openers ──
+    mood_openers = {
+        "chill": "pure chill energy, courtesy of",
+        "nostalgic": "pure nostalgia, courtesy of",
+        "energized": "pure adrenaline, courtesy of",
+        "melancholy": "pure ache, courtesy of",
+        "euphoric": "pure dopamine, courtesy of",
+        "focused": "pure focus energy, courtesy of",
+        "rebellious": "pure rebellion, courtesy of",
+        "romantic": "pure heartbreak, courtesy of",
+        "peaceful": "pure stillness, courtesy of",
+        "dark": "pure shadow energy, courtesy of",
+        "uplifting": "pure sunlight, courtesy of",
+        "groovy": "pure groove, courtesy of",
     }
 
-    mood_phrase = mood_phrases.get(top_mood, "records that hit different")
+    # ── Genre-based artist descriptors ──
+    genre_descriptors = {
+        "pop": [
+            "the pink-pony energy of",
+            "the sugary maximalism of",
+            "the glossy heartbreak of",
+        ],
+        "indie": [
+            "the quiet devastation of",
+            "the bedroom melancholy of",
+            "the soft chaos of",
+        ],
+        "rock": [
+            "the raw voltage of",
+            "the chest-open fury of",
+            "the amp-worship of",
+        ],
+        "folk": [
+            "the candlelit warmth of",
+            "the front-porch storytelling of",
+            "the earthen calm of",
+        ],
+        "r&b": [
+            "the silk and ache of",
+            "the slow burn of",
+            "the velvet gravity of",
+        ],
+        "soul": [
+            "the silk and ache of",
+            "the slow burn of",
+            "the deep warmth of",
+        ],
+        "classical": [
+            "the unhurried grace of",
+            "the late-night sophistication of",
+            "the quiet architecture of",
+        ],
+        "jazz": [
+            "the unhurried grace of",
+            "the late-night sophistication of",
+            "the smoky elegance of",
+        ],
+        "hip hop": [
+            "the low-end theory of",
+            "the concrete poetry of",
+            "the bass-heavy gravity of",
+        ],
+        "electronic": [
+            "the neon pulse of",
+            "the synthetic dreamscape of",
+            "the fluorescent drift of",
+        ],
+        "punk": [
+            "the three-chord gospel of",
+            "the safety-pin elegance of",
+            "the raw nerve of",
+        ],
+        "country": [
+            "the dusty-road heart of",
+            "the steel-and-twang honesty of",
+            "the wide-open longing of",
+        ],
+        "metal": [
+            "the chest-open fury of",
+            "the seismic weight of",
+            "the molten roar of",
+        ],
+    }
 
-    templates = []
-    if top_artist and dominant_era and top_mood:
-        templates.append(f"this week belonged to {top_artist.lower()}, the {dominant_era}, and {mood_phrase}.")
-    if top_artist and dominant_era:
-        templates.append(f"{top_artist.lower()}, the {dominant_era}, and grooves that wouldn't quit.")
-    if top_artist and top_mood:
-        templates.append(f"{top_artist.lower()}, {mood_phrase}, and a turntable that never stopped.")
-    if top_artist:
-        templates.append(f"this week belonged to {top_artist.lower()} and the grooves.")
+    # Fallback descriptors when genre is unknown
+    fallback_descriptors = [
+        "the unmistakable pull of",
+        "the deep grooves of",
+        "the singular magnetism of",
+        "the undeniable gravity of",
+    ]
 
-    if not templates:
-        return "another week in the grooves. keep spinning."
+    if not top_artist:
+        return "another week in the grooves. the needle knows."
 
-    # Pick shortest template that still has personality
-    templates.sort(key=len)
-    line = templates[min(1, len(templates) - 1)]
+    # ── Pick descriptor for artist ──
+    descriptor = None
+    for genre_key, descs in genre_descriptors.items():
+        if genre_key in top_genre:
+            descriptor = random.choice(descs)
+            break
+    if not descriptor:
+        descriptor = random.choice(fallback_descriptors)
+
+    # ── Build the closing line ──
+    # Decide between mood-specific opener or general opener
+    if top_mood and top_mood in mood_openers and random.random() < 0.4:
+        opener = mood_openers[top_mood]
+        line = f"{opener} {descriptor} {top_artist}."
+    else:
+        opener = random.choice(openers)
+        line = f"{opener} {descriptor} {top_artist}."
+
+    # Optionally append era or evocative record reference
+    if dominant_era and random.random() < 0.35:
+        line = line.rstrip(".")
+        line += f", straight out of the {dominant_era}."
+    elif top_record_title and len(top_record_title) < 30 and random.random() < 0.3:
+        line = line.rstrip(".")
+        line += f" — {top_record_title} on repeat."
 
     # Add perfect weekly streak mention
     weekly_prompts = stats.get("weekly_prompt_streak", 0)
