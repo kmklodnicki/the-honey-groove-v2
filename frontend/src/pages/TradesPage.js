@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { ArrowRightLeft, Check, X, MessageSquare, Disc, Loader2, DollarSign, Search, Package, AlertTriangle, Star, Camera, Truck, Clock, CheckCircle2, XCircle, Shield } from 'lucide-react';
+import { ArrowRightLeft, Check, X, MessageSquare, Disc, Loader2, DollarSign, Search, Package, AlertTriangle, Star, Camera, Truck, Clock, CheckCircle2, XCircle, Shield, HelpCircle } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -857,6 +857,53 @@ const RecordDetail = ({ record, condition, photoUrls }) => (
 // ======= Propose Trade Modal (exported for ISOPage) =======
 const OFFER_CONDITIONS = ['Mint', 'Near Mint', 'Very Good Plus', 'Very Good', 'Good Plus', 'Good', 'Fair'];
 
+// Hold Explainer Link Component
+const HoldExplainerLink = () => {
+  const [showExplainer, setShowExplainer] = useState(false);
+  return (
+    <>
+      <button
+        onClick={() => setShowExplainer(true)}
+        className="text-[11px] text-amber-600 hover:text-amber-700 hover:underline flex items-center gap-1"
+        data-testid="hold-explainer-trigger"
+      >
+        <HelpCircle className="w-3 h-3" /> How does this work?
+      </button>
+      <Dialog open={showExplainer} onOpenChange={setShowExplainer}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-heading flex items-center gap-2"><Shield className="w-5 h-5 text-honey-amber" /> How Mutual Hold Works</DialogTitle>
+            <DialogDescription>Protecting both parties in every trade</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2 text-sm text-muted-foreground" data-testid="hold-explainer-modal">
+            <div className="space-y-3">
+              <div className="flex gap-3 items-start">
+                <span className="w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold shrink-0">1</span>
+                <p><strong className="text-vinyl-black">Both parties are charged.</strong> When a trade is accepted, both the proposer and the seller are charged the hold amount. This ensures both parties have skin in the game.</p>
+              </div>
+              <div className="flex gap-3 items-start">
+                <span className="w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold shrink-0">2</span>
+                <p><strong className="text-vinyl-black">Ship your records.</strong> Once both holds are paid, both parties ship their records and enter tracking info.</p>
+              </div>
+              <div className="flex gap-3 items-start">
+                <span className="w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold shrink-0">3</span>
+                <p><strong className="text-vinyl-black">Confirm delivery.</strong> When both parties confirm they received their records, the hold is fully refunded to both parties.</p>
+              </div>
+              <div className="flex gap-3 items-start">
+                <span className="w-6 h-6 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-xs font-bold shrink-0">!</span>
+                <p><strong className="text-vinyl-black">Disputes.</strong> If something goes wrong, either party can open a dispute. An admin will review and decide how to resolve it — including potentially releasing funds to the affected party.</p>
+              </div>
+            </div>
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <p className="text-xs text-amber-800">The hold amount should reflect the approximate value of the records being traded. Higher holds = more protection for both parties.</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+};
+
 export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onSuccess, feePct = 6 }) => {
   const { user: currentUser } = useAuth();
   const [records, setRecords] = useState([]);
@@ -1023,9 +1070,12 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
 
           {/* Hold Amount (always required) */}
           <div className="bg-amber-50/50 border border-amber-200/50 rounded-xl p-4" data-testid="hold-amount-section">
-            <div className="flex items-center gap-2 mb-2">
-              <Shield className="w-4 h-4 text-honey-amber" />
-              <span className="text-xs font-medium text-honey-amber">HOLD AMOUNT</span>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Shield className="w-4 h-4 text-honey-amber" />
+                <span className="text-xs font-medium text-honey-amber">HOLD AMOUNT</span>
+              </div>
+              <HoldExplainerLink />
             </div>
             <div className="relative">
               <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-600" />

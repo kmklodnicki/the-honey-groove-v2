@@ -28,6 +28,7 @@ const AdminPage = () => {
     { key: 'prompts', label: 'Daily Prompts', icon: MessageSquare },
     { key: 'bingo', label: 'Bingo Squares', icon: Grid3X3 },
     { key: 'holds', label: 'Hold Disputes', icon: Shield },
+    { key: 'offplatform', label: 'Off-Platform Alerts', icon: Flag },
     { key: 'reports', label: 'Reports', icon: Flag },
     { key: 'settings', label: 'Platform Settings', icon: Settings },
   ];
@@ -58,6 +59,7 @@ const AdminPage = () => {
       {section === 'prompts' && <PromptsSection API={API} headers={headers} />}
       {section === 'bingo' && <BingoSection API={API} headers={headers} />}
       {section === 'holds' && <HoldDisputesSection API={API} headers={headers} />}
+      {section === 'offplatform' && <OffPlatformAlertsSection API={API} headers={headers} />}
       {section === 'reports' && <ReportsSection API={API} headers={headers} />}
       {section === 'settings' && <SettingsSection API={API} headers={headers} />}
     </div>
@@ -870,6 +872,97 @@ const LoadingSkeleton = () => (
 const fmtDate = (iso) => {
   try { return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
   catch { return iso; }
+};
+
+// ═══════════════════════════════════════════════
+// OFF-PLATFORM ALERTS SECTION
+// ═══════════════════════════════════════════════
+const OffPlatformAlertsSection = ({ API, headers }) => {
+  const [alerts, setAlerts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchAlerts = useCallback(async () => {
+    try {
+      const resp = await axios.get(`${API}/admin/offplatform-alerts`, { headers });
+      setAlerts(resp.data);
+    } catch { /* ignore */ }
+    finally { setLoading(false); }
+  }, [API, headers]);
+
+  useEffect(() => { fetchAlerts(); }, [fetchAlerts]);
+
+  const dismiss = async (alertId) => {
+    try {
+      await axios.put(`${API}/admin/offplatform-alerts/${alertId}/dismiss`, {}, { headers });
+      setAlerts(prev => prev.map(a => a.id === alertId ? { ...a, status: 'dismissed' } : a));
+      toast.success('Alert dismissed');
+    } catch { toast.error('Failed to dismiss'); }
+  };
+
+  if (loading) return <LoadingSkeleton />;
+
+  const openAlerts = alerts.filter(a => a.status === 'open');
+  const dismissedAlerts = alerts.filter(a => a.status === 'dismissed');
+
+  return (
+    <div className="space-y-6" data-testid="offplatform-alerts-section">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-heading text-xl text-[#2A1A06]">Off-Platform Payment Alerts</h2>
+          <p className="text-sm text-[#8A6B4A] mt-1">Listings flagged for mentioning outside payment methods</p>
+        </div>
+        <span className="px-3 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700">
+          {openAlerts.length} open
+        </span>
+      </div>
+
+      {alerts.length === 0 ? (
+        <Card className="p-8 text-center border-[#C8861A]/15">
+          <Flag className="w-10 h-10 text-[#C8861A]/30 mx-auto mb-3" />
+          <p className="text-[#8A6B4A] text-sm">No off-platform alerts yet</p>
+        </Card>
+      ) : (
+        <div className="space-y-3">
+          {[...openAlerts, ...dismissedAlerts].map(alert => (
+            <Card key={alert.id} className={`p-4 border-[#C8861A]/15 ${alert.status === 'dismissed' ? 'opacity-50' : ''}`} data-testid={`offplatform-alert-${alert.id}`}>
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-sm font-medium text-[#2A1A06]">@{alert.username}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${alert.status === 'open' ? 'bg-yellow-100 text-yellow-700' : 'bg-stone-100 text-stone-500'}`}>
+                      {alert.status}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 mb-2">
+                    {(alert.keywords || []).map(kw => (
+                      <span key={kw} className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-red-50 text-red-600 border border-red-200">
+                        {kw}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-xs text-[#8A6B4A] line-clamp-2">{alert.description_snippet}</p>
+                  <p className="text-[10px] text-[#8A6B4A]/60 mt-1">{fmtDate(alert.created_at)}</p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <a href={`/honeypot/listing/${alert.listing_id}`} target="_blank" rel="noopener noreferrer"
+                    className="text-xs text-[#C8861A] hover:underline whitespace-nowrap">
+                    View Listing
+                  </a>
+                  {alert.status === 'open' && (
+                    <Button size="sm" variant="outline" onClick={() => dismiss(alert.id)}
+                      className="text-xs h-7 rounded-full border-[#C8861A]/30 text-[#8A6B4A]"
+                      data-testid={`dismiss-alert-${alert.id}`}>
+                      Dismiss
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default AdminPage;

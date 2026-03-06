@@ -6,7 +6,7 @@ import { Dialog, DialogContent } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { X, Star, Loader2, ChevronLeft, ChevronRight, DollarSign, ArrowRightLeft, Disc, Check, Heart } from 'lucide-react';
+import { X, Star, Loader2, ChevronLeft, ChevronRight, DollarSign, ArrowRightLeft, Disc, Check, Heart, AlertTriangle, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 
@@ -253,6 +253,31 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                       className="text-xs text-amber-600 hover:underline mt-1" data-testid="listing-read-more">
                       {descExpanded ? 'Show less' : 'Read more'}
                     </button>
+                  )}
+                </div>
+              )}
+
+              {/* Off-platform payment warning */}
+              {listing.offplatform_flagged && (
+                <div className="mx-6 my-2 bg-yellow-50 border border-yellow-300 rounded-xl px-4 py-3 flex items-start gap-3" data-testid="offplatform-warning">
+                  <AlertTriangle className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
+                  <p className="text-sm text-yellow-800">
+                    This listing mentions an outside payment method. Never pay outside the Honey Groove. All legitimate transactions happen inside the app through Stripe only.
+                  </p>
+                </div>
+              )}
+
+              {/* Shipping insurance indicator */}
+              {listing.insured !== null && listing.insured !== undefined && (
+                <div className="px-6 py-2" data-testid="listing-insurance-status">
+                  {listing.insured ? (
+                    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 px-3 py-1.5 rounded-full">
+                      <Package className="w-3.5 h-3.5" /> Seller added shipping insurance
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full">
+                      <Package className="w-3.5 h-3.5" /> No shipping insurance
+                    </span>
                   )}
                 </div>
               )}

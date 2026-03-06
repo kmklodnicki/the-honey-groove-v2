@@ -128,17 +128,21 @@ const ISOPage = () => {
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [pricingAssist, setPricingAssist] = useState(null);
+  const [sellerStats, setSellerStats] = useState(null);
+  const [showInsurancePrompt, setShowInsurancePrompt] = useState(false);
+  const [insuranceChoice, setInsuranceChoice] = useState(null);
 
   const fetchData = useCallback(async () => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
-      const [isoRes, communityRes, listingsRes, myListRes, matchesRes, tradesRes] = await Promise.all([
+      const [isoRes, communityRes, listingsRes, myListRes, matchesRes, tradesRes, statsRes] = await Promise.all([
         axios.get(`${API}/iso`, { headers }),
         axios.get(`${API}/iso/community`, { headers }),
         axios.get(`${API}/listings?limit=50`),
         axios.get(`${API}/listings/my`, { headers }),
         axios.get(`${API}/listings/iso-matches`, { headers }),
         axios.get(`${API}/trades`, { headers }),
+        axios.get(`${API}/seller/stats`, { headers }).catch(() => ({ data: { completed_transactions: 0 } })),
       ]);
       setIsos(isoRes.data);
       setCommunityIsos(communityRes.data);
@@ -146,6 +150,7 @@ const ISOPage = () => {
       setMyListings(myListRes.data);
       setIsoMatches(matchesRes.data);
       setTrades(tradesRes.data);
+      setSellerStats(statsRes.data);
     } catch { /* ignore */ }
     finally { setLoading(false); }
   }, [API, token]);
@@ -187,6 +192,7 @@ const ISOPage = () => {
     setListType('BUY_NOW'); setListPrice(''); setListDesc('');
     listPhotos.forEach(p => p.preview && URL.revokeObjectURL(p.preview));
     setListPhotos([]); setUploadingPhotos(false); setPricingAssist(null);
+    setShowInsurancePrompt(false); setInsuranceChoice(null);
   };
 
   const openModal = (type) => {
@@ -254,6 +260,14 @@ const ISOPage = () => {
     if (listType !== 'TRADE' && !listPrice) { toast.error('Price required for Buy/Offer listings'); return; }
     if (listPhotos.length === 0) { toast.error('At least 1 photo is required'); return; }
     if (!listCondition) { toast.error('Condition is required'); return; }
+
+    // Show insurance prompt for items over $75 (only if not yet shown)
+    const priceVal = parseFloat(listPrice);
+    if (listType !== 'TRADE' && priceVal > 75 && insuranceChoice === null && !showInsurancePrompt) {
+      setShowInsurancePrompt(true);
+      return;
+    }
+
     setSubmitting(true);
     try {
       setUploadingPhotos(true);
@@ -270,6 +284,7 @@ const ISOPage = () => {
         price: listPrice ? parseFloat(listPrice) : null,
         description: listDesc || null,
         photo_urls: photoUrls,
+        insured: insuranceChoice,
       }, { headers: { Authorization: `Bearer ${token}` }});
       toast.success('Listing posted!');
       closeModal(); fetchData();
@@ -671,6 +686,11 @@ const ISOPage = () => {
                         recent sales: ${pricingAssist.low?.toFixed(2)} — ${pricingAssist.high?.toFixed(2)} on Discogs
                       </p>
                     )}
+                    {sellerStats && sellerStats.completed_transactions < 3 && parseFloat(listPrice) > 150 && (
+                      <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2" data-testid="new-seller-restriction-msg">
+                        New sellers can list items up to $150. Complete 3 transactions to unlock higher value listings.
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -698,7 +718,31 @@ const ISOPage = () => {
                   </div>
                 </div>
 
-                <Button onClick={submitListing} disabled={submitting || listPhotos.length === 0 || (manualMode && (!listArtist || !listAlbum)) || (!manualMode && !selectedRelease)}
+                {/* Shipping Insurance Prompt */}
+                {showInsurancePrompt && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3" data-testid="insurance-prompt">
+                    <p className="text-sm text-amber-800 font-medium">For items over $75 we recommend adding shipping insurance to protect you and your buyer.</p>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => { setInsuranceChoice(true); setShowInsurancePrompt(false); }}
+                        className="flex-1 bg-green-100 text-green-800 hover:bg-green-200 rounded-full text-xs"
+                        data-testid="insurance-add-btn"
+                      >
+                        Got it, I'll add insurance
+                      </Button>
+                      <Button
+                        onClick={() => { setInsuranceChoice(false); setShowInsurancePrompt(false); }}
+                        variant="outline"
+                        className="flex-1 rounded-full text-xs border-amber-300 text-amber-700"
+                        data-testid="insurance-skip-btn"
+                      >
+                        Skip for now
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                <Button onClick={submitListing} disabled={submitting || listPhotos.length === 0 || (manualMode && (!listArtist || !listAlbum)) || (!manualMode && !selectedRelease) || (sellerStats && sellerStats.completed_transactions < 3 && parseFloat(listPrice) > 150)}
                   className="w-full bg-honey text-vinyl-black hover:bg-honey-amber rounded-full" data-testid="list-form-submit">
                   {submitting ? (<><Loader2 className="w-4 h-4 animate-spin mr-2" />{uploadingPhotos ? 'Uploading photos...' : 'Posting...'}</>) : (<><Tag className="w-4 h-4 mr-2" />{listType === 'TRADE' ? 'List for Trade' : `List for $${listPrice || '0'}`}</>)}
                 </Button>
@@ -921,8 +965,16 @@ const ListingCard = ({ listing, currentUserId, onProposeTrade, onBuyNow, onMakeO
           {listing.condition && <span className="text-xs text-muted-foreground">{listing.condition}</span>}
         </div>
         {listing.user && (
-          <Link to={`/profile/${listing.user.username}`} onClick={e => e.stopPropagation()}
-            className="text-xs text-muted-foreground hover:underline mt-1 block">@{listing.user.username}</Link>
+          <div className="flex items-center gap-1.5 mt-1">
+            <Link to={`/profile/${listing.user.username}`} onClick={e => e.stopPropagation()}
+              className="text-xs text-muted-foreground hover:underline">@{listing.user.username}</Link>
+            {listing.user.completed_sales > 0 && (
+              <span className="text-xs text-muted-foreground" data-testid={`seller-stats-${listing.id}`}>
+                · {listing.user.completed_sales} sale{listing.user.completed_sales !== 1 ? 's' : ''}
+                {listing.user.rating ? ` · ${listing.user.rating.toFixed(1)} ★` : ''}
+              </span>
+            )}
+          </div>
         )}
       </div>
     </Card>

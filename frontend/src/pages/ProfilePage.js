@@ -7,7 +7,7 @@ import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Skeleton } from '../components/ui/skeleton';
-import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, CheckCircle2, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin, Flame } from 'lucide-react';
+import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, CheckCircle2, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin, Flame, ShoppingBag } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { FollowListModal } from '../components/FollowList';
@@ -240,6 +240,14 @@ const ProfilePage = () => {
                 <div className="font-heading text-2xl text-vinyl-black">{profile.followers_count}</div>
                 <div className="text-xs text-muted-foreground">Followers</div>
               </button>
+              {profile.completed_transactions > 0 && (
+                <div className="text-center" data-testid="profile-transactions">
+                  <div className="font-heading text-2xl text-vinyl-black flex items-center justify-center gap-1">
+                    <ShoppingBag className="w-4 h-4 text-honey-amber" /> {profile.completed_transactions}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Sales</div>
+                </div>
+              )}
               {collectionValue && collectionValue.total_value > 0 && (
                 <div className="text-center" data-testid="profile-collection-value">
                   <div className="font-heading text-2xl text-honey-amber">

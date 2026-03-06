@@ -29,6 +29,7 @@ class UserResponse(BaseModel):
     spin_count: int = 0
     followers_count: int = 0
     following_count: int = 0
+    completed_transactions: int = 0
     onboarding_completed: bool = False
     founding_member: bool = False
     is_admin: bool = False
@@ -266,6 +267,7 @@ class ListingCreate(BaseModel):
     price: Optional[float] = None
     description: Optional[str] = None
     photo_urls: List[str] = Field(..., min_length=1, max_length=10)
+    insured: Optional[bool] = None
 
 class ListingResponse(BaseModel):
     id: str
@@ -282,6 +284,8 @@ class ListingResponse(BaseModel):
     price: Optional[float] = None
     description: Optional[str] = None
     photo_urls: List[str] = []
+    insured: Optional[bool] = None
+    offplatform_flagged: Optional[bool] = None
     status: str = "ACTIVE"
     created_at: str
     user: Optional[Dict[str, Any]] = None

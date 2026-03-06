@@ -19,7 +19,22 @@ from models import *
 import stripe as stripe_sdk
 from fastapi.responses import Response
 
+import re
+
 router = APIRouter()
+
+# Off-platform payment keywords to detect
+OFFPLATFORM_KEYWORDS = ["venmo", "paypal", "cashapp", "zelle", "wire transfer", "western union", "bank transfer"]
+
+
+async def _get_seller_transaction_count(user_id: str) -> int:
+    """Count completed trades + sold listings for a user."""
+    completed_trades = await db.trades.count_documents({
+        "$or": [{"initiator_id": user_id}, {"responder_id": user_id}],
+        "status": "COMPLETED"
+    })
+    completed_sales = await db.listings.count_documents({"user_id": user_id, "status": "SOLD"})
+    return completed_trades + completed_sales
 
 async def _get_platform_fee_percent() -> float:
     """Get the current platform fee % from settings, fallback to default."""
@@ -94,8 +109,28 @@ async def create_listing(data: ListingCreate, user: Dict = Depends(require_auth)
         raise HTTPException(status_code=400, detail="At least 1 photo is required")
     if not data.condition:
         raise HTTPException(status_code=400, detail="Condition is required")
+
+    # New seller listing restriction: <3 transactions can't list above $150
+    if data.price and data.price > 150:
+        tx_count = await _get_seller_transaction_count(user["id"])
+        if tx_count < 3:
+            raise HTTPException(
+                status_code=400,
+                detail="New sellers can list items up to $150. Complete 3 transactions to unlock higher value listings."
+            )
+
     now = datetime.now(timezone.utc).isoformat()
     listing_id = str(uuid.uuid4())
+
+    # Off-platform payment detection — scan description
+    offplatform_flagged = False
+    offplatform_keywords_found = []
+    if data.description:
+        desc_lower = data.description.lower()
+        for kw in OFFPLATFORM_KEYWORDS:
+            if kw in desc_lower:
+                offplatform_flagged = True
+                offplatform_keywords_found.append(kw)
     
     listing_doc = {
         "id": listing_id,
@@ -112,10 +147,25 @@ async def create_listing(data: ListingCreate, user: Dict = Depends(require_auth)
         "price": data.price,
         "description": data.description,
         "photo_urls": data.photo_urls,
+        "insured": data.insured,
+        "offplatform_flagged": offplatform_flagged,
         "status": "ACTIVE",
         "created_at": now
     }
     await db.listings.insert_one(listing_doc)
+
+    # Log off-platform alert for admin
+    if offplatform_flagged:
+        await db.offplatform_alerts.insert_one({
+            "id": str(uuid.uuid4()),
+            "listing_id": listing_id,
+            "user_id": user["id"],
+            "username": user.get("username", ""),
+            "keywords": offplatform_keywords_found,
+            "description_snippet": (data.description[:200] + "...") if len(data.description) > 200 else data.description,
+            "status": "open",
+            "created_at": now,
+        })
     
     # Check for ISO matches and notify
     iso_matches = await db.iso_items.find({
@@ -172,7 +222,16 @@ async def get_listings(listing_type: Optional[str] = None, search: Optional[str]
     result = []
     for listing in listings:
         seller = await db.users.find_one({"id": listing["user_id"]}, {"_id": 0, "password_hash": 0})
-        user_data = {"id": seller["id"], "username": seller["username"], "avatar_url": seller.get("avatar_url")} if seller else None
+        user_data = None
+        if seller:
+            tx_count = await _get_seller_transaction_count(seller["id"])
+            user_data = {
+                "id": seller["id"],
+                "username": seller["username"],
+                "avatar_url": seller.get("avatar_url"),
+                "rating": seller.get("rating", 5.0),
+                "completed_sales": tx_count,
+            }
         result.append(ListingResponse(**listing, user=user_data))
     
     return result
@@ -594,6 +653,39 @@ async def get_my_sales(user: Dict = Depends(require_auth)):
         "total_fees": round(total_fees, 2),
         "total_sales": sum(1 for t in txns if t.get("payment_status") == "PAID"),
     }
+
+
+@router.get("/seller/stats")
+async def get_seller_stats(user: Dict = Depends(require_auth)):
+    """Get current user's seller stats (transaction count) for listing restriction checks."""
+    tx_count = await _get_seller_transaction_count(user["id"])
+    return {"completed_transactions": tx_count}
+
+
+# ============== ADMIN OFF-PLATFORM ALERTS ==============
+
+@router.get("/admin/offplatform-alerts")
+async def get_offplatform_alerts(user: Dict = Depends(require_auth)):
+    """Get all off-platform payment alerts for admin review."""
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin only")
+    alerts = await db.offplatform_alerts.find({}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    return alerts
+
+
+@router.put("/admin/offplatform-alerts/{alert_id}/dismiss")
+async def dismiss_offplatform_alert(alert_id: str, user: Dict = Depends(require_auth)):
+    """Dismiss an off-platform alert."""
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin only")
+    result = await db.offplatform_alerts.update_one(
+        {"id": alert_id},
+        {"$set": {"status": "dismissed", "dismissed_by": user["id"], "dismissed_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Alert not found")
+    return {"status": "dismissed"}
+
 
 
 

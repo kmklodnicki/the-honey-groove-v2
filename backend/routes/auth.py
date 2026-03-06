@@ -23,6 +23,12 @@ async def _build_user_response(user: dict) -> UserResponse:
     spin_count = await db.spins.count_documents({"user_id": uid})
     followers_count = await db.followers.count_documents({"following_id": uid})
     following_count = await db.followers.count_documents({"follower_id": uid})
+    completed_trades = await db.trades.count_documents({
+        "$or": [{"initiator_id": uid}, {"responder_id": uid}],
+        "status": "COMPLETED"
+    })
+    completed_sales = await db.listings.count_documents({"user_id": uid, "status": "SOLD"})
+    completed_transactions = completed_trades + completed_sales
     return UserResponse(
         id=uid,
         email=user.get("email", ""),
@@ -39,6 +45,7 @@ async def _build_user_response(user: dict) -> UserResponse:
         spin_count=spin_count,
         followers_count=followers_count,
         following_count=following_count,
+        completed_transactions=completed_transactions,
         onboarding_completed=user.get("onboarding_completed", False),
         founding_member=user.get("founding_member", False),
         is_admin=user.get("is_admin", False),

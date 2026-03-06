@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
 import { Dialog, DialogContent } from '../components/ui/dialog';
-import { Home, Search, User, LogOut, Settings, Library, ShoppingBag, ArrowRightLeft, Bell, Check, MessageCircle, Globe } from 'lucide-react';
+import { Home, Search, User, LogOut, Settings, Library, ShoppingBag, ArrowRightLeft, Bell, Check, MessageCircle, Globe, HelpCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import GlobalSearch from './GlobalSearch';
 
@@ -148,6 +148,10 @@ const Navbar = () => {
                   <DropdownMenuItem onClick={() => navigate('/settings')} data-testid="menu-settings">
                     <Settings className="mr-2 h-4 w-4" />
                     Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => window.open('https://thehoneygroove.com/faq', '_blank')} data-testid="menu-help">
+                    <HelpCircle className="mr-2 h-4 w-4" />
+                    Help
                   </DropdownMenuItem>
                   {user.is_admin && (
                     <>

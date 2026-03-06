@@ -9,7 +9,7 @@ import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Switch } from '../components/ui/switch';
-import { ArrowLeft, Save, LogOut, Camera, Loader2, Mail } from 'lucide-react';
+import { ArrowLeft, Save, LogOut, Camera, Loader2, Mail, HelpCircle, ExternalLink, MessageSquare, Flag } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
 
@@ -309,6 +309,51 @@ const SettingsPage = () => {
               data-testid="newsletter-toggle"
             />
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Help & Support */}
+      <Card className="border-honey/30 mb-6" data-testid="help-support-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><HelpCircle className="w-5 h-5 text-honey-amber" /> Help & Support</CardTitle>
+          <CardDescription>Get help with your account or the platform</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <a
+            href="https://thehoneygroove.com/faq"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between p-3 rounded-xl border border-honey/20 hover:bg-honey/5 transition-colors group"
+            data-testid="help-faq-link"
+          >
+            <div className="flex items-center gap-3">
+              <HelpCircle className="w-4 h-4 text-honey-amber" />
+              <span className="text-sm font-medium">FAQ</span>
+            </div>
+            <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-honey-amber transition-colors" />
+          </a>
+          <a
+            href="mailto:hello@thehoneygroove.com"
+            className="flex items-center justify-between p-3 rounded-xl border border-honey/20 hover:bg-honey/5 transition-colors group"
+            data-testid="help-contact-link"
+          >
+            <div className="flex items-center gap-3">
+              <MessageSquare className="w-4 h-4 text-honey-amber" />
+              <span className="text-sm font-medium">Contact Us</span>
+            </div>
+            <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-honey-amber transition-colors" />
+          </a>
+          <button
+            onClick={() => navigate('/hive')}
+            className="flex items-center justify-between p-3 rounded-xl border border-honey/20 hover:bg-honey/5 transition-colors group w-full text-left"
+            data-testid="help-report-link"
+          >
+            <div className="flex items-center gap-3">
+              <Flag className="w-4 h-4 text-honey-amber" />
+              <span className="text-sm font-medium">Report a Problem</span>
+            </div>
+            <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-honey-amber transition-colors" />
+          </button>
         </CardContent>
       </Card>
 
