@@ -150,6 +150,18 @@ COMPLETED → Mandatory rating before next trade
 
 81. **Help & Support Integration** — Three access points: (1) Settings page "Help & Support" section with FAQ (external link), Contact Us (mailto), Report a Problem links. (2) Navbar dropdown "Help" link between Settings and Log out. (3) "How does this work?" explainer modal on Mutual Hold amount field in trade proposal modal with 4-step walkthrough. (Mar 2026)
 
+82. **Terms of Service Page** — Public page at /terms with 10 sections covering acceptance, service description, user responsibilities, marketplace rules, fees, mutual hold, prohibited conduct, dispute resolution, liability, termination, and contact. Cream background, amber headings, footer links to Privacy and FAQ. (Mar 2026)
+
+83. **Privacy Policy Page** — Public page at /privacy with 8 sections covering data collection, usage, sharing, storage, user rights, cookies, "never sell data" statement, and contact. Lists third-party services (Stripe, Discogs, Resend, Google Analytics). (Mar 2026)
+
+84. **Rate Limiting** — In-memory sliding window rate limiter on login (5/15min), beta signup (3/hr), and invite registration (5/15min). Returns 429 with friendly error message. (Mar 2026)
+
+85. **Invisible Honeypot on Beta Signup** — Hidden 'website' field invisible to humans, visible to bots. Filled submissions silently rejected (success returned, not saved). Blocked submissions logged to honeypot_blocks collection. (Mar 2026)
+
+86. **Email Verification on Account Creation** — New users created via invite get email_verified=false. Verification email sent with 24hr expiry token. GET /api/auth/verify-email validates token. POST /api/auth/resend-verification resends. Login page shows verification banner with resend link for unverified users. Dedicated /verify-email page with loading/success/error states. (Mar 2026)
+
+87. **Secured by Stripe Badge** — Small muted "Secured by Stripe" text badge with Stripe wordmark SVG shown below purchase buttons in ListingDetailModal and below Pay Hold button in TradesPage. (Mar 2026)
+
 ## Upcoming Tasks
 - **P1: Stripe Webhook Verification** — Test /api/webhook/stripe with real Stripe event
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
@@ -172,7 +184,9 @@ newsletter_subscribers,
 bingo_squares, bingo_cards, bingo_marks,
 mood_boards,
 reports (type, target_id, reason, status),
-offplatform_alerts (listing_id, user_id, username, keywords, status)
+offplatform_alerts (listing_id, user_id, username, keywords, status),
+email_verifications (user_id, token, created_at),
+honeypot_blocks (ip, email, created_at)
 ```
 
 ## Test Credentials
