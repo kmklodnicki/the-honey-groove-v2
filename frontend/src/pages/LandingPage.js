@@ -64,22 +64,8 @@ const LandingPage = () => {
       <HoneycombPattern />
 
       {/* Hero Section */}
-      <section className="relative pt-8 md:pt-12 pb-24 overflow-hidden">
-        <div className="max-w-6xl mx-auto px-4 md:px-8">
-          <div className="text-center max-w-4xl mx-auto">
-            {/* Logo wordmark — positioned above drip */}
-            <div className="flex justify-center pt-[36px] pb-[24px] relative z-10">
-              <img
-                src="/logo-wordmark-clean.png"
-                alt="the Honey Groove"
-                className="w-[85vw] max-w-[520px]"
-                data-testid="hero-logo"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Honey drip — tiled across full viewport width */}
+      <section className="relative pb-24 overflow-hidden">
+        {/* Honey drip — pinned to very top of viewport */}
         <div className="w-screen relative left-1/2 -translate-x-1/2 z-0" data-testid="hero-drip"
           style={{
             backgroundImage: 'url(/honey-drip.png)',
@@ -94,6 +80,15 @@ const LandingPage = () => {
 
         <div className="max-w-6xl mx-auto px-4 md:px-8">
           <div className="text-center max-w-4xl mx-auto">
+            {/* Logo wordmark — below the drip */}
+            <div className="flex justify-center pt-[40px] pb-[24px] relative z-10">
+              <img
+                src="/logo-wordmark-clean.png"
+                alt="the Honey Groove"
+                className="w-[85vw] max-w-[520px]"
+                data-testid="hero-logo"
+              />
+            </div>
 
             {/* Headline */}
             <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl text-vinyl-black tracking-tight mb-6 animate-fade-in">
