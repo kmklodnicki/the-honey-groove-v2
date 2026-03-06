@@ -207,6 +207,14 @@ async def create_beta_signup(data: BetaSignupCreate, request: Request):
 @router.get("/admin/beta-signups")
 async def list_beta_signups(user: Dict = Depends(require_admin)):
     signups = await db.beta_signups.find({}, {"_id": 0}).sort("submitted_at", -1).to_list(10000)
+    # Enrich with invite status: check if invite code was used (user joined)
+    for s in signups:
+        code_id = s.get("invite_code_id")
+        if code_id:
+            code_doc = await db.invite_codes.find_one({"id": code_id}, {"_id": 0, "status": 1, "used_at": 1, "used_by": 1})
+            if code_doc and code_doc.get("status") == "used":
+                s["invite_status"] = "used"
+                s["invite_used_at"] = code_doc.get("used_at")
     return signups
 
 
@@ -216,6 +224,59 @@ async def update_beta_signup_notes(signup_id: str, data: BetaSignupNoteUpdate, u
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Signup not found")
     return {"status": "ok"}
+
+
+@router.post("/admin/beta-signups/{signup_id}/send-invite")
+async def send_invite_to_signup(signup_id: str, user: Dict = Depends(require_admin)):
+    """Generate an invite code for a beta signup and send the invite email."""
+    signup = await db.beta_signups.find_one({"id": signup_id}, {"_id": 0})
+    if not signup:
+        raise HTTPException(status_code=404, detail="Signup not found")
+
+    now = datetime.now(timezone.utc).isoformat()
+
+    # If there's an existing unused code for this signup, invalidate it
+    old_code = signup.get("invite_code_id")
+    if old_code:
+        await db.invite_codes.update_one(
+            {"id": old_code, "status": "unused"},
+            {"$set": {"status": "revoked", "revoked_at": now}},
+        )
+
+    # Generate a new invite code
+    code = generate_invite_code()
+    code_doc = {
+        "id": str(uuid.uuid4()),
+        "code": code,
+        "status": "unused",
+        "created_at": now,
+        "created_by": user["id"],
+        "used_by": None,
+        "used_at": None,
+        "sent_to": signup["email"],
+        "sent_at": now,
+    }
+    await db.invite_codes.insert_one(code_doc)
+
+    # Send the invite email
+    tpl = invite_code_tpl(signup["first_name"], code)
+    await send_email(signup["email"], tpl["subject"], tpl["html"], reply_to="hello@thehoneygroove.com")
+
+    # Update the signup record with invite tracking
+    await db.beta_signups.update_one({"id": signup_id}, {"$set": {
+        "invite_code_id": code_doc["id"],
+        "invite_code": code,
+        "invite_status": "sent",
+        "invite_sent_at": now,
+    }})
+
+    return {
+        "status": "sent",
+        "invite_code": code,
+        "invite_code_id": code_doc["id"],
+        "invite_sent_at": now,
+    }
+
 
 
 @router.get("/admin/beta-signups/export")

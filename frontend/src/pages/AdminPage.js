@@ -79,6 +79,7 @@ const BetaSection = ({ API, headers, token }) => {
   const [editingNote, setEditingNote] = useState(null);
   const [noteValue, setNoteValue] = useState('');
   const [generating, setGenerating] = useState(false);
+  const [sendingInvite, setSendingInvite] = useState(null);
 
   const fetch = useCallback(async () => {
     try {
@@ -118,6 +119,29 @@ const BetaSection = ({ API, headers, token }) => {
     toast.success('Invite link copied');
   };
 
+  const copyCodeText = (code) => {
+    navigator.clipboard.writeText(code);
+    toast.success('Code copied');
+  };
+
+  const sendInviteToSignup = async (signup) => {
+    setSendingInvite(signup.id);
+    try {
+      const res = await axios.post(`${API}/admin/beta-signups/${signup.id}/send-invite`, {}, { headers });
+      setSignups(prev => prev.map(s => s.id === signup.id ? {
+        ...s,
+        invite_status: 'sent',
+        invite_code: res.data.invite_code,
+        invite_code_id: res.data.invite_code_id,
+        invite_sent_at: res.data.invite_sent_at,
+      } : s));
+      toast.success(`invite sent to ${signup.email}`);
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'failed to send invite.');
+    }
+    setSendingInvite(null);
+  };
+
   const exportCSV = async () => {
     try {
       const res = await axios.get(`${API}/admin/beta-signups/export`, { headers, responseType: 'blob' });
@@ -125,6 +149,12 @@ const BetaSection = ({ API, headers, token }) => {
       const a = document.createElement('a');
       a.href = url; a.download = 'beta_signups.csv'; document.body.appendChild(a); a.click(); a.remove();
     } catch { toast.error('export failed. try again.'); }
+  };
+
+  const getInviteStatus = (s) => {
+    if (s.invite_status === 'used') return 'used';
+    if (s.invite_status === 'sent') return 'sent';
+    return 'not_sent';
   };
 
   if (loading) return <LoadingSkeleton />;
@@ -158,33 +188,68 @@ const BetaSection = ({ API, headers, token }) => {
                 <thead><tr className="border-b border-honey/20 text-left text-muted-foreground text-xs">
                   <th className="px-3 py-2.5">Name</th><th className="px-3 py-2.5">Instagram</th>
                   <th className="px-3 py-2.5">Email</th><th className="px-3 py-2.5">Feature</th>
-                  <th className="px-3 py-2.5">Date</th><th className="px-3 py-2.5 min-w-[160px]">Notes</th>
+                  <th className="px-3 py-2.5">Date</th><th className="px-3 py-2.5">Status</th>
+                  <th className="px-3 py-2.5">Action</th><th className="px-3 py-2.5">Code</th>
                 </tr></thead>
                 <tbody>
-                  {signups.map(s => (
-                    <tr key={s.id} className="border-b border-honey/10 hover:bg-honey/5">
+                  {signups.map(s => {
+                    const status = getInviteStatus(s);
+                    return (
+                    <tr key={s.id} className="border-b border-honey/10 hover:bg-honey/5" data-testid={`signup-row-${s.id}`}>
                       <td className="px-3 py-2.5 font-medium">{s.first_name}</td>
                       <td className="px-3 py-2.5 text-honey-amber">@{s.instagram_handle}</td>
                       <td className="px-3 py-2.5">{s.email}</td>
-                      <td className="px-3 py-2.5 text-xs">{s.feature_interest}</td>
+                      <td className="px-3 py-2.5 text-xs max-w-[120px] truncate">{s.feature_interest}</td>
                       <td className="px-3 py-2.5 text-muted-foreground text-xs whitespace-nowrap">{fmtDate(s.submitted_at)}</td>
                       <td className="px-3 py-2.5">
-                        {editingNote === s.id ? (
-                          <div className="flex gap-1">
-                            <Input value={noteValue} onChange={e => setNoteValue(e.target.value)} className="h-7 text-xs border-honey/30"
-                              onKeyDown={e => e.key === 'Enter' && saveNote(s.id)} autoFocus />
-                            <Button size="sm" variant="ghost" onClick={() => saveNote(s.id)} className="h-7 px-1.5"><Check className="w-3 h-3" /></Button>
-                            <Button size="sm" variant="ghost" onClick={() => setEditingNote(null)} className="h-7 px-1.5"><X className="w-3 h-3" /></Button>
+                        {status === 'not_sent' && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-stone-100 text-stone-500" data-testid={`invite-status-${s.id}`}>not sent</span>
+                        )}
+                        {status === 'sent' && (
+                          <div>
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#E8A820]/15 text-[#C8861A]" data-testid={`invite-status-${s.id}`}>sent</span>
+                            {s.invite_sent_at && <p className="text-[9px] text-muted-foreground mt-0.5">{fmtDate(s.invite_sent_at)}</p>}
                           </div>
-                        ) : (
-                          <button onClick={() => { setEditingNote(s.id); setNoteValue(s.notes || ''); }}
-                            className="text-left text-xs text-muted-foreground hover:text-vinyl-black cursor-pointer">
-                            {s.notes || 'add note...'}
+                        )}
+                        {status === 'used' && (
+                          <div>
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-100 text-green-700 inline-flex items-center gap-0.5" data-testid={`invite-status-${s.id}`}>
+                              <Check className="w-3 h-3" /> joined
+                            </span>
+                            {s.invite_used_at && <p className="text-[9px] text-muted-foreground mt-0.5">{fmtDate(s.invite_used_at)}</p>}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-3 py-2.5">
+                        {status !== 'used' && (
+                          <Button
+                            size="sm" variant="outline"
+                            onClick={() => sendInviteToSignup(s)}
+                            disabled={sendingInvite === s.id}
+                            className="h-7 text-xs border-[#C8861A]/40 text-[#C8861A] hover:bg-[#E8A820]/10"
+                            data-testid={`send-invite-${s.id}`}
+                          >
+                            {sendingInvite === s.id ? <Loader2 className="w-3 h-3 animate-spin" /> : (
+                              <>{status === 'sent' ? 'Resend' : 'Send Invite'}</>
+                            )}
+                          </Button>
+                        )}
+                      </td>
+                      <td className="px-3 py-2.5">
+                        {s.invite_code && (
+                          <button
+                            onClick={() => copyCodeText(s.invite_code)}
+                            className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-[#C8861A] transition-colors"
+                            title="Click to copy code"
+                            data-testid={`copy-code-${s.id}`}
+                          >
+                            <span className="font-mono">code: {s.invite_code}</span>
+                            <Copy className="w-3 h-3" />
                           </button>
                         )}
                       </td>
                     </tr>
-                  ))}
+                  );})}
                 </tbody>
               </table>
             </div>

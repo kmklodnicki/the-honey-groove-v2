@@ -287,8 +287,8 @@ const HivePage = () => {
   useEffect(() => {
     fetchFeed();
     fetchRecords();
-    // Check if onboarding needed
-    if (user && !user.onboarding_completed) {
+    // Check if onboarding needed (only after full user data loads, not JWT-decoded partial data)
+    if (user && !user._fromToken && user.onboarding_completed === false) {
       setShowOnboarding(true);
     }
   }, [fetchFeed, fetchRecords, user]);

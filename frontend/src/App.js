@@ -48,9 +48,12 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+// Admin route waits for full user data (JWT-decoded user won't have is_admin)
 const AdminRoute = ({ children }) => {
   const { user } = useAuth();
   if (!user) return <Navigate to="/" replace />;
+  // If we only have JWT-decoded partial user, wait for background fetch
+  if (user._fromToken) return <div className="min-h-screen bg-honey-cream" />;
   if (!user.is_admin) return <Navigate to="/hive" replace />;
   return children;
 };
