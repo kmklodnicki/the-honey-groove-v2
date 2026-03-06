@@ -247,6 +247,81 @@ def streak_nudge(username: str, streak: int, prompt_text: str) -> dict:
     }
 
 
+LISTING_TYPE_LABELS = {"BUY_NOW": "Buy It Now", "MAKE_OFFER": "Make an Offer", "TRADE": "Trade"}
+
+
+def listing_confirmed(username: str, album: str, artist: str, condition: str, price: str, listing_type: str, listing_url: str) -> dict:
+    type_label = LISTING_TYPE_LABELS.get(listing_type, listing_type)
+    price_line = f'<p>Price: <strong>${price}</strong></p>' if listing_type != "TRADE" else ""
+    body = f"""
+    <p style="{MUTED}">Hey {username},</p>
+    <p style="{H}font-size:22px;margin:16px 0 4px 0;">{album}</p>
+    <p style="{AMBER}font-size:16px;font-style:italic;margin:0 0 16px 0;">by {artist}</p>
+    <p>is now live in the Honeypot.</p>
+    <div style="padding:16px 20px;background:#FFF8EE;border-radius:12px;border:1px solid #F5E6CC;margin:16px 0;">
+        <p style="margin:0 0 4px 0;">Condition: <strong>{condition}</strong></p>
+        {price_line}
+        <p style="margin:4px 0 0 0;">Listing type: <strong>{type_label}</strong></p>
+    </div>
+    <p>Your record is visible to every collector in the hive. We'll notify you the moment someone makes an offer or purchases.</p>
+    <div style="text-align:center;margin:24px 0;">
+        <a href="{listing_url}" style="{BTN}">view your listing</a>
+    </div>
+    <p>Good luck. \U0001F41D</p>
+    <p style="margin:16px 0 0 0;{MUTED}">— The Honey Groove</p>
+    """
+    return {
+        "subject": "Your record is listed. \U0001F36F",
+        "html": wrap_email(body),
+    }
+
+
+def sale_confirmed_seller(username: str, album: str, artist: str, price: str, fee_amount: str, payout_amount: str, fee_pct: str, sale_url: str) -> dict:
+    body = f"""
+    <p style="{MUTED}">Hey {username},</p>
+    <p style="{H}font-size:22px;margin:16px 0 4px 0;">{album}</p>
+    <p style="{AMBER}font-size:16px;font-style:italic;margin:0 0 16px 0;">by {artist}</p>
+    <p>just sold.</p>
+    <div style="padding:16px 20px;background:#FFF8EE;border-radius:12px;border:1px solid #F5E6CC;margin:16px 0;">
+        <p style="margin:0 0 4px 0;">Sale price: <strong>${price}</strong></p>
+        <p style="margin:4px 0;">Platform fee ({fee_pct}%): <strong>${fee_amount}</strong></p>
+        <p style="margin:4px 0 0 0;{H}font-size:16px;">Your payout: <strong style="{AMBER}">${payout_amount}</strong></p>
+    </div>
+    <p>Your payout will be transferred to your connected Stripe account within 2 to 5 business days.</p>
+    <p>Next step — ship your record to the buyer as soon as possible. Once you've shipped mark it as shipped in the app so the buyer knows it's on the way.</p>
+    <div style="text-align:center;margin:24px 0;">
+        <a href="{sale_url}" style="{BTN}">view the sale</a>
+    </div>
+    <p>Thank you for being part of the hive. \U0001F36F</p>
+    <p style="margin:16px 0 0 0;{MUTED}">— The Honey Groove</p>
+    """
+    return {
+        "subject": "Your record sold. \U0001F389",
+        "html": wrap_email(body),
+    }
+
+
+def sale_confirmed_buyer(username: str, album: str, artist: str, seller_username: str, price: str, purchase_url: str) -> dict:
+    body = f"""
+    <p style="{MUTED}">Hey {username},</p>
+    <p>You just bought <strong style="{H}font-size:18px;">{album}</strong> <span style="{AMBER}font-style:italic;">by {artist}</span> from <strong>@{seller_username}</strong>.</p>
+    <div style="padding:16px 20px;background:#FFF8EE;border-radius:12px;border:1px solid #F5E6CC;margin:16px 0;">
+        <p style="margin:0;">Amount paid: <strong>${price}</strong></p>
+    </div>
+    <p>The seller has been notified and will ship your record shortly. You'll get another email the moment they mark it as shipped.</p>
+    <p>Keep an eye on your messages in the app — you can contact the seller directly if you have any questions about the order.</p>
+    <div style="text-align:center;margin:24px 0;">
+        <a href="{purchase_url}" style="{BTN}">view your purchase</a>
+    </div>
+    <p>Welcome to your collection. \U0001F36F</p>
+    <p style="margin:16px 0 0 0;{MUTED}">— The Honey Groove</p>
+    """
+    return {
+        "subject": "Your record is on its way. \U0001F3B5",
+        "html": wrap_email(body),
+    }
+
+
 def verified_seller_renewal(username: str, expiry_date: str, days_left: int) -> dict:
     body = f"""
     <p style="{MUTED}">Hey {username},</p>

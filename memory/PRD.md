@@ -126,6 +126,8 @@ COMPLETED → Mandatory rating before next trade
 
 69. **Landing Page Hero Polish** — Reduced hero top padding from 144px to 32px mobile / 48px desktop. Added subtle 3s ease-in-out honey drip animation (5px vertical float) on logo-drip.png. (Mar 2026)
 
+70. **Listing & Sale Confirmed Emails** — 3 new transactional emails via Resend: (1) Listing Confirmed sent to seller on listing creation with album/artist/condition/price/type, (2) Sale Confirmed Seller with dynamic fee calculation and payout amount, (3) Sale Confirmed Buyer with seller info and amount. Triggered on both Stripe webhook and polling fallback. (Mar 2026)
+
 ## Upcoming Tasks
 - **P0: Complete Email System** — Wire remaining 2 email triggers (newsletter_signup, weekly_wax_ready), verify all 13 existing triggers
 - **P1: Stripe Webhook Verification** — Test /api/webhook/stripe with real Stripe event

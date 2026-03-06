@@ -3,6 +3,8 @@ from fastapi.security import HTTPAuthorizationCredentials
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone, timedelta
 import uuid
+import os
+import logging
 
 from database import db, require_auth, get_current_user, security, logger, create_notification
 from services.email_service import send_email_fire_and_forget
@@ -136,6 +138,20 @@ async def create_listing(data: ListingCreate, user: Dict = Depends(require_auth)
                 tpl = wantlist_match(iso_user.get("username", ""), data.album or "", data.artist or "", user.get("username", ""), str(data.price or ""), f"https://thehoneygroove.com/honeypot/listing/{listing_id}")
                 await send_email_fire_and_forget(iso_user["email"], tpl["subject"], tpl["html"])
     
+    # Send listing confirmed email to seller
+    if user.get("email"):
+        from templates.emails import listing_confirmed
+        tpl = listing_confirmed(
+            username=user.get("username", ""),
+            album=data.album or "",
+            artist=data.artist or "",
+            condition=data.condition or "",
+            price=str(data.price or ""),
+            listing_type=data.listing_type or "",
+            listing_url=f"https://thehoneygroove.com/honeypot/listing/{listing_id}",
+        )
+        await send_email_fire_and_forget(user["email"], tpl["subject"], tpl["html"])
+
     user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url")}
     return ListingResponse(**{k: v for k, v in listing_doc.items() if k != '_id'}, user=user_data)
 
@@ -403,12 +419,27 @@ async def get_payment_status(session_id: str, request: Request, user: Dict = Dep
             await db.listings.update_one({"id": txn["listing_id"]}, {"$set": {"status": "SOLD"}})
             listing = await db.listings.find_one({"id": txn["listing_id"]}, {"_id": 0})
             buyer = await db.users.find_one({"id": txn["buyer_id"]}, {"_id": 0})
+            seller = await db.users.find_one({"id": txn["seller_id"]}, {"_id": 0})
             await create_notification(txn["seller_id"], "SALE_COMPLETED", "You made a sale!",
                                       f"@{buyer.get('username','?')} bought {listing.get('album','?')} for ${txn['amount']}. Payout: ${txn['seller_payout']}",
                                       {"listing_id": txn["listing_id"], "amount": txn["amount"]})
             await create_notification(txn["buyer_id"], "PURCHASE_COMPLETED", "Purchase confirmed!",
                                       f"Your payment of ${txn['amount']} for {listing.get('album','?')} is confirmed.",
                                       {"listing_id": txn["listing_id"]})
+            # Send sale confirmed emails
+            if listing and seller and buyer and txn.get("type") == "marketplace_purchase":
+                fee_pct = await _get_platform_fee_percent()
+                amount = float(txn.get("amount", 0))
+                fee_amount = round(amount * fee_pct / 100, 2)
+                payout_amount = round(amount - fee_amount, 2)
+                listing_url = f"https://thehoneygroove.com/honeypot/listing/{txn['listing_id']}"
+                from templates.emails import sale_confirmed_seller, sale_confirmed_buyer
+                if seller.get("email"):
+                    tpl_s = sale_confirmed_seller(seller.get("username",""), listing.get("album",""), listing.get("artist",""), f"{amount:.2f}", f"{fee_amount:.2f}", f"{payout_amount:.2f}", f"{fee_pct:g}", listing_url)
+                    await send_email_fire_and_forget(seller["email"], tpl_s["subject"], tpl_s["html"])
+                if buyer.get("email"):
+                    tpl_b = sale_confirmed_buyer(buyer.get("username",""), listing.get("album",""), listing.get("artist",""), seller.get("username",""), f"{amount:.2f}", listing_url)
+                    await send_email_fire_and_forget(buyer["email"], tpl_b["subject"], tpl_b["html"])
 
     return {"status": new_status, "amount": txn["amount"], "session_id": session_id}
 
@@ -428,7 +459,45 @@ async def stripe_webhook(request: Request):
                 await db.payment_transactions.update_one({"session_id": event.session_id}, {"$set": {
                     "payment_status": "PAID", "updated_at": now,
                 }})
-                await db.listings.update_one({"id": txn["listing_id"]}, {"$set": {"status": "SOLD"}})
+                listing_id = txn.get("listing_id")
+                if listing_id:
+                    await db.listings.update_one({"id": listing_id}, {"$set": {"status": "SOLD"}})
+
+                # Send sale confirmed emails to seller and buyer
+                if txn.get("type") == "marketplace_purchase" and listing_id:
+                    listing = await db.listings.find_one({"id": listing_id}, {"_id": 0})
+                    seller = await db.users.find_one({"id": txn["seller_id"]}, {"_id": 0})
+                    buyer = await db.users.find_one({"id": txn["buyer_id"]}, {"_id": 0})
+                    if listing and seller and buyer:
+                        fee_pct = await _get_platform_fee_percent()
+                        amount = float(txn.get("amount", 0))
+                        fee_amount = round(amount * fee_pct / 100, 2)
+                        payout_amount = round(amount - fee_amount, 2)
+                        album = listing.get("album", "")
+                        artist = listing.get("artist", "")
+                        listing_url = f"https://thehoneygroove.com/honeypot/listing/{listing_id}"
+
+                        from templates.emails import sale_confirmed_seller, sale_confirmed_buyer
+                        if seller.get("email"):
+                            tpl_s = sale_confirmed_seller(
+                                username=seller.get("username", ""),
+                                album=album, artist=artist,
+                                price=f"{amount:.2f}",
+                                fee_amount=f"{fee_amount:.2f}",
+                                payout_amount=f"{payout_amount:.2f}",
+                                fee_pct=f"{fee_pct:g}",
+                                sale_url=listing_url,
+                            )
+                            await send_email_fire_and_forget(seller["email"], tpl_s["subject"], tpl_s["html"])
+                        if buyer.get("email"):
+                            tpl_b = sale_confirmed_buyer(
+                                username=buyer.get("username", ""),
+                                album=album, artist=artist,
+                                seller_username=seller.get("username", ""),
+                                price=f"{amount:.2f}",
+                                purchase_url=listing_url,
+                            )
+                            await send_email_fire_and_forget(buyer["email"], tpl_b["subject"], tpl_b["html"])
     except Exception as e:
         logging.error(f"Webhook error: {e}")
     return {"received": True}
