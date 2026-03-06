@@ -39,23 +39,17 @@ import ExploreSeeAllPage from "./pages/ExploreSeeAllPage";
 import WaxReportPage from "./pages/WaxReportPage";
 import WaxReportHistory from "./pages/WaxReportHistory";
 
-// Auth guards — NO loading gate. Render immediately or redirect.
-// Returns a minimal visible placeholder during loading instead of null
-// to prevent Safari from showing a bare cream screen.
+// Auth guards — loading is ALWAYS false. No gates.
+// If user exists (from JWT decode or login), render children.
+// If no user, redirect to login.
 const ProtectedRoute = ({ children }) => {
-  const { user, loading } = useAuth();
-  if (loading) return (
-    <div className="min-h-screen bg-honey-cream" />
-  );
+  const { user } = useAuth();
   if (!user) return <Navigate to="/" replace />;
   return children;
 };
 
 const AdminRoute = ({ children }) => {
-  const { user, loading } = useAuth();
-  if (loading) return (
-    <div className="min-h-screen bg-honey-cream" />
-  );
+  const { user } = useAuth();
   if (!user) return <Navigate to="/" replace />;
   if (!user.is_admin) return <Navigate to="/hive" replace />;
   return children;
@@ -77,8 +71,7 @@ const AppLayout = ({ children }) => {
 
 // Landing wrapper - redirects to hive if logged in
 const LandingWrapper = () => {
-  const { user, loading } = useAuth();
-  if (loading) return <div className="min-h-screen bg-honey-cream" />;
+  const { user } = useAuth();
   if (user) return <Navigate to="/hive" replace />;
   return <LandingPage />;
 };

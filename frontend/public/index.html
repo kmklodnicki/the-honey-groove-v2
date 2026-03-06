@@ -39,22 +39,30 @@
           <img src="%PUBLIC_URL%/logo-wordmark.png" alt="the Honey Groove" style="height:36px;opacity:0.7" />
         </div>
         <script>
-          // Force-remove loading screen after 4s
+          // Force-remove loading screen after 5s
           setTimeout(function(){
             var ls=document.getElementById('loading-screen');
             if(ls) ls.remove();
-          },4000);
-          // Safari fallback: if app hasn't mounted in 8s, show reload button
+          },5000);
+          // Safari fallback: if app hasn't mounted in 15s, show reload button
+          // Also capture and display any JS errors to help diagnose Safari issues
+          window.__hg_errors = [];
+          window.onerror = function(msg, url, line) {
+            window.__hg_errors.push(msg + ' at ' + url + ':' + line);
+          };
           setTimeout(function(){
             var root=document.getElementById('root');
             if(root && root.childNodes.length===0){
+              var errMsg = window.__hg_errors.length > 0
+                ? '<p style="color:#C8861A;font-size:11px;max-width:280px;word-break:break-word;margin-bottom:12px;text-align:center">' + window.__hg_errors[0] + '</p>'
+                : '';
               var fb=document.createElement('div');
               fb.id='safari-fallback';
               fb.style.cssText='position:fixed;top:0;right:0;bottom:0;left:0;z-index:99999;background:#FAF6EE;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Georgia,serif;';
-              fb.innerHTML='<img src="/logo-wordmark.png" alt="the Honey Groove" style="height:40px;margin-bottom:24px;opacity:0.8"/><p style="color:#8A6B4A;font-size:14px;margin-bottom:16px">having trouble loading...</p><button onclick="window.location.reload()" style="background:#C8861A;color:#fff;border:none;padding:12px 32px;border-radius:999px;font-size:15px;font-family:Georgia,serif;cursor:pointer">tap to reload</button>';
+              fb.innerHTML='<img src="/logo-wordmark.png" alt="the Honey Groove" style="height:40px;margin-bottom:24px;opacity:0.8"/><p style="color:#8A6B4A;font-size:14px;margin-bottom:8px">having trouble loading...</p>' + errMsg + '<button onclick="window.location.reload()" style="background:#C8861A;color:#fff;border:none;padding:12px 32px;border-radius:999px;font-size:15px;font-family:Georgia,serif;cursor:pointer">tap to reload</button>';
               document.body.appendChild(fb);
             }
-          },8000);
+          },15000);
         </script>
         <div id="root"></div>
         <!--

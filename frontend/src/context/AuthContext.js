@@ -9,69 +9,80 @@ const AuthContext = createContext(null);
 
 export const useAuth = () => useContext(AuthContext);
 
+// Decode JWT payload client-side (no network call needed)
+function decodeTokenPayload(token) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(atob(base64));
+    // Check if token is expired
+    if (payload.exp && payload.exp * 1000 < Date.now()) {
+      return null;
+    }
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
+// Initialize user from token without any network call
+function initUserFromToken(token) {
+  if (!token) return null;
+  const payload = decodeTokenPayload(token);
+  if (!payload) return null;
+  // Return a minimal user object from JWT claims
+  // The real user data will be fetched in the background
+  return {
+    id: payload.user_id || payload.sub || payload.id,
+    email: payload.email || '',
+    username: payload.username || '',
+    _fromToken: true, // flag: this is partial data from JWT
+  };
+}
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(() => safeStorage.getItem('honeygroove_token'));
-  const [loading, setLoading] = useState(true);
-  const loadingResolved = React.useRef(false);
+  const storedToken = safeStorage.getItem('honeygroove_token');
+  // CRITICAL: loading starts as FALSE. The page renders IMMEDIATELY.
+  // If a token exists, we decode it client-side for instant user hydration.
+  const [token, setToken] = useState(storedToken);
+  const [user, setUser] = useState(() => initUserFromToken(storedToken));
+  const [loading] = useState(false); // NEVER true. No loading gates.
 
   // Set up axios interceptor for auth header
   useEffect(() => {
     const interceptor = axios.interceptors.request.use((config) => {
-      const storedToken = safeStorage.getItem('honeygroove_token');
-      if (storedToken) {
-        config.headers.Authorization = `Bearer ${storedToken}`;
-      }
+      const t = safeStorage.getItem('honeygroove_token');
+      if (t) config.headers.Authorization = `Bearer ${t}`;
       return config;
     });
-
-    return () => {
-      axios.interceptors.request.eject(interceptor);
-    };
+    return () => axios.interceptors.request.eject(interceptor);
   }, []);
 
-  // Resolve loading — only runs ONCE on mount, never re-triggers
-  const resolveLoading = useCallback(() => {
-    if (!loadingResolved.current) {
-      loadingResolved.current = true;
-      setLoading(false);
-    }
-  }, []);
-
+  // Background fetch: refresh user data silently after page renders
   useEffect(() => {
-    console.log('AUTH INIT, token exists:', !!token);
     if (token) {
-      fetchUser();
-    } else {
-      console.log('AUTH RESOLVED, loading: false (no token)');
-      resolveLoading();
+      fetchUserBackground();
     }
-    // Hard safety timeout: force loading=false after 3 seconds no matter what.
-    const safetyTimer = setTimeout(() => {
-      console.log('AUTH SAFETY TIMEOUT, forcing loading: false');
-      resolveLoading();
-    }, 3000);
-    return () => clearTimeout(safetyTimer);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const fetchUser = async () => {
+  const fetchUserBackground = async () => {
     try {
-      console.log('AUTH fetchUser START');
+      console.log('AUTH: background user fetch');
       const response = await axios.get(`${API}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
-        timeout: 5000
+        timeout: 8000,
       });
       if (response.data.email_verified === false) {
         logout();
         return;
       }
+      // Merge full user data (replaces the partial JWT-decoded user)
       setUser(response.data);
-      console.log('AUTH RESOLVED, loading: false (user loaded)');
+      console.log('AUTH: user data refreshed');
     } catch (error) {
-      console.error('Auth error:', error);
+      console.error('AUTH: background fetch failed', error);
+      // Token is invalid or expired — clear session
       logout();
-    } finally {
-      resolveLoading();
     }
   };
 
