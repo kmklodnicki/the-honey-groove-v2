@@ -313,21 +313,22 @@ const NotificationBell = () => {
   const [notifications, setNotifications] = useState([]);
   const [open, setOpen] = useState(false);
   const prevCountRef = React.useRef(0);
-  const [pushEnabled, setPushEnabled] = React.useState(Notification.permission === 'granted');
+  const hasNotificationAPI = typeof Notification !== 'undefined';
+  const [pushEnabled, setPushEnabled] = React.useState(hasNotificationAPI && Notification.permission === 'granted');
 
   // Request browser notification permission on mount
   useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'default') {
+    if (hasNotificationAPI && Notification.permission === 'default') {
       Notification.requestPermission().then(p => setPushEnabled(p === 'granted'));
     }
-  }, []);
+  }, [hasNotificationAPI]);
 
   const fetchCount = useCallback(async () => {
     try {
       const resp = await axios.get(`${API}/notifications/unread-count`, { headers: { Authorization: `Bearer ${token}` } });
       const newCount = resp.data.count;
       // Show browser notification if count increased
-      if (pushEnabled && newCount > prevCountRef.current && prevCountRef.current >= 0) {
+      if (hasNotificationAPI && pushEnabled && newCount > prevCountRef.current && prevCountRef.current >= 0) {
         try {
           const latest = await axios.get(`${API}/notifications?limit=1`, { headers: { Authorization: `Bearer ${token}` } });
           if (latest.data.length > 0 && !latest.data[0].read) {
