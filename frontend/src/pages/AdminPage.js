@@ -37,15 +37,15 @@ const AdminPage = () => {
       <h1 className="font-heading text-3xl text-vinyl-black mb-6">Admin Panel</h1>
 
       {/* Tab nav */}
-      <div className="flex gap-1.5 mb-6 overflow-x-auto pb-1 scrollbar-hide">
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-1 scrollbar-hide">
         {NAV.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setSection(key)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all border ${
               section === key
-                ? 'bg-honey text-vinyl-black'
-                : 'bg-honey/10 text-vinyl-black/60 hover:bg-honey/20'
+                ? 'bg-[#E8A820] text-[#2A1A06] border-[#C8861A] shadow-sm'
+                : 'bg-white text-[#8A6B4A] border-[#C8861A]/15 hover:bg-[#C8861A]/5 hover:border-[#C8861A]/30'
             }`}
             data-testid={`admin-nav-${key}`}
           >
@@ -471,20 +471,13 @@ const BingoSection = ({ API, headers }) => {
 // ═══════════════════════════════════════════════
 // MUTUAL HOLD DISPUTES SECTION
 // ═══════════════════════════════════════════════
-const HOLD_RESOLUTIONS = [
-  { key: 'full_reversal', label: 'Full Reversal', desc: 'Refund both parties, void trade', color: 'bg-green-600 hover:bg-green-700 text-white' },
-  { key: 'penalize_initiator', label: 'Penalize Proposer', desc: 'Keep proposer hold, refund recipient', color: 'bg-red-600 hover:bg-red-700 text-white' },
-  { key: 'penalize_responder', label: 'Penalize Recipient', desc: 'Keep recipient hold, refund proposer', color: 'bg-red-600 hover:bg-red-700 text-white' },
-  { key: 'partial', label: 'Partial Split', desc: 'Custom refund amounts', color: 'bg-amber-600 hover:bg-amber-700 text-white' },
-];
-
 const HoldDisputesSection = ({ API, headers }) => {
   const [disputes, setDisputes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [resolving, setResolving] = useState(null);
-  const [notes, setNotes] = useState('');
-  const [partialInit, setPartialInit] = useState('');
-  const [partialResp, setPartialResp] = useState('');
+  const [notes, setNotes] = useState({});
+  const [partialInit, setPartialInit] = useState({});
+  const [partialResp, setPartialResp] = useState({});
   const [showPartial, setShowPartial] = useState(null);
 
   const fetchDisputes = useCallback(async () => {
@@ -498,17 +491,21 @@ const HoldDisputesSection = ({ API, headers }) => {
   useEffect(() => { fetchDisputes(); }, [fetchDisputes]);
 
   const resolve = async (tradeId, resolution) => {
-    if (!notes.trim()) { toast.error('Resolution notes required'); return; }
+    const n = (notes[tradeId] || '').trim();
+    if (!n) { toast.error('Resolution notes required'); return; }
     setResolving(tradeId);
     try {
-      const body = { resolution, notes };
+      const body = { resolution, notes: n };
       if (resolution === 'partial') {
-        body.partial_refund_initiator = partialInit ? parseFloat(partialInit) : 0;
-        body.partial_refund_responder = partialResp ? parseFloat(partialResp) : 0;
+        body.partial_refund_initiator = partialInit[tradeId] ? parseFloat(partialInit[tradeId]) : 0;
+        body.partial_refund_responder = partialResp[tradeId] ? parseFloat(partialResp[tradeId]) : 0;
       }
       await axios.put(`${API}/admin/hold-disputes/${tradeId}/resolve`, body, { headers });
       toast.success('Dispute resolved');
-      setNotes(''); setPartialInit(''); setPartialResp(''); setShowPartial(null);
+      setNotes(p => ({ ...p, [tradeId]: '' }));
+      setPartialInit(p => ({ ...p, [tradeId]: '' }));
+      setPartialResp(p => ({ ...p, [tradeId]: '' }));
+      setShowPartial(null);
       fetchDisputes();
     } catch (err) { toast.error(err.response?.data?.detail || 'Failed to resolve'); }
     setResolving(null);
@@ -518,76 +515,89 @@ const HoldDisputesSection = ({ API, headers }) => {
 
   return (
     <div data-testid="admin-holds-section">
-      <p className="text-sm text-muted-foreground mb-4">
+      <p className="text-sm font-['Cormorant_Garamond'] italic text-[#8A6B4A] mb-5">
         {disputes.length} active dispute{disputes.length !== 1 ? 's' : ''} with frozen holds
       </p>
 
       {disputes.length === 0 ? (
-        <Card className="p-12 text-center border-honey/30">
-          <Shield className="w-10 h-10 text-honey/30 mx-auto mb-3" />
-          <p className="text-muted-foreground text-sm">No hold disputes. All clear.</p>
-        </Card>
+        <div className="bg-white border border-[#C8861A]/15 rounded-2xl p-14 text-center">
+          <Shield className="w-10 h-10 text-[#C8861A]/25 mx-auto mb-3" />
+          <p className="text-[#8A6B4A] text-sm font-['Cormorant_Garamond'] italic">No hold disputes. All clear.</p>
+        </div>
       ) : (
-        <div className="space-y-4">
-          {disputes.map(trade => (
-            <Card key={trade.id} className="border-red-200 overflow-hidden" data-testid={`hold-dispute-${trade.id}`}>
+        <div className="space-y-5">
+          {disputes.map(trade => {
+            const amt = trade.hold_amount || 0;
+            return (
+            <div key={trade.id} className="bg-white border border-[#C8861A]/15 rounded-2xl overflow-hidden" data-testid={`hold-dispute-${trade.id}`}>
               {/* Header */}
-              <div className="bg-red-50 px-5 py-3 border-b border-red-200 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-red-500" />
-                  <span className="text-sm font-bold text-red-700">HOLD FROZEN</span>
-                  <span className="text-xs text-red-500 font-mono">{trade.id.slice(0, 8)}</span>
+              <div className="px-6 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border border-[#C8861A] text-[#C8861A] text-xs font-bold bg-white">
+                    <Shield className="w-3 h-3" /> HOLD FROZEN
+                  </span>
+                  <span className="text-xs font-mono text-[#8A6B4A]">{trade.id.slice(0, 8)}</span>
                 </div>
-                <span className="text-sm font-bold text-red-700">${trade.hold_amount} per party</span>
+                <span className="text-lg font-heading font-bold text-[#996012]">${amt} per party</span>
               </div>
 
-              <div className="p-5 space-y-4">
-                {/* Parties */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-honey/5 rounded-lg p-3">
-                    <p className="text-[10px] text-muted-foreground mb-1">PROPOSER</p>
-                    <p className="text-sm font-medium">@{trade.initiator?.username || '?'}</p>
-                    <p className="text-xs text-muted-foreground">{trade.initiator?.email || ''}</p>
+              <div className="px-6 pb-6 space-y-5">
+                {/* Parties + records */}
+                <div className="grid grid-cols-[1fr_auto_1fr] gap-4 items-center">
+                  <div className="space-y-2">
+                    <p className="text-[10px] uppercase tracking-widest text-[#8A6B4A]">Proposer</p>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-[#E8A820]/20 flex items-center justify-center text-xs font-bold text-[#996012]">
+                        {(trade.initiator?.username || '?')[0].toUpperCase()}
+                      </div>
+                      <span className="text-sm font-medium text-[#2A1A06]">@{trade.initiator?.username || '?'}</span>
+                    </div>
+                    {trade.offered_record && (
+                      <div className="flex items-center gap-2 mt-1">
+                        {trade.offered_record.cover_url && <img src={trade.offered_record.cover_url} alt="" className="w-9 h-9 rounded object-cover" />}
+                        <div className="min-w-0">
+                          <p className="text-xs font-medium text-[#2A1A06] truncate">{trade.offered_record.title}</p>
+                          <p className="text-[10px] text-[#8A6B4A]">{trade.offered_record.artist}</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className="bg-honey/5 rounded-lg p-3">
-                    <p className="text-[10px] text-muted-foreground mb-1">RECIPIENT</p>
-                    <p className="text-sm font-medium">@{trade.responder?.username || '?'}</p>
-                    <p className="text-xs text-muted-foreground">{trade.responder?.email || ''}</p>
-                  </div>
-                </div>
 
-                {/* Records */}
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                    {trade.offered_record?.cover_url && <img src={trade.offered_record.cover_url} alt="" className="w-10 h-10 rounded object-cover" />}
-                    <div className="min-w-0">
-                      <p className="text-xs font-medium truncate">{trade.offered_record?.title || '?'}</p>
-                      <p className="text-[10px] text-muted-foreground">{trade.offered_record?.artist}</p>
+                  <ArrowRightLeft className="w-5 h-5 text-[#C8861A] shrink-0" />
+
+                  <div className="space-y-2">
+                    <p className="text-[10px] uppercase tracking-widest text-[#8A6B4A]">Recipient</p>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-[#E8A820]/20 flex items-center justify-center text-xs font-bold text-[#996012]">
+                        {(trade.responder?.username || '?')[0].toUpperCase()}
+                      </div>
+                      <span className="text-sm font-medium text-[#2A1A06]">@{trade.responder?.username || '?'}</span>
                     </div>
-                  </div>
-                  <ArrowRightLeft className="w-4 h-4 text-muted-foreground shrink-0" />
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
-                    {trade.listing_record?.cover_url && <img src={trade.listing_record.cover_url} alt="" className="w-10 h-10 rounded object-cover" />}
-                    <div className="min-w-0">
-                      <p className="text-xs font-medium truncate">{trade.listing_record?.album || '?'}</p>
-                      <p className="text-[10px] text-muted-foreground">{trade.listing_record?.artist}</p>
-                    </div>
+                    {trade.listing_record && (
+                      <div className="flex items-center gap-2 mt-1">
+                        {trade.listing_record.cover_url && <img src={trade.listing_record.cover_url} alt="" className="w-9 h-9 rounded object-cover" />}
+                        <div className="min-w-0">
+                          <p className="text-xs font-medium text-[#2A1A06] truncate">{trade.listing_record.album}</p>
+                          <p className="text-[10px] text-[#8A6B4A]">{trade.listing_record.artist}</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 {/* Dispute details */}
                 {trade.dispute && (
-                  <div className="bg-red-50 rounded-lg p-3 border border-red-100">
-                    <p className="text-[10px] text-red-600 font-medium mb-1">
-                      DISPUTE BY @{trade.dispute.opened_by === trade.initiator_id ? trade.initiator?.username : trade.responder?.username}
+                  <div className="bg-[#FAF6EE] rounded-xl p-4 border-l-[3px] border-[#C8861A]">
+                    <p className="text-[10px] uppercase tracking-wider text-[#8A6B4A] mb-1.5">
+                      Dispute by @{trade.dispute.opened_by === trade.initiator_id ? trade.initiator?.username : trade.responder?.username}
                       {' '}&middot; {fmtDate(trade.dispute.opened_at)}
                     </p>
-                    <p className="text-sm text-red-800">{trade.dispute.reason}</p>
+                    <p className="text-[#2A1A06] text-base font-['Cormorant_Garamond'] leading-relaxed">{trade.dispute.reason}</p>
                     {trade.dispute.photo_urls?.length > 0 && (
-                      <div className="flex gap-2 mt-2">
+                      <div className="flex gap-2 mt-3">
                         {trade.dispute.photo_urls.map((url, i) => (
                           <a key={i} href={url} target="_blank" rel="noreferrer">
-                            <img src={url} alt={`evidence ${i + 1}`} className="w-16 h-16 rounded object-cover border border-red-200" />
+                            <img src={url} alt={`evidence ${i + 1}`} className="w-14 h-14 rounded-lg object-cover border border-[#C8861A]/20" />
                           </a>
                         ))}
                       </div>
@@ -598,64 +608,97 @@ const HoldDisputesSection = ({ API, headers }) => {
                 {/* Resolution notes */}
                 <Textarea
                   placeholder="Resolution notes (required) — explain your decision..."
-                  value={notes}
-                  onChange={e => setNotes(e.target.value)}
-                  className="border-honey/30 text-sm resize-none"
+                  value={notes[trade.id] || ''}
+                  onChange={e => setNotes(p => ({ ...p, [trade.id]: e.target.value }))}
+                  className="bg-[#FAF6EE] border-[#C8861A]/20 rounded-xl text-sm resize-none focus:ring-[#C8861A]/30 focus:border-[#C8861A]/40"
                   rows={2}
                   data-testid={`dispute-notes-${trade.id}`}
                 />
 
                 {/* Partial split inputs */}
                 {showPartial === trade.id && (
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-[10px] text-muted-foreground">Refund to @{trade.initiator?.username}</label>
-                      <div className="relative">
-                        <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                        <Input type="number" min="0" max={trade.hold_amount} value={partialInit}
-                          onChange={e => setPartialInit(e.target.value)} className="pl-8 h-8 text-sm border-honey/30"
-                          placeholder="0.00" data-testid={`partial-init-${trade.id}`} />
+                  <div className="bg-[#FAF6EE] rounded-xl p-4 border border-[#C8861A]/15 space-y-3">
+                    <p className="text-xs text-[#8A6B4A]">Enter refund amount for each party. Total must equal ${amt} per party.</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[10px] uppercase tracking-wider text-[#8A6B4A]">Refund @{trade.initiator?.username}</label>
+                        <div className="relative mt-1">
+                          <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#8A6B4A]" />
+                          <Input type="number" min="0" max={amt} value={partialInit[trade.id] || ''}
+                            onChange={e => setPartialInit(p => ({ ...p, [trade.id]: e.target.value }))}
+                            className="pl-8 h-9 text-sm bg-white border-[#C8861A]/20 rounded-xl"
+                            placeholder="0.00" data-testid={`partial-init-${trade.id}`} />
+                        </div>
                       </div>
-                    </div>
-                    <div>
-                      <label className="text-[10px] text-muted-foreground">Refund to @{trade.responder?.username}</label>
-                      <div className="relative">
-                        <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                        <Input type="number" min="0" max={trade.hold_amount} value={partialResp}
-                          onChange={e => setPartialResp(e.target.value)} className="pl-8 h-8 text-sm border-honey/30"
-                          placeholder="0.00" data-testid={`partial-resp-${trade.id}`} />
+                      <div>
+                        <label className="text-[10px] uppercase tracking-wider text-[#8A6B4A]">Refund @{trade.responder?.username}</label>
+                        <div className="relative mt-1">
+                          <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#8A6B4A]" />
+                          <Input type="number" min="0" max={amt} value={partialResp[trade.id] || ''}
+                            onChange={e => setPartialResp(p => ({ ...p, [trade.id]: e.target.value }))}
+                            className="pl-8 h-9 text-sm bg-white border-[#C8861A]/20 rounded-xl"
+                            placeholder="0.00" data-testid={`partial-resp-${trade.id}`} />
+                        </div>
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Action buttons */}
-                <div className="grid grid-cols-2 gap-2">
-                  {HOLD_RESOLUTIONS.map(r => (
-                    <Button key={r.key} size="sm"
-                      className={`text-xs rounded-lg ${r.color}`}
-                      disabled={resolving === trade.id}
-                      onClick={() => {
-                        if (r.key === 'partial') {
-                          if (showPartial === trade.id) resolve(trade.id, 'partial');
-                          else setShowPartial(trade.id);
-                        } else {
-                          if (window.confirm(`${r.label}: ${r.desc}. This cannot be undone.`)) resolve(trade.id, r.key);
-                        }
-                      }}
-                      data-testid={`resolve-${r.key}-${trade.id}`}
-                    >
-                      {resolving === trade.id ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
-                      {r.label}
-                    </Button>
-                  ))}
+                {/* Action buttons — brand-aligned */}
+                <div className="grid grid-cols-2 gap-2.5">
+                  <Button size="sm"
+                    className="h-10 rounded-xl bg-[#E8A820] text-[#2A1A06] font-medium hover:bg-[#D49A18] border-0"
+                    disabled={resolving === trade.id}
+                    onClick={() => {
+                      if (window.confirm(`Both holds will be fully reversed. Each party receives $${amt} back within 2 to 5 business days. This action is final.`))
+                        resolve(trade.id, 'full_reversal');
+                    }}
+                    data-testid={`resolve-full_reversal-${trade.id}`}
+                  >
+                    {resolving === trade.id ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : null}
+                    Refund Both
+                  </Button>
+                  <Button size="sm" variant="outline"
+                    className="h-10 rounded-xl bg-white text-[#996012] border-[#996012] hover:bg-[#C8861A]/5 font-medium"
+                    disabled={resolving === trade.id}
+                    onClick={() => {
+                      if (window.confirm(`The proposer's hold of $${amt} will be kept by the platform. The recipient's hold will be fully reversed. This action is final.`))
+                        resolve(trade.id, 'penalize_initiator');
+                    }}
+                    data-testid={`resolve-penalize_initiator-${trade.id}`}
+                  >
+                    Proposer Forfeits Hold
+                  </Button>
+                  <Button size="sm" variant="outline"
+                    className="h-10 rounded-xl bg-white text-[#996012] border-[#996012] hover:bg-[#C8861A]/5 font-medium"
+                    disabled={resolving === trade.id}
+                    onClick={() => {
+                      if (window.confirm(`The recipient's hold of $${amt} will be kept by the platform. The proposer's hold will be fully reversed. This action is final.`))
+                        resolve(trade.id, 'penalize_responder');
+                    }}
+                    data-testid={`resolve-penalize_responder-${trade.id}`}
+                  >
+                    Recipient Forfeits Hold
+                  </Button>
+                  <Button size="sm" variant="outline"
+                    className="h-10 rounded-xl bg-white text-[#8A6B4A] border-[#8A6B4A]/40 hover:bg-[#C8861A]/5 font-medium"
+                    disabled={resolving === trade.id}
+                    onClick={() => {
+                      if (showPartial === trade.id) resolve(trade.id, 'partial');
+                      else setShowPartial(trade.id);
+                    }}
+                    data-testid={`resolve-partial-${trade.id}`}
+                  >
+                    Custom Split
+                  </Button>
                 </div>
-                <p className="text-[10px] text-muted-foreground italic text-center">
-                  All resolutions are final. Stripe refunds take 2–5 business days.
+                <p className="text-center font-['Cormorant_Garamond'] italic text-[#8A6B4A] text-sm">
+                  All resolutions are final. Stripe refunds take 2 to 5 business days.
                 </p>
               </div>
-            </Card>
-          ))}
+            </div>
+            );
+          })}
         </div>
       )}
     </div>

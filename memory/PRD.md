@@ -138,6 +138,8 @@ COMPLETED → Mandatory rating before next trade
 
 75. **Admin Hold Disputes Panel (Phase 4)** — New "Hold Disputes" tab in admin panel. Dispute cards show: HOLD FROZEN header with amount, both parties, traded records, dispute reason + evidence photos, resolution notes. 4 action buttons: Full Reversal, Penalize Proposer, Penalize Recipient, Partial Split. Verified with real dispute data. (Mar 2026)
 
+76. **Admin Hold Disputes Redesign** — Full brand-aligned restyle: amber palette, cream backgrounds, Cormorant Garamond italic, amber-bordered HOLD FROZEN pill, 4 resolution buttons renamed (Refund Both, Proposer/Recipient Forfeits Hold, Custom Split) with specific confirmation dialogs. Admin tabs restyled to white pills with amber active state. (Mar 2026)
+
 ## Upcoming Tasks
 - **P0: Complete Email System** — Wire remaining 2 email triggers (newsletter_signup, weekly_wax_ready), verify all 13 existing triggers
 - **P1: Stripe Webhook Verification** — Test /api/webhook/stripe with real Stripe event
