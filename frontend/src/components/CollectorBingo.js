@@ -7,7 +7,7 @@ import { Skeleton } from './ui/skeleton';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from './ui/dialog';
-import { Loader2, Download, Lock, PartyPopper, Maximize2 } from 'lucide-react';
+import { Loader2, Download, Lock, PartyPopper } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 
@@ -212,99 +212,49 @@ const CollectorBingo = () => {
     dateRange = `${ws.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · ${we.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
   } catch { /* ignore */ }
 
-  /* ── Locked state: countdown + greyed card ── */
+  /* ── Locked state: compact teaser + countdown ── */
   if (isLocked) {
     return (
       <div data-testid="collector-bingo">
         <div className="flex justify-center">
           <div className="w-full" style={{ maxWidth: '500px' }}>
-            {/* Card title */}
-            <div className="flex items-center justify-between mb-2 px-1">
-              <h3 className="font-heading text-base">Collector Bingo</h3>
-              <Lock className="w-3.5 h-3.5 text-muted-foreground" />
-            </div>
-
-            {/* Previous card at 60% opacity · only if user played */}
-            {userPlayed && (
-              <Card
-                className="p-3 border-amber-200/50 mb-3 relative cursor-pointer"
-                style={{ opacity: 0.6 }}
-                onClick={() => setModalOpen(true)}
-                data-testid="bingo-locked-card"
-              >
-                <p className="text-[10px] text-muted-foreground mb-2">{dateRange}</p>
-                <div className="grid grid-cols-5 mx-auto" style={{ gap: '3px', maxWidth: '468px' }} data-testid="bingo-grid-preview">
-                  {grid.map((sq, i) => {
-                    const isMarked = markedSet.has(i);
-                    const isFree = sq.is_free;
-                    return (
-                      <div
-                        key={i}
-                        className={`aspect-square rounded-md flex flex-col items-center justify-center text-center overflow-hidden
-                          ${isFree ? 'bg-amber-400/25 border border-amber-500/40'
-                            : isMarked ? 'bg-amber-400/20 border border-amber-500/30'
-                            : 'bg-white border border-amber-200/25'}
-                        `}
-                        data-testid={`bingo-sq-preview-${i}`}
-                      >
-                        <span className="leading-none mb-0.5" style={{ fontSize: '14px' }}>{sq.emoji}</span>
-                        <span
-                          className={`leading-tight px-0.5 ${isMarked ? 'text-amber-900 font-medium' : 'text-muted-foreground'}`}
-                          style={{ fontSize: '7px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
-                        >
-                          {isFree ? 'sweet spot 🍯' : sq.text}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-                {hasBingo && (
-                  <div className="mt-2 text-center">
-                    <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold" data-testid="bingo-badge">BINGO 🍯</span>
-                  </div>
-                )}
-              </Card>
-            )}
-
-            {/* "You missed last week" message */}
-            {!userPlayed && (
-              <p
-                className="text-center mb-3 italic"
-                style={{ color: '#8A6B4A', opacity: 0.7, fontFamily: '"DM Serif Display", serif', fontSize: '13px' }}
-                data-testid="bingo-missed-msg"
-              >
-                you missed last week. don't miss this one.
-              </p>
-            )}
-
-            {/* Countdown strip */}
-            {countdown && (
-              <div
-                className="flex items-center px-4 w-full"
-                style={{
-                  background: '#FAF6EE',
-                  border: '1px solid rgba(200,134,26,0.15)',
-                  borderRadius: '12px',
-                  height: '48px',
-                }}
-                data-testid="bingo-countdown"
-              >
-                <span className="shrink-0" style={{ fontSize: '16px' }}>🐝</span>
-                <span
-                  className="flex-1 text-center"
-                  style={{ fontFamily: '"DM Serif Display", serif', fontSize: '13px', color: '#8A6B4A' }}
+            <Card className="p-5 border-amber-200/50 w-full" data-testid="bingo-locked-card">
+              {/* Countdown line */}
+              {countdown && (
+                <p
+                  className="text-xs mb-3"
+                  style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', color: '#8A6B4A' }}
+                  data-testid="bingo-countdown"
                 >
                   new card drops in{' '}
                   <span style={{ fontWeight: 700, color: '#996012' }} data-testid="bingo-countdown-time">{countdown}</span>
-                </span>
-                <span
-                  className="shrink-0 text-right"
-                  style={{ fontFamily: '"DM Serif Display", serif', fontSize: '11px', color: '#8A6B4A', opacity: 0.7 }}
+                  {' '}&middot; {dropDateStr}
+                </p>
+              )}
+
+              {/* Teaser copy */}
+              <p
+                className="mb-4"
+                style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontStyle: 'italic', color: '#8A6B4A', fontSize: '15px', lineHeight: '1.4' }}
+                data-testid="bingo-locked-text"
+              >
+                {userPlayed
+                  ? 'your card is locked. check back when the next one drops.'
+                  : 'you missed last week. don\'t miss this one.'}
+              </p>
+
+              {/* View card button (only if user played) */}
+              {userPlayed && (
+                <Button
+                  onClick={() => setModalOpen(true)}
+                  variant="outline"
+                  className="w-full rounded-full border-amber-300 text-amber-700 hover:bg-amber-50 text-sm h-10"
+                  data-testid="bingo-view-locked-btn"
                 >
-                  {dropDateStr}
-                </span>
-              </div>
-            )}
+                  view your card
+                </Button>
+              )}
+            </Card>
           </div>
         </div>
 
@@ -323,7 +273,7 @@ const CollectorBingo = () => {
     );
   }
 
-  /* ── Active state: compact preview + play now ── */
+  /* ── Active state: compact teaser card ── */
   const urgentBorder = activeUrgency === 'normal' ? 'rgba(200,134,26,0.15)' : '#C8861A';
   const urgentBg = activeUrgency === 'normal' ? '#FAF6EE' : 'rgba(232,168,32,0.08)';
   const urgentTimeColor = activeUrgency === 'normal' ? '#996012' : '#C8861A';
@@ -342,83 +292,38 @@ const CollectorBingo = () => {
             </div>
           )}
 
-          {/* Active countdown strip */}
-          {activeCountdown && (
-            <div
-              className="flex items-center px-4 w-full mb-3"
-              style={{
-                background: urgentBg,
-                border: `1px solid ${urgentBorder}`,
-                borderRadius: '12px',
-                height: '48px',
-                transition: 'background 400ms ease, border-color 400ms ease',
-              }}
-              data-testid="bingo-active-countdown"
-            >
-              <span className="shrink-0" style={{ fontSize: '16px' }}>🐝</span>
-              <span
-                className="flex-1 text-center"
-                style={{ fontFamily: '"DM Serif Display", serif', fontSize: '13px', color: '#8A6B4A' }}
+          <Card className="p-5 border-amber-200/50 w-full" data-testid="bingo-preview">
+            {/* Countdown line */}
+            {activeCountdown && (
+              <p
+                className="text-xs mb-3"
+                style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', color: '#8A6B4A' }}
+                data-testid="bingo-active-countdown"
               >
                 card locks in{' '}
-                <span style={{ fontWeight: 700, color: urgentTimeColor, transition: 'color 400ms ease' }} data-testid="bingo-active-countdown-time">{activeCountdown}</span>
-              </span>
-              <span
-                className="shrink-0 text-right"
-                style={{ fontFamily: '"DM Serif Display", serif', fontSize: '11px', color: '#8A6B4A', opacity: 0.7 }}
-              >
-                locks Sunday at midnight
-              </span>
-            </div>
-          )}
+                <span style={{ fontWeight: 700, color: urgentTimeColor }} data-testid="bingo-active-countdown-time">{activeCountdown}</span>
+                {' '}&middot; locks Sunday at midnight
+              </p>
+            )}
 
-          <Card className="p-4 border-amber-200/50 w-full" data-testid="bingo-preview">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <h3 className="font-heading text-base">Collector Bingo</h3>
-              <p className="text-[10px] text-muted-foreground">{dateRange}</p>
-            </div>
-            <div className="flex items-center gap-2">
-              {hasBingo && <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold" data-testid="bingo-badge">BINGO 🍯</span>}
-            </div>
-          </div>
+            {/* Teaser copy */}
+            <p
+              className="mb-4"
+              style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontStyle: 'italic', color: '#8A6B4A', fontSize: '15px', lineHeight: '1.4' }}
+              data-testid="bingo-teaser-text"
+            >
+              this week's card is live. how many can you check off?
+            </p>
 
-          {/* Mini 5x5 grid · read-only preview */}
-          <div className="grid grid-cols-5 mx-auto mb-3" style={{ gap: '4px', maxWidth: '468px' }} data-testid="bingo-grid-preview">
-            {grid.map((sq, i) => {
-              const isMarked = markedSet.has(i);
-              const isFree = sq.is_free;
-              return (
-                <div
-                  key={i}
-                  className={`aspect-square rounded-md flex flex-col items-center justify-center text-center overflow-hidden
-                    ${isFree ? 'bg-amber-400/25 border border-amber-500/40'
-                      : isMarked ? 'bg-amber-400/20 border border-amber-500/30'
-                      : 'bg-white border border-amber-200/25'}
-                  `}
-                  data-testid={`bingo-sq-preview-${i}`}
-                >
-                  <span className="leading-none mb-0.5" style={{ fontSize: '16px' }}>{sq.emoji}</span>
-                  <span
-                    className={`leading-tight px-0.5 ${isMarked ? 'text-amber-900 font-medium' : 'text-muted-foreground'}`}
-                    style={{ fontSize: '7px', wordBreak: 'break-word', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
-                  >
-                    {isFree ? 'sweet spot 🍯' : sq.text}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-
-          <Button
-            onClick={() => setModalOpen(true)}
-            className="w-full rounded-full bg-amber-500 hover:bg-amber-600 text-white gap-2 text-sm h-9"
-            data-testid="bingo-open-btn"
-          >
-            <Maximize2 className="w-3.5 h-3.5" />
-            play now
-          </Button>
-        </Card>
+            {/* CTA button */}
+            <Button
+              onClick={() => setModalOpen(true)}
+              className="w-full rounded-full bg-[#E8A820] hover:bg-[#C8861A] text-white text-sm h-10 font-medium"
+              data-testid="bingo-open-btn"
+            >
+              play now 🐝
+            </Button>
+          </Card>
         </div>
       </div>
 
