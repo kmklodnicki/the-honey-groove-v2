@@ -79,15 +79,16 @@ const LandingPage = () => {
           </div>
         </div>
 
-        {/* Honey drip — full viewport width, flows from logo */}
-        <div className="w-screen relative left-1/2 -translate-x-1/2 -mt-8 md:-mt-12 z-0" data-testid="hero-drip">
-          <img
-            src="/honey-drip.png"
-            alt=""
-            className="w-full h-auto"
-            style={{ display: 'block' }}
-          />
-        </div>
+        {/* Honey drip — tiled across full viewport width */}
+        <div className="w-screen relative left-1/2 -translate-x-1/2 -mt-8 md:-mt-12 z-0" data-testid="hero-drip"
+          style={{
+            backgroundImage: 'url(/honey-drip.png)',
+            backgroundRepeat: 'repeat-x',
+            backgroundPosition: 'top center',
+            backgroundSize: 'auto 100%',
+            height: '200px',
+          }}
+        />
 
         <div className="max-w-6xl mx-auto px-4 md:px-8">
           <div className="text-center max-w-4xl mx-auto">
