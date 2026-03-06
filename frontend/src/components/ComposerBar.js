@@ -213,7 +213,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const chips = [
     { key: 'NOW_SPINNING', label: 'Now Spinning', icon: Disc, color: 'bg-honey text-vinyl-black' },
     { key: 'NEW_HAUL', label: 'New Haul', icon: Package, color: 'bg-amber-100 text-amber-800' },
-    { key: 'ISO', label: 'ISO', icon: Search, color: 'bg-blue-100 text-blue-800' },
+    { key: 'ISO', label: 'ISO', icon: Search, color: 'bg-amber-100 text-amber-800 border border-amber-300' },
   ];
 
   return (

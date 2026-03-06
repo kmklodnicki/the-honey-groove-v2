@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import safeStorage from '../utils/safeStorage';
 
@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(() => safeStorage.getItem('honeygroove_token'));
   const [loading, setLoading] = useState(true);
+  const loadingResolved = React.useRef(false);
 
   // Set up axios interceptor for auth header
   useEffect(() => {
@@ -29,19 +30,27 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
+  // Resolve loading — only runs ONCE on mount, never re-triggers
+  const resolveLoading = useCallback(() => {
+    if (!loadingResolved.current) {
+      loadingResolved.current = true;
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     console.log('AUTH INIT, token exists:', !!token);
     if (token) {
       fetchUser();
     } else {
       console.log('AUTH RESOLVED, loading: false (no token)');
-      setLoading(false);
+      resolveLoading();
     }
-    // Hard safety timeout: force loading=false after 5 seconds no matter what.
+    // Hard safety timeout: force loading=false after 3 seconds no matter what.
     const safetyTimer = setTimeout(() => {
       console.log('AUTH SAFETY TIMEOUT, forcing loading: false');
-      setLoading(false);
-    }, 5000);
+      resolveLoading();
+    }, 3000);
     return () => clearTimeout(safetyTimer);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -62,7 +71,7 @@ export const AuthProvider = ({ children }) => {
       console.error('Auth error:', error);
       logout();
     } finally {
-      setLoading(false);
+      resolveLoading();
     }
   };
 

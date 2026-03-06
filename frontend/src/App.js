@@ -40,18 +40,22 @@ import WaxReportPage from "./pages/WaxReportPage";
 import WaxReportHistory from "./pages/WaxReportHistory";
 
 // Auth guards — NO loading gate. Render immediately or redirect.
-// If auth is still loading, we render null (transparent) instead of a blocking screen.
-// The index.html fallback handles the visual gap.
+// Returns a minimal visible placeholder during loading instead of null
+// to prevent Safari from showing a bare cream screen.
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  if (loading) return null;
+  if (loading) return (
+    <div className="min-h-screen bg-honey-cream" />
+  );
   if (!user) return <Navigate to="/" replace />;
   return children;
 };
 
 const AdminRoute = ({ children }) => {
   const { user, loading } = useAuth();
-  if (loading) return null;
+  if (loading) return (
+    <div className="min-h-screen bg-honey-cream" />
+  );
   if (!user) return <Navigate to="/" replace />;
   if (!user.is_admin) return <Navigate to="/hive" replace />;
   return children;
@@ -74,7 +78,7 @@ const AppLayout = ({ children }) => {
 // Landing wrapper - redirects to hive if logged in
 const LandingWrapper = () => {
   const { user, loading } = useAuth();
-  if (loading) return null;
+  if (loading) return <div className="min-h-screen bg-honey-cream" />;
   if (user) return <Navigate to="/hive" replace />;
   return <LandingPage />;
 };
