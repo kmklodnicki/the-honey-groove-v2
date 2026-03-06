@@ -74,7 +74,9 @@ const BetaSignupPage = () => {
         <div className="w-full max-w-lg mx-auto px-6" style={{ paddingTop: '40px' }}>
           {/* Logo */}
           <div className="flex justify-center mb-4">
-            <img src="/logo-wordmark-clean.png" alt="the Honey Groove" className="w-[85vw] max-w-[520px]" data-testid="beta-logo" />
+            <a href="/" data-testid="beta-logo-link">
+              <img src="/logo-wordmark-clean.png" alt="the Honey Groove" className="w-[85vw] max-w-[520px]" data-testid="beta-logo" />
+            </a>
           </div>
 
           {!submitted ? (
