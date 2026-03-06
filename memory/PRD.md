@@ -220,7 +220,12 @@ COMPLETED → Mandatory rating before next trade
 
 115. **Delete Account** — Settings page: muted "Delete Account" button with trash icon at bottom. Confirmation modal: "Are you sure?" (Playfair), descriptive body (Cormorant Garamond), "Yes, delete my account" (outlined) + "Cancel" (amber). Backend DELETE /api/auth/account deletes all user data across 25+ collections, cancels Stripe holds, logs deletion to account_deletions collection, logs out and redirects to landing. (Mar 2026)
 
-- **P1: Add Pop & Alternative to genre dropdown**
+116. **Pop & Alternative Genres** — Added "Pop" (after R&B) and "Alternative" (after Indie) to the genre dropdown in profile settings. (Mar 2026)
+
+117. **Admin User Management** — New "User Management" tab in admin panel. Table with username, email, joined date, role pill (Admin/User), and action button. Grant/revoke admin access with confirmation modals. Search by username/email. Filter: All Users, Admins, Standard. Cannot revoke own admin access. (Mar 2026)
+
+118. **Trending in Collections (replaced Fresh Pressings)** — Replaced Fresh Pressings on Explore page with "Trending in Collections" section. Fetches most-collected vinyl records from Discogs API (sort=have, desc). Shows album art, title, artist, and "owned by X collectors" stat. 24h MongoDB cache. See All page at /explore/trending-in-collections. (Mar 2026)
+
 - **P1: Admin User Management tab** — grant/revoke admin access
 - **P2: Weekly Wax welcome email** — first edition with custom copy
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
