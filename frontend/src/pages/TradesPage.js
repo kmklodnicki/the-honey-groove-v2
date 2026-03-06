@@ -22,7 +22,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { ArrowRightLeft, Check, X, MessageSquare, Disc, Loader2, DollarSign, Search, Package, AlertTriangle, Star, Camera, Truck, Clock, CheckCircle2, XCircle } from 'lucide-react';
+import { ArrowRightLeft, Check, X, MessageSquare, Disc, Loader2, DollarSign, Search, Package, AlertTriangle, Star, Camera, Truck, Clock, CheckCircle2, XCircle, Shield } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '../components/ui/tooltip';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import { formatDistanceToNow } from 'date-fns';
@@ -35,6 +41,7 @@ const STATUS_CONFIG = {
   ACCEPTED: { label: 'Accepted', color: 'bg-green-100 text-green-700', dot: 'bg-green-400' },
   DECLINED: { label: 'Declined', color: 'bg-red-100 text-red-700', dot: 'bg-red-400' },
   CANCELLED: { label: 'Cancelled', color: 'bg-gray-100 text-gray-600', dot: 'bg-gray-400' },
+  HOLD_PENDING: { label: 'Hold Pending', color: 'bg-amber-100 text-amber-700', dot: 'bg-amber-500' },
   SHIPPING: { label: 'Shipping', color: 'bg-purple-100 text-purple-700', dot: 'bg-purple-400' },
   CONFIRMING: { label: 'Confirming', color: 'bg-cyan-100 text-cyan-700', dot: 'bg-cyan-400' },
   COMPLETED: { label: 'Completed', color: 'bg-green-100 text-green-700', dot: 'bg-green-500' },
@@ -64,7 +71,7 @@ const TradesPage = () => {
     axios.get(`${API}/platform-fee`).then(r => setPlatformFee(r.data.platform_fee_percent)).catch(() => {});
   }, [API]);
 
-  const activeTrades = trades.filter(t => ['PROPOSED', 'COUNTERED', 'SHIPPING', 'CONFIRMING', 'DISPUTED'].includes(t.status));
+  const activeTrades = trades.filter(t => ['PROPOSED', 'COUNTERED', 'HOLD_PENDING', 'SHIPPING', 'CONFIRMING', 'DISPUTED'].includes(t.status));
   const completedTrades = trades.filter(t => ['COMPLETED', 'DECLINED', 'CANCELLED'].includes(t.status));
 
   const openDetail = (trade) => { setSelectedTrade(trade); setShowDetail(true); };
@@ -124,7 +131,10 @@ const TradeCard = ({ trade, currentUserId, onClick, feePct = 6 }) => {
   const isInitiator = trade.initiator_id === currentUserId;
   const otherUser = isInitiator ? trade.responder : trade.initiator;
   const sc = STATUS_CONFIG[trade.status] || STATUS_CONFIG.PROPOSED;
+  const role = isInitiator ? 'initiator' : 'responder';
+  const holdNeedsPay = trade.status === 'HOLD_PENDING' && !(trade.hold_charges?.[role]?.status === 'paid');
   const needsAction = (trade.status === 'PROPOSED' && !isInitiator) || (trade.status === 'COUNTERED' && isInitiator)
+    || holdNeedsPay
     || (trade.status === 'SHIPPING' && !hasShipped(trade, currentUserId))
     || (trade.status === 'CONFIRMING' && !hasConfirmed(trade, currentUserId))
     || (trade.status === 'COMPLETED' && !hasRated(trade, currentUserId));
@@ -136,7 +146,21 @@ const TradeCard = ({ trade, currentUserId, onClick, feePct = 6 }) => {
         <div className="flex items-center gap-2">
           <span className={`w-2 h-2 rounded-full ${sc.dot}`} />
           <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${sc.color}`}>{sc.label}</span>
-          {needsAction && <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-honey text-vinyl-black">Action needed</span>}
+          {trade.hold_enabled && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="flex items-center" data-testid="hold-shield-icon">
+                    <Shield className="w-3.5 h-3.5 text-honey-amber" />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="bg-vinyl-black text-white text-xs max-w-[200px]">
+                  <p>Mutual hold trade — both parties have skin in the game.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          {needsAction && <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-honey text-vinyl-black">{holdNeedsPay ? 'Pay hold' : 'Action needed'}</span>}
         </div>
         <span className="text-xs text-muted-foreground">{formatDistanceToNow(new Date(trade.updated_at), { addSuffix: true })}</span>
       </div>
@@ -156,6 +180,18 @@ const TradeCard = ({ trade, currentUserId, onClick, feePct = 6 }) => {
             }
           </span>
           <span className="ml-auto text-[10px] text-muted-foreground" title={`${feePct}% platform fee on sweetener amount only`}>{feePct}% fee</span>
+        </div>
+      )}
+      {/* Mutual Hold indicator */}
+      {trade.hold_enabled && trade.hold_amount > 0 && (
+        <div className="mt-2.5 flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200/50" data-testid="trade-hold-badge">
+          <Shield className="w-4 h-4 text-honey-amber shrink-0" />
+          <span className="text-sm font-medium text-vinyl-black">
+            {trade.hold_status === 'active' ? `Hold active — $${trade.hold_amount} held from each party`
+              : trade.hold_status === 'frozen' ? `Hold frozen — $${trade.hold_amount}`
+              : trade.hold_status === 'refunded' ? `Hold reversed — $${trade.hold_amount} refunded`
+              : `$${trade.hold_amount} mutual hold`}
+          </span>
         </div>
       )}
       {/* Shipping status summary */}
@@ -247,6 +283,9 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
   const canAccept = (trade.status === 'PROPOSED' && !isInitiator) || (trade.status === 'COUNTERED' && isInitiator);
   const canCounter = (trade.status === 'PROPOSED' && !isInitiator) || (trade.status === 'COUNTERED' && isInitiator);
   const canDecline = ['PROPOSED', 'COUNTERED'].includes(trade.status);
+  const role = isInitiator ? 'initiator' : 'responder';
+  const holdPaid = trade.hold_charges?.[role]?.status === 'paid';
+  const canPayHold = trade.status === 'HOLD_PENDING' && !holdPaid;
   const canShip = trade.status === 'SHIPPING' && !hasShipped(trade, currentUserId);
   const canConfirm = trade.status === 'CONFIRMING' && !hasConfirmed(trade, currentUserId);
   const canDispute = ['CONFIRMING', 'SHIPPING'].includes(trade.status) && !trade.dispute;
@@ -276,38 +315,30 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
   };
 
   const handleAccept = async () => {
-    // If there's a sweetener, show confirmation first
-    if (trade.boot_amount > 0) {
-      const payer = trade.boot_direction === 'TO_SELLER' ? trade.initiator : trade.responder;
-      const payerIsMe = payer?.id === currentUserId;
-      const confirmed = window.confirm(
-        payerIsMe
-          ? `By accepting, a $${trade.boot_amount} sweetener payment will be initiated (${feePct}% platform fee applies). Proceed?`
-          : `This trade includes a $${trade.boot_amount} sweetener. The other party will be charged upon acceptance. Proceed?`
-      );
-      if (!confirmed) return;
-    }
+    const confirmed = window.confirm(
+      `By accepting, both parties will be charged a mutual hold of $${trade.hold_amount || 0}. This is fully refunded on confirmed delivery. Proceed?`
+    );
+    if (!confirmed) return;
     if (await apiCall('put', `${API}/trades/${trade.id}/accept`)) {
-      // Trigger sweetener payment if applicable
-      if (trade.boot_amount > 0) {
-        try {
-          const payRes = await axios.post(`${API}/trades/${trade.id}/pay-sweetener`,
-            { origin_url: window.location.origin },
-            { headers: { Authorization: `Bearer ${token}` } });
-          if (payRes.data.url) {
-            toast.success('Trade accepted! Redirecting to sweetener payment...');
-            window.location.href = payRes.data.url;
-            return;
-          }
-        } catch {
-          // Payment may not apply to this user (they may be the recipient)
-        }
-      }
-      toast.success('Trade accepted! Ship within 5 days.');
+      toast.success('Trade accepted! Pay your hold to start shipping.');
       trackEvent('trade_completed');
       onUpdate();
     }
   };
+
+  const handlePayHold = async () => {
+    setLoading(true);
+    try {
+      const resp = await axios.post(`${API}/trades/${trade.id}/hold/checkout`,
+        { origin_url: window.location.origin },
+        { headers: { Authorization: `Bearer ${token}` } });
+      if (resp.data.url) {
+        window.location.href = resp.data.url;
+      }
+    } catch (err) { toast.error(err.response?.data?.detail || 'Failed to create hold checkout'); }
+    finally { setLoading(false); }
+  };
+
   const handleDecline = async () => { if (await apiCall('put', `${API}/trades/${trade.id}/decline`)) { toast.success('Trade declined'); onUpdate(); } };
 
   const handleCounter = async () => {
@@ -432,6 +463,57 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
             </div>
           )}
 
+          {/* === MUTUAL HOLD STATUS === */}
+          {trade.hold_enabled && trade.hold_amount > 0 && (
+            <div className={`rounded-xl p-4 border ${
+              trade.hold_status === 'active' ? 'bg-amber-50 border-amber-200'
+                : trade.hold_status === 'frozen' ? 'bg-red-50 border-red-200'
+                : trade.hold_status === 'refunded' ? 'bg-green-50 border-green-200'
+                : 'bg-amber-50/50 border-amber-200/50'
+            }`} data-testid="hold-status-section">
+              <div className="flex items-center gap-2 mb-2">
+                <Shield className="w-4 h-4 text-honey-amber" />
+                <span className="text-xs font-medium text-honey-amber">MUTUAL HOLD</span>
+              </div>
+              {trade.hold_status === 'active' && (
+                <p className="text-sm font-medium text-amber-800">Hold active — ${trade.hold_amount} held from each party</p>
+              )}
+              {trade.hold_status === 'frozen' && (
+                <p className="text-sm font-medium text-red-700">Hold frozen — ${trade.hold_amount} per party. Dispute in progress.</p>
+              )}
+              {trade.hold_status === 'refunded' && (
+                <p className="text-sm font-medium text-green-700">Hold reversed — ${trade.hold_amount} refunded to both parties</p>
+              )}
+              {trade.hold_status === 'awaiting_payment' && (
+                <div>
+                  <p className="text-sm text-amber-700 mb-2">Both parties must pay the ${trade.hold_amount} hold to start shipping.</p>
+                  <div className="flex items-center gap-2 text-xs mb-1">
+                    {trade.hold_charges?.initiator?.status === 'paid' ? <CheckCircle2 className="w-3 h-3 text-green-500" /> : <Clock className="w-3 h-3 text-amber-500" />}
+                    <span>@{trade.initiator?.username} {isInitiator ? '(you)' : ''} — {trade.hold_charges?.initiator?.status === 'paid' ? 'Paid' : 'Waiting'}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    {trade.hold_charges?.responder?.status === 'paid' ? <CheckCircle2 className="w-3 h-3 text-green-500" /> : <Clock className="w-3 h-3 text-amber-500" />}
+                    <span>@{trade.responder?.username} {!isInitiator ? '(you)' : ''} — {trade.hold_charges?.responder?.status === 'paid' ? 'Paid' : 'Waiting'}</span>
+                  </div>
+                </div>
+              )}
+              {!trade.hold_status && (
+                <p className="text-sm text-amber-700">${trade.hold_amount} mutual hold — charged when both parties accept.</p>
+              )}
+              <p className="text-[10px] text-muted-foreground mt-2 italic">
+                Fully reversed within 24 hours of confirmed delivery. The hold is not subject to platform fees.
+              </p>
+            </div>
+          )}
+
+          {/* Pay Hold Button */}
+          {canPayHold && (
+            <Button onClick={handlePayHold} disabled={loading} className="w-full bg-amber-600 text-white hover:bg-amber-700 rounded-full" data-testid="pay-hold-btn">
+              {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Shield className="w-4 h-4 mr-2" />}
+              Pay ${trade.hold_amount} Hold
+            </Button>
+          )}
+
           {/* === SHIPPING STATUS === */}
           {(trade.status === 'SHIPPING' || trade.status === 'CONFIRMING') && trade.shipping && (
             <div className="bg-purple-50 rounded-xl p-4 border border-purple-200">
@@ -486,10 +568,13 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
           {trade.status === 'CONFIRMING' && (
             <div className="bg-cyan-50 rounded-xl p-4 border border-cyan-200">
               <p className="text-xs font-medium text-cyan-700 mb-2">CONFIRMATION WINDOW</p>
-              <p className="text-sm text-cyan-600 mb-3">Both packages delivered. Confirm your record arrived as described.</p>
+              <p className="text-sm text-cyan-700 font-medium mb-1">Did you receive the record as described?</p>
+              {trade.hold_enabled && (
+                <p className="text-xs text-cyan-600 mb-2">Your ${trade.hold_amount} hold will be fully reversed once both parties confirm.</p>
+              )}
               {trade.confirmation_deadline && (
                 <p className="text-xs text-cyan-600 mb-2"><Clock className="w-3 h-3 inline mr-1" />
-                  Auto-completes {formatDistanceToNow(new Date(trade.confirmation_deadline), { addSuffix: true })}
+                  Auto-confirms {formatDistanceToNow(new Date(trade.confirmation_deadline), { addSuffix: true })}
                 </p>
               )}
               {hasConfirmed(trade, currentUserId) ? (
@@ -498,11 +583,11 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
                 <div className="flex gap-2">
                   <Button onClick={handleConfirm} disabled={loading} className="flex-1 bg-cyan-600 text-white hover:bg-cyan-700 rounded-full text-sm" data-testid="confirm-receipt-btn">
                     {loading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Check className="w-4 h-4 mr-1" />}
-                    Arrived as described
+                    Yes, everything looks good
                   </Button>
                   {canDispute && (
                     <Button onClick={() => setShowDispute(true)} variant="outline" className="rounded-full text-red-600 border-red-200 hover:bg-red-50 text-sm" data-testid="open-dispute-btn">
-                      <AlertTriangle className="w-4 h-4 mr-1" /> Dispute
+                      <AlertTriangle className="w-4 h-4 mr-1" /> There's an issue
                     </Button>
                   )}
                 </div>
@@ -642,7 +727,7 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
           )}
 
           {/* Message input */}
-          {['PROPOSED', 'COUNTERED', 'SHIPPING', 'CONFIRMING'].includes(trade.status) && (
+          {['PROPOSED', 'COUNTERED', 'HOLD_PENDING', 'SHIPPING', 'CONFIRMING'].includes(trade.status) && (
             <div className="flex gap-2">
               <Input placeholder="Send a message..." value={messageText} onChange={e => setMessageText(e.target.value)} className="border-honey/50 text-sm"
                 onKeyDown={e => e.key === 'Enter' && handleSendMessage()} data-testid="trade-message-input" />
@@ -781,6 +866,8 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [bootAmount, setBootAmount] = useState('');
   const [bootDirection, setBootDirection] = useState('TO_SELLER');
+  const [holdAmount, setHoldAmount] = useState('');
+  const [holdSuggestion, setHoldSuggestion] = useState(null);
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [loadingRecords, setLoadingRecords] = useState(true);
@@ -809,6 +896,8 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
     if (!selectedRecordId) { toast.error('Select a record to offer'); return; }
     if (!offeredCondition) { toast.error('Select the condition of your record'); return; }
     if (offeredPhotos.length === 0) { toast.error('Add at least 1 photo of your record'); return; }
+    const holdVal = parseFloat(holdAmount) || (holdSuggestion?.suggested_hold || 50);
+    if (holdVal < 10) { toast.error('Hold amount must be at least $10'); return; }
     setLoading(true);
     try {
       // Upload photos first
@@ -827,6 +916,7 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
         offered_photo_urls: photoUrls,
         boot_amount: bootAmount ? parseFloat(bootAmount) : null,
         boot_direction: bootAmount ? bootDirection : null,
+        hold_amount: holdVal,
         message: message || null,
       }, { headers: { Authorization: `Bearer ${token}` } });
       toast.success('Trade proposed!'); trackEvent('trade_proposed'); onOpenChange(false); onSuccess?.();
@@ -836,6 +926,7 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
 
   const reset = () => {
     setSelectedRecordId(''); setOfferedCondition(''); setBootAmount(''); setBootDirection('TO_SELLER'); setMessage('');
+    setHoldAmount(''); setHoldSuggestion(null);
     offeredPhotos.forEach(p => p.preview && URL.revokeObjectURL(p.preview));
     setOfferedPhotos([]);
   };
@@ -929,6 +1020,36 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
               </p>
             )}
           </div>
+
+          {/* Hold Amount (always required) */}
+          <div className="bg-amber-50/50 border border-amber-200/50 rounded-xl p-4" data-testid="hold-amount-section">
+            <div className="flex items-center gap-2 mb-2">
+              <Shield className="w-4 h-4 text-honey-amber" />
+              <span className="text-xs font-medium text-honey-amber">HOLD AMOUNT</span>
+            </div>
+            <div className="relative">
+              <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-600" />
+              <Input
+                type="number"
+                min="10"
+                placeholder={holdSuggestion ? holdSuggestion.suggested_hold.toFixed(2) : '50.00'}
+                value={holdAmount}
+                onChange={e => setHoldAmount(e.target.value)}
+                className="pl-9 border-amber-300 bg-white"
+                data-testid="hold-amount-input"
+              />
+            </div>
+            {holdSuggestion && (
+              <p className="text-xs text-amber-700 mt-2">{holdSuggestion.label}</p>
+            )}
+            {!holdSuggestion && (
+              <p className="text-xs text-amber-600/70 mt-2">Suggested based on estimated record values. Both parties will be charged this amount and fully refunded on confirmed delivery.</p>
+            )}
+            {holdAmount && parseFloat(holdAmount) < 10 && (
+              <p className="text-xs text-red-500 mt-1">Minimum hold amount is $10</p>
+            )}
+          </div>
+
           <Textarea placeholder="Message to seller (optional)" value={message} onChange={e => setMessage(e.target.value)} className="border-honey/50 resize-none" rows={2} data-testid="trade-message-input" />
           <Button onClick={handlePropose} disabled={loading || !selectedRecordId || !offeredCondition || offeredPhotos.length === 0} className="w-full bg-honey text-vinyl-black hover:bg-honey-amber rounded-full" data-testid="trade-propose-btn">
             {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <ArrowRightLeft className="w-4 h-4 mr-2" />}

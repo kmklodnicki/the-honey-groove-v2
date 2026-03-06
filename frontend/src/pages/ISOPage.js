@@ -13,7 +13,10 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '../components/ui/select';
-import { Search, Plus, CheckCircle2, Loader2, Trash2, Tag, DollarSign, Disc, ArrowRightLeft, ShoppingBag, Camera, X, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-react';
+import { Search, Plus, CheckCircle2, Loader2, Trash2, Tag, DollarSign, Disc, ArrowRightLeft, ShoppingBag, Camera, X, ChevronLeft, ChevronRight, MessageSquare, Shield } from 'lucide-react';
+import {
+  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
+} from '../components/ui/tooltip';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import { formatDistanceToNow } from 'date-fns';
@@ -32,6 +35,7 @@ const STATUS_CONFIG = {
   ACCEPTED: { label: 'Accepted', color: 'bg-green-100 text-green-700' },
   DECLINED: { label: 'Declined', color: 'bg-red-100 text-red-700' },
   CANCELLED: { label: 'Cancelled', color: 'bg-gray-100 text-gray-600' },
+  HOLD_PENDING: { label: 'Hold Pending', color: 'bg-amber-100 text-amber-700' },
   SHIPPING: { label: 'Shipping', color: 'bg-purple-100 text-purple-700' },
   CONFIRMING: { label: 'Confirming', color: 'bg-cyan-100 text-cyan-700' },
   COMPLETED: { label: 'Completed', color: 'bg-green-100 text-green-700' },
@@ -307,7 +311,7 @@ const ISOPage = () => {
   // Derived data
   const shopListings = listings.filter(l => l.listing_type === 'BUY_NOW' || l.listing_type === 'MAKE_OFFER');
   const tradeListings = listings.filter(l => l.listing_type === 'TRADE');
-  const activeTrades = trades.filter(t => ['PROPOSED', 'COUNTERED', 'ACCEPTED', 'SHIPPING', 'CONFIRMING', 'DISPUTED'].includes(t.status));
+  const activeTrades = trades.filter(t => ['PROPOSED', 'COUNTERED', 'ACCEPTED', 'HOLD_PENDING', 'SHIPPING', 'CONFIRMING', 'DISPUTED'].includes(t.status));
   const filteredIsos = isos.filter(iso => {
     if (filter !== 'All' && iso.status !== filter) return false;
     if (searchQuery) { const q = searchQuery.toLowerCase(); return iso.artist.toLowerCase().includes(q) || iso.album.toLowerCase().includes(q); }
@@ -857,7 +861,17 @@ const ActiveTradeCard = ({ trade, currentUserId }) => {
             <div className="w-10 h-10 rounded bg-honey/20 flex items-center justify-center"><Disc className="w-4 h-4 text-honey" /></div>
             <p className="text-sm font-medium truncate">{trade.listing_record?.album || 'Their record'}</p>
           </div>
-          <span className={`px-2 py-1 rounded-full text-xs font-bold shrink-0 ${sc.color}`}>{sc.label}</span>
+          <div className="flex items-center gap-1.5 shrink-0">
+            {trade.hold_enabled && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild><span><Shield className="w-3.5 h-3.5 text-honey-amber" /></span></TooltipTrigger>
+                  <TooltipContent className="bg-vinyl-black text-white text-xs max-w-[200px]"><p>Mutual hold trade — both parties have skin in the game.</p></TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+            <span className={`px-2 py-1 rounded-full text-xs font-bold ${sc.color}`}>{sc.label}</span>
+          </div>
         </div>
       </Card>
     </Link>
