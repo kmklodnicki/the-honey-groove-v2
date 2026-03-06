@@ -77,14 +77,14 @@ const TradesPage = () => {
   const openDetail = (trade) => { setSelectedTrade(trade); setShowDetail(true); };
 
   if (loading) return (
-    <div className="max-w-3xl mx-auto px-4 py-8 pt-24">
+    <div className="max-w-3xl mx-auto px-4 py-8 pt-16 md:pt-24">
       <Skeleton className="h-10 w-48 mb-6" />
       {[1, 2, 3].map(i => <Skeleton key={i} className="h-28 w-full mb-3" />)}
     </div>
   );
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 pt-24 pb-24 md:pb-8" data-testid="trades-page">
+    <div className="max-w-3xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8" data-testid="trades-page">
       <div className="mb-6">
         <h1 className="font-heading text-3xl text-vinyl-black">My Trades</h1>
         <p className="text-sm text-muted-foreground mt-1">Manage your record trades with other collectors</p>

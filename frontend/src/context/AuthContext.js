@@ -41,6 +41,11 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.get(`${API}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      // Don't authenticate unverified users
+      if (response.data.email_verified === false) {
+        logout();
+        return;
+      }
       setUser(response.data);
     } catch (error) {
       console.error('Auth error:', error);
@@ -55,6 +60,10 @@ export const AuthProvider = ({ children }) => {
     const { access_token, user: userData } = response.data;
     localStorage.setItem('honeygroove_token', access_token);
     setToken(access_token);
+    // Don't set user if email not verified — keep them on login page
+    if (userData.email_verified === false) {
+      return userData;
+    }
     setUser(userData);
     return userData;
   };
@@ -64,6 +73,9 @@ export const AuthProvider = ({ children }) => {
     const { access_token, user: userData } = response.data;
     localStorage.setItem('honeygroove_token', access_token);
     setToken(access_token);
+    if (userData.email_verified === false) {
+      return userData;
+    }
     setUser(userData);
     return userData;
   };

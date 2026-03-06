@@ -59,7 +59,7 @@ const Navbar = () => {
 
   return (
     <>
-    <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-honey/30">
+    <nav className="hidden md:block fixed top-0 left-0 right-0 z-50 glass border-b border-honey/30">
       <div className="max-w-6xl mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between h-[88px]">
           {/* Logo */}
@@ -184,29 +184,87 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Navigation */}
-      {user && (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 glass border-t border-honey/30 px-4 py-2">
-          <div className="flex justify-around items-center">
-            <Link to="/hive" className={`p-2 rounded-lg ${isActive('/hive') ? 'bg-honey/20' : ''}`} data-testid="mobile-hive">
-              <Home className="w-6 h-6" />
-            </Link>
-            <Link to="/explore" className={`p-2 rounded-lg ${isActive('/explore') ? 'bg-honey/20' : ''}`} data-testid="mobile-explore">
-              <Globe className="w-6 h-6" />
-            </Link>
-            <Link to="/collection" className={`p-2 rounded-lg ${isActive('/collection') ? 'bg-honey/20' : ''}`} data-testid="mobile-collection">
-              <Library className="w-6 h-6" />
-            </Link>
-            <Link to="/honeypot" className={`p-2 rounded-lg ${isActive('/honeypot') ? 'bg-honey/20' : ''}`} data-testid="mobile-honeypot">
-              <ShoppingBag className="w-6 h-6" />
-            </Link>
-            <Link to={`/profile/${user.username}`} className={`p-2 rounded-lg ${isActive(`/profile/${user.username}`) ? 'bg-honey/20' : ''}`} data-testid="mobile-profile">
-              <User className="w-6 h-6" />
-            </Link>
+    </nav>
+
+    {/* Mobile Slim Top Bar */}
+    {user && (
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 h-12 bg-[#FAF6EE] border-b border-[#C8861A]/10" data-testid="mobile-top-bar">
+        <div className="relative flex items-center h-full px-4">
+          <Link to="/hive" className="absolute left-1/2 -translate-x-1/2">
+            <img src="/logo-wordmark.png" alt="the Honey Groove" className="h-8" />
+          </Link>
+          <div className="ml-auto flex items-center gap-4">
+            <DMBadge />
+            <NotificationBell />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0" data-testid="mobile-user-menu">
+                  <BeeAvatar user={user} className="h-8 w-8" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <div className="flex items-center gap-2 p-2">
+                  <BeeAvatar user={user} className="h-8 w-8" />
+                  <div className="flex flex-col">
+                    <p className="text-sm font-medium">@{user.username}</p>
+                    <p className="text-xs text-muted-foreground">{user.email}</p>
+                  </div>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => navigate(`/profile/${user.username}`)} data-testid="mobile-menu-profile">
+                  <User className="mr-2 h-4 w-4" /> Profile
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/settings')} data-testid="mobile-menu-settings">
+                  <Settings className="mr-2 h-4 w-4" /> Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/trades')} data-testid="mobile-menu-trades">
+                  <ArrowRightLeft className="mr-2 h-4 w-4" /> Trades
+                </DropdownMenuItem>
+                {user.is_admin && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => navigate('/admin')} data-testid="mobile-menu-admin">
+                      <Settings className="mr-2 h-4 w-4" /> Admin Panel
+                    </DropdownMenuItem>
+                  </>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="text-red-600" data-testid="mobile-menu-logout">
+                  <LogOut className="mr-2 h-4 w-4" /> Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
-      )}
-    </nav>
+      </div>
+    )}
+
+    {/* Mobile Bottom Nav */}
+    {user && (
+      <div
+        className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#FAF6EE] border-t border-[#C8861A]/10"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+        data-testid="mobile-bottom-nav"
+      >
+        <div className="flex justify-around items-center h-16">
+          <Link to="/hive" className="flex items-center justify-center flex-1 h-full" data-testid="mobile-hive">
+            <Home className="w-6 h-6" style={{ color: isActive('/hive') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }} />
+          </Link>
+          <Link to="/explore" className="flex items-center justify-center flex-1 h-full" data-testid="mobile-explore">
+            <Globe className="w-6 h-6" style={{ color: isActive('/explore') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }} />
+          </Link>
+          <button onClick={() => setSearchOpen(true)} className="flex items-center justify-center flex-1 h-full" data-testid="mobile-search">
+            <Search className="w-6 h-6" style={{ color: searchOpen ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }} />
+          </button>
+          <Link to="/collection" className="flex items-center justify-center flex-1 h-full" data-testid="mobile-collection">
+            <Library className="w-6 h-6" style={{ color: isActive('/collection') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }} />
+          </Link>
+          <Link to="/honeypot" className="flex items-center justify-center flex-1 h-full" data-testid="mobile-honeypot">
+            <ShoppingBag className="w-6 h-6" style={{ color: isActive('/honeypot') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }} />
+          </Link>
+        </div>
+      </div>
+    )}
 
     {/* Global Search Dialog */}
     <Dialog open={searchOpen} onOpenChange={setSearchOpen}>

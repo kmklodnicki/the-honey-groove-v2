@@ -7,7 +7,7 @@ import time
 import uuid
 
 class HoneyGrooveAPITester:
-    def __init__(self, base_url="https://groove-social-beta.preview.emergentagent.com"):
+    def __init__(self, base_url="https://record-groove.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_base = f"{base_url}/api"
         self.token = None

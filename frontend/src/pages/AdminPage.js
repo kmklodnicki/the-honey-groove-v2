@@ -34,7 +34,7 @@ const AdminPage = () => {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 pt-24 pb-24" data-testid="admin-page">
+    <div className="max-w-7xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24" data-testid="admin-page">
       <h1 className="font-heading text-3xl text-vinyl-black mb-6">Admin Panel</h1>
 
       {/* Tab nav */}

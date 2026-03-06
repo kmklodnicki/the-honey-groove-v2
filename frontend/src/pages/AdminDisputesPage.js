@@ -47,14 +47,14 @@ const AdminDisputesPage = () => {
   const resolvedDisputes = allDisputes.filter(t => t.dispute?.resolution);
 
   if (loading) return (
-    <div className="max-w-4xl mx-auto px-4 py-8 pt-24">
+    <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-24">
       <Skeleton className="h-10 w-64 mb-6" />
       {[1, 2].map(i => <Skeleton key={i} className="h-40 w-full mb-4" />)}
     </div>
   );
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 pt-24 pb-24" data-testid="admin-disputes-page">
+    <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24" data-testid="admin-disputes-page">
       <div className="mb-6">
         <h1 className="font-heading text-3xl text-vinyl-black flex items-center gap-2">
           <AlertTriangle className="w-7 h-7 text-red-500" /> Dispute Review

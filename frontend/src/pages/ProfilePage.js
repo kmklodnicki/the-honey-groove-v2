@@ -136,7 +136,7 @@ const ProfilePage = () => {
 
   if (loading) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-8 pt-24">
+      <div className="max-w-3xl mx-auto px-4 py-8 pt-16 md:pt-24">
         <Skeleton className="h-48 w-full rounded-xl mb-6" />
         <Skeleton className="h-12 w-64 mb-4" />
         <Skeleton className="h-64 w-full" />
@@ -146,7 +146,7 @@ const ProfilePage = () => {
 
   if (!profile) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-8 pt-24 text-center">
+      <div className="max-w-3xl mx-auto px-4 py-8 pt-16 md:pt-24 text-center">
         <h2 className="font-heading text-2xl mb-2">User not found</h2>
         <p className="text-muted-foreground">@{username} doesn't exist.</p>
       </div>
@@ -156,7 +156,7 @@ const ProfilePage = () => {
   const firstLetter = profile.username?.charAt(0).toUpperCase() || '?';
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 pt-24 pb-24 md:pb-8" data-testid="profile-page">
+    <div className="max-w-3xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8" data-testid="profile-page">
       {/* Profile Header */}
       <Card className="p-6 border-honey/30 mb-6">
         <div className="flex flex-col sm:flex-row items-start gap-6">

@@ -106,7 +106,7 @@ const ExploreSeeAllPage = () => {
 
   if (!meta) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8 pt-24 text-center">
+      <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-24 text-center">
         <p className="text-muted-foreground">Section not found.</p>
         <Link to="/explore" className="text-honey-amber hover:underline text-sm mt-2 inline-block">Back to Explore</Link>
       </div>
@@ -116,7 +116,7 @@ const ExploreSeeAllPage = () => {
   const Icon = meta.icon;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 pt-24 pb-24 md:pb-8" data-testid={`see-all-${section}`}>
+    <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8" data-testid={`see-all-${section}`}>
       {/* Header */}
       <Link to="/explore" className="inline-flex items-center gap-1.5 text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors mb-6" data-testid="see-all-back">
         <ArrowLeft className="w-4 h-4" /> back to explore

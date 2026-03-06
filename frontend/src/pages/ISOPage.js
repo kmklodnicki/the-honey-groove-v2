@@ -395,7 +395,7 @@ const ISOPage = () => {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8 pt-24">
+      <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-24">
         <Skeleton className="h-10 w-48 mb-6" />
         {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 w-full mb-3" />)}
       </div>
@@ -403,7 +403,7 @@ const ISOPage = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 pt-24 pb-24 md:pb-8" data-testid="honeypot-page">
+    <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8" data-testid="honeypot-page">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>

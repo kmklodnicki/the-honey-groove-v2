@@ -126,7 +126,7 @@ const MessagesPage = () => {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8 pt-28">
+      <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-28">
         <Skeleton className="h-8 w-40 mb-6" />
         {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full mb-3" />)}
       </div>
@@ -136,7 +136,7 @@ const MessagesPage = () => {
   // Thread view
   if (activeConv) {
     return (
-      <div className="max-w-2xl mx-auto px-4 pt-28 pb-4 flex flex-col" style={{ height: '100vh' }} data-testid="dm-thread">
+      <div className="max-w-2xl mx-auto px-4 pt-16 md:pt-28 pb-4 flex flex-col" style={{ height: '100vh' }} data-testid="dm-thread">
         {/* Thread header */}
         <div className="flex items-center gap-3 mb-4">
           <Button variant="ghost" size="sm" onClick={() => { setActiveConv(null); setMessages([]); setConvContext(null); fetchConversations(); }} data-testid="dm-back-btn">
@@ -209,7 +209,7 @@ const MessagesPage = () => {
 
   // Conversation list
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8 pt-28 pb-24 md:pb-8" data-testid="dm-inbox">
+    <div className="max-w-2xl mx-auto px-4 py-8 pt-16 md:pt-28 pb-24 md:pb-8" data-testid="dm-inbox">
       <h1 className="font-heading text-3xl text-vinyl-black mb-6">Messages</h1>
 
       {conversations.length === 0 ? (

@@ -1,6 +1,6 @@
 """Base HTML email wrapper for all HoneyGroove emails."""
 
-LOGO_URL = "https://groove-social-beta.preview.emergentagent.com/logo.png"
+LOGO_URL = "https://record-groove.preview.emergentagent.com/logo.png"
 
 
 def wrap_email(body_html: str, unsubscribe_url: str = "") -> str:

@@ -4,7 +4,7 @@ The user wants to build a web app called **The HoneyGroove**, a social platform 
 **PRODUCT REQUIREMENTS (Synthesized from initial request and subsequent user directives):**
 *   **Core App:** A full-stack application for vinyl collectors to track their collection, log spins, and interact socially.
 *   **Branding & Pages:** A warm, honey-inspired theme. Includes a landing page, About Page, FAQ Page, and an official logo/favicon. Includes a public beta signup page.
-*   **User System & Profile:** Invite-only user accounts with profiles featuring avatar, bio, setup, location, favorite genre, stats, and a following system. Includes a permanent Founding Member badge for the first 500 users. The app is locked down behind authentication.
+*   **User System & Profile:** Invite-only user accounts with profiles featuring avatar, bio, setup, location, favorite genre, stats, and a following system. Includes a permanent Founding Member badge for the first 50 users. The app is locked down behind authentication, with email verification required for new users.
 *   **Onboarding:** A mandatory 3-step onboarding flow for new users to build their initial collection and follow other collectors.
 *   **Social & Engagement Features:**
     *   **The Hive (Feed):** A central social feed for user posts.
@@ -22,31 +22,41 @@ The user wants to build a web app called **The HoneyGroove**, a social platform 
 *   **Analytics & Notifications:**
     *   Google Tag Manager and custom event tracking.
     *   A comprehensive system of transactional and marketing emails sent via Resend.
+*   **Trust & Security:**
+    *   **Buyer Protection:** Seller transaction counts, new seller listing limits, off-platform payment detection, and shipping insurance prompts.
+    *   **Platform Security:** Public Terms of Service and Privacy Policy pages, rate limiting on forms, and a honeypot field on the beta signup form.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a feature-rich, full-stack platform in a closed beta state. Most features are complete, including a detailed admin panel, a fully wired email notification system (pending user's domain verification), and a robust, mandatory Mutual Hold trade system for all trades. The last session focused on implementing the backend and frontend for this trade system, completing the email system, redesigning the Week in Wax shareable story, and performing a brand-aligned redesign of the admin Hold Disputes section. The app is stable and well-tested.
+The application is a feature-rich, full-stack platform in a closed beta state. Most features from the PRD are implemented. The last session focused on adding a 4-point Buyer Protection plan, extensive trust and security enhancements (ToS/Privacy pages, rate limiting, honeypot fields, email verification), and a major redesign of the landing, about, and beta pages based on user feedback. A global scroll-to-top on navigation was also added. The app is stable for verified users, but a critical bug was discovered affecting new, unverified users on mobile.
 
 **Last working item**:
--   **Last item agent was working:** The agent was about to begin implementation of a large, 6-point Buyer Protection feature set requested by the user. The agent has reviewed the user's requirements, conducted initial file exploration, and received user approval to start the work. The first task is to display seller transaction counts on profiles and listings.
--   **Status:** NOT STARTED
+-   **Last item agent was working:** Debugging a critical bug where new, unverified users see a blank page after logging in on mobile. The agent identified the root cause in the  logic, where unverified users are incorrectly set as fully authenticated, leading to routing and state issues. A fix was planned but not yet implemented.
+-   **Status:** IN PROGRESS
 -   **Agent Testing Done:** N
 -   **Which testing method agent to use?** both
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Verify Stripe Webhook Endpoint (P1)**
-    -   **Description:** The  was added to the  file, but the webhook handler's ability to correctly process a signed event from Stripe has never been confirmed with a real test event. The agent's previous  test failed with a 500 error, which was dismissed without proper verification.
-    -   **Status:** TESTING PENDING
+-   **Issue 1: Blank page on mobile for unverified users (P0)**
+    -   **Description:** New users who sign up but have not yet verified their email see a blank page when they log in, specifically on mobile devices. The app fails to handle the state of an authenticated but unverified user correctly.
+    -   **Attempted fixes:** The agent identified that the  function in  prematurely authenticates the user before email verification, causing a redirect loop or state mismatch.
+    -   **Next debug checklist:**
+        1.  Modify :
+            -   In the  function, if the API response shows , save the auth token but **do not** set the  state. This will prevent the app from treating the user as fully authenticated.
+            -   In the  function (used on page refresh), if the fetched user has , clear the user state to ensure they are not considered authenticated.
+        2.  Verify the  correctly shows the Please verify your email banner and that the Resend verification link works using the temporarily stored token.
+        3.  Test the login flow for a **newly created, unverified user** on both mobile and desktop viewports to confirm they remain on the login page with the verification banner.
+        4.  Test the login flow for an **existing, verified user** (e.g., ) to ensure there are no regressions and they can log in successfully.
+    -   **Why fix this issue and what will be achieved with the fix?** This is a critical bug blocking new user registration and onboarding. Fixing it will restore the core signup flow.
+    -   **Status:** IN PROGRESS
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** Both (primarily frontend auth flow).
+    -   **Blocked on other issue:** None.
 
 **In progress Task List**:
--   **Task 1: Implement Buyer Protection Features (P0)**
-    -   **Description:** Implement the 6-point buyer protection feature set as specified by the user. This is a large, multi-faceted task involving both backend and frontend changes.
-    -   **Where to resume:** Start with the first feature: Seller transaction count on profiles and listings. The agent has already identified , , , and  as the key files to modify.
-    -   **What will be achieved with this?** A significantly more secure and trustworthy marketplace experience for buyers and sellers.
-    -   **Status:** NOT STARTED
-    -   **Should Test frontend/backend/both after fix?** Both. Test each of the 6 features as they are completed.
+-   None.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
@@ -54,30 +64,32 @@ The application is a feature-rich, full-stack platform in a closed beta state. M
     -   **P2: Refactor :** Address known technical debt in this complex component.
     -   **P2: Monetization Features:** Implement Pro memberships or a Verified Seller badge.
 -   **Future Tasks:**
-    -   No other future tasks have been specified beyond the current backlog.
+    -   **Implement deferred Buyer Protection features:** Structured dispute flow and auto fraud detection.
 
 **Completed work in this session**
--   **Mutual Hold Trade System (Complete):**
-    -   Implemented the full backend logic for Mutual Hold trades, including creation, negotiation, payment holds via Stripe, shipping updates, confirmation, and dispute resolution.
-    -   Made Mutual Hold mandatory for all trades, removing the old standard trade flow.
-    -   Built the complete frontend UI for the Mutual Hold lifecycle in  and , including status indicators, payment buttons, and a redesigned proposal modal.
-    -   Fixed a critical routing issue that made the  page inaccessible.
-    -   Thoroughly tested the entire backend and frontend flow with the testing agent.
--   **Admin Panel Enhancements:**
-    -   Created and implemented a new Hold Disputes section in the admin panel.
-    -   Completely redesigned the Hold Disputes UI to align with the app's brand aesthetic, replacing generic buttons with styled, outcome-focused actions and confirmation dialogs.
--   **Email System (Complete):**
-    -   Implemented and wired triggers for all remaining emails: , , , and .
-    -   The entire 15-email system is now code-complete and awaiting user domain verification on Resend.
--   **UI/UX Refinements:**
-    -   Redesigned the Week in Wax shareable story image () to perfectly match a detailed Canva template, including layout, typography, and assets.
-    -   Replaced The Honeypot navigation icon from a  to a .
-    -   Reduced top padding on the landing page hero section and added a subtle animation to the logo.
--   **FAQ Updates:**
-    -   Updated the FAQ page to reflect that Mutual Hold is mandatory for all trades and that the platform fee only applies to cash sweeteners, not the hold amount itself.
+-   **Buyer Protection Features (Implemented):**
+    -   Displayed seller transaction count on profiles and listings.
+    -   Enforced listing restrictions for new sellers (max 50).
+    -   Implemented off-platform payment keyword detection in listing descriptions with admin alerts.
+    -   Added a shipping insurance prompt for listings over 5.
+-   **Trust & Security Enhancements (Implemented):**
+    -   Created  and  pages with full content and added links to the site footer.
+    -   Implemented backend rate limiting () on login and beta signup forms.
+    -   Added an invisible honeypot field to the beta signup form to deter bots.
+    -   Implemented a complete email verification flow for new users, including backend logic, email template (), API endpoints, and a frontend banner with a resend link.
+-   **Content & UI Overhaul (Implemented):**
+    -   **Landing & Beta Pages:** Major redesign of the hero section to use separate logo and honey drip images, with the final layout placing the drip at the very top of the viewport. Added three new sections: a stats strip, a Mutual Hold spotlight, and a fee comparison table.
+    -   **FAQ Page:** Replaced all content with extensive new copy and added a proper footer.
+    -   **About Page:** Redesigned the page with new content, a founder photo placeholder, a 2x2 feature grid, and a CTA button.
+    -   **ISO Match Card:** Fixed multiple UI/UX bugs, making the card clickable, fixing links, correcting branding, and resolving a broken image placeholder.
+-   **Technical Improvements & Bug Fixes:**
+    -   **Stripe Webhook Verified:** Confirmed the previously untested Stripe webhook signature verification works correctly.
+    -   **Global Scroll-to-Top:** Added a  component to  to ensure users land at the top of the page on every navigation.
+    -   **Deployment Readiness:** Resolved compilation blockers and hardcoded URLs found by the health check agent.
+    -   **Hero Image Fixes:** Addressed deployment issues with new static images by restarting the frontend, and fixed visual artifacts on the honey drip image using  and later by baking the background color into the image.
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1:  Complexity:** This frontend component was noted as being overly complex and a candidate for future refactoring.
+-   **Issue 1:  Complexity:** This frontend component was noted as being overly complex and a candidate for future refactoring. It is on the upcoming task list.
 
 **Known issue recurrence from previous fork**
 -   N/A
@@ -86,97 +98,102 @@ The application is a feature-rich, full-stack platform in a closed beta state. M
 
 
 **Key Technical Concepts**
--   **Frontend:** React, Tailwind CSS, Shadcn UI, Lucide Icons
--   **Backend:** FastAPI, Pydantic, Motor (async MongoDB)
--   **Database:** MongoDB
--   **Email System:** Fully implemented service using Resend SDK and a repository of 19 HTML templates.
--   **Image Generation:** Using the Pillow library on the backend to dynamically generate the Week in Wax social media card.
--   **Scheduled Tasks:**  for daily/weekly jobs, including a new task to auto-reverse trade holds.
--   **Payment Processing:** Stripe for marketplace payments and holding funds for the Mutual Hold system.
+-   **Frontend:** React, Tailwind CSS, Shadcn UI, Lucide Icons, React Router ( for scroll-to-top).
+-   **Backend:** FastAPI, Pydantic, Motor (async MongoDB),  for rate limiting.
+-   **Database:** MongoDB.
+-   **Security:** Honeypot field for spam prevention, email verification flow with secure tokens.
+-   **Email System:** Resend SDK with HTML templates.
+-   **Payment Processing:** Stripe Connect.
 
 **key DB schema**
--   **trades:** 
+-   **users:** 
 -   **listings:** 
--   **users:** Schema will be updated to include a transaction count.
+-   **off_platform_alerts:**  (New Collection)
+-   **rate_limits:** Managed by  in memory/Redis.
 
 **changes in tech stack**
--   No new technologies were added, but the use of the **Pillow** library for dynamic image generation is now a core part of a user-facing feature.
+-   Added  Python library to the backend for API rate limiting.
 
 **All files of reference**
 *   **Core Logic (Heavily Modified):**
-    *    (Complete Mutual Hold logic)
-    *    (Email triggers, listing logic)
-    *    (New trade and hold models)
-    *    (New Week in Wax card generation)
-    *    (Mutual Hold frontend UI)
-    *    (Hold Disputes UI redesign)
-*   **Supporting Files (Modified):**
+    *    (Email verification, rate limiting, user model)
+    *    (Beta signup rate limit/honeypot, user registration)
+    *    (New listing restrictions, off-platform detection)
+    *    (Massive redesign with new sections and hero)
+    *    (Hero redesign, honeypot field)
+    *    (Verification banner, rate limit handling)
+    *    (Complete content replacement, new footer)
+    *    (Complete redesign)
+    *    (ISO Match card fixes, new listing modal logic)
+    *    (New routes, global  component)
+    *    (Investigated for bug, needs modification)
+*   **New Files:**
     *   
-    *    (Mutual Hold UI additions)
     *   
-    *    (Routing fixes)
+    *   
+    *   
     *   
 
 **Areas that need refactoring**:
 -    remains a known complex component that could be simplified in the future.
 
 **key api endpoints**
--    (Now requires hold info)
--    (Now always initiates a hold)
 -    (New)
 -    (New)
 -    (New)
 -    (New)
--    (New)
--    (Rewritten)
+-    (Updated: rate limiting, honeypot)
+-    (Updated: rate limiting)
+-    (Updated: seller restrictions, off-platform detection, insurance)
 
 **Critical Info for New Agent**
--   **Priority #1 is implementing the 6-point buyer protection plan.** The user has approved the plan, and you should start with the first item: Seller transaction count on profiles and listings.
--   **The Resend email system is code-complete but non-functional until the user verifies their domain.** Remind the user that emails like Listing Confirmed and Sale Confirmed will fail to send until they complete this step in their Resend dashboard.
--   The Stripe webhook endpoint () is a known risk and **still needs to be tested** with a real Stripe event to confirm signature verification works.
+-   **Your immediate priority is to fix the mobile blank page bug for unverified users.** The root cause has been located in . Follow the  in the All Pending/In progress Issue list section to implement the fix.
+-   The Resend email system is code-complete but non-functional until the user verifies their domain. This now blocks the new user registration flow.
+-   The landing page and beta page hero designs are very specific and have been iterated on multiple times. Avoid changing them unless explicitly requested.
 
 **documents and test reports created in this job**
--    (Mutual Hold Backend)
--    (Mutual Hold Frontend Fix & Verification)
--    (Mutual Hold Frontend Full E2E)
+-    (Updated)
+-   
+-   
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **user:** Approved plan to implement Phase 4 (Admin Hold Disputes UI).
-2.  **agent:** Implemented the admin UI.
-3.  **user:** Provided detailed feedback to redesign the Hold Disputes UI to match the app's brand, removing harsh colors.
-4.  **user:** Requested to implement the remaining 6 buyer protection features.
-5.  **agent:** Proposed a plan to do the redesign and then start the buyer protection features.
-6.  **user:** Provided a P0 priority clarification and requested new, clearer button labels for the admin dispute resolution actions.
-7.  **agent:** Acknowledged, implemented the full admin UI redesign with the new labels.
-8.  **user:** Provided the full 6-point spec for all remaining buyer protection features.
-9.  **agent:** Proposed a plan to implement all 6 features, starting with seller transaction counts.
-10. **user:** yes - Confirmed approval to start the buyer protection feature implementation.
+1.  **user:** Reported red artifacts around the honey drip image.
+2.  **agent:** Fixed the artifacts by baking the cream background color into the PNG image itself, removing the need for .
+3.  **user:** Requested to add a global scroll-to-top behavior on every route change.
+4.  **agent:** Implemented the  component and wrapped the app's router with it.
+5.  **user:** Reported that the website is not working on mobile, showing a blank page after sign-in.
+6.  **agent:** Attempted to reproduce the issue but was unsuccessful using the verified demo account. Concluded it might be a caching issue for the user.
+7.  **user:** Clarified they were signed in as the demo account, asking if that was the reason.
+8.  **agent:** Realized the issue is specific to *new, unverified users*. Investigated the auth flow and identified the root cause in  where unverified users are incorrectly treated as fully authenticated.
+9.  **agent:** Proposed a fix to modify  to handle the unverified state correctly.
+10. **(No further user messages)**. Agent was in the middle of implementing the proposed fix.
 
 **Project Health Check:**
 -   **Broken:**
-    -   None.
+    -   The authentication flow for new, unverified users is broken, resulting in a blank page on mobile after login. This is a critical blocker for user acquisition.
 -   **Mocked:**
-    -   All email sending via Resend is blocked until the user verifies the  domain in their Resend account.
-    -   The Stripe webhook signature verification () remains untested and unconfirmed.
+    -   All email sending via Resend (including the now-critical account verification emails) is blocked until the user verifies their  domain in their Resend account.
 
 **3rd Party Integrations**
 -   **Discogs API:** For record data and album art.
--   **Stripe Connect:** For marketplace payments and Mutual Hold fund holding. (Webhook unverified).
+-   **Stripe Connect:** For marketplace payments and Mutual Hold fund holding. (Webhook verified).
 -   **Resend:** For all transactional and marketing emails. (Domain verification pending by user).
 -   **Google Tag Manager / Google Analytics:** For custom event tracking.
--   **Pillow:** Python library for server-side image generation of the Week in Wax card.
--   **APScheduler:** For backend scheduled tasks (daily streak checks, weekly reports, auto-reversing holds).
+-   **Pillow:** Python library for server-side image generation.
+-   **APScheduler:** For backend scheduled tasks.
+-   **slowapi:** For backend API rate limiting.
 
 **Testing status**
--   **Testing agent used after significant changes:** YES. Used multiple times to validate the complete Mutual Hold backend and frontend implementations.
+-   **Testing agent used after significant changes:** YES. Used successfully to test the buyer protection and trust/security features.
 -   **Troubleshoot agent used after agent stuck in loop:** NO
 -   **Test files created:** []
--   **Known regressions:** None.
+-   **Known regressions:** The login flow for new users broke after implementing the email verification feature.
 
 **Credentials to test flow:**
 -   **Email:** 
 -   **Password:** 
-    *(This user has admin privileges)*
+    *(This user has admin privileges and is already email-verified. Use this to test for regressions.)*
+    *(To test the bug, you must create a new user account via the invite flow.)*
 
 **What agent forgot to execute**
--   The critical task of properly verifying the Stripe webhook endpoint remains outstanding from a previous session. All other pending tasks were addressed.</analysis>
+-   The agent was in the middle of a critical bug fix and did not complete it. All other planned tasks were addressed.</analysis>
