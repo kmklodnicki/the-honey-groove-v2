@@ -190,7 +190,9 @@ COMPLETED → Mandatory rating before next trade
 
 101. **Content: 50 Bingo Squares** — Added 48 new bingo squares (2 were duplicates). Total: 76 active squares. (Mar 2026)
 
-102. **Safari Blank Screen Fix** — Removed Safari-incompatible SVG CSS animation (jarFill animating y attribute). Simplified loading screen to static logo in both index.html and React LoadingScreen. Added -webkit-backdrop-filter prefix for glass-card class. 3-second hard timeout on static loading screen. (Mar 2026)
+102. **Safari Blank Screen Fix** — Removed Safari-incompatible SVG CSS animation (jarFill). Simplified loading screen to static logo. Added -webkit-backdrop-filter prefix. 3-second hard timeout. (Mar 2026)
+
+103. **Safari Blank Screen Fix v2 (Aggressive)** — Removed LoadingScreen component entirely from App.js. ProtectedRoute/AdminRoute/LandingWrapper return null during auth loading instead of blocking cream screen. AuthContext has 3s safety timeout to force loading=false. fetchUser timeout reduced to 5s. index.html loading screen force-removed at 2s. Safari fallback "tap to reload" button appears at 4s if React fails to mount. console.log('app mounted') diagnostic added. Full CSS Safari audit: no SVG animations, -webkit-backdrop-filter present, autoprefixer handles Tailwind utilities. (Mar 2026)
 
 103. **Mobile Wordmark Fix** — Mobile top bar wordmark updated from w-[110px] to h-[36px] w-auto max-w-[130px] object-contain to prevent clipping. (Mar 2026)
 
