@@ -162,14 +162,7 @@
     clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
 }
 
-/* Honey jar fill animation */
-@keyframes jarFill {
-  0% { y: 180; }
-  100% { y: 40; }
-}
-.animate-jar-fill {
-  animation: jarFill 1.5s ease-in-out forwards;
-}
+/* (Removed: honey jar SVG fill animation - Safari incompatible) */
 
 /* Custom HoneyGroove Toast */
 .honey-toast {

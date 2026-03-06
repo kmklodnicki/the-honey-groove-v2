@@ -777,7 +777,7 @@ const ISOPage = () => {
             </div>
             <p className="text-xs text-muted-foreground">{platformFee}% platform fee applies. You'll be redirected to secure checkout.</p>
             <Button onClick={handleMakeOfferSubmit} disabled={paymentLoading || !offerAmount}
-              className="w-full bg-blue-600 text-white hover:bg-blue-700 rounded-full" data-testid="submit-offer-btn">
+              className="w-full bg-[#C8861A] text-white hover:bg-[#B07516] rounded-full" data-testid="submit-offer-btn">
               {paymentLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <DollarSign className="w-4 h-4 mr-2" />}
               Pay ${offerAmount || '0'}
             </Button>
@@ -849,7 +849,7 @@ const ISOCard = ({ iso, isOwn, onMarkFound, onDelete, onSetPriceAlert }) => {
         </div>
         {isOwn && iso.status === 'OPEN' && (
           <div className="flex gap-1 shrink-0">
-            <Button size="sm" variant="ghost" className="text-green-600 hover:bg-green-50 h-8 px-2" onClick={() => onMarkFound(iso.id)} data-testid={`mark-found-${iso.id}`}><CheckCircle2 className="w-4 h-4" /></Button>
+            <Button size="sm" variant="ghost" className="text-[#C8861A] hover:bg-amber-50 h-8 px-2" onClick={() => onMarkFound(iso.id)} data-testid={`mark-found-${iso.id}`}><CheckCircle2 className="w-4 h-4" /></Button>
             <Button size="sm" variant="ghost" className="text-[#8A6B4A]/60 hover:bg-[#8A6B4A]/10 h-8 px-2" onClick={() => onDelete(iso.id)}><Trash2 className="w-4 h-4" /></Button>
           </div>
         )}
@@ -866,7 +866,7 @@ const CommunityISOCard = ({ iso, onHaveThis }) => (
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <h4 className="font-heading text-base">{iso.album}</h4>
-          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-700">SEARCHING</span>
+          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-[#E8A820]/15 text-[#C8861A] border border-[#C8861A]/30">SEARCHING</span>
         </div>
         <p className="text-sm text-muted-foreground">{iso.artist}{iso.year ? ` (${iso.year})` : ''}</p>
         {iso.user && (
@@ -881,7 +881,7 @@ const CommunityISOCard = ({ iso, onHaveThis }) => (
           {(iso.target_price_min || iso.target_price_max) && <span>Budget: {iso.target_price_min ? `$${iso.target_price_min}` : ''}{iso.target_price_min && iso.target_price_max ? ' – ' : ''}{iso.target_price_max ? (iso.target_price_min ? `$${iso.target_price_max}` : `up to $${iso.target_price_max}`) : ''}</span>}
         </div>
       </div>
-      <Button size="sm" className="bg-green-100 text-green-700 hover:bg-green-200 rounded-full gap-1 shrink-0" onClick={() => onHaveThis(iso)} data-testid={`i-have-this-${iso.id}`}>
+      <Button size="sm" className="bg-[#E8A820]/15 text-[#C8861A] hover:bg-[#E8A820]/25 rounded-full gap-1 shrink-0" onClick={() => onHaveThis(iso)} data-testid={`i-have-this-${iso.id}`}>
         <MessageSquare className="w-3 h-3" /> I have this
       </Button>
     </div>
@@ -931,7 +931,7 @@ const ListingCard = ({ listing, currentUserId, onProposeTrade, onBuyNow, onMakeO
   const [photoIdx, setPhotoIdx] = useState(0);
   const photos = listing.photo_urls || [];
   const typeConfig = {
-    BUY_NOW: { label: 'Buy Now', color: 'bg-green-100 text-green-700' },
+    BUY_NOW: { label: 'Buy Now', color: 'bg-amber-100/60 text-[#C8861A]' },
     MAKE_OFFER: { label: 'Make Offer', color: 'bg-amber-100/60 text-[#C8861A]' },
     TRADE: { label: 'Trade', color: 'bg-[#E8A820]/15 text-[#C8861A] border border-[#C8861A]/30' },
   };

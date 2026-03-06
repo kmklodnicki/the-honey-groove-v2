@@ -190,8 +190,8 @@ const Navbar = () => {
     {user && (
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 h-14 bg-[#FAF6EE] border-b border-[#C8861A]/10" data-testid="mobile-top-bar">
         <div className="flex items-center h-full px-3">
-          <Link to="/hive" className="shrink-0 mr-auto">
-            <img src="/logo-wordmark.png" alt="the Honey Groove" className="h-auto w-[110px]" />
+          <Link to="/hive" className="shrink-0 mr-auto overflow-visible">
+            <img src="/logo-wordmark.png" alt="the Honey Groove" className="h-[36px] w-auto max-w-[130px] object-contain" />
           </Link>
           <div className="flex items-center gap-3 shrink-0">
             <DMBadge />
