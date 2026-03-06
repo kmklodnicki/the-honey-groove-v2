@@ -23,7 +23,7 @@ const PostTypeBadge = ({ type, mood }) => {
   const config = {
     NOW_SPINNING: { label: 'Now Spinning', icon: Disc, bg: 'bg-honey/20 text-honey-amber' },
     NEW_HAUL: { label: 'New Haul', icon: Package, bg: 'bg-amber-100/60 text-amber-700' },
-    ISO: { label: 'ISO', icon: Search, bg: 'bg-blue-100/60 text-blue-700' },
+    ISO: { label: 'ISO', icon: Search, bg: 'bg-amber-100/60 text-amber-700' },
     ADDED_TO_COLLECTION: { label: 'Added', icon: Plus, bg: 'bg-green-100/60 text-green-700' },
     WEEKLY_WRAP: { label: 'Weekly Wrap', icon: Music, bg: 'bg-purple-100/60 text-purple-700' },
     VINYL_MOOD: { label: 'Vinyl Mood', icon: Moon, bg: 'bg-purple-100/60 text-purple-700' },
@@ -113,18 +113,18 @@ const ISOCard = ({ post }) => {
   const iso = post.iso;
   if (!iso) return <p className="text-sm">{post.caption}</p>;
   return (
-    <div className="bg-blue-50 rounded-lg p-4" data-testid="iso-card">
+    <div className="bg-[#FAF6EE] border border-[#C8861A]/15 rounded-lg p-4" data-testid="iso-card">
       <div className="flex items-start justify-between">
         <div>
           <p className="font-heading text-lg">{iso.album}</p>
           <p className="text-sm text-muted-foreground">{iso.artist}</p>
         </div>
-        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${iso.status === 'FOUND' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>{iso.status}</span>
+        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${iso.status === 'FOUND' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-amber-50 text-[#C8861A] border-[#C8861A]/30'}`}>{iso.status}</span>
       </div>
-      {iso.pressing_notes && <p className="text-xs mt-2 text-blue-700">Pressing: {iso.pressing_notes}</p>}
-      {iso.condition_pref && <p className="text-xs text-blue-600">Condition: {iso.condition_pref}</p>}
+      {iso.pressing_notes && <p className="text-xs mt-2 text-[#8A6B4A]">Pressing: {iso.pressing_notes}</p>}
+      {iso.condition_pref && <p className="text-xs text-[#8A6B4A]">Condition: {iso.condition_pref}</p>}
       {(iso.target_price_min || iso.target_price_max) && (
-        <p className="text-xs text-blue-600 mt-1">Budget: {iso.target_price_min ? `$${iso.target_price_min}` : '?'} – {iso.target_price_max ? `$${iso.target_price_max}` : '?'}</p>
+        <p className="text-xs text-[#8A6B4A] mt-1">Budget: {iso.target_price_min ? `$${iso.target_price_min}` : '?'} – {iso.target_price_max ? `$${iso.target_price_max}` : '?'}</p>
       )}
       {post.caption && <p className="text-sm mt-3">{post.caption}</p>}
     </div>

@@ -69,7 +69,7 @@ const CollectionPage = () => {
       setValueMap(valMapRes.data || {});
     } catch (error) {
       console.error('Failed to fetch records:', error);
-      toast.error('Failed to load collection');
+      toast.error('something went wrong loading your collection.');
     } finally {
       setLoading(false);
     }
@@ -84,7 +84,7 @@ const CollectionPage = () => {
       toast.success(resp.data.message);
       // Poll after a delay to show new values
       setTimeout(fetchData, 5000);
-    } catch { toast.error('Failed to refresh values'); }
+    } catch { toast.error('could not refresh values. try again.'); }
     finally { setRefreshing(false); }
   };
 
@@ -99,11 +99,11 @@ const CollectionPage = () => {
         { record_id: record.id },
         { headers: { Authorization: `Bearer ${token}` }}
       );
-      toast.success(`Now spinning: ${record.title}`);
+      toast.success(`now spinning: ${record.title}`);
       fetchData(); // Refresh to update spin count
     } catch (error) {
       console.error('Failed to log spin:', error);
-      toast.error('Failed to log spin');
+      toast.error('could not log spin. try again.');
     } finally {
       setSpinningRecordId(null);
     }
@@ -117,10 +117,10 @@ const CollectionPage = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
       setRecords(records.filter(r => r.id !== recordId));
-      toast.success('Record removed from collection');
+      toast.success('record removed.');
     } catch (error) {
       console.error('Failed to delete record:', error);
-      toast.error('Failed to remove record');
+      toast.error('could not remove record. try again.');
     }
   };
 

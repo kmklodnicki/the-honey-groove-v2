@@ -35,12 +35,12 @@ const LoginPage = () => {
         setLoading(false);
         return;
       }
-      toast.success('Welcome back to the Honey Groove!');
+      toast.success('welcome back.');
       navigate('/hive');
     } catch (error) {
       const status = error.response?.status;
       if (status === 429) {
-        toast.error('Too many attempts. Please try again in a few minutes.');
+        toast.error('too many attempts. please try again in a few minutes.');
       } else {
         const message = error.response?.data?.detail || 'Invalid email or password';
         toast.error(message);
@@ -55,9 +55,9 @@ const LoginPage = () => {
     try {
       const token = localStorage.getItem('honeygroove_token');
       await axios.post(`${API}/api/auth/resend-verification`, {}, { headers: { Authorization: `Bearer ${token}` } });
-      toast.success('Verification email sent! Check your inbox.');
+      toast.success('verification email sent. check your inbox.');
     } catch {
-      toast.error('Could not send verification email. Try again later.');
+      toast.error('could not send verification email. try again later.');
     } finally {
       setResending(false);
     }
@@ -73,7 +73,7 @@ const LoginPage = () => {
             <img 
               src="/logo-wordmark.png" 
               alt="the Honey Groove" 
-              className="h-16"
+              className="h-auto w-[200px]"
             />
           </Link>
           <CardTitle className="font-heading text-2xl">Welcome Back</CardTitle>

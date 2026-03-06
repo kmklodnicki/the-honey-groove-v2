@@ -339,7 +339,7 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
     finally { setLoading(false); }
   };
 
-  const handleDecline = async () => { if (await apiCall('put', `${API}/trades/${trade.id}/decline`)) { toast.success('Trade declined'); onUpdate(); } };
+  const handleDecline = async () => { if (await apiCall('put', `${API}/trades/${trade.id}/decline`)) { toast.success('trade declined.'); onUpdate(); } };
 
   const handleCounter = async () => {
     if (await apiCall('put', `${API}/trades/${trade.id}/counter`, {
@@ -358,7 +358,7 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
   };
 
   const handleConfirm = async () => {
-    if (await apiCall('put', `${API}/trades/${trade.id}/confirm-receipt`)) { toast.success('Receipt confirmed!'); onUpdate(); }
+    if (await apiCall('put', `${API}/trades/${trade.id}/confirm-receipt`)) { toast.success('receipt confirmed.'); onUpdate(); }
   };
 
   const handleCancelShipping = async () => {
@@ -976,7 +976,7 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
         hold_amount: holdVal,
         message: message || null,
       }, { headers: { Authorization: `Bearer ${token}` } });
-      toast.success('Trade proposed!'); trackEvent('trade_proposed'); onOpenChange(false); onSuccess?.();
+      toast.success('trade proposal sent.'); trackEvent('trade_proposed'); onOpenChange(false); onSuccess?.();
     } catch (err) { toast.error(err.response?.data?.detail || 'Failed'); setUploadingPhotos(false); }
     finally { setLoading(false); }
   };

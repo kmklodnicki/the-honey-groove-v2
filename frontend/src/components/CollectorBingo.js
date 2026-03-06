@@ -188,9 +188,9 @@ const CollectorBingo = () => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = file.name; a.click();
         URL.revokeObjectURL(url);
-        toast.success('Downloaded!');
+        toast.success('downloaded.');
       }
-    } catch { toast.error('Export failed'); }
+    } catch { toast.error('export failed. try again.'); }
     finally { setExporting(false); }
   };
 

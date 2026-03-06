@@ -36,7 +36,7 @@ const AdminDisputesPage = () => {
       setDisputes(open.data);
       setAllDisputes(all.data);
     } catch (err) {
-      if (err.response?.status === 403) toast.error('Admin access required');
+      if (err.response?.status === 403) toast.error('admin access required.');
     }
     finally { setLoading(false); }
   }, [API, token]);
@@ -201,14 +201,14 @@ const ResolveModal = ({ open, onOpenChange, trade, token, API, onResolved }) => 
   const [loading, setLoading] = useState(false);
 
   const handleResolve = async () => {
-    if (!resolution || !notes.trim()) { toast.error('Select resolution and add notes'); return; }
+    if (!resolution || !notes.trim()) { toast.error('select a resolution and add notes.'); return; }
     setLoading(true);
     try {
       await axios.put(`${API}/admin/disputes/${trade.id}/resolve`, {
         resolution, notes,
         partial_amount: partialAmount ? parseFloat(partialAmount) : null,
       }, { headers: { Authorization: `Bearer ${token}` } });
-      toast.success('Dispute resolved');
+      toast.success('dispute resolved.');
       onOpenChange(false);
       onResolved();
     } catch (err) { toast.error(err.response?.data?.detail || 'Failed'); }

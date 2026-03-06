@@ -41,13 +41,13 @@ const SettingsPage = () => {
       if (nlSubscribed) {
         await axios.post(`${API}/newsletter/unsubscribe`, { email: user.email }, { headers: { Authorization: `Bearer ${token}` } });
         setNlSubscribed(false);
-        toast.success('Unsubscribed');
+        toast.success('unsubscribed.');
       } else {
         await axios.post(`${API}/newsletter/subscribe`, { email: user.email, source: 'in_app' }, { headers: { Authorization: `Bearer ${token}` } });
         setNlSubscribed(true);
-        toast.success('Subscribed!');
+        toast.success('subscribed.');
       }
-    } catch { toast.error('Failed to update'); }
+    } catch { toast.error('could not update. try again.'); }
     finally { setNlLoading(false); }
   };
 
@@ -66,7 +66,7 @@ const SettingsPage = () => {
         { headers: { Authorization: `Bearer ${token}` }}
       );
       updateUser(response.data);
-      toast.success('Profile updated!');
+      toast.success('profile updated.');
     } catch (error) {
       const message = error.response?.data?.detail || 'Failed to update profile';
       toast.error(message);
@@ -85,13 +85,13 @@ const SettingsPage = () => {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
+      toast.error('please select an image file.');
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image must be less than 5MB');
+      toast.error('image must be less than 5mb.');
       return;
     }
 
@@ -113,10 +113,10 @@ const SettingsPage = () => {
       const publicUrl = `https://integrations.emergentagent.com/objstore/api/v1/storage/public/${uploadedPath}`;
       
       setAvatarPreview(publicUrl);
-      toast.success('Photo uploaded! Click Save to apply changes.');
+      toast.success('photo uploaded. click save to apply.');
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Failed to upload photo. Please try again.');
+      toast.error('could not upload photo. try again.');
     } finally {
       setUploading(false);
     }

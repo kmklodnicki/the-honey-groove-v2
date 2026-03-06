@@ -60,7 +60,7 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
           setImporting(false);
           clearInterval(interval);
           if (resp.data.status === 'completed') {
-            toast.success(`Imported ${resp.data.imported} records from Discogs!`);
+            toast.success(`imported ${resp.data.imported} records from discogs.`);
             trackEvent('discogs_import_completed', { records_imported: resp.data.imported });
             // Fetch summary and show modal
             fetchSummary();
@@ -80,7 +80,7 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
     const params = new URLSearchParams(window.location.search);
     const discogsParam = params.get('discogs');
     if (discogsParam === 'connected') {
-      toast.success(`Discogs account connected! (${params.get('username') || ''})`);
+      toast.success(`discogs connected as ${params.get('username') || ''}.`);
       window.history.replaceState({}, '', window.location.pathname);
       fetchStatus();
     } else if (discogsParam === 'error') {
@@ -125,7 +125,7 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
         { discogs_username: discogsUsername.trim() },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success(`Connected to Discogs as ${discogsUsername.trim()}${resp.data.collection_count ? ` (${resp.data.collection_count} records found)` : ''}`);
+      toast.success(`connected to discogs as ${discogsUsername.trim()}${resp.data.collection_count ? ` (${resp.data.collection_count} records found)` : ''}.`);
       setShowConnect(false);
       setDiscogsUsername('');
       fetchStatus();
@@ -158,8 +158,8 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
       setStatus({ connected: false });
       setProgress(null);
       setShowDisconnect(false);
-      toast.success('Discogs account disconnected');
-    } catch { toast.error('Failed to disconnect'); }
+      toast.success('discogs account disconnected.');
+    } catch { toast.error('could not disconnect. try again.'); }
   };
 
   if (loading) {

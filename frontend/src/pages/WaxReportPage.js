@@ -55,7 +55,7 @@ const WaxReportPage = () => {
           setReport(gen.data);
         } catch { toast.error('Could not generate your report'); }
       } else {
-        toast.error('Failed to load report');
+        toast.error('could not load report.');
       }
     } finally { setLoading(false); }
   }, [API, token, reportId]);
@@ -72,7 +72,7 @@ const WaxReportPage = () => {
       });
       setShareImg(URL.createObjectURL(resp.data));
       trackEvent('export_card_generated', { card_type: 'week_in_wax' });
-    } catch { toast.error('Failed to generate share card'); }
+    } catch { toast.error('could not generate share card.'); }
     finally { setShareLoading(false); }
   };
 
@@ -90,7 +90,7 @@ const WaxReportPage = () => {
     try {
       const resp = await axios.post(`${API}/wax-reports/regenerate-label/${report.id}`, {}, { headers });
       setReport(prev => ({ ...prev, personality: resp.data.personality, closing_line: resp.data.closing_line, label_regenerated: true }));
-      toast.success('Personality updated!');
+      toast.success('personality updated.');
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Failed to regenerate');
     } finally { setRegenLoading(false); }

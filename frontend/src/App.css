@@ -161,3 +161,46 @@
 .hex-badge {
     clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
 }
+
+/* Honey jar fill animation */
+@keyframes jarFill {
+  0% { y: 180; }
+  100% { y: 40; }
+}
+.animate-jar-fill {
+  animation: jarFill 1.5s ease-in-out forwards;
+}
+
+/* Custom HoneyGroove Toast */
+.honey-toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  background: #FAF6EE;
+  border: 1.5px solid rgba(200, 134, 26, 0.6);
+  border-left: 3px solid #C8861A;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(200, 134, 26, 0.15);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  min-width: 280px;
+  max-width: 420px;
+  animation: toastSlideIn 0.3s ease-out;
+}
+.honey-toast-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.honey-toast-title {
+  color: #2A1A06;
+  font-size: 16px;
+  line-height: 1.4;
+}
+.honey-toast-desc {
+  color: #8A6B4A;
+  font-size: 14px;
+}
+@keyframes toastSlideIn {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}

@@ -98,14 +98,14 @@ const ISOPage = () => {
     const sessionId = searchParams.get('session_id');
     if (!paymentStatus) return;
     setSearchParams({}, { replace: true });
-    if (paymentStatus === 'cancelled') { toast.info('Payment cancelled'); return; }
+    if (paymentStatus === 'cancelled') { toast.info('payment cancelled.'); return; }
     if (paymentStatus === 'success' && sessionId) {
       const checkStatus = async () => {
         try {
           const resp = await axios.get(`${API}/payments/status/${sessionId}`, { headers: { Authorization: `Bearer ${token}` } });
-          if (resp.data.status === 'PAID') { trackEvent('purchase_completed', { amount: resp.data.amount }); toast.success(`Payment of $${resp.data.amount} confirmed!`); fetchData(); }
-          else toast.info('Payment is being processed. You\'ll be notified when complete.');
-        } catch { toast.error('Could not verify payment status'); }
+          if (resp.data.status === 'PAID') { trackEvent('purchase_completed', { amount: resp.data.amount }); toast.success(`payment of $${resp.data.amount} confirmed.`); fetchData(); }
+          else toast.info('payment is processing. you\'ll be notified when complete.');
+        } catch { toast.error('could not verify payment. try again.'); }
       };
       checkStatus();
     }
@@ -220,7 +220,7 @@ const ISOPage = () => {
   const submitISO = async () => {
     const artist = isoArtist || selectedRelease?.artist;
     const album = isoAlbum || selectedRelease?.title;
-    if (!artist || !album) { toast.error('Artist and album required'); return; }
+    if (!artist || !album) { toast.error('artist and album are required.'); return; }
     setSubmitting(true);
     try {
       await axios.post(`${API}/composer/iso`, {
@@ -235,7 +235,7 @@ const ISOPage = () => {
         target_price_max: isoPriceMax ? parseFloat(isoPriceMax) : null,
         caption: isoCaption || null,
       }, { headers: { Authorization: `Bearer ${token}` }});
-      toast.success('ISO posted!');
+      toast.success('iso posted.');
       trackEvent('iso_posted');
       closeModal(); fetchData();
     } catch (err) { toast.error(err.response?.data?.detail || 'Failed'); }
@@ -246,7 +246,7 @@ const ISOPage = () => {
   const handlePhotoSelect = (e) => {
     const files = Array.from(e.target.files || []);
     const remaining = 10 - listPhotos.length;
-    if (remaining <= 0) { toast.error('Maximum 10 photos'); return; }
+    if (remaining <= 0) { toast.error('maximum 10 photos.'); return; }
     const toAdd = files.slice(0, remaining).map(file => ({ file, preview: URL.createObjectURL(file), url: null }));
     setListPhotos(prev => [...prev, ...toAdd]);
   };
@@ -268,10 +268,10 @@ const ISOPage = () => {
   const submitListing = async () => {
     const artist = listArtist || selectedRelease?.artist;
     const album = listAlbum || selectedRelease?.title;
-    if (!artist || !album) { toast.error('Artist and album required'); return; }
-    if (listType !== 'TRADE' && !listPrice) { toast.error('Price required for Buy/Offer listings'); return; }
-    if (listPhotos.length === 0) { toast.error('At least 1 photo is required'); return; }
-    if (!listCondition) { toast.error('Condition is required'); return; }
+    if (!artist || !album) { toast.error('artist and album are required.'); return; }
+    if (listType !== 'TRADE' && !listPrice) { toast.error('price is required for buy/offer listings.'); return; }
+    if (listPhotos.length === 0) { toast.error('at least 1 photo is required.'); return; }
+    if (!listCondition) { toast.error('condition is required.'); return; }
 
     // Show insurance prompt for items over $75 (only if not yet shown)
     const priceVal = parseFloat(listPrice);
@@ -298,20 +298,20 @@ const ISOPage = () => {
         photo_urls: photoUrls,
         insured: insuranceChoice,
       }, { headers: { Authorization: `Bearer ${token}` }});
-      toast.success('Listing posted!');
+      toast.success('listing posted.');
       closeModal(); fetchData();
     } catch (err) { toast.error(err.response?.data?.detail || 'Failed'); setUploadingPhotos(false); }
     finally { setSubmitting(false); }
   };
 
   const handleMarkFound = async (id) => {
-    try { await axios.put(`${API}/iso/${id}/found`, {}, { headers: { Authorization: `Bearer ${token}` }}); setIsos(prev => prev.map(i => i.id === id ? { ...i, status: 'FOUND' } : i)); toast.success('Marked as found!'); } catch { toast.error('Failed'); }
+    try { await axios.put(`${API}/iso/${id}/found`, {}, { headers: { Authorization: `Bearer ${token}` }}); setIsos(prev => prev.map(i => i.id === id ? { ...i, status: 'FOUND' } : i)); toast.success('marked as found.'); } catch { toast.error('something went wrong.'); }
   };
   const handleDeleteIso = async (id) => {
-    try { await axios.delete(`${API}/iso/${id}`, { headers: { Authorization: `Bearer ${token}` }}); setIsos(prev => prev.filter(i => i.id !== id)); toast.success('ISO removed'); } catch { toast.error('Failed'); }
+    try { await axios.delete(`${API}/iso/${id}`, { headers: { Authorization: `Bearer ${token}` }}); setIsos(prev => prev.filter(i => i.id !== id)); toast.success('iso removed.'); } catch { toast.error('something went wrong.'); }
   };
   const handleDeleteListing = async (id) => {
-    try { await axios.delete(`${API}/listings/${id}`, { headers: { Authorization: `Bearer ${token}` }}); setMyListings(prev => prev.filter(l => l.id !== id)); setListings(prev => prev.filter(l => l.id !== id)); toast.success('Listing removed'); } catch { toast.error('Failed'); }
+    try { await axios.delete(`${API}/listings/${id}`, { headers: { Authorization: `Bearer ${token}` }}); setMyListings(prev => prev.filter(l => l.id !== id)); setListings(prev => prev.filter(l => l.id !== id)); toast.success('listing removed.'); } catch { toast.error('something went wrong.'); }
   };
 
   const handleBuyNow = async (listing) => {
@@ -319,7 +319,7 @@ const ISOPage = () => {
     try {
       const resp = await axios.post(`${API}/payments/checkout`, { listing_id: listing.id, origin_url: window.location.origin }, { headers: { Authorization: `Bearer ${token}` } });
       if (resp.data.url) window.location.href = resp.data.url;
-      else toast.error('Failed to create checkout');
+      else toast.error('could not start checkout. try again.');
     } catch (err) { toast.error(err.response?.data?.detail || 'Payment failed'); }
     finally { setPaymentLoading(false); }
   };
@@ -330,7 +330,7 @@ const ISOPage = () => {
     try {
       const resp = await axios.post(`${API}/payments/checkout`, { listing_id: offerTarget.id, offer_amount: parseFloat(offerAmount), origin_url: window.location.origin }, { headers: { Authorization: `Bearer ${token}` } });
       if (resp.data.url) window.location.href = resp.data.url;
-      else toast.error('Failed to create checkout');
+      else toast.error('could not start checkout. try again.');
     } catch (err) { toast.error(err.response?.data?.detail || 'Payment failed'); }
     finally { setPaymentLoading(false); setOfferTarget(null); setOfferAmount(''); }
   };
@@ -354,7 +354,7 @@ const ISOPage = () => {
       });
       setIsos(prev => prev.map(i => i.id === isoId ? { ...i, price_alert: targetPrice } : i));
       toast.success(targetPrice ? `Price alert set at $${targetPrice}` : 'Price alert removed');
-    } catch { toast.error('Failed to set price alert'); }
+    } catch { toast.error('could not set price alert.'); }
   };
 
   // Dynamic labels

@@ -64,7 +64,7 @@ const ExplorePage = () => {
     try {
       const resp = await axios.get(`${API}/explore/trending/${record.id}/posts`, { headers });
       setTrendingModal({ record: resp.data.record, posts: resp.data.posts });
-    } catch { toast.error('Failed to load posts'); }
+    } catch { toast.error('could not load posts.'); }
     finally { setModalLoading(false); }
   };
 
@@ -75,19 +75,19 @@ const ExplorePage = () => {
       }, { headers });
       toast.success(`Added to your Wantlist!`);
     } catch (err) {
-      if (err.response?.status === 409) toast.info('Already on your Wantlist');
-      else toast.error('Failed to add');
+      if (err.response?.status === 409) toast.info('already on your wantlist.');
+      else toast.error('could not add. try again.');
     }
   };
 
   const saveLocation = async () => {
-    if (!cityInput.trim()) { toast.error('City is required'); return; }
+    if (!cityInput.trim()) { toast.error('city is required.'); return; }
     try {
       await axios.put(`${API}/auth/me`, { city: cityInput.trim(), region: regionInput.trim() }, { headers });
-      toast.success('Location saved!');
+      toast.success('location saved.');
       setShowLocationPrompt(false);
       fetchData();
-    } catch { toast.error('Failed to save location'); }
+    } catch { toast.error('could not save location. try again.'); }
   };
 
   if (!user) {

@@ -188,10 +188,10 @@ const Navbar = () => {
 
     {/* Mobile Slim Top Bar */}
     {user && (
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 h-12 bg-[#FAF6EE] border-b border-[#C8861A]/10" data-testid="mobile-top-bar">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 h-14 bg-[#FAF6EE] border-b border-[#C8861A]/10" data-testid="mobile-top-bar">
         <div className="relative flex items-center h-full px-4">
           <Link to="/hive" className="absolute left-1/2 -translate-x-1/2">
-            <img src="/logo-wordmark.png" alt="the Honey Groove" className="h-8" />
+            <img src="/logo-wordmark.png" alt="the Honey Groove" className="h-auto w-[130px]" />
           </Link>
           <div className="ml-auto flex items-center gap-4">
             <DMBadge />
@@ -248,19 +248,19 @@ const Navbar = () => {
       >
         <div className="flex justify-around items-center h-16">
           <Link to="/hive" className="flex items-center justify-center flex-1 h-full" data-testid="mobile-hive">
-            <Home className="w-6 h-6" style={{ color: isActive('/hive') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }} />
+            <Home className="w-6 h-6" style={{ color: isActive('/hive') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
           </Link>
           <Link to="/explore" className="flex items-center justify-center flex-1 h-full" data-testid="mobile-explore">
-            <Globe className="w-6 h-6" style={{ color: isActive('/explore') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }} />
+            <Globe className="w-6 h-6" style={{ color: isActive('/explore') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
           </Link>
           <button onClick={() => setSearchOpen(true)} className="flex items-center justify-center flex-1 h-full" data-testid="mobile-search">
-            <Search className="w-6 h-6" style={{ color: searchOpen ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }} />
+            <Search className="w-6 h-6" style={{ color: searchOpen ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
           </button>
           <Link to="/collection" className="flex items-center justify-center flex-1 h-full" data-testid="mobile-collection">
-            <Library className="w-6 h-6" style={{ color: isActive('/collection') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }} />
+            <Library className="w-6 h-6" style={{ color: isActive('/collection') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
           </Link>
           <Link to="/honeypot" className="flex items-center justify-center flex-1 h-full" data-testid="mobile-honeypot">
-            <ShoppingBag className="w-6 h-6" style={{ color: isActive('/honeypot') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }} />
+            <ShoppingBag className="w-6 h-6" style={{ color: isActive('/honeypot') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
           </Link>
         </div>
       </div>
@@ -395,7 +395,7 @@ const NotificationBell = () => {
         <Button variant="ghost" className="relative h-9 w-9 rounded-full" data-testid="notification-bell">
           <Bell className="w-5 h-5" />
           {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1" data-testid="notification-badge">
+            <span className="absolute -top-0.5 -right-0.5 bg-[#C8861A] text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1" data-testid="notification-badge">
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}

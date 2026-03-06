@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Textarea } from './ui/textarea';
 import { Skeleton } from './ui/skeleton';
-import { Loader2, Disc, Share2, Send, Flame, Download } from 'lucide-react';
+import { Loader2, Disc, Share2, Send, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 
@@ -50,7 +50,7 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
           {hasBuzzedIn ? (
             <div className="flex items-center gap-3">
               <span className="text-sm text-amber-700 font-medium">buzzed in</span>
-              {streak > 0 && <span className="flex items-center gap-1 text-sm text-orange-500 font-bold"><Flame className="w-4 h-4" />{streak}</span>}
+              {streak > 0 && <span className="flex items-center gap-1 text-sm text-amber-600 font-bold">🐝 {streak}</span>}
             </div>
           ) : (
             <Button onClick={() => setModalOpen(true)} className="bg-amber-500 hover:bg-amber-600 text-white rounded-full px-6 text-sm font-semibold shadow-sm" data-testid="buzz-in-btn">
@@ -58,7 +58,7 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
             </Button>
           )}
           {streak > 0 && !hasBuzzedIn && (
-            <span className="flex items-center gap-1 text-sm text-orange-500 font-bold"><Flame className="w-4 h-4" />{streak} day streak</span>
+            <span className="flex items-center gap-1 text-sm text-amber-600 font-bold">🐝 {streak} day streak</span>
           )}
         </div>
       </Card>
@@ -112,7 +112,7 @@ const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
   const yearText = discogsData?.year || selectedRecord?.year || '';
 
   const handleSubmit = async (postToHive) => {
-    if (!selectedRecordId) { toast.error('Select a record'); return; }
+    if (!selectedRecordId) { toast.error('select a record first.'); return; }
     setSubmitting(true);
     try {
       const r = await axios.post(`${API}/prompts/buzz-in`, {
@@ -146,9 +146,9 @@ const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = file.name; a.click();
         URL.revokeObjectURL(url);
-        toast.success('Card downloaded!');
+        toast.success('card downloaded.');
       }
-    } catch { toast.error('Export failed'); }
+    } catch { toast.error('export failed. try again.'); }
     finally { setExporting(false); }
   };
 
@@ -233,8 +233,8 @@ const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
               <div className="bg-amber-50 rounded-xl p-4">
                 <p className="text-amber-700 font-medium mb-1">buzzed in! 🐝</p>
                 {responseData.streak > 0 && (
-                  <p className="flex items-center justify-center gap-1 text-orange-500 font-bold text-lg">
-                    <Flame className="w-5 h-5" /> {responseData.streak} day streak
+                  <p className="flex items-center justify-center gap-1 text-amber-600 font-bold text-lg">
+                    🐝 {responseData.streak} day streak
                   </p>
                 )}
               </div>
@@ -269,8 +269,8 @@ export const StreakBadge = ({ username }) => {
 
   if (streak <= 0) return null;
   return (
-    <div className="flex items-center gap-1.5 text-orange-500 font-bold text-sm" data-testid="profile-streak-badge">
-      <Flame className="w-4 h-4" /> {streak} day streak
+    <div className="flex items-center gap-1.5 text-amber-600 font-bold text-sm" data-testid="profile-streak-badge">
+      🐝 {streak} day streak
     </div>
   );
 };

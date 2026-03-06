@@ -35,7 +35,7 @@ export const MoodBoardTab = ({ username }) => {
     setGenerating(true);
     try {
       await axios.post(`${API}/mood-boards/generate`, { time_range: selectedRange }, { headers: { Authorization: `Bearer ${token}` } });
-      toast.success('Mood board created!');
+      toast.success('mood board created.');
       fetchBoards();
     } catch (err) { toast.error(err.response?.data?.detail || 'Failed to generate'); }
     finally { setGenerating(false); }
@@ -53,9 +53,9 @@ export const MoodBoardTab = ({ username }) => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = file.name; a.click();
         URL.revokeObjectURL(url);
-        toast.success('Downloaded!');
+        toast.success('downloaded.');
       }
-    } catch { toast.error('Export failed'); }
+    } catch { toast.error('export failed. try again.'); }
   };
 
   return (

@@ -28,15 +28,15 @@ const JoinPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (form.password !== form.confirmPassword) {
-      toast.error('Passwords do not match');
+      toast.error('passwords do not match.');
       return;
     }
     if (form.password.length < 6) {
-      toast.error('Password must be at least 6 characters');
+      toast.error('password must be at least 6 characters.');
       return;
     }
     if (form.username.length < 3) {
-      toast.error('Username must be at least 3 characters');
+      toast.error('username must be at least 3 characters.');
       return;
     }
 
@@ -52,7 +52,7 @@ const JoinPage = () => {
       localStorage.setItem('token', access_token);
       setToken(access_token);
       setUser(user);
-      toast.success('Welcome to the Honey Groove!');
+      toast.success('welcome to the hive.');
       trackEvent('invite_used');
       navigate('/hive');
     } catch (err) {

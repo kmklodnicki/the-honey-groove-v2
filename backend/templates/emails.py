@@ -9,6 +9,7 @@ FRONTEND = os.environ.get("FRONTEND_URL", "https://thehoneygroove.com")
 H = "font-family:'Playfair Display',Georgia,serif;font-weight:700;color:#2A1A06;"
 AMBER = "color:#C8861A;"
 MUTED = "color:#8A6B4A;font-size:13px;"
+GREETING = "color:#2A1A06;font-size:15px;"
 BTN = "display:inline-block;padding:14px 28px;background:#E8A820;color:#2A1A06;text-decoration:none;border-radius:50px;font-size:14px;font-weight:700;font-family:Georgia,serif;"
 SIG = f'<p style="margin:24px 0 0 0;{MUTED}">— Katie, founder of the Honey Groove</p>'
 SIG_SHORT = f'<p style="margin:24px 0 0 0;{MUTED}">— Katie, founder</p>'
@@ -18,7 +19,7 @@ SIG_SHORT = f'<p style="margin:24px 0 0 0;{MUTED}">— Katie, founder</p>'
 
 def newsletter_signup(first_name: str, unsub_url: str = "") -> dict:
     body = f"""
-    <p style="{MUTED}">Hey {first_name},</p>
+    <p style="{GREETING}">Hey {first_name},</p>
     <p>You just joined <strong>The Weekly Wax</strong> — a letter for collectors who actually live for this stuff.</p>
     <p>Every week you'll get new finds, community stories, and what's buzzing in the hive. Nothing you didn't ask for.</p>
     <p>We'll see you in your inbox soon.</p>
@@ -32,7 +33,7 @@ def newsletter_signup(first_name: str, unsub_url: str = "") -> dict:
 
 def beta_waitlist(first_name: str, unsub_url: str = "") -> dict:
     body = f"""
-    <p style="{MUTED}">Hey {first_name},</p>
+    <p style="{GREETING}">Hey {first_name},</p>
     <p>You made it onto the founding member list for <strong>the Honey Groove</strong>.</p>
     <p>We're in the final stretch of beta testing and founding members get in first. When your invite is ready I'll send it directly to this email with everything you need to get started.</p>
     <p>In the meantime follow <a href="https://instagram.com/katieintheafterglow" style="{AMBER}text-decoration:underline;">@katieintheafterglow</a> on Instagram for updates.</p>
@@ -47,7 +48,7 @@ def beta_waitlist(first_name: str, unsub_url: str = "") -> dict:
 
 def weekly_wax_ready(username: str, personality_label: str, top_artist: str, top_spins: int, closing_line: str, unsub_url: str = "") -> dict:
     body = f"""
-    <p style="{MUTED}">Hey {username},</p>
+    <p style="{GREETING}">Hey {username},</p>
     <p>Your weekly listening report just dropped.</p>
     <div style="text-align:center;padding:24px 16px;margin:16px 0;background:linear-gradient(135deg,#FFF8EE,#FFF3E0);border-radius:16px;border:1px solid #F5E6CC;">
         <p style="{H}font-size:20px;font-style:italic;line-height:1.5;margin:0;{AMBER}">"{closing_line}"</p>
@@ -69,7 +70,7 @@ def weekly_wax_ready(username: str, personality_label: str, top_artist: str, top
 def invite_code(first_name: str, invite_code: str) -> dict:
     join_url = f"{FRONTEND}/join?code={invite_code}"
     body = f"""
-    <p style="{MUTED}">Hey {first_name},</p>
+    <p style="{GREETING}">Hey {first_name},</p>
     <p style="{H}font-size:24px;margin:16px 0 8px 0;">You're in.</p>
     <p>Click the link below to create your founding member account. This link is yours and yours only — it expires after one use.</p>
     <div style="text-align:center;margin:24px 0;">
@@ -89,7 +90,7 @@ def invite_code(first_name: str, invite_code: str) -> dict:
 
 def welcome(username: str) -> dict:
     body = f"""
-    <p style="{MUTED}">Hey {username},</p>
+    <p style="{GREETING}">Hey {username},</p>
     <p style="{H}font-size:24px;margin:16px 0 8px 0;">You made it.</p>
     <p>The Honey Groove is yours now.</p>
     <p style="margin:16px 0 4px 0;"><strong>A few things to get you started:</strong></p>
@@ -151,7 +152,7 @@ def new_follow(username: str, profile_url: str) -> dict:
 
 def wantlist_match(username: str, album: str, artist: str, seller: str, price: str, listing_url: str) -> dict:
     body = f"""
-    <p style="{MUTED}">Hey {username},</p>
+    <p style="{GREETING}">Hey {username},</p>
     <p>A record on your wantlist just appeared in the Honeypot.</p>
     <div style="text-align:center;padding:20px;margin:16px 0;background:#FFF8EE;border-radius:12px;border:1px solid #F5E6CC;">
         <p style="{H}font-size:22px;margin:0 0 4px 0;">{album}</p>
@@ -172,7 +173,7 @@ def wantlist_match(username: str, album: str, artist: str, seller: str, price: s
 def new_trade_offer(username: str, proposer: str, record_name: str, their_record: str, sweetener: str, trade_url: str) -> dict:
     sweetener_line = f'<p style="{AMBER}font-weight:600;">Sweetener: + ${sweetener}</p>' if sweetener else ""
     body = f"""
-    <p style="{MUTED}">Hey {username},</p>
+    <p style="{GREETING}">Hey {username},</p>
     <p><strong>{proposer}</strong> proposed a trade for your <strong>{record_name}</strong>.</p>
     <p>They're offering: <strong>{their_record}</strong></p>
     {sweetener_line}
@@ -203,7 +204,7 @@ def new_dm(username: str, sender: str, context_record: str, dm_url: str) -> dict
 
 def trade_accepted(username: str, acceptor: str, record_name: str, trade_url: str, hold_amount: str = "0") -> dict:
     body = f"""
-    <p style="{MUTED}">Hey {username},</p>
+    <p style="{GREETING}">Hey {username},</p>
     <p><strong>{acceptor}</strong> accepted your trade offer for <strong>{record_name}</strong>.</p>
     <div style="padding:16px 20px;background:#FFF8EE;border-radius:12px;border:1px solid #F5E6CC;margin:16px 0;">
         <p style="margin:0;">Both parties have been charged a hold of <strong style="{AMBER}">${hold_amount}</strong>.</p>
@@ -222,7 +223,7 @@ def trade_accepted(username: str, acceptor: str, record_name: str, trade_url: st
 
 def trade_shipped(username: str, shipper: str, trade_url: str) -> dict:
     body = f"""
-    <p style="{MUTED}">Hey {username},</p>
+    <p style="{GREETING}">Hey {username},</p>
     <p><strong>{shipper}</strong> has shipped their end of the trade.</p>
     <p>Keep an eye on your mailbox. Once your record arrives confirm receipt in the app to complete the trade and release payment.</p>
     <div style="text-align:center;margin:20px 0;">
@@ -237,7 +238,7 @@ def trade_shipped(username: str, shipper: str, trade_url: str) -> dict:
 
 def streak_nudge(username: str, streak: int, prompt_text: str) -> dict:
     body = f"""
-    <p style="{MUTED}">Hey {username},</p>
+    <p style="{GREETING}">Hey {username},</p>
     <p>You're on a <strong style="{AMBER}">{streak} day streak</strong>. Don't break it now.</p>
     <div style="padding:16px;background:#FFF8EE;border-radius:12px;border:1px solid #F5E6CC;margin:12px 0;">
         <p style="{MUTED}margin:0 0 4px 0;">Today's prompt:</p>
@@ -260,7 +261,7 @@ def listing_confirmed(username: str, album: str, artist: str, condition: str, pr
     type_label = LISTING_TYPE_LABELS.get(listing_type, listing_type)
     price_line = f'<p>Price: <strong>${price}</strong></p>' if listing_type != "TRADE" else ""
     body = f"""
-    <p style="{MUTED}">Hey {username},</p>
+    <p style="{GREETING}">Hey {username},</p>
     <p style="{H}font-size:22px;margin:16px 0 4px 0;">{album}</p>
     <p style="{AMBER}font-size:16px;font-style:italic;margin:0 0 16px 0;">by {artist}</p>
     <p>is now live in the Honeypot.</p>
@@ -284,7 +285,7 @@ def listing_confirmed(username: str, album: str, artist: str, condition: str, pr
 
 def sale_confirmed_seller(username: str, album: str, artist: str, price: str, fee_amount: str, payout_amount: str, fee_pct: str, sale_url: str) -> dict:
     body = f"""
-    <p style="{MUTED}">Hey {username},</p>
+    <p style="{GREETING}">Hey {username},</p>
     <p style="{H}font-size:22px;margin:16px 0 4px 0;">{album}</p>
     <p style="{AMBER}font-size:16px;font-style:italic;margin:0 0 16px 0;">by {artist}</p>
     <p>just sold.</p>
@@ -309,7 +310,7 @@ def sale_confirmed_seller(username: str, album: str, artist: str, price: str, fe
 
 def sale_confirmed_buyer(username: str, album: str, artist: str, seller_username: str, price: str, purchase_url: str) -> dict:
     body = f"""
-    <p style="{MUTED}">Hey {username},</p>
+    <p style="{GREETING}">Hey {username},</p>
     <p>You just bought <strong style="{H}font-size:18px;">{album}</strong> <span style="{AMBER}font-style:italic;">by {artist}</span> from <strong>@{seller_username}</strong>.</p>
     <div style="padding:16px 20px;background:#FFF8EE;border-radius:12px;border:1px solid #F5E6CC;margin:16px 0;">
         <p style="margin:0;">Amount paid: <strong>${price}</strong></p>
@@ -330,7 +331,7 @@ def sale_confirmed_buyer(username: str, album: str, artist: str, seller_username
 
 def hold_activated(username: str, other_username: str, hold_amount: str, trade_url: str) -> dict:
     body = f"""
-    <p style="{MUTED}">Hey {username},</p>
+    <p style="{GREETING}">Hey {username},</p>
     <p>Both holds are now active on your Mutual Hold trade with <strong>@{other_username}</strong>.</p>
     <div style="text-align:center;padding:20px;margin:16px 0;background:#FFF8EE;border-radius:12px;border:1px solid #F5E6CC;">
         <p style="{H}font-size:28px;margin:0;">${hold_amount}</p>
@@ -349,7 +350,7 @@ def hold_activated(username: str, other_username: str, hold_amount: str, trade_u
 
 def hold_delivery_confirmed(username: str, hold_amount: str, trade_url: str) -> dict:
     body = f"""
-    <p style="{MUTED}">Hey {username},</p>
+    <p style="{GREETING}">Hey {username},</p>
     <p>Both records have been marked as delivered. You now have <strong>24 hours</strong> to confirm receipt.</p>
     <div style="text-align:center;padding:16px;margin:16px 0;background:#FFF8EE;border-radius:12px;border:1px solid #F5E6CC;">
         <p style="margin:0;"><strong style="{AMBER}">Your hold: ${hold_amount}</strong></p>
@@ -368,7 +369,7 @@ def hold_delivery_confirmed(username: str, hold_amount: str, trade_url: str) -> 
 
 def hold_reversed(username: str, hold_amount: str) -> dict:
     body = f"""
-    <p style="{MUTED}">Hey {username},</p>
+    <p style="{GREETING}">Hey {username},</p>
     <p>Your hold has been released.</p>
     <div style="text-align:center;padding:20px;margin:16px 0;background:#FFF8EE;border-radius:12px;border:1px solid #F5E6CC;">
         <p style="{H}font-size:28px;margin:0;{AMBER}">${hold_amount}</p>
@@ -386,7 +387,7 @@ def hold_reversed(username: str, hold_amount: str) -> dict:
 
 def hold_dispute_filed(username: str, other_username: str, hold_amount: str, trade_url: str) -> dict:
     body = f"""
-    <p style="{MUTED}">Hey {username},</p>
+    <p style="{GREETING}">Hey {username},</p>
     <p>A dispute has been filed on your Mutual Hold trade with <strong>@{other_username}</strong>.</p>
     <div style="text-align:center;padding:16px;margin:16px 0;background:#FFF8EE;border-radius:12px;border:1px solid #F5E6CC;">
         <p style="margin:0;font-weight:600;color:#B91C1C;">Hold frozen — ${hold_amount}</p>
@@ -405,7 +406,7 @@ def hold_dispute_filed(username: str, other_username: str, hold_amount: str, tra
 
 def verified_seller_renewal(username: str, expiry_date: str, days_left: int) -> dict:
     body = f"""
-    <p style="{MUTED}">Hey {username},</p>
+    <p style="{GREETING}">Hey {username},</p>
     <p>Your <strong>Verified Seller</strong> badge expires on <strong>{expiry_date}</strong> — that's {days_left} days from now.</p>
     <p>Renew for another year at <strong>$25</strong> to keep your badge and trust signal on all your listings.</p>
     <div style="text-align:center;margin:20px 0;">

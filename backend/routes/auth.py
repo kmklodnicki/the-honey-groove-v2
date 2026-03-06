@@ -193,24 +193,21 @@ async def resend_verification(user: Dict = Depends(require_auth)):
     })
 
     verify_url = f"{FRONTEND_URL}/verify-email?token={token}"
-    html = f"""
-    <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 40px 20px; background: #FAF6EE;">
-      <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="font-size: 28px; color: #2A1A06; margin: 0;">Welcome to the Honey Groove</h1>
-      </div>
-      <p style="font-size: 16px; color: #8A6B4A; line-height: 1.6;">
-        Click the button below to verify your email address and start exploring.
-      </p>
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="{verify_url}" style="display: inline-block; padding: 14px 32px; background: #E8A820; color: #2A1A06; text-decoration: none; border-radius: 999px; font-weight: 600; font-size: 16px;">
-          Verify My Email
-        </a>
-      </div>
-      <p style="font-size: 13px; color: #8A6B4A99; text-align: center;">
-        This link expires in 24 hours. If you didn't create an account, you can ignore this email.
-      </p>
+    from templates.base import wrap_email
+    body = f"""
+    <p style="font-size:16px;color:#2A1A06;line-height:1.6;">
+      Click the button below to verify your email address and start exploring.
+    </p>
+    <div style="text-align:center;margin:28px 0;">
+      <a href="{verify_url}" style="display:inline-block;padding:14px 32px;background:#E8A820;color:#2A1A06;text-decoration:none;border-radius:999px;font-weight:600;font-size:16px;">
+        Verify My Email
+      </a>
     </div>
+    <p style="font-size:13px;color:#8A6B4A;text-align:center;">
+      This link expires in 24 hours. If you didn't create an account, you can ignore this email.
+    </p>
     """
+    html = wrap_email(body)
     from services.email_service import send_email_fire_and_forget
     await send_email_fire_and_forget(user["email"], "Verify your Honey Groove account. \U0001F41D", html)
 

@@ -89,15 +89,15 @@ const GlobalSearch = ({ onClose, initialTab }) => {
         title: r.title, artist: r.artist, cover_url: r.cover_url,
         discogs_id: r.discogs_id, year: r.year, format: r.format,
       }, { headers: { Authorization: `Bearer ${token}` } });
-      toast.success('Added to collection!');
+      toast.success('added to collection.');
     } catch (e) { toast.error(e.response?.data?.detail || 'Failed'); }
   };
 
   const followUser = async (u) => {
     try {
       await axios.post(`${API}/users/${u.id}/follow`, {}, { headers: { Authorization: `Bearer ${token}` } });
-      toast.success(`Following @${u.username}`);
-    } catch { toast.error('Failed'); }
+      toast.success(`following @${u.username}.`);
+    } catch { toast.error('something went wrong.'); }
   };
 
   const currentResults = tab === 'records' ? records : tab === 'collectors' ? collectors : posts;

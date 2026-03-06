@@ -120,7 +120,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
 
   // Submit handlers
   const submitNowSpinning = async () => {
-    if (!spinRecordId) { toast.error('Select a record'); return; }
+    if (!spinRecordId) { toast.error('select a record first.'); return; }
     setSubmitting(true);
     try {
       await axios.post(`${API}/composer/now-spinning`, {
@@ -129,7 +129,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
         caption: spinCaption || null,
         mood: spinMood || null,
       }, { headers: { Authorization: `Bearer ${token}` }});
-      toast.success('Now Spinning posted!');
+      toast.success('now spinning posted.');
       trackEvent('now_spinning_posted');
       closeModal(); onPostCreated?.();
     } catch (err) { toast.error(err.response?.data?.detail || 'Failed to post'); }
@@ -137,13 +137,13 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   };
 
   const submitNewHaul = async () => {
-    if (haulItems.length === 0) { toast.error('Add at least one record'); return; }
+    if (haulItems.length === 0) { toast.error('add at least one record.'); return; }
     setSubmitting(true);
     try {
       await axios.post(`${API}/composer/new-haul`, {
         store_name: haulStoreName || null, caption: haulCaption || null, items: haulItems,
       }, { headers: { Authorization: `Bearer ${token}` }});
-      toast.success('Haul posted!');
+      toast.success('haul posted.');
       trackEvent('haul_posted');
       closeModal(); onPostCreated?.();
     } catch (err) { toast.error(err.response?.data?.detail || 'Failed to post'); }
@@ -153,7 +153,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const submitISO = async () => {
     const artist = isoArtist || isoSelectedRelease?.artist;
     const album = isoAlbum || isoSelectedRelease?.title;
-    if (!artist || !album) { toast.error('Artist and album are required'); return; }
+    if (!artist || !album) { toast.error('artist and album are required.'); return; }
     setSubmitting(true);
     try {
       await axios.post(`${API}/composer/iso`, {
@@ -167,7 +167,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
         target_price_max: isoPriceMax ? parseFloat(isoPriceMax) : null,
         caption: isoCaption || null,
       }, { headers: { Authorization: `Bearer ${token}` }});
-      toast.success('ISO posted!');
+      toast.success('iso posted.');
       trackEvent('iso_posted');
       closeModal(); onPostCreated?.();
     } catch (err) { toast.error(err.response?.data?.detail || 'Failed to post'); }
@@ -177,8 +177,8 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const handleNoteImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) { toast.error('Images only'); return; }
-    if (file.size > 5 * 1024 * 1024) { toast.error('Max 5MB'); return; }
+    if (!file.type.startsWith('image/')) { toast.error('images only.'); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error('max 5mb.'); return; }
     setNoteUploading(true);
     try {
       const formData = new FormData();
@@ -187,12 +187,12 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
       });
       setNoteImageUrl(r.data.url);
-    } catch { toast.error('Upload failed'); }
+    } catch { toast.error('upload failed. try again.'); }
     finally { setNoteUploading(false); }
   };
 
   const submitNote = async () => {
-    if (!noteText.trim()) { toast.error('Write something first'); return; }
+    if (!noteText.trim()) { toast.error('write something first.'); return; }
     setSubmitting(true);
     try {
       await axios.post(`${API}/composer/note`, {
@@ -200,7 +200,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
         record_id: noteRecordId || null,
         image_url: noteImageUrl || null,
       }, { headers: { Authorization: `Bearer ${token}` }});
-      toast.success('Note posted!');
+      toast.success('note posted.');
       closeModal(); onPostCreated?.();
     } catch (err) { toast.error(err.response?.data?.detail || 'Failed to post'); }
     finally { setSubmitting(false); }

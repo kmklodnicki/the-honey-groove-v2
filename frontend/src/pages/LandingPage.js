@@ -157,7 +157,7 @@ const LandingPage = () => {
                 <span className="italic text-honey-amber">Every single trade.</span>
               </h2>
               <p className="text-base md:text-xl leading-relaxed mb-8" style={{ fontFamily: "'Cormorant Garamond', serif", color: '#8A6B4A' }}>
-                Every trade on the Honey Groove requires a Mutual Hold. Both collectors put up a hold equal to the estimated value of the records being traded. The hold is fully reversed within 24 hours of confirmed delivery on both sides. Nobody walks away ahead by scamming — the math makes it impossible.
+                Every trade on the Honey Groove requires a Mutual Hold. Both collectors put up a hold equal to the estimated value of the records being traded. The hold is fully reversed within 24 hours of confirmed delivery on both sides. Nobody walks away ahead by scamming. The math makes it impossible.
               </p>
               <Link to="/faq#trades" className="inline-flex items-center gap-2 text-sm font-medium text-[#C8861A] hover:text-[#996012] transition-colors" data-testid="learn-hold-link">
                 Learn how it works <ArrowRight className="w-4 h-4" />
@@ -195,8 +195,8 @@ const LandingPage = () => {
                 </div>
                 <div className="border-t border-dashed border-[#C8861A]/20 pt-5">
                   <div className="flex items-center justify-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                    <span className="text-sm font-medium text-green-700">Delivery Confirmed — Holds Released</span>
+                    <CheckCircle2 className="w-5 h-5 text-[#C8861A]" />
+                    <span className="text-sm font-medium text-[#C8861A]">Delivery Confirmed — Holds Released</span>
                   </div>
                 </div>
               </div>

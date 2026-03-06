@@ -24,17 +24,17 @@ const SignupPage = () => {
     e.preventDefault();
     
     if (password !== confirmPassword) {
-      toast.error('Passwords do not match');
+      toast.error('passwords do not match.');
       return;
     }
 
     if (password.length < 6) {
-      toast.error('Password must be at least 6 characters');
+      toast.error('password must be at least 6 characters.');
       return;
     }
 
     if (username.length < 3) {
-      toast.error('Username must be at least 3 characters');
+      toast.error('username must be at least 3 characters.');
       return;
     }
 
@@ -42,7 +42,7 @@ const SignupPage = () => {
 
     try {
       await register(email, password, username);
-      toast.success('Welcome to the Honey Groove!');
+      toast.success('welcome to the hive.');
       navigate('/hive');
     } catch (error) {
       const message = error.response?.data?.detail || 'Registration failed';

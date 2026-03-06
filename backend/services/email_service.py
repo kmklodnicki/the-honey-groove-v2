@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger("email_service")
 
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
-SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "hello@thehoneygroove.com")
+SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "The Honey Groove <hello@thehoneygroove.com>")
 
 
 async def send_email(to: str, subject: str, html: str, reply_to: str = None):

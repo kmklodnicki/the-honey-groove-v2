@@ -113,16 +113,16 @@ const ProfilePage = () => {
     try {
       await axios.put(`${API}/iso/${isoId}/found`, {}, { headers: { Authorization: `Bearer ${token}` }});
       setIsos(prev => prev.map(i => i.id === isoId ? { ...i, status: 'FOUND' } : i));
-      toast.success('Marked as found!');
-    } catch { toast.error('Failed'); }
+      toast.success('marked as found.');
+    } catch { toast.error('something went wrong.'); }
   };
 
   const handleDeleteIso = async (isoId) => {
     try {
       await axios.delete(`${API}/iso/${isoId}`, { headers: { Authorization: `Bearer ${token}` }});
       setIsos(prev => prev.filter(i => i.id !== isoId));
-      toast.success('ISO removed');
-    } catch { toast.error('Failed'); }
+      toast.success('iso removed.');
+    } catch { toast.error('something went wrong.'); }
   };
 
   const handleStripeConnect = async () => {

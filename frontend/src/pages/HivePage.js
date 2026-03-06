@@ -84,14 +84,14 @@ const PostCard = ({ post, onLike, onCommentCountChange, token, API }) => {
       setNewComment('');
       onCommentCountChange(post.id, 1);
     } catch (error) {
-      toast.error('Failed to add comment');
+      toast.error('something went wrong. please try again.');
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleShare = async (format) => {
-    if (!post.record) { toast.error('Nothing to share'); return; }
+    if (!post.record) { toast.error('nothing to share.'); return; }
     try {
       const response = await axios.post(`${API}/share/generate`,
         { graphic_type: 'now_spinning', record_id: post.record.id, format },
@@ -105,10 +105,10 @@ const PostCard = ({ post, onLike, onCommentCountChange, token, API }) => {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-      toast.success(`${format === 'story' ? 'Story' : 'Square'} image downloaded!`);
+      toast.success(`${format === 'story' ? 'story' : 'square'} image downloaded.`);
       setShareDialogOpen(false);
     } catch {
-      toast.error('Failed to generate share image');
+      toast.error('something went wrong. please try again.');
     }
   };
 
@@ -269,7 +269,7 @@ const HivePage = () => {
       });
       setPosts(response.data);
     } catch (error) {
-      toast.error('Failed to load The Hive');
+      toast.error('something went wrong loading the hive.');
     } finally {
       setLoading(false);
     }

@@ -28,7 +28,7 @@ const RecordDetailPage = () => {
         });
         setData(res.data);
       } catch {
-        toast.error('Record not found');
+        toast.error('record not found.');
         navigate('/collection');
       }
       setLoading(false);
@@ -46,8 +46,8 @@ const RecordDetailPage = () => {
         record: { ...prev.record, spin_count: (prev.record.spin_count || 0) + 1 },
         community: { ...prev.community, total_spins: (prev.community.total_spins || 0) + 1 },
       }));
-      toast.success('Spin logged!');
-    } catch { toast.error('Failed to log spin'); }
+      toast.success('spin logged.');
+    } catch { toast.error('could not log spin. try again.'); }
     setSpinning(false);
   };
 

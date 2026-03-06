@@ -1,6 +1,7 @@
 """Base HTML email wrapper for all HoneyGroove emails."""
 
-LOGO_URL = "https://record-groove.preview.emergentagent.com/logo.png"
+LOGO_URL = "https://record-groove.preview.emergentagent.com/logo-wordmark.png"
+DRIP_URL = "https://record-groove.preview.emergentagent.com/honey-drip.png"
 
 
 def wrap_email(body_html: str, unsubscribe_url: str = "") -> str:
@@ -18,13 +19,18 @@ def wrap_email(body_html: str, unsubscribe_url: str = "") -> str:
 <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
 
 <!-- Logo -->
-<tr><td align="center" style="padding:0 0 16px 0;">
-<p style="font-family:'Playfair Display',Georgia,serif;font-size:22px;font-weight:700;color:#2A1A06;margin:0;letter-spacing:0.5px;">the honey groove</p>
+<tr><td align="center" style="padding:0 0 4px 0;">
+<img src="{LOGO_URL}" alt="the Honey Groove" width="200" style="display:block;max-width:200px;height:auto;" />
+</td></tr>
+
+<!-- Honey Drip -->
+<tr><td align="center" style="padding:0 0 8px 0;">
+<img src="{DRIP_URL}" alt="" width="520" style="display:block;width:100%;max-width:520px;height:auto;" />
 </td></tr>
 
 <!-- Amber divider -->
 <tr><td style="padding:0 0 24px 0;">
-<div style="height:1px;background:#C8861A;opacity:0.4;"></div>
+<div style="height:2px;background:#C8861A;"></div>
 </td></tr>
 
 <!-- Body -->
@@ -34,8 +40,8 @@ def wrap_email(body_html: str, unsubscribe_url: str = "") -> str:
 
 <!-- Footer -->
 <tr><td align="center" style="padding:32px 0 0 0;">
-<div style="height:1px;background:#C8861A;opacity:0.2;margin-bottom:16px;"></div>
-<p style="color:#8A6B4A;font-size:12px;margin:0;"><a href="https://thehoneygroove.com" style="color:#8A6B4A;text-decoration:none;">thehoneygroove.com</a></p>
+<div style="height:2px;background:#C8861A;opacity:0.3;margin-bottom:16px;"></div>
+<p style="color:#8A6B4A;font-size:12px;margin:0;">🐝 <a href="https://thehoneygroove.com" style="color:#C8861A;text-decoration:none;">thehoneygroove.com</a></p>
 {unsub}
 </td></tr>
 

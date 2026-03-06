@@ -99,7 +99,7 @@ const BetaSection = ({ API, headers, token }) => {
       setSignups(signups.map(s => s.id === id ? { ...s, notes: noteValue } : s));
       setEditingNote(null);
       toast.success('Note saved');
-    } catch { toast.error('Failed'); }
+    } catch { toast.error('something went wrong.'); }
   };
 
   const generateCodes = async (count) => {
@@ -108,7 +108,7 @@ const BetaSection = ({ API, headers, token }) => {
       const res = await axios.post(`${API}/admin/invite-codes/generate`, { count }, { headers });
       setCodes([...res.data, ...codes]);
       toast.success(`Generated ${res.data.length} code(s)`);
-    } catch { toast.error('Failed'); }
+    } catch { toast.error('something went wrong.'); }
     setGenerating(false);
   };
 
@@ -123,7 +123,7 @@ const BetaSection = ({ API, headers, token }) => {
       const url = window.URL.createObjectURL(new Blob([res.data]));
       const a = document.createElement('a');
       a.href = url; a.download = 'beta_signups.csv'; document.body.appendChild(a); a.click(); a.remove();
-    } catch { toast.error('Export failed'); }
+    } catch { toast.error('export failed. try again.'); }
   };
 
   if (loading) return <LoadingSkeleton />;
@@ -271,7 +271,7 @@ const PromptsSection = ({ API, headers }) => {
       setForm({ text: '', scheduled_date: '' });
       setShowCreate(false);
       toast.success('Prompt created');
-    } catch { toast.error('Failed'); }
+    } catch { toast.error('something went wrong.'); }
   };
 
   const updatePrompt = async (id, data) => {
@@ -280,7 +280,7 @@ const PromptsSection = ({ API, headers }) => {
       setPrompts(prompts.map(p => p.id === id ? { ...p, ...res.data } : p));
       setEditingId(null);
       toast.success('Updated');
-    } catch { toast.error('Failed'); }
+    } catch { toast.error('something went wrong.'); }
   };
 
   const toggleActive = (p) => updatePrompt(p.id, { active: !p.active });
@@ -393,7 +393,7 @@ const BingoSection = ({ API, headers }) => {
       setForm({ text: '', emoji: '' });
       setShowCreate(false);
       toast.success('Square created');
-    } catch { toast.error('Failed'); }
+    } catch { toast.error('something went wrong.'); }
   };
 
   const updateSquare = async (id, data) => {
@@ -402,7 +402,7 @@ const BingoSection = ({ API, headers }) => {
       setSquares(squares.map(s => s.id === id ? { ...s, ...res.data } : s));
       setEditingId(null);
       toast.success('Updated');
-    } catch { toast.error('Failed'); }
+    } catch { toast.error('something went wrong.'); }
   };
 
   if (loading) return <LoadingSkeleton />;
@@ -503,7 +503,7 @@ const HoldDisputesSection = ({ API, headers }) => {
         body.partial_refund_responder = partialResp[tradeId] ? parseFloat(partialResp[tradeId]) : 0;
       }
       await axios.put(`${API}/admin/hold-disputes/${tradeId}/resolve`, body, { headers });
-      toast.success('Dispute resolved');
+      toast.success('dispute resolved.');
       setNotes(p => ({ ...p, [tradeId]: '' }));
       setPartialInit(p => ({ ...p, [tradeId]: '' }));
       setPartialResp(p => ({ ...p, [tradeId]: '' }));
@@ -739,7 +739,7 @@ const ReportsSection = ({ API, headers }) => {
       const res = await axios.put(`${API}/reports/admin/${id}`, { status }, { headers });
       setReports(reports.map(r => r.id === id ? res.data : r));
       toast.success(`Report marked as ${status}`);
-    } catch { toast.error('Failed'); }
+    } catch { toast.error('something went wrong.'); }
   };
 
   if (loading) return <LoadingSkeleton />;
@@ -827,7 +827,7 @@ const SettingsSection = ({ API, headers }) => {
     try {
       await axios.post(`${API}/admin/settings`, { key: 'platform_fee_percent', value: val }, { headers });
       toast.success(`Platform fee updated to ${val}%`);
-    } catch { toast.error('Failed'); }
+    } catch { toast.error('something went wrong.'); }
     setSaving(false);
   };
 

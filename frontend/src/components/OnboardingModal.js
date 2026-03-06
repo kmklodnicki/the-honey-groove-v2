@@ -83,7 +83,7 @@ const OnboardingModal = ({ open, onComplete }) => {
       );
       setDiscogsConnected(true);
       setShowDiscogsConnect(false);
-      toast.success(`Connected to Discogs as ${discogsUsername.trim()}${resp.data.collection_count ? ` (${resp.data.collection_count} records found)` : ''}`);
+      toast.success(`connected to discogs as ${discogsUsername.trim()}${resp.data.collection_count ? ` (${resp.data.collection_count} records found)` : ''}.`);
       // Start import immediately
       startImport();
     } catch (err) {
@@ -121,7 +121,7 @@ const OnboardingModal = ({ open, onComplete }) => {
           setDiscogsImporting(false);
           if (resp.data.status === 'completed' && resp.data.imported > 0) {
             setImportDone(true);
-            toast.success(`Imported ${resp.data.imported} records from Discogs!`);
+            toast.success(`imported ${resp.data.imported} records from discogs.`);
           } else if (resp.data.status === 'error') {
             toast.error(resp.data.error_message || 'Import failed');
           }
@@ -148,7 +148,7 @@ const OnboardingModal = ({ open, onComplete }) => {
         else next.add(userId);
         return next;
       });
-    } catch { toast.error('Failed'); }
+    } catch { toast.error('something went wrong.'); }
   };
 
   const canProceedStep1 = addedRecords.length >= 3 || importDone;
@@ -166,7 +166,7 @@ const OnboardingModal = ({ open, onComplete }) => {
       await axios.put(`${API}/auth/me`, { onboarding_completed: true }, { headers: { Authorization: `Bearer ${token}` } });
       updateUser(prev => ({ ...prev, onboarding_completed: true }));
       onComplete?.();
-    } catch { toast.error('Failed to post'); }
+    } catch { toast.error('could not post. try again.'); }
     finally { setSubmitting(false); }
   };
 

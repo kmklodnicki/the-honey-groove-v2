@@ -42,7 +42,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
       setOnWantlist(r.data.on_wantlist || false);
       setPhotoIdx(0);
     } catch (err) {
-      toast.error('Listing not found');
+      toast.error('listing not found.');
       onClose();
     } finally {
       setLoading(false);
@@ -86,7 +86,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
           await axios.delete(`${API}/iso/${match.id}`, { headers: { Authorization: `Bearer ${token}` } });
         }
         setOnWantlist(false);
-        toast.success('Removed from wantlist');
+        toast.success('removed from wantlist.');
       } else {
         await axios.post(`${API}/composer/iso`, {
           artist: listing.artist, album: listing.album,
@@ -95,11 +95,11 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
         }, { headers: { Authorization: `Bearer ${token}` } });
         setOnWantlist(true);
         trackEvent('wantlist_added');
-        toast.success('Added to wantlist');
+        toast.success('added to wantlist.');
       }
     } catch (err) {
-      if (err.response?.status === 409) { setOnWantlist(true); toast.info('Already on your wantlist'); }
-      else toast.error('Failed');
+      if (err.response?.status === 409) { setOnWantlist(true); toast.info('already on your wantlist.'); }
+      else toast.error('something went wrong.');
     } finally {
       setWantlistLoading(false);
     }
