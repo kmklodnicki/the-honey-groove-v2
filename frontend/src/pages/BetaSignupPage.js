@@ -51,7 +51,7 @@ const BetaSignupPage = () => {
   return (
     <>
       <Helmet>
-        <title>Join the Beta · the Honey Groove</title>
+        <title>Join the Beta · the Honey Groove&#8482;</title>
         <meta name="description" content="Get early access to the Honey Groove before public launch. Founding members get a permanent badge and a direct line to the founder." />
         <meta property="og:title" content="Join the Beta · the Honey Groove" />
         <meta property="og:description" content="Get early access to the Honey Groove before public launch. Founding members get a permanent badge and a direct line to the founder." />
@@ -90,7 +90,7 @@ const BetaSignupPage = () => {
 
               {/* Subhead */}
               <div className="text-center mb-6" style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: '28px', lineHeight: 1.4, color: '#C8861A' }}>
-                <p>the Honey Groove is almost ready.</p>
+                <p>the Honey Groove<sup style={{ fontSize: '0.6em' }}>&trade;</sup> is almost ready.</p>
                 <p>We're looking for founding members to test it first.</p>
               </div>
 

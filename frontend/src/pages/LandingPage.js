@@ -218,7 +218,7 @@ const LandingPage = () => {
             {[
               { name: 'eBay', fee: '12.9%', highlight: false },
               { name: 'Discogs', fee: '8%', highlight: false },
-              { name: 'The Honey Groove', fee: '6%', highlight: true },
+              { name: 'The Honey Groove\u2122', fee: '6%', highlight: true },
             ].map((row) => (
               <div
                 key={row.name}
@@ -330,7 +330,7 @@ const LandingPage = () => {
               <Link to="/terms" className="text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors" data-testid="footer-terms-link">Terms</Link>
               <Link to="/privacy" className="text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors" data-testid="footer-privacy-link">Privacy</Link>
               <p className="text-sm text-vinyl-black/50">
-                &copy; 2026 the Honey Groove. Made with love for vinyl collectors.
+                &copy; 2026 the Honey Groove<sup style={{ fontSize: '0.6em' }}>&trade;</sup>. Made with love for vinyl collectors.
               </p>
             </div>
           </div>

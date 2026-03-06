@@ -11,7 +11,7 @@ AMBER = "color:#C8861A;"
 MUTED = "color:#8A6B4A;font-size:13px;"
 GREETING = "color:#2A1A06;font-size:15px;"
 BTN = "display:inline-block;padding:14px 28px;background:#E8A820;color:#2A1A06;text-decoration:none;border-radius:50px;font-size:14px;font-weight:700;font-family:Georgia,serif;"
-SIG = f'<p style="margin:24px 0 0 0;{MUTED}">— Katie, founder of the Honey Groove</p>'
+SIG = f'<p style="margin:24px 0 0 0;{MUTED}">— Katie, founder of the Honey Groove<sup style="font-size:0.6em">™</sup></p>'
 SIG_SHORT = f'<p style="margin:24px 0 0 0;{MUTED}">— Katie, founder</p>'
 
 
@@ -34,7 +34,7 @@ def newsletter_signup(first_name: str, unsub_url: str = "") -> dict:
 def beta_waitlist(first_name: str, unsub_url: str = "") -> dict:
     body = f"""
     <p style="{GREETING}">Hey {first_name},</p>
-    <p>You made it onto the founding member list for <strong>the Honey Groove</strong>.</p>
+    <p>You made it onto the founding member list for <strong>the Honey Groove<sup style="font-size:0.6em">™</sup></strong>.</p>
     <p>We're in the final stretch of beta testing and founding members get in first. When your invite is ready I'll send it directly to this email with everything you need to get started.</p>
     <p>In the meantime follow <a href="https://www.instagram.com/thehoneygroove" style="{AMBER}text-decoration:underline;">@thehoneygroove</a> on Instagram for updates.</p>
     <p>Limited spots. You got one. \U0001F41D</p>
@@ -74,7 +74,7 @@ def invite_code(first_name: str, invite_code: str) -> dict:
     <p style="{H}font-size:24px;margin:16px 0 8px 0;">You're in.</p>
     <p>Click the link below to create your founding member account. This link is yours and yours only — it expires after one use.</p>
     <div style="text-align:center;margin:24px 0;">
-        <a href="{join_url}" style="{BTN}">join the Honey Groove</a>
+        <a href="{join_url}" style="{BTN}">join the Honey Groove<sup style="font-size:0.6em">™</sup></a>
     </div>
     <p style="{MUTED}">{join_url}</p>
     <p>Once you're in you'll get a permanent <strong>founding member badge</strong> on your profile that never goes away. You were here first and that means something.</p>
@@ -83,7 +83,7 @@ def invite_code(first_name: str, invite_code: str) -> dict:
     <p style="{MUTED}margin-top:12px;">Questions? Reply to this email.</p>
     """
     return {
-        "subject": "Your invite to the Honey Groove is here. \U0001F41D",
+        "subject": "Your invite to the Honey Groove\u2122 is here. \U0001F41D",
         "html": wrap_email(body),
     }
 
@@ -92,7 +92,7 @@ def welcome(username: str) -> dict:
     body = f"""
     <p style="{GREETING}">Hey {username},</p>
     <p style="{H}font-size:24px;margin:16px 0 8px 0;">You made it.</p>
-    <p>The Honey Groove is yours now.</p>
+    <p>The Honey Groove<sup style="font-size:0.6em">™</sup> is yours now.</p>
     <p style="margin:16px 0 4px 0;"><strong>A few things to get you started:</strong></p>
     <p><strong style="{AMBER}">Add your collection.</strong> Search by artist or album, or import directly from Discogs if you already have one there.</p>
     <p><strong style="{AMBER}">Drop the needle.</strong> Post your first Now Spinning and let the hive know what's on the turntable.</p>
@@ -138,7 +138,7 @@ def new_like(username: str, post_type: str, post_preview: str, post_url: str) ->
 
 def new_follow(username: str, profile_url: str) -> dict:
     body = f"""
-    <p><strong>{username}</strong> started following you on the Honey Groove.</p>
+    <p><strong>{username}</strong> started following you on the Honey Groove<sup style="font-size:0.6em">™</sup>.</p>
     <p>Check out their collection and follow them back.</p>
     <div style="text-align:center;margin:20px 0;">
         <a href="{profile_url}" style="{BTN}">view their profile</a>
@@ -190,7 +190,7 @@ def new_trade_offer(username: str, proposer: str, record_name: str, their_record
 def new_dm(username: str, sender: str, context_record: str, dm_url: str) -> dict:
     context_line = f'<p style="{MUTED}">Re: {context_record}</p>' if context_record else ""
     body = f"""
-    <p><strong>{sender}</strong> sent you a message on the Honey Groove.</p>
+    <p><strong>{sender}</strong> sent you a message on the Honey Groove<sup style="font-size:0.6em">™</sup>.</p>
     {context_line}
     <div style="text-align:center;margin:20px 0;">
         <a href="{dm_url}" style="{BTN}">read it</a>

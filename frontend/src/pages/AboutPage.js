@@ -16,7 +16,7 @@ const AboutPage = () => {
         </Link>
 
         {/* Header */}
-        <h1 className="font-heading text-4xl sm:text-5xl text-vinyl-black mb-2">About the Honey Groove</h1>
+        <h1 className="font-heading text-4xl sm:text-5xl text-vinyl-black mb-2">About the Honey Groove<sup style={{ fontSize: '0.6em' }}>&trade;</sup></h1>
         <p className="text-honey-amber font-heading text-lg mb-10">built by a collector. for collectors.</p>
 
         {/* Founder Photo */}
