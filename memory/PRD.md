@@ -190,7 +190,15 @@ COMPLETED → Mandatory rating before next trade
 
 101. **Content: 50 Bingo Squares** — Added 48 new bingo squares (2 were duplicates). Total: 76 active squares. (Mar 2026)
 
+102. **Safari Blank Screen Fix** — Removed Safari-incompatible SVG CSS animation (jarFill animating y attribute). Simplified loading screen to static logo in both index.html and React LoadingScreen. Added -webkit-backdrop-filter prefix for glass-card class. 3-second hard timeout on static loading screen. (Mar 2026)
+
+103. **Mobile Wordmark Fix** — Mobile top bar wordmark updated from w-[110px] to h-[36px] w-auto max-w-[130px] object-contain to prevent clipping. (Mar 2026)
+
+104. **ISO Page Brand Color Audit** — Changed all off-brand colors: SEARCHING badge purple→amber, 'I have this' button green→amber, BUY_NOW badge green→amber, Make Offer button blue→amber, Mark Found button green→amber. All using #C8861A/#E8A820 palette. (Mar 2026)
+
 ## Upcoming Tasks
+- **P1: Add 50 New Daily Prompts + 50 Bingo Squares** — User-provided content batch
+- **P2: Safari CSS Compatibility Audit** — Check for missing -webkit- prefixes across the app
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
 - **P2: Refactor ISOPage.js** — Break monolithic 3-tab component
 - **P2: Monetization** — Pro membership, Verified Seller badge
