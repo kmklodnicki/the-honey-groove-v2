@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
 import { Dialog, DialogContent } from '../components/ui/dialog';
-import { Home, Search, User, LogOut, Settings, Library, Disc, ArrowRightLeft, Bell, Check, MessageCircle, Globe } from 'lucide-react';
+import { Home, Search, User, LogOut, Settings, Library, ShoppingBag, ArrowRightLeft, Bell, Check, MessageCircle, Globe } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import GlobalSearch from './GlobalSearch';
 
@@ -106,7 +106,7 @@ const Navbar = () => {
                   variant="ghost" 
                   className={`gap-2 ${isActive('/honeypot') ? 'bg-honey/20' : ''}`}
                 >
-                  <Disc className="w-4 h-4" />
+                  <ShoppingBag className="w-4 h-4" />
                   The Honeypot
                 </Button>
               </Link>
@@ -194,7 +194,7 @@ const Navbar = () => {
               <Library className="w-6 h-6" />
             </Link>
             <Link to="/honeypot" className={`p-2 rounded-lg ${isActive('/honeypot') ? 'bg-honey/20' : ''}`} data-testid="mobile-honeypot">
-              <Disc className="w-6 h-6" />
+              <ShoppingBag className="w-6 h-6" />
             </Link>
             <Link to={`/profile/${user.username}`} className={`p-2 rounded-lg ${isActive(`/profile/${user.username}`) ? 'bg-honey/20' : ''}`} data-testid="mobile-profile">
               <User className="w-6 h-6" />
