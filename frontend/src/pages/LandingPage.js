@@ -68,7 +68,7 @@ const LandingPage = () => {
         <div className="max-w-6xl mx-auto px-4 md:px-8">
           <div className="text-center max-w-4xl mx-auto">
             {/* Logo wordmark — positioned above drip */}
-            <div className="flex justify-center pt-[60px] relative z-10">
+            <div className="flex justify-center pt-[36px] pb-[24px] relative z-10">
               <img
                 src="/logo-wordmark-clean.png"
                 alt="the Honey Groove"
@@ -80,7 +80,7 @@ const LandingPage = () => {
         </div>
 
         {/* Honey drip — tiled across full viewport width */}
-        <div className="w-screen relative left-1/2 -translate-x-1/2 -mt-8 md:-mt-12 z-0" data-testid="hero-drip"
+        <div className="w-screen relative left-1/2 -translate-x-1/2 z-0" data-testid="hero-drip"
           style={{
             backgroundImage: 'url(/honey-drip.png)',
             backgroundRepeat: 'repeat-x',
