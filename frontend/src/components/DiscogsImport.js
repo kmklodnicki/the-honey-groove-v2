@@ -61,13 +61,13 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
           setImporting(false);
           clearInterval(interval);
           if (resp.data.status === 'completed') {
-            toast.success(`imported ${resp.data.imported} records from discogs.`);
+            toast.success('collection imported successfully.');
             trackEvent('discogs_import_completed', { records_imported: resp.data.imported });
             // Fetch summary and show modal
             fetchSummary();
             onImportComplete?.();
           } else {
-            toast.error(resp.data.error_message || 'Import failed');
+            toast.error(resp.data.error_message || 'Import failed. Please try again.');
           }
           fetchStatus();
         }
@@ -119,19 +119,22 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
 
   const handleTokenConnect = async (e) => {
     e.preventDefault();
-    if (!discogsUsername.trim()) return;
+    const username = discogsUsername.trim();
+    if (!username) return;
     setConnecting(true);
+    console.log('DISCOGS: connecting with username:', username);
     try {
       const resp = await axios.post(`${API}/discogs/connect-token`,
-        { discogs_username: discogsUsername.trim() },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { discogs_username: username },
+        { headers: { Authorization: `Bearer ${token}` }, timeout: 30000 }
       );
-      toast.success(`connected to discogs as ${discogsUsername.trim()}${resp.data.collection_count ? ` (${resp.data.collection_count} records found)` : ''}.`);
+      toast.success(`connected to discogs as ${username}${resp.data.collection_count ? ` (${resp.data.collection_count} records found)` : ''}.`);
       setShowConnect(false);
       setDiscogsUsername('');
       fetchStatus();
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Failed to connect');
+      const msg = err.response?.data?.detail || '';
+      toast.error(msg || 'could not find that Discogs username. double check and try again.');
     } finally {
       setConnecting(false);
     }
@@ -142,12 +145,13 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
     setProgress({ status: 'in_progress', total: 0, imported: 0, skipped: 0 });
     try {
       const resp = await axios.post(`${API}/discogs/import`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 30000,
       });
       setProgress(resp.data);
     } catch (err) {
       setImporting(false);
-      toast.error(err.response?.data?.detail || 'Failed to start import');
+      toast.error(err.response?.data?.detail || 'could not find that Discogs username. double check and try again.');
     }
   };
 

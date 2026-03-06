@@ -4,13 +4,12 @@ import axios from 'axios';
 import { Dialog, DialogContent } from './ui/dialog';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from './ui/select';
 import { Textarea } from './ui/textarea';
 import { Progress } from './ui/progress';
-import { Disc, Loader2, Search, Check, ChevronRight, ExternalLink, CheckCircle2, AlertCircle, X } from 'lucide-react';
+import { Disc, Loader2, Search, ChevronRight, ExternalLink, CheckCircle2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import AlbumArt from './AlbumArt';
 
@@ -35,17 +34,11 @@ const OnboardingModal = ({ open, onComplete }) => {
   const [showDiscogsConnect, setShowDiscogsConnect] = useState(false);
   const [discogsUsername, setDiscogsUsername] = useState('');
   const [discogsConnecting, setDiscogsConnecting] = useState(false);
-  const [discogsConnected, setDiscogsConnected] = useState(false);
   const [discogsImporting, setDiscogsImporting] = useState(false);
   const [importProgress, setImportProgress] = useState(null);
   const [importDone, setImportDone] = useState(false);
 
-  // Step 2: Follow people
-  const [suggestions, setSuggestions] = useState([]);
-  const [followedIds, setFollowedIds] = useState(new Set());
-  const [sugLoading, setSugLoading] = useState(false);
-
-  // Step 3: First post
+  // Step 2: First post
   const [selectedRecord, setSelectedRecord] = useState('');
   const [caption, setCaption] = useState('');
   const [mood, setMood] = useState('');
@@ -75,20 +68,21 @@ const OnboardingModal = ({ open, onComplete }) => {
   // Discogs connect via username
   const handleDiscogsConnect = async (e) => {
     e.preventDefault();
-    if (!discogsUsername.trim()) return;
+    const username = discogsUsername.trim();
+    if (!username) return;
     setDiscogsConnecting(true);
+    console.log('DISCOGS: connecting with username:', username);
     try {
       const resp = await axios.post(`${API}/discogs/connect-token`,
-        { discogs_username: discogsUsername.trim() },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { discogs_username: username },
+        { headers: { Authorization: `Bearer ${token}` }, timeout: 30000 }
       );
-      setDiscogsConnected(true);
       setShowDiscogsConnect(false);
-      toast.success(`connected to discogs as ${discogsUsername.trim()}${resp.data.collection_count ? ` (${resp.data.collection_count} records found)` : ''}.`);
-      // Start import immediately
+      toast.success(`connected to discogs as ${username}${resp.data.collection_count ? ` (${resp.data.collection_count} records found)` : ''}.`);
       startImport();
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Failed to connect');
+      const msg = err.response?.data?.detail || '';
+      toast.error(msg || 'could not find that Discogs username. double check and try again.');
     } finally {
       setDiscogsConnecting(false);
     }
@@ -98,11 +92,10 @@ const OnboardingModal = ({ open, onComplete }) => {
     setDiscogsImporting(true);
     setImportProgress({ status: 'in_progress', total: 0, imported: 0, skipped: 0 });
     try {
-      const resp = await axios.post(`${API}/discogs/import`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
+      await axios.post(`${API}/discogs/import`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 30000,
       });
-      setImportProgress(resp.data);
-      // Start polling
       pollImport();
     } catch (err) {
       setDiscogsImporting(false);
@@ -122,7 +115,7 @@ const OnboardingModal = ({ open, onComplete }) => {
           setDiscogsImporting(false);
           if (resp.data.status === 'completed' && resp.data.imported > 0) {
             setImportDone(true);
-            toast.success(`imported ${resp.data.imported} records from discogs.`);
+            toast.success('collection imported successfully.');
           } else if (resp.data.status === 'error') {
             toast.error(resp.data.error_message || 'Import failed');
           }
@@ -131,30 +124,7 @@ const OnboardingModal = ({ open, onComplete }) => {
     }, 2000);
   };
 
-  const loadSuggestions = useCallback(async () => {
-    setSugLoading(true);
-    try {
-      const r = await axios.get(`${API}/users/discover/suggestions`, { headers: { Authorization: `Bearer ${token}` } });
-      setSuggestions(r.data?.slice(0, 10) || []);
-    } catch { /* ignore */ }
-    finally { setSugLoading(false); }
-  }, [API, token]);
-
-  const toggleFollow = async (userId) => {
-    try {
-      await axios.post(`${API}/users/${userId}/follow`, {}, { headers: { Authorization: `Bearer ${token}` } });
-      setFollowedIds(prev => {
-        const next = new Set(prev);
-        if (next.has(userId)) next.delete(userId);
-        else next.add(userId);
-        return next;
-      });
-    } catch { toast.error('something went wrong.'); }
-  };
-
-  const canProceedStep1 = addedRecords.length >= 3 || importDone;
-  const goStep2 = () => { setStep(2); loadSuggestions(); };
-  const goStep3 = () => { setStep(3); };
+  const goStep2 = () => { setStep(2); };
 
   const postAndEnter = async () => {
     setSubmitting(true);
@@ -190,12 +160,12 @@ const OnboardingModal = ({ open, onComplete }) => {
 
         {/* Progress */}
         <div className="flex items-center justify-center gap-2 mb-4" data-testid="onboarding-progress">
-          {[1, 2, 3].map(s => (
+          {[1, 2].map(s => (
             <div key={s} className="flex items-center gap-1">
-              <div className={`w-8 h-1 rounded-full transition-colors ${s <= step ? 'bg-amber-500' : 'bg-stone-200'}`} />
+              <div className={`w-10 h-1 rounded-full transition-colors ${s <= step ? 'bg-amber-500' : 'bg-stone-200'}`} />
             </div>
           ))}
-          <span className="text-xs text-muted-foreground ml-2">Step {step} of 3</span>
+          <span className="text-xs text-muted-foreground ml-2">Step {step} of 2</span>
         </div>
 
         {/* Step 1: Build Collection */}
@@ -332,86 +302,41 @@ const OnboardingModal = ({ open, onComplete }) => {
                     ))}
                   </div>
                 )}
-                {!importDone && <p className="text-xs text-muted-foreground text-center">{addedRecords.length}/3 records added</p>}
+                {!importDone && addedRecords.length > 0 && <p className="text-xs text-muted-foreground text-center">{addedRecords.length} records added</p>}
               </>
             )}
 
             <Button
               onClick={goStep2}
-              disabled={!canProceedStep1 || discogsImporting}
+              disabled={discogsImporting}
               className="w-full rounded-full bg-amber-500 hover:bg-amber-600 text-white"
               data-testid="onboarding-step1-next"
             >
-              {importDone ? 'continue' : 'looks good'} <ChevronRight className="w-4 h-4 ml-1" />
+              {(importDone || addedRecords.length > 0) ? 'continue' : 'skip for now'} <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           </div>
         )}
 
-        {/* Step 2: Find your people */}
+        {/* Step 2: Drop the needle */}
         {step === 2 && (
           <div className="space-y-4" data-testid="onboarding-step-2">
-            <div className="text-center">
-              <h2 className="font-heading text-2xl italic" style={{ fontFamily: '"Playfair Display", serif' }}>the hive is better together.</h2>
-              <p className="text-sm text-muted-foreground mt-1">follow a few collectors to fill your feed.</p>
-            </div>
-
-            {sugLoading ? (
-              <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-amber-400" /></div>
-            ) : (
-              <div className="space-y-2 max-h-60 overflow-y-auto">
-                {suggestions.map(u => (
-                  <div key={u.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-amber-50/50" data-testid={`onboarding-suggest-${u.username}`}>
-                    <Avatar className="h-10 w-10 border border-amber-200">
-                      <AvatarImage src={u.avatar_url} />
-                      <AvatarFallback className="bg-amber-50 text-sm">{u.username?.[0]?.toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium">@{u.username}</p>
-                      <p className="text-xs text-muted-foreground">{u.record_count} records</p>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant={followedIds.has(u.id) ? 'default' : 'outline'}
-                      className={`rounded-full text-xs ${followedIds.has(u.id) ? 'bg-amber-500 hover:bg-amber-600 text-white' : 'border-amber-300 text-amber-700'}`}
-                      onClick={() => toggleFollow(u.id)}
-                      data-testid={`onboarding-follow-${u.username}`}
-                    >
-                      {followedIds.has(u.id) ? <><Check className="w-3 h-3 mr-1" /> Following</> : 'Follow'}
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <Button
-              onClick={goStep3}
-              disabled={followedIds.size < 1}
-              className="w-full rounded-full bg-amber-500 hover:bg-amber-600 text-white"
-              data-testid="onboarding-step2-next"
-            >
-              let's go <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-          </div>
-        )}
-
-        {/* Step 3: Drop the needle */}
-        {step === 3 && (
-          <div className="space-y-4" data-testid="onboarding-step-3">
             <div className="text-center">
               <h2 className="font-heading text-2xl italic" style={{ fontFamily: '"Playfair Display", serif' }}>what's on the turntable right now?</h2>
               <p className="text-sm text-muted-foreground mt-1">post your first Now Spinning. it only takes a second.</p>
             </div>
 
-            <Select value={selectedRecord} onValueChange={setSelectedRecord}>
-              <SelectTrigger className="border-amber-200" data-testid="onboarding-record-select">
-                <SelectValue placeholder="Choose a record you just added" />
-              </SelectTrigger>
-              <SelectContent>
-                {addedRecords.map(r => (
-                  <SelectItem key={r.discogs_id} value={String(r.discogs_id)}>{r.artist} · {r.title}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {addedRecords.length > 0 && (
+              <Select value={selectedRecord} onValueChange={setSelectedRecord}>
+                <SelectTrigger className="border-amber-200" data-testid="onboarding-record-select">
+                  <SelectValue placeholder="Choose a record you just added" />
+                </SelectTrigger>
+                <SelectContent>
+                  {addedRecords.map(r => (
+                    <SelectItem key={r.discogs_id} value={String(r.discogs_id)}>{r.artist} · {r.title}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
 
             <div className="flex flex-wrap gap-1.5">
               {MOOD_OPTIONS.map(m => (
