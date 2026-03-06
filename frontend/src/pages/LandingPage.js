@@ -87,6 +87,8 @@ const LandingPage = () => {
             backgroundPosition: 'top center',
             backgroundSize: 'auto 100%',
             height: '200px',
+            mixBlendMode: 'multiply',
+            imageRendering: 'high-quality',
           }}
         />
 
