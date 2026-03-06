@@ -24,21 +24,14 @@ import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { ProposeTradeModal } from './TradesPage';
 import { usePageTitle } from '../hooks/usePageTitle';
 import ListingDetailModal from '../components/ListingDetailModal';
+import AlbumArt from '../components/AlbumArt';
 
 const ISO_TAGS = ['OG Press', 'Factory Sealed', 'Any', 'Promo'];
 const FILTER_OPTIONS = ['All', 'OPEN', 'FOUND'];
 const LISTING_CONDITIONS = ['Mint', 'Near Mint', 'Very Good Plus', 'Very Good', 'Good Plus', 'Good', 'Fair'];
 
 const IsoMatchCover = ({ coverUrl }) => {
-  const [failed, setFailed] = useState(false);
-  if (coverUrl && !failed) {
-    return <img src={coverUrl} alt="" className="w-8 h-8 rounded object-cover shrink-0" onError={() => setFailed(true)} />;
-  }
-  return (
-    <div className="w-8 h-8 rounded bg-amber-50 border border-[#C8861A]/20 flex items-center justify-center shrink-0">
-      <Disc className="w-4 h-4 text-[#C8861A]" />
-    </div>
-  );
+  return <AlbumArt src={coverUrl} className="w-8 h-8 rounded shrink-0" />;
 };
 
 const STATUS_CONFIG = {
@@ -375,7 +368,7 @@ const ISOPage = () => {
             <div className="border border-honey/30 rounded-lg max-h-48 overflow-y-auto bg-white">
               {discogsResults.map(r => (
                 <button key={r.discogs_id} onClick={() => selectRelease(r)} className="w-full text-left px-3 py-2 hover:bg-honey/10 flex items-center gap-3 text-sm border-b border-honey/10 last:border-0" data-testid={`discogs-result-${r.discogs_id}`}>
-                  {r.cover_url ? <img src={r.cover_url} alt="" className="w-10 h-10 rounded object-cover" /> : <div className="w-10 h-10 rounded bg-honey/20 flex items-center justify-center"><Disc className="w-5 h-5 text-honey" /></div>}
+                  <AlbumArt src={r.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
                   <div className="min-w-0 flex-1"><p className="font-medium truncate">{r.title}</p><p className="text-xs text-muted-foreground truncate">{r.artist} {r.year ? `(${r.year})` : ''}</p></div>
                 </button>
               ))}
@@ -385,7 +378,7 @@ const ISOPage = () => {
         </>
       ) : selectedRelease ? (
         <div className="flex items-center gap-3 bg-honey/10 rounded-lg p-3">
-          {selectedRelease.cover_url ? <img src={selectedRelease.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow" /> : <div className="w-14 h-14 rounded-lg bg-honey/20 flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>}
+          <AlbumArt src={selectedRelease.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow" />
           <div className="flex-1 min-w-0"><p className="font-heading text-base">{selectedRelease.title}</p><p className="text-sm text-muted-foreground">{selectedRelease.artist} {selectedRelease.year ? `(${selectedRelease.year})` : ''}</p></div>
           <button onClick={() => { setSelectedRelease(null); setManualMode(false); }} className="text-xs text-muted-foreground hover:text-red-500">Change</button>
         </div>
@@ -812,8 +805,7 @@ const ISOCard = ({ iso, isOwn, onMarkFound, onDelete, onSetPriceAlert }) => {
   return (
     <Card className={`p-4 border-honey/30 transition-all ${iso.status === 'FOUND' ? 'opacity-60 bg-green-50/30' : 'hover:shadow-md'}`} data-testid={`iso-item-${iso.id}`}>
       <div className="flex items-start gap-3">
-        {iso.cover_url ? <img src={iso.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow" />
-          : <div className="w-14 h-14 rounded-lg bg-purple-100 flex items-center justify-center shrink-0"><Search className="w-6 h-6 text-purple-400" /></div>}
+        <AlbumArt src={iso.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h4 className="font-heading text-base">{iso.album}</h4>
@@ -870,8 +862,7 @@ const ISOCard = ({ iso, isOwn, onMarkFound, onDelete, onSetPriceAlert }) => {
 const CommunityISOCard = ({ iso, onHaveThis }) => (
   <Card className="p-4 border-honey/30 hover:shadow-md transition-all" data-testid={`community-iso-${iso.id}`}>
     <div className="flex items-start gap-3">
-      {iso.cover_url ? <img src={iso.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow" />
-        : <div className="w-14 h-14 rounded-lg bg-purple-100 flex items-center justify-center shrink-0"><Search className="w-6 h-6 text-purple-400" /></div>}
+      <AlbumArt src={iso.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow" />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <h4 className="font-heading text-base">{iso.album}</h4>
@@ -907,8 +898,7 @@ const ActiveTradeCard = ({ trade, currentUserId }) => {
       <Card className="p-4 border-honey/30 hover:shadow-md transition-all cursor-pointer">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            {trade.offered_record?.cover_url ? <img src={trade.offered_record.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
-              : <div className="w-10 h-10 rounded bg-honey/20 flex items-center justify-center"><Disc className="w-4 h-4 text-honey" /></div>}
+            <AlbumArt src={trade.offered_record.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
             <div className="min-w-0">
               <p className="text-sm font-medium truncate">{trade.offered_record?.title || 'Your record'}</p>
               <p className="text-xs text-muted-foreground">with @{otherUser?.username || '?'}</p>
@@ -952,7 +942,7 @@ const ListingCard = ({ listing, currentUserId, onProposeTrade, onBuyNow, onMakeO
     <Card className="border-honey/30 overflow-hidden hover:shadow-md transition-all cursor-pointer" data-testid={`listing-${listing.id}`}
       onClick={onClick}>
       <div className="relative aspect-square bg-honey/10">
-        {mainImage ? <img src={mainImage} alt="" className="w-full h-full object-cover" />
+        {mainImage ? <AlbumArt src={mainImage} alt="" className="w-full h-full" />
           : <div className="w-full h-full flex items-center justify-center"><Disc className="w-12 h-12 text-honey" /></div>}
         {photos.length > 1 && (
           <>

@@ -13,6 +13,7 @@ import {
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useSearchParams } from 'react-router-dom';
+import AlbumArt from '../components/AlbumArt';
 
 const AdminPage = () => {
   usePageTitle('Admin Panel');
@@ -556,7 +557,7 @@ const HoldDisputesSection = ({ API, headers }) => {
                     </div>
                     {trade.offered_record && (
                       <div className="flex items-center gap-2 mt-1">
-                        {trade.offered_record.cover_url && <img src={trade.offered_record.cover_url} alt="" className="w-9 h-9 rounded object-cover" />}
+                        <AlbumArt src={trade.offered_record.cover_url} alt="" className="w-9 h-9 rounded object-cover" />
                         <div className="min-w-0">
                           <p className="text-xs font-medium text-[#2A1A06] truncate">{trade.offered_record.title}</p>
                           <p className="text-[10px] text-[#8A6B4A]">{trade.offered_record.artist}</p>
@@ -577,7 +578,7 @@ const HoldDisputesSection = ({ API, headers }) => {
                     </div>
                     {trade.listing_record && (
                       <div className="flex items-center gap-2 mt-1">
-                        {trade.listing_record.cover_url && <img src={trade.listing_record.cover_url} alt="" className="w-9 h-9 rounded object-cover" />}
+                        <AlbumArt src={trade.listing_record.cover_url} alt="" className="w-9 h-9 rounded object-cover" />
                         <div className="min-w-0">
                           <p className="text-xs font-medium text-[#2A1A06] truncate">{trade.listing_record.album}</p>
                           <p className="text-[10px] text-[#8A6B4A]">{trade.listing_record.artist}</p>

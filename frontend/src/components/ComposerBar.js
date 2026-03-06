@@ -13,6 +13,7 @@ import {
 import { Disc, Package, Search, Loader2, X, Feather, ImagePlus, Tag } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
+import AlbumArt from './AlbumArt';
 
 const MOOD_CONFIG = {
   'Late Night': { emoji: '\u{1F56F}\uFE0F', bg: '#1a1230', btnColor: '#6a3a9a', placeholder: 'what are you listening to at this hour?' },
@@ -341,7 +342,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                 <div className="mt-1 border border-honey/30 rounded-lg max-h-40 overflow-y-auto bg-white">
                   {haulResults.map(r => (
                     <button key={r.discogs_id} onClick={() => addHaulItem(r)} className="w-full text-left px-3 py-2 hover:bg-honey/10 flex items-center gap-2 text-sm border-b border-honey/10 last:border-0">
-                      {r.cover_url && <img src={r.cover_url} alt="" className="w-8 h-8 rounded object-cover" />}
+                      <AlbumArt src={r.cover_url} alt="" className="w-8 h-8 rounded object-cover" />
                       <span className="truncate">{r.artist} — {r.title}</span>
                     </button>
                   ))}
@@ -352,7 +353,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               <div className="space-y-2">
                 {haulItems.map((item, idx) => (
                   <div key={idx} className="flex items-center gap-2 bg-honey/10 rounded-lg px-3 py-2">
-                    {item.cover_url && <img src={item.cover_url} alt="" className="w-8 h-8 rounded object-cover" />}
+                    <AlbumArt src={item.cover_url} alt="" className="w-8 h-8 rounded object-cover" />
                     <span className="flex-1 text-sm truncate">{item.artist} — {item.title}</span>
                     <button onClick={() => setHaulItems(prev => prev.filter((_, i) => i !== idx))} className="text-muted-foreground hover:text-red-500"><X className="w-4 h-4" /></button>
                   </div>
@@ -390,7 +391,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                   <div className="border border-honey/30 rounded-lg max-h-48 overflow-y-auto bg-white">
                     {isoDiscogsResults.map(r => (
                       <button key={r.discogs_id} onClick={() => selectIsoRelease(r)} className="w-full text-left px-3 py-2 hover:bg-honey/10 flex items-center gap-3 text-sm border-b border-honey/10 last:border-0" data-testid={`iso-discogs-result-${r.discogs_id}`}>
-                        {r.cover_url ? <img src={r.cover_url} alt="" className="w-10 h-10 rounded object-cover" /> : <Disc className="w-10 h-10 text-honey/30" />}
+                        {r.cover_url ? <AlbumArt src={r.cover_url} alt="" className="w-10 h-10 rounded object-cover" /> : <Disc className="w-10 h-10 text-honey/30" />}
                         <div className="min-w-0 flex-1"><p className="font-medium truncate">{r.title}</p><p className="text-xs text-muted-foreground truncate">{r.artist} {r.year ? `(${r.year})` : ''}</p></div>
                       </button>
                     ))}
@@ -400,7 +401,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               </>
             ) : isoSelectedRelease ? (
               <div className="flex items-center gap-3 bg-blue-50 rounded-lg p-3">
-                {isoSelectedRelease.cover_url ? <img src={isoSelectedRelease.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow" /> : <Disc className="w-14 h-14 text-blue-300" />}
+                {isoSelectedRelease.cover_url ? <AlbumArt src={isoSelectedRelease.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow" /> : <Disc className="w-14 h-14 text-blue-300" />}
                 <div className="flex-1 min-w-0"><p className="font-heading text-base">{isoSelectedRelease.title}</p><p className="text-sm text-muted-foreground">{isoSelectedRelease.artist} {isoSelectedRelease.year ? `(${isoSelectedRelease.year})` : ''}</p></div>
                 <button onClick={() => { setIsoSelectedRelease(null); setIsoArtist(''); setIsoAlbum(''); }} className="text-xs text-muted-foreground hover:text-red-500">Change</button>
               </div>
@@ -490,7 +491,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
             {noteRecord && (
               <div className="flex items-center gap-2 bg-stone-50 rounded-lg px-3 py-2" data-testid="note-tagged-record">
                 {noteRecord.cover_url ? (
-                  <img src={noteRecord.cover_url} alt="" className="w-8 h-8 rounded object-cover" />
+                  <AlbumArt src={noteRecord.cover_url} alt="" className="w-8 h-8 rounded object-cover" />
                 ) : (
                   <div className="w-8 h-8 rounded bg-stone-200 flex items-center justify-center"><Disc className="w-4 h-4 text-stone-400" /></div>
                 )}

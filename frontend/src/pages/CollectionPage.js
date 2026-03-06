@@ -23,6 +23,7 @@ import {
 import { toast } from 'sonner';
 import DiscogsImport from '../components/DiscogsImport';
 import { usePageTitle } from '../hooks/usePageTitle';
+import AlbumArt from '../components/AlbumArt';
 
 const SORT_OPTIONS = [
   { value: 'artist_asc', label: 'Artist A → Z' },
@@ -261,8 +262,7 @@ const CollectionPage = () => {
             {hiddenGems.map((gem, idx) => (
               <Card key={gem.id} className="p-3 border-honey/30 flex items-center gap-3 hover:shadow-sm transition-all" data-testid={`hidden-gem-${idx}`}>
                 <div className="relative shrink-0">
-                  {gem.cover_url ? <img src={gem.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow-sm" />
-                    : <div className="w-14 h-14 rounded-lg bg-honey/20 flex items-center justify-center"><Disc className="w-7 h-7 text-honey" /></div>}
+                  <AlbumArt src={gem.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow-sm" />
                   <span className="absolute -top-1.5 -left-1.5 w-5 h-5 bg-honey rounded-full flex items-center justify-center text-[10px] font-bold text-vinyl-black shadow">
                     {idx + 1}
                   </span>
@@ -367,7 +367,7 @@ const RecordCard = ({ record, onSpin, onDelete, isSpinning, value }) => {
       <Link to={`/record/${record.id}`}>
         <div className="relative aspect-square bg-vinyl-black">
           {record.cover_url ? (
-            <img 
+            <AlbumArt 
               src={record.cover_url} 
               alt={record.title}
               className={`w-full h-full object-cover ${isSpinning ? 'animate-spin-slow' : ''}`}

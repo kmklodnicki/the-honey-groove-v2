@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { toast } from 'sonner';
+import AlbumArt from '../components/AlbumArt';
 
 const RecordDetailPage = () => {
   usePageTitle('Record Details');
@@ -75,7 +76,7 @@ const RecordDetailPage = () => {
         <div className="shrink-0">
           <div className="w-full md:w-80 aspect-square rounded-2xl overflow-hidden bg-honey/10 shadow-lg shadow-black/5">
             {record.cover_url ? (
-              <img src={record.cover_url} alt={record.title} className="w-full h-full object-cover" data-testid="record-cover" />
+              <AlbumArt src={record.cover_url} alt={record.title} className="w-full h-full object-cover" data-testid="record-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <Disc className="w-20 h-20 text-honey/30" />

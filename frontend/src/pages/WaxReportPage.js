@@ -15,6 +15,7 @@ import {
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import { usePageTitle } from '../hooks/usePageTitle';
+import AlbumArt from '../components/AlbumArt';
 
 /* ═══════ Brand Colors ═══════ */
 const C = {
@@ -199,7 +200,7 @@ const WaxReportPage = () => {
                 <div key={i} className="flex items-center gap-3 py-2">
                   <span className="font-heading text-sm w-6 text-right shrink-0" style={{ color: C.amber }}>{i + 1}</span>
                   {r.cover_url
-                    ? <img src={r.cover_url} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                    ? <AlbumArt src={r.cover_url} alt="" className="w-10 h-10 rounded-lg object-cover" />
                     : <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: C.barTrack }}><Disc className="w-5 h-5" style={{ color: C.amber }} /></div>}
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate" style={{ color: C.textDark }}>{r.title}</p>

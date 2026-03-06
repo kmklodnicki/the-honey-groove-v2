@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import debounce from 'lodash.debounce';
 import { usePageTitle } from '../hooks/usePageTitle';
+import AlbumArt from '../components/AlbumArt';
 
 const AddRecordPage = () => {
   usePageTitle('Add Record');
@@ -131,7 +132,7 @@ const AddRecordPage = () => {
         <Card className="p-6 border-honey/30 mb-6">
           <div className="flex gap-4">
             {selectedRecord.cover_url ? (
-              <img 
+              <AlbumArt 
                 src={selectedRecord.cover_url} 
                 alt={selectedRecord.title}
                 className="w-32 h-32 rounded-lg object-cover shadow-md"
@@ -300,7 +301,7 @@ const AddRecordPage = () => {
                   data-testid={`search-result-${result.discogs_id}`}
                 >
                   {result.cover_url ? (
-                    <img 
+                    <AlbumArt 
                       src={result.cover_url} 
                       alt={result.title}
                       className="w-16 h-16 rounded object-cover"

@@ -154,7 +154,7 @@ const BetaSignupPage = () => {
                     </svg>
                   </button>
                   {selectOpen && (
-                    <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-[#C8861A]/20 rounded-xl shadow-lg overflow-hidden" data-testid="beta-feature-dropdown">
+                    <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-[#FAF6EE] border border-[#C8861A]/20 rounded-xl shadow-lg overflow-hidden" data-testid="beta-feature-dropdown">
                       {FEATURE_OPTIONS.map((opt) => (
                         <button
                           key={opt}

@@ -7,6 +7,7 @@ import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Search, Plus, Clock, Trash2, UserPlus, Disc, Feather } from 'lucide-react';
 import { toast } from 'sonner';
+import AlbumArt from './AlbumArt';
 
 const TABS = [
   { key: 'records', label: 'Records' },
@@ -199,7 +200,7 @@ const GlobalSearch = ({ onClose, initialTab }) => {
               <div key={r.discogs_id || i} className="flex items-center gap-3 p-2 rounded-lg hover:bg-honey/10 cursor-pointer group" data-testid={`search-record-${i}`}>
                 <div className="shrink-0 cursor-pointer" onClick={() => goToRecord(r)}>
                   {r.cover_url ? (
-                    <img src={r.cover_url} alt="" className="w-12 h-12 rounded-md object-cover shadow-sm" />
+                    <AlbumArt src={r.cover_url} alt="" className="w-12 h-12 rounded-md object-cover shadow-sm" />
                   ) : (
                     <div className="w-12 h-12 rounded-md bg-stone-100 flex items-center justify-center"><Disc className="w-5 h-5 text-stone-400" /></div>
                   )}

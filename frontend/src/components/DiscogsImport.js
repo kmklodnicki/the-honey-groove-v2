@@ -11,6 +11,7 @@ import {
 import { ExternalLink, RefreshCw, CheckCircle2, AlertCircle, Loader2, Unplug, Disc, ArrowRight, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
+import AlbumArt from './AlbumArt';
 
 const DiscogsImport = ({ onImportComplete, compact = false }) => {
   const { token, API } = useAuth();
@@ -317,7 +318,7 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
                     {summary.sample_covers.slice(0, 12).map((c, i) => (
                       <div key={i} className="aspect-square rounded-lg overflow-hidden bg-stone-100" title={`${c.artist} — ${c.title}`}>
                         {c.cover_url ? (
-                          <img src={c.cover_url} alt={c.title} className="w-full h-full object-cover" loading="lazy" />
+                          <AlbumArt src={c.cover_url} alt={c.title} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center"><Disc className="w-5 h-5 text-stone-300" /></div>
                         )}

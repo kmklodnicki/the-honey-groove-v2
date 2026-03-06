@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Disc, Package, Search, Moon, Plus, Music, Feather } from 'lucide-react';
+import AlbumArt from './AlbumArt';
 
 const MOOD_EMOJI_MAP = {
   'Late Night': '\u{1F56F}\uFE0F', 'Good Morning': '\u2600\uFE0F', 'Sunday Morning': '\u2600\uFE0F',
@@ -66,7 +67,7 @@ const NowSpinningCard = ({ post }) => {
   return (
     <div className="flex gap-4 items-start" data-testid="now-spinning-card">
       {record.cover_url ? (
-        <img src={record.cover_url} alt={record.title} className="w-24 h-24 rounded-lg object-cover shadow-md" />
+        <AlbumArt src={record.cover_url} alt={record.title} className="w-24 h-24 rounded-lg object-cover shadow-md" />
       ) : (
         <div className="w-24 h-24 rounded-lg bg-vinyl-black flex items-center justify-center">
           <Disc className="w-10 h-10 text-honey animate-spin" style={{ animationDuration: '3s' }} />
@@ -94,8 +95,7 @@ const NewHaulCard = ({ post }) => {
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {items.slice(0, 6).map((item, idx) => (
           <div key={idx} className="flex items-center gap-2 bg-amber-50 rounded-lg p-2">
-            {item.cover_url ? <img src={item.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
-              : <div className="w-10 h-10 rounded bg-amber-200 flex items-center justify-center"><Disc className="w-5 h-5 text-amber-700" /></div>}
+            <AlbumArt src={item.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
             <div className="min-w-0 flex-1">
               <p className="text-xs font-medium truncate">{item.title}</p>
               <p className="text-xs text-muted-foreground truncate">{item.artist}</p>
@@ -113,13 +113,13 @@ const ISOCard = ({ post }) => {
   const iso = post.iso;
   if (!iso) return <p className="text-sm">{post.caption}</p>;
   return (
-    <div className="bg-[#FAF6EE] border border-[#C8861A]/15 rounded-lg p-4" data-testid="iso-card">
+    <div className="bg-[#FAF6EE] border border-[#C8861A]/15 rounded-xl p-4" data-testid="iso-card">
       <div className="flex items-start justify-between">
         <div>
           <p className="font-heading text-lg">{iso.album}</p>
           <p className="text-sm text-muted-foreground">{iso.artist}</p>
         </div>
-        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${iso.status === 'FOUND' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-amber-50 text-[#C8861A] border-[#C8861A]/30'}`}>{iso.status}</span>
+        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${iso.status === 'FOUND' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-transparent text-[#C8861A] border-[#C8861A]'}`}>{iso.status}</span>
       </div>
       {iso.pressing_notes && <p className="text-xs mt-2 text-[#8A6B4A]">Pressing: {iso.pressing_notes}</p>}
       {iso.condition_pref && <p className="text-xs text-[#8A6B4A]">Condition: {iso.condition_pref}</p>}
@@ -137,8 +137,7 @@ const AddedToCollectionCard = ({ post }) => {
   if (!record) return <p className="text-sm">{post.caption}</p>;
   return (
     <div className="flex gap-3 items-center" data-testid="added-card">
-      {record.cover_url ? <img src={record.cover_url} alt="" className="w-16 h-16 rounded-lg object-cover shadow" />
-        : <div className="w-16 h-16 rounded-lg bg-green-100 flex items-center justify-center"><Plus className="w-6 h-6 text-green-600" /></div>}
+      <AlbumArt src={record.cover_url} alt="" className="w-16 h-16 rounded-lg object-cover shadow" />
       <div>
         <p className="font-medium">{record.title}</p>
         <p className="text-sm text-muted-foreground">{record.artist}</p>
@@ -170,7 +169,7 @@ const VinylMoodCard = ({ post }) => {
       </div>
       {record && (
         <div className="flex gap-3 items-center mt-2 rounded-lg p-2" style={{ backgroundColor: color + '15' }}>
-          {record.cover_url && <img src={record.cover_url} alt="" className="w-10 h-10 rounded object-cover" />}
+          <AlbumArt src={record.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
           <div>
             <p className="text-sm font-medium">{record.title}</p>
             <p className="text-xs text-muted-foreground">{record.artist}</p>
@@ -188,7 +187,7 @@ const DailyPromptPostCard = ({ post }) => (
     <p className="text-sm italic text-amber-700 mb-3">{post.prompt_text}</p>
     <div className="flex gap-4 items-start bg-amber-50/60 rounded-lg p-3">
       {post.cover_url ? (
-        <img src={post.cover_url} alt="" className="w-20 h-20 rounded-lg object-cover shadow-md" />
+        <AlbumArt src={post.cover_url} alt="" className="w-20 h-20 rounded-lg object-cover shadow-md" />
       ) : (
         <div className="w-20 h-20 rounded-lg bg-amber-100 flex items-center justify-center"><Disc className="w-8 h-8 text-amber-300" /></div>
       )}
@@ -209,7 +208,7 @@ const NoteCard = ({ post }) => (
     {post.record && (
       <div className="flex items-center gap-2.5 bg-stone-50 rounded-lg px-3 py-2 mt-3" data-testid="note-record-tag">
         {post.record.cover_url ? (
-          <img src={post.record.cover_url} alt="" className="w-10 h-10 rounded object-cover shadow-sm" />
+          <AlbumArt src={post.record.cover_url} alt="" className="w-10 h-10 rounded object-cover shadow-sm" />
         ) : (
           <div className="w-10 h-10 rounded bg-stone-200 flex items-center justify-center"><Disc className="w-5 h-5 text-stone-400" /></div>
         )}
@@ -242,7 +241,7 @@ const PostCardBody = ({ post }) => {
         <div>
           {post.record && (
             <div className="flex gap-3 items-center mb-2">
-              {post.record.cover_url && <img src={post.record.cover_url} alt="" className="w-14 h-14 rounded object-cover" />}
+              <AlbumArt src={post.record.cover_url} alt="" className="w-14 h-14 rounded object-cover" />
               <div>
                 <p className="font-medium">{post.record.title}</p>
                 <p className="text-sm text-muted-foreground">{post.record.artist}</p>

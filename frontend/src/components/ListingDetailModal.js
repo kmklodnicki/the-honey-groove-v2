@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { X, Star, Loader2, ChevronLeft, ChevronRight, DollarSign, ArrowRightLeft, Disc, Check, Heart, AlertTriangle, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
+import AlbumArt from './AlbumArt';
 
 const CONDITION_MAP = {
   'Mint': 'bg-emerald-100 text-emerald-800 border-emerald-200',
@@ -160,7 +161,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
               {/* Album Art */}
               <div className="flex justify-center bg-stone-50 pt-6 pb-4 px-6">
                 <div className="relative max-w-[480px] w-full">
-                  <img
+                  <AlbumArt
                     src={listing.cover_url || photos[0]}
                     alt={listing.album}
                     className="w-full aspect-square object-cover rounded-2xl shadow-lg"
@@ -384,7 +385,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                       <button key={s.id} onClick={() => { setListing(null); setLoading(true); }}
                         className="flex-shrink-0 w-28 text-left" data-testid={`similar-listing-${s.id}`}>
                         <div className="w-28 h-28 rounded-lg overflow-hidden bg-stone-100 mb-1">
-                          {s.cover_url ? <img src={s.cover_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Disc className="w-6 h-6 text-stone-300" /></div>}
+                          <AlbumArt src={s.cover_url} alt="" className="w-full h-full object-cover" />
                         </div>
                         <p className="text-xs font-medium truncate">{s.album}</p>
                         <p className="text-[10px] text-muted-foreground truncate">{s.price ? `$${s.price}` : 'Trade'}</p>

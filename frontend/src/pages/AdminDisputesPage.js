@@ -16,6 +16,7 @@ import { AlertTriangle, ArrowRightLeft, CheckCircle2, XCircle, Loader2, Disc, Cl
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { usePageTitle } from '../hooks/usePageTitle';
+import AlbumArt from '../components/AlbumArt';
 
 const AdminDisputesPage = () => {
   usePageTitle('Admin Disputes');
@@ -141,8 +142,7 @@ const DisputeCard = ({ trade, onSelect, resolved }) => {
       {/* The exchange */}
       <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-3 mb-3">
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          {trade.offered_record?.cover_url ? <img src={trade.offered_record.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
-            : <div className="w-10 h-10 rounded bg-honey/20 flex items-center justify-center"><Disc className="w-4 h-4 text-honey" /></div>}
+          <AlbumArt src={trade.offered_record.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
           <div className="min-w-0">
             <p className="text-sm font-medium truncate">{trade.offered_record?.title || 'Unknown'}</p>
             <p className="text-xs text-muted-foreground">@{trade.initiator?.username}</p>

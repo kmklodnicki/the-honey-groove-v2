@@ -12,6 +12,7 @@ import { ArrowLeft, Search, Disc, Plus, X, Package, Share2 } from 'lucide-react'
 import { toast } from 'sonner';
 import debounce from 'lodash.debounce';
 import { usePageTitle } from '../hooks/usePageTitle';
+import AlbumArt from '../components/AlbumArt';
 
 const CreateHaulPage = () => {
   usePageTitle('New Haul');
@@ -169,7 +170,7 @@ const CreateHaulPage = () => {
                 className="flex items-center gap-3 p-3 bg-honey/10 rounded-lg"
               >
                 {item.cover_url ? (
-                  <img src={item.cover_url} alt={item.title} className="w-12 h-12 rounded object-cover" />
+                  <AlbumArt src={item.cover_url} alt={item.title} className="w-12 h-12 rounded object-cover" />
                 ) : (
                   <div className="w-12 h-12 rounded bg-vinyl-black flex items-center justify-center">
                     <Disc className="w-5 h-5 text-honey" />
@@ -223,7 +224,7 @@ const CreateHaulPage = () => {
                 onClick={() => addItem(result)}
               >
                 {result.cover_url ? (
-                  <img src={result.cover_url} alt={result.title} className="w-12 h-12 rounded object-cover" />
+                  <AlbumArt src={result.cover_url} alt={result.title} className="w-12 h-12 rounded object-cover" />
                 ) : (
                   <div className="w-12 h-12 rounded bg-vinyl-black flex items-center justify-center">
                     <Disc className="w-5 h-5 text-honey" />

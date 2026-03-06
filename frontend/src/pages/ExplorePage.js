@@ -14,6 +14,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
 import CollectorBingo from '../components/CollectorBingo';
+import AlbumArt from '../components/AlbumArt';
 
 const ExplorePage = () => {
   usePageTitle('Explore');
@@ -150,8 +151,7 @@ const ExplorePage = () => {
               <button key={r.id} onClick={() => openTrendingModal(r)}
                 className="flex-shrink-0 w-36 text-left group" data-testid={`trending-${r.id}`}>
                 <div className="aspect-square rounded-xl overflow-hidden bg-honey/10 mb-2 shadow-sm group-hover:shadow-md transition-shadow">
-                  {r.cover_url ? <img src={r.cover_url} alt="" className="w-full h-full object-cover" />
-                    : <div className="w-full h-full flex items-center justify-center"><Disc className="w-10 h-10 text-honey" /></div>}
+                  <AlbumArt src={r.cover_url} alt="" className="w-full h-full object-cover" />
                 </div>
                 <p className="text-sm font-medium truncate">{r.title}</p>
                 <p className="text-xs text-muted-foreground truncate">{r.artist}</p>
@@ -204,8 +204,7 @@ const ExplorePage = () => {
             {freshPressings.map((r, idx) => (
               <div key={r.discogs_id || idx} className="flex-shrink-0 w-40" data-testid={`fresh-pressing-${r.discogs_id || idx}`}>
                 <div className="aspect-square rounded-xl overflow-hidden bg-honey/10 mb-2 shadow-sm relative group">
-                  {r.cover_url ? <img src={r.cover_url} alt="" className="w-full h-full object-cover" />
-                    : <div className="w-full h-full flex items-center justify-center"><Disc className="w-10 h-10 text-honey" /></div>}
+                  <AlbumArt src={r.cover_url} alt="" className="w-full h-full object-cover" />
                   <button
                     onClick={() => addToWantlist(r.artist, r.title, r.discogs_id, r.cover_url, r.year)}
                     className="absolute bottom-2 right-2 bg-white/90 hover:bg-white rounded-full p-1.5 shadow opacity-0 group-hover:opacity-100 transition-opacity"
@@ -231,8 +230,7 @@ const ExplorePage = () => {
             {mostWanted.map((r, idx) => (
               <div key={`${r.artist}-${r.album}`} className="flex items-center gap-3 py-2 px-1 rounded-lg hover:bg-honey/5 transition-colors" data-testid={`most-wanted-${idx}`}>
                 <span className="text-sm font-heading text-honey-amber w-6 text-right shrink-0">{idx + 1}</span>
-                {r.cover_url ? <img src={r.cover_url} alt="" className="w-10 h-10 rounded-lg object-cover" />
-                  : <div className="w-10 h-10 rounded-lg bg-honey/20 flex items-center justify-center"><Disc className="w-5 h-5 text-honey" /></div>}
+                <AlbumArt src={r.cover_url} alt="" className="w-10 h-10 rounded-lg object-cover" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{r.album}</p>
                   <p className="text-xs text-muted-foreground truncate">{r.artist}{r.year ? ` (${r.year})` : ''}</p>
@@ -292,7 +290,7 @@ const ExplorePage = () => {
                   {nearYou.listings.map(l => (
                     <Card key={l.id} className="flex-shrink-0 w-40 p-2 border-honey/30" data-testid={`nearby-listing-${l.id}`}>
                       <div className="aspect-square rounded-lg overflow-hidden bg-honey/10 mb-1.5">
-                        {(l.photo_urls?.[0] || l.cover_url) ? <img src={l.photo_urls?.[0] || l.cover_url} alt="" className="w-full h-full object-cover" />
+                        {(l.photo_urls?.[0] || l.cover_url) ? <AlbumArt src={l.photo_urls?.[0] || l.cover_url} alt="" className="w-full h-full object-cover" />
                           : <div className="w-full h-full flex items-center justify-center"><Disc className="w-8 h-8 text-honey" /></div>}
                       </div>
                       <p className="text-xs font-medium truncate">{l.album}</p>
@@ -324,7 +322,7 @@ const ExplorePage = () => {
               {/* Record card */}
               <div className="flex items-center gap-4 mb-4 bg-honey/10 rounded-xl p-3">
                 {trendingModal.record?.cover_url ? (
-                  <img src={trendingModal.record.cover_url} alt="" className="w-16 h-16 rounded-lg object-cover shadow" />
+                  <AlbumArt src={trendingModal.record.cover_url} alt="" className="w-16 h-16 rounded-lg object-cover shadow" />
                 ) : (
                   <div className="w-16 h-16 rounded-lg bg-honey/20 flex items-center justify-center"><Disc className="w-8 h-8 text-honey" /></div>
                 )}

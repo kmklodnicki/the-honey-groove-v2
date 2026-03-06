@@ -14,6 +14,7 @@ import { FollowListModal } from '../components/FollowList';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { StreakBadge } from '../components/DailyPrompt';
 import { MoodBoardTab } from '../components/MoodBoardTab';
+import AlbumArt from '../components/AlbumArt';
 
 const ProfilePage = () => {
   usePageTitle('Profile');
@@ -333,7 +334,7 @@ const ProfilePage = () => {
                   <Card className="border-honey/30 overflow-hidden hover:shadow-honey transition-all hover:-translate-y-1">
                     <div className="aspect-square bg-vinyl-black">
                       {record.cover_url ? (
-                        <img src={record.cover_url} alt={record.title} className="w-full h-full object-cover" />
+                        <AlbumArt src={record.cover_url} alt={record.title} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <Disc className="w-12 h-12 text-honey" />
@@ -405,7 +406,7 @@ const ProfilePage = () => {
               {spins.map(spin => (
                 <Card key={spin.id} className="p-4 border-honey/30 flex items-center gap-4" data-testid={`spin-${spin.id}`}>
                   {spin.record?.cover_url ? (
-                    <img src={spin.record.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow" />
+                    <AlbumArt src={spin.record.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow" />
                   ) : (
                     <div className="w-14 h-14 rounded-lg bg-vinyl-black flex items-center justify-center">
                       <Disc className="w-6 h-6 text-honey" />
@@ -453,7 +454,7 @@ const ProfilePage = () => {
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         {trade.offered_record?.cover_url ? (
-                          <img src={trade.offered_record.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
+                          <AlbumArt src={trade.offered_record.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
                         ) : (
                           <div className="w-10 h-10 rounded bg-honey/20 flex items-center justify-center"><Disc className="w-4 h-4 text-honey" /></div>
                         )}
@@ -465,7 +466,7 @@ const ProfilePage = () => {
                       <ArrowRightLeft className="w-4 h-4 text-honey shrink-0" />
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         {trade.listing_record?.cover_url ? (
-                          <img src={trade.listing_record.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
+                          <AlbumArt src={trade.listing_record.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
                         ) : (
                           <div className="w-10 h-10 rounded bg-honey/20 flex items-center justify-center"><Disc className="w-4 h-4 text-honey" /></div>
                         )}

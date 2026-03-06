@@ -12,6 +12,7 @@ import { Textarea } from './ui/textarea';
 import { Progress } from './ui/progress';
 import { Disc, Loader2, Search, Check, ChevronRight, ExternalLink, CheckCircle2, AlertCircle, X } from 'lucide-react';
 import { toast } from 'sonner';
+import AlbumArt from './AlbumArt';
 
 const MOOD_OPTIONS = [
   'Late Night', 'Good Morning', 'Rainy Day', 'Road Trip', 'Golden Hour',
@@ -307,7 +308,7 @@ const OnboardingModal = ({ open, onComplete }) => {
                         className="w-full text-left px-3 py-2 hover:bg-amber-50 flex items-center gap-2.5 text-sm border-b border-amber-100 last:border-0"
                         data-testid={`onboarding-result-${r.discogs_id}`}
                       >
-                        {r.cover_url ? <img src={r.cover_url} alt="" className="w-10 h-10 rounded object-cover" /> : <Disc className="w-10 h-10 text-stone-300" />}
+                        {r.cover_url ? <AlbumArt src={r.cover_url} alt="" className="w-10 h-10 rounded object-cover" /> : <Disc className="w-10 h-10 text-stone-300" />}
                         <div className="min-w-0 flex-1"><p className="font-medium truncate">{r.title}</p><p className="text-xs text-muted-foreground truncate">{r.artist}</p></div>
                       </button>
                     ))}
@@ -319,7 +320,7 @@ const OnboardingModal = ({ open, onComplete }) => {
                     {addedRecords.map((r, i) => (
                       <div key={i} className="shrink-0 relative group">
                         {r.cover_url ? (
-                          <img src={r.cover_url} alt="" className="w-16 h-16 rounded-lg object-cover shadow-sm" />
+                          <AlbumArt src={r.cover_url} alt="" className="w-16 h-16 rounded-lg object-cover shadow-sm" />
                         ) : (
                           <div className="w-16 h-16 rounded-lg bg-stone-100 flex items-center justify-center"><Disc className="w-6 h-6 text-stone-400" /></div>
                         )}

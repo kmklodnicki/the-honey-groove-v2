@@ -8,6 +8,8 @@ import { Loader2, Download, Grid3X3 } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 
+import AlbumArt from './AlbumArt';
+
 const TIME_PILLS = [
   { key: 'week', label: 'This Week' },
   { key: 'month', label: 'This Month' },
@@ -104,7 +106,7 @@ const MoodBoardCard = ({ board, isPinned, onExport }) => {
       <div className={`grid grid-cols-3 ${isPinned ? 'max-w-sm mx-auto' : ''}`}>
         {[...Array(9)].map((_, i) => (
           <div key={i} className="aspect-square bg-amber-50">
-            {covers[i] ? <img src={covers[i]} alt="" className="w-full h-full object-cover" loading="lazy" />
+            {covers[i] ? <AlbumArt src={covers[i]} alt="" className="w-full h-full object-cover" />
               : <div className="w-full h-full bg-amber-100/50" />}
           </div>
         ))}

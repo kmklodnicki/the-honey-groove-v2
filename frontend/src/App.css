@@ -176,15 +176,15 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 14px 20px;
+  padding: 12px 16px;
   background: #FAF6EE;
   border: 1.5px solid rgba(200, 134, 26, 0.6);
   border-left: 3px solid #C8861A;
   border-radius: 16px;
   box-shadow: 0 4px 16px rgba(200, 134, 26, 0.15);
   font-family: 'Cormorant Garamond', Georgia, serif;
-  min-width: 280px;
-  max-width: 420px;
+  max-width: 320px;
+  margin: 0 auto;
   animation: toastSlideIn 0.3s ease-out;
 }
 .honey-toast-icon {
@@ -203,4 +203,15 @@
 @keyframes toastSlideIn {
   from { opacity: 0; transform: translateY(-12px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Album art shimmer loading */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.animate-shimmer {
+  background: linear-gradient(90deg, #F0E8D8 25%, rgba(200,134,26,0.1) 50%, #F0E8D8 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
 }

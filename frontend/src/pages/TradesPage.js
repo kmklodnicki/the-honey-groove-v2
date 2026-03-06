@@ -34,6 +34,7 @@ import { trackEvent } from '../utils/analytics';
 import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { usePageTitle } from '../hooks/usePageTitle';
+import AlbumArt from '../components/AlbumArt';
 
 const STATUS_CONFIG = {
   PROPOSED: { label: 'Proposed', color: 'bg-amber-100 text-amber-700', dot: 'bg-amber-400' },
@@ -242,7 +243,7 @@ const ShippingSummary = ({ trade, currentUserId }) => {
 const RecordMini = ({ record, label }) => (
   <div className="flex items-center gap-2 flex-1 min-w-0">
     {record?.cover_url ? (
-      <img src={record.cover_url} alt="" className="w-12 h-12 rounded-lg object-cover shadow" />
+      <AlbumArt src={record.cover_url} alt="" className="w-12 h-12 rounded-lg object-cover shadow" />
     ) : (
       <div className="w-12 h-12 rounded-lg bg-honey/20 flex items-center justify-center shrink-0"><Disc className="w-5 h-5 text-honey" /></div>
     )}
@@ -854,7 +855,7 @@ const RecordDetail = ({ record, condition, photoUrls }) => (
         )}
       </div>
     ) : record?.cover_url ? (
-      <img src={record.cover_url} alt="" className="w-full aspect-square rounded-lg object-cover mb-2" />
+      <AlbumArt src={record.cover_url} alt="" className="w-full aspect-square rounded-lg object-cover mb-2" />
     ) : (
       <div className="w-full aspect-square rounded-lg bg-honey/10 flex items-center justify-center mb-2"><Disc className="w-8 h-8 text-honey" /></div>
     )}
@@ -999,8 +1000,8 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
           <div>
             <p className="text-xs font-medium text-muted-foreground mb-2">THEY HAVE</p>
             <div className="flex items-center gap-3 bg-honey/10 rounded-lg p-3">
-              {listing?.cover_url ? <img src={listing.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow" />
-                : listing?.photo_urls?.[0] ? <img src={listing.photo_urls[0]} alt="" className="w-14 h-14 rounded-lg object-cover shadow" />
+              {listing?.cover_url ? <AlbumArt src={listing.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow" />
+                : listing?.photo_urls?.[0] ? <AlbumArt src={listing.photo_urls[0]} alt="" className="w-14 h-14 rounded-lg object-cover shadow" />
                 : <div className="w-14 h-14 rounded-lg bg-honey/20 flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>}
               <div>
                 <p className="font-heading text-base">{listing?.album}</p>
