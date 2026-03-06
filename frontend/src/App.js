@@ -26,6 +26,9 @@ import AdminPage from "./pages/AdminPage";
 import MessagesPage from "./pages/MessagesPage";
 import FAQPage from "./pages/FAQPage";
 import AboutPage from "./pages/AboutPage";
+import TermsPage from "./pages/TermsPage";
+import PrivacyPage from "./pages/PrivacyPage";
+import VerifyEmailPage from "./pages/VerifyEmailPage";
 import ExploreSeeAllPage from "./pages/ExploreSeeAllPage";
 import WaxReportPage from "./pages/WaxReportPage";
 import WaxReportHistory from "./pages/WaxReportHistory";
@@ -98,6 +101,9 @@ function AppContent() {
       <Route path="/join" element={<JoinPage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/faq" element={<FAQPage />} />
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/verify-email" element={<VerifyEmailPage />} />
 
       {/* Protected routes — auth required */}
       <Route path="/explore" element={

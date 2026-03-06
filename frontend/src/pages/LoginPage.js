@@ -5,9 +5,12 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Disc, Eye, EyeOff } from 'lucide-react';
+import { Disc, Eye, EyeOff, Mail, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
+import axios from 'axios';
+
+const API = process.env.REACT_APP_BACKEND_URL;
 
 const LoginPage = () => {
   usePageTitle('Sign In');
@@ -15,22 +18,48 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [unverified, setUnverified] = useState(false);
+  const [resending, setResending] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setUnverified(false);
 
     try {
-      await login(email, password);
+      const userData = await login(email, password);
+      if (userData && userData.email_verified === false) {
+        setUnverified(true);
+        setLoading(false);
+        return;
+      }
       toast.success('Welcome back to the Honey Groove!');
       navigate('/hive');
     } catch (error) {
-      const message = error.response?.data?.detail || 'Invalid email or password';
-      toast.error(message);
+      const status = error.response?.status;
+      if (status === 429) {
+        toast.error('Too many attempts. Please try again in a few minutes.');
+      } else {
+        const message = error.response?.data?.detail || 'Invalid email or password';
+        toast.error(message);
+      }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    setResending(true);
+    try {
+      const token = localStorage.getItem('honeygroove_token');
+      await axios.post(`${API}/api/auth/resend-verification`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success('Verification email sent! Check your inbox.');
+    } catch {
+      toast.error('Could not send verification email. Try again later.');
+    } finally {
+      setResending(false);
     }
   };
 
@@ -51,6 +80,26 @@ const LoginPage = () => {
           <CardDescription>Sign in to your account</CardDescription>
         </CardHeader>
         <CardContent>
+          {unverified && (
+            <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl p-4" data-testid="email-verify-banner">
+              <div className="flex items-start gap-3">
+                <Mail className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm text-amber-800 font-medium">Please verify your email address</p>
+                  <p className="text-xs text-amber-700 mt-1">Check your inbox for a verification link.</p>
+                  <button
+                    type="button"
+                    onClick={handleResendVerification}
+                    disabled={resending}
+                    className="text-xs text-amber-600 hover:text-amber-800 underline mt-2 inline-flex items-center gap-1"
+                    data-testid="resend-verification-btn"
+                  >
+                    {resending ? <><Loader2 className="w-3 h-3 animate-spin" /> Sending...</> : 'Resend verification email'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>

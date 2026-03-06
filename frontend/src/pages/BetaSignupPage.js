@@ -17,7 +17,7 @@ const FEATURE_OPTIONS = [
 ];
 
 const BetaSignupPage = () => {
-  const [form, setForm] = useState({ first_name: '', email: '', instagram_handle: '', feature_interest: '' });
+  const [form, setForm] = useState({ first_name: '', email: '', instagram_handle: '', feature_interest: '', website: '' });
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState('');
@@ -36,7 +36,11 @@ const BetaSignupPage = () => {
       trackEvent('beta_signup', { feature_interest: form.feature_interest });
       setSubmitted(true);
     } catch (err) {
-      setError(err.response?.data?.detail || 'something went wrong. try again.');
+      if (err.response?.status === 429) {
+        setError('Too many attempts. Please try again in a few minutes.');
+      } else {
+        setError(err.response?.data?.detail || 'something went wrong. try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -159,6 +163,18 @@ const BetaSignupPage = () => {
                 </div>
 
                 {error && <p className="text-red-600 text-sm text-center font-serif" data-testid="beta-error">{error}</p>}
+
+                {/* Honeypot field — invisible to humans, visible to bots */}
+                <input
+                  type="text"
+                  name="website"
+                  value={form.website}
+                  onChange={e => setForm({ ...form, website: e.target.value })}
+                  autoComplete="off"
+                  tabIndex={-1}
+                  style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0, width: 0, overflow: 'hidden' }}
+                  aria-hidden="true"
+                />
 
                 <button
                   type="submit"

@@ -351,7 +351,17 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                 </div>
               )}
 
-              {/* Wantlist shortcut */}
+              {/* Secured by Stripe */}
+              {!isOwn && (listing.price || listing.listing_type === 'TRADE') && (
+                <div className="text-center py-2" data-testid="stripe-trust-badge">
+                  <span className="text-[11px] text-muted-foreground/60 inline-flex items-center gap-1.5">
+                    <svg width="28" height="12" viewBox="0 0 28 12" fill="none" className="opacity-40">
+                      <path d="M13.3 3.4c0-.6.5-.8 1.3-.8.9 0 2.1.3 3 .8V.6c-1-.4-2-.6-3-.6C12.4 0 11 1.2 11 3.2c0 3.1 4.3 2.6 4.3 4 0 .7-.6.9-1.4.9-1.2 0-2.7-.5-3.8-1.2v2.8c1.3.6 2.6.8 3.8.8 2.3 0 3.8-1.1 3.8-3.2-.1-3.3-4.4-2.8-4.4-3.9zM7.5 5L6.3 4.5c-.5-.2-.6-.4-.6-.6 0-.3.3-.4.7-.4.6 0 1.2.2 1.8.5l.7-2A5 5 0 007 1.5C5.6 1.5 4.5 2.3 4.5 3.6c0 .8.5 1.5 1.2 1.8l1.1.5c.5.2.6.4.6.7 0 .3-.3.5-.8.5-.7 0-1.4-.3-2.1-.7l-.7 2c.9.5 1.8.7 2.8.7C8 9.1 9 8.2 9 6.9 9 6 8.4 5.4 7.5 5zm11.3-3.5h-2l.01 6.6c0 1.9 1 2.7 2.3 2.7.7 0 1.3-.1 1.8-.4V8.1c-.3.1-.9.3-1.3.3-.6 0-1-.2-1-1V4h1.3V1.6h-1.1zm5 0l-.2 1.2h-.01V1.6h-2.5v8.1h2.6V4.8c.6-.8 1.7-.7 2-.6V1.6c-.4-.2-1.6-.3-2.1.9zm2.8-1.8L24 .5v2.7h-1.3V5.5H24v3.2c0 1.6.8 2.3 2 2.3.6 0 1.1-.1 1.5-.3V8.4c-.3.1-.6.2-1 .2-.4 0-.7-.2-.7-.8V5.5h1.7V3.2h-1.7V-.3z" fill="currentColor"/>
+                    </svg>
+                    Secured by Stripe
+                  </span>
+                </div>
+              )}
               {!isOwn && (
                 <div className="px-6 py-2 text-center" data-testid="listing-wantlist-section">
                   <button onClick={toggleWantlist} disabled={wantlistLoading}

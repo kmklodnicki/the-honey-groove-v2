@@ -1,5 +1,5 @@
 """Admin routes — invite codes, beta signups, platform settings."""
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.responses import StreamingResponse
 from typing import Dict, Optional
 from datetime import datetime, timezone
@@ -156,6 +156,7 @@ class BetaSignupCreate(BaseModel):
     email: str
     instagram_handle: str
     feature_interest: str
+    website: Optional[str] = None  # Honeypot field — bots fill this, humans don't
 
 
 class BetaSignupNoteUpdate(BaseModel):
@@ -163,8 +164,22 @@ class BetaSignupNoteUpdate(BaseModel):
 
 
 @router.post("/beta/signup")
-async def create_beta_signup(data: BetaSignupCreate):
+async def create_beta_signup(data: BetaSignupCreate, request: Request):
     """Public endpoint — no auth required."""
+    from services.rate_limiter import rate_limiter, get_client_ip
+    rate_limiter.check(f"beta_signup:{get_client_ip(request)}", max_requests=3, window_seconds=3600)
+
+    # Honeypot check — if hidden field is filled, silently reject (bot)
+    if hasattr(data, 'website') and data.website:
+        # Log the blocked submission
+        await db.honeypot_blocks.insert_one({
+            "id": str(uuid.uuid4()),
+            "ip": get_client_ip(request),
+            "email": data.email,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        })
+        return {"status": "ok", "message": "You're on the list!"}
+
     # Check for duplicate email
     existing = await db.beta_signups.find_one({"email": data.email.lower()}, {"_id": 0})
     if existing:
@@ -232,9 +247,12 @@ class InviteRegister(BaseModel):
 
 
 @router.post("/auth/register-invite")
-async def register_with_invite(data: InviteRegister):
+async def register_with_invite(data: InviteRegister, request: Request):
     """Register a new account using an invite code."""
     from database import hash_password, create_token
+    from services.rate_limiter import rate_limiter, get_client_ip
+
+    rate_limiter.check(f"register:{get_client_ip(request)}", max_requests=5, window_seconds=900)
 
     # Validate invite code
     code_doc = await db.invite_codes.find_one({"code": data.code.strip().upper()}, {"_id": 0})
@@ -261,6 +279,7 @@ async def register_with_invite(data: InviteRegister):
         "favorite_genre": None,
         "onboarding_completed": False,
         "founding_member": True,
+        "email_verified": False,
         "created_at": now,
     }
     await db.users.insert_one(user_doc)
@@ -273,7 +292,36 @@ async def register_with_invite(data: InviteRegister):
 
     token = create_token(user_id)
 
-    # Send welcome email
+    # Send verification email
+    verify_token = str(uuid.uuid4())
+    await db.email_verifications.insert_one({
+        "user_id": user_id,
+        "token": verify_token,
+        "created_at": now,
+    })
+    frontend_url = os.environ.get("FRONTEND_URL", "")
+    verify_url = f"{frontend_url}/verify-email?token={verify_token}"
+    verify_html = f"""
+    <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 40px 20px; background: #FAF6EE;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="font-size: 28px; color: #2A1A06; margin: 0;">Welcome to the Honey Groove</h1>
+      </div>
+      <p style="font-size: 16px; color: #8A6B4A; line-height: 1.6;">
+        You're in! Click the button below to verify your email address and start exploring.
+      </p>
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="{verify_url}" style="display: inline-block; padding: 14px 32px; background: #E8A820; color: #2A1A06; text-decoration: none; border-radius: 999px; font-weight: 600; font-size: 16px;">
+          Verify My Email
+        </a>
+      </div>
+      <p style="font-size: 13px; color: #8A6B4A99; text-align: center;">
+        This link expires in 24 hours.
+      </p>
+    </div>
+    """
+    asyncio.create_task(send_email(data.email.lower(), "Verify your Honey Groove account. \U0001F41D", verify_html))
+
+    # Send welcome email too
     from templates.emails import welcome as welcome_tpl
     asyncio.create_task(send_email(data.email.lower(), **(lambda t: {"subject": t["subject"], "html": t["html"]})(welcome_tpl(data.username.lower()))))
 
@@ -287,5 +335,6 @@ async def register_with_invite(data: InviteRegister):
             "avatar_url": user_doc["avatar_url"],
             "founding_member": True,
             "onboarding_completed": False,
+            "email_verified": False,
         },
     }

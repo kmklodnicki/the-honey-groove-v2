@@ -49,6 +49,7 @@ async def _build_user_response(user: dict) -> UserResponse:
         onboarding_completed=user.get("onboarding_completed", False),
         founding_member=user.get("founding_member", False),
         is_admin=user.get("is_admin", False),
+        email_verified=user.get("email_verified", True),
     )
 
 # ============== AUTH ROUTES ==============
@@ -115,10 +116,19 @@ async def register(user_data: UserCreate):
     )
 
 @router.post("/auth/login", response_model=TokenResponse)
-async def login(credentials: UserLogin):
+async def login(credentials: UserLogin, request: Request):
+    from services.rate_limiter import rate_limiter, get_client_ip
+    rate_limiter.check(f"login:{get_client_ip(request)}", max_requests=5, window_seconds=900)
+
     user = await db.users.find_one({"email": credentials.email}, {"_id": 0})
     if not user or not verify_password(credentials.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    # Check email verification
+    if not user.get("email_verified", False):
+        token = create_token(user["id"])
+        return TokenResponse(access_token=token, user=await _build_user_response(user))
+
     token = create_token(user["id"])
     return TokenResponse(access_token=token, user=await _build_user_response(user))
 
@@ -144,6 +154,68 @@ async def update_me(update_data: UserUpdate, user: Dict = Depends(require_auth))
         await db.users.update_one({"id": user["id"]}, {"$set": update_fields})
     updated = await db.users.find_one({"id": user["id"]}, {"_id": 0, "password_hash": 0})
     return await _build_user_response(updated)
+
+
+
+# ============== EMAIL VERIFICATION ==============
+
+@router.get("/auth/verify-email")
+async def verify_email(token: str = Query(...)):
+    """Verify a user's email address via token."""
+    vdoc = await db.email_verifications.find_one({"token": token}, {"_id": 0})
+    if not vdoc:
+        raise HTTPException(status_code=400, detail="Invalid or expired verification link.")
+    # Check expiry (24 hours)
+    created = datetime.fromisoformat(vdoc["created_at"])
+    if datetime.now(timezone.utc) - created > timedelta(hours=24):
+        raise HTTPException(status_code=400, detail="Verification link has expired. Please request a new one.")
+    await db.users.update_one({"id": vdoc["user_id"]}, {"$set": {"email_verified": True}})
+    await db.email_verifications.delete_many({"user_id": vdoc["user_id"]})
+    return {"status": "ok", "message": "Email verified successfully!"}
+
+
+@router.post("/auth/resend-verification")
+async def resend_verification(user: Dict = Depends(require_auth)):
+    """Resend verification email."""
+    from services.rate_limiter import rate_limiter
+    rate_limiter.check(f"resend_verify:{user['id']}", max_requests=3, window_seconds=900)
+
+    if user.get("email_verified", True):
+        return {"status": "ok", "message": "Email already verified"}
+
+    token = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    await db.email_verifications.delete_many({"user_id": user["id"]})
+    await db.email_verifications.insert_one({
+        "user_id": user["id"],
+        "token": token,
+        "created_at": now,
+    })
+
+    verify_url = f"{FRONTEND_URL}/verify-email?token={token}"
+    html = f"""
+    <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 40px 20px; background: #FAF6EE;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="font-size: 28px; color: #2A1A06; margin: 0;">Welcome to the Honey Groove</h1>
+      </div>
+      <p style="font-size: 16px; color: #8A6B4A; line-height: 1.6;">
+        Click the button below to verify your email address and start exploring.
+      </p>
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="{verify_url}" style="display: inline-block; padding: 14px 32px; background: #E8A820; color: #2A1A06; text-decoration: none; border-radius: 999px; font-weight: 600; font-size: 16px;">
+          Verify My Email
+        </a>
+      </div>
+      <p style="font-size: 13px; color: #8A6B4A99; text-align: center;">
+        This link expires in 24 hours. If you didn't create an account, you can ignore this email.
+      </p>
+    </div>
+    """
+    from services.email_service import send_email_fire_and_forget
+    await send_email_fire_and_forget(user["email"], "Verify your Honey Groove account. \U0001F41D", html)
+
+    return {"status": "ok", "message": "Verification email sent"}
+
 
 
 # ============== USER ROUTES ==============
