@@ -13,7 +13,7 @@ import asyncio
 import os
 import logging
 
-from database import db, require_auth, logger
+from database import db, require_auth, logger, FRONTEND_URL
 from services.email_service import send_email, send_email_fire_and_forget
 from templates.emails import beta_waitlist, invite_code as invite_code_tpl
 
@@ -360,8 +360,7 @@ async def register_with_invite(data: InviteRegister, request: Request):
         "token": verify_token,
         "created_at": now,
     })
-    frontend_url = os.environ.get("FRONTEND_URL", "")
-    verify_url = f"{frontend_url}/verify-email?token={verify_token}"
+    verify_url = f"{FRONTEND_URL}/verify-email?token={verify_token}"
     verify_html = f"""
     <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 40px 20px; background: #FAF6EE;">
       <div style="text-align: center; margin-bottom: 30px;">
