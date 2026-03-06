@@ -734,88 +734,76 @@ def _round_corners(img, radius: int):
 
 
 def _generate_share_card(report: dict) -> bytes:
-    """Generate a redesigned 1080x1920 Instagram Story share card PNG."""
+    """Generate a 1080x1920 Instagram Story share card matching the Canva template."""
     from PIL import Image, ImageDraw, ImageFont
 
     W, H = 1080, 1920
-    BG = (250, 246, 238)         # #FAF6EE warm cream
+    BG = (250, 246, 238)              # #FAF6EE warm cream
+    CARD_BG = (245, 238, 226)         # slightly darker cream for cards
+    STAT_AMBER = (200, 145, 50)       # amber for stat boxes
+    STAT_AMBER_DARK = (160, 110, 30)  # darker amber for stat numbers
+    PILL_GREEN = (140, 155, 120)      # olive/sage green for decade pills
+    PILL_TEXT = (255, 255, 255)       # white text on pills
+    TEXT_DARK = (42, 26, 6)           # #2A1A06
+    TEXT_MUTED = (138, 107, 74)       # #8A6B4A
+    AMBER_ACCENT = (200, 134, 26)    # #C8861A
     CARD_WHITE = (255, 255, 255)
-    TEXT_DARK = (42, 26, 6)      # #2A1A06
-    TEXT_MUTED = (138, 107, 74)  # #8A6B4A
-    AMBER = (153, 96, 18)       # #996012
-    AMBER_ACCENT = (200, 134, 26)  # #C8861A
 
     img = Image.new("RGBA", (W, H), BG)
     draw = ImageDraw.Draw(img)
 
-    # Subtle radial glows
-    glow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    glow_draw = ImageDraw.Draw(glow)
-    for r in range(700, 0, -2):
-        alpha = max(0, int(15 * (1 - r / 700)))
-        glow_draw.ellipse([(W - 200 - r, -100 - r), (W - 200 + r, -100 + r)], fill=(200, 134, 26, alpha))
-    for r in range(500, 0, -2):
-        alpha = max(0, int(10 * (1 - r / 500)))
-        glow_draw.ellipse([(-100 - r, H - 200 - r), (-100 + r, H - 200 + r)], fill=(200, 134, 26, alpha))
-    img = Image.alpha_composite(img, glow)
-    draw = ImageDraw.Draw(img)
+    pad = 60
 
     # Load fonts
     try:
-        playfair_bold_72 = ImageFont.truetype(str(FONTS_DIR / "PlayfairDisplay-Bold2.ttf"), 72)
-        playfair_bold_56 = ImageFont.truetype(str(FONTS_DIR / "PlayfairDisplay-Bold2.ttf"), 56)
-        playfair_bold_48 = ImageFont.truetype(str(FONTS_DIR / "PlayfairDisplay-Bold2.ttf"), 48)
+        playfair_bold_52 = ImageFont.truetype(str(FONTS_DIR / "PlayfairDisplay-Bold2.ttf"), 52)
         playfair_bold_42 = ImageFont.truetype(str(FONTS_DIR / "PlayfairDisplay-Bold2.ttf"), 42)
-        playfair_bold_38 = ImageFont.truetype(str(FONTS_DIR / "PlayfairDisplay-Bold2.ttf"), 38)
-        playfair_italic_28 = ImageFont.truetype(str(FONTS_DIR / "PlayfairDisplay-Italic2.ttf"), 28)
-        cormorant_italic_52 = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Italic2.ttf"), 52)
-        cormorant_italic_46 = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Italic2.ttf"), 46)
-        cormorant_italic_40 = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Italic2.ttf"), 40)
-        cormorant_italic_32 = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Italic2.ttf"), 32)
+        playfair_bold_36 = ImageFont.truetype(str(FONTS_DIR / "PlayfairDisplay-Bold2.ttf"), 36)
+        playfair_bold_28 = ImageFont.truetype(str(FONTS_DIR / "PlayfairDisplay-Bold2.ttf"), 28)
+        cormorant_italic_42 = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Italic2.ttf"), 42)
+        cormorant_italic_36 = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Italic2.ttf"), 36)
+        cormorant_italic_30 = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Italic2.ttf"), 30)
         cormorant_italic_26 = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Italic2.ttf"), 26)
         cormorant_italic_24 = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Italic2.ttf"), 24)
-        cormorant_reg_36 = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Regular2.ttf"), 36)
-        cormorant_reg_28 = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Regular2.ttf"), 28)
+        cormorant_reg_30 = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Regular2.ttf"), 30)
         cormorant_reg_26 = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Regular2.ttf"), 26)
-        stat_num_font = ImageFont.truetype(str(FONTS_DIR / "PlayfairDisplay-Bold2.ttf"), 64)
-        eyebrow_font = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Regular2.ttf"), 26)
-        footer_font = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Italic2.ttf"), 26)
+        stat_num_font = ImageFont.truetype(str(FONTS_DIR / "PlayfairDisplay-Bold2.ttf"), 56)
+        footer_font = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Italic2.ttf"), 24)
+        eyebrow_font = ImageFont.truetype(str(FONTS_DIR / "CormorantGaramond-Italic2.ttf"), 22)
     except Exception:
         f = ImageFont.load_default()
-        playfair_bold_72 = playfair_bold_56 = playfair_bold_48 = f
-        playfair_bold_42 = playfair_bold_38 = playfair_italic_28 = f
-        cormorant_italic_52 = cormorant_italic_46 = cormorant_italic_40 = f
-        cormorant_italic_32 = cormorant_italic_26 = cormorant_italic_24 = f
-        cormorant_reg_36 = cormorant_reg_28 = cormorant_reg_26 = f
+        playfair_bold_52 = playfair_bold_42 = playfair_bold_36 = playfair_bold_28 = f
+        cormorant_italic_42 = cormorant_italic_36 = cormorant_italic_30 = f
+        cormorant_italic_26 = cormorant_italic_24 = f
+        cormorant_reg_30 = cormorant_reg_26 = f
         stat_num_font = eyebrow_font = footer_font = f
 
-    pad = 60
-
-    def draw_divider(y_pos):
-        overlay = Image.new("RGBA", (W - 2 * pad, 4), (0, 0, 0, 0))
-        od = ImageDraw.Draw(overlay)
-        mid = (W - 2 * pad) // 2
-        for x in range(W - 2 * pad):
-            alpha = int(45 * (1 - abs(x - mid) / mid))
-            od.point((x, 1), fill=(200, 134, 26, max(0, alpha)))
-        img.paste(overlay, (pad, y_pos), overlay)
-        return y_pos + 8
-
-    def text_width(text, font):
+    def tw(text, font):
         bbox = draw.textbbox((0, 0), text, font=font)
         return bbox[2] - bbox[0]
 
-    def text_height(text, font):
+    def th(text, font):
         bbox = draw.textbbox((0, 0), text, font=font)
         return bbox[3] - bbox[1]
 
     # ════════════════════════════════════════════════════════
-    # HEADER — 130px
+    # HONEY DRIP — top-right corner overlay
     # ════════════════════════════════════════════════════════
-    y = 50
-    draw.text((pad, y), "the Honey Groove", fill=AMBER_ACCENT, font=playfair_italic_28)
-    username = report.get("username", "collector")
-    draw.text((pad, y + 34), f"@{username}", fill=TEXT_MUTED, font=cormorant_reg_26)
+    drip_path = Path(__file__).parent.parent / "assets" / "honey_drip.png"
+    try:
+        drip_img = Image.open(drip_path).convert("RGBA")
+        drip_w = 400
+        drip_h = int(drip_img.height * drip_w / drip_img.width)
+        drip_img = drip_img.resize((drip_w, drip_h), Image.LANCZOS)
+        img.paste(drip_img, (W - drip_w + 20, -30), drip_img)
+        draw = ImageDraw.Draw(img)
+    except Exception:
+        pass
+
+    # ════════════════════════════════════════════════════════
+    # HEADER — date range + @username (left aligned)
+    # ════════════════════════════════════════════════════════
+    y = 70
     ws = report.get("week_start", "")
     we = report.get("week_end", "")
     try:
@@ -823,247 +811,206 @@ def _generate_share_card(report: dict) -> bytes:
         we_dt = datetime.fromisoformat(we) - timedelta(days=1)
         date_range = f"{ws_dt.strftime('%b %d')} — {we_dt.strftime('%b %d, %Y')}"
     except Exception:
-        date_range = ""
-    draw.text((W - pad - text_width(date_range, cormorant_reg_26), y + 6), date_range, fill=TEXT_MUTED, font=cormorant_reg_26)
-    y = 130
-    y = draw_divider(y)
-
-    # ════════════════════════════════════════════════════════
-    # PERSONALITY LABEL — ~150px (no quotes!)
-    # ════════════════════════════════════════════════════════
-    personality = report.get("personality", {})
-    label = personality.get("label", "")
-    if label:
-        # Strip any existing quote marks
-        label = label.strip('"\'')
-        y += 40
-        lines = textwrap.wrap(label, width=30)
-        for line in lines[:3]:
-            tw = text_width(line, cormorant_italic_46)
-            draw.text(((W - tw) / 2, y), line, fill=AMBER_ACCENT, font=cormorant_italic_46)
-            y += 54
-        y += 36
-    else:
-        y += 20
-    y = draw_divider(y)
-
-    # ════════════════════════════════════════════════════════
-    # TOP ARTISTS — ~420px with visual hierarchy
-    # ════════════════════════════════════════════════════════
-    y += 12
-    draw.text((pad, y), "TOP ARTISTS", fill=TEXT_MUTED, font=eyebrow_font)
+        date_range = "this week"
+    draw.text((pad, y), date_range, fill=TEXT_MUTED, font=cormorant_italic_26)
     y += 36
-    top_artists = report.get("top_artists", [])[:5]
-    max_spins = max((a.get("spins", 0) for a in top_artists), default=1)
-
-    # Font sizes: rank 1=72, 2=56, 3=48, 4=42, 5=38
-    artist_fonts = [playfair_bold_72, playfair_bold_56, playfair_bold_48, playfair_bold_42, playfair_bold_38]
-    # Spin count fonts (italic)
-    spin_fonts = [cormorant_italic_32, cormorant_italic_32, cormorant_italic_26, cormorant_italic_26, cormorant_italic_24]
-    # Row heights scale with font
-    row_heights = [86, 72, 64, 56, 52]
-
-    for i, a in enumerate(top_artists):
-        font_idx = min(i, 4)
-        name_font = artist_fonts[font_idx]
-        spin_font = spin_fonts[font_idx]
-        row_h = row_heights[font_idx]
-
-        # Proportional amber bar behind — 35% opacity for rank 1, scaling down
-        bar_opacity = max(10, int(35 - i * 5))
-        spins = a.get("spins", 0)
-        bar_ratio = spins / max(max_spins, 1)
-        bar_w = int(bar_ratio * (W - 2 * pad))
-        bar_w = max(bar_w, 120)
-
-        # Draw bar background
-        bar_overlay = Image.new("RGBA", (bar_w, row_h), (0, 0, 0, 0))
-        bar_draw = ImageDraw.Draw(bar_overlay)
-        bar_draw.rounded_rectangle([(0, 0), (bar_w, row_h)], radius=10,
-                                    fill=(200, 134, 26, bar_opacity))
-        img.paste(bar_overlay, (pad, y), bar_overlay)
-        draw = ImageDraw.Draw(img)  # refresh draw after paste
-
-        # Artist name — dark text, left aligned with padding
-        artist_name = a.get("artist", "")[:24]
-        name_y = y + (row_h - text_height(artist_name, name_font)) // 2 - 4
-        draw.text((pad + 16, name_y), artist_name, fill=TEXT_DARK, font=name_font)
-
-        # Spin count — right-aligned, amber italic
-        spins_text = str(spins)
-        spin_tw = text_width(spins_text, spin_font)
-        spin_y = y + (row_h - text_height(spins_text, spin_font)) // 2 - 2
-        draw.text((W - pad - spin_tw, spin_y), spins_text, fill=AMBER_ACCENT, font=spin_font)
-
-        y += row_h + 4
-
-    y += 10
-    y = draw_divider(y)
+    username = report.get("username", "collector")
+    draw.text((pad, y), f"@{username}", fill=TEXT_DARK, font=playfair_bold_28)
+    y += 60
 
     # ════════════════════════════════════════════════════════
-    # STATS ROW — 3 tiles: spins, unique records, unique artists
-    # ════════════════════════════════════════════════════════
-    y += 12
-    draw.text((pad, y), "THIS WEEK", fill=TEXT_MUTED, font=eyebrow_font)
-    y += 34
-    tile_w = (W - 2 * pad - 20) // 3
-    tile_h = 130
-
-    # Determine 3rd stat: unique artists (always has data if any spins)
-    unique_artists_val = report.get("unique_artists_count", 0)
-    # Fallback: count distinct artists from top_artists list
-    if not unique_artists_val and top_artists:
-        unique_artists_val = len(top_artists)
-
-    stats_data = [
-        (str(report.get("total_spins", 0)), "spins"),
-        (str(report.get("listening_stats", {}).get("unique_records", 0)), "unique records"),
-        (str(unique_artists_val), "unique artists"),
-    ]
-
-    for i, (val, lbl) in enumerate(stats_data):
-        tx = pad + i * (tile_w + 10)
-        # White card with subtle amber border
-        draw.rounded_rectangle([(tx, y), (tx + tile_w, y + tile_h)], radius=16,
-                                fill=CARD_WHITE, outline=(200, 134, 26, 38))
-        # Stat number centered
-        val_tw = text_width(val, stat_num_font)
-        draw.text((tx + (tile_w - val_tw) // 2, y + 14), val, fill=AMBER, font=stat_num_font)
-        # Label centered
-        lbl_tw = text_width(lbl, cormorant_italic_24)
-        draw.text((tx + (tile_w - lbl_tw) // 2, y + 88), lbl, fill=TEXT_MUTED, font=cormorant_italic_24)
-
-    y += tile_h + 12
-    y = draw_divider(y)
-
-    # ════════════════════════════════════════════════════════
-    # ERAS — pills, slightly larger
-    # ════════════════════════════════════════════════════════
-    era = report.get("era_breakdown", [])
-    if era:
-        y += 10
-        draw.text((pad, y), "ERAS", fill=TEXT_MUTED, font=eyebrow_font)
-        y += 34
-        pill_x = pad
-        for e in era[:6]:
-            text = f'{e["decade"]} ({e["pct"]}%)'
-            pw = text_width(text, cormorant_reg_36) + 32
-            ph = 48
-            if pill_x + pw > W - pad:
-                pill_x = pad
-                y += ph + 12
-            draw.rounded_rectangle([(pill_x, y), (pill_x + pw, y + ph)], radius=24,
-                                    fill=CARD_WHITE, outline=(200, 134, 26, 51))
-            draw.text((pill_x + 16, y + 4), text, fill=TEXT_MUTED, font=cormorant_reg_36)
-            pill_x += pw + 12
-        y += 56
-    else:
-        y += 6
-    y = draw_divider(y)
-
-    # ════════════════════════════════════════════════════════
-    # TOP RECORD — most spun this week with album art hero
+    # TOP ALBUM CARD — cream card with album art, title, artist
     # ════════════════════════════════════════════════════════
     top_records = report.get("top_records", [])
     top_record = top_records[0] if top_records else None
 
-    if top_record:
-        y += 10
-        # Eyebrow label
-        eyebrow_text = "MOST SPUN THIS WEEK"
-        etw = text_width(eyebrow_text, eyebrow_font)
-        draw.text(((W - etw) / 2, y), eyebrow_text, fill=TEXT_MUTED, font=eyebrow_font)
-        y += 32
+    card_x = pad
+    card_w = W - 2 * pad
+    card_h = 520
+    card_y = y
 
-        # Album art — 440px wide centered with shadow effect
-        art_size = 440
-        art_x = (W - art_size) // 2
+    # Draw card background
+    draw.rounded_rectangle([(card_x, card_y), (card_x + card_w, card_y + card_h)],
+                           radius=24, fill=CARD_BG)
+
+    # "top album" label inside card
+    label_y = card_y + 24
+    draw.text((card_x + 30, label_y), "top album", fill=TEXT_MUTED, font=cormorant_italic_26)
+
+    if top_record:
+        # Album art — large, left-aligned inside card
+        art_size = 380
+        art_x = card_x + 30
+        art_y = label_y + 40
         cover_url = top_record.get("cover_url", "")
         cover_img = _download_cover(cover_url, art_size) if cover_url else None
 
         if cover_img:
-            # Drop shadow
-            shadow = Image.new("RGBA", (art_size + 40, art_size + 40), (0, 0, 0, 0))
-            shadow_draw = ImageDraw.Draw(shadow)
-            shadow_draw.rounded_rectangle([(0, 8), (art_size + 40, art_size + 48)],
-                                           radius=24, fill=(0, 0, 0, 30))
-            img.paste(shadow, (art_x - 20, y - 4), shadow)
+            cover_rounded = _round_corners(cover_img, 16)
+            img.paste(cover_rounded, (art_x, art_y), cover_rounded)
             draw = ImageDraw.Draw(img)
-
-            # Round corners on album art
-            cover_rounded = _round_corners(cover_img, 20)
-            img.paste(cover_rounded, (art_x, y), cover_rounded)
-            draw = ImageDraw.Draw(img)
-            y += art_size + 16
         else:
-            # Placeholder rectangle
-            draw.rounded_rectangle([(art_x, y), (art_x + art_size, y + art_size)],
-                                    radius=20, fill=(230, 222, 210), outline=(200, 134, 26, 40))
-            placeholder = "no cover"
-            ptw = text_width(placeholder, cormorant_reg_28)
-            draw.text(((W - ptw) / 2, y + art_size // 2 - 14), placeholder, fill=TEXT_MUTED, font=cormorant_reg_28)
-            y += art_size + 16
+            draw.rounded_rectangle([(art_x, art_y), (art_x + art_size, art_y + art_size)],
+                                   radius=16, fill=(230, 222, 210))
 
-        # Artist name centered
-        rec_artist = top_record.get("artist", "")[:40]
-        ratw = text_width(rec_artist, playfair_bold_42)
-        draw.text(((W - ratw) / 2, y), rec_artist, fill=TEXT_DARK, font=playfair_bold_42)
-        y += 46
+        # Title and artist to the right of album art
+        text_x = art_x + art_size + 30
+        text_w = card_w - art_size - 90
 
-        # Album name centered
-        rec_title = top_record.get("title", "")[:45]
-        rttw = text_width(rec_title, cormorant_italic_32)
-        draw.text(((W - rttw) / 2, y), rec_title, fill=AMBER_ACCENT, font=cormorant_italic_32)
-        y += 38
+        rec_title = top_record.get("title", "")[:30]
+        rec_artist = top_record.get("artist", "")[:30]
+        spins = top_record.get("spins", 0)
+
+        # Title (bold, larger)
+        title_y = art_y + 40
+        title_lines = textwrap.wrap(rec_title, width=12)
+        for line in title_lines[:3]:
+            draw.text((text_x, title_y), line, fill=TEXT_DARK, font=playfair_bold_42)
+            title_y += 50
+
+        # Artist (italic, muted)
+        draw.text((text_x, title_y + 10), rec_artist, fill=TEXT_MUTED, font=cormorant_italic_30)
+
+        # Spin count
+        draw.text((text_x, title_y + 50), f"{spins} spins", fill=AMBER_ACCENT, font=cormorant_italic_26)
     else:
-        y += 20
+        draw.text((card_x + 30, card_y + 200), "no records this week", fill=TEXT_MUTED, font=cormorant_italic_30)
 
-    y = draw_divider(y)
+    y = card_y + card_h + 24
 
     # ════════════════════════════════════════════════════════
-    # CLOSING LINE — poetic, data-driven, fits within canvas
+    # TOP ARTISTS BAR — 3 columns in a cream card
+    # ════════════════════════════════════════════════════════
+    top_artists = report.get("top_artists", [])[:3]
+    if top_artists:
+        bar_h = 130
+        draw.rounded_rectangle([(pad, y), (W - pad, y + bar_h)], radius=20, fill=CARD_BG)
+
+        col_w = card_w // 3
+        for i, a in enumerate(top_artists):
+            cx = pad + i * col_w + col_w // 2
+            name = a.get("artist", "")[:16]
+            spins = a.get("spins", 0)
+
+            # Artist name centered
+            ntw = tw(name, playfair_bold_28)
+            draw.text((cx - ntw // 2, y + 24), name, fill=TEXT_DARK, font=playfair_bold_28)
+
+            # Spins below
+            spin_text = f"{spins} spins"
+            stw = tw(spin_text, cormorant_italic_24)
+            draw.text((cx - stw // 2, y + 68), spin_text, fill=TEXT_MUTED, font=cormorant_italic_24)
+
+            # Vertical separator (except last)
+            if i < len(top_artists) - 1:
+                sep_x = pad + (i + 1) * col_w
+                draw.line([(sep_x, y + 20), (sep_x, y + bar_h - 20)], fill=(200, 190, 170), width=1)
+
+        y += bar_h + 24
+
+    # ════════════════════════════════════════════════════════
+    # PERSONALITY LABEL — centered italic
+    # ════════════════════════════════════════════════════════
+    personality = report.get("personality", {})
+    label = personality.get("label", "").strip("\"'")
+    if label:
+        label_lines = textwrap.wrap(label, width=34)
+        for line in label_lines[:2]:
+            ltw = tw(line, cormorant_italic_36)
+            draw.text(((W - ltw) / 2, y), line, fill=AMBER_ACCENT, font=cormorant_italic_36)
+            y += 44
+        y += 20
+
+    # ════════════════════════════════════════════════════════
+    # STATS — 3 amber boxes: Spins, Unique Records, Top Mood
+    # ════════════════════════════════════════════════════════
+    tile_w = (card_w - 20) // 3
+    tile_h = 130
+
+    listening = report.get("listening_stats", {})
+    top_mood = report.get("listening_mood", "")
+    if not top_mood:
+        mood_data = report.get("mood_breakdown", [])
+        top_mood = mood_data[0].get("mood", "chill") if mood_data else "chill"
+
+    stats_data = [
+        (str(report.get("total_spins", 0)), "spins"),
+        (str(listening.get("unique_records", 0)), "unique records"),
+        (top_mood[:12], "top mood"),
+    ]
+
+    for i, (val, lbl) in enumerate(stats_data):
+        tx = pad + i * (tile_w + 10)
+        # Amber rounded box
+        draw.rounded_rectangle([(tx, y), (tx + tile_w, y + tile_h)],
+                               radius=16, fill=STAT_AMBER)
+        # Value centered (white bold)
+        vtw = tw(val, stat_num_font)
+        draw.text((tx + (tile_w - vtw) // 2, y + 16), val, fill=CARD_WHITE, font=stat_num_font)
+        # Label below (white italic)
+        ltw = tw(lbl, cormorant_italic_24)
+        draw.text((tx + (tile_w - ltw) // 2, y + 86), lbl, fill=(255, 255, 255, 200), font=cormorant_italic_24)
+
+    y += tile_h + 20
+
+    # ════════════════════════════════════════════════════════
+    # DECADE PILLS — olive/sage green
+    # ════════════════════════════════════════════════════════
+    era = report.get("era_breakdown", [])
+    if era:
+        pill_x = pad
+        for e in era[:4]:
+            text = f'{e["decade"]}: {e["pct"]}%'
+            pw = tw(text, cormorant_reg_30) + 36
+            ph = 44
+            if pill_x + pw > W - pad:
+                pill_x = pad
+                y += ph + 10
+            draw.rounded_rectangle([(pill_x, y), (pill_x + pw, y + ph)],
+                                   radius=22, fill=PILL_GREEN)
+            draw.text((pill_x + 18, y + 5), text, fill=PILL_TEXT, font=cormorant_reg_30)
+            pill_x += pw + 12
+        y += 56
+
+    # ════════════════════════════════════════════════════════
+    # CLOSING LINE — centered, amber/honey italic
     # ════════════════════════════════════════════════════════
     closing = report.get("closing_line", "")
     if closing:
-        # Calculate remaining space: footer needs ~80px from bottom
-        footer_zone = H - 80
+        y += 10
+        footer_zone = H - 70
         available = footer_zone - y - 10
 
-        y += 20
-        available -= 20
-
-        # Try font sizes from large to small until it fits
-        for closing_font_size, closing_font, wrap_w in [
-            (52, cormorant_italic_52, 30),
-            (46, cormorant_italic_46, 34),
-            (40, cormorant_italic_40, 40),
-            (32, cormorant_italic_32, 48),
+        for closing_font, wrap_w, lh in [
+            (cormorant_italic_42, 34, 50),
+            (cormorant_italic_36, 40, 44),
+            (cormorant_italic_30, 48, 38),
         ]:
             lines = textwrap.wrap(closing, width=wrap_w)
-            total_text_h = len(lines) * (closing_font_size + 8)
-            if total_text_h <= available:
+            total_h = len(lines) * lh
+            if total_h <= available:
                 break
 
         for line in lines:
-            tw = text_width(line, closing_font)
-            draw.text(((W - tw) / 2, y), line, fill=TEXT_DARK, font=closing_font)
-            y += closing_font_size + 8
+            ltw = tw(line, closing_font)
+            draw.text(((W - ltw) / 2, y), line, fill=AMBER_ACCENT, font=closing_font)
+            y += lh
 
     # ════════════════════════════════════════════════════════
-    # FOOTER — pinned to bottom
+    # FOOTER — thehoneygroove.com (left) + your week in wax (right)
     # ════════════════════════════════════════════════════════
-    fy = H - 60
-    draw_divider(fy - 14)
+    fy = H - 56
+    # Subtle divider
+    div_y = fy - 14
+    for x in range(pad, W - pad):
+        mid = W // 2
+        alpha = int(30 * (1 - abs(x - mid) / (mid - pad)))
+        if alpha > 0:
+            draw.point((x, div_y), fill=(200, 134, 26, max(0, alpha)))
 
-    # Left: thehoneygroove.com
     draw.text((pad, fy), "thehoneygroove.com", fill=TEXT_MUTED, font=footer_font)
-    # Center: bee emoji
-    bee = "\U0001F41D"
-    bee_tw = text_width(bee, footer_font)
-    draw.text(((W - bee_tw) / 2, fy), bee, fill=TEXT_DARK, font=footer_font)
-    # Right: your week in wax
     yw_text = "your week in wax"
-    yw_tw = text_width(yw_text, footer_font)
+    yw_tw = tw(yw_text, footer_font)
     draw.text((W - pad - yw_tw, fy), yw_text, fill=TEXT_MUTED, font=footer_font)
 
     buf = io.BytesIO()
