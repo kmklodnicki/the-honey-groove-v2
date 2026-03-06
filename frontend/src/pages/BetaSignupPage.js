@@ -60,10 +60,23 @@ const BetaSignupPage = () => {
       </Helmet>
 
       <div className="min-h-screen bg-[#FAF6EE] flex flex-col items-center pb-16" data-testid="beta-signup-page">
-        <div className="w-full max-w-lg mx-auto px-6" style={{ paddingTop: '80px' }}>
+        {/* Honey drip — pinned to top */}
+        <div className="w-screen" data-testid="beta-drip"
+          style={{
+            backgroundImage: 'url(/honey-drip.png)',
+            backgroundRepeat: 'repeat-x',
+            backgroundPosition: 'top center',
+            backgroundSize: 'auto 100%',
+            height: '200px',
+            mixBlendMode: 'multiply',
+            imageRendering: 'high-quality',
+          }}
+        />
+
+        <div className="w-full max-w-lg mx-auto px-6" style={{ paddingTop: '40px' }}>
           {/* Logo */}
           <div className="flex justify-center mb-4">
-            <img src="/logo-drip.png" alt="the Honey Groove" className="w-[85vw] max-w-[520px] md:max-w-[560px] lg:max-w-[600px]" data-testid="beta-logo" />
+            <img src="/logo-wordmark-clean.png" alt="the Honey Groove" className="w-[85vw] max-w-[520px]" data-testid="beta-logo" />
           </div>
 
           {!submitted ? (
