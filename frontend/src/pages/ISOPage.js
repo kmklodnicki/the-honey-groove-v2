@@ -20,6 +20,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { ProposeTradeModal } from './TradesPage';
 import { usePageTitle } from '../hooks/usePageTitle';
+import ListingDetailModal from '../components/ListingDetailModal';
 
 const ISO_TAGS = ['OG Press', 'Factory Sealed', 'Any', 'Promo'];
 const FILTER_OPTIONS = ['All', 'OPEN', 'FOUND'];
@@ -57,12 +58,23 @@ const ISOPage = () => {
   const [offerAmount, setOfferAmount] = useState('');
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [platformFee, setPlatformFee] = useState(6);
+  const [selectedListingId, setSelectedListingId] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Fetch dynamic platform fee
   useEffect(() => {
     axios.get(`${API}/platform-fee`).then(r => setPlatformFee(r.data.platform_fee_percent)).catch(() => {});
   }, [API]);
+
+  // Deep link: open listing modal from URL /honeypot/listing/:id
+  useEffect(() => {
+    const path = window.location.pathname;
+    const match = path.match(/^\/honeypot\/listing\/(.+)$/);
+    if (match) {
+      setSelectedListingId(match[1]);
+      setActiveTab('shop');
+    }
+  }, []);
 
   // Handle Stripe payment return
   useEffect(() => {
@@ -422,7 +434,8 @@ const ISOPage = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {shopListings.map(listing => (
                 <ListingCard key={listing.id} listing={listing} currentUserId={user?.id}
-                  onBuyNow={handleBuyNow} onMakeOffer={(l) => setOfferTarget(l)} />
+                  onBuyNow={handleBuyNow} onMakeOffer={(l) => setOfferTarget(l)}
+                  onClick={() => setSelectedListingId(listing.id)} />
               ))}
             </div>
           )}
@@ -530,7 +543,8 @@ const ISOPage = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {tradeListings.map(listing => (
-                <ListingCard key={listing.id} listing={listing} currentUserId={user?.id} onProposeTrade={(l) => setTradeTarget(l)} />
+                <ListingCard key={listing.id} listing={listing} currentUserId={user?.id} onProposeTrade={(l) => setTradeTarget(l)}
+                  onClick={() => setSelectedListingId(listing.id)} />
               ))}
             </div>
           )}
@@ -715,6 +729,15 @@ const ISOPage = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ListingDetailModal
+        listingId={selectedListingId}
+        open={!!selectedListingId}
+        onClose={() => { setSelectedListingId(null); window.history.replaceState({}, '', '/honeypot'); }}
+        onBuyNow={handleBuyNow}
+        onMakeOffer={(l) => setOfferTarget(l)}
+        onProposeTrade={(l) => setTradeTarget(l)}
+      />
     </div>
   );
 };
@@ -842,7 +865,7 @@ const ActiveTradeCard = ({ trade, currentUserId }) => {
 };
 
 // Listing Card Component
-const ListingCard = ({ listing, currentUserId, onProposeTrade, onBuyNow, onMakeOffer }) => {
+const ListingCard = ({ listing, currentUserId, onProposeTrade, onBuyNow, onMakeOffer, onClick }) => {
   const [photoIdx, setPhotoIdx] = useState(0);
   const photos = listing.photo_urls || [];
   const typeConfig = {
@@ -852,13 +875,10 @@ const ListingCard = ({ listing, currentUserId, onProposeTrade, onBuyNow, onMakeO
   };
   const tc = typeConfig[listing.listing_type] || typeConfig.BUY_NOW;
   const mainImage = photos.length > 0 ? photos[photoIdx] : listing.cover_url;
-  const isOwn = listing.user_id === currentUserId || listing.user?.id === currentUserId;
-  const isTrade = listing.listing_type === 'TRADE';
-  const isBuyNow = listing.listing_type === 'BUY_NOW';
-  const isMakeOffer = listing.listing_type === 'MAKE_OFFER';
 
   return (
-    <Card className="border-honey/30 overflow-hidden hover:shadow-md transition-all" data-testid={`listing-${listing.id}`}>
+    <Card className="border-honey/30 overflow-hidden hover:shadow-md transition-all cursor-pointer" data-testid={`listing-${listing.id}`}
+      onClick={onClick}>
       <div className="relative aspect-square bg-honey/10">
         {mainImage ? <img src={mainImage} alt="" className="w-full h-full object-cover" />
           : <div className="w-full h-full flex items-center justify-center"><Disc className="w-12 h-12 text-honey" /></div>}
@@ -886,25 +906,9 @@ const ListingCard = ({ listing, currentUserId, onProposeTrade, onBuyNow, onMakeO
           {listing.price && <span className="text-sm font-heading">${listing.price}</span>}
           {listing.condition && <span className="text-xs text-muted-foreground">{listing.condition}</span>}
         </div>
-        {listing.user && <Link to={`/profile/${listing.user.username}`} className="text-xs text-muted-foreground hover:underline mt-1 block">@{listing.user.username}</Link>}
-        {!isOwn && (
-          <div className="mt-2 space-y-1.5">
-            {isBuyNow && onBuyNow && (
-              <button onClick={() => onBuyNow(listing)} className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-green-600 text-white hover:bg-green-700 transition-all" data-testid={`buy-now-${listing.id}`}>
-                <DollarSign className="w-3 h-3" /> Buy Now — ${listing.price}
-              </button>
-            )}
-            {isMakeOffer && onMakeOffer && (
-              <button onClick={() => onMakeOffer(listing)} className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-blue-600 text-white hover:bg-blue-700 transition-all" data-testid={`make-offer-${listing.id}`}>
-                <DollarSign className="w-3 h-3" /> Make an Offer
-              </button>
-            )}
-            {isTrade && onProposeTrade && (
-              <button onClick={() => onProposeTrade(listing)} className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-purple-100 text-purple-700 hover:bg-purple-200 transition-all" data-testid={`propose-trade-${listing.id}`}>
-                <ArrowRightLeft className="w-3 h-3" /> Propose Trade
-              </button>
-            )}
-          </div>
+        {listing.user && (
+          <Link to={`/profile/${listing.user.username}`} onClick={e => e.stopPropagation()}
+            className="text-xs text-muted-foreground hover:underline mt-1 block">@{listing.user.username}</Link>
         )}
       </div>
     </Card>

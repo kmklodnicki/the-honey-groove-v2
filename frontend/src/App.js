@@ -135,6 +135,11 @@ function AppContent() {
           <AppLayout><ISOPage /></AppLayout>
         </ProtectedRoute>
       } />
+      <Route path="/honeypot/listing/:listingId" element={
+        <ProtectedRoute>
+          <AppLayout><ISOPage /></AppLayout>
+        </ProtectedRoute>
+      } />
       <Route path="/iso" element={<Navigate to="/honeypot" replace />} />
       <Route path="/trades" element={<Navigate to="/honeypot" replace />} />
       <Route path="/messages" element={

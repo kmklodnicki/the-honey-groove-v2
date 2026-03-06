@@ -186,14 +186,53 @@ async def get_iso_matches(user: Dict = Depends(require_auth)):
     
     return result
 
-@router.get("/listings/{listing_id}", response_model=ListingResponse)
-async def get_listing(listing_id: str):
+@router.get("/listings/{listing_id}")
+async def get_listing(listing_id: str, current_user: Optional[Dict] = Depends(get_current_user)):
     listing = await db.listings.find_one({"id": listing_id}, {"_id": 0})
     if not listing:
         raise HTTPException(status_code=404, detail="Listing not found")
     seller = await db.users.find_one({"id": listing["user_id"]}, {"_id": 0, "password_hash": 0})
-    user_data = {"id": seller["id"], "username": seller["username"], "avatar_url": seller.get("avatar_url")} if seller else None
-    return ListingResponse(**listing, user=user_data)
+    seller_data = None
+    if seller:
+        completed_trades = await db.trades.count_documents({"$or": [{"initiator_id": seller["id"]}, {"responder_id": seller["id"]}], "status": "COMPLETED"})
+        completed_sales = await db.listings.count_documents({"user_id": seller["id"], "status": "SOLD"})
+        total_completed = completed_trades + completed_sales
+        seller_data = {
+            "id": seller["id"],
+            "username": seller["username"],
+            "avatar_url": seller.get("avatar_url"),
+            "rating": seller.get("rating", 5.0),
+            "completed_sales": total_completed,
+            "city": seller.get("city"),
+            "region": seller.get("region"),
+        }
+
+    # Similar listings by the same artist (max 5, exclude current)
+    similar = await db.listings.find(
+        {"artist": {"$regex": listing["artist"], "$options": "i"}, "status": "ACTIVE", "id": {"$ne": listing_id}},
+        {"_id": 0}
+    ).limit(5).to_list(5)
+    similar_enriched = []
+    for s in similar:
+        s_seller = await db.users.find_one({"id": s["user_id"]}, {"_id": 0, "password_hash": 0})
+        s_user = {"id": s_seller["id"], "username": s_seller["username"], "avatar_url": s_seller.get("avatar_url")} if s_seller else None
+        similar_enriched.append({**{k: v for k, v in s.items()}, "user": s_user})
+
+    # Check wantlist status for current user
+    on_wantlist = False
+    if current_user and listing.get("artist") and listing.get("album"):
+        wl = await db.iso_items.find_one({
+            "user_id": current_user["id"],
+            "artist": {"$regex": f"^{listing['artist']}$", "$options": "i"},
+            "album": {"$regex": f"^{listing['album']}$", "$options": "i"},
+        })
+        on_wantlist = wl is not None
+
+    resp = {k: v for k, v in listing.items()}
+    resp["user"] = seller_data
+    resp["similar_listings"] = similar_enriched
+    resp["on_wantlist"] = on_wantlist
+    return resp
 
 @router.delete("/listings/{listing_id}")
 async def delete_listing(listing_id: str, user: Dict = Depends(require_auth)):
