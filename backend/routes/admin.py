@@ -399,3 +399,58 @@ async def register_with_invite(data: InviteRegister, request: Request):
             "email_verified": False,
         },
     }
+
+
+# ═══════════════════════════════════════════════
+# USER MANAGEMENT
+# ═══════════════════════════════════════════════
+
+@router.get("/admin/users")
+async def list_users(
+    search: str = "",
+    role_filter: str = "all",
+    user: Dict = Depends(require_admin),
+):
+    """List all users with optional search and role filter."""
+    query = {}
+    if search:
+        regex = {"$regex": search, "$options": "i"}
+        query["$or"] = [{"username": regex}, {"email": regex}]
+    if role_filter == "admin":
+        query["is_admin"] = True
+    elif role_filter == "standard":
+        query["$or"] = query.get("$or", [])
+        query.setdefault("is_admin", {"$ne": True})
+
+    users = await db.users.find(query, {"_id": 0, "password_hash": 0}).sort("created_at", -1).to_list(500)
+    return [
+        {
+            "id": u["id"],
+            "username": u.get("username"),
+            "email": u.get("email"),
+            "avatar_url": u.get("avatar_url"),
+            "is_admin": u.get("is_admin", False),
+            "created_at": u.get("created_at"),
+        }
+        for u in users
+    ]
+
+
+class AdminRoleUpdate(BaseModel):
+    user_id: str
+    is_admin: bool
+
+
+@router.post("/admin/users/role")
+async def update_user_role(data: AdminRoleUpdate, user: Dict = Depends(require_admin)):
+    """Grant or revoke admin access for a user."""
+    if data.user_id == user["id"] and not data.is_admin:
+        raise HTTPException(status_code=400, detail="You cannot remove your own admin access.")
+
+    target = await db.users.find_one({"id": data.user_id}, {"_id": 0})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    await db.users.update_one({"id": data.user_id}, {"$set": {"is_admin": data.is_admin}})
+    action = "granted" if data.is_admin else "revoked"
+    return {"detail": f"Admin access {action} for @{target.get('username')}"}

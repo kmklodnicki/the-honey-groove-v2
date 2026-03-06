@@ -19,7 +19,7 @@ import AlbumArt from '../components/AlbumArt';
 const SECTIONS = {
   trending: { title: 'Trending in the Hive', icon: TrendingUp, iconColor: 'text-honey-amber' },
   'taste-match': { title: 'Taste Match', icon: Users, iconColor: 'text-honey-amber' },
-  'fresh-pressings': { title: 'Fresh Pressings', icon: Disc, iconColor: 'text-honey-amber' },
+  'trending-in-collections': { title: 'Trending in Collections', icon: TrendingUp, iconColor: 'text-honey-amber' },
   'most-wanted': { title: 'Most Wanted', icon: Heart, iconColor: 'text-red-400' },
   'near-you': { title: 'Near You', icon: MapPin, iconColor: 'text-honey-amber' },
 };
@@ -55,8 +55,8 @@ const ExploreSeeAllPage = () => {
         case 'taste-match':
           resp = await axios.get(`${API}/explore/suggested-collectors?limit=50`, { headers });
           break;
-        case 'fresh-pressings':
-          resp = await axios.get(`${API}/explore/fresh-pressings?limit=50`, { headers });
+        case 'trending-in-collections':
+          resp = await axios.get(`${API}/explore/trending-in-collections?limit=50`, { headers });
           break;
         case 'most-wanted':
           resp = await axios.get(`${API}/explore/most-wanted?limit=100`, { headers });
@@ -131,7 +131,7 @@ const ExploreSeeAllPage = () => {
         <>
           {section === 'trending' && <TrendingAll data={data} onOpen={openTrendingModal} />}
           {section === 'taste-match' && <TasteMatchAll data={data} navigate={navigate} />}
-          {section === 'fresh-pressings' && <FreshPressingsAll data={data} addToWantlist={addToWantlist} />}
+          {section === 'trending-in-collections' && <TrendingCollectionsAll data={data} addToWantlist={addToWantlist} />}
           {section === 'most-wanted' && <MostWantedAll data={data} addToWantlist={addToWantlist} />}
           {section === 'near-you' && (
             <NearYouAll
@@ -271,24 +271,24 @@ const TasteMatchAll = ({ data, navigate }) => {
   );
 };
 
-const FreshPressingsAll = ({ data, addToWantlist }) => {
-  if (!data || data.length === 0) return <EmptyState text="No fresh pressings found right now." />;
+const TrendingCollectionsAll = ({ data, addToWantlist }) => {
+  if (!data || data.length === 0) return <EmptyState text="No trending collection data right now." />;
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4" data-testid="fresh-pressings-grid">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4" data-testid="trending-collections-grid">
       {data.map((r, idx) => (
-        <div key={r.discogs_id || idx} data-testid={`sa-fp-${r.discogs_id || idx}`}>
+        <div key={r.discogs_id || idx} data-testid={`sa-tc-${r.discogs_id || idx}`}>
           <div className="aspect-square rounded-xl overflow-hidden bg-honey/10 mb-2 shadow-sm relative group">
             <AlbumArt src={r.cover_url} alt="" className="w-full h-full object-cover" />
             <button
               onClick={() => addToWantlist(r.artist, r.title, r.discogs_id, r.cover_url, r.year)}
               className="absolute bottom-2 right-2 bg-white/90 hover:bg-white rounded-full p-1.5 shadow opacity-0 group-hover:opacity-100 transition-opacity"
-              data-testid={`sa-add-wantlist-${r.discogs_id || idx}`}>
-              <Plus className="w-4 h-4 text-purple-600" />
+              data-testid={`sa-add-wantlist-tc-${r.discogs_id || idx}`}>
+              <Plus className="w-4 h-4 text-honey-amber" />
             </button>
           </div>
           <p className="text-sm font-medium truncate">{r.title}</p>
           <p className="text-xs text-muted-foreground truncate">{r.artist}</p>
-          {r.label && r.label.length > 0 && <p className="text-[10px] text-muted-foreground truncate">{r.label[0]}</p>}
+          {r.have > 0 && <p className="text-[10px] text-muted-foreground">owned by {r.have.toLocaleString()} collectors</p>}
         </div>
       ))}
     </div>

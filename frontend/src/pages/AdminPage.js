@@ -7,7 +7,7 @@ import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import {
   Loader2, Copy, Download, Plus, Users, Key, Check, X,
-  MessageSquare, Grid3X3, Flag, Settings, ChevronRight,
+  MessageSquare, Grid3X3, Flag, Settings, ChevronRight, Search,
   ToggleLeft, ToggleRight, Pencil, Calendar, Hash, Shield, DollarSign, ArrowRightLeft
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -26,6 +26,7 @@ const AdminPage = () => {
 
   const NAV = [
     { key: 'beta', label: 'Beta & Invites', icon: Users },
+    { key: 'users', label: 'User Management', icon: Shield },
     { key: 'prompts', label: 'Daily Prompts', icon: MessageSquare },
     { key: 'bingo', label: 'Bingo Squares', icon: Grid3X3 },
     { key: 'holds', label: 'Hold Disputes', icon: Shield },
@@ -57,6 +58,7 @@ const AdminPage = () => {
       </div>
 
       {section === 'beta' && <BetaSection API={API} headers={headers} token={token} />}
+      {section === 'users' && <UserManagementSection API={API} headers={headers} />}
       {section === 'prompts' && <PromptsSection API={API} headers={headers} />}
       {section === 'bingo' && <BingoSection API={API} headers={headers} />}
       {section === 'holds' && <HoldDisputesSection API={API} headers={headers} />}
@@ -1025,6 +1027,163 @@ const OffPlatformAlertsSection = ({ API, headers }) => {
               </div>
             </Card>
           ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ═══════════════════════════════════════════════
+// USER MANAGEMENT SECTION
+// ═══════════════════════════════════════════════
+const UserManagementSection = ({ API, headers }) => {
+  const { user: currentAdmin } = useAuth();
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [confirmModal, setConfirmModal] = useState(null); // { userId, username, action: 'grant'|'revoke' }
+  const [actionLoading, setActionLoading] = useState(false);
+
+  const fetchUsers = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (search) params.append('search', search);
+      if (roleFilter !== 'all') params.append('role_filter', roleFilter);
+      const res = await axios.get(`${API}/admin/users?${params}`, { headers });
+      setUsers(res.data);
+    } catch { toast.error('could not load users.'); }
+    finally { setLoading(false); }
+  }, [API, headers, search, roleFilter]);
+
+  useEffect(() => { fetchUsers(); }, [fetchUsers]);
+
+  const handleRoleChange = async () => {
+    if (!confirmModal) return;
+    setActionLoading(true);
+    try {
+      const isAdmin = confirmModal.action === 'grant';
+      await axios.post(`${API}/admin/users/role`, { user_id: confirmModal.userId, is_admin: isAdmin }, { headers });
+      toast.success(`@${confirmModal.username} is now ${isAdmin ? 'an admin' : 'a standard user'}.`);
+      setConfirmModal(null);
+      fetchUsers();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'could not update role.');
+    } finally { setActionLoading(false); }
+  };
+
+  const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+
+  return (
+    <div data-testid="user-management-section">
+      {/* Search + filter */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by username or email..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9 border-honey/50"
+            data-testid="user-search"
+          />
+        </div>
+        <div className="flex gap-1">
+          {['all', 'admin', 'standard'].map(f => (
+            <Button key={f} size="sm"
+              variant={roleFilter === f ? 'default' : 'outline'}
+              onClick={() => setRoleFilter(f)}
+              className={`rounded-full text-xs capitalize ${roleFilter === f ? 'bg-[#E8A820] text-[#2A1A06] hover:bg-[#C8861A]' : ''}`}
+              data-testid={`filter-${f}`}>
+              {f === 'all' ? 'All Users' : f === 'admin' ? 'Admins' : 'Standard'}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-honey-amber" /></div>
+      ) : users.length === 0 ? (
+        <Card className="p-8 text-center border-honey/30">
+          <Users className="w-10 h-10 text-honey/40 mx-auto mb-3" />
+          <p className="text-muted-foreground text-sm">No users found.</p>
+        </Card>
+      ) : (
+        <div className="border border-honey/20 rounded-xl overflow-hidden bg-white">
+          {/* Header */}
+          <div className="hidden sm:grid sm:grid-cols-[1fr_1fr_120px_80px_100px] gap-3 px-4 py-2.5 bg-honey/5 border-b border-honey/15 text-xs font-medium text-[#8A6B4A]">
+            <span>Username</span><span>Email</span><span>Joined</span><span>Role</span><span></span>
+          </div>
+          {/* Rows */}
+          <div className="divide-y divide-[#C8861A]/10">
+            {users.map(u => (
+              <div key={u.id} className="flex flex-col sm:grid sm:grid-cols-[1fr_1fr_120px_80px_100px] gap-1 sm:gap-3 px-4 py-3 items-start sm:items-center hover:bg-honey/5 transition-colors"
+                data-testid={`user-row-${u.username}`}>
+                <div className="flex items-center gap-2 min-w-0">
+                  <img src={u.avatar_url} alt="" className="w-7 h-7 rounded-full shrink-0" />
+                  <span className="text-sm font-medium truncate">@{u.username}</span>
+                </div>
+                <span className="text-xs text-muted-foreground truncate">{u.email}</span>
+                <span className="text-xs text-muted-foreground">{fmtDate(u.created_at)}</span>
+                <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold w-fit ${
+                  u.is_admin ? 'bg-[#E8A820]/15 text-[#C8861A] border border-[#C8861A]/30' : 'bg-gray-100 text-gray-600'
+                }`}>
+                  {u.is_admin ? 'Admin' : 'User'}
+                </span>
+                <div>
+                  {u.is_admin ? (
+                    <Button size="sm" variant="outline"
+                      onClick={() => setConfirmModal({ userId: u.id, username: u.username, action: 'revoke' })}
+                      className="text-[11px] h-7 rounded-full border-[#8A6B4A]/30 text-[#8A6B4A]"
+                      data-testid={`revoke-admin-${u.username}`}>
+                      Revoke Admin
+                    </Button>
+                  ) : (
+                    <Button size="sm" variant="outline"
+                      onClick={() => setConfirmModal({ userId: u.id, username: u.username, action: 'grant' })}
+                      className="text-[11px] h-7 rounded-full border-[#C8861A]/30 text-[#C8861A]"
+                      data-testid={`make-admin-${u.username}`}>
+                      Make Admin
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Confirmation Modal */}
+      {confirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setConfirmModal(null)}>
+          <div className="bg-[#FAF6EE] rounded-2xl p-6 max-w-sm mx-4 shadow-xl" onClick={e => e.stopPropagation()} data-testid="role-confirm-modal">
+            <h3 className="font-heading text-xl text-vinyl-black mb-3">
+              {confirmModal.action === 'grant' ? 'Grant Admin Access?' : 'Revoke Admin Access?'}
+            </h3>
+            <p className="text-sm text-vinyl-black/70 font-serif italic leading-relaxed mb-5">
+              {confirmModal.action === 'grant'
+                ? `Are you sure you want to grant admin access to @${confirmModal.username}? They will have full access to the admin panel including user data, listings, disputes, and all settings.`
+                : `Are you sure you want to revoke admin access from @${confirmModal.username}? They will lose access to the admin panel.`}
+            </p>
+            <div className="flex flex-col gap-2">
+              <Button
+                variant="outline"
+                onClick={handleRoleChange}
+                disabled={actionLoading}
+                className="w-full rounded-full border-vinyl-black/30 text-vinyl-black"
+                data-testid="confirm-role-btn">
+                {actionLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                {confirmModal.action === 'grant' ? 'Yes, grant access' : 'Yes, revoke access'}
+              </Button>
+              <Button
+                onClick={() => setConfirmModal(null)}
+                className="w-full bg-[#E8A820] text-vinyl-black hover:bg-[#C8861A] rounded-full"
+                data-testid="cancel-role-btn">
+                Cancel
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </div>

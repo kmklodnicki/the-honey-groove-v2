@@ -22,7 +22,7 @@ const ExplorePage = () => {
   const navigate = useNavigate();
   const [trending, setTrending] = useState([]);
   const [suggested, setSuggested] = useState([]);
-  const [freshPressings, setFreshPressings] = useState([]);
+  const [trendingCollections, setTrendingCollections] = useState([]);
   const [mostWanted, setMostWanted] = useState([]);
   const [nearYou, setNearYou] = useState({ collectors: [], listings: [], needs_location: true });
   const [loading, setLoading] = useState(true);
@@ -41,16 +41,16 @@ const ExplorePage = () => {
   const fetchData = useCallback(async () => {
     if (!token) { setLoading(false); return; }
     try {
-      const [trendRes, sugRes, fpRes, mwRes, nyRes] = await Promise.all([
+      const [trendRes, sugRes, tcRes, mwRes, nyRes] = await Promise.all([
         axios.get(`${API}/explore/trending?limit=10`, { headers }),
         axios.get(`${API}/explore/suggested-collectors?limit=8`, { headers }),
-        axios.get(`${API}/explore/fresh-pressings?limit=12`, { headers }),
+        axios.get(`${API}/explore/trending-in-collections?limit=12`, { headers }),
         axios.get(`${API}/explore/most-wanted?limit=20`, { headers }),
         axios.get(`${API}/explore/near-you`, { headers }),
       ]);
       setTrending(trendRes.data);
       setSuggested(sugRes.data);
-      setFreshPressings(fpRes.data);
+      setTrendingCollections(tcRes.data);
       setMostWanted(mwRes.data);
       setNearYou(nyRes.data);
     } catch { /* ignore */ }
@@ -195,26 +195,26 @@ const ExplorePage = () => {
         )}
       </ExploreSection>
 
-      {/* 3. Fresh Pressings */}
-      <ExploreSection icon={<Disc className="w-4 h-4 text-honey-amber" />} title="Fresh Pressings" testId="fresh-pressings-section" seeAllTo="/explore/fresh-pressings">
-        {freshPressings.length === 0 ? (
-          <EmptyCard text="No fresh pressings found right now." />
+      {/* 3. Trending in Collections */}
+      <ExploreSection icon={<TrendingUp className="w-4 h-4 text-honey-amber" />} title="Trending in Collections" testId="trending-collections-section" seeAllTo="/explore/trending-in-collections">
+        {trendingCollections.length === 0 ? (
+          <EmptyCard text="No trending collection data right now." />
         ) : (
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
-            {freshPressings.map((r, idx) => (
-              <div key={r.discogs_id || idx} className="flex-shrink-0 w-40" data-testid={`fresh-pressing-${r.discogs_id || idx}`}>
+            {trendingCollections.map((r, idx) => (
+              <div key={r.discogs_id || idx} className="flex-shrink-0 w-40" data-testid={`trending-collection-${r.discogs_id || idx}`}>
                 <div className="aspect-square rounded-xl overflow-hidden bg-honey/10 mb-2 shadow-sm relative group">
                   <AlbumArt src={r.cover_url} alt="" className="w-full h-full object-cover" />
                   <button
                     onClick={() => addToWantlist(r.artist, r.title, r.discogs_id, r.cover_url, r.year)}
                     className="absolute bottom-2 right-2 bg-white/90 hover:bg-white rounded-full p-1.5 shadow opacity-0 group-hover:opacity-100 transition-opacity"
-                    data-testid={`add-wantlist-${r.discogs_id || idx}`}>
-                    <Plus className="w-4 h-4 text-purple-600" />
+                    data-testid={`add-wantlist-tc-${r.discogs_id || idx}`}>
+                    <Plus className="w-4 h-4 text-honey-amber" />
                   </button>
                 </div>
                 <p className="text-sm font-medium truncate">{r.title}</p>
                 <p className="text-xs text-muted-foreground truncate">{r.artist}</p>
-                {r.label && r.label.length > 0 && <p className="text-[10px] text-muted-foreground truncate">{r.label[0]}</p>}
+                {r.have > 0 && <p className="text-[10px] text-muted-foreground">owned by {r.have.toLocaleString()} collectors</p>}
               </div>
             ))}
           </div>

@@ -5,6 +5,9 @@ from datetime import datetime, timezone, timedelta
 import uuid
 
 from database import db, require_auth, get_current_user, security, logger, create_notification, get_hidden_user_ids
+from database import DISCOGS_TOKEN, DISCOGS_USER_AGENT
+DISCOGS_API_BASE = "https://api.discogs.com"
+import requests
 from services.email_service import send_email_fire_and_forget
 import templates.emails as email_tpl
 from database import hash_password, verify_password, create_token, search_discogs, get_discogs_release
@@ -296,12 +299,12 @@ async def get_trending_record_posts(record_id: str, limit: int = 20, user: Dict 
     return {"record": record, "posts": posts}
 
 
-@router.get("/explore/fresh-pressings")
-async def get_fresh_pressings(limit: int = 12, user: Dict = Depends(require_auth)):
-    """Search Discogs for current year vinyl releases, cached for 24 hours."""
+@router.get("/explore/trending-in-collections")
+async def get_trending_in_collections(limit: int = 20, user: Dict = Depends(require_auth)):
+    """Most collected vinyl records on Discogs, cached for 24 hours."""
     import datetime as dt
 
-    cache_key = "fresh_pressings_cache"
+    cache_key = "trending_in_collections_cache"
     cache = await db.cache.find_one({"key": cache_key}, {"_id": 0})
 
     now = dt.datetime.now(dt.timezone.utc)
@@ -313,19 +316,39 @@ async def get_fresh_pressings(limit: int = 12, user: Dict = Depends(require_auth
         except Exception:
             pass
 
-    # Cache miss or expired — fetch from Discogs
-    year = now.year
-    results = search_discogs(f"year:{year}", search_type="release")
-    vinyl_results = []
-    for r in results:
-        formats = r.get("format", [])
-        if isinstance(formats, list) and any("vinyl" in f.lower() for f in formats):
-            vinyl_results.append(r)
-        elif not formats or len(vinyl_results) < limit:
-            vinyl_results.append(r)
-        if len(vinyl_results) >= limit:
-            break
-    data = vinyl_results[:limit]
+    # Cache miss or expired — fetch most collected from Discogs
+    headers = {"User-Agent": DISCOGS_USER_AGENT}
+    params = {
+        "sort": "have",
+        "sort_order": "desc",
+        "format": "vinyl",
+        "per_page": limit,
+        "type": "release",
+    }
+    if DISCOGS_TOKEN:
+        params["token"] = DISCOGS_TOKEN
+
+    data = []
+    try:
+        resp = requests.get(f"{DISCOGS_API_BASE}/database/search", params=params, headers=headers, timeout=15)
+        if resp.status_code == 200:
+            for item in resp.json().get("results", []):
+                parts = item.get("title", "").split(" - ", 1)
+                artist = parts[0].strip() if len(parts) > 1 else "Unknown"
+                title = parts[1].strip() if len(parts) > 1 else parts[0].strip()
+                community = item.get("community", {})
+                data.append({
+                    "discogs_id": item.get("id"),
+                    "artist": artist,
+                    "title": title,
+                    "year": item.get("year"),
+                    "cover_url": item.get("cover_image"),
+                    "format": item.get("format", []),
+                    "have": community.get("have", 0),
+                    "want": community.get("want", 0),
+                })
+    except Exception as e:
+        logger.error(f"Discogs trending-in-collections error: {e}")
 
     # Store in cache with 24-hour TTL
     expires_at = (now + dt.timedelta(hours=24)).isoformat()
@@ -334,7 +357,11 @@ async def get_fresh_pressings(limit: int = 12, user: Dict = Depends(require_auth
         {"$set": {"key": cache_key, "data": data, "expires_at": expires_at, "updated_at": now.isoformat()}},
         upsert=True,
     )
-    return data
+
+    # Clean up old fresh_pressings cache
+    await db.cache.delete_one({"key": "fresh_pressings_cache"})
+
+    return data[:limit]
 
 
 @router.get("/explore/most-wanted")

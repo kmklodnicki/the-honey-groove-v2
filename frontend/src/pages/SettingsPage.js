@@ -294,7 +294,7 @@ const SettingsPage = () => {
               data-testid="settings-genre"
             >
               <option value="">Select a genre</option>
-              {['Jazz', 'Soul', 'Funk', 'R&B', 'Hip Hop', 'Rock', 'Indie', 'Electronic', 'House', 'Techno', 'Ambient', 'Classical', 'Folk', 'Country', 'Reggae', 'Punk', 'Metal', 'Blues', 'Latin', 'World'].map(g => (
+              {['Jazz', 'Soul', 'Funk', 'R&B', 'Pop', 'Hip Hop', 'Rock', 'Indie', 'Alternative', 'Electronic', 'House', 'Techno', 'Ambient', 'Classical', 'Folk', 'Country', 'Reggae', 'Punk', 'Metal', 'Blues', 'Latin', 'World'].map(g => (
                 <option key={g} value={g}>{g}</option>
               ))}
             </select>
