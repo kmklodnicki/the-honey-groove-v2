@@ -166,6 +166,18 @@ COMPLETED → Mandatory rating before next trade
 
 89. **Mobile Bottom Navigation** — Instagram/TikTok-style mobile nav. Desktop nav hidden on mobile (<768px). Replaced with: (1) 48px slim top bar with centered HoneyGroove wordmark, DM/notification/avatar icons on right. (2) 64px fixed bottom nav with 5 icon-only tabs: The Hive, Explore, Search, Collection, The Honeypot. Active icon: amber #C8861A, inactive: muted #8A6B4A at 50%. Safe area padding via env(safe-area-inset-bottom). Page padding updated to pt-16 md:pt-24. (Mar 2026)
 
+90. **Brand Polish Phase 1 — Quick UI Fixes** — Login logo 200px, mobile wordmark 130px/56px bar, notification badge amber (not red), bottom nav inactive opacity 0.65, ISO card cream bg + amber border + outlined OPEN pill, Daily Prompt bee emoji replacing fire, Mutual Hold amber (not green) + copy fix, honey jar favicon at 16/32/180/192 sizes with PWA manifest. (Mar 2026)
+
+91. **Brand Polish Phase 2 — Honey Jar Loading Screen** — SVG honey jar with CSS fill animation (1.5s ease), rotating loading phrases ('filling the hive...', 'warming up the wax...', etc.), replaces both index.html initial loader and React LoadingScreen component. (Mar 2026)
+
+92. **Brand Polish Phase 3 — Custom Toasts** — Sonner unstyled mode with custom CSS: cream #FAF6EE bg, amber border, 16px radius, emoji icons (🍯 success, 🐝 error, 🎵 info), max-width 320px floating pill. All 85+ toast messages updated to lowercase conversational style. (Mar 2026)
+
+93. **Brand Polish Phase 4 — Email Templates** — Sender name 'The Honey Groove', base template redesigned with logo image, honey drip, solid 2px amber divider, warm #FAF6EE bg, bee footer with amber link. Verification email migrated to use base template. (Mar 2026)
+
+94. **Global Album Art Fallback** — Reusable AlbumArt component with shimmer loading skeleton and vinyl record SVG placeholder on error. Applied to 75+ img tags across all pages/components. Vinyl placeholder: cream bg with muted amber concentric circles. (Mar 2026)
+
+95. **ISO Card & Toast Fixes** — Toast constrained to 320px max-width floating pill. ISO card: rounded-xl (12px), outlined amber OPEN badge (transparent bg, amber border/text). Beta page dropdown bg fixed to cream. (Mar 2026)
+
 ## Upcoming Tasks
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
 - **P2: Refactor ISOPage.js** — Break monolithic 3-tab component
