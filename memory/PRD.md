@@ -132,6 +132,8 @@ COMPLETED → Mandatory rating before next trade
 
 72. **Mandatory Mutual Hold** — All trades now require hold (no straight trades). Removed toggle/decline option. Accept always → HOLD_PENDING. Trade accepted email updated with hold explanation. FAQ updated: new "What is a Mutual Hold Trade?" entry, fee policy clarifies 6% on sweeteners only, hold not subject to fee. (Mar 2026)
 
+73. **Mutual Hold Phase 3 Frontend** — TradesPage routing fixed (/trades renders instead of redirect). Trade cards: shield icon + tooltip, hold amount badge, "Pay hold" indicator. Trade detail modal: MUTUAL HOLD status section, per-party payment tracking, "Pay $X Hold" Stripe button. Propose modal: always-visible hold amount field with $10 min. Confirmation UI: "Yes, everything looks good" / "There's an issue". FAQ updated. 17/17 tests passed. (Mar 2026)
+
 ## Upcoming Tasks
 - **P0: Complete Email System** — Wire remaining 2 email triggers (newsletter_signup, weekly_wax_ready), verify all 13 existing triggers
 - **P1: Stripe Webhook Verification** — Test /api/webhook/stripe with real Stripe event
