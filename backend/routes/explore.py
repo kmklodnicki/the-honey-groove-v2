@@ -294,11 +294,24 @@ async def get_trending_record_posts(record_id: str, limit: int = 20, user: Dict 
 
 @router.get("/explore/fresh-pressings")
 async def get_fresh_pressings(limit: int = 12, user: Dict = Depends(require_auth)):
-    """Search Discogs for current year vinyl releases"""
+    """Search Discogs for current year vinyl releases, cached for 24 hours."""
     import datetime as dt
-    year = dt.datetime.now().year
+
+    cache_key = "fresh_pressings_cache"
+    cache = await db.cache.find_one({"key": cache_key}, {"_id": 0})
+
+    now = dt.datetime.now(dt.timezone.utc)
+    if cache and cache.get("expires_at"):
+        try:
+            expires = dt.datetime.fromisoformat(cache["expires_at"])
+            if now < expires:
+                return cache.get("data", [])[:limit]
+        except Exception:
+            pass
+
+    # Cache miss or expired — fetch from Discogs
+    year = now.year
     results = search_discogs(f"year:{year}", search_type="release")
-    # Filter to vinyl format
     vinyl_results = []
     for r in results:
         formats = r.get("format", [])
@@ -308,7 +321,16 @@ async def get_fresh_pressings(limit: int = 12, user: Dict = Depends(require_auth
             vinyl_results.append(r)
         if len(vinyl_results) >= limit:
             break
-    return vinyl_results[:limit]
+    data = vinyl_results[:limit]
+
+    # Store in cache with 24-hour TTL
+    expires_at = (now + dt.timedelta(hours=24)).isoformat()
+    await db.cache.update_one(
+        {"key": cache_key},
+        {"$set": {"key": cache_key, "data": data, "expires_at": expires_at, "updated_at": now.isoformat()}},
+        upsert=True,
+    )
+    return data
 
 
 @router.get("/explore/most-wanted")

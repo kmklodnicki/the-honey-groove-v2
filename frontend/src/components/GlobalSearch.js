@@ -90,9 +90,9 @@ const GlobalSearch = ({ onClose, initialTab }) => {
       await axios.post(`${API}/records`, {
         title: r.title, artist: r.artist, cover_url: r.cover_url,
         discogs_id: r.discogs_id, year: r.year, format: r.format,
-      }, { headers: { Authorization: `Bearer ${token}` } });
+      }, { headers: { Authorization: `Bearer ${token}` }, timeout: 15000 });
       toast.success('added to collection.');
-    } catch (e) { toast.error(e.response?.data?.detail || 'Failed'); }
+    } catch (e) { toast.error(e.response?.data?.detail || "couldn't add that record. please try again."); }
   };
 
   const followUser = async (u) => {

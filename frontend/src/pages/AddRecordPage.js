@@ -99,15 +99,20 @@ const AddRecordPage = () => {
       };
 
       await axios.post(`${API}/records`, recordData, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 15000,
       });
 
-      toast.success('Record added to collection!');
+      toast.success('record added to your collection.');
       trackEvent('collection_record_added');
       navigate('/collection');
     } catch (error) {
       console.error('Add error:', error);
-      toast.error('Failed to add record');
+      if (error.response?.data?.detail) {
+        toast.error(error.response.data.detail);
+      } else {
+        toast.error("couldn't add that record. please try again.");
+      }
     } finally {
       setAdding(false);
     }
