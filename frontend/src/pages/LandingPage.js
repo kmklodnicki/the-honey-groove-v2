@@ -51,12 +51,12 @@ const LandingPage = () => {
   );
 
   const features = [
-    { icon: <Disc className="w-6 h-6" />, title: "Track Your Collection", description: "Add records with album art pulled from Discogs. Log every press, note conditions, and watch your collection grow — and appreciate in value." },
-    { icon: <Music2 className="w-6 h-6" />, title: "Now Spinning", description: "Drop the needle, share the moment. Log your spin, pick a mood, and let your people know exactly what you're feeling right now." },
-    { icon: <ShoppingBag className="w-6 h-6" />, title: "New Haul", description: "Record store day. Thrift score. eBay win. Show off every find to people who actually understand why it matters." },
-    { icon: <Search className="w-6 h-6" />, title: "ISO", description: "Been hunting something for years? Post it. Get matched with collectors who have it and reach out directly." },
-    { icon: <ArrowLeftRight className="w-6 h-6" />, title: "Trade", description: "Offer a record from your collection, add a sweetener if needed, and swap directly with collectors. No middleman. Just the community." },
-    { icon: <Share2 className="w-6 h-6" />, title: "Shareable Graphics", description: "Generate beautiful Now Spinning and Haul cards built for Instagram. One tap, ready to post." },
+    { icon: <Disc className="w-6 h-6" />, title: "Track Your Collection", description: "Add records with album art pulled from Discogs. Log every press, note conditions, and watch your collection grow and appreciate in value. Import your existing Discogs collection in one click." },
+    { icon: <Music2 className="w-6 h-6" />, title: "Now Spinning", description: "Drop the needle, share the moment. Log your spin, pick a mood, and let the hive know exactly what's on the turntable right now." },
+    { icon: <ShoppingBag className="w-6 h-6" />, title: "The Honeypot", description: "A peer-to-peer marketplace built for collectors. Buy, sell, and trade records directly with people who understand what they're worth. Lower fees than any major vinyl marketplace." },
+    { icon: <Search className="w-6 h-6" />, title: "ISO", description: "Been hunting something for years? Post it. Get matched with collectors who have it and reach out directly. We notify you the moment your record appears in the marketplace." },
+    { icon: <ArrowLeftRight className="w-6 h-6" />, title: "Trade with Confidence", description: "Every trade on the Honey Groove uses a Mutual Hold \u2014 both parties put up a hold equal to the estimated record value. Fully reversed on confirmed delivery. No risk, no strangers, no trust issues." },
+    { icon: <Share2 className="w-6 h-6" />, title: "Your Week in Wax", description: "Every Sunday get a full breakdown of your listening week \u2014 top artists, moods, era breakdown, and a one-line summary of who you were as a listener. Shareable to Instagram Stories in one tap." },
   ];
 
   return (
@@ -119,7 +119,7 @@ const LandingPage = () => {
               built for the <span className="text-honey-amber italic">obsessed.</span>
             </h2>
             <p className="text-base md:text-lg text-vinyl-black/70 max-w-xl mx-auto">
-              The Honey Groove is designed by collectors, for collectors. here's what makes our hive special.
+              The Honey Groove is designed by collectors, for collectors. Here's what makes our hive different.
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
