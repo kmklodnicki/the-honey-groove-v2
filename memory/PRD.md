@@ -124,7 +124,11 @@ SHIPPING/CONFIRMING → DISPUTED → Admin resolves (COMPLETED/CANCELLED/PARTIAL
 COMPLETED → Mandatory rating before next trade
 ```
 
+69. **Landing Page Hero Polish** — Reduced hero top padding from 144px to 32px mobile / 48px desktop. Added subtle 3s ease-in-out honey drip animation (5px vertical float) on logo-drip.png. (Mar 2026)
+
 ## Upcoming Tasks
+- **P0: Complete Email System** — Wire remaining 2 email triggers (newsletter_signup, weekly_wax_ready), verify all 13 existing triggers
+- **P1: Stripe Webhook Verification** — Test /api/webhook/stripe with real Stripe event
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
 - **P2: Refactor ISOPage.js** — Break monolithic 3-tab component
 - **P2: Monetization** — Pro membership, Verified Seller badge

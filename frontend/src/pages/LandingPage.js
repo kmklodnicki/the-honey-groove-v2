@@ -64,15 +64,15 @@ const LandingPage = () => {
       <HoneycombPattern />
 
       {/* Hero Section */}
-      <section className="relative pt-20 pb-24 overflow-hidden">
-        <div className="max-w-6xl mx-auto px-4 md:px-8 pt-16">
+      <section className="relative pt-8 md:pt-12 pb-24 overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 md:px-8">
           <div className="text-center max-w-4xl mx-auto">
             {/* Logo */}
             <div className="flex justify-center mb-2">
               <img
                 src="/logo-drip.png"
                 alt="the Honey Groove"
-                className="w-[85vw] max-w-[520px] md:max-w-[560px] lg:max-w-[600px]"
+                className="w-[85vw] max-w-[520px] md:max-w-[560px] lg:max-w-[600px] animate-honey-drip"
               />
             </div>
 
