@@ -67,14 +67,30 @@ const LandingPage = () => {
       <section className="relative pt-8 md:pt-12 pb-24 overflow-hidden">
         <div className="max-w-6xl mx-auto px-4 md:px-8">
           <div className="text-center max-w-4xl mx-auto">
-            {/* Logo */}
-            <div className="flex justify-center mb-2">
+            {/* Logo wordmark — positioned above drip */}
+            <div className="flex justify-center pt-[60px] relative z-10">
               <img
-                src="/logo-drip.png"
+                src="/logo-wordmark-clean.png"
                 alt="the Honey Groove"
-                className="w-[85vw] max-w-[520px] md:max-w-[560px] lg:max-w-[600px] animate-honey-drip"
+                className="w-[85vw] max-w-[520px]"
+                data-testid="hero-logo"
               />
             </div>
+          </div>
+        </div>
+
+        {/* Honey drip — full viewport width, flows from logo */}
+        <div className="w-screen relative left-1/2 -translate-x-1/2 -mt-8 md:-mt-12 z-0" data-testid="hero-drip">
+          <img
+            src="/honey-drip.png"
+            alt=""
+            className="w-full h-auto"
+            style={{ display: 'block' }}
+          />
+        </div>
+
+        <div className="max-w-6xl mx-auto px-4 md:px-8">
+          <div className="text-center max-w-4xl mx-auto">
 
             {/* Bee bridge */}
             <p className="text-[28px] mb-4" style={{ color: 'rgba(200,134,26,0.6)' }}>🐝</p>
