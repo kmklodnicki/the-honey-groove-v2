@@ -129,7 +129,9 @@ function AppContent() {
 }
 
 function App() {
+  console.log('APP RENDERING');
   useEffect(() => {
+    console.log('APP MOUNTED');
     // Remove the static HTML loading screen immediately on mount
     const loader = document.getElementById('loading-screen');
     if (loader) loader.remove();

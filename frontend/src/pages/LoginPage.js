@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Disc, Eye, EyeOff, Mail, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
+import safeStorage from '../utils/safeStorage';
 import axios from 'axios';
 
 const API = process.env.REACT_APP_BACKEND_URL;
@@ -53,7 +54,7 @@ const LoginPage = () => {
   const handleResendVerification = async () => {
     setResending(true);
     try {
-      const token = localStorage.getItem('honeygroove_token');
+      const token = safeStorage.getItem('honeygroove_token');
       await axios.post(`${API}/api/auth/resend-verification`, {}, { headers: { Authorization: `Bearer ${token}` } });
       toast.success('verification email sent. check your inbox.');
     } catch {

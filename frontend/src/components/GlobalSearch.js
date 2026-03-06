@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Search, Plus, Clock, Trash2, UserPlus, Disc, Feather } from 'lucide-react';
 import { toast } from 'sonner';
 import AlbumArt from './AlbumArt';
+import safeStorage from '../utils/safeStorage';
 
 const TABS = [
   { key: 'records', label: 'Records' },
@@ -23,15 +24,15 @@ const RECENT_KEY = 'hg_recent_searches';
 const MAX_RECENT = 8;
 
 function getRecent() {
-  try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]').slice(0, MAX_RECENT); }
+  try { return JSON.parse(safeStorage.getItem(RECENT_KEY) || '[]').slice(0, MAX_RECENT); }
   catch { return []; }
 }
 function addRecent(q) {
   const list = getRecent().filter(s => s !== q);
   list.unshift(q);
-  localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, MAX_RECENT)));
+  safeStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, MAX_RECENT)));
 }
-function clearRecent() { localStorage.removeItem(RECENT_KEY); }
+function clearRecent() { safeStorage.removeItem(RECENT_KEY); }
 
 const GlobalSearch = ({ onClose, initialTab }) => {
   const { token, API } = useAuth();

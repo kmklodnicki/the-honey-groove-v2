@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import safeStorage from '../utils/safeStorage';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -10,13 +11,13 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(() => localStorage.getItem('honeygroove_token'));
+  const [token, setToken] = useState(() => safeStorage.getItem('honeygroove_token'));
   const [loading, setLoading] = useState(true);
 
   // Set up axios interceptor for auth header
   useEffect(() => {
     const interceptor = axios.interceptors.request.use((config) => {
-      const storedToken = localStorage.getItem('honeygroove_token');
+      const storedToken = safeStorage.getItem('honeygroove_token');
       if (storedToken) {
         config.headers.Authorization = `Bearer ${storedToken}`;
       }
@@ -29,21 +30,24 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   useEffect(() => {
+    console.log('AUTH INIT, token exists:', !!token);
     if (token) {
       fetchUser();
     } else {
+      console.log('AUTH RESOLVED, loading: false (no token)');
       setLoading(false);
     }
-    // Hard safety timeout: force loading=false after 3 seconds no matter what.
-    // Prevents Safari from hanging indefinitely on a blank screen.
+    // Hard safety timeout: force loading=false after 5 seconds no matter what.
     const safetyTimer = setTimeout(() => {
+      console.log('AUTH SAFETY TIMEOUT, forcing loading: false');
       setLoading(false);
-    }, 3000);
+    }, 5000);
     return () => clearTimeout(safetyTimer);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchUser = async () => {
     try {
+      console.log('AUTH fetchUser START');
       const response = await axios.get(`${API}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
         timeout: 5000
@@ -53,6 +57,7 @@ export const AuthProvider = ({ children }) => {
         return;
       }
       setUser(response.data);
+      console.log('AUTH RESOLVED, loading: false (user loaded)');
     } catch (error) {
       console.error('Auth error:', error);
       logout();
@@ -64,9 +69,8 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     const response = await axios.post(`${API}/auth/login`, { email, password });
     const { access_token, user: userData } = response.data;
-    localStorage.setItem('honeygroove_token', access_token);
+    safeStorage.setItem('honeygroove_token', access_token);
     setToken(access_token);
-    // Don't set user if email not verified — keep them on login page
     if (userData.email_verified === false) {
       return userData;
     }
@@ -77,7 +81,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (email, password, username) => {
     const response = await axios.post(`${API}/auth/register`, { email, password, username });
     const { access_token, user: userData } = response.data;
-    localStorage.setItem('honeygroove_token', access_token);
+    safeStorage.setItem('honeygroove_token', access_token);
     setToken(access_token);
     if (userData.email_verified === false) {
       return userData;
@@ -87,7 +91,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('honeygroove_token');
+    safeStorage.removeItem('honeygroove_token');
     setToken(null);
     setUser(null);
   };

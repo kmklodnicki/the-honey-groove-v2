@@ -6,6 +6,7 @@ import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import { usePageTitle } from '../hooks/usePageTitle';
+import safeStorage from '../utils/safeStorage';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
@@ -49,7 +50,7 @@ const JoinPage = () => {
         username: form.username,
       });
       const { access_token, user } = res.data;
-      localStorage.setItem('token', access_token);
+      safeStorage.setItem('honeygroove_token', access_token);
       setToken(access_token);
       setUser(user);
       toast.success('welcome to the hive.');
