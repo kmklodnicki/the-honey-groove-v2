@@ -34,13 +34,19 @@ export const AuthProvider = ({ children }) => {
     } else {
       setLoading(false);
     }
-  }, []);
+    // Hard safety timeout: force loading=false after 3 seconds no matter what.
+    // Prevents Safari from hanging indefinitely on a blank screen.
+    const safetyTimer = setTimeout(() => {
+      setLoading(false);
+    }, 3000);
+    return () => clearTimeout(safetyTimer);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchUser = async () => {
     try {
       const response = await axios.get(`${API}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
-        timeout: 10000
+        timeout: 5000
       });
       if (response.data.email_verified === false) {
         logout();
