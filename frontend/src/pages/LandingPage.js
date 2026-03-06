@@ -93,9 +93,6 @@ const LandingPage = () => {
         <div className="max-w-6xl mx-auto px-4 md:px-8">
           <div className="text-center max-w-4xl mx-auto">
 
-            {/* Bee bridge */}
-            <p className="-mt-10 text-[28px] mb-4" style={{ color: 'rgba(200,134,26,0.6)' }}>🐝</p>
-
             {/* Headline */}
             <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl text-vinyl-black tracking-tight mb-6 animate-fade-in">
               the vinyl social club,{' '}
