@@ -320,6 +320,8 @@ COMPLETED → Mandatory rating before next trade
 
 165. **AlbumArt Import Fix** — Added missing `import AlbumArt from '../components/AlbumArt'` to AddRecordPage.js. The component was used on line 142 but never imported, causing "Uncaught ReferenceError: AlbumArt is not defined" in production builds. (Mar 2026)
 
+166. **Notification Click Navigation** — Each notification type now navigates to its correct destination on click: NEW_FOLLOWER→`/profile/{username}`, POST_LIKED/NEW_COMMENT→`/hive`, TRADE_PROPOSED/ACCEPTED→`/trades`, SALE_COMPLETED/PURCHASE_COMPLETED/WANTLIST_MATCH→`/honeypot/listing/{id}`, ORDER_SHIPPED/CANCELLED→`/orders`, WAX_REPORT→`/wax-reports`, BINGO→`/nectar`, MOOD_BOARD→`/profile/{username}`, streak_nudge→`/hive`, PRICE_ALERT→`/honeypot`, STRIPE_CONNECTED→`/settings`, dm→`/messages`. Also expanded NOTIF_ICONS map with all types. 100% test pass rate (19/19). (Mar 2026)
+
 ## Upcoming Tasks
 - **P1: Weekly Wax Email** — Ensure scheduled "Weekly Wax" email is correctly configured (Sundays 12:00 PM ET)
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
