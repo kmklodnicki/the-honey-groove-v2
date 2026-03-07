@@ -549,6 +549,9 @@ async def create_payment_checkout(request: Request, body: Dict, user: Dict = Dep
             mode="payment",
             success_url=success_url,
             cancel_url=cancel_url,
+            shipping_address_collection={
+                "allowed_countries": [user.get("country", "US")] if user.get("country") else ["US", "GB", "CA", "AU", "DE", "FR", "JP", "NL", "SE", "IT", "ES", "BR", "MX", "NZ", "IE", "NO", "DK", "FI", "BE", "AT", "CH", "PT", "PL", "CZ", "KR", "TW", "SG", "ZA", "AR", "CL", "CO", "PH", "IN", "IL", "GR", "HU", "RO", "HR", "SK", "BG", "RS", "UA", "TH", "MY", "ID", "VN", "HK", "AE", "SA"],
+            },
             payment_intent_data={
                 "application_fee_amount": fee_cents,
                 "transfer_data": {"destination": seller["stripe_account_id"]},
@@ -556,6 +559,7 @@ async def create_payment_checkout(request: Request, body: Dict, user: Dict = Dep
             metadata={
                 "listing_id": listing_id, "buyer_id": user["id"],
                 "seller_id": listing["user_id"], "type": "marketplace_purchase",
+                "buyer_country": user.get("country", ""),
             },
         )
     except Exception as e:

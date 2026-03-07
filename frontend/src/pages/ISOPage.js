@@ -31,6 +31,7 @@ import ListingDetailModal from '../components/ListingDetailModal';
 import AlbumArt from '../components/AlbumArt';
 import RecordSearchResult from '../components/RecordSearchResult';
 import StripeGateModal from '../components/StripeGateModal';
+import CountryGateModal from '../components/CountryGateModal';
 
 const ISO_TAGS = ['OG Press', 'Factory Sealed', 'Any', 'Promo'];
 const FILTER_OPTIONS = ['All', 'OPEN', 'FOUND'];
@@ -77,6 +78,7 @@ const ISOPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [stripeEnabled, setStripeEnabled] = useState(false);
   const [showStripeGate, setShowStripeGate] = useState(false);
+  const [showCountryGate, setShowCountryGate] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null); // listing or iso id pending delete
   const [deleteConfirmType, setDeleteConfirmType] = useState(null); // 'listing' or 'iso'
 
@@ -251,6 +253,10 @@ const ISOPage = () => {
       setShowStripeGate(true);
       return;
     }
+    if (type === 'listing' && !user?.country) {
+      setShowCountryGate(true);
+      return;
+    }
     resetForm();
     if (type === 'listing' && activeTab === 'trade') setListType('TRADE');
     else if (type === 'listing') setListType('BUY_NOW');
@@ -371,6 +377,7 @@ const ISOPage = () => {
   };
 
   const handleBuyNow = async (listing) => {
+    if (!user?.country) { setShowCountryGate(true); return; }
     setPaymentLoading(true);
     try {
       const resp = await axios.post(`${API}/payments/checkout`, { listing_id: listing.id, origin_url: window.location.origin }, { headers: { Authorization: `Bearer ${token}` } });
@@ -381,6 +388,7 @@ const ISOPage = () => {
   };
 
   const handleMakeOfferSubmit = async () => {
+    if (!user?.country) { setShowCountryGate(true); return; }
     if (!offerTarget || !offerAmount) return;
     setPaymentLoading(true);
     try {
@@ -457,6 +465,7 @@ const ISOPage = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8" data-testid="honeypot-page">
       <StripeGateModal open={showStripeGate} onClose={() => setShowStripeGate(false)} />
+      <CountryGateModal open={showCountryGate} onClose={() => setShowCountryGate(false)} />
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -617,7 +626,7 @@ const ISOPage = () => {
           ) : (
             <div className="divide-y divide-[#C8861A]/10 border border-honey/20 rounded-xl overflow-hidden bg-white">
               {tradeListings.map(listing => (
-                <ListingCard key={listing.id} listing={listing} currentUserId={user?.id} onProposeTrade={(l) => setTradeTarget(l)}
+                <ListingCard key={listing.id} listing={listing} currentUserId={user?.id} onProposeTrade={(l) => { if (!user?.country) { setShowCountryGate(true); return; } setTradeTarget(l); }}
                   onClick={() => setSelectedListingId(listing.id)} />
               ))}
             </div>
@@ -857,7 +866,7 @@ const ISOPage = () => {
         onClose={() => { setSelectedListingId(null); window.history.replaceState({}, '', '/honeypot'); }}
         onBuyNow={handleBuyNow}
         onMakeOffer={(l) => setOfferTarget(l)}
-        onProposeTrade={(l) => setTradeTarget(l)}
+        onProposeTrade={(l) => { if (!user?.country) { setShowCountryGate(true); return; } setTradeTarget(l); }}
       />
 
       {/* Delete Confirmation Dialog */}

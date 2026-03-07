@@ -1,0 +1,80 @@
+{
+  "summary": "Iteration 76: Tested Country Gate Modal and Shipping Address Country Validation features. All 9 requested features verified working.",
+  
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  
+  "passed_tests": [
+    "BACKEND: PUT /api/auth/me can update country field (VERIFIED - pytest passed)",
+    "BACKEND: POST /api/payments/checkout includes shipping_address_collection with allowed_countries matching buyer country (VERIFIED via code inspection)",
+    "BACKEND: POST /api/payments/checkout validates international_shipping restrictions - domestic-only seller different country from buyer returns 400 (VERIFIED - pytest passed)",
+    "FRONTEND: App loads without build errors (VERIFIED - screenshot captured)",
+    "FRONTEND: CountryGateModal appears when user with no country tries to create a listing (VERIFIED - screenshot captured)",
+    "FRONTEND: CountryGateModal has 'go to settings' button that navigates to /settings (VERIFIED - screenshot captured)",
+    "FRONTEND: Settings page has Country dropdown that saves country (VERIFIED - screenshot captured)",
+    "FRONTEND: After setting country, CountryGateModal no longer appears for listing creation (VERIFIED - Listing modal opened)",
+    "FRONTEND: Onboarding Step 3 shows country selector (VERIFIED - Step 3 of 3 with 'where are you based?' and country dropdown)"
+  ],
+  
+  "test_report_links": [
+    "/app/backend/tests/test_country_gate_features.py",
+    "/app/test_reports/pytest/country_gate_results.xml"
+  ],
+  
+  "action_items": [],
+  
+  "critical_code_review_comments": [
+    "CountryGateModal correctly checks user.country and shows modal when falsy (ISOPage.js lines 251-264)",
+    "ISOPage.js gates listing creation, handleBuyNow, handleMakeOfferSubmit, and onProposeTrade with country check",
+    "Checkout session in honeypot.py (lines 539-553) correctly includes shipping_address_collection.allowed_countries set to buyer's country",
+    "If buyer has no country, fallback to full list of supported countries is implemented",
+    "International shipping validation in checkout (lines 522-526) correctly blocks cross-country purchases for domestic-only listings",
+    "OnboardingModal Step 3 (lines 480-514) correctly has country selector with data-testid='onboarding-country'"
+  ],
+  
+  "updated_files": [],
+  
+  "success_rate": {
+    "backend": "100% (6/6 pytest tests passed)",
+    "frontend": "100% (6/6 features verified via Playwright)"
+  },
+  
+  "test_credentials": {
+    "stripe_no_country_user": "TEST_stripe_nocountry_726f89@honey.io / testpass123 (has Stripe, no country)",
+    "onboarding_user": "TEST_onboarding_1da183@honey.io / testpass123 (onboarding_completed=false)",
+    "seller_with_stripe": "vinylcollector@honey.io / password123 (country=US, stripe_connected=true)"
+  },
+  
+  "seed_data_creation": "Created test users: (1) TEST_stripe_nocountry_726f89@honey.io with Stripe connected but NO country (to test CountryGateModal), (2) TEST_onboarding_1da183@honey.io with onboarding_completed=false (to test Onboarding Step 3 country selector)",
+  
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  
+  "context_for_next_testing_agent": "Two features implemented and tested: (1) Country Gate Modal - When user tries to create listing/buy/sell/trade without country set, CountryGateModal appears prompting them to set country in Settings first. Logic is in ISOPage.js - Stripe check happens FIRST (if no Stripe → StripeGateModal), THEN country check (if no country → CountryGateModal). (2) Shipping Address Country Validation - Stripe checkout now collects shipping address restricted to buyer's profile country via allowed_countries. If buyer has country, allowed_countries=[buyer.country]. If no country, full list is used as fallback. Domestic-only listings (international_shipping=false) cannot be purchased by buyers from different countries. MOCKED: Resend email service is mocked, Stripe Connect is live.",
+  
+  "feature_flow_summary": {
+    "country_gate_modal": {
+      "trigger": "User without country set tries to: create listing, buy now, make offer, or propose trade",
+      "check_order": "1. Check Stripe connected (if not → StripeGateModal), 2. Check user.country (if not → CountryGateModal)",
+      "modal_content": "Title: 'set your country first', Button: 'go to settings' navigates to /settings",
+      "resolution": "User sets country in Settings → CountryGateModal no longer appears"
+    },
+    "shipping_address_validation": {
+      "checkout_behavior": "Stripe checkout session includes shipping_address_collection.allowed_countries set to [user.country]",
+      "domestic_only_check": "If listing.international_shipping=false AND seller.country != buyer.country → 400 error",
+      "fallback": "If buyer has no country, all supported countries are allowed in Stripe form"
+    },
+    "onboarding": {
+      "steps": "3 steps total (was 2)",
+      "step_3": "'where are you based?' with country dropdown selector"
+    }
+  }
+}
