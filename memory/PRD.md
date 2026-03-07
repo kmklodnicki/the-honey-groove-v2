@@ -258,6 +258,12 @@ COMPLETED → Mandatory rating before next trade
 
 134. **HEIC/HEIF Image Support & Compression** — iPhone users upload HEIC photos which browsers can't render. Fixed across entire upload pipeline: Backend `process_image()` in collection.py converts HEIC/HEIF to JPEG via `pillow-heif`, resizes to max 1200px on longest side, compresses to 85% JPEG quality. Handles RGBA/Palette PNG by compositing onto white background. All uploads stored as `.jpg`. Frontend validation utility (`utils/imageUpload.js`) accepts jpg/png/webp/heic/heif, rejects other types with toast. All 5 file inputs updated (SettingsPage, ISOPage, TradesPage x2, ComposerBar). Admin endpoint `POST /api/admin/reprocess-heic` scans listings/users/posts for existing HEIC URLs and re-processes them. (Mar 2026)
 
+135. **Photo Lightbox Gallery** — Reusable `PhotoLightbox.js` component with: dark overlay, photo counter (1/3), close button (X / Escape / tap-outside / swipe-down), desktop left/right arrows, mobile swipe navigation, thumbnail strip with amber ring on active photo, fade/scale open/close animation, smooth slide between photos. Applied to: ListingDetailModal (multi-photo listings), NoteCard in PostCards (single image posts). (Mar 2026)
+
+136. **Profile Page Mobile Layout Fixes** — Card background changed to cream `#FAF6EE`. Stats restructured as 2x2 grid on mobile (Records, Following, Followers, Est. Value). Streak moved from stats row to amber pill next to username. Setup text emoji replaced with Lucide Disc icon. Founding member badge cleaned up. Stripe Connected badge already owner-only (isOwnProfile). Removed duplicate StreakBadge standalone component. (Mar 2026)
+
+137. **Navbar Wordmark Size Fix** — Applied inline `style={{minWidth: '160px', width: '160px'}}` directly on the mobile wordmark img tag to prevent CSS class overrides. (Mar 2026)
+
 ## Upcoming Tasks
 - **P1: Weekly Wax Email** — Ensure scheduled "Weekly Wax" email is correctly configured (Sundays 12:00 PM ET)
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
