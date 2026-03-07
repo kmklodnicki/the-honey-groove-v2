@@ -228,8 +228,15 @@ COMPLETED → Mandatory rating before next trade
 
 119. **Share/Export Buttons Hidden** — All Instagram shareable export options temporarily removed from user-facing views: Hive post share button & dialog, Wax Report share button & modal, Collector Bingo "save & share card" button, Daily Prompt "share to instagram" + post-submit "save & share card", Mood Board export button, Collection Page "shareable card" label. Code preserved via comments for quick re-enable. (Mar 2026)
 
-- **P1: Admin User Management tab** — grant/revoke admin access
-- **P2: Weekly Wax welcome email** — first edition with custom copy
+120. **Discogs Search Debounce (All Components)** — Added 350ms debounce to ComposerBar.js (haul search, ISO search) and OnboardingModal.js (record search) using useRef-based timers with cleanup. ISOPage.js already had debounce. Prevents excessive API calls on mobile. (Mar 2026)
+
+121. **Weekly Wax Email — 12PM ET Schedule** — Changed wax report scheduler from Sunday midnight UTC to Sunday 12:00 PM ET using zoneinfo.ZoneInfo("America/New_York"). Handles DST transitions automatically. Starting March 8, 2026. (Mar 2026)
+
+122. **Hold Auto-Reversal Fix** — Fixed import scope for auto_reverse_expired_holds in server.py. Import was inside startup function but referenced in _schedule_hold_auto_reversal — moved import into the scheduler function. (Mar 2026)
+
+123. **Data Cleanup** — Deleted 3 orphan posts with no type. Purged all test accounts created during testing. Only real user (katieintheafterglow) and hidden admin remain. (Mar 2026)
+
+## Upcoming Tasks
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
 - **P2: Refactor ISOPage.js** — Break monolithic 3-tab component
 - **P2: Monetization** — Pro membership, Verified Seller badge
@@ -256,4 +263,7 @@ honeypot_blocks (ip, email, created_at)
 ```
 
 ## Test Credentials
-- Admin: demo@example.com / password123 (is_admin: true)
+- Admin: admin@thehoneygroove.com (is_admin: true, is_hidden: true)
+- Real user: katieintheafterglow (kmklodnicki@gmail.com)
+- demo@example.com has been DELETED
+- To test: Generate invite code via admin, register via /join?code=XXXXXX
