@@ -238,6 +238,10 @@ COMPLETED → Mandatory rating before next trade
 
 124. **Global Search Overhaul** — Complete rewrite of search functionality. New unified backend endpoint GET /api/search/unified searches records (from collections), collectors, posts, AND Honeypot listings simultaneously using per-word regex matching. Relevancy scoring: exact match (100) > starts-with (60) > word boundary (40) > contains (20). Separate non-blocking GET /api/search/discogs for external Discogs catalog results. Frontend shows all content types in single scrollable view with section headers (Records, Collectors, Honeypot Listings, Posts) with counts. Fuzzy matching: "tay swift" finds Taylor Swift. Speed: avg 115ms (target was 300ms). Database indexes on records.artist, records.title, listings.artist+album, posts.caption+content. Empty state: "no results for [query]" with bee emoji. Batch queries for user data (no N+1). (Mar 2026)
 
+125. **Search Input Lag Fix** — Added AbortController to GlobalSearch.js and AddRecordPage.js to cancel in-flight requests when user types again. Separated input state (instant) from search trigger (300ms debounce). Added amber loading spinner inside search bar. No keyboard blocking on mobile. (Mar 2026)
+
+126. **Vinyl Variant Details in Search Cards** — Created reusable RecordSearchResult.js component showing two-line compact format: Line 1 = Year · Label · Catalog#, Line 2 = Format · Country. Color variants displayed in amber pill badges (e.g., "Blue Translucent", "Target Exclusive #3"). Enhanced backend search_discogs() to extract color/variant from Discogs formats.text field. Updated DiscogsSearchResult Pydantic model (format: str, added label/catno/country/color_variant/genre). Applied to all 6 search UIs: GlobalSearch, AddRecord, ISOPage DiscogsPicker, ComposerBar haul+ISO, OnboardingModal. (Mar 2026)
+
 ## Upcoming Tasks
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
 - **P2: Refactor ISOPage.js** — Break monolithic 3-tab component
