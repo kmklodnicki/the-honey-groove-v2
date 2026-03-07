@@ -24,6 +24,7 @@ from routes.mood_boards import router as mood_boards_router, generate_weekly_moo
 from routes.bingo import router as bingo_router, seed_bingo_squares
 from routes.reports import router as reports_router
 from routes.admin import router as admin_router
+from routes.search import router as search_router
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -33,7 +34,7 @@ app = FastAPI(title="HoneyGroove API")
 for r in [auth_router, hive_router, collection_router, honeypot_router,
           trades_router, notifications_router, dms_router, explore_router,
           valuation_router, wax_reports_router, daily_prompts_router, newsletter_router,
-          mood_boards_router, bingo_router, reports_router, admin_router]:
+          mood_boards_router, bingo_router, reports_router, admin_router, search_router]:
     app.include_router(r, prefix="/api")
 
 app.add_middleware(
@@ -80,6 +81,11 @@ async def startup_event():
     await db.collection_values.create_index("last_updated")
     await db.wax_reports.create_index([("user_id", 1), ("week_start", 1)], unique=True)
     await db.wax_reports.create_index([("user_id", 1), ("week_end", -1)])
+    # Search indexes for global search performance
+    await db.records.create_index([("artist", 1)])
+    await db.records.create_index([("title", 1)])
+    await db.posts.create_index([("caption", "text"), ("content", "text")])
+    await db.listings.create_index([("artist", 1), ("album", 1)])
     # Daily prompts indexes
     await db.prompts.create_index("scheduled_date")
     await db.prompts.create_index("id", unique=True)

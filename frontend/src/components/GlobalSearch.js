@@ -5,16 +5,10 @@ import axios from 'axios';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Search, Plus, Clock, Trash2, UserPlus, Disc, Feather } from 'lucide-react';
+import { Search, Plus, Clock, Trash2, UserPlus, Disc, Feather, ShoppingBag, Tag, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import AlbumArt from './AlbumArt';
 import safeStorage from '../utils/safeStorage';
-
-const TABS = [
-  { key: 'records', label: 'Records' },
-  { key: 'collectors', label: 'Collectors' },
-  { key: 'posts', label: 'Posts' },
-];
 
 const POST_ICONS = {
   NOW_SPINNING: Disc, ISO: Search, NEW_HAUL: Plus, NOTE: Feather,
@@ -38,34 +32,45 @@ const GlobalSearch = ({ onClose, initialTab }) => {
   const { token, API } = useAuth();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
-  const [tab, setTab] = useState(initialTab || 'records');
-  const [records, setRecords] = useState([]);
-  const [collectors, setCollectors] = useState([]);
-  const [posts, setPosts] = useState([]);
+  const [results, setResults] = useState({ records: [], collectors: [], posts: [], listings: [] });
+  const [discogsResults, setDiscogsResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [discogsLoading, setDiscogsLoading] = useState(false);
   const [recentSearches, setRecentSearches] = useState(getRecent());
   const inputRef = useRef(null);
   const debounceRef = useRef(null);
+  const discogsRef = useRef(null);
 
   useEffect(() => { inputRef.current?.focus(); }, []);
 
   const doSearch = useCallback(async (q) => {
-    if (!q || q.length < 2) { setRecords([]); setCollectors([]); setPosts([]); return; }
-    setLoading(true);
+    if (!q || q.length < 2) {
+      setResults({ records: [], collectors: [], posts: [], listings: [] });
+      setDiscogsResults([]);
+      return;
+    }
     const headers = { Authorization: `Bearer ${token}` };
+
+    // Fast local search
+    setLoading(true);
     try {
-      const [recResp, colResp, postResp] = await Promise.all([
-        axios.get(`${API}/discogs/search?q=${encodeURIComponent(q)}`, { headers }).catch(() => ({ data: [] })),
-        axios.get(`${API}/users/search?query=${encodeURIComponent(q)}`, { headers }).catch(() => ({ data: [] })),
-        axios.get(`${API}/search/posts?q=${encodeURIComponent(q)}`, { headers }).catch(() => ({ data: [] })),
-      ]);
-      setRecords(recResp.data?.slice(0, 12) || []);
-      setCollectors(colResp.data?.slice(0, 12) || []);
-      setPosts(postResp.data?.slice(0, 12) || []);
+      const resp = await axios.get(`${API}/search/unified?q=${encodeURIComponent(q)}`, { headers, timeout: 5000 });
+      setResults(resp.data);
       addRecent(q);
       setRecentSearches(getRecent());
     } catch { /* ignore */ }
     finally { setLoading(false); }
+
+    // Slower Discogs external search (non-blocking)
+    if (discogsRef.current) clearTimeout(discogsRef.current);
+    setDiscogsLoading(true);
+    discogsRef.current = setTimeout(async () => {
+      try {
+        const resp = await axios.get(`${API}/search/discogs?q=${encodeURIComponent(q)}`, { headers, timeout: 8000 });
+        setDiscogsResults(resp.data?.slice(0, 8) || []);
+      } catch { setDiscogsResults([]); }
+      finally { setDiscogsLoading(false); }
+    }, 100);
   }, [API, token]);
 
   useEffect(() => {
@@ -73,17 +78,16 @@ const GlobalSearch = ({ onClose, initialTab }) => {
     if (query.length >= 2) {
       debounceRef.current = setTimeout(() => doSearch(query), 300);
     } else {
-      setRecords([]); setCollectors([]); setPosts([]);
+      setResults({ records: [], collectors: [], posts: [], listings: [] });
+      setDiscogsResults([]);
     }
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [query, doSearch]);
 
-  const goToRecord = (r) => {
-    if (r.discogs_id) navigate(`/record/${r.discogs_id}`);
-    onClose?.();
-  };
+  const goToRecord = (r) => { if (r.discogs_id) navigate(`/record/${r.discogs_id}`); onClose?.(); };
   const goToCollector = (u) => { navigate(`/profile/${u.username}`); onClose?.(); };
-  const goToPost = (p) => { navigate('/hive'); onClose?.(); };
+  const goToPost = () => { navigate('/hive'); onClose?.(); };
+  const goToListing = (l) => { navigate(`/honeypot?listing=${l.id}`); onClose?.(); };
 
   const addToCollection = async (r) => {
     try {
@@ -102,9 +106,16 @@ const GlobalSearch = ({ onClose, initialTab }) => {
     } catch { toast.error('something went wrong.'); }
   };
 
-  const currentResults = tab === 'records' ? records : tab === 'collectors' ? collectors : posts;
   const hasQuery = query.length >= 2;
-  const noResults = hasQuery && !loading && currentResults.length === 0;
+  const { records, collectors, posts, listings } = results;
+
+  // Merge local records + discogs (deduped by discogs_id)
+  const seenIds = new Set(records.map(r => r.discogs_id).filter(Boolean));
+  const extraDiscogs = discogsResults.filter(r => r.discogs_id && !seenIds.has(r.discogs_id));
+  const allRecords = [...records, ...extraDiscogs.map(r => ({ ...r, source: 'discogs' }))];
+
+  const totalResults = allRecords.length + collectors.length + posts.length + listings.length;
+  const noResults = hasQuery && !loading && !discogsLoading && totalResults === 0;
 
   return (
     <div className="flex flex-col h-full" data-testid="global-search">
@@ -124,31 +135,12 @@ const GlobalSearch = ({ onClose, initialTab }) => {
         </Button>
       </div>
 
-      {/* Tabs */}
-      {hasQuery && (
-        <div className="flex border-b border-honey/20 px-4" data-testid="search-tabs">
-          {TABS.map(t => (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${tab === t.key ? 'border-amber-500 text-amber-700' : 'border-transparent text-muted-foreground hover:text-vinyl-black'}`}
-              data-testid={`search-tab-${t.key}`}
-            >
-              {t.label}
-              {t.key === 'records' && records.length > 0 && <span className="ml-1 text-xs opacity-60">({records.length})</span>}
-              {t.key === 'collectors' && collectors.length > 0 && <span className="ml-1 text-xs opacity-60">({collectors.length})</span>}
-              {t.key === 'posts' && posts.length > 0 && <span className="ml-1 text-xs opacity-60">({posts.length})</span>}
-            </button>
-          ))}
-        </div>
-      )}
-
       {/* Results */}
       <div className="flex-1 overflow-y-auto p-4">
         {/* Loading */}
         {loading && (
-          <div className="flex items-center justify-center py-8">
-            <div className="w-6 h-6 border-2 border-amber-400 border-t-transparent rounded-full animate-spin" />
+          <div className="flex items-center justify-center py-8" data-testid="search-loading">
+            <Loader2 className="w-6 h-6 animate-spin text-amber-400" />
           </div>
         )}
 
@@ -187,89 +179,145 @@ const GlobalSearch = ({ onClose, initialTab }) => {
         {/* No results */}
         {noResults && (
           <div className="text-center py-12" data-testid="search-empty-state">
-            <span className="text-3xl block mb-3">🎵</span>
-            <p className="italic text-muted-foreground" style={{ fontFamily: '"DM Serif Display", serif', color: '#8A6B4A' }}>
-              nothing in the hive for that yet.
+            <p className="text-sm text-muted-foreground" style={{ color: '#8A6B4A' }}>
+              no results for "{query}" 🐝
             </p>
           </div>
         )}
 
-        {/* Records results */}
-        {hasQuery && !loading && tab === 'records' && records.length > 0 && (
-          <div className="space-y-1" data-testid="search-records-list">
-            {records.map((r, i) => (
-              <div key={r.discogs_id || i} className="flex items-center gap-3 p-2 rounded-lg hover:bg-honey/10 cursor-pointer group" data-testid={`search-record-${i}`}>
-                <div className="shrink-0 cursor-pointer" onClick={() => goToRecord(r)}>
-                  {r.cover_url ? (
-                    <AlbumArt src={r.cover_url} alt="" className="w-12 h-12 rounded-md object-cover shadow-sm" />
-                  ) : (
-                    <div className="w-12 h-12 rounded-md bg-stone-100 flex items-center justify-center"><Disc className="w-5 h-5 text-stone-400" /></div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0 cursor-pointer" onClick={() => goToRecord(r)}>
-                  <p className="text-sm font-medium truncate">{r.title}</p>
-                  <p className="text-xs text-muted-foreground truncate">{r.artist} {r.year ? `(${r.year})` : ''} {r.format ? `· ${r.format}` : ''}</p>
-                </div>
-                <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                  <button onClick={(e) => { e.stopPropagation(); addToCollection(r); }}
-                    className="text-xs text-amber-600 hover:text-amber-800 px-2 py-1 rounded-full border border-amber-300 hover:bg-amber-50"
-                    data-testid={`search-add-collection-${i}`}
-                  >+ collection</button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Collectors results */}
-        {hasQuery && !loading && tab === 'collectors' && collectors.length > 0 && (
-          <div className="space-y-1" data-testid="search-collectors-list">
-            {collectors.map((u, i) => (
-              <div key={u.id || i} className="flex items-center gap-3 p-2 rounded-lg hover:bg-honey/10 cursor-pointer" onClick={() => goToCollector(u)} data-testid={`search-collector-${i}`}>
-                <Avatar className="h-10 w-10 border border-honey/30">
-                  <AvatarImage src={u.avatar_url} />
-                  <AvatarFallback className="bg-honey-soft text-sm font-medium">{u.username?.[0]?.toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium">@{u.username}</p>
-                  <p className="text-xs text-muted-foreground">{u.record_count || 0} records</p>
-                </div>
-                <button onClick={(e) => { e.stopPropagation(); followUser(u); }}
-                  className="text-xs text-amber-600 hover:text-amber-800 px-3 py-1.5 rounded-full border border-amber-300 hover:bg-amber-50 flex items-center gap-1"
-                  data-testid={`search-follow-${i}`}
-                >
-                  <UserPlus className="w-3 h-3" /> Follow
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Posts results */}
-        {hasQuery && !loading && tab === 'posts' && posts.length > 0 && (
-          <div className="space-y-1" data-testid="search-posts-list">
-            {posts.map((p, i) => {
-              const Icon = POST_ICONS[p.post_type] || Disc;
-              return (
-                <div key={p.id || i} className="flex items-start gap-3 p-2 rounded-lg hover:bg-honey/10 cursor-pointer" onClick={() => goToPost(p)} data-testid={`search-post-${i}`}>
-                  <div className="mt-0.5 shrink-0">
-                    <Icon className="w-4 h-4 text-amber-500" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      {p.post_type !== 'NOTE' && (
-                        <span className="text-[10px] font-medium text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">{p.post_type?.replace('_', ' ')}</span>
-                      )}
-                      <span className="text-xs text-muted-foreground">@{p.user?.username}</span>
+        {/* Unified results grouped by section */}
+        {hasQuery && !loading && totalResults > 0 && (
+          <div className="space-y-6">
+            {/* Records Section */}
+            {allRecords.length > 0 && (
+              <section data-testid="search-records-section">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <Disc className="w-3.5 h-3.5" /> Records
+                  <span className="text-[10px] opacity-60">({allRecords.length})</span>
+                  {discogsLoading && <Loader2 className="w-3 h-3 animate-spin ml-1" />}
+                </h3>
+                <div className="space-y-0.5">
+                  {allRecords.slice(0, 8).map((r, i) => (
+                    <div key={r.discogs_id || i} className="flex items-center gap-3 p-2 rounded-lg hover:bg-honey/10 cursor-pointer group" data-testid={`search-record-${i}`}>
+                      <div className="shrink-0 cursor-pointer" onClick={() => goToRecord(r)}>
+                        {r.cover_url ? (
+                          <AlbumArt src={r.cover_url} alt="" className="w-11 h-11 rounded-md object-cover shadow-sm" />
+                        ) : (
+                          <div className="w-11 h-11 rounded-md bg-stone-100 flex items-center justify-center"><Disc className="w-5 h-5 text-stone-400" /></div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0 cursor-pointer" onClick={() => goToRecord(r)}>
+                        <p className="text-sm font-medium truncate">{r.title}</p>
+                        <p className="text-xs text-muted-foreground truncate">{r.artist} {r.year ? `(${r.year})` : ''}</p>
+                      </div>
+                      <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                        <button onClick={(e) => { e.stopPropagation(); addToCollection(r); }}
+                          className="text-xs text-amber-600 hover:text-amber-800 px-2 py-1 rounded-full border border-amber-300 hover:bg-amber-50"
+                          data-testid={`search-add-collection-${i}`}
+                        >+ collection</button>
+                      </div>
                     </div>
-                    <p className="text-sm truncate">{p.caption}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
-                      {p.created_at ? new Date(p.created_at).toLocaleDateString() : ''}
-                    </p>
-                  </div>
+                  ))}
                 </div>
-              );
-            })}
+              </section>
+            )}
+
+            {/* Collectors Section */}
+            {collectors.length > 0 && (
+              <section data-testid="search-collectors-section">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <UserPlus className="w-3.5 h-3.5" /> Collectors
+                  <span className="text-[10px] opacity-60">({collectors.length})</span>
+                </h3>
+                <div className="space-y-0.5">
+                  {collectors.map((u, i) => (
+                    <div key={u.id || i} className="flex items-center gap-3 p-2 rounded-lg hover:bg-honey/10 cursor-pointer" onClick={() => goToCollector(u)} data-testid={`search-collector-${i}`}>
+                      <Avatar className="h-10 w-10 border border-honey/30">
+                        <AvatarImage src={u.avatar_url} />
+                        <AvatarFallback className="bg-honey-soft text-sm font-medium">{u.username?.[0]?.toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium">@{u.username}</p>
+                        <p className="text-xs text-muted-foreground">{u.record_count || 0} records</p>
+                      </div>
+                      {!u.is_following && (
+                        <button onClick={(e) => { e.stopPropagation(); followUser(u); }}
+                          className="text-xs text-amber-600 hover:text-amber-800 px-3 py-1.5 rounded-full border border-amber-300 hover:bg-amber-50 flex items-center gap-1"
+                          data-testid={`search-follow-${i}`}
+                        >
+                          <UserPlus className="w-3 h-3" /> Follow
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Listings Section */}
+            {listings.length > 0 && (
+              <section data-testid="search-listings-section">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <ShoppingBag className="w-3.5 h-3.5" /> Honeypot Listings
+                  <span className="text-[10px] opacity-60">({listings.length})</span>
+                </h3>
+                <div className="space-y-0.5">
+                  {listings.map((l, i) => (
+                    <div key={l.id || i} className="flex items-center gap-3 p-2 rounded-lg hover:bg-honey/10 cursor-pointer" onClick={() => goToListing(l)} data-testid={`search-listing-${i}`}>
+                      <div className="shrink-0">
+                        {l.cover_url ? (
+                          <AlbumArt src={l.cover_url} alt="" className="w-11 h-11 rounded-md object-cover shadow-sm" />
+                        ) : (
+                          <div className="w-11 h-11 rounded-md bg-stone-100 flex items-center justify-center"><ShoppingBag className="w-5 h-5 text-stone-400" /></div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{l.album}</p>
+                        <p className="text-xs text-muted-foreground truncate">{l.artist}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        {l.price && <p className="text-sm font-semibold" style={{ color: '#C8861A' }}>${l.price}</p>}
+                        {l.condition && <p className="text-[10px] text-muted-foreground">{l.condition}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Posts Section */}
+            {posts.length > 0 && (
+              <section data-testid="search-posts-section">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <Feather className="w-3.5 h-3.5" /> Posts
+                  <span className="text-[10px] opacity-60">({posts.length})</span>
+                </h3>
+                <div className="space-y-0.5">
+                  {posts.map((p, i) => {
+                    const Icon = POST_ICONS[p.post_type] || Disc;
+                    return (
+                      <div key={p.id || i} className="flex items-start gap-3 p-2 rounded-lg hover:bg-honey/10 cursor-pointer" onClick={goToPost} data-testid={`search-post-${i}`}>
+                        <div className="mt-0.5 shrink-0">
+                          <Icon className="w-4 h-4 text-amber-500" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            {p.post_type !== 'NOTE' && p.post_type && (
+                              <span className="text-[10px] font-medium text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">{p.post_type?.replace('_', ' ')}</span>
+                            )}
+                            <span className="text-xs text-muted-foreground">@{p.user?.username}</span>
+                          </div>
+                          <p className="text-sm truncate">{p.caption}</p>
+                          <p className="text-[10px] text-muted-foreground mt-0.5">
+                            {p.created_at ? new Date(p.created_at).toLocaleDateString() : ''}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
           </div>
         )}
       </div>
