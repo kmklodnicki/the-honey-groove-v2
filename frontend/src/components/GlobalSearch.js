@@ -135,7 +135,11 @@ const GlobalSearch = ({ onClose }) => {
 
   const followUser = async (u) => {
     try {
-      await axios.post(`${API}/users/${u.id}/follow`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      await axios.post(`${API}/follow/${u.username}`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      setResults(prev => ({
+        ...prev,
+        collectors: prev.collectors.map(c => c.id === u.id ? { ...c, is_following: true } : c),
+      }));
       toast.success(`following @${u.username}.`);
     } catch { toast.error('something went wrong.'); }
   };
@@ -261,7 +265,11 @@ const GlobalSearch = ({ onClose }) => {
                         <p className="text-sm font-medium">@{u.username}</p>
                         <p className="text-xs text-muted-foreground">{u.record_count || 0} records</p>
                       </div>
-                      {!u.is_following && (
+                      {u.is_following ? (
+                        <span className="text-xs text-muted-foreground px-3 py-1.5 rounded-full border border-stone-200 bg-stone-50" data-testid={`search-following-${i}`}>
+                          Following
+                        </span>
+                      ) : (
                         <button onClick={(e) => { e.stopPropagation(); followUser(u); }}
                           className="text-xs text-amber-600 hover:text-amber-800 px-3 py-1.5 rounded-full border border-amber-300 hover:bg-amber-50 flex items-center gap-1"
                           data-testid={`search-follow-${i}`}
