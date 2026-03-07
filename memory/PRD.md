@@ -296,6 +296,10 @@ COMPLETED → Mandatory rating before next trade
 
 153. **ISOs Page: Removed Search/Found Counts** — Removed the "Searching for X" and "Found X" stat section from the ISO tab. Tab badge still shows count. (Mar 2026)
 
+154. **Email Config: hello@thehoneygroove.com** — Updated ADMIN_NOTIFY_EMAIL from contact@kathrynklodnicki.com to hello@thehoneygroove.com. All outgoing emails now sent from/to hello@thehoneygroove.com. (Mar 2026)
+
+155. **Explore → Nectar Rename** — Renamed Explore page to "Nectar" everywhere: page title, nav labels (desktop + mobile), route /explore → /nectar, see-all sub-routes /nectar/:section. Backend API routes remain /api/explore/* unchanged. (Mar 2026)
+
 ## Upcoming Tasks
 - **P1: Weekly Wax Email** — Ensure scheduled "Weekly Wax" email is correctly configured (Sundays 12:00 PM ET)
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
