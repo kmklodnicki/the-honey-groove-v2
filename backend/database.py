@@ -92,8 +92,15 @@ async def require_auth(credentials: HTTPAuthorizationCredentials = Depends(secur
 
 
 async def get_hidden_user_ids() -> list:
-    """Return IDs of users with is_hidden=True (e.g. demo accounts)."""
-    hidden = await db.users.find({"is_hidden": True}, {"_id": 0, "id": 1}).to_list(100)
+    """Return IDs of users that should be excluded from public feeds (hidden, test, demo accounts)."""
+    hidden = await db.users.find(
+        {"$or": [
+            {"is_hidden": True},
+            {"email": {"$regex": "@(test|example)\\.com$", "$options": "i"}},
+            {"username": {"$regex": "^(demo|test)", "$options": "i"}},
+        ]},
+        {"_id": 0, "id": 1}
+    ).to_list(100)
     return [u["id"] for u in hidden]
 
 
@@ -103,9 +110,15 @@ def init_storage():
         logger.warning("EMERGENT_LLM_KEY not set, storage disabled")
         return
     try:
-        resp = requests.get(f"{STORAGE_URL}/key", headers={"Authorization": f"Bearer {EMERGENT_KEY}"}, params={"app_name": APP_NAME})
+        resp = requests.post(f"{STORAGE_URL}/init", json={"app_name": APP_NAME, "emergent_key": EMERGENT_KEY})
         if resp.status_code == 200:
-            storage_key = resp.json().get("key")
+            storage_key = resp.json().get("storage_key")
+            if storage_key:
+                logger.info("Storage initialized")
+            else:
+                logger.warning("Storage init returned no key")
+        else:
+            logger.warning(f"Storage init failed: {resp.status_code} {resp.text[:100]}")
     except Exception as e:
         logger.warning(f"Storage init error: {e}")
 
@@ -114,19 +127,22 @@ def put_object(path: str, data: bytes, content_type: str) -> dict:
     if not storage_key:
         raise Exception("Storage not initialized")
     resp = requests.put(
-        f"{STORAGE_URL}/objects/{storage_key}/{path}",
-        headers={"Authorization": f"Bearer {EMERGENT_KEY}", "Content-Type": content_type},
+        f"{STORAGE_URL}/objects/{path}",
+        headers={"Authorization": f"Bearer {EMERGENT_KEY}", "X-Storage-Key": storage_key, "Content-Type": content_type},
         data=data
     )
-    return resp.json() if resp.status_code == 200 else {}
+    if resp.status_code == 200:
+        return resp.json()
+    logger.error(f"Storage put failed: {resp.status_code} {resp.text[:200]}")
+    return {}
 
 
 def get_object(path: str) -> tuple:
     if not storage_key:
         raise Exception("Storage not initialized")
     resp = requests.get(
-        f"{STORAGE_URL}/objects/{storage_key}/{path}",
-        headers={"Authorization": f"Bearer {EMERGENT_KEY}"}
+        f"{STORAGE_URL}/objects/{path}",
+        headers={"Authorization": f"Bearer {EMERGENT_KEY}", "X-Storage-Key": storage_key}
     )
     if resp.status_code == 200:
         return resp.content, resp.headers.get("Content-Type", "application/octet-stream")
