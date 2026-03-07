@@ -339,7 +339,7 @@ async def delete_listing(listing_id: str, user: Dict = Depends(require_auth)):
 
 
 @router.post("/stripe/connect")
-async def stripe_connect_onboarding(request: Request, user: Dict = Depends(require_auth)):
+async def stripe_connect_onboarding(user: Dict = Depends(require_auth)):
     u = await db.users.find_one({"id": user["id"]}, {"_id": 0})
     if u.get("stripe_connected") and u.get("stripe_charges_enabled"):
         raise HTTPException(status_code=400, detail="Stripe already connected")
@@ -369,8 +369,8 @@ async def stripe_connect_onboarding(request: Request, user: Dict = Depends(requi
             "stripe_onboarding_started": now,
         }})
 
-    # Create an account link for onboarding — return/refresh point to FRONTEND routes
-    frontend_url = FRONTEND_URL or str(request.base_url).rstrip("/")
+    # Create an account link for onboarding — always use production URL
+    frontend_url = FRONTEND_URL or "https://thehoneygroove.com"
     account_link = stripe_sdk.AccountLink.create(
         account=account_id,
         refresh_url=f"{frontend_url}/stripe/connect/refresh?user_id={user['id']}",
@@ -429,14 +429,14 @@ async def stripe_connect_refresh(user_id: str, request: Request):
 
 
 @router.get("/stripe/connect/refresh-link")
-async def stripe_connect_refresh_link(user_id: str, request: Request):
+async def stripe_connect_refresh_link(user_id: str):
     """Generate a new onboarding link for an existing account."""
     u = await db.users.find_one({"id": user_id}, {"_id": 0})
     if not u or not u.get("stripe_account_id"):
         raise HTTPException(status_code=404, detail="User not found or no Stripe account")
 
     stripe_sdk.api_key = STRIPE_API_KEY
-    frontend_url = FRONTEND_URL or str(request.base_url).rstrip("/")
+    frontend_url = FRONTEND_URL or "https://thehoneygroove.com"
     account_link = stripe_sdk.AccountLink.create(
         account=u["stripe_account_id"],
         refresh_url=f"{frontend_url}/stripe/connect/refresh?user_id={user_id}",

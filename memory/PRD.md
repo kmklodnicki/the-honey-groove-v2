@@ -310,6 +310,8 @@ COMPLETED → Mandatory rating before next trade
 
 160. **Auto-subscribe Newsletter on Registration** — New users are now automatically opted in to the Weekly Wax Report upon registration. A newsletter_subscribers document is created with source="registration" during the register endpoint. (Mar 2026)
 
+161. **Stripe Connect Production URL Fix** — Removed `request.base_url` fallback from all Stripe Connect redirect URLs (return, refresh, refresh-link). All now use `FRONTEND_URL or "https://thehoneygroove.com"` to prevent preview domain leaking into Stripe onboarding links. (Mar 2026)
+
 ## Upcoming Tasks
 - **P1: Weekly Wax Email** — Ensure scheduled "Weekly Wax" email is correctly configured (Sundays 12:00 PM ET)
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
