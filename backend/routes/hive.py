@@ -258,8 +258,18 @@ def normalize_post_type(post_type: str) -> str:
     """Map legacy post types to new enum values"""
     return POST_TYPE_MAP.get(post_type, post_type)
 
-async def build_post_response(post: Dict, current_user_id: Optional[str] = None) -> Dict:
-    """Build a full post response with user, record, haul, iso data"""
+async def build_post_response(post: Dict, current_user_id: Optional[str] = None):
+    """Build a full post response with user, record, haul, iso data. Returns None for blank/invalid posts."""
+    # Skip blank ISO posts (no iso data, no caption, no content)
+    pt = post.get("post_type", "")
+    if pt == "ISO" and not post.get("caption") and not post.get("content"):
+        iso = await db.iso_items.find_one({"id": post.get("iso_id", "")}, {"_id": 0})
+        if not iso or (not iso.get("artist", "").strip() and not iso.get("album", "").strip()):
+            return None
+    # Skip blank listing posts with no album info
+    if pt in ("listing_sale", "listing_trade") and not post.get("record_title") and not post.get("content"):
+        return None
+
     post_user = await db.users.find_one({"id": post["user_id"]}, {"_id": 0, "password_hash": 0})
     user_data = {"id": post_user["id"], "username": post_user["username"], "avatar_url": post_user.get("avatar_url"), "founding_member": post_user.get("founding_member", False)} if post_user else None
     
@@ -345,7 +355,8 @@ async def get_feed(user: Dict = Depends(require_auth), limit: int = 50, skip: in
         result.append(pinned_resp)
     for post in posts:
         resp = await build_post_response(post, user["id"])
-        result.append(resp)
+        if resp:
+            result.append(resp)
     
     return result
 
@@ -359,7 +370,8 @@ async def get_explore_feed(current_user: Optional[Dict] = Depends(get_current_us
     for post in posts:
         uid = current_user["id"] if current_user else None
         resp = await build_post_response(post, uid)
-        result.append(resp)
+        if resp:
+            result.append(resp)
     
     return result
 
@@ -459,6 +471,8 @@ async def composer_new_haul(data: NewHaulCreate, user: Dict = Depends(require_au
 @router.post("/composer/iso", response_model=PostResponse)
 async def composer_iso(data: ISOPostCreate, user: Dict = Depends(require_auth)):
     """Create an ISO (In Search Of) post in one flow"""
+    if not data.artist.strip() or not data.album.strip():
+        raise HTTPException(status_code=400, detail="Artist and album are required for ISO posts")
     now = datetime.now(timezone.utc).isoformat()
     
     # Create ISO item
