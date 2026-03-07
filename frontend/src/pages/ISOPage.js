@@ -11,6 +11,10 @@ import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from '../components/ui/dialog';
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '../components/ui/alert-dialog';
+import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '../components/ui/select';
 import { Search, Plus, CheckCircle2, Loader2, Trash2, Tag, DollarSign, Disc, ArrowRightLeft, ShoppingBag, Camera, X, MessageSquare, Shield } from 'lucide-react';
@@ -73,6 +77,8 @@ const ISOPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [stripeEnabled, setStripeEnabled] = useState(false);
   const [showStripeGate, setShowStripeGate] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null); // listing or iso id pending delete
+  const [deleteConfirmType, setDeleteConfirmType] = useState(null); // 'listing' or 'iso'
 
   // Check Stripe status
   useEffect(() => {
@@ -354,6 +360,12 @@ const ISOPage = () => {
   const handleDeleteListing = async (id) => {
     try { await axios.delete(`${API}/listings/${id}`, { headers: { Authorization: `Bearer ${token}` }}); setMyListings(prev => prev.filter(l => l.id !== id)); setListings(prev => prev.filter(l => l.id !== id)); toast.success('listing removed.'); } catch { toast.error('something went wrong.'); }
   };
+  const confirmDelete = () => {
+    if (deleteConfirmType === 'listing') handleDeleteListing(deleteConfirmId);
+    else if (deleteConfirmType === 'iso') handleDeleteIso(deleteConfirmId);
+    setDeleteConfirmId(null);
+    setDeleteConfirmType(null);
+  };
 
   const handleBuyNow = async (listing) => {
     setPaymentLoading(true);
@@ -520,7 +532,7 @@ const ISOPage = () => {
                 {myListings.filter(l => l.listing_type !== 'TRADE').map(listing => (
                   <div key={listing.id} className="relative">
                     <ListingCard listing={listing} />
-                    <Button size="sm" variant="ghost" onClick={() => handleDeleteListing(listing.id)}
+                    <Button size="sm" variant="ghost" onClick={() => { setDeleteConfirmId(listing.id); setDeleteConfirmType('listing'); }}
                       className="absolute top-3 right-3 text-[#8A6B4A]/60 hover:bg-[#8A6B4A]/10 h-8 w-8 p-0" data-testid={`delete-listing-${listing.id}`}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -567,7 +579,7 @@ const ISOPage = () => {
             </Card>
           ) : (
             <div className="space-y-3 mb-8">
-              {filteredIsos.map(iso => <ISOCard key={iso.id} iso={iso} isOwn={true} onMarkFound={handleMarkFound} onDelete={handleDeleteIso} onSetPriceAlert={handleSetPriceAlert} />)}
+              {filteredIsos.map(iso => <ISOCard key={iso.id} iso={iso} isOwn={true} onMarkFound={handleMarkFound} onDelete={(id) => { setDeleteConfirmId(id); setDeleteConfirmType('iso'); }} onSetPriceAlert={handleSetPriceAlert} />)}
             </div>
           )}
 
@@ -629,7 +641,7 @@ const ISOPage = () => {
                 {myListings.filter(l => l.listing_type === 'TRADE').map(listing => (
                   <div key={listing.id} className="relative">
                     <ListingCard listing={listing} />
-                    <Button size="sm" variant="ghost" onClick={() => handleDeleteListing(listing.id)}
+                    <Button size="sm" variant="ghost" onClick={() => { setDeleteConfirmId(listing.id); setDeleteConfirmType('listing'); }}
                       className="absolute top-3 right-3 text-[#8A6B4A]/60 hover:bg-[#8A6B4A]/10 h-8 w-8 p-0" data-testid={`delete-listing-${listing.id}`}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
@@ -839,6 +851,22 @@ const ISOPage = () => {
         onMakeOffer={(l) => setOfferTarget(l)}
         onProposeTrade={(l) => setTradeTarget(l)}
       />
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteConfirmId} onOpenChange={(open) => { if (!open) { setDeleteConfirmId(null); setDeleteConfirmType(null); } }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-heading">Are you sure you want to delete this {deleteConfirmType === 'iso' ? 'ISO' : 'listing'}?</AlertDialogTitle>
+            <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="cancel-delete-listing">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 text-white hover:bg-red-700" data-testid="confirm-delete-listing">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

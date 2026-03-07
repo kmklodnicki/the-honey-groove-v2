@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Skeleton } from '../components/ui/skeleton';
-import { Heart, MessageCircle, Share2, Disc, Send, ChevronDown, ChevronUp } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Disc, Send, ChevronDown, ChevronUp, MoreVertical, Trash2, Play, ShoppingBag, ArrowRightLeft, Plus, Calendar, Music2, Loader2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '../components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import ComposerBar from '../components/ComposerBar';
@@ -23,6 +39,7 @@ import { PostTypeBadge, PostCardBody } from '../components/PostCards';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { DailyPromptCard } from '../components/DailyPrompt';
 import OnboardingModal from '../components/OnboardingModal';
+import AlbumArt from '../components/AlbumArt';
 
 // Bee Avatar Component
 const BeeAvatar = ({ user, className = "h-10 w-10" }) => {
@@ -43,13 +60,16 @@ const BeeAvatar = ({ user, className = "h-10 w-10" }) => {
   );
 };
 
-const PostCard = ({ post, onLike, onCommentCountChange, token, API }) => {
+const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, token, API, currentUserId }) => {
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [loadingComments, setLoadingComments] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+  const isOwner = post.user_id === currentUserId;
 
   const timeAgo = formatDistanceToNow(new Date(post.created_at), { addSuffix: true });
 
@@ -127,18 +147,32 @@ const PostCard = ({ post, onLike, onCommentCountChange, token, API }) => {
                 @{post.user?.username}
               </Link>
               {post.user?.founding_member && (
-                <span title="founding member of the Honey Groove 🐝" className="inline-block ml-1 cursor-help" style={{ color: '#C8861A', fontSize: '12px' }}>🍯</span>
+                <span title="founding member of the Honey Groove" className="inline-block ml-1 cursor-help" style={{ color: '#C8861A', fontSize: '12px' }}>🍯</span>
               )}
               <PostTypeBadge type={post.post_type} mood={post.mood} />
             </div>
             <p className="text-xs text-muted-foreground">{timeAgo}</p>
           </div>
+          {isOwner && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="p-1.5 rounded-full hover:bg-honey/10 transition-colors" data-testid={`post-menu-${post.id}`}>
+                  <MoreVertical className="w-4 h-4 text-muted-foreground" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setDeleteDialogOpen(true)} className="text-red-600" data-testid={`delete-post-${post.id}`}>
+                  <Trash2 className="mr-2 h-4 w-4" /> Delete Post
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
       </div>
 
       {/* Post Type-Specific Body */}
       <div className="px-4 py-2">
-        <PostCardBody post={post} />
+        <PostCardBody post={post} onAlbumClick={onAlbumClick} />
       </div>
 
       {/* Actions */}
@@ -218,6 +252,26 @@ const PostCard = ({ post, onLike, onCommentCountChange, token, API }) => {
       )}
 
       {/* Share Dialog — hidden until feature is ready */}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-heading">Are you sure you want to delete this post?</AlertDialogTitle>
+            <AlertDialogDescription>This cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid={`cancel-delete-${post.id}`}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => onDelete(post.id)}
+              className="bg-red-600 text-white hover:bg-red-700"
+              data-testid={`confirm-delete-${post.id}`}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };
@@ -225,11 +279,22 @@ const PostCard = ({ post, onLike, onCommentCountChange, token, API }) => {
 const HivePage = () => {
   usePageTitle('The Hive');
   const { user, token, API } = useAuth();
+  const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
+
+  // Album detail modal state
+  const [albumModal, setAlbumModal] = useState(null); // { record }
+  const [albumModalLoading, setAlbumModalLoading] = useState(false);
+  const [albumOwnership, setAlbumOwnership] = useState(null);
+  const [albumRelease, setAlbumRelease] = useState(null);
+  const [spinningAlbum, setSpinningAlbum] = useState(false);
+  const [addingAlbum, setAddingAlbum] = useState(false);
+
+  const headers = { Authorization: `Bearer ${token}` };
 
   const fetchFeed = useCallback(async () => {
     try {
@@ -288,6 +353,87 @@ const HivePage = () => {
   const handlePostCreated = () => {
     fetchFeed();
     fetchRecords();
+  };
+
+  const handleDeletePost = async (postId) => {
+    try {
+      await axios.delete(`${API}/posts/${postId}`, { headers });
+      setPosts(prev => prev.filter(p => p.id !== postId));
+      toast.success('post deleted.');
+    } catch {
+      toast.error('could not delete post. try again.');
+    }
+  };
+
+  // Album detail modal
+  const handleAlbumClick = async (record) => {
+    setAlbumModalLoading(true);
+    setAlbumOwnership(null);
+    setAlbumRelease(null);
+    setAlbumModal({ record });
+
+    const discogsId = record.discogs_id;
+    const ownershipPromise = discogsId
+      ? axios.get(`${API}/records/check-ownership?discogs_id=${discogsId}`, { headers }).catch(() => null)
+      : record.id
+        ? axios.get(`${API}/records/check-ownership?artist=${encodeURIComponent(record.artist)}&title=${encodeURIComponent(record.title)}`, { headers }).catch(() => null)
+        : Promise.resolve(null);
+    const releasePromise = discogsId
+      ? axios.get(`${API}/discogs/release/${discogsId}`, { headers }).catch(() => null)
+      : Promise.resolve(null);
+
+    const [ownerResp, releaseResp] = await Promise.all([ownershipPromise, releasePromise]);
+    if (ownerResp?.data) setAlbumOwnership(ownerResp.data);
+    else setAlbumOwnership({ in_collection: !!record.id, record_id: record.id || null });
+    if (releaseResp?.data) setAlbumRelease(releaseResp.data);
+    setAlbumModalLoading(false);
+  };
+
+  const handleAlbumAddToCollection = async () => {
+    if (!albumModal?.record) return;
+    setAddingAlbum(true);
+    const r = albumModal.record;
+    try {
+      const res = await axios.post(`${API}/records`, {
+        discogs_id: r.discogs_id,
+        title: r.title,
+        artist: r.artist,
+        cover_url: r.cover_url,
+        year: r.year,
+        format: albumRelease?.format?.[0] || 'Vinyl',
+      }, { headers });
+      toast.success('added to your collection!');
+      setAlbumOwnership({ in_collection: true, record_id: res.data.id });
+      fetchRecords();
+    } catch (err) {
+      if (err.response?.status === 409) toast.info('already in your collection.');
+      else toast.error('could not add. try again.');
+    }
+    setAddingAlbum(false);
+  };
+
+  const handleAlbumSpin = async () => {
+    if (!albumOwnership?.record_id) return;
+    setSpinningAlbum(true);
+    try {
+      await axios.post(`${API}/spins`, { record_id: albumOwnership.record_id }, { headers });
+      toast.success('spin logged!');
+    } catch { toast.error('could not log spin. try again.'); }
+    setSpinningAlbum(false);
+  };
+
+  const handleAlbumAddWantlist = async () => {
+    const r = albumModal?.record;
+    if (!r) return;
+    try {
+      await axios.post(`${API}/composer/iso`, {
+        artist: r.artist, album: r.title, discogs_id: r.discogs_id, cover_url: r.cover_url, year: r.year,
+      }, { headers });
+      toast.success('added to your wantlist!');
+    } catch (err) {
+      if (err.response?.status === 409) toast.info('already on your wantlist.');
+      else toast.error('could not add. try again.');
+    }
   };
 
   const handleOnboardingComplete = () => {
@@ -367,12 +513,124 @@ const HivePage = () => {
               post={post}
               onLike={handleLike}
               onCommentCountChange={updatePostCommentCount}
+              onDelete={handleDeletePost}
+              onAlbumClick={handleAlbumClick}
               token={token}
               API={API}
+              currentUserId={user?.id}
             />
           ))}
         </div>
       )}
+
+      {/* Album Detail Modal */}
+      <Dialog open={!!albumModal} onOpenChange={(open) => { if (!open) { setAlbumModal(null); setAlbumOwnership(null); setAlbumRelease(null); } }}>
+        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto" aria-describedby="album-modal-desc">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-lg">Album Details</DialogTitle>
+            <p id="album-modal-desc" className="sr-only">Details and actions for this album</p>
+          </DialogHeader>
+          {albumModal && (
+            <div>
+              {/* Album card */}
+              <div className="flex items-center gap-4 mb-3 bg-honey/10 rounded-xl p-3">
+                {albumModal.record?.cover_url ? (
+                  <AlbumArt src={albumModal.record.cover_url} alt="" className="w-20 h-20 rounded-lg object-cover shadow" />
+                ) : (
+                  <div className="w-20 h-20 rounded-lg bg-honey/20 flex items-center justify-center"><Disc className="w-8 h-8 text-honey" /></div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-heading text-base leading-tight" data-testid="hive-modal-album-title">{albumModal.record?.title}</p>
+                  <p className="text-sm text-honey-amber italic" data-testid="hive-modal-album-artist">{albumModal.record?.artist}{albumModal.record?.year ? ` (${albumModal.record.year})` : ''}</p>
+                </div>
+              </div>
+
+              {/* Variant / Pressing Details */}
+              {(albumRelease || albumModal.record?.format) && (
+                <div className="flex flex-wrap gap-1.5 mb-4" data-testid="hive-modal-variant-details">
+                  {(albumRelease?.year || albumModal.record?.year) && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-honey/10 text-xs text-vinyl-black/70">
+                      <Calendar className="w-3 h-3" /> {albumRelease?.year || albumModal.record?.year}
+                    </span>
+                  )}
+                  {albumRelease?.label?.[0] && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-honey/10 text-xs text-vinyl-black/70">
+                      {albumRelease.label[0]}
+                    </span>
+                  )}
+                  {albumRelease?.catno && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-honey/10 text-xs text-vinyl-black/70">
+                      {albumRelease.catno}
+                    </span>
+                  )}
+                  {albumRelease?.format?.[0] && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-honey/10 text-xs text-vinyl-black/70">
+                      <Disc className="w-3 h-3" /> {albumRelease.format.join(', ')}
+                    </span>
+                  )}
+                  {albumRelease?.country && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-honey/10 text-xs text-vinyl-black/70">
+                      {albumRelease.country}
+                    </span>
+                  )}
+                  {albumRelease?.color_variant && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-xs text-amber-800 font-medium">
+                      {albumRelease.color_variant}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Contextual Action Buttons */}
+              {albumModalLoading ? (
+                <div className="flex justify-center py-3"><Loader2 className="w-5 h-5 animate-spin text-honey-amber" /></div>
+              ) : albumOwnership?.in_collection ? (
+                <div className="flex flex-wrap gap-2 mb-4" data-testid="hive-modal-owner-actions">
+                  <Button size="sm" className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full text-xs"
+                    onClick={handleAlbumSpin} disabled={spinningAlbum} data-testid="hive-modal-log-spin">
+                    {spinningAlbum ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Play className="w-3 h-3 mr-1" />} Log a Spin
+                  </Button>
+                  <Button size="sm" variant="outline" className="rounded-full text-xs border-honey/50 text-honey-amber hover:bg-honey/10"
+                    onClick={() => {
+                      const r = albumModal.record;
+                      setAlbumModal(null);
+                      navigate(`/honeypot?create=sale&artist=${encodeURIComponent(r.artist)}&album=${encodeURIComponent(r.title)}&discogs_id=${r.discogs_id || ''}&cover_url=${encodeURIComponent(r.cover_url || '')}&year=${r.year || ''}`);
+                    }} data-testid="hive-modal-list-sale">
+                    <ShoppingBag className="w-3 h-3 mr-1" /> List for Sale
+                  </Button>
+                  <Button size="sm" variant="outline" className="rounded-full text-xs border-honey/50 text-honey-amber hover:bg-honey/10"
+                    onClick={() => {
+                      const r = albumModal.record;
+                      setAlbumModal(null);
+                      navigate(`/honeypot?create=trade&artist=${encodeURIComponent(r.artist)}&album=${encodeURIComponent(r.title)}&discogs_id=${r.discogs_id || ''}&cover_url=${encodeURIComponent(r.cover_url || '')}&year=${r.year || ''}`);
+                    }} data-testid="hive-modal-offer-trade">
+                    <ArrowRightLeft className="w-3 h-3 mr-1" /> Offer to Trade
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2 mb-4" data-testid="hive-modal-nonowner-actions">
+                  <Button size="sm" className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full text-xs"
+                    onClick={handleAlbumAddToCollection} disabled={addingAlbum} data-testid="hive-modal-add-collection">
+                    {addingAlbum ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Plus className="w-3 h-3 mr-1" />} Add to Collection
+                  </Button>
+                  <Button size="sm" variant="outline" className="rounded-full text-xs border-honey/50 text-honey-amber hover:bg-honey/10"
+                    onClick={handleAlbumAddWantlist} data-testid="hive-modal-add-wantlist">
+                    <Heart className="w-3 h-3 mr-1" /> Add to Wantlist
+                  </Button>
+                </div>
+              )}
+
+              {/* Discogs link */}
+              {albumModal.record?.discogs_id && (
+                <a href={`https://www.discogs.com/release/${albumModal.record.discogs_id}`} target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-vinyl-black/5 text-xs text-vinyl-black/60 hover:bg-vinyl-black/10 transition-colors" data-testid="hive-modal-discogs-link">
+                  <Music2 className="w-3 h-3" /> View on Discogs
+                </a>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

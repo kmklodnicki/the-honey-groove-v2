@@ -18,14 +18,30 @@ const MOOD_COLOR_MAP = {
   'Melancholy': '#5a5a8a', 'Upbeat Vibes': '#3a9a5a', 'Cozy Evening': '#aa5a2a', 'Workout': '#cc3a2a',
 };
 
-// Clickable album card wrapper — navigates to record detail if record has an id
-const AlbumLink = ({ record, children, className = '' }) => {
-  if (record?.id) {
-    return (
-      <Link to={`/record/${record.id}`} className={`block hover:opacity-90 transition-opacity ${className}`} data-testid={`album-link-${record.id}`}>
-        {children}
-      </Link>
-    );
+// Clickable album card wrapper — calls onAlbumClick if provided, otherwise navigates to record detail
+const AlbumLink = ({ record, children, className = '', onAlbumClick }) => {
+  if (record?.id || record?.discogs_id) {
+    if (onAlbumClick) {
+      return (
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => onAlbumClick(record)}
+          onKeyDown={(e) => e.key === 'Enter' && onAlbumClick(record)}
+          className={`block hover:opacity-90 transition-opacity cursor-pointer ${className}`}
+          data-testid={`album-link-${record.id || record.discogs_id}`}
+        >
+          {children}
+        </div>
+      );
+    }
+    if (record.id) {
+      return (
+        <Link to={`/record/${record.id}`} className={`block hover:opacity-90 transition-opacity ${className}`} data-testid={`album-link-${record.id}`}>
+          {children}
+        </Link>
+      );
+    }
   }
   return <div className={className}>{children}</div>;
 };
@@ -69,11 +85,11 @@ const MoodPill = ({ mood }) => {
 };
 
 // NOW_SPINNING card body
-const NowSpinningCard = ({ post }) => {
+const NowSpinningCard = ({ post, onAlbumClick }) => {
   const record = post.record;
   if (!record) return null;
   return (
-    <AlbumLink record={record}>
+    <AlbumLink record={record} onAlbumClick={onAlbumClick}>
       <div className="flex gap-4 items-start" data-testid="now-spinning-card">
         {record.cover_url ? (
           <AlbumArt src={record.cover_url} alt={record.title} className="w-24 h-24 rounded-lg object-cover shadow-md" />
@@ -94,7 +110,7 @@ const NowSpinningCard = ({ post }) => {
 };
 
 // NEW_HAUL card body
-const NewHaulCard = ({ post }) => {
+const NewHaulCard = ({ post, onAlbumClick }) => {
   const haul = post.haul;
   if (!haul) return <p className="text-sm">{post.caption}</p>;
   const items = haul.items || [];
@@ -104,7 +120,7 @@ const NewHaulCard = ({ post }) => {
       {post.caption && <p className="text-sm mb-3">{post.caption}</p>}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {items.slice(0, 6).map((item, idx) => (
-          <AlbumLink key={idx} record={item}>
+          <AlbumLink key={idx} record={item} onAlbumClick={onAlbumClick}>
             <div className="flex items-center gap-2 bg-amber-50 rounded-lg p-2">
               <AlbumArt src={item.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
               <div className="min-w-0 flex-1">
@@ -144,11 +160,11 @@ const ISOCard = ({ post }) => {
 };
 
 // ADDED_TO_COLLECTION card body
-const AddedToCollectionCard = ({ post }) => {
+const AddedToCollectionCard = ({ post, onAlbumClick }) => {
   const record = post.record;
   if (!record) return <p className="text-sm">{post.caption}</p>;
   return (
-    <AlbumLink record={record}>
+    <AlbumLink record={record} onAlbumClick={onAlbumClick}>
       <div className="flex gap-3 items-center" data-testid="added-card">
         <AlbumArt src={record.cover_url} alt="" className="w-16 h-16 rounded-lg object-cover shadow" />
         <div>
@@ -171,7 +187,7 @@ const WeeklyWrapCard = ({ post }) => {
 };
 
 // VINYL_MOOD card body
-const VinylMoodCard = ({ post }) => {
+const VinylMoodCard = ({ post, onAlbumClick }) => {
   const record = post.record;
   const mood = post.mood || '';
   const emoji = MOOD_EMOJI_MAP[mood] || '';
@@ -182,7 +198,7 @@ const VinylMoodCard = ({ post }) => {
         {emoji} {mood}
       </div>
       {record && (
-        <AlbumLink record={record}>
+        <AlbumLink record={record} onAlbumClick={onAlbumClick}>
           <div className="flex gap-3 items-center mt-2 rounded-lg p-2" style={{ backgroundColor: color + '15' }}>
             <AlbumArt src={record.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
             <div>
@@ -217,13 +233,13 @@ const DailyPromptPostCard = ({ post }) => (
 );
 
 // NOTE card body
-const NoteCard = ({ post }) => {
+const NoteCard = ({ post, onAlbumClick }) => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   return (
     <div data-testid="note-card">
       <p className="text-sm whitespace-pre-wrap">{post.caption || post.content}</p>
       {post.record && (
-        <AlbumLink record={post.record}>
+        <AlbumLink record={post.record} onAlbumClick={onAlbumClick}>
           <div className="flex items-center gap-2.5 bg-stone-50 rounded-lg px-3 py-2 mt-3" data-testid="note-record-tag">
             {post.record.cover_url ? (
               <AlbumArt src={post.record.cover_url} alt="" className="w-10 h-10 rounded object-cover shadow-sm" />
@@ -257,21 +273,21 @@ const NoteCard = ({ post }) => {
 };
 
 // Main renderer
-const PostCardBody = ({ post }) => {
+const PostCardBody = ({ post, onAlbumClick }) => {
   switch (post.post_type) {
-    case 'NOW_SPINNING': return <NowSpinningCard post={post} />;
-    case 'NEW_HAUL': return <NewHaulCard post={post} />;
+    case 'NOW_SPINNING': return <NowSpinningCard post={post} onAlbumClick={onAlbumClick} />;
+    case 'NEW_HAUL': return <NewHaulCard post={post} onAlbumClick={onAlbumClick} />;
     case 'ISO': return <ISOCard post={post} />;
-    case 'NOTE': return <NoteCard post={post} />;
-    case 'ADDED_TO_COLLECTION': return <AddedToCollectionCard post={post} />;
+    case 'NOTE': return <NoteCard post={post} onAlbumClick={onAlbumClick} />;
+    case 'ADDED_TO_COLLECTION': return <AddedToCollectionCard post={post} onAlbumClick={onAlbumClick} />;
     case 'WEEKLY_WRAP': return <WeeklyWrapCard post={post} />;
-    case 'VINYL_MOOD': return <VinylMoodCard post={post} />;
+    case 'VINYL_MOOD': return <VinylMoodCard post={post} onAlbumClick={onAlbumClick} />;
     case 'DAILY_PROMPT': return <DailyPromptPostCard post={post} />;
     default:
       return (
         <div>
           {post.record && (
-            <AlbumLink record={post.record}>
+            <AlbumLink record={post.record} onAlbumClick={onAlbumClick}>
               <div className="flex gap-3 items-center mb-2">
                 <AlbumArt src={post.record.cover_url} alt="" className="w-14 h-14 rounded object-cover" />
                 <div>

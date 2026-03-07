@@ -561,6 +561,24 @@ async def search_posts(q: str = Query(..., min_length=2), user: Dict = Depends(r
     return results
 
 
+# ============== DELETE POST ==============
+
+@router.delete("/posts/{post_id}")
+async def delete_post(post_id: str, user: Dict = Depends(require_auth)):
+    """Delete a post owned by the current user, along with its likes and comments."""
+    post = await db.posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    if post["user_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="You can only delete your own posts")
+
+    await db.likes.delete_many({"post_id": post_id})
+    await db.comments.delete_many({"post_id": post_id})
+    await db.posts.delete_one({"id": post_id})
+    return {"message": "Post deleted"}
+
+
+
 # ============== LIKES ROUTES ==============
 
 @router.post("/posts/{post_id}/like")
