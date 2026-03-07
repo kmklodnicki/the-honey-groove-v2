@@ -3,7 +3,7 @@ import axios from 'axios';
 import safeStorage from '../utils/safeStorage';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 const AuthContext = createContext(null);
 

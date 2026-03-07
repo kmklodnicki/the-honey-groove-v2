@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
@@ -162,16 +162,20 @@ const ISOPage = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // Discogs search
-  const searchDiscogs = async (query) => {
+  // Discogs search with debounce
+  const searchTimerRef = useRef(null);
+  const searchDiscogs = (query) => {
     setDiscogsQuery(query);
     if (!query || query.length < 2) { setDiscogsResults([]); return; }
-    setSearchLoading(true);
-    try {
-      const resp = await axios.get(`${API}/discogs/search?q=${encodeURIComponent(query)}`, { headers: { Authorization: `Bearer ${token}` } });
-      setDiscogsResults(resp.data.slice(0, 10));
-    } catch { setDiscogsResults([]); }
-    finally { setSearchLoading(false); }
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(async () => {
+      setSearchLoading(true);
+      try {
+        const resp = await axios.get(`${API}/discogs/search?q=${encodeURIComponent(query)}`, { headers: { Authorization: `Bearer ${token}` } });
+        setDiscogsResults(resp.data.slice(0, 10));
+      } catch { setDiscogsResults([]); }
+      finally { setSearchLoading(false); }
+    }, 350);
   };
 
   const selectRelease = (release) => {
