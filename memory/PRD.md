@@ -78,6 +78,14 @@ The Hive — Explore — Collection — The Honeypot
 66. **Listing Detail Modal** — Clicking a listing card in The Honeypot opens a full detail modal (not a page nav). Shows: album art, artist (Playfair Display Bold #2A1A06 32px), album (Cormorant Garamond Italic #C8861A 26px), condition pill, seller info (avatar, rating stars, completed sales), seller photos (horizontal scroll, tappable fullscreen), price (Playfair Display Bold #996012 52px), description (Cormorant Garamond, Read more toggle), shipping info, CTA buttons (Buy Now / Make Offer + Buy at asking / Trade + Trade instead), wantlist toggle, similar listings by artist. URL deep links to /honeypot/listing/:id. Back button dismisses modal. Backend enriched with seller.rating, seller.completed_sales, similar_listings, on_wantlist. (Mar 2026)
 67. **N+1 Query Optimization** — Collection records and Explore trending now use MongoDB aggregation pipelines ($lookup) instead of N+1 individual queries. (Mar 2026)
 68. **Email & Env Updates** — Beta signup notifications now sent from hello@thehoneygroove.com to contact@kathrynklodnicki.com. Resend API key configured. Emergent badge hidden. (Mar 2026)
+69. **Comment System Overhaul** — Comment likes (toggle), nested replies (parent_comment_id), @mention autocomplete (GET /api/mention-search). CommentThread component extracted from HivePage. (Mar 2026)
+70. **Admin Pin Post** — Admin can pin/unpin a single post to top of Hive feed. POST/DELETE /api/posts/{id}/pin. (Mar 2026)
+71. **Notification Deep-Linking** — Notifications navigate to /hive?post=...&comment=... with auto-scroll and highlight. (Mar 2026)
+72. **International Shipping & Country Profiles** — Listings have international_shipping flag. Country-based marketplace filtering. Mandatory country in onboarding/settings. CountryGateModal for existing users. Stripe checkout enforces shipping country match. (Mar 2026)
+73. **Auto-post Listings to Hive** — New marketplace sale/trade listings auto-create Hive feed posts. (Mar 2026)
+74. **Hive Feed Filters** — Client-side filter bar: All, Now Spinning, New Haul, ISO, For Sale/Trade, A Note, Following. Bug fix: NOTE filter key matched to uppercase backend post_type. (Mar 2026)
+75. **Email Verification Removed** — Users access app immediately after registration without email verification. (Mar 2026)
+76. **UI Bug Fixes (Mar 2026)** — Fixed AlbumArt import, enlarged navbar logo, fixed Orders page layout, fixed Follow button in search, separated DM notifications, validated blank ISO posts.
 
 ## Code Architecture
 ```
