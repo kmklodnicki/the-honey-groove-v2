@@ -18,11 +18,21 @@ const MOOD_COLOR_MAP = {
   'Melancholy': '#5a5a8a', 'Upbeat Vibes': '#3a9a5a', 'Cozy Evening': '#aa5a2a', 'Workout': '#cc3a2a',
 };
 
+// Clickable album card wrapper — navigates to record detail if record has an id
+const AlbumLink = ({ record, children, className = '' }) => {
+  if (record?.id) {
+    return (
+      <Link to={`/record/${record.id}`} className={`block hover:opacity-90 transition-opacity ${className}`} data-testid={`album-link-${record.id}`}>
+        {children}
+      </Link>
+    );
+  }
+  return <div className={className}>{children}</div>;
+};
+
 // Badge showing post type
 const PostTypeBadge = ({ type, mood }) => {
-  // NOTE posts have no badge
   if (type === 'NOTE') return null;
-
   const config = {
     NOW_SPINNING: { label: 'Now Spinning', icon: Disc, bg: 'bg-honey/20 text-honey-amber' },
     NEW_HAUL: { label: 'New Haul', icon: Package, bg: 'bg-amber-100/60 text-amber-700' },
@@ -40,15 +50,11 @@ const PostTypeBadge = ({ type, mood }) => {
         <Icon className="w-3 h-3" />
         {c.label}
       </span>
-      {/* Mood pill badge for Now Spinning posts */}
-      {type === 'NOW_SPINNING' && mood && (
-        <MoodPill mood={mood} />
-      )}
+      {type === 'NOW_SPINNING' && mood && <MoodPill mood={mood} />}
     </span>
   );
 };
 
-// Small mood pill badge
 const MoodPill = ({ mood }) => {
   const emoji = MOOD_EMOJI_MAP[mood] || '';
   const color = MOOD_COLOR_MAP[mood] || '#7e22ce';
@@ -67,21 +73,23 @@ const NowSpinningCard = ({ post }) => {
   const record = post.record;
   if (!record) return null;
   return (
-    <div className="flex gap-4 items-start" data-testid="now-spinning-card">
-      {record.cover_url ? (
-        <AlbumArt src={record.cover_url} alt={record.title} className="w-24 h-24 rounded-lg object-cover shadow-md" />
-      ) : (
-        <div className="w-24 h-24 rounded-lg bg-vinyl-black flex items-center justify-center">
-          <Disc className="w-10 h-10 text-honey animate-spin" style={{ animationDuration: '3s' }} />
+    <AlbumLink record={record}>
+      <div className="flex gap-4 items-start" data-testid="now-spinning-card">
+        {record.cover_url ? (
+          <AlbumArt src={record.cover_url} alt={record.title} className="w-24 h-24 rounded-lg object-cover shadow-md" />
+        ) : (
+          <div className="w-24 h-24 rounded-lg bg-vinyl-black flex items-center justify-center">
+            <Disc className="w-10 h-10 text-honey animate-spin" style={{ animationDuration: '3s' }} />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <p className="font-heading text-lg leading-tight">{record.title}</p>
+          <p className="text-sm text-muted-foreground">{record.artist}</p>
+          {post.track && <p className="text-xs text-honey-amber mt-1">Track: {post.track}</p>}
+          {post.caption && <p className="text-sm mt-2">{post.caption}</p>}
         </div>
-      )}
-      <div className="flex-1 min-w-0">
-        <p className="font-heading text-lg leading-tight">{record.title}</p>
-        <p className="text-sm text-muted-foreground">{record.artist}</p>
-        {post.track && <p className="text-xs text-honey-amber mt-1">Track: {post.track}</p>}
-        {post.caption && <p className="text-sm mt-2">{post.caption}</p>}
       </div>
-    </div>
+    </AlbumLink>
   );
 };
 
@@ -96,13 +104,15 @@ const NewHaulCard = ({ post }) => {
       {post.caption && <p className="text-sm mb-3">{post.caption}</p>}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {items.slice(0, 6).map((item, idx) => (
-          <div key={idx} className="flex items-center gap-2 bg-amber-50 rounded-lg p-2">
-            <AlbumArt src={item.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
-            <div className="min-w-0 flex-1">
-              <p className="text-xs font-medium truncate">{item.title}</p>
-              <p className="text-xs text-muted-foreground truncate">{item.artist}</p>
+          <AlbumLink key={idx} record={item}>
+            <div className="flex items-center gap-2 bg-amber-50 rounded-lg p-2">
+              <AlbumArt src={item.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium truncate">{item.title}</p>
+                <p className="text-xs text-muted-foreground truncate">{item.artist}</p>
+              </div>
             </div>
-          </div>
+          </AlbumLink>
         ))}
       </div>
       {items.length > 6 && <p className="text-xs text-muted-foreground mt-2">+ {items.length - 6} more records</p>}
@@ -138,13 +148,15 @@ const AddedToCollectionCard = ({ post }) => {
   const record = post.record;
   if (!record) return <p className="text-sm">{post.caption}</p>;
   return (
-    <div className="flex gap-3 items-center" data-testid="added-card">
-      <AlbumArt src={record.cover_url} alt="" className="w-16 h-16 rounded-lg object-cover shadow" />
-      <div>
-        <p className="font-medium">{record.title}</p>
-        <p className="text-sm text-muted-foreground">{record.artist}</p>
+    <AlbumLink record={record}>
+      <div className="flex gap-3 items-center" data-testid="added-card">
+        <AlbumArt src={record.cover_url} alt="" className="w-16 h-16 rounded-lg object-cover shadow" />
+        <div>
+          <p className="font-medium">{record.title}</p>
+          <p className="text-sm text-muted-foreground">{record.artist}</p>
+        </div>
       </div>
-    </div>
+    </AlbumLink>
   );
 };
 
@@ -158,7 +170,7 @@ const WeeklyWrapCard = ({ post }) => {
   );
 };
 
-// VINYL_MOOD card body (legacy — kept for old posts)
+// VINYL_MOOD card body
 const VinylMoodCard = ({ post }) => {
   const record = post.record;
   const mood = post.mood || '';
@@ -170,13 +182,15 @@ const VinylMoodCard = ({ post }) => {
         {emoji} {mood}
       </div>
       {record && (
-        <div className="flex gap-3 items-center mt-2 rounded-lg p-2" style={{ backgroundColor: color + '15' }}>
-          <AlbumArt src={record.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
-          <div>
-            <p className="text-sm font-medium">{record.title}</p>
-            <p className="text-xs text-muted-foreground">{record.artist}</p>
+        <AlbumLink record={record}>
+          <div className="flex gap-3 items-center mt-2 rounded-lg p-2" style={{ backgroundColor: color + '15' }}>
+            <AlbumArt src={record.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
+            <div>
+              <p className="text-sm font-medium">{record.title}</p>
+              <p className="text-xs text-muted-foreground">{record.artist}</p>
+            </div>
           </div>
-        </div>
+        </AlbumLink>
       )}
       {post.caption && <p className="text-sm mt-2">{post.caption}</p>}
     </div>
@@ -202,27 +216,27 @@ const DailyPromptPostCard = ({ post }) => (
   </div>
 );
 
-// NOTE card body — free-form text, optional record tag, optional image
+// NOTE card body
 const NoteCard = ({ post }) => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   return (
     <div data-testid="note-card">
       <p className="text-sm whitespace-pre-wrap">{post.caption || post.content}</p>
-      {/* Tagged record inline card */}
       {post.record && (
-        <div className="flex items-center gap-2.5 bg-stone-50 rounded-lg px-3 py-2 mt-3" data-testid="note-record-tag">
-          {post.record.cover_url ? (
-            <AlbumArt src={post.record.cover_url} alt="" className="w-10 h-10 rounded object-cover shadow-sm" />
-          ) : (
-            <div className="w-10 h-10 rounded bg-stone-200 flex items-center justify-center"><Disc className="w-5 h-5 text-stone-400" /></div>
-          )}
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium truncate">{post.record.title}</p>
-            <p className="text-xs text-muted-foreground truncate">{post.record.artist}</p>
+        <AlbumLink record={post.record}>
+          <div className="flex items-center gap-2.5 bg-stone-50 rounded-lg px-3 py-2 mt-3" data-testid="note-record-tag">
+            {post.record.cover_url ? (
+              <AlbumArt src={post.record.cover_url} alt="" className="w-10 h-10 rounded object-cover shadow-sm" />
+            ) : (
+              <div className="w-10 h-10 rounded bg-stone-200 flex items-center justify-center"><Disc className="w-5 h-5 text-stone-400" /></div>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium truncate">{post.record.title}</p>
+              <p className="text-xs text-muted-foreground truncate">{post.record.artist}</p>
+            </div>
           </div>
-        </div>
+        </AlbumLink>
       )}
-      {/* Optional image with lightbox */}
       {post.image_url && (
         <>
           <img
@@ -257,13 +271,15 @@ const PostCardBody = ({ post }) => {
       return (
         <div>
           {post.record && (
-            <div className="flex gap-3 items-center mb-2">
-              <AlbumArt src={post.record.cover_url} alt="" className="w-14 h-14 rounded object-cover" />
-              <div>
-                <p className="font-medium">{post.record.title}</p>
-                <p className="text-sm text-muted-foreground">{post.record.artist}</p>
+            <AlbumLink record={post.record}>
+              <div className="flex gap-3 items-center mb-2">
+                <AlbumArt src={post.record.cover_url} alt="" className="w-14 h-14 rounded object-cover" />
+                <div>
+                  <p className="font-medium">{post.record.title}</p>
+                  <p className="text-sm text-muted-foreground">{post.record.artist}</p>
+                </div>
               </div>
-            </div>
+            </AlbumLink>
           )}
           <p className="text-sm">{post.caption || post.content}</p>
         </div>

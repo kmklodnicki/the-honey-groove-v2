@@ -278,6 +278,8 @@ COMPLETED → Mandatory rating before next trade
 
 144. **Stripe Gate on Listing Creation** — Users without `stripe_charges_enabled` can no longer create sale or trade listings. Reusable `StripeGateModal.js` component shows "connect stripe to list" message with a "set up stripe" button that navigates to settings. Gate check added in `ISOPage.js` — `openModal('listing')` checks Stripe status and shows the gate modal if not connected. Stripe status fetched on page load via `GET /api/stripe/status`. (Mar 2026)
 
+145. **Clickable Album Cards in Hive Feed** — All tagged album cards in Hive feed posts are now clickable. Created `AlbumLink` wrapper component in `PostCards.js` that wraps album cards with `Link to={/record/{id}}`. Applied to: NowSpinningCard, NewHaulCard (each item), AddedToCollectionCard, NoteCard (tagged record), VinylMoodCard, and default fallback. Gracefully renders plain div if record has no id. (Mar 2026)
+
 ## Upcoming Tasks
 - **P1: Weekly Wax Email** — Ensure scheduled "Weekly Wax" email is correctly configured (Sundays 12:00 PM ET)
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
