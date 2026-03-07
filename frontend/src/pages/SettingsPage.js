@@ -113,8 +113,8 @@ const SettingsPage = () => {
         }
       });
 
-      // Get the public URL from the response
-      const publicUrl = response.data.url || `${API}/files/serve/${response.data.path}`;
+      // Build the URL using the current API base so it works in any environment
+      const publicUrl = `${API}/files/serve/${response.data.path}`;
       
       setAvatarPreview(publicUrl);
       toast.success('photo uploaded. click save to apply.');

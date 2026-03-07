@@ -250,9 +250,13 @@ async def root():
 @router.get("/explore/trending")
 async def get_trending_records(limit: int = 12, user: Dict = Depends(require_auth)):
     """Trending records: most spun + most added in last 14 days"""
+    hidden_ids = await get_hidden_user_ids()
     cutoff = (datetime.now(timezone.utc) - timedelta(days=14)).isoformat()
+    spin_match = {"created_at": {"$gte": cutoff}}
+    if hidden_ids:
+        spin_match["user_id"] = {"$nin": hidden_ids}
     pipeline = [
-        {"$match": {"created_at": {"$gte": cutoff}}},
+        {"$match": spin_match},
         {"$group": {"_id": "$record_id", "count": {"$sum": 1}}},
         {"$sort": {"count": -1}},
         {"$limit": limit},
@@ -272,6 +276,7 @@ async def get_trending_records(limit: int = 12, user: Dict = Depends(require_aut
 @router.get("/explore/trending/{record_id}/posts")
 async def get_trending_record_posts(record_id: str, limit: int = 20, user: Dict = Depends(require_auth)):
     """Get Now Spinning posts for a specific record"""
+    hidden_ids = await get_hidden_user_ids()
     record = await db.records.find_one({"id": record_id}, {"_id": 0})
     if not record:
         raise HTTPException(status_code=404, detail="Record not found")
@@ -286,8 +291,11 @@ async def get_trending_record_posts(record_id: str, limit: int = 20, user: Dict 
         ).to_list(200)
         query = {"$or": [{"id": {"$in": [s["id"] for s in sibling_ids]}}]}
     all_ids = [s["id"] for s in sibling_ids] if sibling_ids else [record_id]
+    post_filter = {"post_type": "NOW_SPINNING", "record_id": {"$in": all_ids}}
+    if hidden_ids:
+        post_filter["user_id"] = {"$nin": hidden_ids}
     posts = await db.posts.find(
-        {"post_type": "NOW_SPINNING", "record_id": {"$in": all_ids}}, {"_id": 0}
+        post_filter, {"_id": 0}
     ).sort("created_at", -1).limit(limit).to_list(limit)
     user_ids = list({p["user_id"] for p in posts})
     users_map = {}
@@ -367,8 +375,12 @@ async def get_trending_in_collections(limit: int = 20, user: Dict = Depends(requ
 @router.get("/explore/most-wanted")
 async def get_most_wanted(limit: int = 20, user: Dict = Depends(require_auth)):
     """Top 20 most wanted records across all wantlists"""
+    hidden_ids = await get_hidden_user_ids()
+    iso_match = {"status": "OPEN"}
+    if hidden_ids:
+        iso_match["user_id"] = {"$nin": hidden_ids}
     pipeline = [
-        {"$match": {"status": "OPEN"}},
+        {"$match": iso_match},
         {"$group": {
             "_id": {"artist": "$artist", "album": "$album"},
             "count": {"$sum": 1},
@@ -396,12 +408,15 @@ async def get_most_wanted(limit: int = 20, user: Dict = Depends(require_auth)):
 @router.get("/explore/near-you")
 async def get_near_you(user: Dict = Depends(require_auth), collector_limit: int = 20, listing_limit: int = 10):
     """Get collectors and listings in the same city/region"""
+    hidden_ids = await get_hidden_user_ids()
     my_city = user.get("city", "").strip().lower()
     my_region = user.get("region", "").strip().lower()
     if not my_city and not my_region:
         return {"collectors": [], "listings": [], "needs_location": True}
 
-    query = {"id": {"$ne": user["id"]}}
+    query = {"id": {"$ne": user["id"]}, "username": {"$ne": "demo"}, "email": {"$not": {"$regex": "(example|test)\\.com$", "$options": "i"}}}
+    if hidden_ids:
+        query["id"] = {"$ne": user["id"], "$nin": hidden_ids}
     conditions = []
     if my_city:
         conditions.append({"city": {"$regex": f"^{my_city}$", "$options": "i"}})
@@ -437,8 +452,12 @@ async def get_near_you(user: Dict = Depends(require_auth), collector_limit: int 
 @router.get("/explore/recent-hauls")
 async def get_recent_hauls(limit: int = 10, user: Dict = Depends(require_auth)):
     """Recent haul posts from the community"""
+    hidden_ids = await get_hidden_user_ids()
+    haul_filter = {"post_type": "NEW_HAUL"}
+    if hidden_ids:
+        haul_filter["user_id"] = {"$nin": hidden_ids}
     posts = await db.posts.find(
-        {"post_type": "NEW_HAUL"}, {"_id": 0}
+        haul_filter, {"_id": 0}
     ).sort("created_at", -1).limit(limit).to_list(limit)
     user_ids = list({p["user_id"] for p in posts})
     haul_ids = [p["haul_id"] for p in posts if p.get("haul_id")]
@@ -459,19 +478,25 @@ async def get_recent_hauls(limit: int = 10, user: Dict = Depends(require_auth)):
 @router.get("/explore/suggested-collectors")
 async def get_suggested_collectors(limit: int = 10, user: Dict = Depends(require_auth)):
     """Suggest collectors based on collection overlap (shared artists)"""
+    hidden_ids = await get_hidden_user_ids()
     my_records = await db.records.find({"user_id": user["id"]}, {"_id": 0, "artist": 1}).to_list(500)
     my_artists = list({r["artist"] for r in my_records})
+
+    # Hard filter: never show demo/test/hidden users
+    user_exclude = {"username": {"$ne": "demo"}, "email": {"$not": {"$regex": "(example|test)\\.com$", "$options": "i"}}, "is_hidden": {"$ne": True}, "is_test": {"$ne": True}}
+
     if not my_artists:
         return await db.users.find(
-            {"id": {"$ne": user["id"]}}, {"_id": 0, "password_hash": 0}
+            {"id": {"$ne": user["id"], "$nin": hidden_ids}, **user_exclude}, {"_id": 0, "password_hash": 0}
         ).sort("created_at", -1).limit(limit).to_list(limit)
 
     following = await db.followers.find({"follower_id": user["id"]}, {"_id": 0, "following_id": 1}).to_list(500)
     following_ids = {f["following_id"] for f in following}
     following_ids.add(user["id"])
+    all_exclude_ids = list(following_ids | set(hidden_ids))
 
     pipeline = [
-        {"$match": {"artist": {"$in": my_artists[:20]}, "user_id": {"$nin": list(following_ids)}}},
+        {"$match": {"artist": {"$in": my_artists[:20]}, "user_id": {"$nin": all_exclude_ids}}},
         {"$group": {"_id": "$user_id", "overlap": {"$sum": 1}}},
         {"$match": {"overlap": {"$gte": 3}}},
         {"$sort": {"overlap": -1}},
@@ -482,7 +507,7 @@ async def get_suggested_collectors(limit: int = 10, user: Dict = Depends(require
     overlap_map = {a["_id"]: a["overlap"] for a in agg}
     if not user_ids:
         return []
-    users = await db.users.find({"id": {"$in": user_ids}}, {"_id": 0, "password_hash": 0}).to_list(limit)
+    users = await db.users.find({"id": {"$in": user_ids}, **user_exclude}, {"_id": 0, "password_hash": 0}).to_list(limit)
     for u in users:
         u["shared_artists"] = overlap_map.get(u["id"], 0)
     users.sort(key=lambda x: x.get("shared_artists", 0), reverse=True)
@@ -492,21 +517,26 @@ async def get_suggested_collectors(limit: int = 10, user: Dict = Depends(require
 @router.get("/explore/active-isos")
 async def get_active_iso_matches(user: Dict = Depends(require_auth)):
     """Get ISO matches for the current user - listings matching their wantlist"""
+    hidden_ids = await get_hidden_user_ids()
     isos = await db.iso_items.find({"user_id": user["id"], "status": "OPEN"}, {"_id": 0}).to_list(50)
     if not isos:
         return []
     matches = []
     for iso in isos:
-        query = {"status": "ACTIVE", "user_id": {"$ne": user["id"]}}
+        query = {"status": "ACTIVE", "user_id": {"$ne": user["id"], "$nin": hidden_ids}, "user_id": {"$ne": user["id"]}}
+        if hidden_ids:
+            query["user_id"] = {"$ne": user["id"], "$nin": hidden_ids}
         query["$or"] = [
             {"artist": {"$regex": iso["artist"], "$options": "i"}, "album": {"$regex": iso["album"], "$options": "i"}},
         ]
         if iso.get("discogs_id"):
             query["$or"].append({"discogs_id": iso["discogs_id"]})
         listings = await db.listings.find(query, {"_id": 0}).limit(5).to_list(5)
-        for l in listings:
-            seller = await db.users.find_one({"id": l["user_id"]}, {"_id": 0, "password_hash": 0})
-            l["user"] = {"id": seller["id"], "username": seller.get("username"), "avatar_url": seller.get("avatar_url")} if seller else None
-            l["matched_iso"] = {"artist": iso["artist"], "album": iso["album"]}
-            matches.append(l)
+        for listing_item in listings:
+            seller = await db.users.find_one({"id": listing_item["user_id"], "username": {"$ne": "demo"}, "is_hidden": {"$ne": True}}, {"_id": 0, "password_hash": 0})
+            if not seller:
+                continue
+            listing_item["user"] = {"id": seller["id"], "username": seller.get("username"), "avatar_url": seller.get("avatar_url")}
+            listing_item["matched_iso"] = {"artist": iso["artist"], "album": iso["album"]}
+            matches.append(listing_item)
     return matches

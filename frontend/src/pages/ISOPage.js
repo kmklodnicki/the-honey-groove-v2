@@ -278,7 +278,7 @@ const ISOPage = () => {
       if (photo.url) { urls.push(photo.url); continue; }
       const formData = new FormData(); formData.append('file', photo.file);
       const resp = await axios.post(`${API}/upload`, formData, { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } });
-      urls.push(resp.data.url || `${API}/files/serve/${resp.data.path}`);
+      urls.push(`${API}/files/serve/${resp.data.path}`);
     }
     return urls;
   };
