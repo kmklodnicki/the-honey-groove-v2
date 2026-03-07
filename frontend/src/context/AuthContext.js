@@ -73,8 +73,7 @@ export const AuthProvider = ({ children }) => {
         timeout: 8000,
       });
       if (response.data.email_verified === false) {
-        logout();
-        return;
+        // Email verification disabled — allow full access
       }
       // Merge full user data (replaces the partial JWT-decoded user)
       setUser(response.data);
@@ -91,9 +90,6 @@ export const AuthProvider = ({ children }) => {
     const { access_token, user: userData } = response.data;
     safeStorage.setItem('honeygroove_token', access_token);
     setToken(access_token);
-    if (userData.email_verified === false) {
-      return userData;
-    }
     setUser(userData);
     return userData;
   };
@@ -103,9 +99,6 @@ export const AuthProvider = ({ children }) => {
     const { access_token, user: userData } = response.data;
     safeStorage.setItem('honeygroove_token', access_token);
     setToken(access_token);
-    if (userData.email_verified === false) {
-      return userData;
-    }
     setUser(userData);
     return userData;
   };

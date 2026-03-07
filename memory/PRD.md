@@ -332,6 +332,8 @@ COMPLETED → Mandatory rating before next trade
 175. **Country Gate Modal** — Users without country set are prompted before buy/sell/trade. CountryGateModal shows "set your country first" with button to Settings. Check order: Stripe → Country. Once country is set, prompt disappears. (Mar 2026)
 176. **Shipping Address Country Validation** — Stripe checkout now collects shipping address restricted to buyer's profile country via allowed_countries. Domestic-only listings blocked for cross-country purchases at both backend (400 error) and Stripe (address form restriction). (Mar 2026)
 177. **Onboarding Step 3** — Added country selector as step 3 of onboarding ("where are you based?"). Country saved via PUT /api/auth/me on completion. (Mar 2026)
+178. **Removed Email Verification Requirement** — Users now have full app access immediately after signup. Removed verification gates from backend login, frontend AuthContext (login, register, background fetch), and LoginPage. (Mar 2026)
+179. **Settings Location Placeholder** — Changed from "City, Country" to "City, State". (Mar 2026)
 
 ## Upcoming Tasks
 - **P1: Weekly Wax Email** — Ensure scheduled "Weekly Wax" email is correctly configured (Sundays 12:00 PM ET)

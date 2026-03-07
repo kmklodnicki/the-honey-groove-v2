@@ -31,11 +31,6 @@ const LoginPage = () => {
 
     try {
       const userData = await login(email, password);
-      if (userData && userData.email_verified === false) {
-        setUnverified(true);
-        setLoading(false);
-        return;
-      }
       toast.success('welcome back.');
       navigate('/hive');
     } catch (error) {

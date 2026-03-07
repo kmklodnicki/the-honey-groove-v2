@@ -133,11 +133,7 @@ async def login(credentials: UserLogin, request: Request):
     if not user or not verify_password(credentials.password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
-    # Check email verification
-    if not user.get("email_verified", False):
-        token = create_token(user["id"])
-        return TokenResponse(access_token=token, user=await _build_user_response(user))
-
+    # Check email verification — skip, users have full access immediately
     token = create_token(user["id"])
     return TokenResponse(access_token=token, user=await _build_user_response(user))
 

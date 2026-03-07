@@ -294,7 +294,7 @@ const SettingsPage = () => {
             <Label htmlFor="location">Location</Label>
             <Input
               id="location"
-              placeholder="city, country"
+              placeholder="City, State"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
               className="border-honey/50"
