@@ -206,10 +206,28 @@ async def create_listing(data: ListingCreate, user: Dict = Depends(require_auth)
         await send_email_fire_and_forget(user["email"], tpl["subject"], tpl["html"])
 
     user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url")}
+    
+    # Auto-create a Hive post for this listing
+    post_id = str(uuid.uuid4())
+    post_type = "listing_sale" if data.listing_type == "BUY_NOW" or data.listing_type == "MAKE_OFFER" else "listing_trade"
+    post_doc = {
+        "id": post_id,
+        "user_id": user["id"],
+        "post_type": post_type,
+        "content": f"Just listed {data.album} by {data.artist} {'for sale' if 'sale' in post_type else 'for trade'} on the Honeypot",
+        "record_title": data.album,
+        "record_artist": data.artist,
+        "cover_url": data.photo_urls[0] if data.photo_urls else None,
+        "listing_id": listing_id,
+        "created_at": now,
+        "is_pinned": False,
+    }
+    await db.posts.insert_one(post_doc)
+    
     return ListingResponse(**{k: v for k, v in listing_doc.items() if k != '_id'}, user=user_data)
 
 @router.get("/listings", response_model=List[ListingResponse])
-async def get_listings(listing_type: Optional[str] = None, search: Optional[str] = None, limit: int = 50, skip: int = 0):
+async def get_listings(listing_type: Optional[str] = None, search: Optional[str] = None, limit: int = 50, skip: int = 0, current_user: Optional[Dict] = Depends(get_current_user)):
     """Browse marketplace listings"""
     hidden_ids = await get_hidden_user_ids()
     query = {"status": "ACTIVE"}
@@ -225,11 +243,17 @@ async def get_listings(listing_type: Optional[str] = None, search: Optional[str]
     
     listings = await db.listings.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
     
+    buyer_country = current_user.get("country") if current_user else None
+    
     result = []
     for listing in listings:
         seller = await db.users.find_one({"id": listing["user_id"]}, {"_id": 0, "password_hash": 0})
         user_data = None
         if seller:
+            # Filter: if no intl shipping, seller has country, buyer has country, and they differ → skip
+            seller_country = seller.get("country")
+            if not listing.get("international_shipping") and seller_country and buyer_country and seller_country != buyer_country:
+                continue
             tx_count = await _get_seller_transaction_count(seller["id"])
             user_data = {
                 "id": seller["id"],
@@ -298,6 +322,7 @@ async def get_listing(listing_id: str, current_user: Optional[Dict] = Depends(ge
             "completed_sales": total_completed,
             "city": seller.get("city"),
             "region": seller.get("region"),
+            "country": seller.get("country"),
         }
 
     # Similar listings by the same artist (max 5, exclude current)
@@ -492,6 +517,13 @@ async def create_payment_checkout(request: Request, body: Dict, user: Dict = Dep
         raise HTTPException(status_code=400, detail="Seller has not connected their Stripe account")
     if not seller.get("stripe_charges_enabled"):
         raise HTTPException(status_code=400, detail="Seller's Stripe account is not fully set up yet")
+    
+    # International shipping check
+    if not listing.get("international_shipping"):
+        seller_country = seller.get("country")
+        buyer_country = user.get("country")
+        if seller_country and buyer_country and seller_country != buyer_country:
+            raise HTTPException(status_code=400, detail="This seller only ships domestically. International shipping is not available for this listing.")
 
     fee_pct = await _get_platform_fee_percent()
     platform_fee = round(amount * fee_pct / 100, 2)

@@ -301,6 +301,14 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                 </div>
               )}
 
+              {/* Domestic-only shipping warning */}
+              {!isOwn && !listing.international_shipping && seller?.country && currentUser?.country && seller.country !== currentUser.country && (
+                <div className="mx-6 mt-2 px-3 py-2.5 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800 flex items-start gap-2" data-testid="domestic-only-warning">
+                  <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+                  <span>This seller only ships domestically ({seller.country}). International shipping is not available for this listing.</span>
+                </div>
+              )}
+
               {/* CTA buttons */}
               {!isOwn && (
                 <div className="px-6 pt-3 pb-2 space-y-2" data-testid="listing-cta-section">

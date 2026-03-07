@@ -26,6 +26,7 @@ const SettingsPage = () => {
   const [setup, setSetup] = useState(user?.setup || '');
   const [location, setLocation] = useState(user?.location || '');
   const [favoriteGenre, setFavoriteGenre] = useState(user?.favorite_genre || '');
+  const [country, setCountry] = useState(user?.country || '');
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState(user?.avatar_url);
@@ -72,6 +73,7 @@ const SettingsPage = () => {
           bio: bio,
           setup: setup,
           location: location,
+          country: country || undefined,
           favorite_genre: favoriteGenre || undefined,
           avatar_url: avatarPreview !== user.avatar_url ? avatarPreview : undefined
         },
@@ -298,6 +300,24 @@ const SettingsPage = () => {
               className="border-honey/50"
               data-testid="settings-location"
             />
+          </div>
+
+          {/* Country */}
+          <div className="space-y-2">
+            <Label htmlFor="country">Country</Label>
+            <select
+              id="country"
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              className="flex h-10 w-full rounded-md border border-honey/50 bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              data-testid="settings-country"
+            >
+              <option value="">Select country</option>
+              {['US', 'GB', 'CA', 'AU', 'DE', 'FR', 'JP', 'NL', 'SE', 'IT', 'ES', 'BR', 'MX', 'NZ', 'IE', 'NO', 'DK', 'FI', 'BE', 'AT', 'CH', 'PT', 'PL', 'CZ', 'KR', 'TW', 'SG', 'ZA', 'AR', 'CL', 'CO', 'PH', 'IN', 'IL', 'GR', 'HU', 'RO', 'HR', 'SK', 'BG', 'RS', 'UA', 'TH', 'MY', 'ID', 'VN', 'HK', 'AE', 'SA'].map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+            <p className="text-xs text-muted-foreground">Used for shipping eligibility on marketplace listings.</p>
           </div>
 
           {/* Favorite Genre */}

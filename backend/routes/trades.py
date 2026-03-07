@@ -151,6 +151,14 @@ async def propose_trade(data: TradePropose, user: Dict = Depends(require_auth)):
     if listing["user_id"] == user["id"]:
         raise HTTPException(status_code=400, detail="Cannot trade with yourself")
 
+    # International shipping check
+    if not listing.get("international_shipping"):
+        seller = await db.users.find_one({"id": listing["user_id"]}, {"_id": 0, "country": 1})
+        seller_country = seller.get("country") if seller else None
+        buyer_country = user.get("country")
+        if seller_country and buyer_country and seller_country != buyer_country:
+            raise HTTPException(status_code=400, detail="This seller only ships domestically. International shipping is not available for this listing.")
+
     # Verify offered record belongs to the initiator
     record = await db.records.find_one({"id": data.offered_record_id, "user_id": user["id"]}, {"_id": 0})
     if not record:

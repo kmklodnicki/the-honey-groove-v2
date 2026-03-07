@@ -40,6 +40,7 @@ async def _build_user_response(user: dict) -> UserResponse:
         favorite_genre=user.get("favorite_genre"),
         city=user.get("city"),
         region=user.get("region"),
+        country=user.get("country"),
         created_at=user.get("created_at", ""),
         collection_count=collection_count,
         spin_count=spin_count,
@@ -152,7 +153,7 @@ async def update_me(update_data: UserUpdate, user: Dict = Depends(require_auth))
         if existing:
             raise HTTPException(status_code=400, detail="Username already taken")
         update_fields["username"] = update_data.username.lower()
-    for field in ("bio", "avatar_url", "city", "region", "setup", "location", "favorite_genre"):
+    for field in ("bio", "avatar_url", "city", "region", "country", "setup", "location", "favorite_genre"):
         val = getattr(update_data, field, None)
         if val is not None:
             update_fields[field] = val

@@ -44,6 +44,13 @@ const OnboardingModal = ({ open, onComplete }) => {
   const [caption, setCaption] = useState('');
   const [mood, setMood] = useState('');
 
+  // Step 3: Country
+  const [onboardCountry, setOnboardCountry] = useState('');
+
+  const COUNTRIES = [
+    'US', 'GB', 'CA', 'AU', 'DE', 'FR', 'JP', 'NL', 'SE', 'IT', 'ES', 'BR', 'MX', 'NZ', 'IE', 'NO', 'DK', 'FI', 'BE', 'AT', 'CH', 'PT', 'PL', 'CZ', 'KR', 'TW', 'SG', 'ZA', 'AR', 'CL', 'CO', 'PH', 'IN', 'IL', 'GR', 'HU', 'RO', 'HR', 'SK', 'BG', 'RS', 'UA', 'TH', 'MY', 'ID', 'VN', 'HK', 'AE', 'SA',
+  ];
+
   const searchTimerRef = useRef(null);
   const spinTimerRef = useRef(null);
   useEffect(() => { return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current); if (spinTimerRef.current) clearTimeout(spinTimerRef.current); }; }, []);
@@ -186,8 +193,8 @@ const OnboardingModal = ({ open, onComplete }) => {
           record_id: spinRecord.record_id, caption: caption || null, mood: mood || null,
         }, { headers: { Authorization: `Bearer ${token}` } });
       }
-      await axios.put(`${API}/auth/me`, { onboarding_completed: true }, { headers: { Authorization: `Bearer ${token}` } });
-      updateUser(prev => ({ ...prev, onboarding_completed: true }));
+      await axios.put(`${API}/auth/me`, { onboarding_completed: true, ...(onboardCountry ? { country: onboardCountry } : {}) }, { headers: { Authorization: `Bearer ${token}` } });
+      updateUser(prev => ({ ...prev, onboarding_completed: true, ...(onboardCountry ? { country: onboardCountry } : {}) }));
       onComplete?.();
     } catch { toast.error('could not post. try again.'); }
     finally { setSubmitting(false); }
@@ -195,8 +202,8 @@ const OnboardingModal = ({ open, onComplete }) => {
 
   const skipAndEnter = async () => {
     try {
-      await axios.put(`${API}/auth/me`, { onboarding_completed: true }, { headers: { Authorization: `Bearer ${token}` } });
-      updateUser(prev => ({ ...prev, onboarding_completed: true }));
+      await axios.put(`${API}/auth/me`, { onboarding_completed: true, ...(onboardCountry ? { country: onboardCountry } : {}) }, { headers: { Authorization: `Bearer ${token}` } });
+      updateUser(prev => ({ ...prev, onboarding_completed: true, ...(onboardCountry ? { country: onboardCountry } : {}) }));
       onComplete?.();
     } catch { onComplete?.(); }
   };
@@ -212,12 +219,12 @@ const OnboardingModal = ({ open, onComplete }) => {
 
         {/* Progress */}
         <div className="flex items-center justify-center gap-2 mb-4" data-testid="onboarding-progress">
-          {[1, 2].map(s => (
+          {[1, 2, 3].map(s => (
             <div key={s} className="flex items-center gap-1">
               <div className={`w-10 h-1 rounded-full transition-colors ${s <= step ? 'bg-amber-500' : 'bg-stone-200'}`} />
             </div>
           ))}
-          <span className="text-xs text-muted-foreground ml-2">Step {step} of 2</span>
+          <span className="text-xs text-muted-foreground ml-2">Step {step} of 3</span>
         </div>
 
         {/* Step 1: Build Collection */}
@@ -457,6 +464,40 @@ const OnboardingModal = ({ open, onComplete }) => {
             />
 
             <Button
+              onClick={() => setStep(3)}
+              className="w-full rounded-full bg-amber-500 hover:bg-amber-600 text-white"
+              data-testid="onboarding-step2-next"
+            >
+              next
+            </Button>
+
+            <button onClick={() => setStep(3)} className="w-full text-center text-xs text-muted-foreground hover:text-amber-600 transition-colors" data-testid="onboarding-skip">
+              skip for now
+            </button>
+          </div>
+        )}
+
+        {/* Step 3: Country */}
+        {step === 3 && (
+          <div className="space-y-4" data-testid="onboarding-step-3">
+            <div className="text-center">
+              <h2 className="font-heading text-2xl italic" style={{ fontFamily: '"Playfair Display", serif' }}>where are you based?</h2>
+              <p className="text-sm text-muted-foreground mt-1">helps with shipping for marketplace listings.</p>
+            </div>
+
+            <select
+              value={onboardCountry}
+              onChange={(e) => setOnboardCountry(e.target.value)}
+              className="flex h-10 w-full rounded-md border border-amber-200 bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+              data-testid="onboarding-country"
+            >
+              <option value="">Select your country</option>
+              {COUNTRIES.map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+
+            <Button
               onClick={postAndEnter}
               disabled={submitting}
               className="w-full rounded-full bg-amber-500 hover:bg-amber-600 text-white"
@@ -466,7 +507,7 @@ const OnboardingModal = ({ open, onComplete }) => {
               {spinRecord ? 'post and enter the hive' : 'enter the hive'}
             </Button>
 
-            <button onClick={skipAndEnter} className="w-full text-center text-xs text-muted-foreground hover:text-amber-600 transition-colors" data-testid="onboarding-skip">
+            <button onClick={skipAndEnter} className="w-full text-center text-xs text-muted-foreground hover:text-amber-600 transition-colors" data-testid="onboarding-skip-country">
               skip for now
             </button>
           </div>

@@ -24,6 +24,7 @@ class UserResponse(BaseModel):
     favorite_genre: Optional[str] = None
     city: Optional[str] = None
     region: Optional[str] = None
+    country: Optional[str] = None
     created_at: str
     collection_count: int = 0
     spin_count: int = 0
@@ -44,6 +45,7 @@ class UserUpdate(BaseModel):
     avatar_url: Optional[str] = None
     city: Optional[str] = None
     region: Optional[str] = None
+    country: Optional[str] = None
     onboarding_completed: Optional[bool] = None
 
 class TokenResponse(BaseModel):
@@ -157,6 +159,7 @@ class PostResponse(BaseModel):
     share_card_story_url: Optional[str] = None
     record_id: Optional[str] = None
     haul_id: Optional[str] = None
+    listing_id: Optional[str] = None
     iso_id: Optional[str] = None
     weekly_wrap_id: Optional[str] = None
     track: Optional[str] = None

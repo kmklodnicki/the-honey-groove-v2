@@ -298,6 +298,7 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
         share_card_story_url=post.get("share_card_story_url"),
         record_id=post.get("record_id"),
         haul_id=post.get("haul_id"),
+        listing_id=post.get("listing_id"),
         iso_id=post.get("iso_id"),
         weekly_wrap_id=post.get("weekly_wrap_id"),
         track=post.get("track"),

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Disc, Package, Search, Moon, Plus, Music, Feather } from 'lucide-react';
+import { Disc, Package, Search, Moon, Plus, Music, Feather, ShoppingBag, ArrowRightLeft } from 'lucide-react';
 import AlbumArt from './AlbumArt';
 import { resolveImageUrl } from '../utils/imageUrl';
 import PhotoLightbox from './PhotoLightbox';
@@ -57,6 +57,8 @@ const PostTypeBadge = ({ type, mood }) => {
     WEEKLY_WRAP: { label: 'Weekly Wrap', icon: Music, bg: 'bg-purple-100/60 text-purple-700' },
     VINYL_MOOD: { label: 'Vinyl Mood', icon: Moon, bg: 'bg-purple-100/60 text-purple-700' },
     DAILY_PROMPT: { label: 'Daily Prompt', icon: Disc, bg: 'bg-amber-100/60 text-amber-700' },
+    listing_sale: { label: 'For Sale', icon: ShoppingBag, bg: 'bg-green-100/60 text-green-700' },
+    listing_trade: { label: 'For Trade', icon: ArrowRightLeft, bg: 'bg-blue-100/60 text-blue-700' },
   };
   const c = config[type] || config.NOW_SPINNING;
   const Icon = c.icon;
@@ -286,6 +288,30 @@ const NoteCard = ({ post, onAlbumClick }) => {
 };
 
 // Main renderer
+// Listing post card (auto-created when a listing is made)
+const ListingPostCard = ({ post }) => {
+  const isSale = post.post_type === 'listing_sale';
+  return (
+    <Link to={post.listing_id ? `/honeypot/listing/${post.listing_id}` : '/honeypot'} className="block" data-testid={`listing-post-${post.id}`}>
+      <div className="flex gap-3 items-center bg-stone-50 rounded-xl p-3 hover:bg-stone-100 transition-colors">
+        {post.cover_url ? (
+          <AlbumArt src={post.cover_url} alt="" className="w-16 h-16 rounded-lg object-cover shadow-sm" />
+        ) : (
+          <div className="w-16 h-16 rounded-lg bg-amber-100 flex items-center justify-center"><Disc className="w-6 h-6 text-amber-400" /></div>
+        )}
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-sm truncate">{post.record_title}</p>
+          <p className="text-xs text-muted-foreground truncate">{post.record_artist}</p>
+          <span className={`inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs font-medium ${isSale ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+            {isSale ? <ShoppingBag className="w-3 h-3" /> : <ArrowRightLeft className="w-3 h-3" />}
+            {isSale ? 'For Sale' : 'For Trade'}
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+};
+
 const PostCardBody = ({ post, onAlbumClick }) => {
   switch (post.post_type) {
     case 'NOW_SPINNING': return <NowSpinningCard post={post} onAlbumClick={onAlbumClick} />;
@@ -296,6 +322,8 @@ const PostCardBody = ({ post, onAlbumClick }) => {
     case 'WEEKLY_WRAP': return <WeeklyWrapCard post={post} />;
     case 'VINYL_MOOD': return <VinylMoodCard post={post} onAlbumClick={onAlbumClick} />;
     case 'DAILY_PROMPT': return <DailyPromptPostCard post={post} />;
+    case 'listing_sale': return <ListingPostCard post={post} />;
+    case 'listing_trade': return <ListingPostCard post={post} />;
     default:
       return (
         <div>
