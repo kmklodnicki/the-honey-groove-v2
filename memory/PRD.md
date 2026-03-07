@@ -328,7 +328,10 @@ COMPLETED → Mandatory rating before next trade
 171. **Notification Deep-Link to Post** — Clicking post/comment notifications now navigates to `/hive?post={id}&comment={id}`, scrolls to the specific post with a honey ring highlight, and auto-opens comments if it's a comment notification. Added GET /api/posts/{id} single-post endpoint. If the targeted post isn't in the user's feed, it's fetched and injected. (Mar 2026)
 172. **International Shipping Checkbox** — Added `international_shipping` field to ListingCreate/ListingResponse models. Checkbox on listing form with tip text. Badge on listing cards and detail modal. (Mar 2026)
 173. **International Shipping Logic** — Country-based listing filtering. Domestic-only listings hidden from buyers in different countries. Country field on user profiles (Settings + Onboarding step 3). Checkout and trade endpoints also validate country match. Sellers with no country set are visible to everyone. Set katieintheafterglow=US. (Mar 2026)
-174. **Auto-Post Listing to Hive** — Creating a listing auto-generates a Hive post with post_type `listing_sale` or `listing_trade`, showing album art, title, artist, and For Sale/Trade badge. Links to listing detail. New ListingPostCard component in PostCards.js. (Mar 2026)
+174. **Auto-Post Listing to Hive** — Creating a listing auto-generates a Hive post with post_type `listing_sale` or `listing_trade`. New ListingPostCard component in PostCards.js. (Mar 2026)
+175. **Country Gate Modal** — Users without country set are prompted before buy/sell/trade. CountryGateModal shows "set your country first" with button to Settings. Check order: Stripe → Country. Once country is set, prompt disappears. (Mar 2026)
+176. **Shipping Address Country Validation** — Stripe checkout now collects shipping address restricted to buyer's profile country via allowed_countries. Domestic-only listings blocked for cross-country purchases at both backend (400 error) and Stripe (address form restriction). (Mar 2026)
+177. **Onboarding Step 3** — Added country selector as step 3 of onboarding ("where are you based?"). Country saved via PUT /api/auth/me on completion. (Mar 2026)
 
 ## Upcoming Tasks
 - **P1: Weekly Wax Email** — Ensure scheduled "Weekly Wax" email is correctly configured (Sundays 12:00 PM ET)
