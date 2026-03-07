@@ -3,155 +3,160 @@ The user wants to build a web app called **The HoneyGroove**, a social platform 
 
 **PRODUCT REQUIREMENTS (Synthesized from initial request and subsequent user directives):**
 *   **Core App:** A full-stack application for vinyl collectors to track their collection, log spins, and interact socially.
-*   **Branding & UI/UX:** A warm, honey-inspired theme with a clean, modern UI, amber color palette, and specific fonts.
-*   **User System & Onboarding:** Invite-only, email-verified accounts. Beta invite links must lead directly to the onboarding flow.
-*   **Social & Engagement Features:** A social feed (now named Nectar), daily prompts, and weekly Collector Bingo. Users must be able to delete their own posts.
-*   **Search & Discovery:** A fast, fuzzy global search and dedicated pages for records, leveraging the Discogs API. Search results must show rich variant details.
-*   **Admin Panel:** For managing beta signups and user roles.
-*   **Data Integrity:** Test and demo data (, , ) must be permanently and completely hidden from all user-facing parts of the application.
-*   **Core Functionality:** User registration, login, profile management, and creating listings for sale/trade (with photo uploads) must be stable and functional. Image URLs must resolve correctly.
-*   **Sales & Trades:** The sales flow must use **live** Stripe Connect Express accounts. The trade flow must support secure shipping address exchange. Listing creation must be gated behind Stripe connection.
-*   **Order Management:** Implement My Orders and My Sales pages. Sellers must be able to update shipping/tracking info and cancel orders (triggering a refund). Buyers should be able to contact sellers.
-*   **UI/UX Polish:** Key UI elements like album cards in feeds, modals, and on various pages should be interactive and clickable, leading to a consistent album detail view.
+*   **Branding & UI/UX:** A warm, honey-inspired theme with a clean, modern UI, amber color palette, and specific fonts. The navbar logo must be prominent.
+*   **User System & Onboarding:** Invite-only, email-verified accounts. Beta invite links must lead directly to the onboarding flow. **UPDATE:** The email verification requirement has been removed. Users must select their country during onboarding.
+*   **Social & Engagement Features:**
+    *   A social feed (The Hive) with filters (All, Now Spinning, New Haul, ISO, Sale/Trade, Following).
+    *   Users can like and reply to comments. Replies are nested.
+    *   Users can @mention others in comments, triggering an autocomplete search and a notification.
+    *   Admin users can pin one post to the top of the Hive feed.
+*   **Notifications:** Must be interactive, deep-linking to the relevant post or comment. Message notifications should be separated from activity notifications.
+*   **Marketplace (The Honeypot):**
+    *   Sellers can mark listings as Open to international shipping.
+    *   Listings are only visible/purchasable by users in the same country unless international shipping is enabled.
+    *   Users must have a country set on their profile to buy, sell, or trade.
+    *   During checkout, the buyer's shipping address country must match their profile country.
+    *   Creating a new sale/trade listing automatically creates a corresponding post in the Hive feed.
+*   **Data Integrity:** Test and demo data must be hidden. Blank ISO posts must be prevented and removed.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application (React, FastAPI, MongoDB) for vinyl collectors. The platform features user accounts, collection management, a social feed (Nectar), and a sales/trades marketplace (The Honeypot). The application's payment system has been switched to use **live Stripe keys**. The agent just received a P0 bug report that the beta invite link flow is broken.
+A full-stack application (React, FastAPI, MongoDB) for vinyl collectors. The platform features user accounts, collection management, a social feed (The Hive), and a sales/trades marketplace (The Honeypot) using live Stripe keys.
+
+In this session, a significant number of features and bug fixes were implemented, including: a complete comment system overhaul (likes, nested replies, @mentions), an admin post-pinning system, deep-linking for notifications, international shipping logic for the marketplace, a country selector for user profiles, automatic Hive posts for new listings, and various UI/UX polishes and critical bug fixes. The application is significantly more feature-rich and stable than at the start of the session.
 
 **Last working item**:
-- **Last item agent was working:** Investigating a critical bug where beta invite links are redirecting users to the homepage instead of the correct sign-up/onboarding flow, preventing new users from joining the app.
-- **Status:** NOT STARTED
+- **Last item agent was working:** Implementing a filter bar at the top of The Hive feed. The filter bar allows users to filter posts by type (, , , , etc.) and to see posts only from users they follow. The filtering logic was implemented on the client-side in .
+- **Status:** USER VERIFICATION PENDING
 - **Agent Testing Done:** N
-- **Which testing method agent to use?** backend testing agent. First, use  to inspect the response from the  endpoint. Then, use the testing agent to verify the complete end-to-end user flow from clicking an invite link to successful sign-up.
+- **Which testing method agent to use?** Frontend testing agent. The agent should create various post types, log in as a user, and click each filter option in the new filter bar on the Hive page to verify that the feed content updates correctly according to the selected filter.
 - **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-- **Issue 1: Broken Beta Invite Links (P0)**
-    - **Description:** Beta invite links () are redirecting to the homepage () instead of the intended onboarding/signup flow. This is a critical blocker preventing any new users from joining the application.
-    - **Status:** NOT STARTED
-    - **Next debug checklist:**
-        1.  Examine the backend route handler for  in  to check its logic.
-        2.  Review the frontend routing in  to see how the  path is handled.
-        3.  Check for any middleware or guards that might be incorrectly redirecting unauthenticated users from the invite page.
-    - **Why fix this issue and what will be achieved with the fix?** Fixing this will unblock the user acquisition funnel, allowing new invited users to sign up and access the application.
-    - **Should Test frontend/backend/both after fix?** Both.
+- None.
 
 **In progress Task List**:
 - None.
 
 **Upcoming and Future Tasks**
 - **Upcoming Tasks:**
-    - **P1: Implement Weekly Wax Email:** Ensure the scheduled Weekly Wax email is correctly configured to be sent every Sunday at 12:00 PM ET.
-    - **P2: Hauls Enhancement:** Develop a dedicated page and more functionality for Haul posts.
-    - **P2: Refactor :** Address known technical debt in this complex component.
+  - **P1: Implement Weekly Wax Email:** Ensure the scheduled Weekly Wax email is correctly configured to be sent every Sunday at 12:00 PM ET.
+  - **P2: Hauls Enhancement:** Develop a dedicated page and more functionality for Haul posts.
+  - **P2: Refactor :** Address known technical debt in this complex component.
 - **Future Tasks:**
-    - Re-implement a new, fully Safari-compatible loading animation.
-    - Implement Pro memberships or a Verified Seller badge.
-    - Implement deferred Buyer Protection features.
-    - Re-enable Instagram sharing features.
+  - Re-implement a new, fully Safari-compatible loading animation.
+  - Implement Pro memberships or a Verified Seller badge.
+  - Implement deferred Buyer Protection features.
+  - Re-enable Instagram sharing features.
 
 **Completed work in this session**
-- **Stripe Live Integration:**
-    - Switched the entire payment system from Stripe test mode to **live mode** by updating the backend  file with live API keys.
-    - Hardcoded the production domain () for all Stripe Connect redirect URLs in  to prevent environment-related errors.
-- **Order Management Feature:**
-    - Created a new My Orders / My Sales page accessible from the user profile dropdown.
-    - Implemented backend endpoints (, ) to fetch and enrich transaction data.
-    - Added functionality for sellers to update shipping and tracking information ().
-    - Implemented order cancellation for sellers, which triggers an automatic Stripe refund ().
-    - Added a Message Seller link for buyers on the orders page.
-- **Post & Listing Deletion:**
-    - Implemented functionality for users to delete their own posts from the Hive feed, with a confirmation dialog.
-    - Added a confirmation dialog to the existing delete functionality for sale/trade listings on the .
-- **UI/UX & Bug Fixes:**
-    - Renamed the Explore page to Nectar across the entire application, including routes, navigation, and text references.
-    - Fixed a bug where album cards in Hive feed posts were not clickable.
-    - Fixed a bug where uploaded photos for sale listings were not displaying.
-    - Added a Payments section to the Settings page with a button to initiate the Stripe Connect flow.
-    - Fixed the mobile navigation bar logo size.
-- **Onboarding & Configuration:**
-    - Updated the user onboarding flow to include an optional Now Spinning search feature.
-    - Configured the registration process to opt-in all new users to the Wax Report newsletter by default.
-    - Ensured all emails are sent from .
-    - Removed the Searching for / Found counts from the  page.
+- **Feature: Comment System Overhaul:** Implemented comment likes, nested replies, and @mention functionality with user search autocomplete in  and .
+- **Feature: Admin Pin Post:** Added backend endpoints and frontend UI for admins to pin/unpin a single post to the top of the Hive feed.
+- **Feature: Notification Deep-Linking:** Notifications now navigate users to the specific post and highlight the relevant comment upon clicking.
+- **Feature: International Shipping & Country Profiles:**
+    - Added an Open to international shipping checkbox for listings.
+    - Implemented country-based filtering and purchase restrictions in the marketplace.
+    - Added a mandatory country selection step to user onboarding and an editable field in Settings.
+    - Implemented a Country Gate modal to prompt existing users to set their country.
+- **Feature: Auto-post Listings to Hive:** New marketplace listings for sale or trade now automatically generate a post in the Hive feed.
+- **Feature: Hive Feed Filters:** Added a client-side filter bar to the Hive feed for filtering posts by type.
+- **Bug Fix: Broken Beta Invite Flow (P0):** Resolved a critical bug where invite links were redirecting to the homepage instead of the sign-up flow.
+- **Bug Fixes & UI Polish:**
+    - Fixed broken  import in the Add Record modal.
+    - Increased the navbar logo size for better visibility.
+    - Fixed the  layout where content was hidden by the navbar.
+    - Fixed the non-functional Follow button in the global search dropdown.
+    - Separated DM notifications from the main notification feed.
+    - Added validation to prevent and hide blank/empty ISO posts.
+- **Improvement: Removed Email Verification:** Users can now access the app fully immediately after registration without needing to verify their email.
 
 **Earlier issues found/mentioned but not fixed**
 - None.
 
 **Known issue recurrence from previous fork**
--   **Issue recurrence in previous fork:**
-    -    test data appearing on public pages (Explore).
-    -   Image uploads/display not working for profiles and listings.
--   **Recurrence count:** 3+
--   **Status:** RESOLVED. The previous agent performed an exhaustive, app-wide fix for all image rendering and data filtering logic.
+- **Issue recurrence in previous fork:**  test data appearing; Image uploads not working.
+- **Recurrence count:** 3+
+- **Status:** RESOLVED. No recurrence of these issues was observed in this session.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- **Stripe Live Mode:** The application is now processing real payments.
-- **Stripe Refunds API:** Used  via the payment intent ID stored in the database to automate refunds on order cancellation.
-- **Enriched API Endpoints:** The new order/sales endpoints aggregate data from , , , and  collections to provide a complete view to the frontend.
-- **Frontend Routing & Renaming:** Systematically updated React Router routes,  components, and all user-facing text to rename a core feature.
+- **Component Refactoring:** The  component was extracted from  into its own file () and refactored to be non-recursive to resolve a Maximum call stack size exceeded build error from Babel.
+- **Client-Side Filtering:** Implemented filtering logic directly in React state within  for instant feed filtering without new API calls.
+- **Deep-Linking:** Used React Router's query parameters () to navigate to and highlight specific content within a page.
+- **Conditional UI Gating:** Implemented modals () and disabled buttons to enforce user actions like setting a profile country before accessing marketplace features.
+- **Stripe Enforcement:** Leveraged Stripe Checkout's  with  to enforce that a buyer's shipping address country matches their profile country, offloading validation to Stripe.
+- **Cross-Feature Logic:** Implemented a feature where one action (creating a listing in ) automatically triggers another (creating a post in ).
 
 **key DB schema**
--   **payment_transactions:** Updated with  (str),  (str),  (datetime), and an expanded  field that now includes 'CANCELLED'. The  is crucial for processing refunds.
+-   **posts:**  (bool),  array now holds nested comment objects with  (ObjectId),  ([ObjectId]), and  ([str]).
+-   **listings:**  (bool).
+-   **users:** The  field (str, 2-letter ISO code) is now required for marketplace interactions.
+-   **notifications:** Added new types: , . The  type is now filtered out of the main notification endpoints.
 
 **changes in tech stack**
 -   None.
 
 **All files of reference**
--   **Current Bug (Invites):**
+-   **Core Social Features:**
     -   
     -   
--   **Stripe & Order Management:**
+    -    (New file)
+-   **Marketplace & Country Logic:**
     -   
     -   
+    -    (New file)
     -   
     -   
--   **Post Deletion & UI Fixes:**
-    -   
-    -   
-    -   
-    -   
+-   **Bug Fixes:**
+    -    (Invite fix)
+    -    (Follow button fix)
+    -    (DM notification fix)
+    -    (Blank post fix)
 
 **Areas that need refactoring**:
--    remains a large and complex component that could be broken down.
--   Backend routes still contain star imports () which should be replaced with explicit imports.
+-    remains a large and complex component that could benefit from being broken down.
+-   Backend routes still use star imports (), which should be replaced with explicit imports for clarity and to avoid namespace pollution.
 
 **key api endpoints**
--   ****: (NEW) Cancels an order and triggers a Stripe refund.
--   ****: (NEW) Updates shipping/tracking info for an order.
--   ****: (NEW) Fetches all orders for the current user.
--   ****: (UPDATED) Fetches all sales for the current user with enriched data.
--   ****: (NEW) Deletes a user's post from the Hive feed.
--   ****: (UNDER INVESTIGATION) Endpoint for handling beta invites.
+-   ****: (NEW) Toggles a like on a comment.
+-   ****: (UPDATED) Supports a  for creating nested replies.
+-   ****: (NEW) Searches for users to @mention in comments.
+-   ****: (NEW) Admin endpoint to pin a post.
+-   ****: (UPDATED) Now creates a Hive post on success and requires  flag.
+-   ****: (UPDATED) Now includes  to enforce country matching.
+-   ****: (UPDATED) No longer returns notifications of type .
+-   ****: (UPDATED) Now validates that post content is not empty.
 
 **Critical Info for New Agent**
--   **STRIPE IS LIVE.** All payment-related actions are real and involve real money. Exercise extreme caution when modifying any code in  or payment-related frontend components.
--   The immediate priority is to fix the **broken beta invite flow (P0)**. This is a critical blocker preventing new user sign-ups.
--   The Stripe Connect redirect URLs are hardcoded in  to point to . Do not change this unless explicitly requested.
+-   **STRIPE IS LIVE.** All payment-related actions are real. Exercise extreme caution.
+-   **Country Field is Critical:** The  field on user profiles is now essential for all marketplace functions (listing, buying, trading). The app will block users without a country set.
+-   **HivePage.js Complexity:** This file is the hub for most social features. It was recently refactored to extract the  component to fix a build error. Be mindful of its size and complexity when making further changes.
+-   **Testing Agent:** The testing agent was used extensively and successfully in this session, catching several bugs before they reached the user. It is a reliable tool for verifying complex features.
 
 **documents and test reports created in this job**
--    (updated after each major feature)
--   Multiple test reports in , with the latest confirming the functionality of the Orders page.
+-    (updated multiple times)
+-   Multiple test reports in  detailing the successful implementation of new features and bug fixes.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Requests a My Orders / My Sales page. (Status: COMPLETED)
-2.  **User:** Confirms adding shipping/tracking updates for sellers. (Status: COMPLETED)
-3.  **User:** Requests order cancellation for sellers (with refunds) and a message seller option for buyers. (Status: COMPLETED)
-4.  **User:** Requests switching Stripe to live mode. (Status: COMPLETED)
-5.  **User:** Provides live Stripe secret key. (Status: COMPLETED)
-6.  **User:** Provides live Stripe publishable key. (Status: COMPLETED)
-7.  **User:** Provides live Stripe webhook secret. (Status: COMPLETED)
-8.  **User:** Reports beta invite links are broken and redirecting to the homepage. (Status: **PENDING - CURRENT TASK**)
-9.  **Agent:** Acknowledges and starts investigating the invite bug. (Status: IN PROGRESS)
-10. **(No more user messages)**
+1.  **User:** Requests features for comment replies, comment likes, @-mentions, and admin post pinning. (Status: COMPLETED)
+2.  **User:** Requests a fix for the navbar logo being too small. (Status: COMPLETED)
+3.  **User:** Approves the agent's plan to implement the requested features. (Status: COMPLETED)
+4.  **User:** Requests adding international shipping logic to the marketplace and auto-posting new listings to the Hive feed. (Status: COMPLETED)
+5.  **User:** Approves the plan and clarifies that users should set their country in onboarding/settings. (Status: COMPLETED)
+6.  **User:** Requests a gate for users without a country set and validation for shipping address country at checkout. (Status: COMPLETED)
+7.  **User:** Requests removing the email verification requirement and changing placeholder text in the settings location input. (Status: COMPLETED)
+8.  **User:** Reports the Orders page layout is broken on desktop. (Status: COMPLETED)
+9.  **User:** Reports the follow button in search results is not working. (Status: COMPLETED)
+10. **User:** Reports that message notifications should be separate from the main notification dropdown. (Status: COMPLETED)
+11. **User:** Reports a blank ISO post is appearing in the feed. (Status: COMPLETED)
+12. **User:** Requests filters for the Hive feed. (Status: **USER VERIFICATION PENDING**)
 
 **Project Health Check:**
--   **Broken:** The beta invite user acquisition flow is critically broken.
--   **Mocked:** Email sending via Resend is still mocked.
+-   **Broken:** None.
+-   **Mocked:** Email sending via Resend remains mocked.
 
 **3rd Party Integrations**
 -   **Stripe Connect:** **LIVE MODE**. For peer-to-peer payments.
@@ -161,13 +166,13 @@ A full-stack application (React, FastAPI, MongoDB) for vinyl collectors. The pla
 -   **Emergent Storage:** For all file uploads.
 
 **Testing status**
--   **Testing agent used after significant changes:** YES. The testing agent was used successfully after every feature sprint, catching a critical bug where API endpoints were incorrectly renamed during a global search-replace.
+-   **Testing agent used after significant changes:** YES. The testing agent was used multiple times to validate large feature drops and successfully identified and fixed several backend and frontend bugs.
 -   **Troubleshoot agent used after agent stuck in loop:** NO
 -   **Test files created:** None.
--   **Known regressions:** The beta invite flow is a new regression.
+-   **Known regressions:** None identified in this session.
 
 **Credentials to test flow:**
--   To test protected flows, use the Admin Panel to send an invite to a test email address. Use that invite link to register a new user. **Note: This flow is currently broken and is the P0 task to fix.**
+-   To test protected flows, use the Admin Panel to send an invite to a test email address. Use that invite link to register a new user. This flow is now working correctly.
 
 **What agent forgot to execute**
--   The agent has not overlooked any tasks and was proceeding to investigate the latest user-reported bug before the session ended.</analysis>
+-   The agent successfully implemented all user requests from this session. The remaining tasks are from the long-term backlog defined in previous sessions.</analysis>

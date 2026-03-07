@@ -392,6 +392,7 @@ const HivePage = () => {
   const [posts, setPosts] = useState([]);
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
+  // Following filter works because /feed already returns only followed users + self
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
 
@@ -405,6 +406,18 @@ const HivePage = () => {
   const [albumRelease, setAlbumRelease] = useState(null);
   const [spinningAlbum, setSpinningAlbum] = useState(false);
   const [addingAlbum, setAddingAlbum] = useState(false);
+
+  const [activeFilter, setActiveFilter] = useState('all');
+
+  const FEED_FILTERS = [
+    { key: 'all', label: 'All' },
+    { key: 'NOW_SPINNING', label: 'Now Spinning' },
+    { key: 'NEW_HAUL', label: 'New Haul' },
+    { key: 'ISO', label: 'ISO' },
+    { key: 'listing', label: 'For Sale/Trade' },
+    { key: 'NOTE', label: 'A Note' },
+    { key: 'following', label: 'Following' },
+  ];
 
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -448,6 +461,13 @@ const HivePage = () => {
       setShowOnboarding(true);
     }
   }, [fetchFeed, fetchRecords, user]);
+
+  const filteredPosts = React.useMemo(() => {
+    if (activeFilter === 'all') return posts;
+    if (activeFilter === 'following') return posts.filter(p => p.user_id !== user?.id);
+    if (activeFilter === 'listing') return posts.filter(p => p.post_type === 'listing_sale' || p.post_type === 'listing_trade');
+    return posts.filter(p => p.post_type === activeFilter);
+  }, [posts, activeFilter, user?.id]);
 
   const handleLike = async (postId, isLiked) => {
     try {
@@ -630,14 +650,32 @@ const HivePage = () => {
       {/* Composer Bar */}
       <ComposerBar onPostCreated={handlePostCreated} records={records} />
 
+      {/* Filter Bar */}
+      <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide -mx-1 px-1" data-testid="feed-filter-bar">
+        {FEED_FILTERS.map(f => (
+          <button
+            key={f.key}
+            onClick={() => setActiveFilter(f.key)}
+            className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition-all shrink-0 ${
+              activeFilter === f.key
+                ? 'bg-vinyl-black text-white shadow-sm'
+                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+            }`}
+            data-testid={`filter-${f.key}`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
       {/* Daily Prompt */}
       <DailyPromptCard records={records} onPostCreated={handlePostCreated} />
 
-      {posts.length === 0 ? (
+      {filteredPosts.length === 0 ? (
         <Card className="p-8 text-center border-honey/30" data-testid="hive-empty-state">
           <span className="text-4xl block mb-3">🐝</span>
           <p className="italic text-muted-foreground mb-4" style={{ fontFamily: '"DM Serif Display", serif', color: '#8A6B4A' }}>
-            the hive is just getting started. be the first to post.
+            {activeFilter === 'all' ? 'the hive is just getting started. be the first to post.' : `no ${FEED_FILTERS.find(f => f.key === activeFilter)?.label || ''} posts yet.`}
           </p>
           <Button onClick={() => {}} className="bg-amber-500 text-white hover:bg-amber-600 rounded-full" data-testid="hive-empty-cta">
             post something
@@ -645,7 +683,7 @@ const HivePage = () => {
         </Card>
       ) : (
         <div className="space-y-4">
-          {posts.map(post => (
+          {filteredPosts.map(post => (
             <PostCard
               key={post.id}
               post={post}
