@@ -42,6 +42,10 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const [spinTrack, setSpinTrack] = useState('');
   const [spinCaption, setSpinCaption] = useState('');
   const [spinMood, setSpinMood] = useState('');
+  const [spinSearch, setSpinSearch] = useState('');
+  const [spinSearchResults, setSpinSearchResults] = useState([]);
+  const [spinSelectedRecord, setSpinSelectedRecord] = useState(null);
+  const spinSearchTimer = useRef(null);
 
   // New Haul
   const [haulStoreName, setHaulStoreName] = useState('');
@@ -75,6 +79,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
 
   const resetAll = () => {
     setSpinRecordId(''); setSpinTrack(''); setSpinCaption(''); setSpinMood('');
+    setSpinSearch(''); setSpinSearchResults([]); setSpinSelectedRecord(null);
     setHaulStoreName(''); setHaulCaption(''); setHaulItems([]); setHaulSearch(''); setHaulResults([]);
     setIsoArtist(''); setIsoAlbum(''); setIsoPressing(''); setIsoCondition('');
     setIsoPriceMin(''); setIsoPriceMax(''); setIsoCaption('');
@@ -92,8 +97,49 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     return () => {
       if (haulSearchTimer.current) clearTimeout(haulSearchTimer.current);
       if (isoSearchTimer.current) clearTimeout(isoSearchTimer.current);
+      if (spinSearchTimer.current) clearTimeout(spinSearchTimer.current);
     };
   }, []);
+
+  // Local collection search for Now Spinning
+  const searchCollection = useCallback((query) => {
+    if (spinSearchTimer.current) clearTimeout(spinSearchTimer.current);
+    if (!query || query.length < 2) { setSpinSearchResults([]); return; }
+    spinSearchTimer.current = setTimeout(() => {
+      const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+      const scored = records
+        .filter(r => {
+          const hay = `${r.artist} ${r.title}`.toLowerCase();
+          return words.every(w => hay.includes(w));
+        })
+        .map(r => {
+          const hay = `${r.artist} ${r.title}`.toLowerCase();
+          let score = 0;
+          for (const w of words) {
+            if (hay === w) score += 100;
+            else if (hay.startsWith(w)) score += 60;
+            else if (hay.includes(` ${w}`)) score += 40;
+            else if (hay.includes(w)) score += 20;
+          }
+          return { ...r, _score: score };
+        })
+        .sort((a, b) => b._score - a._score)
+        .slice(0, 10);
+      setSpinSearchResults(scored);
+    }, 300);
+  }, [records]);
+
+  const selectSpinRecord = (rec) => {
+    setSpinSelectedRecord(rec);
+    setSpinRecordId(rec.id);
+    setSpinSearch('');
+    setSpinSearchResults([]);
+  };
+
+  const deselectSpinRecord = () => {
+    setSpinSelectedRecord(null);
+    setSpinRecordId('');
+  };
 
   const searchDiscogs = useCallback((query) => {
     if (!query || query.length < 2) { setHaulResults([]); setSearchLoading(false); return; }
@@ -273,19 +319,59 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
           <div className="space-y-4 pt-2">
             <div>
               <label className="text-sm font-medium mb-1 block" style={moodCfg ? { color: moodCfg.btnColor } : {}}>Record</label>
-              <Select value={spinRecordId} onValueChange={setSpinRecordId}>
-                <SelectTrigger
-                  className="border-honey/50"
-                  style={moodCfg ? { background: 'rgba(255,255,255,0.08)', color: '#ddd', borderColor: moodCfg.btnColor + '60' } : {}}
-                  data-testid="spin-record-select">
-                  <SelectValue placeholder="Choose from your collection" />
-                </SelectTrigger>
-                <SelectContent>
-                  {records.map(r => (
-                    <SelectItem key={r.id} value={r.id}>{r.artist} · {r.title}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {!spinSelectedRecord ? (
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" style={moodCfg ? { color: '#888' } : {}} />
+                  <Input
+                    placeholder="search your collection..."
+                    value={spinSearch}
+                    onChange={e => { setSpinSearch(e.target.value); searchCollection(e.target.value); }}
+                    className="pl-9 border-honey/50"
+                    style={moodCfg ? { background: 'rgba(255,255,255,0.08)', color: '#ddd', borderColor: moodCfg.btnColor + '60' } : {}}
+                    data-testid="spin-record-search"
+                    autoFocus
+                  />
+                  {spinSearchResults.length > 0 && (
+                    <div className="absolute z-50 left-0 right-0 mt-1 border rounded-lg max-h-52 overflow-y-auto shadow-lg"
+                      style={moodCfg ? { background: moodCfg.bg, borderColor: moodCfg.btnColor + '40' } : { background: '#fff', borderColor: 'rgba(200,134,26,0.3)' }}>
+                      {spinSearchResults.map(r => (
+                        <RecordSearchResult key={r.id} record={r} onClick={() => selectSpinRecord(r)} size="sm" testId={`spin-result-${r.id}`} />
+                      ))}
+                    </div>
+                  )}
+                  {spinSearch.length >= 2 && spinSearchResults.length === 0 && (
+                    <div className="absolute z-50 left-0 right-0 mt-1 border rounded-lg p-4 text-center shadow-lg"
+                      style={moodCfg ? { background: moodCfg.bg, borderColor: moodCfg.btnColor + '40' } : { background: '#fff', borderColor: 'rgba(200,134,26,0.3)' }}>
+                      <p className="text-sm" style={{ color: moodCfg ? '#999' : '#8A6B4A' }}>
+                        no results in your collection 🐝
+                      </p>
+                      <a href="/add-record" className="text-xs mt-1 inline-block hover:underline"
+                        style={{ color: moodCfg ? moodCfg.btnColor : '#C8861A' }}
+                        data-testid="spin-add-record-link">
+                        add it first →
+                      </a>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center gap-3 rounded-lg p-2.5"
+                  style={moodCfg ? { background: 'rgba(255,255,255,0.08)', borderColor: moodCfg.btnColor + '40' } : { background: 'rgba(244,185,66,0.1)' }}>
+                  {spinSelectedRecord.cover_url ? (
+                    <AlbumArt src={spinSelectedRecord.cover_url} alt="" className="w-11 h-11 rounded-md object-cover shadow-sm" />
+                  ) : (
+                    <div className="w-11 h-11 rounded-md bg-stone-100 flex items-center justify-center"><Disc className="w-5 h-5 text-stone-400" /></div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate" style={moodCfg ? { color: '#eee' } : {}}>{spinSelectedRecord.title}</p>
+                    <p className="text-xs truncate" style={{ color: moodCfg ? '#aaa' : '#8A6B4A' }}>{spinSelectedRecord.artist}</p>
+                  </div>
+                  <button onClick={deselectSpinRecord} className="p-1 rounded-full hover:bg-black/10"
+                    style={moodCfg ? { color: '#999' } : { color: '#8A6B4A' }}
+                    data-testid="spin-deselect-record">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </div>
 
             <Input placeholder="Track (optional)" value={spinTrack} onChange={e => setSpinTrack(e.target.value)}
