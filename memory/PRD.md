@@ -86,6 +86,8 @@ The Hive — Explore — Collection — The Honeypot
 74. **Hive Feed Filters** — Client-side filter bar: All, Now Spinning, New Haul, ISO, For Sale/Trade, A Note, Following. Bug fix: NOTE filter key matched to uppercase backend post_type. (Mar 2026)
 75. **Email Verification Removed** — Users access app immediately after registration without email verification. (Mar 2026)
 76. **UI Bug Fixes (Mar 2026)** — Fixed AlbumArt import, enlarged navbar logo, fixed Orders page layout, fixed Follow button in search, separated DM notifications, validated blank ISO posts.
+77. **Hive Feed Pagination** — "View Older Posts" button at bottom of feed loads next 50 posts via /api/feed?limit=50&skip=N. End-of-feed message when no more posts. Only shown on "All" filter. (Mar 2026)
+78. **Back to Top Button** — Floating arrow button fixed bottom-right, appears after scrolling >300px, smooth scrolls to top. vinyl-black styled. (Mar 2026)
 
 ## Code Architecture
 ```
