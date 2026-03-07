@@ -254,7 +254,10 @@ COMPLETED → Mandatory rating before next trade
 
 132. **Sell/Trade Buttons on Record Detail** — Added "List for Sale" (amber outline) and "Offer to Trade" (cream outline) buttons to RecordDetailPage, visible only for record owner. Buttons navigate to /honeypot with query params (create=sale/trade, artist, album, discogs_id, cover_url, year). ISOPage reads these params and prefills the listing form. (Mar 2026)
 
+133. **Universal Image URL Resolution (Definitive Fix)** — Created `/app/frontend/src/utils/imageUrl.js` with `resolveImageUrl()` that handles 3 cases: (1) raw storage paths → builds proxy URL, (2) old full URLs from different deployment domains containing `/api/files/serve/` → extracts storage path and rebuilds with current API base, (3) external URLs (Discogs, Dicebear) → returned as-is. Applied to ALL 15 components that render avatar_url or image_url: BeeAvatar, FollowList, GlobalSearch, ListingDetailModal, PostCards, HivePage, ExplorePage, ExploreSeeAllPage, RecordDetailPage, TradesPage, MessagesPage, AdminPage, WaxReportPage, ProfilePage, AlbumArt. This definitively fixes broken images when the app domain changes between deployments. Tested and verified: old URL from `collector-beta.preview` correctly rewritten to `wax-preview` with HTTP 200 response. (Mar 2026)
+
 ## Upcoming Tasks
+- **P1: Weekly Wax Email** — Ensure scheduled "Weekly Wax" email is correctly configured (Sundays 12:00 PM ET)
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
 - **P2: Refactor ISOPage.js** — Break monolithic 3-tab component
 - **P2: Monetization** — Pro membership, Verified Seller badge
