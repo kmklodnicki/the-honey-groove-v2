@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import { usePageTitle } from '../hooks/usePageTitle';
 import AlbumArt from '../components/AlbumArt';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 /* ═══════ Brand Colors ═══════ */
 const C = {
@@ -139,7 +140,7 @@ const WaxReportPage = () => {
         {/* ═══ Header ═══ */}
         <div className="flex items-center gap-4 mb-2" data-testid="wax-header">
           {report.avatar_url
-            ? <img src={report.avatar_url} alt="" className="w-14 h-14 rounded-full object-cover shadow" />
+            ? <img src={resolveImageUrl(report.avatar_url)} alt="" className="w-14 h-14 rounded-full object-cover shadow" />
             : <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold" style={{ background: C.barTrack, color: C.amber }}>{(report.username || '?')[0].toUpperCase()}</div>}
           <div>
             <h1 className="font-heading text-2xl" style={{ color: C.textDark }}>your week in wax</h1>

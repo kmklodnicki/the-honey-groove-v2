@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Button } from '../components/ui/button';
+import { resolveImageUrl } from '../utils/imageUrl';
 import {
   Dialog,
   DialogContent,
@@ -40,7 +41,7 @@ const UserRow = ({ u, currentUserId, token, API, onFollowChange }) => {
     <div className="flex items-center gap-3 py-3 border-b border-honey/10 last:border-0" data-testid={`user-row-${u.username}`}>
       <Link to={`/profile/${u.username}`} className="flex items-center gap-3 flex-1 min-w-0">
         <Avatar className="h-10 w-10 border-2 border-honey/30">
-          {u.avatar_url && <AvatarImage src={u.avatar_url} />}
+          {u.avatar_url && <AvatarImage src={resolveImageUrl(u.avatar_url)} />}
           <AvatarFallback className="bg-honey-soft text-vinyl-black text-sm font-heading">
             {u.username?.charAt(0).toUpperCase()}
           </AvatarFallback>

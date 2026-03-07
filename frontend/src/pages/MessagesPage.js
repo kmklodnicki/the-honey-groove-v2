@@ -9,6 +9,7 @@ import { Skeleton } from '../components/ui/skeleton';
 import { ArrowLeft, Send, Disc, Search } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 const MessagesPage = () => {
   usePageTitle('Messages');
@@ -143,7 +144,7 @@ const MessagesPage = () => {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           {otherUser?.avatar_url ? (
-            <img src={otherUser.avatar_url} alt="" className="w-9 h-9 rounded-full object-cover" />
+            <img src={resolveImageUrl(otherUser.avatar_url)} alt="" className="w-9 h-9 rounded-full object-cover" />
           ) : (
             <div className="w-9 h-9 rounded-full bg-honey/30 flex items-center justify-center text-sm font-bold text-honey-amber">
               {(otherUser?.username || '?')[0].toUpperCase()}
@@ -225,7 +226,7 @@ const MessagesPage = () => {
               className="w-full text-left p-4 rounded-xl bg-white border border-honey/20 hover:border-honey/50 hover:shadow-sm transition-all flex items-center gap-3"
               data-testid={`dm-conv-${conv.id}`}>
               {conv.other_user?.avatar_url ? (
-                <img src={conv.other_user.avatar_url} alt="" className="w-11 h-11 rounded-full object-cover shrink-0" />
+                <img src={resolveImageUrl(conv.other_user.avatar_url)} alt="" className="w-11 h-11 rounded-full object-cover shrink-0" />
               ) : (
                 <div className="w-11 h-11 rounded-full bg-honey/30 flex items-center justify-center text-base font-bold text-honey-amber shrink-0">
                   {(conv.other_user?.username || '?')[0].toUpperCase()}

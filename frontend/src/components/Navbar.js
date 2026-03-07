@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog';
 import { Home, Search, User, LogOut, Settings, Library, ShoppingBag, ArrowRightLeft, Bell, Check, MessageCircle, Globe, HelpCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import GlobalSearch from './GlobalSearch';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 // Bee icon SVG component
 const BeeIcon = ({ className = "w-4 h-4" }) => (
@@ -35,7 +36,7 @@ const BeeAvatar = ({ user, className = "h-10 w-10" }) => {
 
   return (
     <Avatar className={`${className} border-2 border-honey`}>
-      {hasCustomAvatar && <AvatarImage src={user.avatar_url} alt={user?.username} />}
+      {hasCustomAvatar && <AvatarImage src={resolveImageUrl(user.avatar_url)} alt={user?.username} />}
       <AvatarFallback className="bg-honey-soft text-vinyl-black relative">
         <span className="font-heading">{firstLetter}</span>
         <BeeIcon className="absolute -bottom-0.5 -right-0.5 w-4 h-4" />

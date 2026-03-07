@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { X, Star, Loader2, ChevronLeft, ChevronRight, DollarSign, ArrowRightLeft, Disc, Check, Heart, AlertTriangle, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
+import { resolveImageUrl } from '../utils/imageUrl';
 import AlbumArt from './AlbumArt';
 
 const CONDITION_MAP = {
@@ -194,7 +195,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                   <Link to={`/profile/${seller.username}`} onClick={handleClose}
                     className="flex items-center gap-2 hover:opacity-80 transition-opacity" data-testid="listing-seller-link">
                     <Avatar className="w-7 h-7 border border-amber-200">
-                      <AvatarImage src={seller.avatar_url} />
+                      <AvatarImage src={resolveImageUrl(seller.avatar_url)} />
                       <AvatarFallback className="bg-amber-50 text-xs">{seller.username?.[0]?.toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <div className="text-left">
@@ -220,7 +221,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                       <button key={i} onClick={() => setExpandedPhoto(url)}
                         className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border border-stone-200 hover:border-amber-300 transition-colors"
                         data-testid={`listing-photo-thumb-${i}`}>
-                        <img src={url} alt="" className="w-full h-full object-cover" />
+                        <img src={resolveImageUrl(url)} alt="" className="w-full h-full object-cover" />
                       </button>
                     ))}
                   </div>
@@ -407,7 +408,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
             className="absolute top-4 right-4 text-white/80 hover:text-white">
             <X className="w-8 h-8" />
           </button>
-          <img src={expandedPhoto} alt="" className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg" />
+          <img src={resolveImageUrl(expandedPhoto)} alt="" className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg" />
         </div>
       )}
     </>

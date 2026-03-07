@@ -11,6 +11,7 @@ import {
 import { usePageTitle } from '../hooks/usePageTitle';
 import { toast } from 'sonner';
 import AlbumArt from '../components/AlbumArt';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 const RecordDetailPage = () => {
   usePageTitle('Record Details');
@@ -128,7 +129,7 @@ const RecordDetailPage = () => {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>Added by</span>
               <Link to={`/profile/${owner.username}`} className="flex items-center gap-1.5 text-vinyl-black hover:text-honey-amber transition-colors" data-testid="record-owner-link">
-                <img src={owner.avatar_url} alt="" className="w-5 h-5 rounded-full" />
+                <img src={resolveImageUrl(owner.avatar_url)} alt="" className="w-5 h-5 rounded-full" />
                 <span className="font-medium">@{owner.username}</span>
               </Link>
             </div>
@@ -205,7 +206,7 @@ const RecordDetailPage = () => {
               <Link key={o.id} to={`/profile/${o.username}`}
                 className="flex items-center gap-2 px-3 py-2 rounded-full bg-honey/8 hover:bg-honey/15 transition-colors"
                 data-testid={`owner-${o.username}`}>
-                <img src={o.avatar_url} alt="" className="w-6 h-6 rounded-full" />
+                <img src={resolveImageUrl(o.avatar_url)} alt="" className="w-6 h-6 rounded-full" />
                 <span className="text-sm font-medium">@{o.username}</span>
               </Link>
             ))}
@@ -230,7 +231,7 @@ const RecordDetailPage = () => {
                 <div className="flex items-start gap-3">
                   {post.user && (
                     <Link to={`/profile/${post.user.username}`}>
-                      <img src={post.user.avatar_url} alt="" className="w-8 h-8 rounded-full" />
+                      <img src={resolveImageUrl(post.user.avatar_url)} alt="" className="w-8 h-8 rounded-full" />
                     </Link>
                   )}
                   <div className="flex-1 min-w-0">

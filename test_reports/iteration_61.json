@@ -1,0 +1,109 @@
+{
+  "summary": "Iteration 61: Verified two critical recurring bug fixes - (1) Profile/listing photos loading via resolveImageUrl URL rewriting, (2) Demo/test user filtering from explore endpoints. Backend: 8/8 tests passed. Frontend: Avatar URL resolution verified working.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "passed_tests": [
+    "Backend: GET /api/files/serve/honeygroove/{path} returns 404/500 for missing file (correct namespace) - PASSED",
+    "Backend: GET /api/files/serve/other_app/test.png returns 403 Access denied (security) - PASSED",
+    "Backend: GET /api/files/serve/etc/passwd returns 403 (path traversal blocked) - PASSED",
+    "Backend: GET /api/files/serve/honeygroove/uploads/{user_id}/{image} returns 200 for actual file - PASSED",
+    "Backend: Admin user has is_hidden=True in database - PASSED",
+    "Backend: get_hidden_user_ids regex matches admin user - PASSED",
+    "Backend: All 8 explore endpoints return 200 with valid auth - PASSED",
+    "Backend: Upload endpoint requires authentication - PASSED",
+    "Frontend: resolveImageUrl correctly rewrites old URLs - VERIFIED",
+    "Frontend: Profile page avatar loads from wax-preview domain (not collector-beta) - VERIFIED",
+    "Frontend: Explore page shows no @demo users - VERIFIED",
+    "Frontend: All 15 components use resolveImageUrl for avatar rendering - VERIFIED"
+  ],
+
+  "verified_features": {
+    "resolveImageUrl": {
+      "status": "WORKING",
+      "test_case": "katieintheafterglow's avatar_url in DB points to 'collector-beta.preview.emergentagent.com' but frontend renders it as 'wax-preview.preview.emergentagent.com'",
+      "db_value": "https://collector-beta.preview.emergentagent.com/api/files/serve/honeygroove/uploads/4072aaa7-1171-4cd2-9c8f-20dfca8fdc58/819ab9c1-b7b9-4055-881e-096d064e36f8.png",
+      "rendered_src": "https://wax-preview.preview.emergentagent.com/api/files/serve/honeygroove/uploads/4072aaa7-1171-4cd2-9c8f-20dfca8fdc58/819ab9c1-b7b9-4055-881e-096d064e36f8.png",
+      "http_status": 200
+    },
+    "demo_user_filtering": {
+      "status": "WORKING",
+      "filtered_patterns": [
+        "is_hidden: true",
+        "is_test: true",
+        "email regex: @(test|example).com$",
+        "username regex: ^(demo|test)",
+        "username: demo"
+      ],
+      "admin_filtered": true,
+      "explore_endpoints_tested": 8
+    },
+    "file_serve_security": {
+      "status": "WORKING",
+      "valid_namespace": "honeygroove/",
+      "invalid_namespace_blocked": true,
+      "path_traversal_blocked": true
+    }
+  },
+
+  "components_verified_using_resolveImageUrl": [
+    "BeeAvatar.js (line 12)",
+    "FollowList.js (line 44)",
+    "GlobalSearch.js (lines 257, 290)",
+    "ListingDetailModal.js (lines 198, 224, 411)",
+    "PostCards.js (line 224)",
+    "HivePage.js (line 33)",
+    "ExplorePage.js (lines 172, 265, 343)",
+    "ProfilePage.js (line 166)",
+    "RecordDetailPage.js (lines 132, 209, 234)",
+    "TradesPage.js (line 206)",
+    "MessagesPage.js (lines 147, 229)",
+    "AdminPage.js (line 1125)",
+    "WaxReportPage.js (line 143)",
+    "AlbumArt.js (line 7)",
+    "ExploreSeeAllPage.js (lines 181, 253, 350)"
+  ],
+
+  "test_report_links": [
+    "/app/backend/tests/test_image_url_demo_filter.py",
+    "/app/test_reports/pytest/image_url_demo_filter_results.xml"
+  ],
+
+  "action_items": [],
+
+  "critical_code_review_comments": [],
+
+  "updated_files": [
+    "/app/backend/tests/test_image_url_demo_filter.py"
+  ],
+
+  "success_rate": {
+    "backend": "100% (8/8 tests passed)",
+    "frontend": "100% (avatar URL resolution verified, no demo users in explore)"
+  },
+
+  "test_credentials": {
+    "test_user": "test_iter61@test.com / testpass123",
+    "existing_user_checked": "katieintheafterglow (id: 4072aaa7-1171-4cd2-9c8f-20dfca8fdc58)"
+  },
+
+  "seed_data_creation": "Created test user test_iter61@test.com for authentication",
+
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+
+  "context_for_next_testing_agent": "Iteration 61 verified two recurring bug fixes: 1) resolveImageUrl in /app/frontend/src/utils/imageUrl.js correctly rewrites old URLs from different deployment domains (e.g., collector-beta) to the current domain (wax-preview). Tested by checking katieintheafterglow's avatar_url which is stored as old domain in DB but renders as current domain. The avatar image actually loads (HTTP 200). 2) get_hidden_user_ids in /app/backend/database.py filters out is_hidden, is_test, demo/test usernames, and example.com/test.com emails. Admin user has is_hidden=True. All 8 explore endpoints use this filter. 15 frontend components use resolveImageUrl for avatar rendering. No demo/test users appear in the explore page.",
+
+  "mocked_apis": {
+    "Resend email service": "MOCKED (email sending)"
+  }
+}

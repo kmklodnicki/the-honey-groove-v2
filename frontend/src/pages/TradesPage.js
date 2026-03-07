@@ -35,6 +35,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { Link } from 'react-router-dom';
 import { usePageTitle } from '../hooks/usePageTitle';
 import AlbumArt from '../components/AlbumArt';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 const STATUS_CONFIG = {
   PROPOSED: { label: 'Proposed', color: 'bg-amber-100 text-amber-700', dot: 'bg-amber-400' },
@@ -202,7 +203,7 @@ const TradeCard = ({ trade, currentUserId, onClick, feePct = 6 }) => {
       <div className="flex items-center justify-between mt-3">
         <div className="flex items-center gap-2">
           <Avatar className="h-5 w-5">
-            {otherUser?.avatar_url && <AvatarImage src={otherUser.avatar_url} />}
+            {otherUser?.avatar_url && <AvatarImage src={resolveImageUrl(otherUser.avatar_url)} />}
             <AvatarFallback className="text-[10px] bg-honey/20">{otherUser?.username?.charAt(0).toUpperCase()}</AvatarFallback>
           </Avatar>
           <span className="text-xs text-muted-foreground">with @{otherUser?.username}</span>

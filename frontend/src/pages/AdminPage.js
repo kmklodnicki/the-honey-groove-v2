@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useSearchParams } from 'react-router-dom';
 import AlbumArt from '../components/AlbumArt';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 const AdminPage = () => {
   usePageTitle('Admin Panel');
@@ -1121,7 +1122,7 @@ const UserManagementSection = ({ API, headers }) => {
               <div key={u.id} className="flex flex-col sm:grid sm:grid-cols-[1fr_1fr_120px_80px_100px] gap-1 sm:gap-3 px-4 py-3 items-start sm:items-center hover:bg-honey/5 transition-colors"
                 data-testid={`user-row-${u.username}`}>
                 <div className="flex items-center gap-2 min-w-0">
-                  <img src={u.avatar_url} alt="" className="w-7 h-7 rounded-full shrink-0" />
+                  <img src={resolveImageUrl(u.avatar_url)} alt="" className="w-7 h-7 rounded-full shrink-0" />
                   <span className="text-sm font-medium truncate">@{u.username}</span>
                 </div>
                 <span className="text-xs text-muted-foreground truncate">{u.email}</span>

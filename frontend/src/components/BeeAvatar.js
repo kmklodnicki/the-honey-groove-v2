@@ -1,5 +1,6 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 // Bee Avatar component with first letter and bee icon
 const BeeAvatar = ({ user, className = "h-10 w-10", showBorder = true }) => {
@@ -8,7 +9,7 @@ const BeeAvatar = ({ user, className = "h-10 w-10", showBorder = true }) => {
 
   return (
     <Avatar className={`${className} ${showBorder ? 'border-2 border-honey/50' : ''}`}>
-      {hasCustomAvatar && <AvatarImage src={user.avatar_url} alt={user?.username} />}
+      {hasCustomAvatar && <AvatarImage src={resolveImageUrl(user.avatar_url)} alt={user?.username} />}
       <AvatarFallback className="bg-honey-soft text-vinyl-black relative">
         <span className="font-heading text-lg">{firstLetter}</span>
         <svg 

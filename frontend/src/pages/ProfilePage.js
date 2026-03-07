@@ -14,6 +14,7 @@ import { FollowListModal } from '../components/FollowList';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { StreakBadge } from '../components/DailyPrompt';
 import { MoodBoardTab } from '../components/MoodBoardTab';
+import { resolveImageUrl } from '../utils/imageUrl';
 import AlbumArt from '../components/AlbumArt';
 
 const ProfilePage = () => {
@@ -162,7 +163,7 @@ const ProfilePage = () => {
       <Card className="p-6 border-honey/30 mb-6">
         <div className="flex flex-col sm:flex-row items-start gap-6">
           <Avatar className="h-24 w-24 border-4 border-honey/30">
-            {profile.avatar_url && <AvatarImage src={profile.avatar_url} />}
+            {profile.avatar_url && <AvatarImage src={resolveImageUrl(profile.avatar_url)} />}
             <AvatarFallback className="bg-honey-soft text-vinyl-black text-3xl font-heading">
               {firstLetter}
             </AvatarFallback>

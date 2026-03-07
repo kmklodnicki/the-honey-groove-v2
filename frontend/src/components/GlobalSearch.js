@@ -9,6 +9,7 @@ import { Search, Clock, Trash2, UserPlus, Disc, Feather, ShoppingBag, Plus, Load
 import { toast } from 'sonner';
 import RecordSearchResult from './RecordSearchResult';
 import safeStorage from '../utils/safeStorage';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 const POST_ICONS = {
   NOW_SPINNING: Disc, ISO: Search, NEW_HAUL: Plus, NOTE: Feather,
@@ -253,7 +254,7 @@ const GlobalSearch = ({ onClose }) => {
                   {collectors.map((u, i) => (
                     <div key={u.id || i} className="flex items-center gap-3 p-2 rounded-lg hover:bg-honey/10 cursor-pointer" onClick={() => goToCollector(u)} data-testid={`search-collector-${i}`}>
                       <Avatar className="h-10 w-10 border border-honey/30">
-                        <AvatarImage src={u.avatar_url} />
+                        <AvatarImage src={resolveImageUrl(u.avatar_url)} />
                         <AvatarFallback className="bg-honey-soft text-sm font-medium">{u.username?.[0]?.toUpperCase()}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
@@ -286,7 +287,7 @@ const GlobalSearch = ({ onClose }) => {
                     <div key={l.id || i} className="flex items-center gap-3 p-2 rounded-lg hover:bg-honey/10 cursor-pointer" onClick={() => goToListing(l)} data-testid={`search-listing-${i}`}>
                       <div className="shrink-0">
                         {l.cover_url ? (
-                          <img src={l.cover_url} alt="" className="w-11 h-11 rounded-md object-cover shadow-sm" />
+                          <img src={resolveImageUrl(l.cover_url)} alt="" className="w-11 h-11 rounded-md object-cover shadow-sm" />
                         ) : (
                           <div className="w-11 h-11 rounded-md bg-stone-100 flex items-center justify-center"><ShoppingBag className="w-5 h-5 text-stone-400" /></div>
                         )}

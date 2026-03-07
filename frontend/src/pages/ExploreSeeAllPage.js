@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import { usePageTitle } from '../hooks/usePageTitle';
 import AlbumArt from '../components/AlbumArt';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 const SECTIONS = {
   trending: { title: 'Trending in the Hive', icon: TrendingUp, iconColor: 'text-honey-amber' },
@@ -177,7 +178,7 @@ const ExploreSeeAllPage = () => {
                   {trendingModal.posts.map(post => (
                     <div key={post.id} className="flex items-start gap-3 py-2">
                       <Link to={`/profile/${post.user?.username}`}>
-                        {post.user?.avatar_url ? <img src={post.user.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                        {post.user?.avatar_url ? <img src={resolveImageUrl(post.user.avatar_url)} alt="" className="w-8 h-8 rounded-full object-cover" />
                           : <div className="w-8 h-8 rounded-full bg-honey/30 flex items-center justify-center text-xs font-bold text-honey-amber">{(post.user?.username || '?')[0].toUpperCase()}</div>}
                       </Link>
                       <div className="flex-1 min-w-0">
@@ -249,7 +250,7 @@ const TasteMatchAll = ({ data, navigate }) => {
         <Card key={u.id} className="p-4 border-honey/30 hover:shadow-sm transition-all" data-testid={`sa-taste-${u.id}`}>
           <div className="flex items-center gap-3">
             <Link to={`/profile/${u.username}`}>
-              {u.avatar_url ? <img src={u.avatar_url} alt="" className="w-11 h-11 rounded-full object-cover" />
+              {u.avatar_url ? <img src={resolveImageUrl(u.avatar_url)} alt="" className="w-11 h-11 rounded-full object-cover" />
                 : <div className="w-11 h-11 rounded-full bg-honey/30 flex items-center justify-center text-base font-bold text-honey-amber">{(u.username || '?')[0].toUpperCase()}</div>}
             </Link>
             <div className="flex-1 min-w-0">
@@ -346,7 +347,7 @@ const NearYouAll = ({ data, navigate, onSetLocation }) => {
               <Card key={u.id} className="p-4 border-honey/30 hover:shadow-sm transition-all" data-testid={`sa-nearby-${u.id}`}>
                 <div className="flex items-center gap-3">
                   <Link to={`/profile/${u.username}`}>
-                    {u.avatar_url ? <img src={u.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover" />
+                    {u.avatar_url ? <img src={resolveImageUrl(u.avatar_url)} alt="" className="w-10 h-10 rounded-full object-cover" />
                       : <div className="w-10 h-10 rounded-full bg-honey/30 flex items-center justify-center text-sm font-bold text-honey-amber">{(u.username || '?')[0].toUpperCase()}</div>}
                   </Link>
                   <div className="flex-1 min-w-0">

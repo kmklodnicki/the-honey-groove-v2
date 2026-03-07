@@ -18,6 +18,7 @@ import {
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import ComposerBar from '../components/ComposerBar';
+import { resolveImageUrl } from '../utils/imageUrl';
 import { PostTypeBadge, PostCardBody } from '../components/PostCards';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { DailyPromptCard } from '../components/DailyPrompt';
@@ -29,7 +30,7 @@ const BeeAvatar = ({ user, className = "h-10 w-10" }) => {
   const hasCustomAvatar = user?.avatar_url && !user.avatar_url.includes('dicebear');
   return (
     <Avatar className={`${className} border-2 border-honey/30`}>
-      {hasCustomAvatar && <AvatarImage src={user.avatar_url} alt={user?.username} />}
+      {hasCustomAvatar && <AvatarImage src={resolveImageUrl(user.avatar_url)} alt={user?.username} />}
       <AvatarFallback className="bg-honey-soft text-vinyl-black relative">
         <span className="font-heading">{firstLetter}</span>
         <svg viewBox="0 0 24 24" className="absolute -bottom-0.5 -right-0.5 w-3 h-3" fill="none">

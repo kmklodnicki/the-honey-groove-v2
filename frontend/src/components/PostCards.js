@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Disc, Package, Search, Moon, Plus, Music, Feather } from 'lucide-react';
 import AlbumArt from './AlbumArt';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 const MOOD_EMOJI_MAP = {
   'Late Night': '\u{1F56F}\uFE0F', 'Good Morning': '\u2600\uFE0F', 'Sunday Morning': '\u2600\uFE0F',
@@ -220,7 +221,7 @@ const NoteCard = ({ post }) => (
     )}
     {/* Optional image */}
     {post.image_url && (
-      <img src={post.image_url} alt="" className="w-full rounded-lg mt-3 object-cover max-h-80" />
+      <img src={resolveImageUrl(post.image_url)} alt="" className="w-full rounded-lg mt-3 object-cover max-h-80" />
     )}
   </div>
 );

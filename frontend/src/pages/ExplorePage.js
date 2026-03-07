@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
 import CollectorBingo from '../components/CollectorBingo';
 import AlbumArt from '../components/AlbumArt';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 const ExplorePage = () => {
   usePageTitle('Explore');
@@ -168,7 +169,7 @@ const ExplorePage = () => {
               <Card key={u.id} className="p-4 border-honey/30 hover:shadow-sm transition-all" data-testid={`taste-match-${u.id}`}>
                 <div className="flex items-center gap-3">
                   <Link to={`/profile/${u.username}`}>
-                    {u.avatar_url ? <img src={u.avatar_url} alt="" className="w-11 h-11 rounded-full object-cover" />
+                    {u.avatar_url ? <img src={resolveImageUrl(u.avatar_url)} alt="" className="w-11 h-11 rounded-full object-cover" />
                       : <div className="w-11 h-11 rounded-full bg-honey/30 flex items-center justify-center text-base font-bold text-honey-amber">{(u.username || '?')[0].toUpperCase()}</div>}
                   </Link>
                   <div className="flex-1 min-w-0">
@@ -261,7 +262,7 @@ const ExplorePage = () => {
                 <Card key={u.id} className="p-3 border-honey/30 hover:shadow-sm transition-all" data-testid={`nearby-${u.id}`}>
                   <div className="flex items-center gap-3">
                     <Link to={`/profile/${u.username}`}>
-                      {u.avatar_url ? <img src={u.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover" />
+                      {u.avatar_url ? <img src={resolveImageUrl(u.avatar_url)} alt="" className="w-10 h-10 rounded-full object-cover" />
                         : <div className="w-10 h-10 rounded-full bg-honey/30 flex items-center justify-center text-sm font-bold text-honey-amber">{(u.username || '?')[0].toUpperCase()}</div>}
                     </Link>
                     <div className="flex-1 min-w-0">
@@ -339,7 +340,7 @@ const ExplorePage = () => {
                   {trendingModal.posts.map(post => (
                     <div key={post.id} className="flex items-start gap-3 py-2" data-testid={`trending-post-${post.id}`}>
                       <Link to={`/profile/${post.user?.username}`}>
-                        {post.user?.avatar_url ? <img src={post.user.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" />
+                        {post.user?.avatar_url ? <img src={resolveImageUrl(post.user.avatar_url)} alt="" className="w-8 h-8 rounded-full object-cover" />
                           : <div className="w-8 h-8 rounded-full bg-honey/30 flex items-center justify-center text-xs font-bold text-honey-amber">{(post.user?.username || '?')[0].toUpperCase()}</div>}
                       </Link>
                       <div className="flex-1 min-w-0">

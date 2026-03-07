@@ -3,196 +3,159 @@ The user wants to build a web app called **The HoneyGroove**, a social platform 
 
 **PRODUCT REQUIREMENTS (Synthesized from initial request and subsequent user directives):**
 *   **Core App:** A full-stack application for vinyl collectors to track their collection, log spins, and interact socially.
-*   **Branding & UI/UX:** A warm, honey-inspired theme is paramount. The UI should be clean, modern, and consistent with the brand's amber color palette and specific fonts.
+*   **Branding & UI/UX:** A warm, honey-inspired theme with a clean, modern UI, amber color palette, and specific fonts.
 *   **User System & Onboarding:** Invite-only, email-verified accounts.
 *   **Social & Engagement Features:** A social feed (The Hive), daily prompts, and weekly Collector Bingo.
-*   **Search & Discovery:** Global search and dedicated pages for records, leveraging the Discogs API.
-*   **Admin Panel:** For managing beta signups, user roles, and sending invites.
-*   **Mobile-First Experience:** The application must be fully functional and performant on mobile browsers.
-*   **Data Integrity:** Test and demo data must be completely hidden from real users in the production environment.
-*   **Core Functionality:** User registration, login, email verification, profile management (including photo upload and account deletion), and creating listings for sale (including photo uploads) must be stable.
+*   **Search & Discovery:** A fast, fuzzy global search and dedicated pages for records, leveraging the Discogs API. Search results must show rich variant details.
+*   **Admin Panel:** For managing beta signups and user roles.
+*   **Data Integrity:** Test and demo data (, , ) must be permanently and completely hidden from all user-facing parts of the application (Explore page, feeds, search).
+*   **Core Functionality:** User registration, login, profile management (photo uploads), and creating listings for sale (photo uploads) must be stable and functional in production. Image URLs must resolve correctly, regardless of when they were uploaded.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a full-stack platform (React, FastAPI, MongoDB). This session involved a massive effort to stabilize the application for its beta launch. The agent tackled a cascade of critical, interconnected bugs stemming from incorrect environment variable configurations in the production build.
+The application is a full-stack platform (React, FastAPI, MongoDB). The current session was focused on fixing a set of critical, recurring bugs reported by the user, and implementing major enhancements to the search functionality.
 
-Key accomplishments include:
-- **CRITICAL: Production URL Fix:** Identified and fixed the root cause of numerous issues (login failures, redirect loops, broken API calls) by correcting the  in the frontend  file and hardcoding the production domain in all backend-generated email links.
-- **CRITICAL: Image Uploads Fixed:** Diagnosed and resolved failing profile and listing image uploads by correctly setting the  and fixing the backend storage service API calls.
-- **CRITICAL: Deployment Failures Fixed:** Resolved a deployment-blocking build error by fixing faulty import paths and syntax errors in the frontend code.
-- **Data Restoration & Cleanup:** Performed multiple database sweeps to delete all test/demo accounts and their associated content. Restored 26 real beta signups from a user-provided CSV, including their names and Instagram handles.
-- **Feature Implementation:** Implemented a compact list view for the Honeypot marketplace, added a Delete Account feature, created an admin user management panel, and replaced Fresh Pressings with a Trending in Collections section.
-- **Bug Fixes & UI Polish:** Changed Unspun labels to no logged spins, hid the Collector Bingo feature, and fixed sender display names in emails.
-
-The application is now believed to be stable, but a production deployment and user verification are required to confirm all fixes.
+**Completed Work:**
+*   **Global Search Overhaul:** Implemented a new unified, fuzzy search () with relevancy ranking and added necessary database indexes. The frontend was updated to cancel in-flight requests and display a loading state, drastically improving performance and user experience.
+*   **Enhanced Record Cards:** All record search results across the app (Global Search, Add Record, Hive Composer) now display rich variant details (format, year, label, color, etc.) fetched from the Discogs API, using a new reusable  component.
+*   **Hive Composer Improved:** The Now Spinning post composer's album selection dropdown was replaced with a responsive, fuzzy-search input that filters the user's local collection.
+*   **Recurring Bug Fixes (In Progress):** In response to persistent user reports of broken images and test data on production, the agent implemented robust, centralized fixes:
+    *   **Universal Image Fix:** Created a frontend utility  to correctly construct the full public URL for any image. This handles both old, relative-path URLs stored in the database and new, full-URL formats, ensuring backward compatibility. This helper was applied to all image rendering components (, , , ).
+    *   **Data Filtering:** Added hard filters to every single query in the  file to explicitly exclude test/demo accounts, addressing the user's report of seeing  content.
 
 **Last working item**:
--   **Last item agent was working:** Addressing a list of five critical, interconnected bugs that were blocking the beta launch:
-    1.  Failed production deployments.
-    2.  Failing profile photo uploads.
-    3.  Failing record listing photo uploads.
-    4.  Discogs search returning no results.
-    5.  Visible test data on the Explore page.
--   **Status:** USER VERIFICATION PENDING
--   **Agent Testing Done:** Y
--   **Which testing method agent to use?** both. A full regression test is highly recommended after the user confirms the next production deployment is successful. Use the  to test all core flows: registration, login, email verification, profile/listing creation with image uploads, and check all public pages for test data.
+-   **Last item agent was working:** Applying a definitive, centralized fix for two critical, recurring production bugs: (1) profile and listing photos not loading, and (2)  test data appearing on the Explore page. The agent created a universal frontend helper () to fix all broken image links and applied it to every component that renders an image.
+-   **Status:** IN PROGRESS
+-   **Agent Testing Done:** N
+-   **Which testing method agent to use?** both. A comprehensive test is required.
+    1.  **Manual Test:** Create a new user. Upload a profile picture. Create a listing with a picture. Navigate to the profile page, settings page, and the Honeypot to verify all images load correctly.
+    2.  **Testing Agent:** Call  for a full regression test covering image uploads (profile & listing) and data visibility on all public pages (Explore, Hive, Honeypot) to confirm no test data leaks through.
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Confirm Production Stability Post-Deploy (P0)**
-    -   **Description:** The user was experiencing a cascade of critical failures on the production domain () due to the frontend build using the preview domain for its backend URL, and other environment/code issues. The agent has implemented fixes for all known issues.
-    -   **Attempted fixes:**
-        -   Changed  in  to the production domain.
-        -   Hardcoded the production domain in all email link generation logic in the backend.
-        -   Fixed the storage service initialization and API calls to resolve image uploads.
-        -   Resolved build-breaking errors in the frontend code.
-        -   Performed a final, thorough cleanup of all test data from the database.
+-   **Issue 1: Test and Verify Fixes for Recurring Production Bugs (P0)**
+    -   **Description:** The user has repeatedly reported that images are not loading and test data is visible on the live production site. The latest set of fixes is the most robust yet, but they have not been tested.
+    -   **Attempted fixes:** The agent created a universal  helper in  and applied it to , , ,  and other components to fix all image rendering. The agent also added explicit filters to every database query in .
     -   **Next debug checklist:**
-        1.  User needs to trigger a new deployment to production.
-        2.  Verify the deployment completes successfully.
-        3.  Test the critical user flows on the live production domain: new user registration via invite, email verification, login, profile photo upload, and creating a record listing with photos.
-        4.  Browse all public pages (Explore, Hive, Honeypot) to confirm no test/demo data is visible.
-    -   **Why fix this issue and what will be achieved with the fix?** This is the final step to stabilize the application and unblock the beta launch. Success means new users can finally join and use the app.
-    -   **Status:** USER VERIFICATION PENDING
+        1.  Verify the backend service has restarted without errors.
+        2.  Manually test the full image upload and display lifecycle for both a new user's avatar and a new listing's photos.
+        3.  Use  to hit all  endpoints and confirm the responses are empty (or contain no test data).
+        4.  Run the  to perform a comprehensive regression test.
+    -   **Why fix this issue and what will be achieved with the fix?** This will finally resolve the most critical and persistent user-facing bugs, stabilize the production application, and restore user confidence.
+    -   **Status:** IN PROGRESS
     -   **Is recurring issue?** Y
     -   **Should Test frontend/backend/both after fix?** Both.
-    -   **Blocked on other issue:** None. Blocked on user action (deploying to production).
+    -   **Blocked on other issue:** None.
 
 **In progress Task List**:
 -   None.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
-    -   **P1: Debounce Record Search Input:** Add a 300-400ms debounce to the Discogs search input on the record listing form to prevent lag on mobile ().
-    -   **P2: Implement Weekly Wax Email:** Schedule the Weekly Wax email to be sent every Sunday at 12:00 PM ET. The email copy has already been provided and the template updated. This will require a background task scheduler (e.g., Celery, APScheduler).
+    -   **P1: Implement Weekly Wax Email:** Ensure the scheduled Weekly Wax email is correctly configured to be sent every Sunday at 12:00 PM ET.
     -   **P2: Hauls Enhancement:** Develop a dedicated page and more functionality for Haul posts.
     -   **P2: Refactor :** Address known technical debt in this complex component.
 -   **Future Tasks:**
     -   Re-implement a new, fully Safari-compatible loading animation.
     -   Implement Pro memberships or a Verified Seller badge.
-    -   Implement deferred Buyer Protection features (structured dispute flow, auto fraud detection).
-    -   Re-enable Instagram sharing features once they are fully developed.
+    -   Implement deferred Buyer Protection features.
+    -   Re-enable Instagram sharing features.
 
 **Completed work in this session**
--   **CRITICAL STABILITY FIXES:**
-    -   **Production Environment:** Corrected  to point to the production domain, fixing dozens of downstream errors.
-    -   **Email Verification Links:** Hardcoded the production domain in  and  to permanently fix verification/invite links pointing to the preview domain.
-    -   **Image Uploads:** Fixed failing image uploads by adding  to  and correcting the  service to use the correct API signature (headers and request body).
-    -   **Deployment Build:** Fixed a critical build failure by correcting import paths ( -> ) in  and creating a placeholder  file.
--   **DATABASE MANAGEMENT:**
-    -   **Data Restoration:** Restored 26 real beta signups from a user-provided CSV after they were accidentally deleted.
-    -   **Data Correction:** Updated user names and Instagram handles for all restored beta signups. Fixed double  symbols in the admin panel display.
-    -   **Data Cleanup:** Performed multiple, thorough purges of all test/demo accounts and their associated content (posts, records, listings, etc.) from the database. The  account has been completely removed.
--   **FEATURE DEVELOPMENT:**
-    -   **Honeypot UI:** Redesigned the Shop and Trade tabs to use a compact list view instead of large cards ().
-    -   **User Management:** Implemented a Delete Account feature in user settings with a confirmation modal and backend deletion logic (, ).
-    -   **Admin Panel:** Added a User Management section for granting/revoking admin privileges (, ).
--   **FEATURE UPDATES:**
-    -   **Explore Page:** Replaced the Fresh Pressings section with Trending in Collections, fetching data from a new Discogs endpoint (, ).
-    -   **UI Text:** Changed all Unspun labels to no logged spins.
-    -   **Feature Hiding:** Hid the Collector Bingo and all Share to Instagram features from the UI pending future development.
--   **TESTING & VERIFICATION:**
-    -   Verified fixes for Add to Collection and the Fresh Pressings Redis cache from the previous session.
+-   **Global Search Overhaul:** Implemented a fast, fuzzy, unified search with relevancy ranking and an  to prevent race conditions.
+-   **Enhanced Record Cards:** All search results now display rich vinyl variant details (label, year, color, etc.) using a new reusable  component.
+-   **Hive Composer Upgrade:** Replaced album dropdown with a responsive fuzzy-search input for the user's collection.
+-   **Sell/Trade Buttons:** Added List for Sale and Offer to Trade buttons to the collection record detail view.
+-   **Centralized Image URL Fix:** Created and applied a universal  helper to fix all broken images across the app.
+-   **Comprehensive Data Filtering:** Added explicit demo/test user exclusion filters to all 8 database queries in .
 
 **Earlier issues found/mentioned but not fixed**
--   **Issue 1: Listing form search input is laggy on mobile.**
-    -   **Debug checklist:** The user requested adding a 300-400ms debounce to the search input in . This was superseded by critical deployment failures and was not implemented.
-    -   **Why to solve this issue and what will be achieved with this?** To improve user experience when creating a listing on mobile devices.
-    -   **Should Test frontend/backend/both after fix:** Frontend.
-    -   **Is recurring issue?** N
+-   None. All previously mentioned issues (like search lag) were addressed in this session.
 
 **Known issue recurrence from previous fork**
--   **Email links pointing to preview domain:** This was a major recurring issue throughout the session. It has been **RESOLVED** by hardcoding the  URL in all backend files that generate email links (, , ).
--   **Blank screen / Redirect to preview domain on mobile:** This also recurred and was traced to  being incorrect in the production build. This has been **RESOLVED** by updating . A new deployment is required for the fix to take effect.
+-   **Issue recurrence in previous fork:**
+    -    test data appearing on public pages (Explore).
+    -   Image uploads/display not working for profiles and listings.
+-   **Recurrence count:** 3+ times.
+-   **Status:** IN PROGRESS. The latest implemented fixes are the most comprehensive attempt to solve these for good, but they are pending testing.
 
 **Code Architecture**
-
+resolveImageUrl
 
 **Key Technical Concepts**
--   **Environment Variable Management:** The session highlighted the critical distinction between build-time env vars () and runtime env vars. Incorrectly set build-time variables were the root cause of many production failures.
--   **Production Debugging:** Diagnosing issues (login, redirects, API calls) that only appear on the live production deployment by analyzing symptoms and inferring the root cause in the build/deployment configuration.
--   **Hardcoding vs. Environment Variables:** A strategic decision was made to hardcode the production frontend URL in the backend to eliminate any possibility of misconfiguration from environment variables causing critical email link failures.
--   **Database Restoration:** Manually restoring user data from a CSV file into the MongoDB database using a Python script.
--   **Build Process Debugging:** Fixing a failed deployment by analyzing build logs to identify and resolve errors related to incorrect import paths and syntax.
+-   **Universal Image URL Resolution:** A key defensive programming pattern implemented in . It creates a single, reliable function to construct a valid image URL, whether the database provides a full URL or an old relative path. This makes the frontend resilient to data inconsistencies.
+-   **Backend Image Proxy:** The  endpoint acts as a secure proxy to serve files from a non-public storage backend, a crucial piece of infrastructure for the image-serving solution.
+-   **Fuzzy Search & Relevancy Ranking:** Using MongoDB's  for partial matching and  with  to implement a multi-tiered relevancy score (e.g., exact matches > starts with > contains).
+-   **Frontend Search State Management:** Using  within a  hook to cancel stale, in-flight API requests, preventing race conditions and ensuring the UI only displays results for the latest query.
 
 **key DB schema**
--   **users:** The  account and ~15 other test accounts were deleted. An  account was created for internal testing. Real user data was restored.  is used to filter content.
--   **beta_signups:** Cleared of test data and repopulated with 26 real signups from a CSV file, including names and Instagram handles.
--   All content collections (posts, listings, spins, etc.) were purged of data associated with deleted test accounts.
+-   **New Indexes:** Added text indexes on  (artist, title),  (username, display_name),  (content), and  (title, description) to optimize fuzzy search performance.
 
 **changes in tech stack**
--   No new technologies were added, but the existing  storage service was correctly configured and fixed.
+-   None.
 
 **All files of reference**
--   **Critical Fixes:**
-    -    (Backend URL fix)
-    -    (Image upload fix)
-    -    (Registration flow & email link fix)
-    -    (Email link fix)
-    -    (Build error fix)
--   **Data Management:**
-    -    (Hidden user filter logic)
--   **Feature/UI Changes:**
-    -    (User management UI)
-    -    (Delete Account UI)
-    -    (Compact list view)
-    -    (Trending collections UI)
+-   **Critical Fixes (Image & Data Leaks):**
+    -    (The new universal image URL helper)
+    -    (Consumer of the new helper)
+    -    (Consumer of the new helper)
+    -    (Consumer of the new helper)
+    -    (Where all test data filters were added)
+-   **Search Enhancements:**
+    -    (New unified search endpoint)
+    -    (New search UI logic)
+    -    (New reusable result card)
+-   **Composer Upgrade:**
+    -    (New search input for 'Now Spinning')
 
 **Areas that need refactoring**:
--    remains a complex component. The build error related to it suggests fragile import paths.
--   A placeholder file  was created to fix the build. This indicates dead code or an incomplete feature that should be properly implemented or removed.
+-    remains a very large and complex component.
+-   The backend routes (, , etc.) have pre-existing linting errors for using star imports (), which should be replaced with explicit imports.
 
 **key api endpoints**
--   : Endpoint was debugged, simplified, and confirmed working.
--   : File upload endpoint, now fixed.
--   : Listing creation with file uploads, now fixed.
--   , : Internal storage endpoints that were debugged and fixed.
--   : New endpoint to delete the current user's account.
--   , : New endpoints for admin user management.
+-   ****: New high-performance, fuzzy-matching unified search endpoint.
+-   ****: Critical proxy endpoint for serving all stored images.
 
 **Critical Info for New Agent**
--   **A PRODUCTION DEPLOYMENT IS REQUIRED.** Most fixes in this session, especially for the critical bugs (URL issues, uploads, build failures), will only take effect on  after the user redeploys the application. You must guide the user to do this first.
--   The root cause of many recurring problems was  in  pointing to the preview domain. This has been fixed, but it's a critical area to be aware of if similar issues arise.
--   Image uploads were broken due to an unconfigured storage service. This is now fixed by setting the  in  and correcting the API calls in .
--   The database has been aggressively cleaned. The  account no longer exists. An  account was created for internal use but does not have content. All public content belongs to real users.
+-   **USER TRUST IS LOW.** The user is frustrated with recurring bugs that were previously marked as fixed. You must be extremely thorough. Do not claim a fix is complete until you have tested it yourself and can provide evidence (e.g., API test results, screenshots). Follow the user's directive to show your work.
+-   **The  helper is the definitive fix for all broken images.** Understand that the database contains a mix of old (relative paths) and new (full URLs) image links. This single frontend utility is designed to handle both. If an image is broken, the first step is to ensure it's being rendered through a component that uses this helper.
+-   **Test data issues are likely production-specific.** The preview database is clean. If the user reports test data again after deployment, the cause could be production data that was missed during cleanup or a caching layer on the production server. The agent has already added filters to all known public endpoints in .
 
 **documents and test reports created in this job**
 -   
--   User provided  which was used to restore beta signups.
+-   
+-   
+-   
+-   
+-   
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** My verification email link is STILL pointing to the preview domain. *(Status: RESOLVED by hardcoding URL)*
-2.  **User:** Registration is failing. *(Status: RESOLVED, issue was likely a used invite code or the URL bug; flow was hardened)*
-3.  **User:** Registration is STILL failing, show me the logs. *(Status: RESOLVED, logging was added, no errors found in preview, fix was in the yet-to-be-deployed code)*
-4.  **User:** How do I deploy to production? *(Status: Agent provided instructions)*
-5.  **User:** Hide Collector Bingo. Also, the app URL is still changing to the preview domain on mobile. *(Status: RESOLVED, Bingo hidden, root URL cause identified and fixed in )*
-6.  **User:** Three critical issues: test data still visible, demo account still visible, record listing upload failing. *(Status: RESOLVED, DB cleaned, demo account deleted, image upload fixed)*
-7.  **User:** Delete all test accounts from production. *(Status: Completed, confirmed DB was already clean)*
-8.  **User:** Listing form search is laggy on mobile and not showing suggestions. *(Status: NOT STARTED, superseded by deploy failures)*
-9.  **User:** Five critical issues: Deploy is failing, photo uploads failing (profile & listing), Discogs search broken, test data visible. *(Status: RESOLVED, agent fixed all five items)*
-10. **User:** User provided a series of messages with names/instagrams to restore beta user data. *(Status: Completed)*
+1.  **User:** Requests fix for slow/laggy mobile search input and adding vinyl variant details to search results. (Status: COMPLETED)
+2.  **User:** Requests replacing the Hive post composer's album dropdown with a fuzzy search input. (Status: COMPLETED)
+3.  **User:** Reports  account still appearing on Explore, sale post photos not loading, and profile photo not updating. (Status: IN PROGRESS)
+4.  **User:** Expresses frustration that issues are recurring. Demands proof of fixes, not just claims. Asks to see the exact query for Explore, the upload handler code for profile photos, and the storage config for listing photos. (Status: IN PROGRESS - Agent implemented fixes based on this detailed request).
+5.  **User:** Still seeing  on Explore (Taste Match, Most Wanted) and broken listing photos after redeployment. Demands permanent deletion of  from the database, and wants to see the specific queries for the failing sections and the exact failing image URL from the browser network tab. (Status: IN PROGRESS - Agent is currently acting on this by creating the universal  helper).
 
 **Project Health Check:**
--   **Broken:** The project was critically broken (un-deployable, non-functional registration/uploads). All known issues have been fixed in the preview environment. The project is now pending production deployment and verification.
+-   **Broken:** The application is considered broken in production by the user due to the persistent image loading and test data visibility issues. The latest fixes are implemented in the preview environment but are pending testing and deployment.
 -   **Mocked:** Email sending via Resend.
 
 **3rd Party Integrations**
--   **Discogs API:** For record data, new releases, and trending stats.
+-   **Discogs API:** For all record data and search.
 -   **Stripe Connect:** For payments.
 -   **Resend:** For transactional emails.
 -   **Google Tag Manager / Google Analytics:** For analytics.
--   **Emergent Storage:** For image uploads (via ). Configured with .
+-   **Emergent Storage:** For all file uploads (profile photos, listing photos).
 
 **Testing status**
--   **Testing agent used after significant changes:** YES, but most critical fixes happened after the last test run.
+-   **Testing agent used after significant changes:** YES. It was used multiple times for new features. It needs to be run again to verify the latest critical bug fixes.
 -   **Troubleshoot agent used after agent stuck in loop:** NO
 -   **Test files created:** []
--   **Known regressions:** None. A massive number of regressions were fixed.
+-   **Known regressions:** The user is reporting regressions on image loading and data filtering on the production site. The latest set of implemented fixes aims to resolve these.
 
 **Credentials to test flow:**
--   The  account has been **deleted**.
--   To test, use the invite flow. Go to the Admin Panel -> Beta Signups, send an invite to a test email address, and use that link to register a new user. You can grant this new user admin access via the User Management tab if needed.
+-   To test protected flows, use the Admin Panel to send an invite to a test email address. Use that invite link to register a new user. You can grant this new user admin access via the User Management tab if needed. The  account should not exist.
 
 **What agent forgot to execute**
--   **Debounce on listing search:** The user requested adding a debounce to the Discogs search input on the record listing form to improve mobile performance. This task was acknowledged but not implemented as more critical, launch-blocking bugs took priority.</analysis>
+-   The agent implemented a comprehensive set of fixes for the recurring image and data-leak bugs but did not get to test them before the session ended. The immediate next step is to thoroughly test these fixes.</analysis>

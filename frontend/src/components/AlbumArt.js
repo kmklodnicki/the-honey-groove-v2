@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 const FALLBACK = '/vinyl-placeholder.svg';
 
 const AlbumArt = ({ src, alt = '', className = '', style, ...props }) => {
-  const [status, setStatus] = useState(src ? 'loading' : 'error');
+  const resolvedSrc = resolveImageUrl(src);
+  const [status, setStatus] = useState(resolvedSrc ? 'loading' : 'error');
 
   return (
     <div className={`relative overflow-hidden ${className}`} style={style} {...props}>
@@ -11,7 +13,7 @@ const AlbumArt = ({ src, alt = '', className = '', style, ...props }) => {
         <div className="absolute inset-0 bg-[#F0E8D8] animate-shimmer" />
       )}
       <img
-        src={status === 'error' || !src ? FALLBACK : src}
+        src={status === 'error' || !resolvedSrc ? FALLBACK : resolvedSrc}
         alt={alt}
         className="w-full h-full object-cover"
         onLoad={() => setStatus('loaded')}
