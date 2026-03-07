@@ -309,23 +309,41 @@ class InviteRegister(BaseModel):
 
 @router.post("/auth/register-invite")
 async def register_with_invite(data: InviteRegister, request: Request):
-    """Register a new account using an invite code."""
+    """Register a new account using an invite code — simplified for reliability."""
     from database import hash_password, create_token
     from services.rate_limiter import rate_limiter, get_client_ip
 
-    rate_limiter.check(f"register:{get_client_ip(request)}", max_requests=5, window_seconds=900)
+    try:
+        rate_limiter.check(f"register:{get_client_ip(request)}", max_requests=5, window_seconds=900)
+    except Exception as e:
+        logger.error(f"Registration rate limit error: {e}")
+        raise HTTPException(status_code=429, detail="Too many attempts. Try again in 15 minutes.")
 
-    # Validate invite code
-    code_doc = await db.invite_codes.find_one({"code": data.code.strip().upper()}, {"_id": 0})
-    if not code_doc or code_doc.get("status") != "unused":
-        raise HTTPException(status_code=400, detail="This invite code is invalid or has already been used.")
+    # Step 1: Validate invite code
+    try:
+        code_doc = await db.invite_codes.find_one({"code": data.code.strip().upper()}, {"_id": 0})
+        if not code_doc or code_doc.get("status") != "unused":
+            logger.warning(f"Invalid invite code: {data.code} status={code_doc.get('status') if code_doc else 'NOT_FOUND'}")
+            raise HTTPException(status_code=400, detail="This invite code is invalid or has already been used.")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Invite code lookup failed: {e}")
+        raise HTTPException(status_code=500, detail="Could not validate invite code.")
 
-    # Check email / username uniqueness
-    if await db.users.find_one({"email": data.email.lower()}):
-        raise HTTPException(status_code=400, detail="Email already registered")
-    if await db.users.find_one({"username": data.username.lower()}):
-        raise HTTPException(status_code=400, detail="Username already taken")
+    # Step 2: Check uniqueness
+    try:
+        if await db.users.find_one({"email": data.email.lower()}):
+            raise HTTPException(status_code=400, detail="Email already registered")
+        if await db.users.find_one({"username": data.username.lower()}):
+            raise HTTPException(status_code=400, detail="Username already taken")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Uniqueness check failed: {e}")
+        raise HTTPException(status_code=500, detail="Could not validate account details.")
 
+    # Step 3: Create user
     user_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
     user_doc = {
@@ -343,47 +361,59 @@ async def register_with_invite(data: InviteRegister, request: Request):
         "email_verified": False,
         "created_at": now,
     }
-    await db.users.insert_one(user_doc)
+    try:
+        await db.users.insert_one(user_doc)
+        logger.info(f"User created: @{data.username.lower()} ({data.email.lower()})")
+    except Exception as e:
+        logger.error(f"User insert failed: {e}")
+        raise HTTPException(status_code=500, detail="Could not create account.")
 
-    # Mark code as used
-    await db.invite_codes.update_one(
-        {"code": data.code.strip().upper()},
-        {"$set": {"status": "used", "used_by": user_id, "used_at": now}},
-    )
+    # Step 4: Mark code as used
+    try:
+        await db.invite_codes.update_one(
+            {"code": data.code.strip().upper()},
+            {"$set": {"status": "used", "used_by": user_id, "used_at": now}},
+        )
+    except Exception as e:
+        logger.error(f"Code update failed (user already created): {e}")
 
+    # Step 5: Generate token
     token = create_token(user_id)
 
-    # Send verification email
-    verify_token = str(uuid.uuid4())
-    await db.email_verifications.insert_one({
-        "user_id": user_id,
-        "token": verify_token,
-        "created_at": now,
-    })
-    verify_url = f"https://thehoneygroove.com/verify-email?token={verify_token}"
-    verify_html = f"""
-    <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 40px 20px; background: #FAF6EE;">
-      <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="font-size: 28px; color: #2A1A06; margin: 0;">Welcome to the Honey Groove</h1>
-      </div>
-      <p style="font-size: 16px; color: #8A6B4A; line-height: 1.6;">
-        You're in! Click the button below to verify your email address and start exploring.
-      </p>
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="{verify_url}" style="display: inline-block; padding: 14px 32px; background: #E8A820; color: #2A1A06; text-decoration: none; border-radius: 999px; font-weight: 600; font-size: 16px;">
-          Verify My Email
-        </a>
-      </div>
-      <p style="font-size: 13px; color: #8A6B4A99; text-align: center;">
-        This link expires in 24 hours.
-      </p>
-    </div>
-    """
-    asyncio.create_task(send_email(data.email.lower(), "Verify your Honey Groove account. \U0001F41D", verify_html))
+    # Step 6: Send emails (non-blocking, never fails registration)
+    try:
+        verify_token = str(uuid.uuid4())
+        await db.email_verifications.insert_one({
+            "user_id": user_id,
+            "token": verify_token,
+            "created_at": now,
+        })
+        verify_url = f"https://thehoneygroove.com/verify-email?token={verify_token}"
+        verify_html = f"""
+        <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 40px 20px; background: #FAF6EE;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="font-size: 28px; color: #2A1A06; margin: 0;">Welcome to the Honey Groove</h1>
+          </div>
+          <p style="font-size: 16px; color: #8A6B4A; line-height: 1.6;">
+            You're in! Click the button below to verify your email address and start exploring.
+          </p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="{verify_url}" style="display: inline-block; padding: 14px 32px; background: #E8A820; color: #2A1A06; text-decoration: none; border-radius: 999px; font-weight: 600; font-size: 16px;">
+              Verify My Email
+            </a>
+          </div>
+          <p style="font-size: 13px; color: #8A6B4A99; text-align: center;">
+            This link expires in 24 hours.
+          </p>
+        </div>
+        """
+        asyncio.create_task(send_email(data.email.lower(), "Verify your Honey Groove account. \U0001F41D", verify_html))
+        from templates.emails import welcome as welcome_tpl
+        asyncio.create_task(send_email(data.email.lower(), **(lambda t: {"subject": t["subject"], "html": t["html"]})(welcome_tpl(data.username.lower()))))
+    except Exception as e:
+        logger.error(f"Email send setup failed (registration still successful): {e}")
 
-    # Send welcome email too
-    from templates.emails import welcome as welcome_tpl
-    asyncio.create_task(send_email(data.email.lower(), **(lambda t: {"subject": t["subject"], "html": t["html"]})(welcome_tpl(data.username.lower()))))
+    logger.info(f"Registration complete: @{data.username.lower()} with code {data.code.strip().upper()}")
 
     return {
         "access_token": token,
