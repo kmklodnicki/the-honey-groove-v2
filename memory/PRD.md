@@ -326,7 +326,9 @@ COMPLETED → Mandatory rating before next trade
 169. **Navbar Logo Size** — 140px desktop / 120px mobile via inline styles. (Mar 2026)
 170. **Admin Pin Post** — POST/DELETE /api/posts/{id}/pin, one pinned post at a time, pinned indicator, feed shows pinned first. (Mar 2026)
 171. **Notification Deep-Link to Post** — Clicking post/comment notifications now navigates to `/hive?post={id}&comment={id}`, scrolls to the specific post with a honey ring highlight, and auto-opens comments if it's a comment notification. Added GET /api/posts/{id} single-post endpoint. If the targeted post isn't in the user's feed, it's fetched and injected. (Mar 2026)
-172. **International Shipping Checkbox** — Added `international_shipping` field to ListingCreate/ListingResponse models and backend. Listing form (ISOPage) now has checkbox "Open to international shipping" (unchecked by default) with tip text when checked. Badge shown on listing cards ("Intl Shipping") and in ListingDetailModal ("Open to international shipping"). (Mar 2026)
+172. **International Shipping Checkbox** — Added `international_shipping` field to ListingCreate/ListingResponse models. Checkbox on listing form with tip text. Badge on listing cards and detail modal. (Mar 2026)
+173. **International Shipping Logic** — Country-based listing filtering. Domestic-only listings hidden from buyers in different countries. Country field on user profiles (Settings + Onboarding step 3). Checkout and trade endpoints also validate country match. Sellers with no country set are visible to everyone. Set katieintheafterglow=US. (Mar 2026)
+174. **Auto-Post Listing to Hive** — Creating a listing auto-generates a Hive post with post_type `listing_sale` or `listing_trade`, showing album art, title, artist, and For Sale/Trade badge. Links to listing detail. New ListingPostCard component in PostCards.js. (Mar 2026)
 
 ## Upcoming Tasks
 - **P1: Weekly Wax Email** — Ensure scheduled "Weekly Wax" email is correctly configured (Sundays 12:00 PM ET)
