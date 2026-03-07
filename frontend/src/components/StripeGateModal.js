@@ -20,7 +20,7 @@ const StripeGateModal = ({ open, onClose }) => {
           </p>
           <Button
             onClick={() => { onClose(); navigate('/settings'); }}
-            className="w-full bg-[#635bff] text-white hover:bg-[#5146e0] rounded-full gap-2"
+            className="w-full bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2"
             data-testid="stripe-gate-connect-btn"
           >
             <CreditCard className="w-4 h-4" /> go to settings

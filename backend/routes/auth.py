@@ -91,7 +91,15 @@ async def register(user_data: UserCreate):
         user_doc["founding_member"] = False
     
     await db.users.insert_one(user_doc)
-    
+
+    # Auto-subscribe new user to the Weekly Wax Report
+    await db.newsletter_subscribers.insert_one({
+        "email": user_data.email,
+        "subscribed": True,
+        "source": "registration",
+        "subscribed_at": now,
+    })
+
     token = create_token(user_id)
     
     return TokenResponse(

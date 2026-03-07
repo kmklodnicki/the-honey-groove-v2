@@ -306,6 +306,10 @@ COMPLETED → Mandatory rating before next trade
 
 158. **Settings: Payments & Payouts Section** — Added dedicated "Payments & Payouts" card to Settings page with Stripe connection status. Shows "Connect Stripe" button (purple, branded) when not connected → calls POST /api/stripe/connect to start Express onboarding. Shows green "Stripe Connected" badge + Stripe Dashboard link when connected. StripeGateModal button text updated to "go to settings". (Mar 2026)
 
+159. **StripeGateModal Button Color Fix** — Changed "go to settings" button from Stripe purple (#635bff) to honey gold (bg-honey) to match app brand. (Mar 2026)
+
+160. **Auto-subscribe Newsletter on Registration** — New users are now automatically opted in to the Weekly Wax Report upon registration. A newsletter_subscribers document is created with source="registration" during the register endpoint. (Mar 2026)
+
 ## Upcoming Tasks
 - **P1: Weekly Wax Email** — Ensure scheduled "Weekly Wax" email is correctly configured (Sundays 12:00 PM ET)
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
