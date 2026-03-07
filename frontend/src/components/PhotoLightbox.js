@@ -53,7 +53,7 @@ const PhotoLightbox = ({ photos = [], initialIndex = 0, open, onClose }) => {
     <div
       ref={containerRef}
       className="fixed inset-0 flex flex-col items-center justify-center transition-opacity duration-200"
-      style={{ zIndex: 9999, background: 'rgba(0,0,0,0.92)', opacity: visible ? 1 : 0 }}
+      style={{ zIndex: 9999, background: 'rgba(0,0,0,0.92)', opacity: visible ? 1 : 0, pointerEvents: 'auto' }}
       onClick={(e) => { if (e.target === containerRef.current || e.target.dataset.overlay) close(); }}
       data-testid="photo-lightbox"
     >
@@ -65,7 +65,7 @@ const PhotoLightbox = ({ photos = [], initialIndex = 0, open, onClose }) => {
       )}
 
       {/* Close */}
-      <button onClick={close} className="absolute top-4 right-4 text-white/70 hover:text-white z-10 transition-colors" data-testid="lightbox-close">
+      <button onClick={(e) => { e.stopPropagation(); close(); }} className="absolute top-4 right-4 text-white/70 hover:text-white z-10 transition-colors p-2" data-testid="lightbox-close">
         <X className="w-7 h-7" />
       </button>
 
