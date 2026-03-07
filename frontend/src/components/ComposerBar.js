@@ -241,8 +241,9 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const handleNoteImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (!file.type.startsWith('image/')) { toast.error('images only.'); return; }
-    if (file.size > 5 * 1024 * 1024) { toast.error('max 5mb.'); return; }
+    const { validateImageFile } = await import('../utils/imageUpload');
+    const err = validateImageFile(file);
+    if (err) { toast.error(err); return; }
     setNoteUploading(true);
     try {
       const formData = new FormData();
@@ -566,7 +567,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                 >
                   <ImagePlus className="w-3.5 h-3.5" /> add image
                 </button>
-                <input ref={noteFileRef} type="file" accept="image/*" className="hidden" onChange={handleNoteImageUpload} />
+                <input ref={noteFileRef} type="file" accept=".jpg,.jpeg,.png,.webp,.heic,.heif" className="hidden" onChange={handleNoteImageUpload} />
               </div>
             </div>
 

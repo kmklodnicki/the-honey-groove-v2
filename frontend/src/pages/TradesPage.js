@@ -818,8 +818,14 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
 const PhotoUploadMini = ({ photos, setPhotos, label }) => {
   const handleSelect = (e) => {
     const files = Array.from(e.target.files || []);
-    const toAdd = files.slice(0, 5 - photos.length).map(f => ({ file: f, preview: URL.createObjectURL(f) }));
-    setPhotos(prev => [...prev, ...toAdd]);
+    const { validateImageFile } = require('../utils/imageUpload');
+    const valid = [];
+    for (const f of files.slice(0, 5 - photos.length)) {
+      const err = validateImageFile(f);
+      if (err) { toast.error(err); continue; }
+      valid.push({ file: f, preview: URL.createObjectURL(f) });
+    }
+    if (valid.length) setPhotos(prev => [...prev, ...valid]);
   };
   return (
     <div>
@@ -834,7 +840,7 @@ const PhotoUploadMini = ({ photos, setPhotos, label }) => {
         {photos.length < 5 && (
           <label className="w-12 h-12 border-2 border-dashed border-gray-300 rounded flex items-center justify-center cursor-pointer hover:border-gray-400">
             <Camera className="w-4 h-4 text-gray-400" />
-            <input type="file" accept="image/*" multiple onChange={handleSelect} className="hidden" />
+            <input type="file" accept=".jpg,.jpeg,.png,.webp,.heic,.heif" multiple onChange={handleSelect} className="hidden" />
           </label>
         )}
       </div>
@@ -943,8 +949,14 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
     const files = Array.from(e.target.files || []);
     const remaining = 5 - offeredPhotos.length;
     if (remaining <= 0) { toast.error('Maximum 5 photos'); return; }
-    const toAdd = files.slice(0, remaining).map(f => ({ file: f, preview: URL.createObjectURL(f) }));
-    setOfferedPhotos(prev => [...prev, ...toAdd]);
+    const { validateImageFile } = require('../utils/imageUpload');
+    const valid = [];
+    for (const f of files.slice(0, remaining)) {
+      const err = validateImageFile(f);
+      if (err) { toast.error(err); continue; }
+      valid.push({ file: f, preview: URL.createObjectURL(f) });
+    }
+    if (valid.length) setOfferedPhotos(prev => [...prev, ...valid]);
   };
 
   const removePhoto = (idx) => {
@@ -1051,7 +1063,7 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
                 <label className="w-16 h-16 rounded-lg border-2 border-dashed border-honey/40 flex flex-col items-center justify-center cursor-pointer hover:border-honey hover:bg-honey/5 transition-all" data-testid="add-offer-photo-btn">
                   <Camera className="w-4 h-4 text-honey mb-0.5" />
                   <span className="text-[9px] text-muted-foreground">{offeredPhotos.length}/5</span>
-                  <input type="file" accept="image/*" multiple onChange={handlePhotoSelect} className="hidden" />
+                  <input type="file" accept=".jpg,.jpeg,.png,.webp,.heic,.heif" multiple onChange={handlePhotoSelect} className="hidden" />
                 </label>
               )}
             </div>

@@ -266,8 +266,14 @@ const ISOPage = () => {
     const files = Array.from(e.target.files || []);
     const remaining = 10 - listPhotos.length;
     if (remaining <= 0) { toast.error('maximum 10 photos.'); return; }
-    const toAdd = files.slice(0, remaining).map(file => ({ file, preview: URL.createObjectURL(file), url: null }));
-    setListPhotos(prev => [...prev, ...toAdd]);
+    const { validateImageFile } = require('../utils/imageUpload');
+    const valid = [];
+    for (const file of files.slice(0, remaining)) {
+      const err = validateImageFile(file);
+      if (err) { toast.error(err); continue; }
+      valid.push({ file, preview: URL.createObjectURL(file), url: null });
+    }
+    if (valid.length) setListPhotos(prev => [...prev, ...valid]);
   };
   const removePhoto = (idx) => {
     setListPhotos(prev => { const r = prev[idx]; if (r.preview) URL.revokeObjectURL(r.preview); return prev.filter((_, i) => i !== idx); });
@@ -742,7 +748,7 @@ const ISOPage = () => {
                       <label className="aspect-square rounded-lg border-2 border-dashed border-honey/40 flex flex-col items-center justify-center cursor-pointer hover:border-honey hover:bg-honey/5 transition-all" data-testid="add-photo-btn">
                         <Camera className="w-5 h-5 text-honey mb-1" />
                         <span className="text-[10px] text-muted-foreground">{listPhotos.length === 0 ? 'Add photos' : `${listPhotos.length}/10`}</span>
-                        <input type="file" accept="image/*" multiple onChange={handlePhotoSelect} className="hidden" />
+                        <input type="file" accept=".jpg,.jpeg,.png,.webp,.heic,.heif" multiple onChange={handlePhotoSelect} className="hidden" />
                       </label>
                     )}
                   </div>

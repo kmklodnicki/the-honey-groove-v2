@@ -89,14 +89,10 @@ const SettingsPage = () => {
     if (!file) return;
 
     // Validate file type
-    if (!file.type.startsWith('image/')) {
-      toast.error('please select an image file.');
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('image must be less than 5mb.');
+    const { validateImageFile } = await import('../utils/imageUpload');
+    const err = validateImageFile(file);
+    if (err) {
+      toast.error(err);
       return;
     }
 
@@ -209,7 +205,7 @@ const SettingsPage = () => {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept=".jpg,.jpeg,.png,.webp,.heic,.heif"
                 onChange={handlePhotoChange}
                 className="hidden"
                 data-testid="avatar-file-input"

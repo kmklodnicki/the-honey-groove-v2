@@ -465,18 +465,70 @@ async def get_weekly_summary(user: Dict = Depends(require_auth)):
 
 # ============== FILE UPLOAD ROUTES ==============
 
+ALLOWED_IMAGE_TYPES = {
+    "image/jpeg", "image/png", "image/webp", "image/heic", "image/heif",
+}
+ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "webp", "heic", "heif"}
+MAX_DIMENSION = 1200
+JPEG_QUALITY = 85
+
+
+def process_image(data: bytes, content_type: str, filename: str) -> tuple:
+    """Convert HEIC/HEIF to JPEG, resize to max 1200px, compress to 85% JPEG quality.
+    Returns (processed_bytes, final_content_type, final_extension)."""
+    from PIL import Image
+    import io
+
+    ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    is_heic = ext in ("heic", "heif") or content_type in ("image/heic", "image/heif")
+
+    if is_heic:
+        import pillow_heif
+        pillow_heif.register_heif_opener()
+
+    img = Image.open(io.BytesIO(data))
+
+    # Convert palette/RGBA modes for JPEG compatibility
+    if img.mode in ("RGBA", "P", "LA"):
+        background = Image.new("RGB", img.size, (255, 255, 255))
+        if img.mode == "P":
+            img = img.convert("RGBA")
+        background.paste(img, mask=img.split()[-1] if "A" in img.mode else None)
+        img = background
+    elif img.mode != "RGB":
+        img = img.convert("RGB")
+
+    # Resize if larger than MAX_DIMENSION on longest side
+    w, h = img.size
+    if max(w, h) > MAX_DIMENSION:
+        ratio = MAX_DIMENSION / max(w, h)
+        img = img.resize((int(w * ratio), int(h * ratio)), Image.LANCZOS)
+
+    buf = io.BytesIO()
+    img.save(buf, format="JPEG", quality=JPEG_QUALITY, optimize=True)
+    return buf.getvalue(), "image/jpeg", "jpg"
+
+
 @router.post("/upload")
 async def upload_file(file: UploadFile = File(...), user: Dict = Depends(require_auth)):
-    if not file.content_type or not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=400, detail="Only image files are allowed")
-    
-    ext = file.filename.split(".")[-1] if "." in file.filename else "jpg"
-    path = f"{APP_NAME}/uploads/{user['id']}/{uuid.uuid4()}.{ext}"
-    
+    ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
+    ct = (file.content_type or "").lower()
+
+    if ext not in ALLOWED_EXTENSIONS and ct not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(status_code=400, detail="Only image files are allowed (jpg, png, webp, heic)")
+
     data = await file.read()
-    
+
     try:
-        result = put_object(path, data, file.content_type or "image/jpeg")
+        processed_data, final_ct, final_ext = process_image(data, ct, file.filename)
+    except Exception as e:
+        logger.error(f"Image processing failed: {e}")
+        raise HTTPException(status_code=400, detail="Could not process image. Please upload a jpg, png, or webp file.")
+
+    path = f"{APP_NAME}/uploads/{user['id']}/{uuid.uuid4()}.{final_ext}"
+
+    try:
+        result = put_object(path, processed_data, final_ct)
         
         # Store file reference
         file_id = str(uuid.uuid4())
@@ -485,8 +537,8 @@ async def upload_file(file: UploadFile = File(...), user: Dict = Depends(require
             "user_id": user["id"],
             "storage_path": result["path"],
             "original_filename": file.filename,
-            "content_type": file.content_type,
-            "size": result.get("size", len(data)),
+            "content_type": final_ct,
+            "size": result.get("size", len(processed_data)),
             "created_at": datetime.now(timezone.utc).isoformat()
         })
         
@@ -497,6 +549,51 @@ async def upload_file(file: UploadFile = File(...), user: Dict = Depends(require
     except Exception as e:
         logger.error(f"Upload failed: {e}")
         raise HTTPException(status_code=500, detail="Upload failed")
+
+
+@router.post("/admin/reprocess-heic")
+async def reprocess_heic_files(user: Dict = Depends(require_auth)):
+    """Admin: find and reprocess any HEIC/HEIF files stored in the DB."""
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin only")
+
+    reprocessed = []
+    # Check listings photo_urls, users avatar_url, posts image_url, files
+    for coll_name, field in [("listings", "photo_urls"), ("users", "avatar_url"), ("posts", "image_url")]:
+        docs = await db[coll_name].find({}, {"_id": 0}).to_list(5000)
+        for doc in docs:
+            val = doc.get(field)
+            urls_to_check = val if isinstance(val, list) else ([val] if val else [])
+            for url in urls_to_check:
+                if not url or not isinstance(url, str):
+                    continue
+                if not any(url.lower().endswith(ext) for ext in (".heic", ".heif")):
+                    continue
+                # Extract storage path
+                serve_marker = "/api/files/serve/"
+                idx = url.find(serve_marker)
+                storage_path = url[idx + len(serve_marker):] if idx != -1 else url
+                if not storage_path.startswith(f"{APP_NAME}/"):
+                    continue
+                try:
+                    raw_data, _ = get_object(storage_path)
+                    if raw_data is None:
+                        continue
+                    processed_data, final_ct, final_ext = process_image(raw_data, "image/heic", storage_path)
+                    new_path = storage_path.rsplit(".", 1)[0] + f".{final_ext}"
+                    put_object(new_path, processed_data, final_ct)
+                    new_url = url[:idx] + serve_marker + new_path if idx != -1 else new_path
+                    # Update the DB record
+                    if isinstance(val, list):
+                        new_list = [new_url if u == url else u for u in val]
+                        await db[coll_name].update_one({"id": doc["id"]}, {"$set": {field: new_list}})
+                    else:
+                        await db[coll_name].update_one({"id": doc["id"]}, {"$set": {field: new_url}})
+                    reprocessed.append({"collection": coll_name, "id": doc.get("id"), "old": url, "new": new_url})
+                except Exception as e:
+                    logger.error(f"Reprocess HEIC failed for {coll_name}/{doc.get('id')}: {e}")
+
+    return {"reprocessed": len(reprocessed), "details": reprocessed}
 
 @router.get("/files/{file_id}")
 async def get_file(file_id: str, user: Dict = Depends(require_auth)):
