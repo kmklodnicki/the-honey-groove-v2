@@ -315,7 +315,7 @@ const DMBadge = () => {
 
 // Notification Bell Component
 const NotificationBell = () => {
-  const { token, API } = useAuth();
+  const { token, API, user } = useAuth();
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
@@ -384,18 +384,42 @@ const NotificationBell = () => {
     }
     setOpen(false);
     const d = notif.data || {};
+    const t = notif.type;
+    // DMs → messages page
     if (d.conversation_id) navigate('/messages');
+    // Trades → trades page
     else if (d.trade_id) navigate('/trades');
+    // Follower → their profile
     else if (d.follower_username) navigate(`/profile/${d.follower_username}`);
-    else if (d.listing_id) navigate('/honeypot');
+    // Orders (shipped/cancelled) → orders page
+    else if (d.order_id) navigate('/orders');
+    // Post interactions → specific post's record or hive
     else if (d.post_id) navigate('/hive');
+    // Listings (sale, purchase, wantlist match) → honeypot listing detail
+    else if (d.listing_id) navigate(`/honeypot/listing/${d.listing_id}`);
+    // Wax report → wax reports page
+    else if (t === 'WAX_REPORT') navigate('/wax-reports');
+    // Bingo → nectar (explore) where bingo lives
+    else if (t === 'BINGO') navigate('/nectar');
+    // Mood board → profile mood board tab
+    else if (t === 'MOOD_BOARD') navigate(`/profile/${user?.username}`);
+    // Streak nudge → hive (daily prompt is at top)
+    else if (t === 'streak_nudge' || t === 'streak_nudge_urgent') navigate('/hive');
+    // Price alert → honeypot
+    else if (t === 'PRICE_ALERT') navigate('/honeypot');
+    // Stripe connected → settings
+    else if (t === 'STRIPE_CONNECTED') navigate('/settings');
   };
 
   const NOTIF_ICONS = {
     NEW_FOLLOWER: '👤', POST_LIKED: '❤️', NEW_COMMENT: '💬',
     TRADE_PROPOSED: '🤝', TRADE_ACCEPTED: '✅', TRADE_SHIPPED: '📦',
     TRADE_CONFIRMED: '🎉', SALE_COMPLETED: '💰', PURCHASE_COMPLETED: '🛒',
-    STRIPE_CONNECTED: '💳', ISO_MATCH: '🔍',
+    STRIPE_CONNECTED: '💳', ISO_MATCH: '🔍', WANTLIST_MATCH: '🔍',
+    ORDER_SHIPPED: '📦', ORDER_CANCELLED: '❌', PRICE_ALERT: '💲',
+    WAX_REPORT: '📊', BINGO: '🎯', MOOD_BOARD: '🎨',
+    streak_nudge: '🐝', streak_nudge_urgent: '🐝', dm: '💬',
+    HOLD_DISPUTE: '⚠️',
   };
 
   return (
