@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import { usePageTitle } from '../hooks/usePageTitle';
 import RecordSearchResult from '../components/RecordSearchResult';
+import AlbumArt from '../components/AlbumArt';
 
 const AddRecordPage = () => {
   usePageTitle('Add Record');

@@ -318,6 +318,8 @@ COMPLETED → Mandatory rating before next trade
 
 164. **Invite Link Route Fix (P0)** — Added `/invite/:code` frontend route in App.js that redirects to `/join?code={code}`. Previously, users visiting `/invite/{code}` (shown in invite emails) were caught by the catch-all route and sent to `/`. InviteRedirect component uses `useParams()` to extract the code and `Navigate` with `replace` to redirect. 100% test pass rate (11/11 backend+frontend tests). (Mar 2026)
 
+165. **AlbumArt Import Fix** — Added missing `import AlbumArt from '../components/AlbumArt'` to AddRecordPage.js. The component was used on line 142 but never imported, causing "Uncaught ReferenceError: AlbumArt is not defined" in production builds. (Mar 2026)
+
 ## Upcoming Tasks
 - **P1: Weekly Wax Email** — Ensure scheduled "Weekly Wax" email is correctly configured (Sundays 12:00 PM ET)
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
