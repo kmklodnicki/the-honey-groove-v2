@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { ArrowRightLeft, Check, X, MessageSquare, Disc, Loader2, DollarSign, Search, Package, AlertTriangle, Star, Camera, Truck, Clock, CheckCircle2, XCircle, Shield, HelpCircle } from 'lucide-react';
+import { ArrowRightLeft, Check, X, MessageSquare, Disc, Loader2, DollarSign, Search, Package, AlertTriangle, Star, Camera, Truck, Clock, CheckCircle2, XCircle, Shield, HelpCircle, MapPin } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -48,6 +48,68 @@ const STATUS_CONFIG = {
   CONFIRMING: { label: 'Confirming', color: 'bg-cyan-100 text-cyan-700', dot: 'bg-cyan-400' },
   COMPLETED: { label: 'Completed', color: 'bg-green-100 text-green-700', dot: 'bg-green-500' },
   DISPUTED: { label: 'Disputed', color: 'bg-red-100 text-red-700', dot: 'bg-red-500' },
+};
+
+// Shipping Address Exchange component for trade parties
+const ShippingAddressSection = ({ tradeId, token, API }) => {
+  const [myAddress, setMyAddress] = useState('');
+  const [otherAddress, setOtherAddress] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const fetchAddresses = async () => {
+      try {
+        const resp = await axios.get(`${API}/trades/${tradeId}/shipping-address`, { headers: { Authorization: `Bearer ${token}` } });
+        setMyAddress(resp.data.my_address || '');
+        setOtherAddress(resp.data.other_address || '');
+      } catch {}
+      setLoaded(true);
+    };
+    fetchAddresses();
+  }, [tradeId, token, API]);
+
+  const handleSave = async () => {
+    if (!myAddress.trim()) return;
+    setSaving(true);
+    try {
+      await axios.put(`${API}/trades/${tradeId}/shipping-address`, { address: myAddress }, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success('Shipping address saved');
+    } catch (err) { toast.error(err.response?.data?.detail || 'Failed to save address'); }
+    finally { setSaving(false); }
+  };
+
+  if (!loaded) return null;
+
+  return (
+    <div className="bg-indigo-50 rounded-xl p-4 border border-indigo-200" data-testid="shipping-address-section">
+      <p className="text-xs font-medium text-indigo-700 mb-3 flex items-center gap-1"><MapPin className="w-3 h-3" /> SHIPPING ADDRESSES</p>
+      <div className="space-y-3">
+        <div>
+          <label className="text-xs text-indigo-600 font-medium mb-1 block">Your shipping address</label>
+          <Textarea
+            placeholder="Enter your full shipping address..."
+            value={myAddress}
+            onChange={e => setMyAddress(e.target.value)}
+            className="text-sm border-indigo-200 min-h-[60px] resize-none"
+            data-testid="my-shipping-address"
+          />
+          <Button onClick={handleSave} disabled={saving || !myAddress.trim()} size="sm" className="mt-2 bg-indigo-600 text-white hover:bg-indigo-700 rounded-full text-xs" data-testid="save-shipping-address-btn">
+            {saving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Check className="w-3 h-3 mr-1" />}
+            Save Address
+          </Button>
+        </div>
+        {otherAddress ? (
+          <div>
+            <label className="text-xs text-indigo-600 font-medium mb-1 block">Ship to (other party)</label>
+            <div className="bg-white rounded-lg p-3 text-sm border border-indigo-100 whitespace-pre-wrap" data-testid="other-shipping-address">{otherAddress}</div>
+          </div>
+        ) : (
+          <p className="text-xs text-indigo-400 italic" data-testid="waiting-other-address">Waiting for the other party to share their address...</p>
+        )}
+      </div>
+    </div>
+  );
 };
 
 const TradesPage = () => {
@@ -552,6 +614,11 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
                 </p>
               )}
             </div>
+          )}
+
+          {/* Shipping Address Exchange */}
+          {(trade.status === 'HOLD_PENDING' || trade.status === 'SHIPPING' || trade.status === 'CONFIRMING') && (
+            <ShippingAddressSection tradeId={trade.id} token={token} API={API} />
           )}
 
           {/* Ship form */}

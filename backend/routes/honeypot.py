@@ -341,21 +341,44 @@ async def delete_listing(listing_id: str, user: Dict = Depends(require_auth)):
 @router.post("/stripe/connect")
 async def stripe_connect_onboarding(request: Request, user: Dict = Depends(require_auth)):
     u = await db.users.find_one({"id": user["id"]}, {"_id": 0})
-    if u.get("stripe_connected"):
+    if u.get("stripe_connected") and u.get("stripe_charges_enabled"):
         raise HTTPException(status_code=400, detail="Stripe already connected")
 
-    host_url = str(request.base_url).rstrip("/")
-    account_id = f"acct_sim_{uuid.uuid4().hex[:16]}"
+    stripe_sdk.api_key = STRIPE_API_KEY
     now = datetime.now(timezone.utc).isoformat()
 
-    await db.users.update_one({"id": user["id"]}, {"$set": {
-        "stripe_account_id": account_id,
-        "stripe_connected": False,
-        "stripe_onboarding_started": now,
-    }})
+    # Reuse existing account or create a new Express account
+    account_id = u.get("stripe_account_id")
+    if not account_id or account_id.startswith("acct_sim_"):
+        try:
+            account = stripe_sdk.Account.create(
+                type="express",
+                email=u.get("email"),
+                metadata={"user_id": user["id"], "username": u.get("username", "")},
+            )
+            account_id = account.id
+        except stripe_sdk.error.InvalidRequestError as e:
+            if "signed up for Connect" in str(e):
+                raise HTTPException(status_code=400,
+                    detail="Stripe Connect is not enabled on this platform. The account owner must enable Connect at https://dashboard.stripe.com/connect before sellers can onboard.")
+            raise HTTPException(status_code=500, detail=f"Stripe error: {str(e)}")
+        await db.users.update_one({"id": user["id"]}, {"$set": {
+            "stripe_account_id": account_id,
+            "stripe_connected": False,
+            "stripe_charges_enabled": False,
+            "stripe_onboarding_started": now,
+        }})
 
-    return_url = f"{host_url}/api/stripe/connect/return?user_id={user['id']}"
-    return {"url": return_url, "account_id": account_id}
+    # Create an account link for onboarding
+    host_url = FRONTEND_URL or str(request.base_url).rstrip("/")
+    account_link = stripe_sdk.AccountLink.create(
+        account=account_id,
+        refresh_url=f"{host_url}/api/stripe/connect/refresh?user_id={user['id']}",
+        return_url=f"{host_url}/api/stripe/connect/return?user_id={user['id']}",
+        type="account_onboarding",
+    )
+
+    return {"url": account_link.url, "account_id": account_id}
 
 
 @router.get("/stripe/connect/return")
@@ -363,24 +386,73 @@ async def stripe_connect_return(user_id: str):
     u = await db.users.find_one({"id": user_id}, {"_id": 0})
     if not u:
         raise HTTPException(status_code=404, detail="User not found")
+
+    # Verify the account is fully onboarded
+    stripe_sdk.api_key = STRIPE_API_KEY
+    account_id = u.get("stripe_account_id")
+    charges_enabled = False
+    if account_id:
+        try:
+            account = stripe_sdk.Account.retrieve(account_id)
+            charges_enabled = account.charges_enabled
+        except Exception as e:
+            logger.error(f"Stripe account retrieve failed: {e}")
+
     now = datetime.now(timezone.utc).isoformat()
     await db.users.update_one({"id": user_id}, {"$set": {
         "stripe_connected": True,
+        "stripe_charges_enabled": charges_enabled,
         "stripe_connected_at": now,
     }})
-    await create_notification(user_id, "STRIPE_CONNECTED", "Stripe Connected!",
-                              "Your Stripe account is now active. You can receive payments for marketplace sales.")
-    frontend_url = "https://thehoneygroove.com"
+
+    if charges_enabled:
+        await create_notification(user_id, "STRIPE_CONNECTED", "Stripe Connected!",
+                                  "Your Stripe account is now active. You can receive payments for marketplace sales.")
+
+    frontend_url = FRONTEND_URL or "https://thehoneygroove.com"
     from starlette.responses import RedirectResponse
     return RedirectResponse(url=f"{frontend_url}/profile/{u['username']}?stripe=connected")
+
+
+@router.get("/stripe/connect/refresh")
+async def stripe_connect_refresh(user_id: str, request: Request):
+    """Stripe redirects here if the onboarding link expires. Generate a new one."""
+    u = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not u or not u.get("stripe_account_id"):
+        raise HTTPException(status_code=404, detail="User not found or no Stripe account")
+
+    stripe_sdk.api_key = STRIPE_API_KEY
+    host_url = FRONTEND_URL or str(request.base_url).rstrip("/")
+    account_link = stripe_sdk.AccountLink.create(
+        account=u["stripe_account_id"],
+        refresh_url=f"{host_url}/api/stripe/connect/refresh?user_id={user_id}",
+        return_url=f"{host_url}/api/stripe/connect/return?user_id={user_id}",
+        type="account_onboarding",
+    )
+    from starlette.responses import RedirectResponse
+    return RedirectResponse(url=account_link.url)
 
 
 @router.get("/stripe/status")
 async def stripe_connect_status(user: Dict = Depends(require_auth)):
     u = await db.users.find_one({"id": user["id"]}, {"_id": 0})
+
+    # Re-check charges_enabled from Stripe if account exists but not yet enabled
+    account_id = u.get("stripe_account_id")
+    charges_enabled = u.get("stripe_charges_enabled", False)
+    if account_id and not charges_enabled:
+        try:
+            stripe_sdk.api_key = STRIPE_API_KEY
+            account = stripe_sdk.Account.retrieve(account_id)
+            charges_enabled = account.charges_enabled
+            if charges_enabled:
+                await db.users.update_one({"id": user["id"]}, {"$set": {"stripe_charges_enabled": True}})
+        except Exception:
+            pass
+
     return {
-        "stripe_connected": u.get("stripe_connected", False),
-        "stripe_account_id": u.get("stripe_account_id"),
+        "stripe_connected": charges_enabled,
+        "stripe_account_id": account_id,
     }
 
 
@@ -400,10 +472,12 @@ async def create_payment_checkout(request: Request, body: Dict, user: Dict = Dep
     else:
         raise HTTPException(status_code=400, detail="Invalid listing type or missing offer amount")
 
-    # Verify seller has Stripe Connect account
+    # Verify seller has Stripe Connect account with charges enabled
     seller = await db.users.find_one({"id": listing["user_id"]}, {"_id": 0})
     if not seller or not seller.get("stripe_account_id"):
         raise HTTPException(status_code=400, detail="Seller has not connected their Stripe account")
+    if not seller.get("stripe_charges_enabled"):
+        raise HTTPException(status_code=400, detail="Seller's Stripe account is not fully set up yet")
 
     fee_pct = await _get_platform_fee_percent()
     platform_fee = round(amount * fee_pct / 100, 2)
@@ -595,6 +669,8 @@ async def pay_trade_sweetener(trade_id: str, request: Request, body: Dict, user:
     recipient = await db.users.find_one({"id": recipient_id}, {"_id": 0})
     if not recipient or not recipient.get("stripe_account_id"):
         raise HTTPException(status_code=400, detail="Recipient has not connected their Stripe account")
+    if not recipient.get("stripe_charges_enabled"):
+        raise HTTPException(status_code=400, detail="Recipient's Stripe account is not fully set up yet")
 
     amount = float(boot_amount)
     fee_pct = await _get_platform_fee_percent()

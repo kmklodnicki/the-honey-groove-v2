@@ -19,7 +19,7 @@ import asyncio
 
 router = APIRouter()
 
-TRADE_URL = "https://thehoneygroove.com/honeypot"
+TRADE_URL = f"{FRONTEND_URL}/honeypot"
 
 
 async def _refund_hold(payment_intent_id: str) -> bool:
@@ -202,7 +202,7 @@ async def propose_trade(data: TradePropose, user: Dict = Depends(require_auth)):
     responder = await db.users.find_one({"id": listing["user_id"]}, {"_id": 0})
     if responder and responder.get("email"):
         sweetener = str(data.boot_amount) if data.boot_amount else ""
-        tpl = email_tpl.new_trade_offer(responder.get("username", ""), u.get("username", ""), listing.get("album", "your listing"), record.get("title", "a record"), sweetener, "https://thehoneygroove.com/honeypot")
+        tpl = email_tpl.new_trade_offer(responder.get("username", ""), u.get("username", ""), listing.get("album", "your listing"), record.get("title", "a record"), sweetener, TRADE_URL)
         await send_email_fire_and_forget(responder["email"], tpl["subject"], tpl["html"])
 
     return await build_trade_response(trade_doc)
@@ -382,6 +382,49 @@ async def add_trade_message(trade_id: str, data: Dict, user: Dict = Depends(requ
     await db.trades.update_one({"id": trade_id}, {"$push": {"messages": msg}, "$set": {"updated_at": now}})
     return {"message": "Message added"}
 
+
+# ============== SHIPPING ADDRESS EXCHANGE ==============
+
+@router.put("/trades/{trade_id}/shipping-address")
+async def update_shipping_address(trade_id: str, data: Dict, user: Dict = Depends(require_auth)):
+    """Save shipping address for a trade party. Only visible to the other party."""
+    trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade not found")
+    if trade["initiator_id"] != user["id"] and trade["responder_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    if trade["status"] not in ("HOLD_PENDING", "SHIPPING", "CONFIRMING"):
+        raise HTTPException(status_code=400, detail="Shipping address can only be set after trade is accepted")
+
+    role = "initiator" if user["id"] == trade["initiator_id"] else "responder"
+    address = data.get("address", "").strip()
+    if not address:
+        raise HTTPException(status_code=400, detail="Address is required")
+
+    now = datetime.now(timezone.utc).isoformat()
+    await db.trades.update_one({"id": trade_id}, {
+        "$set": {f"shipping_addresses.{role}": address, "updated_at": now}
+    })
+    return {"message": "Shipping address saved"}
+
+
+@router.get("/trades/{trade_id}/shipping-address")
+async def get_shipping_address(trade_id: str, user: Dict = Depends(require_auth)):
+    """Get the OTHER party's shipping address (your own is shown as editable)."""
+    trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade not found")
+    if trade["initiator_id"] != user["id"] and trade["responder_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    my_role = "initiator" if user["id"] == trade["initiator_id"] else "responder"
+    other_role = "responder" if my_role == "initiator" else "initiator"
+    addrs = trade.get("shipping_addresses", {})
+
+    return {
+        "my_address": addrs.get(my_role, ""),
+        "other_address": addrs.get(other_role, ""),
+    }
 
 
 # ============== TRADE PHASE 2: SHIPPING & CONFIRMATION ==============

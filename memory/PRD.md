@@ -264,6 +264,12 @@ COMPLETED → Mandatory rating before next trade
 
 137. **Navbar Wordmark Size Fix** — Applied inline `style={{minWidth: '160px', width: '160px'}}` directly on the mobile wordmark img tag to prevent CSS class overrides. (Mar 2026)
 
+138. **Real Stripe Connect Express Onboarding** — Replaced simulated `acct_sim_` fake accounts with real Stripe Express Connect flow: `stripe.Account.create(type='express')` → `stripe.AccountLink.create()` → redirect to Stripe onboarding → verify `charges_enabled` on return. Added `/api/stripe/connect/refresh` endpoint for expired links. Status endpoint now live-checks `charges_enabled` from Stripe API. Checkout endpoints verify `charges_enabled` before creating sessions. Graceful error if Connect not enabled on platform. (Mar 2026)
+
+139. **Shipping Address Exchange for Trades** — New `PUT/GET /api/trades/{id}/shipping-address` endpoints. Each trade party can enter their shipping address after trade is accepted. Address only visible to the other party. Frontend `ShippingAddressSection` component shows in trade detail during HOLD_PENDING/SHIPPING/CONFIRMING statuses. (Mar 2026)
+
+140. **Hardcoded URL Cleanup** — Replaced all `thehoneygroove.com` hardcodes in `trades.py` and `honeypot.py` with `FRONTEND_URL` env variable for correct routing in all environments. (Mar 2026)
+
 ## Upcoming Tasks
 - **P1: Weekly Wax Email** — Ensure scheduled "Weekly Wax" email is correctly configured (Sundays 12:00 PM ET)
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
