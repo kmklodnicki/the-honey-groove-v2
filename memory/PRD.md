@@ -270,6 +270,10 @@ COMPLETED → Mandatory rating before next trade
 
 140. **Hardcoded URL Cleanup** — Replaced all `thehoneygroove.com` hardcodes in `trades.py` and `honeypot.py` with `FRONTEND_URL` env variable for correct routing in all environments. (Mar 2026)
 
+141. **Photo Lightbox Portal Fix** — Lightbox was rendering behind modals due to DOM stacking context. Fixed by rendering via `ReactDOM.createPortal(content, document.body)` and setting `zIndex: 9999` as inline style. Now always appears on top of all modals, navbars, and overlays. (Mar 2026)
+
+142. **Profile Username Overflow Fix** — Username was getting clipped on mobile. Added `minWidth: 0`, `flexShrink: 1`, `break-words` to the username h1, and `minWidth: 0` to its flex parent container. Long usernames now wrap cleanly instead of overflowing. (Mar 2026)
+
 ## Upcoming Tasks
 - **P1: Weekly Wax Email** — Ensure scheduled "Weekly Wax" email is correctly configured (Sundays 12:00 PM ET)
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality

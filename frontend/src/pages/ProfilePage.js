@@ -168,9 +168,9 @@ const ProfilePage = () => {
             </AvatarFallback>
           </Avatar>
 
-          <div className="flex-1">
+          <div className="flex-1" style={{ minWidth: 0 }}>
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="font-heading text-2xl" data-testid="profile-username">@{profile.username}</h1>
+              <h1 className="font-heading text-2xl break-words" style={{ flexShrink: 1, minWidth: 0 }} data-testid="profile-username">@{profile.username}</h1>
               {promptStreak && promptStreak.streak > 0 && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-bold" data-testid="profile-streak-pill">
                   {promptStreak.streak} day streak

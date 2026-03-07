@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { resolveImageUrl } from '../utils/imageUrl';
 
@@ -48,11 +49,11 @@ const PhotoLightbox = ({ photos = [], initialIndex = 0, open, onClose }) => {
 
   const resolved = photos.map(p => resolveImageUrl(p));
 
-  return (
+  const lightboxContent = (
     <div
       ref={containerRef}
-      className={`fixed inset-0 z-[200] flex flex-col items-center justify-center transition-opacity duration-200 ${visible ? 'opacity-100' : 'opacity-0'}`}
-      style={{ background: 'rgba(0,0,0,0.92)' }}
+      className="fixed inset-0 flex flex-col items-center justify-center transition-opacity duration-200"
+      style={{ zIndex: 9999, background: 'rgba(0,0,0,0.92)', opacity: visible ? 1 : 0 }}
       onClick={(e) => { if (e.target === containerRef.current || e.target.dataset.overlay) close(); }}
       data-testid="photo-lightbox"
     >
@@ -115,6 +116,8 @@ const PhotoLightbox = ({ photos = [], initialIndex = 0, open, onClose }) => {
       )}
     </div>
   );
+
+  return ReactDOM.createPortal(lightboxContent, document.body);
 };
 
 export default PhotoLightbox;
