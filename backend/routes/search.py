@@ -88,6 +88,10 @@ async def unified_search(q: str = Query(..., min_length=2), user: Dict = Depends
         "cover_url": r.get("cover_url"),
         "year": r.get("year"),
         "format": r.get("format"),
+        "label": r.get("label"),
+        "catno": r.get("catno"),
+        "country": r.get("country"),
+        "color_variant": r.get("color_variant"),
         "source": "collection",
     } for r in scored_records]
 

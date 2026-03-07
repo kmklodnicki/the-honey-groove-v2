@@ -80,8 +80,12 @@ class DiscogsSearchResult(BaseModel):
     artist: str
     cover_url: Optional[str] = None
     year: Optional[int] = None
-    format: Optional[List[str]] = None  # Discogs returns format as a list
+    format: Optional[str] = None
     country: Optional[str] = None
+    label: Optional[str] = None
+    catno: Optional[str] = None
+    color_variant: Optional[str] = None
+    genre: Optional[List[str]] = None
 
 # Spin Models
 class SpinCreate(BaseModel):

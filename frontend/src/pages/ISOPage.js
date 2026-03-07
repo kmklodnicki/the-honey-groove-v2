@@ -25,6 +25,7 @@ import { ProposeTradeModal } from './TradesPage';
 import { usePageTitle } from '../hooks/usePageTitle';
 import ListingDetailModal from '../components/ListingDetailModal';
 import AlbumArt from '../components/AlbumArt';
+import RecordSearchResult from '../components/RecordSearchResult';
 
 const ISO_TAGS = ['OG Press', 'Factory Sealed', 'Any', 'Promo'];
 const FILTER_OPTIONS = ['All', 'OPEN', 'FOUND'];
@@ -371,10 +372,7 @@ const ISOPage = () => {
           {discogsResults.length > 0 && (
             <div className="border border-honey/30 rounded-lg max-h-48 overflow-y-auto bg-white">
               {discogsResults.map(r => (
-                <button key={r.discogs_id} onClick={() => selectRelease(r)} className="w-full text-left px-3 py-2 hover:bg-honey/10 flex items-center gap-3 text-sm border-b border-honey/10 last:border-0" data-testid={`discogs-result-${r.discogs_id}`}>
-                  <AlbumArt src={r.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
-                  <div className="min-w-0 flex-1"><p className="font-medium truncate">{r.title}</p><p className="text-xs text-muted-foreground truncate">{r.artist} {r.year ? `(${r.year})` : ''}</p></div>
-                </button>
+                <RecordSearchResult key={r.discogs_id} record={r} onClick={() => selectRelease(r)} size="sm" testId={`discogs-result-${r.discogs_id}`} />
               ))}
             </div>
           )}

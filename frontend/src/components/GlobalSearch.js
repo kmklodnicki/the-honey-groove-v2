@@ -5,9 +5,9 @@ import axios from 'axios';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Search, Plus, Clock, Trash2, UserPlus, Disc, Feather, ShoppingBag, Tag, Loader2 } from 'lucide-react';
+import { Search, Clock, Trash2, UserPlus, Disc, Feather, ShoppingBag, Plus, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import AlbumArt from './AlbumArt';
+import RecordSearchResult from './RecordSearchResult';
 import safeStorage from '../utils/safeStorage';
 
 const POST_ICONS = {
@@ -28,7 +28,7 @@ function addRecent(q) {
 }
 function clearRecent() { safeStorage.removeItem(RECENT_KEY); }
 
-const GlobalSearch = ({ onClose, initialTab }) => {
+const GlobalSearch = ({ onClose }) => {
   const { token, API } = useAuth();
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
@@ -39,47 +39,80 @@ const GlobalSearch = ({ onClose, initialTab }) => {
   const [recentSearches, setRecentSearches] = useState(getRecent());
   const inputRef = useRef(null);
   const debounceRef = useRef(null);
-  const discogsRef = useRef(null);
+  const abortRef = useRef(null);
+  const discogsAbortRef = useRef(null);
 
   useEffect(() => { inputRef.current?.focus(); }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (abortRef.current) abortRef.current.abort();
+      if (discogsAbortRef.current) discogsAbortRef.current.abort();
+    };
+  }, []);
 
   const doSearch = useCallback(async (q) => {
     if (!q || q.length < 2) {
       setResults({ records: [], collectors: [], posts: [], listings: [] });
       setDiscogsResults([]);
+      setLoading(false);
+      setDiscogsLoading(false);
       return;
     }
+
+    // Cancel any in-flight requests
+    if (abortRef.current) abortRef.current.abort();
+    if (discogsAbortRef.current) discogsAbortRef.current.abort();
+
+    const localController = new AbortController();
+    const discogsController = new AbortController();
+    abortRef.current = localController;
+    discogsAbortRef.current = discogsController;
+
     const headers = { Authorization: `Bearer ${token}` };
 
     // Fast local search
     setLoading(true);
     try {
-      const resp = await axios.get(`${API}/search/unified?q=${encodeURIComponent(q)}`, { headers, timeout: 5000 });
+      const resp = await axios.get(`${API}/search/unified?q=${encodeURIComponent(q)}`, {
+        headers, timeout: 5000, signal: localController.signal,
+      });
       setResults(resp.data);
       addRecent(q);
       setRecentSearches(getRecent());
-    } catch { /* ignore */ }
-    finally { setLoading(false); }
+    } catch (e) {
+      if (!axios.isCancel(e)) setResults({ records: [], collectors: [], posts: [], listings: [] });
+    } finally {
+      if (!localController.signal.aborted) setLoading(false);
+    }
 
     // Slower Discogs external search (non-blocking)
-    if (discogsRef.current) clearTimeout(discogsRef.current);
     setDiscogsLoading(true);
-    discogsRef.current = setTimeout(async () => {
-      try {
-        const resp = await axios.get(`${API}/search/discogs?q=${encodeURIComponent(q)}`, { headers, timeout: 8000 });
-        setDiscogsResults(resp.data?.slice(0, 8) || []);
-      } catch { setDiscogsResults([]); }
-      finally { setDiscogsLoading(false); }
-    }, 100);
+    try {
+      const resp = await axios.get(`${API}/search/discogs?q=${encodeURIComponent(q)}`, {
+        headers, timeout: 8000, signal: discogsController.signal,
+      });
+      setDiscogsResults(resp.data?.slice(0, 8) || []);
+    } catch (e) {
+      if (!axios.isCancel(e)) setDiscogsResults([]);
+    } finally {
+      if (!discogsController.signal.aborted) setDiscogsLoading(false);
+    }
   }, [API, token]);
 
+  // Debounced search trigger — input state updates instantly, search fires after 300ms pause
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (query.length >= 2) {
+      setLoading(true); // show spinner immediately
       debounceRef.current = setTimeout(() => doSearch(query), 300);
     } else {
       setResults({ records: [], collectors: [], posts: [], listings: [] });
       setDiscogsResults([]);
+      setLoading(false);
+      setDiscogsLoading(false);
     }
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [query, doSearch]);
@@ -130,6 +163,7 @@ const GlobalSearch = ({ onClose, initialTab }) => {
           className="border-0 shadow-none focus-visible:ring-0 text-base"
           data-testid="global-search-input"
         />
+        {loading && <Loader2 className="w-4 h-4 animate-spin text-amber-400 shrink-0" data-testid="search-spinner" />}
         <Button variant="ghost" size="sm" onClick={onClose} className="text-muted-foreground shrink-0" data-testid="search-close-btn">
           Cancel
         </Button>
@@ -137,13 +171,6 @@ const GlobalSearch = ({ onClose, initialTab }) => {
 
       {/* Results */}
       <div className="flex-1 overflow-y-auto p-4">
-        {/* Loading */}
-        {loading && (
-          <div className="flex items-center justify-center py-8" data-testid="search-loading">
-            <Loader2 className="w-6 h-6 animate-spin text-amber-400" />
-          </div>
-        )}
-
         {/* Recent searches (before typing) */}
         {!hasQuery && !loading && (
           <div>
@@ -186,7 +213,7 @@ const GlobalSearch = ({ onClose, initialTab }) => {
         )}
 
         {/* Unified results grouped by section */}
-        {hasQuery && !loading && totalResults > 0 && (
+        {hasQuery && !noResults && (totalResults > 0 || loading || discogsLoading) && (
           <div className="space-y-6">
             {/* Records Section */}
             {allRecords.length > 0 && (
@@ -197,26 +224,19 @@ const GlobalSearch = ({ onClose, initialTab }) => {
                   {discogsLoading && <Loader2 className="w-3 h-3 animate-spin ml-1" />}
                 </h3>
                 <div className="space-y-0.5">
-                  {allRecords.slice(0, 8).map((r, i) => (
-                    <div key={r.discogs_id || i} className="flex items-center gap-3 p-2 rounded-lg hover:bg-honey/10 cursor-pointer group" data-testid={`search-record-${i}`}>
-                      <div className="shrink-0 cursor-pointer" onClick={() => goToRecord(r)}>
-                        {r.cover_url ? (
-                          <AlbumArt src={r.cover_url} alt="" className="w-11 h-11 rounded-md object-cover shadow-sm" />
-                        ) : (
-                          <div className="w-11 h-11 rounded-md bg-stone-100 flex items-center justify-center"><Disc className="w-5 h-5 text-stone-400" /></div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0 cursor-pointer" onClick={() => goToRecord(r)}>
-                        <p className="text-sm font-medium truncate">{r.title}</p>
-                        <p className="text-xs text-muted-foreground truncate">{r.artist} {r.year ? `(${r.year})` : ''}</p>
-                      </div>
-                      <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                  {allRecords.slice(0, 10).map((r, i) => (
+                    <RecordSearchResult
+                      key={r.discogs_id || i}
+                      record={r}
+                      onClick={() => goToRecord(r)}
+                      testId={`search-record-${i}`}
+                      actions={
                         <button onClick={(e) => { e.stopPropagation(); addToCollection(r); }}
-                          className="text-xs text-amber-600 hover:text-amber-800 px-2 py-1 rounded-full border border-amber-300 hover:bg-amber-50"
+                          className="text-xs text-amber-600 hover:text-amber-800 px-2 py-1 rounded-full border border-amber-300 hover:bg-amber-50 opacity-0 group-hover:opacity-100 transition-opacity"
                           data-testid={`search-add-collection-${i}`}
                         >+ collection</button>
-                      </div>
-                    </div>
+                      }
+                    />
                   ))}
                 </div>
               </section>
@@ -266,7 +286,7 @@ const GlobalSearch = ({ onClose, initialTab }) => {
                     <div key={l.id || i} className="flex items-center gap-3 p-2 rounded-lg hover:bg-honey/10 cursor-pointer" onClick={() => goToListing(l)} data-testid={`search-listing-${i}`}>
                       <div className="shrink-0">
                         {l.cover_url ? (
-                          <AlbumArt src={l.cover_url} alt="" className="w-11 h-11 rounded-md object-cover shadow-sm" />
+                          <img src={l.cover_url} alt="" className="w-11 h-11 rounded-md object-cover shadow-sm" />
                         ) : (
                           <div className="w-11 h-11 rounded-md bg-stone-100 flex items-center justify-center"><ShoppingBag className="w-5 h-5 text-stone-400" /></div>
                         )}

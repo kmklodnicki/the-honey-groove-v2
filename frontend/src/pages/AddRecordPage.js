@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -8,12 +8,11 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Skeleton } from '../components/ui/skeleton';
-import { Search, Disc, Plus, Check, ArrowLeft } from 'lucide-react';
+import { Search, Disc, Plus, Check, ArrowLeft, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
-import debounce from 'lodash.debounce';
 import { usePageTitle } from '../hooks/usePageTitle';
-import AlbumArt from '../components/AlbumArt';
+import RecordSearchResult from '../components/RecordSearchResult';
 
 const AddRecordPage = () => {
   usePageTitle('Add Record');
@@ -32,36 +31,38 @@ const AddRecordPage = () => {
   const [manualArtist, setManualArtist] = useState('');
   const [manualYear, setManualYear] = useState('');
 
-  const searchDiscogs = async (query) => {
-    if (query.length < 2) {
-      setSearchResults([]);
-      return;
-    }
+  const searchTimerRef = useRef(null);
+  const abortRef = useRef(null);
 
-    setSearching(true);
-    try {
-      const response = await axios.get(`${API}/discogs/search`, {
-        params: { q: query },
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setSearchResults(response.data);
-    } catch (error) {
-      console.error('Search error:', error);
-      toast.error('Search failed. Try again.');
-    } finally {
-      setSearching(false);
-    }
-  };
-
-  const debouncedSearch = useCallback(
-    debounce((query) => searchDiscogs(query), 500),
-    [token]
-  );
+  useEffect(() => {
+    return () => {
+      if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+      if (abortRef.current) abortRef.current.abort();
+    };
+  }, []);
 
   const handleSearchChange = (e) => {
     const query = e.target.value;
     setSearchQuery(query);
-    debouncedSearch(query);
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    if (abortRef.current) abortRef.current.abort();
+    if (query.length < 2) { setSearchResults([]); setSearching(false); return; }
+    setSearching(true);
+    searchTimerRef.current = setTimeout(async () => {
+      const controller = new AbortController();
+      abortRef.current = controller;
+      try {
+        const response = await axios.get(`${API}/discogs/search`, {
+          params: { q: query }, headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
+        });
+        setSearchResults(response.data);
+      } catch (err) {
+        if (!axios.isCancel(err)) { toast.error('Search failed. Try again.'); setSearchResults([]); }
+      } finally {
+        if (!controller.signal.aborted) setSearching(false);
+      }
+    }, 300);
   };
 
   const handleSelectRecord = (record) => {
@@ -277,6 +278,7 @@ const AddRecordPage = () => {
                 className="pl-10 h-12 text-lg border-honey/50"
                 data-testid="discogs-search"
               />
+              {searching && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 animate-spin text-amber-400" />}
             </div>
             <p className="text-xs text-muted-foreground mt-2">
               Search powered by Discogs database
@@ -284,7 +286,7 @@ const AddRecordPage = () => {
           </Card>
 
           {/* Search Results */}
-          {searching ? (
+          {searching && searchResults.length === 0 ? (
             <div className="space-y-3">
               {[1, 2, 3].map(i => (
                 <Card key={i} className="p-4 flex gap-4">
@@ -297,39 +299,16 @@ const AddRecordPage = () => {
               ))}
             </div>
           ) : searchResults.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-1 border border-honey/30 rounded-lg p-2 bg-white">
               {searchResults.map(result => (
-                <Card 
+                <RecordSearchResult
                   key={result.discogs_id}
-                  className="p-4 flex gap-4 cursor-pointer border-honey/30 hover:border-honey hover:shadow-honey transition-all"
+                  record={result}
                   onClick={() => handleSelectRecord(result)}
-                  data-testid={`search-result-${result.discogs_id}`}
-                >
-                  {result.cover_url ? (
-                    <AlbumArt 
-                      src={result.cover_url} 
-                      alt={result.title}
-                      className="w-16 h-16 rounded object-cover"
-                    />
-                  ) : (
-                    <div className="w-16 h-16 rounded bg-vinyl-black flex items-center justify-center">
-                      <Disc className="w-6 h-6 text-honey" />
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium truncate">{result.title}</h4>
-                    <p className="text-sm text-muted-foreground truncate">{result.artist}</p>
-                    <div className="flex gap-2 mt-1">
-                      {result.year && (
-                        <span className="text-xs text-muted-foreground">{result.year}</span>
-                      )}
-                      {result.format && (
-                        <span className="text-xs bg-honey/20 px-2 py-0.5 rounded-full">{result.format}</span>
-                      )}
-                    </div>
-                  </div>
-                  <Plus className="w-5 h-5 text-honey self-center" />
-                </Card>
+                  size="md"
+                  testId={`search-result-${result.discogs_id}`}
+                  actions={<Plus className="w-5 h-5 text-honey" />}
+                />
               ))}
             </div>
           ) : searchQuery.length >= 2 && !searching ? (

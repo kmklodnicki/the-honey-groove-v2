@@ -14,6 +14,7 @@ import { Disc, Package, Search, Loader2, X, Feather, ImagePlus, Tag } from 'luci
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import AlbumArt from './AlbumArt';
+import RecordSearchResult from './RecordSearchResult';
 
 const MOOD_CONFIG = {
   'Late Night': { emoji: '\u{1F56F}\uFE0F', bg: '#1a1230', btnColor: '#6a3a9a', placeholder: 'what are you listening to at this hour?' },
@@ -357,10 +358,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               {haulResults.length > 0 && (
                 <div className="mt-1 border border-honey/30 rounded-lg max-h-40 overflow-y-auto bg-white">
                   {haulResults.map(r => (
-                    <button key={r.discogs_id} onClick={() => addHaulItem(r)} className="w-full text-left px-3 py-2 hover:bg-honey/10 flex items-center gap-2 text-sm border-b border-honey/10 last:border-0">
-                      <AlbumArt src={r.cover_url} alt="" className="w-8 h-8 rounded object-cover" />
-                      <span className="truncate">{r.artist} · {r.title}</span>
-                    </button>
+                    <RecordSearchResult key={r.discogs_id} record={r} onClick={() => addHaulItem(r)} size="sm" testId={`haul-result-${r.discogs_id}`} />
                   ))}
                 </div>
               )}
@@ -406,10 +404,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                 {isoDiscogsResults.length > 0 && (
                   <div className="border border-honey/30 rounded-lg max-h-48 overflow-y-auto bg-white">
                     {isoDiscogsResults.map(r => (
-                      <button key={r.discogs_id} onClick={() => selectIsoRelease(r)} className="w-full text-left px-3 py-2 hover:bg-honey/10 flex items-center gap-3 text-sm border-b border-honey/10 last:border-0" data-testid={`iso-discogs-result-${r.discogs_id}`}>
-                        {r.cover_url ? <AlbumArt src={r.cover_url} alt="" className="w-10 h-10 rounded object-cover" /> : <Disc className="w-10 h-10 text-honey/30" />}
-                        <div className="min-w-0 flex-1"><p className="font-medium truncate">{r.title}</p><p className="text-xs text-muted-foreground truncate">{r.artist} {r.year ? `(${r.year})` : ''}</p></div>
-                      </button>
+                      <RecordSearchResult key={r.discogs_id} record={r} onClick={() => selectIsoRelease(r)} size="sm" testId={`iso-discogs-result-${r.discogs_id}`} />
                     ))}
                   </div>
                 )}

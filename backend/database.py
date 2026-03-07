@@ -162,6 +162,27 @@ def search_discogs(query: str, search_type: str = "release") -> List[Dict]:
                 parts = item.get("title", "").split(" - ", 1)
                 artist = parts[0].strip() if len(parts) > 1 else "Unknown"
                 title = parts[1].strip() if len(parts) > 1 else parts[0].strip()
+                # Extract color/variant info from formats
+                color_variant = None
+                format_name = None
+                descriptions = []
+                for fmt in item.get("formats", []):
+                    fname = fmt.get("name", "")
+                    if fname and fname not in ("All Media",):
+                        format_name = fname
+                    ftext = fmt.get("text", "")
+                    if ftext:
+                        color_variant = ftext
+                    descs = fmt.get("descriptions", [])
+                    descriptions.extend(descs)
+                # Build compact format string
+                format_str = format_name or ""
+                if descriptions:
+                    unique_descs = list(dict.fromkeys(d for d in descriptions if d not in ("Album", "Compilation")))
+                    if unique_descs:
+                        format_str = f"{format_name} ({', '.join(unique_descs[:2])})" if format_name else ", ".join(unique_descs[:2])
+                labels = item.get("label", [])
+                main_label = labels[0] if labels else None
                 results.append({
                     "discogs_id": item.get("id"),
                     "artist": artist,
@@ -169,8 +190,11 @@ def search_discogs(query: str, search_type: str = "release") -> List[Dict]:
                     "year": item.get("year"),
                     "genre": item.get("genre", []),
                     "cover_url": item.get("cover_image"),
-                    "format": item.get("format", []),
-                    "label": item.get("label", []),
+                    "format": format_str or (item.get("format", [None])[0] if item.get("format") else None),
+                    "label": main_label,
+                    "catno": item.get("catno"),
+                    "country": item.get("country"),
+                    "color_variant": color_variant,
                 })
             return results
     except Exception as e:
