@@ -20,13 +20,13 @@ router = APIRouter()
 
 @router.get("/notifications")
 async def get_notifications(limit: int = 30, user: Dict = Depends(require_auth)):
-    notifs = await db.notifications.find({"user_id": user["id"]}, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+    notifs = await db.notifications.find({"user_id": user["id"], "type": {"$ne": "dm"}}, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
     return notifs
 
 
 @router.get("/notifications/unread-count")
 async def get_unread_count(user: Dict = Depends(require_auth)):
-    count = await db.notifications.count_documents({"user_id": user["id"], "read": False})
+    count = await db.notifications.count_documents({"user_id": user["id"], "read": False, "type": {"$ne": "dm"}})
     return {"count": count}
 
 
