@@ -242,6 +242,8 @@ COMPLETED → Mandatory rating before next trade
 
 126. **Vinyl Variant Details in Search Cards** — Created reusable RecordSearchResult.js component showing two-line compact format: Line 1 = Year · Label · Catalog#, Line 2 = Format · Country. Color variants displayed in amber pill badges (e.g., "Blue Translucent", "Target Exclusive #3"). Enhanced backend search_discogs() to extract color/variant from Discogs formats.text field. Updated DiscogsSearchResult Pydantic model (format: str, added label/catno/country/color_variant/genre). Applied to all 6 search UIs: GlobalSearch, AddRecord, ISOPage DiscogsPicker, ComposerBar haul+ISO, OnboardingModal. (Mar 2026)
 
+127. **Now Spinning Composer Search** — Replaced album Select dropdown in Now Spinning modal with a local collection search input. Features: "search your collection..." placeholder, 300ms debounce via setTimeout, fuzzy matching (words.every match), relevancy scoring, RecordSearchResult with variant details, selected record shows as compact card with album art + X to deselect, empty state "no results in your collection 🐝" with "add it first →" link to /add-record. No API calls (filters records prop locally). (Mar 2026)
+
 ## Upcoming Tasks
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
 - **P2: Refactor ISOPage.js** — Break monolithic 3-tab component
