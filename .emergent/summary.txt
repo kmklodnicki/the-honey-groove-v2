@@ -4,36 +4,44 @@ The user wants to build a web app called **The HoneyGroove**, a social platform 
 **PRODUCT REQUIREMENTS (Synthesized from initial request and subsequent user directives):**
 *   **Core App:** A full-stack application for vinyl collectors to track their collection, log spins, and interact socially.
 *   **Branding & UI/UX:** A warm, honey-inspired theme with a clean, modern UI, amber color palette, and specific fonts.
-*   **User System & Onboarding:** Invite-only, email-verified accounts.
-*   **Social & Engagement Features:** A social feed (The Hive), daily prompts, and weekly Collector Bingo.
+*   **User System & Onboarding:** Invite-only, email-verified accounts. Beta invite links must lead directly to the onboarding flow.
+*   **Social & Engagement Features:** A social feed (now named Nectar), daily prompts, and weekly Collector Bingo. Users must be able to delete their own posts.
 *   **Search & Discovery:** A fast, fuzzy global search and dedicated pages for records, leveraging the Discogs API. Search results must show rich variant details.
 *   **Admin Panel:** For managing beta signups and user roles.
 *   **Data Integrity:** Test and demo data (, , ) must be permanently and completely hidden from all user-facing parts of the application.
 *   **Core Functionality:** User registration, login, profile management, and creating listings for sale/trade (with photo uploads) must be stable and functional. Image URLs must resolve correctly.
-*   **Sales & Trades:** The sales flow must use real Stripe Connect Express accounts. The trade flow must support secure shipping address exchange. Listing creation must be gated behind Stripe connection.
+*   **Sales & Trades:** The sales flow must use **live** Stripe Connect Express accounts. The trade flow must support secure shipping address exchange. Listing creation must be gated behind Stripe connection.
+*   **Order Management:** Implement My Orders and My Sales pages. Sellers must be able to update shipping/tracking info and cancel orders (triggering a refund). Buyers should be able to contact sellers.
 *   **UI/UX Polish:** Key UI elements like album cards in feeds, modals, and on various pages should be interactive and clickable, leading to a consistent album detail view.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application (React, FastAPI, MongoDB) for vinyl collectors. The platform features user accounts, collection management, a social feed (The Hive), and a sales/trades marketplace (The Honeypot). The most recent sessions have focused on resolving critical production bugs, overhauling the image upload pipeline, implementing a real Stripe Connect payment flow, and making various UI elements consistently interactive.
+A full-stack application (React, FastAPI, MongoDB) for vinyl collectors. The platform features user accounts, collection management, a social feed (Nectar), and a sales/trades marketplace (The Honeypot). The application's payment system has been switched to use **live Stripe keys**. The agent just received a P0 bug report that the beta invite link flow is broken.
 
 **Last working item**:
-- **Last item agent was working:** The agent received a new user request to update the modal that appears when clicking albums on the Explore page (in the Trending in Collections and Most Wanted sections). The goal is to make this modal behave like the main collection's album detail modal, showing contextual actions based on collection ownership.
+- **Last item agent was working:** Investigating a critical bug where beta invite links are redirecting users to the homepage instead of the correct sign-up/onboarding flow, preventing new users from joining the app.
 - **Status:** NOT STARTED
 - **Agent Testing Done:** N
-- **Which testing method agent to use?** Frontend testing agent. The agent should implement the logic and then verify that clicking an album on the Explore page opens a modal with the correct buttons ('Add to Collection' vs. 'List for Sale') and pressing details, based on whether a test user owns that album.
+- **Which testing method agent to use?** backend testing agent. First, use  to inspect the response from the  endpoint. Then, use the testing agent to verify the complete end-to-end user flow from clicking an invite link to successful sign-up.
 - **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-- No pending issues. The last working item is a new feature request.
+- **Issue 1: Broken Beta Invite Links (P0)**
+    - **Description:** Beta invite links () are redirecting to the homepage () instead of the intended onboarding/signup flow. This is a critical blocker preventing any new users from joining the application.
+    - **Status:** NOT STARTED
+    - **Next debug checklist:**
+        1.  Examine the backend route handler for  in  to check its logic.
+        2.  Review the frontend routing in  to see how the  path is handled.
+        3.  Check for any middleware or guards that might be incorrectly redirecting unauthenticated users from the invite page.
+    - **Why fix this issue and what will be achieved with the fix?** Fixing this will unblock the user acquisition funnel, allowing new invited users to sign up and access the application.
+    - **Should Test frontend/backend/both after fix?** Both.
 
 **In progress Task List**:
 - None.
 
 **Upcoming and Future Tasks**
 - **Upcoming Tasks:**
-    - **P0: Update Explore Page Album Modal:** The modal for Trending in Collections and Most Wanted albums on the Explore page needs to be updated. It should show contextual actions ('Add to Collection'/'Add to Wantlist' or 'List for Sale'/'Offer to Trade'/'Log a Spin') based on whether the user already owns the album. It also needs to display the pressing/variant details.
     - **P1: Implement Weekly Wax Email:** Ensure the scheduled Weekly Wax email is correctly configured to be sent every Sunday at 12:00 PM ET.
     - **P2: Hauls Enhancement:** Develop a dedicated page and more functionality for Haul posts.
     - **P2: Refactor :** Address known technical debt in this complex component.
@@ -44,64 +52,65 @@ A full-stack application (React, FastAPI, MongoDB) for vinyl collectors. The pla
     - Re-enable Instagram sharing features.
 
 **Completed work in this session**
-- **Recurring Bug Fixes (RESOLVED):**
-    - Fixed all broken images by systematically applying the  helper across dozens of components and enhancing it to handle stale URLs from previous deployments.
-    - Verified all backend queries correctly filter out test/demo data.
-- **Image Upload Overhaul:**
-    - Implemented backend HEIC/HEIF to JPEG conversion, resizing, and compression for all uploads.
-    - Added frontend validation for allowed image types.
-    - Created an admin endpoint to re-process existing HEIC files.
-- **Stripe Integration & Gating:**
-    - Replaced the simulated Stripe Connect flow with a real Stripe Express onboarding implementation.
-    - Fixed the Stripe Connect return URL 404 error by creating dedicated frontend routes and backend verification endpoints.
-    - Implemented a secure shipping address exchange for the trade flow.
-    - Gated all listing creation (sale/trade) behind a successful Stripe Connect onboarding.
-- **UI/UX Enhancements & Fixes:**
-    - Made album cards clickable across the Hive feed, Collection page (Hidden Gems), and Explore page (Trending/Most Wanted).
-    - Created a new  component using a React Portal to fix z-index issues when viewing images from within a modal.
-    - Fixed multiple mobile layout issues on the .
-    - Fixed the non-functional close ('X') button on the photo lightbox.
-    - Fixed the email sender name to display as The Honey Groove.
-    - Fixed a username overflow bug on the profile page header.
+- **Stripe Live Integration:**
+    - Switched the entire payment system from Stripe test mode to **live mode** by updating the backend  file with live API keys.
+    - Hardcoded the production domain () for all Stripe Connect redirect URLs in  to prevent environment-related errors.
+- **Order Management Feature:**
+    - Created a new My Orders / My Sales page accessible from the user profile dropdown.
+    - Implemented backend endpoints (, ) to fetch and enrich transaction data.
+    - Added functionality for sellers to update shipping and tracking information ().
+    - Implemented order cancellation for sellers, which triggers an automatic Stripe refund ().
+    - Added a Message Seller link for buyers on the orders page.
+- **Post & Listing Deletion:**
+    - Implemented functionality for users to delete their own posts from the Hive feed, with a confirmation dialog.
+    - Added a confirmation dialog to the existing delete functionality for sale/trade listings on the .
+- **UI/UX & Bug Fixes:**
+    - Renamed the Explore page to Nectar across the entire application, including routes, navigation, and text references.
+    - Fixed a bug where album cards in Hive feed posts were not clickable.
+    - Fixed a bug where uploaded photos for sale listings were not displaying.
+    - Added a Payments section to the Settings page with a button to initiate the Stripe Connect flow.
+    - Fixed the mobile navigation bar logo size.
+- **Onboarding & Configuration:**
+    - Updated the user onboarding flow to include an optional Now Spinning search feature.
+    - Configured the registration process to opt-in all new users to the Wax Report newsletter by default.
+    - Ensured all emails are sent from .
+    - Removed the Searching for / Found counts from the  page.
 
 **Earlier issues found/mentioned but not fixed**
--   None.
+- None.
 
 **Known issue recurrence from previous fork**
 -   **Issue recurrence in previous fork:**
     -    test data appearing on public pages (Explore).
     -   Image uploads/display not working for profiles and listings.
 -   **Recurrence count:** 3+
--   **Status:** RESOLVED. The agent performed an exhaustive, app-wide fix for all image rendering and data filtering logic. A comprehensive testing agent run with 100% success confirmed the fixes are robust.
+-   **Status:** RESOLVED. The previous agent performed an exhaustive, app-wide fix for all image rendering and data filtering logic.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **React Portals:** Used  in the  component to solve z-index/stacking context issues where the lightbox was rendering behind its parent modal.
--   **Stripe Connect Express:** Implementation of the full server-side flow (, ) and client-side handling of return/refresh URLs.
--   **Feature Gating:** Intercepting user actions (like opening a modal to create a listing) to perform an async check () and conditionally show a gate modal instead.
--   **Defensive Image Handling:** Backend conversion of HEIC/HEIF files to JPEG using  and universal frontend URL resolution () to handle data inconsistencies.
+- **Stripe Live Mode:** The application is now processing real payments.
+- **Stripe Refunds API:** Used  via the payment intent ID stored in the database to automate refunds on order cancellation.
+- **Enriched API Endpoints:** The new order/sales endpoints aggregate data from , , , and  collections to provide a complete view to the frontend.
+- **Frontend Routing & Renaming:** Systematically updated React Router routes,  components, and all user-facing text to rename a core feature.
 
 **key DB schema**
--   **users:** Added  (string),  (boolean),  (boolean). The  field is the definitive source of truth for payment readiness.
--   **trades:** Added  (string) and  (string) to facilitate secure address exchange.
+-   **payment_transactions:** Updated with  (str),  (str),  (datetime), and an expanded  field that now includes 'CANCELLED'. The  is crucial for processing refunds.
 
 **changes in tech stack**
--   **New Dependency:**  added to  to handle HEIC image conversion.
+-   None.
 
 **All files of reference**
--   **Stripe & Payments:**
+-   **Current Bug (Invites):**
+    -   
+    -   
+-   **Stripe & Order Management:**
     -   
     -   
     -   
     -   
--   **Image Handling & Lightbox:**
-    -    (upload endpoint)
-    -   
-    -   
-    -   
--   **UI Clickability & Fixes:**
+-   **Post Deletion & UI Fixes:**
     -   
     -   
     -   
@@ -109,58 +118,56 @@ A full-stack application (React, FastAPI, MongoDB) for vinyl collectors. The pla
 
 **Areas that need refactoring**:
 -    remains a large and complex component that could be broken down.
--   Backend routes still contain star imports () which should be replaced with explicit imports to improve code clarity and prevent namespace pollution.
+-   Backend routes still contain star imports () which should be replaced with explicit imports.
 
 **key api endpoints**
--   ****: Updated to perform HEIC conversion, resizing, and compression.
--   ****: Now creates a real Stripe Express account and onboarding link.
--   ****: New endpoint for the frontend to call upon return from Stripe to verify  status.
--   ****: New endpoint for the frontend to get a new onboarding link if the previous one expired.
--   ****: New endpoint for users in a trade to submit their shipping address.
--   ****: The primary endpoint for the frontend to check if a user is fully connected to Stripe.
+-   ****: (NEW) Cancels an order and triggers a Stripe refund.
+-   ****: (NEW) Updates shipping/tracking info for an order.
+-   ****: (NEW) Fetches all orders for the current user.
+-   ****: (UPDATED) Fetches all sales for the current user with enriched data.
+-   ****: (NEW) Deletes a user's post from the Hive feed.
+-   ****: (UNDER INVESTIGATION) Endpoint for handling beta invites.
 
 **Critical Info for New Agent**
--   The user has confirmed that Stripe Connect is now enabled on their Stripe dashboard, which was blocking the end-to-end testing of the sales flow. A top priority is to deploy and perform a full test of the sales and trade flows.
--   The  field on the user model is the single source of truth for gating payment-related features. Always check this via the  endpoint.
--   React Portals are the correct solution for any future z-index or overlay issues. The pattern is established in .
+-   **STRIPE IS LIVE.** All payment-related actions are real and involve real money. Exercise extreme caution when modifying any code in  or payment-related frontend components.
+-   The immediate priority is to fix the **broken beta invite flow (P0)**. This is a critical blocker preventing new user sign-ups.
+-   The Stripe Connect redirect URLs are hardcoded in  to point to . Do not change this unless explicitly requested.
 
 **documents and test reports created in this job**
--    (updated multiple times)
--    (and many previous)
+-    (updated after each major feature)
+-   Multiple test reports in , with the latest confirming the functionality of the Orders page.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Requests a walkthrough to test the sale and trade flows and confirmation that Stripe is in test mode. (Status: COMPLETED, Agent provided an audit and identified the fake Stripe Connect as a blocker).
-2.  **User:** Approves fixing the Stripe Connect flow immediately, providing detailed instructions. (Status: COMPLETED).
-3.  **User:** Reports Stripe Connect is enabled and asks the agent to deploy and test the full end-to-end sale and trade flows. (Status: PENDING DEPLOYMENT/TESTING).
-4.  **User:** Reports a bug where the photo lightbox opens behind the modal and the username is cut off on the profile page. (Status: COMPLETED).
-5.  **User:** Reports a 404 error after Stripe onboarding. (Status: COMPLETED).
-6.  **User:** Asks for the specific field on the user object that indicates Stripe connection status. (Status: COMPLETED, Agent identified ).
-7.  **User:** Requests gating listing creation behind Stripe connection. (Status: COMPLETED).
-8.  **User:** Requests making album cards in the Hive feed clickable to open the album detail modal. (Status: COMPLETED).
-9.  **User:** Requests making album cards in the Collection (Hidden Gems) and Explore (Trending/Most Wanted) pages clickable. (Status: COMPLETED).
-10. **User:** Requests fixing the email sender name from 'hello' to 'The Honey Groove'. (Status: COMPLETED).
-11. **User:** Reports the 'X' button on the lightbox is not working. (Status: COMPLETED).
-12. **User:** Requests updating the Explore page album modal to have contextual buttons based on collection ownership. (Status: NOT STARTED, This is the current task).
+1.  **User:** Requests a My Orders / My Sales page. (Status: COMPLETED)
+2.  **User:** Confirms adding shipping/tracking updates for sellers. (Status: COMPLETED)
+3.  **User:** Requests order cancellation for sellers (with refunds) and a message seller option for buyers. (Status: COMPLETED)
+4.  **User:** Requests switching Stripe to live mode. (Status: COMPLETED)
+5.  **User:** Provides live Stripe secret key. (Status: COMPLETED)
+6.  **User:** Provides live Stripe publishable key. (Status: COMPLETED)
+7.  **User:** Provides live Stripe webhook secret. (Status: COMPLETED)
+8.  **User:** Reports beta invite links are broken and redirecting to the homepage. (Status: **PENDING - CURRENT TASK**)
+9.  **Agent:** Acknowledges and starts investigating the invite bug. (Status: IN PROGRESS)
+10. **(No more user messages)**
 
 **Project Health Check:**
--   **Broken:** None. All reported production issues have been addressed. The application is stable in the preview environment, pending deployment and final user verification of the Stripe flow.
--   **Mocked:** Email sending via Resend.
+-   **Broken:** The beta invite user acquisition flow is critically broken.
+-   **Mocked:** Email sending via Resend is still mocked.
 
 **3rd Party Integrations**
+-   **Stripe Connect:** **LIVE MODE**. For peer-to-peer payments.
 -   **Discogs API:** For all record data and search.
--   **Stripe Connect:** For peer-to-peer payments (Now using real Express accounts).
--   **Resend:** For transactional emails.
+-   **Resend:** For transactional emails (mocked).
 -   **Google Tag Manager / Google Analytics:** For analytics.
--   **Emergent Storage:** For all file uploads (profile photos, listing photos).
+-   **Emergent Storage:** For all file uploads.
 
 **Testing status**
--   **Testing agent used after significant changes:** YES. The agent was used extensively to validate all major bug fixes and feature implementations, including image rendering, upload processing, and UI changes.
+-   **Testing agent used after significant changes:** YES. The testing agent was used successfully after every feature sprint, catching a critical bug where API endpoints were incorrectly renamed during a global search-replace.
 -   **Troubleshoot agent used after agent stuck in loop:** NO
--   **Test files created:** []
--   **Known regressions:** None in the preview environment. The previously reported production regressions (images, data leaks) have been comprehensively fixed and tested.
+-   **Test files created:** None.
+-   **Known regressions:** The beta invite flow is a new regression.
 
 **Credentials to test flow:**
--   To test protected flows, use the Admin Panel to send an invite to a test email address. Use that invite link to register a new user. The Stripe Connect flow can be tested with standard Stripe test details.
+-   To test protected flows, use the Admin Panel to send an invite to a test email address. Use that invite link to register a new user. **Note: This flow is currently broken and is the P0 task to fix.**
 
 **What agent forgot to execute**
--   The agent has not yet started implementation of the latest user request: updating the Explore page album modal with contextual actions. This is the immediate next task.</analysis>
+-   The agent has not overlooked any tasks and was proceeding to investigate the latest user-reported bug before the session ended.</analysis>

@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import "@/App.css";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { Toaster } from "./components/ui/sonner";
 import { HelmetProvider } from "react-helmet-async";
@@ -82,6 +82,12 @@ const LandingWrapper = () => {
   return <LandingPage />;
 };
 
+// Invite redirect — /invite/:code → /join?code=:code
+const InviteRedirect = () => {
+  const { code } = useParams();
+  return <Navigate to={`/join?code=${code}`} replace />;
+};
+
 function AppContent() {
   // Debug: confirm React app is mounting (Safari diagnostic)
   useEffect(() => {
@@ -95,6 +101,7 @@ function AppContent() {
       <Route path="/beta" element={<BetaSignupPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/join" element={<JoinPage />} />
+      <Route path="/invite/:code" element={<InviteRedirect />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/faq" element={<FAQPage />} />
       <Route path="/terms" element={<TermsPage />} />
