@@ -244,6 +244,16 @@ COMPLETED → Mandatory rating before next trade
 
 127. **Now Spinning Composer Search** — Replaced album Select dropdown in Now Spinning modal with a local collection search input. Features: "search your collection..." placeholder, 300ms debounce via setTimeout, fuzzy matching (words.every match), relevancy scoring, RecordSearchResult with variant details, selected record shows as compact card with album art + X to deselect, empty state "no results in your collection 🐝" with "add it first →" link to /add-record. No API calls (filters records prop locally). (Mar 2026)
 
+128. **Demo/Test Content Permanent Filter** — Enhanced get_hidden_user_ids() to also exclude is_test=True users. Cleaned 1 orphaned spin and 2 orphaned notifications from deleted users. No demo account exists in database. Filter covers: is_hidden, is_test, username=demo/test*, email=*@example.com/*@test.com. Applied to all Explore, Hive feed, search, and listing queries. (Mar 2026)
+
+129. **Image Proxy Endpoint** — Created GET /api/files/serve/{path:path} public proxy endpoint to serve uploaded images from Emergent storage. Includes namespace security check (403 for paths outside honeygroove/), 1-year cache headers. Upload endpoint now returns {file_id, path, url} where url points to the proxy. Fixes both listing photos and profile photos. (Mar 2026)
+
+130. **Listing Photo Upload Fix** — ISOPage uploadAllPhotos now uses resp.data.url (public proxy URL) instead of raw storage path. Listing photos now display correctly in Honeypot. (Mar 2026)
+
+131. **Profile Photo Upload Fix** — SettingsPage avatar upload now uses response.data.url instead of hardcoded (and broken) integrations.emergentagent.com/storage/public/ URL format. Profile photos now update immediately after upload. (Mar 2026)
+
+132. **Sell/Trade Buttons on Record Detail** — Added "List for Sale" (amber outline) and "Offer to Trade" (cream outline) buttons to RecordDetailPage, visible only for record owner. Buttons navigate to /honeypot with query params (create=sale/trade, artist, album, discogs_id, cover_url, year). ISOPage reads these params and prefills the listing form. (Mar 2026)
+
 ## Upcoming Tasks
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
 - **P2: Refactor ISOPage.js** — Break monolithic 3-tab component
