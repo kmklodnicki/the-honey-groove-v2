@@ -68,7 +68,7 @@ const Navbar = () => {
             <img 
               src="/logo-wordmark.png" 
               alt="the Honey Groove" 
-              className="h-[104px] group-hover:scale-105 transition-transform"
+              className="h-[40px] group-hover:scale-105 transition-transform"
             />
           </Link>
 

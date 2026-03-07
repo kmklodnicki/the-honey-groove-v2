@@ -26,6 +26,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import ListingDetailModal from '../components/ListingDetailModal';
 import AlbumArt from '../components/AlbumArt';
 import RecordSearchResult from '../components/RecordSearchResult';
+import StripeGateModal from '../components/StripeGateModal';
 
 const ISO_TAGS = ['OG Press', 'Factory Sealed', 'Any', 'Promo'];
 const FILTER_OPTIONS = ['All', 'OPEN', 'FOUND'];
@@ -70,6 +71,17 @@ const ISOPage = () => {
   const [platformFee, setPlatformFee] = useState(6);
   const [selectedListingId, setSelectedListingId] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [stripeEnabled, setStripeEnabled] = useState(false);
+  const [showStripeGate, setShowStripeGate] = useState(false);
+
+  // Check Stripe status
+  useEffect(() => {
+    if (token) {
+      axios.get(`${API}/stripe/status`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(r => setStripeEnabled(r.data.stripe_connected))
+        .catch(() => {});
+    }
+  }, [API, token]);
 
   // Fetch dynamic platform fee
   useEffect(() => {
@@ -227,6 +239,10 @@ const ISOPage = () => {
   };
 
   const openModal = (type) => {
+    if (type === 'listing' && !stripeEnabled) {
+      setShowStripeGate(true);
+      return;
+    }
     resetForm();
     if (type === 'listing' && activeTab === 'trade') setListType('TRADE');
     else if (type === 'listing') setListType('BUY_NOW');
@@ -426,6 +442,7 @@ const ISOPage = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8" data-testid="honeypot-page">
+      <StripeGateModal open={showStripeGate} onClose={() => setShowStripeGate(false)} />
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
