@@ -304,6 +304,8 @@ COMPLETED → Mandatory rating before next trade
 
 157. **Bug Fix: Listing Photo Priority** — ListingDetailModal main image now prioritizes uploaded photos (photos[0]) over Discogs cover_url. Previously showed Discogs cover even when user photos existed. (Mar 2026)
 
+158. **Settings: Payments & Payouts Section** — Added dedicated "Payments & Payouts" card to Settings page with Stripe connection status. Shows "Connect Stripe" button (purple, branded) when not connected → calls POST /api/stripe/connect to start Express onboarding. Shows green "Stripe Connected" badge + Stripe Dashboard link when connected. StripeGateModal button text updated to "go to settings". (Mar 2026)
+
 ## Upcoming Tasks
 - **P1: Weekly Wax Email** — Ensure scheduled "Weekly Wax" email is correctly configured (Sundays 12:00 PM ET)
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
