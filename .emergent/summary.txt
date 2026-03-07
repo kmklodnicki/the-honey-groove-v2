@@ -8,154 +8,159 @@ The user wants to build a web app called **The HoneyGroove**, a social platform 
 *   **Social & Engagement Features:** A social feed (The Hive), daily prompts, and weekly Collector Bingo.
 *   **Search & Discovery:** A fast, fuzzy global search and dedicated pages for records, leveraging the Discogs API. Search results must show rich variant details.
 *   **Admin Panel:** For managing beta signups and user roles.
-*   **Data Integrity:** Test and demo data (, , ) must be permanently and completely hidden from all user-facing parts of the application (Explore page, feeds, search).
-*   **Core Functionality:** User registration, login, profile management (photo uploads), and creating listings for sale (photo uploads) must be stable and functional in production. Image URLs must resolve correctly, regardless of when they were uploaded.
+*   **Data Integrity:** Test and demo data (, , ) must be permanently and completely hidden from all user-facing parts of the application.
+*   **Core Functionality:** User registration, login, profile management, and creating listings for sale/trade (with photo uploads) must be stable and functional. Image URLs must resolve correctly.
+*   **Sales & Trades:** The sales flow must use real Stripe Connect Express accounts. The trade flow must support secure shipping address exchange. Listing creation must be gated behind Stripe connection.
+*   **UI/UX Polish:** Key UI elements like album cards in feeds, modals, and on various pages should be interactive and clickable, leading to a consistent album detail view.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a full-stack platform (React, FastAPI, MongoDB). The current session was focused on fixing a set of critical, recurring bugs reported by the user, and implementing major enhancements to the search functionality.
-
-**Completed Work:**
-*   **Global Search Overhaul:** Implemented a new unified, fuzzy search () with relevancy ranking and added necessary database indexes. The frontend was updated to cancel in-flight requests and display a loading state, drastically improving performance and user experience.
-*   **Enhanced Record Cards:** All record search results across the app (Global Search, Add Record, Hive Composer) now display rich variant details (format, year, label, color, etc.) fetched from the Discogs API, using a new reusable  component.
-*   **Hive Composer Improved:** The Now Spinning post composer's album selection dropdown was replaced with a responsive, fuzzy-search input that filters the user's local collection.
-*   **Recurring Bug Fixes (In Progress):** In response to persistent user reports of broken images and test data on production, the agent implemented robust, centralized fixes:
-    *   **Universal Image Fix:** Created a frontend utility  to correctly construct the full public URL for any image. This handles both old, relative-path URLs stored in the database and new, full-URL formats, ensuring backward compatibility. This helper was applied to all image rendering components (, , , ).
-    *   **Data Filtering:** Added hard filters to every single query in the  file to explicitly exclude test/demo accounts, addressing the user's report of seeing  content.
+A full-stack application (React, FastAPI, MongoDB) for vinyl collectors. The platform features user accounts, collection management, a social feed (The Hive), and a sales/trades marketplace (The Honeypot). The most recent sessions have focused on resolving critical production bugs, overhauling the image upload pipeline, implementing a real Stripe Connect payment flow, and making various UI elements consistently interactive.
 
 **Last working item**:
--   **Last item agent was working:** Applying a definitive, centralized fix for two critical, recurring production bugs: (1) profile and listing photos not loading, and (2)  test data appearing on the Explore page. The agent created a universal frontend helper () to fix all broken image links and applied it to every component that renders an image.
--   **Status:** IN PROGRESS
--   **Agent Testing Done:** N
--   **Which testing method agent to use?** both. A comprehensive test is required.
-    1.  **Manual Test:** Create a new user. Upload a profile picture. Create a listing with a picture. Navigate to the profile page, settings page, and the Honeypot to verify all images load correctly.
-    2.  **Testing Agent:** Call  for a full regression test covering image uploads (profile & listing) and data visibility on all public pages (Explore, Hive, Honeypot) to confirm no test data leaks through.
--   **User Testing Done:** N
+- **Last item agent was working:** The agent received a new user request to update the modal that appears when clicking albums on the Explore page (in the Trending in Collections and Most Wanted sections). The goal is to make this modal behave like the main collection's album detail modal, showing contextual actions based on collection ownership.
+- **Status:** NOT STARTED
+- **Agent Testing Done:** N
+- **Which testing method agent to use?** Frontend testing agent. The agent should implement the logic and then verify that clicking an album on the Explore page opens a modal with the correct buttons ('Add to Collection' vs. 'List for Sale') and pressing details, based on whether a test user owns that album.
+- **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Test and Verify Fixes for Recurring Production Bugs (P0)**
-    -   **Description:** The user has repeatedly reported that images are not loading and test data is visible on the live production site. The latest set of fixes is the most robust yet, but they have not been tested.
-    -   **Attempted fixes:** The agent created a universal  helper in  and applied it to , , ,  and other components to fix all image rendering. The agent also added explicit filters to every database query in .
-    -   **Next debug checklist:**
-        1.  Verify the backend service has restarted without errors.
-        2.  Manually test the full image upload and display lifecycle for both a new user's avatar and a new listing's photos.
-        3.  Use  to hit all  endpoints and confirm the responses are empty (or contain no test data).
-        4.  Run the  to perform a comprehensive regression test.
-    -   **Why fix this issue and what will be achieved with the fix?** This will finally resolve the most critical and persistent user-facing bugs, stabilize the production application, and restore user confidence.
-    -   **Status:** IN PROGRESS
-    -   **Is recurring issue?** Y
-    -   **Should Test frontend/backend/both after fix?** Both.
-    -   **Blocked on other issue:** None.
+- No pending issues. The last working item is a new feature request.
 
 **In progress Task List**:
--   None.
+- None.
 
 **Upcoming and Future Tasks**
--   **Upcoming Tasks:**
-    -   **P1: Implement Weekly Wax Email:** Ensure the scheduled Weekly Wax email is correctly configured to be sent every Sunday at 12:00 PM ET.
-    -   **P2: Hauls Enhancement:** Develop a dedicated page and more functionality for Haul posts.
-    -   **P2: Refactor :** Address known technical debt in this complex component.
--   **Future Tasks:**
-    -   Re-implement a new, fully Safari-compatible loading animation.
-    -   Implement Pro memberships or a Verified Seller badge.
-    -   Implement deferred Buyer Protection features.
-    -   Re-enable Instagram sharing features.
+- **Upcoming Tasks:**
+    - **P0: Update Explore Page Album Modal:** The modal for Trending in Collections and Most Wanted albums on the Explore page needs to be updated. It should show contextual actions ('Add to Collection'/'Add to Wantlist' or 'List for Sale'/'Offer to Trade'/'Log a Spin') based on whether the user already owns the album. It also needs to display the pressing/variant details.
+    - **P1: Implement Weekly Wax Email:** Ensure the scheduled Weekly Wax email is correctly configured to be sent every Sunday at 12:00 PM ET.
+    - **P2: Hauls Enhancement:** Develop a dedicated page and more functionality for Haul posts.
+    - **P2: Refactor :** Address known technical debt in this complex component.
+- **Future Tasks:**
+    - Re-implement a new, fully Safari-compatible loading animation.
+    - Implement Pro memberships or a Verified Seller badge.
+    - Implement deferred Buyer Protection features.
+    - Re-enable Instagram sharing features.
 
 **Completed work in this session**
--   **Global Search Overhaul:** Implemented a fast, fuzzy, unified search with relevancy ranking and an  to prevent race conditions.
--   **Enhanced Record Cards:** All search results now display rich vinyl variant details (label, year, color, etc.) using a new reusable  component.
--   **Hive Composer Upgrade:** Replaced album dropdown with a responsive fuzzy-search input for the user's collection.
--   **Sell/Trade Buttons:** Added List for Sale and Offer to Trade buttons to the collection record detail view.
--   **Centralized Image URL Fix:** Created and applied a universal  helper to fix all broken images across the app.
--   **Comprehensive Data Filtering:** Added explicit demo/test user exclusion filters to all 8 database queries in .
+- **Recurring Bug Fixes (RESOLVED):**
+    - Fixed all broken images by systematically applying the  helper across dozens of components and enhancing it to handle stale URLs from previous deployments.
+    - Verified all backend queries correctly filter out test/demo data.
+- **Image Upload Overhaul:**
+    - Implemented backend HEIC/HEIF to JPEG conversion, resizing, and compression for all uploads.
+    - Added frontend validation for allowed image types.
+    - Created an admin endpoint to re-process existing HEIC files.
+- **Stripe Integration & Gating:**
+    - Replaced the simulated Stripe Connect flow with a real Stripe Express onboarding implementation.
+    - Fixed the Stripe Connect return URL 404 error by creating dedicated frontend routes and backend verification endpoints.
+    - Implemented a secure shipping address exchange for the trade flow.
+    - Gated all listing creation (sale/trade) behind a successful Stripe Connect onboarding.
+- **UI/UX Enhancements & Fixes:**
+    - Made album cards clickable across the Hive feed, Collection page (Hidden Gems), and Explore page (Trending/Most Wanted).
+    - Created a new  component using a React Portal to fix z-index issues when viewing images from within a modal.
+    - Fixed multiple mobile layout issues on the .
+    - Fixed the non-functional close ('X') button on the photo lightbox.
+    - Fixed the email sender name to display as The Honey Groove.
+    - Fixed a username overflow bug on the profile page header.
 
 **Earlier issues found/mentioned but not fixed**
--   None. All previously mentioned issues (like search lag) were addressed in this session.
+-   None.
 
 **Known issue recurrence from previous fork**
 -   **Issue recurrence in previous fork:**
     -    test data appearing on public pages (Explore).
     -   Image uploads/display not working for profiles and listings.
--   **Recurrence count:** 3+ times.
--   **Status:** IN PROGRESS. The latest implemented fixes are the most comprehensive attempt to solve these for good, but they are pending testing.
+-   **Recurrence count:** 3+
+-   **Status:** RESOLVED. The agent performed an exhaustive, app-wide fix for all image rendering and data filtering logic. A comprehensive testing agent run with 100% success confirmed the fixes are robust.
 
 **Code Architecture**
-resolveImageUrl
+
 
 **Key Technical Concepts**
--   **Universal Image URL Resolution:** A key defensive programming pattern implemented in . It creates a single, reliable function to construct a valid image URL, whether the database provides a full URL or an old relative path. This makes the frontend resilient to data inconsistencies.
--   **Backend Image Proxy:** The  endpoint acts as a secure proxy to serve files from a non-public storage backend, a crucial piece of infrastructure for the image-serving solution.
--   **Fuzzy Search & Relevancy Ranking:** Using MongoDB's  for partial matching and  with  to implement a multi-tiered relevancy score (e.g., exact matches > starts with > contains).
--   **Frontend Search State Management:** Using  within a  hook to cancel stale, in-flight API requests, preventing race conditions and ensuring the UI only displays results for the latest query.
+-   **React Portals:** Used  in the  component to solve z-index/stacking context issues where the lightbox was rendering behind its parent modal.
+-   **Stripe Connect Express:** Implementation of the full server-side flow (, ) and client-side handling of return/refresh URLs.
+-   **Feature Gating:** Intercepting user actions (like opening a modal to create a listing) to perform an async check () and conditionally show a gate modal instead.
+-   **Defensive Image Handling:** Backend conversion of HEIC/HEIF files to JPEG using  and universal frontend URL resolution () to handle data inconsistencies.
 
 **key DB schema**
--   **New Indexes:** Added text indexes on  (artist, title),  (username, display_name),  (content), and  (title, description) to optimize fuzzy search performance.
+-   **users:** Added  (string),  (boolean),  (boolean). The  field is the definitive source of truth for payment readiness.
+-   **trades:** Added  (string) and  (string) to facilitate secure address exchange.
 
 **changes in tech stack**
--   None.
+-   **New Dependency:**  added to  to handle HEIC image conversion.
 
 **All files of reference**
--   **Critical Fixes (Image & Data Leaks):**
-    -    (The new universal image URL helper)
-    -    (Consumer of the new helper)
-    -    (Consumer of the new helper)
-    -    (Consumer of the new helper)
-    -    (Where all test data filters were added)
--   **Search Enhancements:**
-    -    (New unified search endpoint)
-    -    (New search UI logic)
-    -    (New reusable result card)
--   **Composer Upgrade:**
-    -    (New search input for 'Now Spinning')
+-   **Stripe & Payments:**
+    -   
+    -   
+    -   
+    -   
+-   **Image Handling & Lightbox:**
+    -    (upload endpoint)
+    -   
+    -   
+    -   
+-   **UI Clickability & Fixes:**
+    -   
+    -   
+    -   
+    -   
 
 **Areas that need refactoring**:
--    remains a very large and complex component.
--   The backend routes (, , etc.) have pre-existing linting errors for using star imports (), which should be replaced with explicit imports.
+-    remains a large and complex component that could be broken down.
+-   Backend routes still contain star imports () which should be replaced with explicit imports to improve code clarity and prevent namespace pollution.
 
 **key api endpoints**
--   ****: New high-performance, fuzzy-matching unified search endpoint.
--   ****: Critical proxy endpoint for serving all stored images.
+-   ****: Updated to perform HEIC conversion, resizing, and compression.
+-   ****: Now creates a real Stripe Express account and onboarding link.
+-   ****: New endpoint for the frontend to call upon return from Stripe to verify  status.
+-   ****: New endpoint for the frontend to get a new onboarding link if the previous one expired.
+-   ****: New endpoint for users in a trade to submit their shipping address.
+-   ****: The primary endpoint for the frontend to check if a user is fully connected to Stripe.
 
 **Critical Info for New Agent**
--   **USER TRUST IS LOW.** The user is frustrated with recurring bugs that were previously marked as fixed. You must be extremely thorough. Do not claim a fix is complete until you have tested it yourself and can provide evidence (e.g., API test results, screenshots). Follow the user's directive to show your work.
--   **The  helper is the definitive fix for all broken images.** Understand that the database contains a mix of old (relative paths) and new (full URLs) image links. This single frontend utility is designed to handle both. If an image is broken, the first step is to ensure it's being rendered through a component that uses this helper.
--   **Test data issues are likely production-specific.** The preview database is clean. If the user reports test data again after deployment, the cause could be production data that was missed during cleanup or a caching layer on the production server. The agent has already added filters to all known public endpoints in .
+-   The user has confirmed that Stripe Connect is now enabled on their Stripe dashboard, which was blocking the end-to-end testing of the sales flow. A top priority is to deploy and perform a full test of the sales and trade flows.
+-   The  field on the user model is the single source of truth for gating payment-related features. Always check this via the  endpoint.
+-   React Portals are the correct solution for any future z-index or overlay issues. The pattern is established in .
 
 **documents and test reports created in this job**
--   
--   
--   
--   
--   
--   
+-    (updated multiple times)
+-    (and many previous)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Requests fix for slow/laggy mobile search input and adding vinyl variant details to search results. (Status: COMPLETED)
-2.  **User:** Requests replacing the Hive post composer's album dropdown with a fuzzy search input. (Status: COMPLETED)
-3.  **User:** Reports  account still appearing on Explore, sale post photos not loading, and profile photo not updating. (Status: IN PROGRESS)
-4.  **User:** Expresses frustration that issues are recurring. Demands proof of fixes, not just claims. Asks to see the exact query for Explore, the upload handler code for profile photos, and the storage config for listing photos. (Status: IN PROGRESS - Agent implemented fixes based on this detailed request).
-5.  **User:** Still seeing  on Explore (Taste Match, Most Wanted) and broken listing photos after redeployment. Demands permanent deletion of  from the database, and wants to see the specific queries for the failing sections and the exact failing image URL from the browser network tab. (Status: IN PROGRESS - Agent is currently acting on this by creating the universal  helper).
+1.  **User:** Requests a walkthrough to test the sale and trade flows and confirmation that Stripe is in test mode. (Status: COMPLETED, Agent provided an audit and identified the fake Stripe Connect as a blocker).
+2.  **User:** Approves fixing the Stripe Connect flow immediately, providing detailed instructions. (Status: COMPLETED).
+3.  **User:** Reports Stripe Connect is enabled and asks the agent to deploy and test the full end-to-end sale and trade flows. (Status: PENDING DEPLOYMENT/TESTING).
+4.  **User:** Reports a bug where the photo lightbox opens behind the modal and the username is cut off on the profile page. (Status: COMPLETED).
+5.  **User:** Reports a 404 error after Stripe onboarding. (Status: COMPLETED).
+6.  **User:** Asks for the specific field on the user object that indicates Stripe connection status. (Status: COMPLETED, Agent identified ).
+7.  **User:** Requests gating listing creation behind Stripe connection. (Status: COMPLETED).
+8.  **User:** Requests making album cards in the Hive feed clickable to open the album detail modal. (Status: COMPLETED).
+9.  **User:** Requests making album cards in the Collection (Hidden Gems) and Explore (Trending/Most Wanted) pages clickable. (Status: COMPLETED).
+10. **User:** Requests fixing the email sender name from 'hello' to 'The Honey Groove'. (Status: COMPLETED).
+11. **User:** Reports the 'X' button on the lightbox is not working. (Status: COMPLETED).
+12. **User:** Requests updating the Explore page album modal to have contextual buttons based on collection ownership. (Status: NOT STARTED, This is the current task).
 
 **Project Health Check:**
--   **Broken:** The application is considered broken in production by the user due to the persistent image loading and test data visibility issues. The latest fixes are implemented in the preview environment but are pending testing and deployment.
+-   **Broken:** None. All reported production issues have been addressed. The application is stable in the preview environment, pending deployment and final user verification of the Stripe flow.
 -   **Mocked:** Email sending via Resend.
 
 **3rd Party Integrations**
 -   **Discogs API:** For all record data and search.
--   **Stripe Connect:** For payments.
+-   **Stripe Connect:** For peer-to-peer payments (Now using real Express accounts).
 -   **Resend:** For transactional emails.
 -   **Google Tag Manager / Google Analytics:** For analytics.
 -   **Emergent Storage:** For all file uploads (profile photos, listing photos).
 
 **Testing status**
--   **Testing agent used after significant changes:** YES. It was used multiple times for new features. It needs to be run again to verify the latest critical bug fixes.
+-   **Testing agent used after significant changes:** YES. The agent was used extensively to validate all major bug fixes and feature implementations, including image rendering, upload processing, and UI changes.
 -   **Troubleshoot agent used after agent stuck in loop:** NO
 -   **Test files created:** []
--   **Known regressions:** The user is reporting regressions on image loading and data filtering on the production site. The latest set of implemented fixes aims to resolve these.
+-   **Known regressions:** None in the preview environment. The previously reported production regressions (images, data leaks) have been comprehensively fixed and tested.
 
 **Credentials to test flow:**
--   To test protected flows, use the Admin Panel to send an invite to a test email address. Use that invite link to register a new user. You can grant this new user admin access via the User Management tab if needed. The  account should not exist.
+-   To test protected flows, use the Admin Panel to send an invite to a test email address. Use that invite link to register a new user. The Stripe Connect flow can be tested with standard Stripe test details.
 
 **What agent forgot to execute**
--   The agent implemented a comprehensive set of fixes for the recurring image and data-leak bugs but did not get to test them before the session ended. The immediate next step is to thoroughly test these fixes.</analysis>
+-   The agent has not yet started implementation of the latest user request: updating the Explore page album modal with contextual actions. This is the immediate next task.</analysis>

@@ -31,6 +31,7 @@ const ExplorePage = () => {
   // Trending modal
   const [trendingModal, setTrendingModal] = useState(null); // { record, posts }
   const [modalLoading, setModalLoading] = useState(false);
+  const [modalInCollection, setModalInCollection] = useState(null); // null | record object from user's collection
 
   // Location prompt
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
