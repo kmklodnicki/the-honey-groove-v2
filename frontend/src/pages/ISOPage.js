@@ -163,6 +163,27 @@ const ISOPage = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  // Prefill listing form from query params (from record detail "List for Sale" / "Offer to Trade")
+  useEffect(() => {
+    const createType = searchParams.get('create');
+    if (createType === 'sale' || createType === 'trade') {
+      const artist = searchParams.get('artist') || '';
+      const album = searchParams.get('album') || '';
+      const discogs_id = searchParams.get('discogs_id') || '';
+      const cover_url = searchParams.get('cover_url') || '';
+      const year = searchParams.get('year') || '';
+      setActiveTab('shop');
+      setShowCreate('listing');
+      setListArtist(artist);
+      setListAlbum(album);
+      setListType(createType === 'trade' ? 'TRADE' : 'BUY_NOW');
+      if (discogs_id) {
+        setSelectedRelease({ discogs_id: parseInt(discogs_id), artist, title: album, cover_url, year: year ? parseInt(year) : null });
+      }
+      setSearchParams({}, { replace: true });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Discogs search with debounce
   const searchTimerRef = useRef(null);
   const searchDiscogs = (query) => {
@@ -257,7 +278,7 @@ const ISOPage = () => {
       if (photo.url) { urls.push(photo.url); continue; }
       const formData = new FormData(); formData.append('file', photo.file);
       const resp = await axios.post(`${API}/upload`, formData, { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' } });
-      urls.push(resp.data.path);
+      urls.push(resp.data.url || `${API}/files/serve/${resp.data.path}`);
     }
     return urls;
   };

@@ -96,8 +96,10 @@ async def get_hidden_user_ids() -> list:
     hidden = await db.users.find(
         {"$or": [
             {"is_hidden": True},
+            {"is_test": True},
             {"email": {"$regex": "@(test|example)\\.com$", "$options": "i"}},
             {"username": {"$regex": "^(demo|test)", "$options": "i"}},
+            {"username": "demo"},
         ]},
         {"_id": 0, "id": 1}
     ).to_list(100)

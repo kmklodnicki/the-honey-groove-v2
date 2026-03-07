@@ -114,8 +114,7 @@ const SettingsPage = () => {
       });
 
       // Get the public URL from the response
-      const uploadedPath = response.data.path;
-      const publicUrl = `https://integrations.emergentagent.com/objstore/api/v1/storage/public/${uploadedPath}`;
+      const publicUrl = response.data.url || `${API}/files/serve/${response.data.path}`;
       
       setAvatarPreview(publicUrl);
       toast.success('photo uploaded. click save to apply.');

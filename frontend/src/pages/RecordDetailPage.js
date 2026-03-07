@@ -6,7 +6,7 @@ import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import {
   Disc, Users, BarChart3, Heart, Clock, ArrowLeft,
-  Loader2, Calendar, Music2, Play, User, TrendingUp
+  Loader2, Calendar, Music2, Play, User, TrendingUp, ShoppingBag, ArrowRightLeft
 } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { toast } from 'sonner';
@@ -167,6 +167,31 @@ const RecordDetailPage = () => {
           </div>
           <p className="text-xs text-muted-foreground mt-2">Based on Discogs marketplace data</p>
         </Card>
+      )}
+
+      {/* List / Trade action buttons (only for record owner) */}
+      {isOwner && (
+        <div className="flex gap-3 mb-8" data-testid="listing-actions">
+          <Button
+            variant="outline"
+            className="flex-1 h-11 gap-2 border-amber-400 text-amber-700 hover:bg-amber-50 hover:border-amber-500"
+            onClick={() => navigate(`/honeypot?create=sale&artist=${encodeURIComponent(record.artist)}&album=${encodeURIComponent(record.title)}&discogs_id=${record.discogs_id || ''}&cover_url=${encodeURIComponent(record.cover_url || '')}&year=${record.year || ''}`)}
+            data-testid="list-for-sale-btn"
+          >
+            <ShoppingBag className="w-4 h-4" />
+            List for Sale
+          </Button>
+          <Button
+            variant="outline"
+            className="flex-1 h-11 gap-2 border-stone-300 text-stone-700 hover:bg-stone-50 hover:border-stone-400"
+            style={{ background: 'rgba(255,246,230,0.5)' }}
+            onClick={() => navigate(`/honeypot?create=trade&artist=${encodeURIComponent(record.artist)}&album=${encodeURIComponent(record.title)}&discogs_id=${record.discogs_id || ''}&cover_url=${encodeURIComponent(record.cover_url || '')}&year=${record.year || ''}`)}
+            data-testid="offer-to-trade-btn"
+          >
+            <ArrowRightLeft className="w-4 h-4" />
+            Offer to Trade
+          </Button>
+        </div>
       )}
 
       {/* Community owners */}

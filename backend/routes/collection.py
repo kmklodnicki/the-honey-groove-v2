@@ -490,7 +490,10 @@ async def upload_file(file: UploadFile = File(...), user: Dict = Depends(require
             "created_at": datetime.now(timezone.utc).isoformat()
         })
         
-        return {"file_id": file_id, "path": result["path"]}
+        # Build a public URL that routes through our proxy endpoint
+        public_url = f"{FRONTEND_URL}/api/files/serve/{result['path']}"
+        
+        return {"file_id": file_id, "path": result["path"], "url": public_url}
     except Exception as e:
         logger.error(f"Upload failed: {e}")
         raise HTTPException(status_code=500, detail="Upload failed")
@@ -507,6 +510,27 @@ async def get_file(file_id: str, user: Dict = Depends(require_auth)):
     except Exception as e:
         logger.error(f"File download failed: {e}")
         raise HTTPException(status_code=500, detail="Download failed")
+
+
+@router.get("/files/serve/{path:path}")
+async def serve_file(path: str):
+    """Public proxy endpoint to serve uploaded images from storage."""
+    if not path.startswith(f"{APP_NAME}/"):
+        raise HTTPException(status_code=403, detail="Access denied")
+    try:
+        data, content_type = get_object(path)
+        if data is None:
+            raise HTTPException(status_code=404, detail="File not found")
+        return Response(
+            content=data,
+            media_type=content_type or "image/jpeg",
+            headers={"Cache-Control": "public, max-age=31536000, immutable"},
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Serve file failed: {e}")
+        raise HTTPException(status_code=500, detail="File not found")
 
 
 # ============== DISCOGS OAUTH & IMPORT ROUTES ==============
