@@ -285,6 +285,15 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                 </div>
               )}
 
+              {/* International shipping indicator */}
+              {listing.international_shipping && (
+                <div className="px-6 py-1" data-testid="listing-intl-shipping">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-full">
+                    <Package className="w-3.5 h-3.5" /> Open to international shipping
+                  </span>
+                </div>
+              )}
+
               {/* Shipping info */}
               {seller && (seller.city || seller.region) && (
                 <div className="px-6 py-2 text-xs text-muted-foreground" data-testid="listing-shipping">

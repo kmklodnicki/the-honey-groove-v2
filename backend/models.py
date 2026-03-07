@@ -279,6 +279,7 @@ class ListingCreate(BaseModel):
     description: Optional[str] = None
     photo_urls: List[str] = Field(..., min_length=1, max_length=10)
     insured: Optional[bool] = None
+    international_shipping: Optional[bool] = False
 
 class ListingResponse(BaseModel):
     id: str
@@ -296,6 +297,7 @@ class ListingResponse(BaseModel):
     description: Optional[str] = None
     photo_urls: List[str] = []
     insured: Optional[bool] = None
+    international_shipping: Optional[bool] = False
     offplatform_flagged: Optional[bool] = None
     status: str = "ACTIVE"
     created_at: str

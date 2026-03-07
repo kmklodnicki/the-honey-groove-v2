@@ -155,6 +155,7 @@ const ISOPage = () => {
   const [sellerStats, setSellerStats] = useState(null);
   const [showInsurancePrompt, setShowInsurancePrompt] = useState(false);
   const [insuranceChoice, setInsuranceChoice] = useState(null);
+  const [internationalShipping, setInternationalShipping] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -242,6 +243,7 @@ const ISOPage = () => {
     listPhotos.forEach(p => p.preview && URL.revokeObjectURL(p.preview));
     setListPhotos([]); setUploadingPhotos(false); setPricingAssist(null);
     setShowInsurancePrompt(false); setInsuranceChoice(null);
+    setInternationalShipping(false);
   };
 
   const openModal = (type) => {
@@ -344,6 +346,7 @@ const ISOPage = () => {
         description: listDesc || null,
         photo_urls: photoUrls,
         insured: insuranceChoice,
+        international_shipping: internationalShipping,
       }, { headers: { Authorization: `Bearer ${token}` }});
       toast.success('listing posted.');
       closeModal(); fetchData();
@@ -794,6 +797,24 @@ const ISOPage = () => {
                   </div>
                 )}
 
+                {/* International Shipping */}
+                <div className="space-y-1.5">
+                  <label className="flex items-center gap-2.5 cursor-pointer group" data-testid="international-shipping-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={internationalShipping}
+                      onChange={(e) => setInternationalShipping(e.target.checked)}
+                      className="w-4 h-4 rounded border-honey/50 text-honey accent-[#E8A820] cursor-pointer"
+                    />
+                    <span className="text-sm text-foreground group-hover:text-[#C8861A] transition-colors">Open to international shipping</span>
+                  </label>
+                  {internationalShipping && (
+                    <p className="text-xs text-muted-foreground ml-6.5 pl-[26px]">
+                      Tip: if you offer international shipping, make sure to bake the shipping cost into your listing price.
+                    </p>
+                  )}
+                </div>
+
                 <Button onClick={submitListing} disabled={submitting || listPhotos.length === 0 || (manualMode && (!listArtist || !listAlbum)) || (!manualMode && !selectedRelease) || (sellerStats && sellerStats.completed_transactions < 3 && parseFloat(listPrice) > 150)}
                   className="w-full bg-honey text-vinyl-black hover:bg-honey-amber rounded-full" data-testid="list-form-submit">
                   {submitting ? (<><Loader2 className="w-4 h-4 animate-spin mr-2" />{uploadingPhotos ? 'Uploading photos...' : 'Posting...'}</>) : (<><Tag className="w-4 h-4 mr-2" />{listType === 'TRADE' ? 'List for Trade' : `List for $${listPrice || '0'}`}</>)}
@@ -1008,9 +1029,10 @@ const ListingCard = ({ listing, currentUserId, onProposeTrade, onBuyNow, onMakeO
       <div className="flex-1 min-w-0">
         <p className="font-heading text-sm font-bold truncate leading-tight">{listing.album}</p>
         <p className="text-xs text-muted-foreground truncate">{listing.artist}{listing.year ? ` (${listing.year})` : ''}</p>
-        <div className="flex items-center gap-1.5 mt-1">
+        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
           {listing.condition && <span className="text-[10px] text-muted-foreground bg-honey/10 px-1.5 py-0.5 rounded-full">{listing.condition}</span>}
           <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${tc.color}`}>{tc.label}</span>
+          {listing.international_shipping && <span className="text-[10px] text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded-full border border-blue-200" data-testid={`listing-intl-${listing.id}`}>Intl Shipping</span>}
         </div>
         {listing.user && (
           <div className="flex items-center gap-1 mt-0.5">

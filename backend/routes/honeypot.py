@@ -150,6 +150,7 @@ async def create_listing(data: ListingCreate, user: Dict = Depends(require_auth)
         "description": data.description,
         "photo_urls": data.photo_urls,
         "insured": data.insured,
+        "international_shipping": data.international_shipping or False,
         "offplatform_flagged": offplatform_flagged,
         "status": "ACTIVE",
         "created_at": now
