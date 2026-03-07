@@ -236,6 +236,8 @@ COMPLETED → Mandatory rating before next trade
 
 123. **Data Cleanup** — Deleted 3 orphan posts with no type. Purged all test accounts created during testing. Only real user (katieintheafterglow) and hidden admin remain. (Mar 2026)
 
+124. **Global Search Overhaul** — Complete rewrite of search functionality. New unified backend endpoint GET /api/search/unified searches records (from collections), collectors, posts, AND Honeypot listings simultaneously using per-word regex matching. Relevancy scoring: exact match (100) > starts-with (60) > word boundary (40) > contains (20). Separate non-blocking GET /api/search/discogs for external Discogs catalog results. Frontend shows all content types in single scrollable view with section headers (Records, Collectors, Honeypot Listings, Posts) with counts. Fuzzy matching: "tay swift" finds Taylor Swift. Speed: avg 115ms (target was 300ms). Database indexes on records.artist, records.title, listings.artist+album, posts.caption+content. Empty state: "no results for [query]" with bee emoji. Batch queries for user data (no N+1). (Mar 2026)
+
 ## Upcoming Tasks
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
 - **P2: Refactor ISOPage.js** — Break monolithic 3-tab component

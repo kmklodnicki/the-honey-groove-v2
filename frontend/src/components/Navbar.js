@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
-import { Dialog, DialogContent } from '../components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog';
 import { Home, Search, User, LogOut, Settings, Library, ShoppingBag, ArrowRightLeft, Bell, Check, MessageCircle, Globe, HelpCircle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import GlobalSearch from './GlobalSearch';
@@ -269,7 +269,7 @@ const Navbar = () => {
     {/* Global Search Dialog */}
     <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
       <DialogContent className="sm:max-w-2xl max-h-[80vh] p-0 overflow-hidden [&>button:last-child]:hidden" aria-describedby="global-search-desc">
-        <div className="sr-only"><span>Search</span></div>
+        <DialogTitle className="sr-only">Search</DialogTitle>
         <span id="global-search-desc" className="sr-only">Search records, collectors, and posts</span>
         <GlobalSearch onClose={() => setSearchOpen(false)} />
       </DialogContent>
