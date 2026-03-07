@@ -196,11 +196,11 @@ const ExplorePage = () => {
         ) : (
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
             {trendingCollections.map((r, idx) => (
-              <div key={r.discogs_id || idx} className="flex-shrink-0 w-40" data-testid={`trending-collection-${r.discogs_id || idx}`}>
-                <div className="aspect-square rounded-xl overflow-hidden bg-honey/10 mb-2 shadow-sm relative group">
+              <button key={r.discogs_id || idx} onClick={() => openTrendingModal(r)} className="flex-shrink-0 w-40 text-left group" data-testid={`trending-collection-${r.discogs_id || idx}`}>
+                <div className="aspect-square rounded-xl overflow-hidden bg-honey/10 mb-2 shadow-sm relative group-hover:shadow-md transition-shadow">
                   <AlbumArt src={r.cover_url} alt="" className="w-full h-full object-cover" />
                   <button
-                    onClick={() => addToWantlist(r.artist, r.title, r.discogs_id, r.cover_url, r.year)}
+                    onClick={(e) => { e.stopPropagation(); addToWantlist(r.artist, r.title, r.discogs_id, r.cover_url, r.year); }}
                     className="absolute bottom-2 right-2 bg-white/90 hover:bg-white rounded-full p-1.5 shadow opacity-0 group-hover:opacity-100 transition-opacity"
                     data-testid={`add-wantlist-tc-${r.discogs_id || idx}`}>
                     <Plus className="w-4 h-4 text-honey-amber" />
@@ -209,7 +209,7 @@ const ExplorePage = () => {
                 <p className="text-sm font-medium truncate">{r.title}</p>
                 <p className="text-xs text-muted-foreground truncate">{r.artist}</p>
                 {r.have > 0 && <p className="text-[10px] text-muted-foreground">owned by {r.have.toLocaleString()} collectors</p>}
-              </div>
+              </button>
             ))}
           </div>
         )}
@@ -222,7 +222,8 @@ const ExplorePage = () => {
         ) : (
           <div className="space-y-2">
             {mostWanted.map((r, idx) => (
-              <div key={`${r.artist}-${r.album}`} className="flex items-center gap-3 py-2 px-1 rounded-lg hover:bg-honey/5 transition-colors" data-testid={`most-wanted-${idx}`}>
+              <button key={`${r.artist}-${r.album}`} onClick={() => openTrendingModal({ ...r, title: r.album })}
+                className="flex items-center gap-3 py-2 px-1 rounded-lg hover:bg-honey/5 transition-colors w-full text-left" data-testid={`most-wanted-${idx}`}>
                 <span className="text-sm font-heading text-honey-amber w-6 text-right shrink-0">{idx + 1}</span>
                 <AlbumArt src={r.cover_url} alt="" className="w-10 h-10 rounded-lg object-cover" />
                 <div className="flex-1 min-w-0">
@@ -231,12 +232,12 @@ const ExplorePage = () => {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="text-xs text-red-500 font-medium">{r.want_count} {r.want_count === 1 ? 'want' : 'wants'}</span>
-                  <button onClick={() => addToWantlist(r.artist, r.album, r.discogs_id, r.cover_url, r.year)}
+                  <span onClick={(e) => { e.stopPropagation(); addToWantlist(r.artist, r.album, r.discogs_id, r.cover_url, r.year); }}
                     className="text-purple-600 hover:bg-purple-50 rounded-full p-1" data-testid={`want-${idx}`}>
                     <Plus className="w-4 h-4" />
-                  </button>
+                  </span>
                 </div>
-              </div>
+              </button>
             ))}
           </div>
         )}

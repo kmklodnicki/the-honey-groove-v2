@@ -280,6 +280,10 @@ COMPLETED → Mandatory rating before next trade
 
 145. **Clickable Album Cards in Hive Feed** — All tagged album cards in Hive feed posts are now clickable. Created `AlbumLink` wrapper component in `PostCards.js` that wraps album cards with `Link to={/record/{id}}`. Applied to: NowSpinningCard, NewHaulCard (each item), AddedToCollectionCard, NoteCard (tagged record), VinylMoodCard, and default fallback. Gracefully renders plain div if record has no id. (Mar 2026)
 
+146. **Clickable Hidden Gems** — Collection page Hidden Gems cards now wrapped in `<Link to="/record/{gem.id}">` so tapping navigates to the record detail page. (Mar 2026)
+
+147. **Clickable Trending in Collections & Most Wanted** — Explore page Trending in Collections and Most Wanted items now clickable via `openTrendingModal()`, opening the existing trending record detail modal/overlay. "Add to wantlist" buttons use `e.stopPropagation()` to prevent modal from opening on wantlist click. (Mar 2026)
+
 ## Upcoming Tasks
 - **P1: Weekly Wax Email** — Ensure scheduled "Weekly Wax" email is correctly configured (Sundays 12:00 PM ET)
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
