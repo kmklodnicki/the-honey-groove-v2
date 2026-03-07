@@ -320,7 +320,11 @@ COMPLETED → Mandatory rating before next trade
 
 165. **AlbumArt Import Fix** — Added missing `import AlbumArt from '../components/AlbumArt'` to AddRecordPage.js. The component was used on line 142 but never imported, causing "Uncaught ReferenceError: AlbumArt is not defined" in production builds. (Mar 2026)
 
-166. **Notification Click Navigation** — Each notification type now navigates to its correct destination on click: NEW_FOLLOWER→`/profile/{username}`, POST_LIKED/NEW_COMMENT→`/hive`, TRADE_PROPOSED/ACCEPTED→`/trades`, SALE_COMPLETED/PURCHASE_COMPLETED/WANTLIST_MATCH→`/honeypot/listing/{id}`, ORDER_SHIPPED/CANCELLED→`/orders`, WAX_REPORT→`/wax-reports`, BINGO→`/nectar`, MOOD_BOARD→`/profile/{username}`, streak_nudge→`/hive`, PRICE_ALERT→`/honeypot`, STRIPE_CONNECTED→`/settings`, dm→`/messages`. Also expanded NOTIF_ICONS map with all types. 100% test pass rate (19/19). (Mar 2026)
+166. **Notification Click Navigation** — Each notification type now navigates to its correct destination on click. Expanded NOTIF_ICONS map with all types. (Mar 2026)
+167. **Comment Replies + @Mentions** — Nested replies (parent_id), @username autocomplete (GET /api/mention-search), MENTION + COMMENT_REPLY notifications. CommentItem.js extracted as separate component. (Mar 2026)
+168. **Comment Likes** — Heart/like toggle on comments (POST/DELETE /api/comments/{id}/like), COMMENT_LIKED notification. (Mar 2026)
+169. **Navbar Logo Size** — 140px desktop / 120px mobile via inline styles. (Mar 2026)
+170. **Admin Pin Post** — POST/DELETE /api/posts/{id}/pin, one pinned post at a time, pinned indicator, feed shows pinned first. (Mar 2026)
 
 ## Upcoming Tasks
 - **P1: Weekly Wax Email** — Ensure scheduled "Weekly Wax" email is correctly configured (Sundays 12:00 PM ET)
