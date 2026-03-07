@@ -7,7 +7,7 @@ import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Skeleton } from '../components/ui/skeleton';
-import { Heart, MessageCircle, Share2, Disc, Send, ChevronDown, ChevronUp, MoreVertical, Trash2, Play, ShoppingBag, ArrowRightLeft, Plus, Calendar, Music2, Loader2, Pin, Reply } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Disc, Send, ChevronDown, ChevronUp, MoreVertical, Trash2, Play, ShoppingBag, ArrowRightLeft, Plus, Calendar, Music2, Loader2, Pin, Reply, ArrowUp } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -392,6 +392,9 @@ const HivePage = () => {
   const [posts, setPosts] = useState([]);
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [showBackToTop, setShowBackToTop] = useState(false);
   // Following filter works because /feed already returns only followed users + self
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
@@ -421,12 +424,16 @@ const HivePage = () => {
 
   const headers = { Authorization: `Bearer ${token}` };
 
+  const FEED_LIMIT = 50;
+
   const fetchFeed = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/feed`, {
+        params: { limit: FEED_LIMIT, skip: 0 },
         headers: { Authorization: `Bearer ${token}` }
       });
       let feedPosts = response.data;
+      setHasMore(feedPosts.length >= FEED_LIMIT);
       // If a specific post is targeted from notification but not in feed, fetch and inject it
       if (targetPostId && !feedPosts.find(p => p.id === targetPostId)) {
         try {
@@ -443,6 +450,24 @@ const HivePage = () => {
       setLoading(false);
     }
   }, [API, token, targetPostId]);
+
+  const loadMore = async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      const response = await axios.get(`${API}/feed`, {
+        params: { limit: FEED_LIMIT, skip: posts.length },
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const newPosts = response.data;
+      setHasMore(newPosts.length >= FEED_LIMIT);
+      setPosts(prev => [...prev, ...newPosts]);
+    } catch {
+      toast.error('could not load more posts.');
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const fetchRecords = useCallback(async () => {
     try {
@@ -461,6 +486,15 @@ const HivePage = () => {
       setShowOnboarding(true);
     }
   }, [fetchFeed, fetchRecords, user]);
+
+  // Back to top scroll listener
+  useEffect(() => {
+    const onScroll = () => setShowBackToTop(window.scrollY > 300);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   const filteredPosts = React.useMemo(() => {
     if (activeFilter === 'all') return posts;
@@ -701,6 +735,37 @@ const HivePage = () => {
             />
           ))}
         </div>
+      )}
+
+      {/* View Older Posts */}
+      {filteredPosts.length > 0 && hasMore && activeFilter === 'all' && (
+        <div className="flex justify-center pt-6 pb-2">
+          <Button
+            onClick={loadMore}
+            disabled={loadingMore}
+            variant="outline"
+            className="rounded-full border-honey/50 text-honey-amber hover:bg-honey/10 px-6"
+            data-testid="load-more-btn"
+          >
+            {loadingMore ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+            {loadingMore ? 'loading...' : 'view older posts'}
+          </Button>
+        </div>
+      )}
+      {filteredPosts.length > 0 && !hasMore && activeFilter === 'all' && (
+        <p className="text-center text-sm text-muted-foreground pt-6 pb-2 italic">you've reached the beginning of the hive.</p>
+      )}
+
+      {/* Back to Top */}
+      {showBackToTop && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 z-40 w-10 h-10 rounded-full bg-vinyl-black text-white shadow-lg flex items-center justify-center hover:bg-vinyl-black/80 transition-all animate-in fade-in slide-in-from-bottom-4 duration-300"
+          data-testid="back-to-top-btn"
+          aria-label="Back to top"
+        >
+          <ArrowUp className="w-5 h-5" />
+        </button>
       )}
 
       {/* Album Detail Modal */}
