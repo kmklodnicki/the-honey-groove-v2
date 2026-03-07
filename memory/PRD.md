@@ -316,6 +316,8 @@ COMPLETED → Mandatory rating before next trade
 
 163. **Order Cancellation + Buyer DM** — Sellers can cancel orders from My Sales tab with confirmation dialog ("Are you sure? This cannot be undone."). On confirm, POST /api/orders/{order_id}/cancel issues Stripe refund (reverse_transfer), sets status to CANCELLED, re-activates listing, notifies buyer. Buyers see "Need to cancel? Send the seller a message." with DM link. Cancelled orders are dimmed with no action buttons. (Mar 2026)
 
+164. **Invite Link Route Fix (P0)** — Added `/invite/:code` frontend route in App.js that redirects to `/join?code={code}`. Previously, users visiting `/invite/{code}` (shown in invite emails) were caught by the catch-all route and sent to `/`. InviteRedirect component uses `useParams()` to extract the code and `Navigate` with `replace` to redirect. 100% test pass rate (11/11 backend+frontend tests). (Mar 2026)
+
 ## Upcoming Tasks
 - **P1: Weekly Wax Email** — Ensure scheduled "Weekly Wax" email is correctly configured (Sundays 12:00 PM ET)
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
