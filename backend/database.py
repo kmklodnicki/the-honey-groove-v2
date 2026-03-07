@@ -214,6 +214,17 @@ def get_discogs_release(release_id: int) -> Optional[Dict]:
         if resp.status_code == 200:
             data = resp.json()
             artists = ", ".join([a.get("name", "") for a in data.get("artists", [])])
+            # Extract label + catno from first label entry
+            labels_raw = data.get("labels", [])
+            label_names = [l.get("name", "") for l in labels_raw]
+            catno = labels_raw[0].get("catno", "") if labels_raw else ""
+            # Extract color variant from formats text field
+            color_variant = None
+            for fmt in data.get("formats", []):
+                ftext = fmt.get("text", "")
+                if ftext:
+                    color_variant = ftext
+                    break
             return {
                 "discogs_id": data.get("id"),
                 "artist": artists or "Unknown",
@@ -224,8 +235,10 @@ def get_discogs_release(release_id: int) -> Optional[Dict]:
                 "cover_url": data.get("images", [{}])[0].get("uri") if data.get("images") else None,
                 "tracklist": [{"position": t.get("position"), "title": t.get("title"), "duration": t.get("duration")} for t in data.get("tracklist", [])],
                 "format": [f.get("name", "") for f in data.get("formats", [])],
-                "label": [l.get("name", "") for l in data.get("labels", [])],
+                "label": label_names,
+                "catno": catno,
                 "country": data.get("country"),
+                "color_variant": color_variant,
                 "notes": data.get("notes"),
             }
     except Exception as e:

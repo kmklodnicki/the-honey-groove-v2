@@ -84,6 +84,31 @@ async def add_record(record_data: RecordCreate, user: Dict = Depends(require_aut
         spin_count=0
     )
 
+
+@router.get("/records/check-ownership")
+async def check_record_ownership(
+    discogs_id: Optional[int] = None,
+    artist: Optional[str] = None,
+    title: Optional[str] = None,
+    user: Dict = Depends(require_auth),
+):
+    """Check if the current user has a record in their collection."""
+    if not discogs_id and not (artist and title):
+        return {"in_collection": False, "record_id": None}
+
+    query = {"user_id": user["id"]}
+    if discogs_id:
+        query["discogs_id"] = discogs_id
+    else:
+        query["artist"] = {"$regex": f"^{artist}$", "$options": "i"}
+        query["title"] = {"$regex": f"^{title}$", "$options": "i"}
+
+    record = await db.records.find_one(query, {"_id": 0, "id": 1})
+    if record:
+        return {"in_collection": True, "record_id": record["id"]}
+    return {"in_collection": False, "record_id": None}
+
+
 @router.get("/records", response_model=List[RecordResponse])
 async def get_my_records(user: Dict = Depends(require_auth)):
     pipeline = [
