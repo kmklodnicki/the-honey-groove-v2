@@ -292,6 +292,10 @@ COMPLETED → Mandatory rating before next trade
 
 151. **Clickable Album Cards in Hive Feed** — Album cards in Hive feed posts (Now Spinning, New Haul, Added to Collection, Vinyl Mood, Note) now open an Album Detail Modal on click instead of navigating to a page. Modal shows album info, variant details (year, label, catno, format, country, color variant), and contextual action buttons based on collection ownership (same as Explore page modal). AlbumLink component updated to accept optional onAlbumClick callback. (Mar 2026)
 
+152. **Onboarding Step 2: Now Spinning Search** — Replaced the Select dropdown with a full Discogs search input for the "Now Spinning" record. Users can search for any record or quick-pick from thumbnails of records added in Step 1. Selected record shows as a preview card with clear button. Post button dynamically changes text. Fixed bug where selectedRecord used discogs_id instead of collection record_id. (Mar 2026)
+
+153. **ISOs Page: Removed Search/Found Counts** — Removed the "Searching for X" and "Found X" stat section from the ISO tab. Tab badge still shows count. (Mar 2026)
+
 ## Upcoming Tasks
 - **P1: Weekly Wax Email** — Ensure scheduled "Weekly Wax" email is correctly configured (Sundays 12:00 PM ET)
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
