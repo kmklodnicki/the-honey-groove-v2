@@ -3,6 +3,7 @@ from fastapi.security import HTTPAuthorizationCredentials
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone, timedelta
 import uuid
+import re
 
 from database import db, require_auth, get_current_user, security, logger, create_notification, get_hidden_user_ids
 from services.email_service import send_email_fire_and_forget
@@ -313,6 +314,7 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
         haul=haul_data,
         iso=iso_data,
         is_liked=is_liked,
+        is_pinned=post.get("is_pinned", False),
         content=post.get("content")
     )
 
@@ -326,12 +328,20 @@ async def get_feed(user: Dict = Depends(require_auth), limit: int = 50, skip: in
     hidden_ids = await get_hidden_user_ids()
     visible_ids = [uid for uid in following_ids if uid not in hidden_ids]
     
+    # Fetch pinned post first (if any)
+    pinned_post = await db.posts.find_one({"is_pinned": True}, {"_id": 0})
+    pinned_resp = None
+    if pinned_post and pinned_post.get("user_id") not in hidden_ids:
+        pinned_resp = await build_post_response(pinned_post, user["id"])
+
     posts = await db.posts.find(
-        {"user_id": {"$in": visible_ids}},
+        {"user_id": {"$in": visible_ids}, "is_pinned": {"$ne": True}},
         {"_id": 0}
     ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
     
     result = []
+    if pinned_resp and skip == 0:
+        result.append(pinned_resp)
     for post in posts:
         resp = await build_post_response(post, user["id"])
         result.append(resp)
@@ -643,11 +653,13 @@ async def add_comment(post_id: str, comment_data: CommentCreate, user: Dict = De
         "post_id": post_id,
         "user_id": user["id"],
         "content": comment_data.content,
+        "parent_id": comment_data.parent_id,
         "created_at": now
     }
     
     await db.comments.insert_one(comment_doc)
     
+    # Notify post owner about comment (if not self)
     if post.get("user_id") != user["id"]:
         await create_notification(post["user_id"], "NEW_COMMENT", "New comment on your post",
                                   f"@{user.get('username','?')} commented on your post",
@@ -658,21 +670,138 @@ async def add_comment(post_id: str, comment_data: CommentCreate, user: Dict = De
             tpl = email_tpl.new_comment(user.get("username", "?"), post_type, comment_data.content[:200], "https://thehoneygroove.com/hive")
             await send_email_fire_and_forget(post_owner["email"], tpl["subject"], tpl["html"])
 
+    # If replying, notify the parent comment author (if not self)
+    if comment_data.parent_id:
+        parent = await db.comments.find_one({"id": comment_data.parent_id}, {"_id": 0})
+        if parent and parent.get("user_id") != user["id"]:
+            await create_notification(parent["user_id"], "COMMENT_REPLY", "Someone replied to your comment",
+                                      f"@{user.get('username','?')} replied to your comment",
+                                      {"post_id": post_id, "comment_id": comment_id})
+
+    # Parse @mentions and notify mentioned users (if not self or already notified)
+    mentions = set(re.findall(r'@(\w+)', comment_data.content))
+    notified_ids = set()
+    if post.get("user_id") != user["id"]:
+        notified_ids.add(post["user_id"])
+    if comment_data.parent_id and parent and parent.get("user_id") != user["id"]:
+        notified_ids.add(parent["user_id"])
+    for username in mentions:
+        mentioned_user = await db.users.find_one({"username": username.lower()}, {"_id": 0, "id": 1, "username": 1})
+        if mentioned_user and mentioned_user["id"] != user["id"] and mentioned_user["id"] not in notified_ids:
+            await create_notification(mentioned_user["id"], "MENTION", "You were mentioned in a comment",
+                                      f"@{user.get('username','?')} mentioned you in a comment",
+                                      {"post_id": post_id, "comment_id": comment_id})
+            notified_ids.add(mentioned_user["id"])
+
     user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url")}
     
-    return CommentResponse(**comment_doc, user=user_data)
+    return CommentResponse(**comment_doc, user=user_data, likes_count=0, is_liked=False)
 
-@router.get("/posts/{post_id}/comments", response_model=List[CommentResponse])
+@router.get("/posts/{post_id}/comments")
 async def get_comments(post_id: str, current_user: Optional[Dict] = Depends(get_current_user)):
-    comments = await db.comments.find({"post_id": post_id}, {"_id": 0}).sort("created_at", 1).to_list(100)
+    comments = await db.comments.find({"post_id": post_id}, {"_id": 0}).sort("created_at", 1).to_list(200)
     
-    result = []
+    current_user_id = current_user["id"] if current_user else None
+    
+    # Build response for all comments with like info
+    comment_map = {}
     for comment in comments:
         comment_user = await db.users.find_one({"id": comment["user_id"]}, {"_id": 0, "password_hash": 0})
         user_data = {"id": comment_user["id"], "username": comment_user["username"], "avatar_url": comment_user.get("avatar_url")} if comment_user else None
-        result.append(CommentResponse(**comment, user=user_data))
+        likes_count = await db.comment_likes.count_documents({"comment_id": comment["id"]})
+        is_liked = False
+        if current_user_id:
+            is_liked = await db.comment_likes.find_one({"comment_id": comment["id"], "user_id": current_user_id}) is not None
+        resp = {
+            **comment,
+            "user": user_data,
+            "likes_count": likes_count,
+            "is_liked": is_liked,
+            "replies": [],
+        }
+        comment_map[comment["id"]] = resp
+
+    # Build nested structure: top-level comments with replies
+    top_level = []
+    for cid, c in comment_map.items():
+        pid = c.get("parent_id")
+        if pid and pid in comment_map:
+            comment_map[pid]["replies"].append(c)
+        else:
+            top_level.append(c)
     
-    return result
+    return top_level
+
+
+# ============== COMMENT LIKES ==============
+
+@router.post("/comments/{comment_id}/like")
+async def like_comment(comment_id: str, user: Dict = Depends(require_auth)):
+    comment = await db.comments.find_one({"id": comment_id}, {"_id": 0})
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    existing = await db.comment_likes.find_one({"comment_id": comment_id, "user_id": user["id"]})
+    if existing:
+        raise HTTPException(status_code=400, detail="Already liked")
+    now = datetime.now(timezone.utc).isoformat()
+    await db.comment_likes.insert_one({
+        "id": str(uuid.uuid4()),
+        "comment_id": comment_id,
+        "user_id": user["id"],
+        "created_at": now,
+    })
+    # Notify comment author
+    if comment.get("user_id") != user["id"]:
+        await create_notification(comment["user_id"], "COMMENT_LIKED", "Someone liked your comment",
+                                  f"@{user.get('username','?')} liked your comment",
+                                  {"post_id": comment.get("post_id"), "comment_id": comment_id})
+    return {"message": "Comment liked"}
+
+@router.delete("/comments/{comment_id}/like")
+async def unlike_comment(comment_id: str, user: Dict = Depends(require_auth)):
+    result = await db.comment_likes.delete_one({"comment_id": comment_id, "user_id": user["id"]})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=400, detail="Not liked")
+    return {"message": "Comment unliked"}
+
+
+# ============== @MENTION USER SEARCH ==============
+
+@router.get("/mention-search")
+async def search_users_mention(q: str = "", user: Dict = Depends(require_auth)):
+    """Search users for @mention autocomplete."""
+    if not q or len(q) < 1:
+        return []
+    hidden_ids = await get_hidden_user_ids()
+    regex = {"$regex": f"^{q}", "$options": "i"}
+    users = await db.users.find(
+        {"username": regex, "id": {"$nin": hidden_ids}},
+        {"_id": 0, "id": 1, "username": 1, "avatar_url": 1}
+    ).limit(8).to_list(8)
+    return users
+
+
+# ============== ADMIN PIN POST ==============
+
+@router.post("/posts/{post_id}/pin")
+async def pin_post(post_id: str, user: Dict = Depends(require_auth)):
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    post = await db.posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    # Unpin any currently pinned post
+    await db.posts.update_many({"is_pinned": True}, {"$set": {"is_pinned": False}})
+    # Pin this post
+    await db.posts.update_one({"id": post_id}, {"$set": {"is_pinned": True}})
+    return {"message": "Post pinned"}
+
+@router.delete("/posts/{post_id}/pin")
+async def unpin_post(post_id: str, user: Dict = Depends(require_auth)):
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    await db.posts.update_one({"id": post_id}, {"$set": {"is_pinned": False}})
+    return {"message": "Post unpinned"}
 
 
 # ============== SHARE GRAPHICS ROUTES ==============

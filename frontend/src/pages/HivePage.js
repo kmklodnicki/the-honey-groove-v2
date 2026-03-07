@@ -7,7 +7,7 @@ import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Skeleton } from '../components/ui/skeleton';
-import { Heart, MessageCircle, Share2, Disc, Send, ChevronDown, ChevronUp, MoreVertical, Trash2, Play, ShoppingBag, ArrowRightLeft, Plus, Calendar, Music2, Loader2 } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Disc, Send, ChevronDown, ChevronUp, MoreVertical, Trash2, Play, ShoppingBag, ArrowRightLeft, Plus, Calendar, Music2, Loader2, Pin, Reply } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -60,7 +60,9 @@ const BeeAvatar = ({ user, className = "h-10 w-10" }) => {
   );
 };
 
-const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, token, API, currentUserId }) => {
+import CommentThread from '../components/CommentItem';
+
+const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, onPin, token, API, currentUserId, isAdmin }) => {
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
@@ -68,6 +70,12 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
   const [submitting, setSubmitting] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [replyTo, setReplyTo] = useState(null); // { id, username }
+  const [mentionQuery, setMentionQuery] = useState('');
+  const [mentionResults, setMentionResults] = useState([]);
+  const [showMentions, setShowMentions] = useState(false);
+  const commentInputRef = React.useRef(null);
+  const mentionTimerRef = React.useRef(null);
 
   const isOwner = post.user_id === currentUserId;
 
@@ -98,17 +106,84 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
     setSubmitting(true);
     try {
       const response = await axios.post(`${API}/posts/${post.id}/comments`,
-        { post_id: post.id, content: newComment.trim() },
+        { post_id: post.id, content: newComment.trim(), parent_id: replyTo?.id || null },
         { headers: { Authorization: `Bearer ${token}` }}
       );
-      setComments([...comments, response.data]);
+      if (replyTo) {
+        // Add reply nested under parent
+        setComments(prev => prev.map(c => {
+          if (c.id === replyTo.id) {
+            return { ...c, replies: [...(c.replies || []), response.data] };
+          }
+          return c;
+        }));
+      } else {
+        setComments(prev => [...prev, { ...response.data, replies: [] }]);
+      }
       setNewComment('');
+      setReplyTo(null);
+      setShowMentions(false);
       onCommentCountChange(post.id, 1);
     } catch (error) {
       toast.error('something went wrong. please try again.');
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleReply = (comment) => {
+    setReplyTo({ id: comment.id, username: comment.user?.username });
+    setNewComment(`@${comment.user?.username} `);
+    setTimeout(() => commentInputRef.current?.focus(), 50);
+  };
+
+  const handleCommentLike = async (commentId, isLiked) => {
+    try {
+      if (isLiked) {
+        await axios.delete(`${API}/comments/${commentId}/like`, { headers: { Authorization: `Bearer ${token}` } });
+      } else {
+        await axios.post(`${API}/comments/${commentId}/like`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      }
+      const updateLike = (list) => list.map(c => {
+        if (c.id === commentId) return { ...c, is_liked: !isLiked, likes_count: isLiked ? c.likes_count - 1 : c.likes_count + 1 };
+        if (c.replies?.length) return { ...c, replies: updateLike(c.replies) };
+        return c;
+      });
+      setComments(prev => updateLike(prev));
+    } catch { /* ignore */ }
+  };
+
+  const handleCommentInputChange = (e) => {
+    const val = e.target.value;
+    setNewComment(val);
+    // Detect @mention trigger
+    const cursorPos = e.target.selectionStart;
+    const textBeforeCursor = val.slice(0, cursorPos);
+    const atMatch = textBeforeCursor.match(/@(\w*)$/);
+    if (atMatch && atMatch[1].length >= 1) {
+      const query = atMatch[1];
+      setMentionQuery(query);
+      if (mentionTimerRef.current) clearTimeout(mentionTimerRef.current);
+      mentionTimerRef.current = setTimeout(async () => {
+        try {
+          const res = await axios.get(`${API}/mention-search`, { params: { q: query }, headers: { Authorization: `Bearer ${token}` } });
+          setMentionResults(res.data);
+          setShowMentions(res.data.length > 0);
+        } catch { setShowMentions(false); }
+      }, 200);
+    } else {
+      setShowMentions(false);
+    }
+  };
+
+  const insertMention = (username) => {
+    const cursorPos = commentInputRef.current?.selectionStart || newComment.length;
+    const textBeforeCursor = newComment.slice(0, cursorPos);
+    const textAfterCursor = newComment.slice(cursorPos);
+    const replaced = textBeforeCursor.replace(/@(\w*)$/, `@${username} `);
+    setNewComment(replaced + textAfterCursor);
+    setShowMentions(false);
+    setTimeout(() => commentInputRef.current?.focus(), 50);
   };
 
   const handleShare = async (format) => {
@@ -135,6 +210,12 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
 
   return (
     <Card className="border-honey/30 overflow-hidden hover:shadow-honey transition-shadow" data-testid={`post-${post.id}`}>
+      {/* Pinned indicator */}
+      {post.is_pinned && (
+        <div className="px-4 py-1.5 bg-honey/10 border-b border-honey/20 flex items-center gap-1.5 text-xs text-honey-amber" data-testid={`pinned-${post.id}`}>
+          <Pin className="w-3 h-3" /> pinned
+        </div>
+      )}
       {/* Header */}
       <div className="p-4 pb-2">
         <div className="flex items-center gap-3">
@@ -153,7 +234,7 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
             </div>
             <p className="text-xs text-muted-foreground">{timeAgo}</p>
           </div>
-          {isOwner && (
+          {(isOwner || isAdmin) && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="p-1.5 rounded-full hover:bg-honey/10 transition-colors" data-testid={`post-menu-${post.id}`}>
@@ -161,9 +242,16 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
                 </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setDeleteDialogOpen(true)} className="text-red-600" data-testid={`delete-post-${post.id}`}>
-                  <Trash2 className="mr-2 h-4 w-4" /> Delete Post
-                </DropdownMenuItem>
+                {isOwner && (
+                  <DropdownMenuItem onClick={() => setDeleteDialogOpen(true)} className="text-red-600" data-testid={`delete-post-${post.id}`}>
+                    <Trash2 className="mr-2 h-4 w-4" /> Delete Post
+                  </DropdownMenuItem>
+                )}
+                {isAdmin && (
+                  <DropdownMenuItem onClick={() => onPin(post.id, post.is_pinned)} data-testid={`pin-post-${post.id}`}>
+                    <Pin className="mr-2 h-4 w-4" /> {post.is_pinned ? 'Unpin Post' : 'Pin to Top'}
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -204,48 +292,55 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
             <div className="py-4 text-center text-sm text-muted-foreground">Loading comments...</div>
           ) : (
             <>
-              <div className="py-3 space-y-3 max-h-64 overflow-y-auto">
+              <div className="py-3 space-y-3 max-h-80 overflow-y-auto">
                 {comments.length === 0 ? (
                   <p className="text-center text-sm text-muted-foreground py-2">No comments yet. Be the first!</p>
                 ) : (
                   comments.map(comment => (
-                    <div key={comment.id} className="flex gap-2" data-testid={`comment-${comment.id}`}>
-                      <Link to={`/profile/${comment.user?.username}`}>
-                        <BeeAvatar user={comment.user} className="h-8 w-8" />
-                      </Link>
-                      <div className="flex-1 bg-white rounded-lg px-3 py-2">
-                        <div className="flex items-center gap-2">
-                          <Link to={`/profile/${comment.user?.username}`} className="font-medium text-sm hover:underline">
-                            @{comment.user?.username}
-                          </Link>
-                          <span className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
-                          </span>
-                        </div>
-                        <p className="text-sm mt-1">{comment.content}</p>
-                      </div>
-                    </div>
+                    <CommentThread key={comment.id} comment={comment} onReply={handleReply} onLike={handleCommentLike} />
                   ))
                 )}
               </div>
-              <form onSubmit={handleSubmitComment} className="flex gap-2 pt-2 border-t border-honey/20">
-                <Input
-                  placeholder="Write a comment..."
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  className="flex-1 h-9 text-sm border-honey/50"
-                  data-testid={`comment-input-${post.id}`}
-                />
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={submitting || !newComment.trim()}
-                  className="bg-honey text-vinyl-black hover:bg-honey-amber h-9 px-3"
-                  data-testid={`comment-submit-${post.id}`}
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
-              </form>
+              {/* Reply indicator */}
+              {replyTo && (
+                <div className="flex items-center gap-2 pt-2 text-xs text-honey-amber">
+                  <Reply className="w-3 h-3" />
+                  <span>replying to @{replyTo.username}</span>
+                  <button onClick={() => { setReplyTo(null); setNewComment(''); }} className="ml-auto text-muted-foreground hover:text-red-500">cancel</button>
+                </div>
+              )}
+              {/* Mention autocomplete */}
+              <div className="relative">
+                {showMentions && (
+                  <div className="absolute bottom-full left-0 right-0 bg-white border border-honey/30 rounded-lg shadow-lg z-10 max-h-40 overflow-y-auto mb-1" data-testid="mention-dropdown">
+                    {mentionResults.map(u => (
+                      <button key={u.id} onClick={() => insertMention(u.username)} className="w-full flex items-center gap-2 px-3 py-2 hover:bg-honey/10 text-sm text-left" data-testid={`mention-${u.username}`}>
+                        <BeeAvatar user={u} className="h-6 w-6" />
+                        <span>@{u.username}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <form onSubmit={handleSubmitComment} className="flex gap-2 pt-2 border-t border-honey/20">
+                  <Input
+                    ref={commentInputRef}
+                    placeholder={replyTo ? `Reply to @${replyTo.username}...` : "Write a comment..."}
+                    value={newComment}
+                    onChange={handleCommentInputChange}
+                    className="flex-1 h-9 text-sm border-honey/50"
+                    data-testid={`comment-input-${post.id}`}
+                  />
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={submitting || !newComment.trim()}
+                    className="bg-honey text-vinyl-black hover:bg-honey-amber h-9 px-3"
+                    data-testid={`comment-submit-${post.id}`}
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </form>
+              </div>
             </>
           )}
         </div>
@@ -362,6 +457,22 @@ const HivePage = () => {
       toast.success('post deleted.');
     } catch {
       toast.error('could not delete post. try again.');
+    }
+  };
+
+  const handlePinPost = async (postId, isPinned) => {
+    try {
+      if (isPinned) {
+        await axios.delete(`${API}/posts/${postId}/pin`, { headers });
+        setPosts(prev => prev.map(p => p.id === postId ? { ...p, is_pinned: false } : p));
+        toast.success('post unpinned.');
+      } else {
+        await axios.post(`${API}/posts/${postId}/pin`, {}, { headers });
+        setPosts(prev => prev.map(p => ({ ...p, is_pinned: p.id === postId })));
+        toast.success('post pinned to top.');
+      }
+    } catch {
+      toast.error('could not update pin status.');
     }
   };
 
@@ -515,9 +626,11 @@ const HivePage = () => {
               onCommentCountChange={updatePostCommentCount}
               onDelete={handleDeletePost}
               onAlbumClick={handleAlbumClick}
+              onPin={handlePinPost}
               token={token}
               API={API}
               currentUserId={user?.id}
+              isAdmin={user?.is_admin}
             />
           ))}
         </div>

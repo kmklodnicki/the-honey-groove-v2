@@ -68,7 +68,8 @@ const Navbar = () => {
             <img 
               src="/logo-wordmark.png" 
               alt="the Honey Groove" 
-              className="h-[40px] group-hover:scale-105 transition-transform"
+              style={{width: '140px', minWidth: '140px'}}
+              className="group-hover:scale-105 transition-transform object-contain"
             />
           </Link>
 
@@ -196,7 +197,7 @@ const Navbar = () => {
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 h-[52px] bg-[#FAF6EE] border-b border-[#C8861A]/10" data-testid="mobile-top-bar">
         <div className="flex items-center h-full px-3">
           <Link to="/hive" className="shrink-0 mr-auto overflow-visible">
-            <img src="/logo-wordmark.png" alt="the Honey Groove" style={{minWidth: '160px', width: '160px'}} className="h-[48px] object-contain" />
+            <img src="/logo-wordmark.png" alt="the Honey Groove" style={{minWidth: '120px', width: '120px'}} className="object-contain" />
           </Link>
           <div className="flex items-center gap-2 shrink-0">
             <DMBadge />
@@ -419,7 +420,8 @@ const NotificationBell = () => {
     ORDER_SHIPPED: '📦', ORDER_CANCELLED: '❌', PRICE_ALERT: '💲',
     WAX_REPORT: '📊', BINGO: '🎯', MOOD_BOARD: '🎨',
     streak_nudge: '🐝', streak_nudge_urgent: '🐝', dm: '💬',
-    HOLD_DISPUTE: '⚠️',
+    HOLD_DISPUTE: '⚠️', COMMENT_LIKED: '❤️', COMMENT_REPLY: '💬',
+    MENTION: '🔔',
   };
 
   return (

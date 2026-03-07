@@ -173,12 +173,14 @@ class PostResponse(BaseModel):
     haul: Optional[Dict[str, Any]] = None
     iso: Optional[Dict[str, Any]] = None
     is_liked: bool = False
+    is_pinned: bool = False
     content: Optional[str] = None
 
 # Comment Models
 class CommentCreate(BaseModel):
     post_id: str
     content: str
+    parent_id: Optional[str] = None  # For replies
 
 class CommentResponse(BaseModel):
     id: str
@@ -186,7 +188,11 @@ class CommentResponse(BaseModel):
     user_id: str
     content: str
     created_at: str
+    parent_id: Optional[str] = None
     user: Optional[Dict[str, Any]] = None
+    likes_count: int = 0
+    is_liked: bool = False
+    replies: Optional[List[Any]] = None
 
 # ISO Models
 class ISOCreate(BaseModel):
