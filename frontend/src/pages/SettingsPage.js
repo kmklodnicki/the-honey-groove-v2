@@ -9,7 +9,7 @@ import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Switch } from '../components/ui/switch';
-import { ArrowLeft, Save, LogOut, Camera, Loader2, Mail, HelpCircle, ExternalLink, MessageSquare, Flag, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, LogOut, Camera, Loader2, Mail, HelpCircle, ExternalLink, MessageSquare, Flag, Trash2, CreditCard, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
 import {
@@ -33,11 +33,18 @@ const SettingsPage = () => {
   const [nlLoading, setNlLoading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [stripeStatus, setStripeStatus] = useState(null); // { stripe_connected, stripe_account_id }
+  const [stripeLoading, setStripeLoading] = useState(true);
+  const [stripeConnecting, setStripeConnecting] = useState(false);
 
   useEffect(() => {
     axios.get(`${API}/newsletter/status`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => setNlSubscribed(r.data.subscribed))
       .catch(() => {});
+    axios.get(`${API}/stripe/status`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => setStripeStatus(r.data))
+      .catch(() => setStripeStatus({ stripe_connected: false, stripe_account_id: null }))
+      .finally(() => setStripeLoading(false));
   }, [API, token]);
 
   const toggleNewsletter = async () => {
@@ -125,6 +132,21 @@ const SettingsPage = () => {
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const handleStripeConnect = async () => {
+    setStripeConnecting(true);
+    try {
+      const resp = await axios.post(`${API}/stripe/connect`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      if (resp.data.url) {
+        window.location.href = resp.data.url;
+      }
+    } catch (err) {
+      const msg = err.response?.data?.detail || 'could not start Stripe setup. try again.';
+      toast.error(msg);
+    } finally {
+      setStripeConnecting(false);
+    }
   };
 
   const handleDeleteAccount = async () => {
@@ -326,6 +348,59 @@ const SettingsPage = () => {
               data-testid="newsletter-toggle"
             />
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Payments & Payouts */}
+      <Card className="border-honey/30 mb-6" data-testid="payments-settings-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><CreditCard className="w-5 h-5 text-[#635bff]" /> Payments & Payouts</CardTitle>
+          <CardDescription>connect Stripe to sell records and receive payouts.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {stripeLoading ? (
+            <div className="flex items-center gap-3 py-2">
+              <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">checking connection...</span>
+            </div>
+          ) : stripeStatus?.stripe_connected ? (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-green-700">Stripe Connected</p>
+                  <p className="text-xs text-muted-foreground">you can list items for sale and receive payouts.</p>
+                </div>
+              </div>
+              <a
+                href="https://dashboard.stripe.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-[#635bff] hover:underline flex items-center gap-1"
+                data-testid="stripe-dashboard-link"
+              >
+                Dashboard <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium">Not connected</p>
+                <p className="text-xs text-muted-foreground">connect Stripe to start selling on the Honeypot.</p>
+              </div>
+              <Button
+                onClick={handleStripeConnect}
+                disabled={stripeConnecting}
+                className="bg-[#635bff] text-white hover:bg-[#5146e0] rounded-full gap-2"
+                data-testid="stripe-connect-btn"
+              >
+                {stripeConnecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CreditCard className="w-4 h-4" />}
+                Connect Stripe
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 

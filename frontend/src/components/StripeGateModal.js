@@ -23,7 +23,7 @@ const StripeGateModal = ({ open, onClose }) => {
             className="w-full bg-[#635bff] text-white hover:bg-[#5146e0] rounded-full gap-2"
             data-testid="stripe-gate-connect-btn"
           >
-            <CreditCard className="w-4 h-4" /> set up stripe
+            <CreditCard className="w-4 h-4" /> go to settings
           </Button>
           <button onClick={onClose} className="text-xs text-muted-foreground hover:underline" data-testid="stripe-gate-dismiss">
             maybe later
