@@ -38,6 +38,8 @@ import VerifyEmailPage from "./pages/VerifyEmailPage";
 import ExploreSeeAllPage from "./pages/ExploreSeeAllPage";
 import WaxReportPage from "./pages/WaxReportPage";
 import WaxReportHistory from "./pages/WaxReportHistory";
+import StripeConnectReturnPage from "./pages/StripeConnectReturnPage";
+import StripeConnectRefreshPage from "./pages/StripeConnectRefreshPage";
 
 // Auth guards — loading is ALWAYS false. No gates.
 // If user exists (from JWT decode or login), render children.
@@ -97,6 +99,8 @@ function AppContent() {
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
+      <Route path="/stripe/connect/return" element={<StripeConnectReturnPage />} />
+      <Route path="/stripe/connect/refresh" element={<StripeConnectRefreshPage />} />
 
       {/* Protected routes */}
       <Route path="/explore" element={<ProtectedRoute><AppLayout><ExplorePage /></AppLayout></ProtectedRoute>} />

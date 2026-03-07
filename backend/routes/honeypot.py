@@ -369,25 +369,25 @@ async def stripe_connect_onboarding(request: Request, user: Dict = Depends(requi
             "stripe_onboarding_started": now,
         }})
 
-    # Create an account link for onboarding
-    host_url = FRONTEND_URL or str(request.base_url).rstrip("/")
+    # Create an account link for onboarding — return/refresh point to FRONTEND routes
+    frontend_url = FRONTEND_URL or str(request.base_url).rstrip("/")
     account_link = stripe_sdk.AccountLink.create(
         account=account_id,
-        refresh_url=f"{host_url}/api/stripe/connect/refresh?user_id={user['id']}",
-        return_url=f"{host_url}/api/stripe/connect/return?user_id={user['id']}",
+        refresh_url=f"{frontend_url}/stripe/connect/refresh?user_id={user['id']}",
+        return_url=f"{frontend_url}/stripe/connect/return?user_id={user['id']}",
         type="account_onboarding",
     )
 
     return {"url": account_link.url, "account_id": account_id}
 
 
-@router.get("/stripe/connect/return")
-async def stripe_connect_return(user_id: str):
+@router.get("/stripe/connect/verify")
+async def stripe_connect_verify(user_id: str):
+    """Called by frontend after Stripe redirects back. Verifies account and updates DB."""
     u = await db.users.find_one({"id": user_id}, {"_id": 0})
     if not u:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # Verify the account is fully onboarded
     stripe_sdk.api_key = STRIPE_API_KEY
     account_id = u.get("stripe_account_id")
     charges_enabled = False
@@ -409,28 +409,41 @@ async def stripe_connect_return(user_id: str):
         await create_notification(user_id, "STRIPE_CONNECTED", "Stripe Connected!",
                                   "Your Stripe account is now active. You can receive payments for marketplace sales.")
 
+    return {"charges_enabled": charges_enabled, "account_id": account_id}
+
+
+@router.get("/stripe/connect/return")
+async def stripe_connect_return(user_id: str):
+    """Legacy return endpoint — redirects to frontend return page."""
     frontend_url = FRONTEND_URL or "https://thehoneygroove.com"
     from starlette.responses import RedirectResponse
-    return RedirectResponse(url=f"{frontend_url}/profile/{u['username']}?stripe=connected")
+    return RedirectResponse(url=f"{frontend_url}/stripe/connect/return?user_id={user_id}")
 
 
 @router.get("/stripe/connect/refresh")
 async def stripe_connect_refresh(user_id: str, request: Request):
-    """Stripe redirects here if the onboarding link expires. Generate a new one."""
+    """Legacy refresh endpoint — redirects to frontend refresh page."""
+    frontend_url = FRONTEND_URL or "https://thehoneygroove.com"
+    from starlette.responses import RedirectResponse
+    return RedirectResponse(url=f"{frontend_url}/stripe/connect/refresh?user_id={user_id}")
+
+
+@router.get("/stripe/connect/refresh-link")
+async def stripe_connect_refresh_link(user_id: str, request: Request):
+    """Generate a new onboarding link for an existing account."""
     u = await db.users.find_one({"id": user_id}, {"_id": 0})
     if not u or not u.get("stripe_account_id"):
         raise HTTPException(status_code=404, detail="User not found or no Stripe account")
 
     stripe_sdk.api_key = STRIPE_API_KEY
-    host_url = FRONTEND_URL or str(request.base_url).rstrip("/")
+    frontend_url = FRONTEND_URL or str(request.base_url).rstrip("/")
     account_link = stripe_sdk.AccountLink.create(
         account=u["stripe_account_id"],
-        refresh_url=f"{host_url}/api/stripe/connect/refresh?user_id={user_id}",
-        return_url=f"{host_url}/api/stripe/connect/return?user_id={user_id}",
+        refresh_url=f"{frontend_url}/stripe/connect/refresh?user_id={user_id}",
+        return_url=f"{frontend_url}/stripe/connect/return?user_id={user_id}",
         type="account_onboarding",
     )
-    from starlette.responses import RedirectResponse
-    return RedirectResponse(url=account_link.url)
+    return {"url": account_link.url}
 
 
 @router.get("/stripe/status")

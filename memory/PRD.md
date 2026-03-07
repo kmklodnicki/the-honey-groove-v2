@@ -274,6 +274,8 @@ COMPLETED → Mandatory rating before next trade
 
 142. **Profile Username Overflow Fix** — Username was getting clipped on mobile. Added `minWidth: 0`, `flexShrink: 1`, `break-words` to the username h1, and `minWidth: 0` to its flex parent container. Long usernames now wrap cleanly instead of overflowing. (Mar 2026)
 
+143. **Stripe Connect Return Flow Fix** — Return after Stripe onboarding was 404ing because return/refresh URLs pointed to backend API routes with server-side redirects. Fixed by: (1) Created `StripeConnectReturnPage.js` and `StripeConnectRefreshPage.js` frontend pages, (2) Added routes `/stripe/connect/return` and `/stripe/connect/refresh` to React router as public routes, (3) Changed backend AccountLink return/refresh URLs to point to frontend routes instead of `/api/*` backend routes, (4) Added `GET /api/stripe/connect/verify` endpoint for client-side account verification, (5) Added `GET /api/stripe/connect/refresh-link` endpoint for generating new onboarding links. Return page shows verifying → success → redirects to profile with badge. (Mar 2026)
+
 ## Upcoming Tasks
 - **P1: Weekly Wax Email** — Ensure scheduled "Weekly Wax" email is correctly configured (Sundays 12:00 PM ET)
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
