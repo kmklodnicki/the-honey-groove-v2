@@ -4,9 +4,6 @@ import axios from 'axios';
 import { Dialog, DialogContent } from './ui/dialog';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from './ui/select';
 import { Textarea } from './ui/textarea';
 import { Progress } from './ui/progress';
 import { Disc, Loader2, Search, ChevronRight, ExternalLink, CheckCircle2, X } from 'lucide-react';
@@ -29,7 +26,7 @@ const OnboardingModal = ({ open, onComplete }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
-  const [addedRecords, setAddedRecords] = useState([]);
+  const [addedRecords, setAddedRecords] = useState([]); // {discogs_id, title, artist, cover_url, year, format, record_id}
 
   // Step 1: Discogs import flow
   const [showDiscogsConnect, setShowDiscogsConnect] = useState(false);
@@ -39,13 +36,17 @@ const OnboardingModal = ({ open, onComplete }) => {
   const [importProgress, setImportProgress] = useState(null);
   const [importDone, setImportDone] = useState(false);
 
-  // Step 2: First post
-  const [selectedRecord, setSelectedRecord] = useState('');
+  // Step 2: Now Spinning
+  const [spinRecord, setSpinRecord] = useState(null); // { discogs_id, title, artist, cover_url, record_id }
+  const [spinSearch, setSpinSearch] = useState('');
+  const [spinResults, setSpinResults] = useState([]);
+  const [spinSearching, setSpinSearching] = useState(false);
   const [caption, setCaption] = useState('');
   const [mood, setMood] = useState('');
 
   const searchTimerRef = useRef(null);
-  useEffect(() => { return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current); }; }, []);
+  const spinTimerRef = useRef(null);
+  useEffect(() => { return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current); if (spinTimerRef.current) clearTimeout(spinTimerRef.current); }; }, []);
 
   const searchDiscogs = useCallback((q) => {
     if (!q || q.length < 2) { setSearchResults([]); setSearchLoading(false); return; }
@@ -63,11 +64,11 @@ const OnboardingModal = ({ open, onComplete }) => {
   const addRecord = async (record) => {
     if (addedRecords.find(r => r.discogs_id === record.discogs_id)) return;
     try {
-      await axios.post(`${API}/records`, {
+      const resp = await axios.post(`${API}/records`, {
         title: record.title, artist: record.artist, cover_url: record.cover_url,
         discogs_id: record.discogs_id, year: record.year, format: Array.isArray(record.format) ? record.format.join(', ') : record.format,
       }, { headers: { Authorization: `Bearer ${token}` } });
-      setAddedRecords(prev => [...prev, record]);
+      setAddedRecords(prev => [...prev, { ...record, record_id: resp.data.id }]);
       setSearchQuery(''); setSearchResults([]);
     } catch (e) { toast.error(e.response?.data?.detail || 'Failed to add'); }
   };
@@ -133,12 +134,56 @@ const OnboardingModal = ({ open, onComplete }) => {
 
   const goStep2 = () => { setStep(2); };
 
+  // Step 2: search for a record to spin
+  const searchSpin = useCallback((q) => {
+    if (!q || q.length < 2) { setSpinResults([]); setSpinSearching(false); return; }
+    if (spinTimerRef.current) clearTimeout(spinTimerRef.current);
+    spinTimerRef.current = setTimeout(async () => {
+      setSpinSearching(true);
+      try {
+        const r = await axios.get(`${API}/discogs/search?q=${encodeURIComponent(q)}`, { headers: { Authorization: `Bearer ${token}` } });
+        setSpinResults(r.data?.slice(0, 6) || []);
+      } catch { setSpinResults([]); }
+      finally { setSpinSearching(false); }
+    }, 350);
+  }, [API, token]);
+
+  const pickSpinRecord = async (record) => {
+    // Check if already in addedRecords from Step 1
+    const existing = addedRecords.find(r => r.discogs_id === record.discogs_id);
+    if (existing?.record_id) {
+      setSpinRecord({ ...record, record_id: existing.record_id });
+    } else {
+      // Add to collection first
+      try {
+        const resp = await axios.post(`${API}/records`, {
+          title: record.title, artist: record.artist, cover_url: record.cover_url,
+          discogs_id: record.discogs_id, year: record.year, format: Array.isArray(record.format) ? record.format.join(', ') : record.format,
+        }, { headers: { Authorization: `Bearer ${token}` } });
+        setSpinRecord({ ...record, record_id: resp.data.id });
+      } catch (e) {
+        if (e.response?.status === 409) {
+          // Already in collection - fetch the record_id
+          try {
+            const check = await axios.get(`${API}/records/check-ownership?discogs_id=${record.discogs_id}`, { headers: { Authorization: `Bearer ${token}` } });
+            setSpinRecord({ ...record, record_id: check.data.record_id });
+          } catch { setSpinRecord({ ...record, record_id: null }); }
+        } else {
+          toast.error('could not add record.');
+          return;
+        }
+      }
+    }
+    setSpinSearch('');
+    setSpinResults([]);
+  };
+
   const postAndEnter = async () => {
     setSubmitting(true);
     try {
-      if (selectedRecord) {
+      if (spinRecord?.record_id) {
         await axios.post(`${API}/composer/now-spinning`, {
-          record_id: selectedRecord, caption: caption || null, mood: mood || null,
+          record_id: spinRecord.record_id, caption: caption || null, mood: mood || null,
         }, { headers: { Authorization: `Bearer ${token}` } });
       }
       await axios.put(`${API}/auth/me`, { onboarding_completed: true }, { headers: { Authorization: `Bearer ${token}` } });
@@ -323,31 +368,83 @@ const OnboardingModal = ({ open, onComplete }) => {
           <div className="space-y-4" data-testid="onboarding-step-2">
             <div className="text-center">
               <h2 className="font-heading text-2xl italic" style={{ fontFamily: '"Playfair Display", serif' }}>what's on the turntable right now?</h2>
-              <p className="text-sm text-muted-foreground mt-1">post your first Now Spinning. it only takes a second.</p>
+              <p className="text-sm text-muted-foreground mt-1">share what you're spinning. totally optional.</p>
             </div>
 
-            {addedRecords.length > 0 && (
-              <Select value={selectedRecord} onValueChange={setSelectedRecord}>
-                <SelectTrigger className="border-amber-200" data-testid="onboarding-record-select">
-                  <SelectValue placeholder="Choose a record you just added" />
-                </SelectTrigger>
-                <SelectContent>
-                  {addedRecords.map(r => (
-                    <SelectItem key={r.discogs_id} value={String(r.discogs_id)}>{r.artist} · {r.title}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            {/* Selected record preview */}
+            {spinRecord && (
+              <div className="flex items-center gap-3 bg-amber-50 rounded-xl p-3" data-testid="onboarding-spin-selected">
+                {spinRecord.cover_url ? (
+                  <AlbumArt src={spinRecord.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow-sm" />
+                ) : (
+                  <div className="w-14 h-14 rounded-lg bg-amber-100 flex items-center justify-center"><Disc className="w-6 h-6 text-amber-400" /></div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm truncate">{spinRecord.title}</p>
+                  <p className="text-xs text-muted-foreground truncate">{spinRecord.artist}</p>
+                </div>
+                <button onClick={() => setSpinRecord(null)} className="p-1 rounded-full hover:bg-amber-100 transition-colors" data-testid="onboarding-spin-clear">
+                  <X className="w-4 h-4 text-muted-foreground" />
+                </button>
+              </div>
             )}
 
-            <div className="flex flex-wrap gap-1.5">
-              {MOOD_OPTIONS.map(m => (
-                <button key={m} onClick={() => setMood(mood === m ? '' : m)}
-                  className={`px-3 py-1.5 rounded-full text-xs transition-all ${mood === m ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-700 hover:bg-amber-100'}`}
-                  data-testid={`onboarding-mood-${m.toLowerCase().replace(/\s/g, '-')}`}
-                >
-                  {m}
-                </button>
-              ))}
+            {/* Search for record */}
+            {!spinRecord && (
+              <>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="search for a record..."
+                    value={spinSearch}
+                    onChange={e => { setSpinSearch(e.target.value); searchSpin(e.target.value); }}
+                    className="pl-9 border-amber-200"
+                    data-testid="onboarding-spin-search"
+                  />
+                  {spinSearching && <Loader2 className="w-4 h-4 animate-spin absolute right-3 top-3 text-amber-400" />}
+                </div>
+
+                {spinResults.length > 0 && (
+                  <div className="border border-amber-200/50 rounded-lg max-h-48 overflow-y-auto bg-white">
+                    {spinResults.map(r => (
+                      <RecordSearchResult key={r.discogs_id} record={r} onClick={() => pickSpinRecord(r)} size="sm" testId={`onboarding-spin-result-${r.discogs_id}`} />
+                    ))}
+                  </div>
+                )}
+
+                {/* Quick picks from Step 1 */}
+                {addedRecords.length > 0 && !spinSearch && (
+                  <div data-testid="onboarding-quick-picks">
+                    <p className="text-xs text-muted-foreground mb-2">quick pick from your collection</p>
+                    <div className="flex gap-2 overflow-x-auto pb-1">
+                      {addedRecords.slice(0, 8).map((r, i) => (
+                        <button key={i} onClick={() => pickSpinRecord(r)} className="shrink-0 group" data-testid={`onboarding-quick-pick-${i}`}>
+                          {r.cover_url ? (
+                            <AlbumArt src={r.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow-sm group-hover:ring-2 ring-amber-400 transition-all" />
+                          ) : (
+                            <div className="w-14 h-14 rounded-lg bg-stone-100 flex items-center justify-center group-hover:ring-2 ring-amber-400 transition-all"><Disc className="w-5 h-5 text-stone-400" /></div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Mood */}
+            <div>
+              <p className="text-xs text-muted-foreground mb-1.5">set the mood</p>
+              <div className="flex flex-wrap gap-1.5">
+                {MOOD_OPTIONS.map(m => (
+                  <button key={m} onClick={() => setMood(mood === m ? '' : m)}
+                    className={`px-3 py-1.5 rounded-full text-xs transition-all ${mood === m ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-700 hover:bg-amber-100'}`}
+                    data-testid={`onboarding-mood-${m.toLowerCase().replace(/\s/g, '-')}`}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <Textarea
@@ -366,7 +463,7 @@ const OnboardingModal = ({ open, onComplete }) => {
               data-testid="onboarding-post-btn"
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-              post and enter the hive
+              {spinRecord ? 'post and enter the hive' : 'enter the hive'}
             </Button>
 
             <button onClick={skipAndEnter} className="w-full text-center text-xs text-muted-foreground hover:text-amber-600 transition-colors" data-testid="onboarding-skip">

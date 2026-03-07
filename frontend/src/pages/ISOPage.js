@@ -398,7 +398,6 @@ const ISOPage = () => {
     return true;
   });
   const openCount = isos.filter(i => i.status === 'OPEN').length;
-  const foundCount = isos.filter(i => i.status === 'FOUND').length;
 
   const handleSetPriceAlert = async (isoId, targetPrice) => {
     try {
@@ -545,18 +544,6 @@ const ISOPage = () => {
 
         {/* ====== ISO TAB ====== */}
         <TabsContent value="iso">
-          {/* Stats */}
-          <div className="flex gap-4 mb-4">
-            <div className="bg-[#FAF6EE] border border-[#C8861A]/20 px-4 py-2 rounded-lg">
-              <span className="text-2xl font-heading text-[#C8861A]">{openCount}</span>
-              <span className="text-xs text-[#C8861A] ml-1">searching</span>
-            </div>
-            <div className="bg-[#FAF6EE] border border-[#C8861A]/20 px-4 py-2 rounded-lg">
-              <span className="text-2xl font-heading text-[#C8861A]">{foundCount}</span>
-              <span className="text-xs text-[#C8861A] ml-1">found</span>
-            </div>
-          </div>
-
           {/* Your Hunt List */}
           <h3 className="font-heading text-lg text-vinyl-black mb-3" data-testid="your-wantlist-title">Your Wantlist</h3>
           <div className="flex gap-3 mb-4">
