@@ -132,14 +132,7 @@ const ExplorePage = () => {
       <h1 className="font-heading text-3xl text-vinyl-black mb-1">Explore</h1>
       <p className="text-sm text-muted-foreground mb-8">discover what the community is into.</p>
 
-      {/* Collector Bingo */}
-      <section className="mb-10" data-testid="bingo-section">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-lg">🎲</span>
-          <h2 className="font-heading text-lg text-vinyl-black">Collector Bingo</h2>
-        </div>
-        <CollectorBingo />
-      </section>
+      {/* Collector Bingo — hidden until feature is ready */}
 
       {/* 1. Trending in the Hive */}
       <ExploreSection icon={<TrendingUp className="w-4 h-4 text-honey-amber" />} title="Trending in the Hive" testId="trending-section" seeAllTo="/explore/trending">
