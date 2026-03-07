@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Button } from '../components/ui/button';
@@ -62,8 +62,8 @@ const BeeAvatar = ({ user, className = "h-10 w-10" }) => {
 
 import CommentThread from '../components/CommentItem';
 
-const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, onPin, token, API, currentUserId, isAdmin }) => {
-  const [showComments, setShowComments] = useState(false);
+const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, onPin, token, API, currentUserId, isAdmin, highlighted, autoOpenComments }) => {
+  const [showComments, setShowComments] = useState(!!autoOpenComments);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [loadingComments, setLoadingComments] = useState(false);
@@ -76,6 +76,7 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
   const [showMentions, setShowMentions] = useState(false);
   const commentInputRef = React.useRef(null);
   const mentionTimerRef = React.useRef(null);
+  const cardRef = useRef(null);
 
   const isOwner = post.user_id === currentUserId;
 
@@ -99,6 +100,18 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
     if (!showComments && comments.length === 0) fetchComments();
     setShowComments(!showComments);
   };
+
+  // Auto-scroll and auto-open comments when targeted from notification
+  useEffect(() => {
+    if (highlighted && cardRef.current) {
+      setTimeout(() => {
+        cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 300);
+    }
+    if (autoOpenComments && comments.length === 0) {
+      fetchComments();
+    }
+  }, [highlighted, autoOpenComments]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmitComment = async (e) => {
     e.preventDefault();
@@ -209,7 +222,7 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
   };
 
   return (
-    <Card className="border-honey/30 overflow-hidden hover:shadow-honey transition-shadow" data-testid={`post-${post.id}`}>
+    <Card ref={cardRef} className={`border-honey/30 overflow-hidden hover:shadow-honey transition-all ${highlighted ? 'ring-2 ring-honey shadow-lg shadow-honey/20' : ''}`} data-testid={`post-${post.id}`}>
       {/* Pinned indicator */}
       {post.is_pinned && (
         <div className="px-4 py-1.5 bg-honey/10 border-b border-honey/20 flex items-center gap-1.5 text-xs text-honey-amber" data-testid={`pinned-${post.id}`}>
@@ -375,11 +388,15 @@ const HivePage = () => {
   usePageTitle('The Hive');
   const { user, token, API } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [posts, setPosts] = useState([]);
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
+
+  const targetPostId = searchParams.get('post');
+  const targetCommentId = searchParams.get('comment');
 
   // Album detail modal state
   const [albumModal, setAlbumModal] = useState(null); // { record }
@@ -396,13 +413,23 @@ const HivePage = () => {
       const response = await axios.get(`${API}/feed`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setPosts(response.data);
+      let feedPosts = response.data;
+      // If a specific post is targeted from notification but not in feed, fetch and inject it
+      if (targetPostId && !feedPosts.find(p => p.id === targetPostId)) {
+        try {
+          const single = await axios.get(`${API}/posts/${targetPostId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          feedPosts = [single.data, ...feedPosts];
+        } catch { /* post might be deleted */ }
+      }
+      setPosts(feedPosts);
     } catch (error) {
       toast.error('something went wrong loading the hive.');
     } finally {
       setLoading(false);
     }
-  }, [API, token]);
+  }, [API, token, targetPostId]);
 
   const fetchRecords = useCallback(async () => {
     try {
@@ -631,6 +658,8 @@ const HivePage = () => {
               API={API}
               currentUserId={user?.id}
               isAdmin={user?.is_admin}
+              highlighted={post.id === targetPostId}
+              autoOpenComments={post.id === targetPostId && !!targetCommentId}
             />
           ))}
         </div>

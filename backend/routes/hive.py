@@ -571,6 +571,16 @@ async def search_posts(q: str = Query(..., min_length=2), user: Dict = Depends(r
     return results
 
 
+# ============== GET SINGLE POST ==============
+
+@router.get("/posts/{post_id}", response_model=PostResponse)
+async def get_post(post_id: str, user: Dict = Depends(require_auth)):
+    post = await db.posts.find_one({"id": post_id}, {"_id": 0})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    return await build_post_response(post, user["id"])
+
+
 # ============== DELETE POST ==============
 
 @router.delete("/posts/{post_id}")

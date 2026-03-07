@@ -394,8 +394,12 @@ const NotificationBell = () => {
     else if (d.follower_username) navigate(`/profile/${d.follower_username}`);
     // Orders (shipped/cancelled) → orders page
     else if (d.order_id) navigate('/orders');
-    // Post interactions → specific post's record or hive
-    else if (d.post_id) navigate('/hive');
+    // Post interactions → specific post with optional comment
+    else if (d.post_id) {
+      const params = new URLSearchParams({ post: d.post_id });
+      if (d.comment_id) params.set('comment', d.comment_id);
+      navigate(`/hive?${params.toString()}`);
+    }
     // Listings (sale, purchase, wantlist match) → honeypot listing detail
     else if (d.listing_id) navigate(`/honeypot/listing/${d.listing_id}`);
     // Wax report → wax reports page
