@@ -26,9 +26,9 @@ const AlbumLink = ({ record, children, className = '', onAlbumClick }) => {
         <div
           role="button"
           tabIndex={0}
-          onClick={() => onAlbumClick(record)}
+          onClick={(e) => { e.stopPropagation(); onAlbumClick(record); }}
           onKeyDown={(e) => e.key === 'Enter' && onAlbumClick(record)}
-          className={`block hover:opacity-90 transition-opacity cursor-pointer ${className}`}
+          className={`block hover:opacity-80 active:scale-[0.98] transition-all cursor-pointer ${className}`}
           data-testid={`album-link-${record.id || record.discogs_id}`}
         >
           {children}
@@ -37,7 +37,7 @@ const AlbumLink = ({ record, children, className = '', onAlbumClick }) => {
     }
     if (record.id) {
       return (
-        <Link to={`/record/${record.id}`} className={`block hover:opacity-90 transition-opacity ${className}`} data-testid={`album-link-${record.id}`}>
+        <Link to={`/record/${record.id}`} className={`block hover:opacity-80 transition-opacity cursor-pointer ${className}`} data-testid={`album-link-${record.id}`}>
           {children}
         </Link>
       );
@@ -137,25 +137,38 @@ const NewHaulCard = ({ post, onAlbumClick }) => {
 };
 
 // ISO card body
-const ISOCard = ({ post }) => {
+const ISOCard = ({ post, onAlbumClick }) => {
   const iso = post.iso;
   if (!iso) return <p className="text-sm">{post.caption}</p>;
+  // Construct a record-like object from ISO data for AlbumLink
+  const isoRecord = { title: iso.album, artist: iso.artist, discogs_id: iso.discogs_id, cover_url: iso.cover_url, year: iso.year };
   return (
-    <div className="bg-[#FAF6EE] border border-[#C8861A]/15 rounded-xl p-4" data-testid="iso-card">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="font-heading text-lg">{iso.album}</p>
-          <p className="text-sm text-muted-foreground">{iso.artist}</p>
+    <AlbumLink record={isoRecord} onAlbumClick={onAlbumClick}>
+      <div className="bg-[#FAF6EE] border border-[#C8861A]/15 rounded-xl p-4 hover:border-[#C8861A]/40 transition-colors" data-testid="iso-card">
+        <div className="flex items-start gap-3">
+          {iso.cover_url ? (
+            <AlbumArt src={iso.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow-sm shrink-0" />
+          ) : (
+            <div className="w-14 h-14 rounded-lg bg-[#C8861A]/10 flex items-center justify-center shrink-0"><Search className="w-5 h-5 text-[#C8861A]/50" /></div>
+          )}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="font-heading text-lg truncate">{iso.album}</p>
+                <p className="text-sm text-muted-foreground truncate">{iso.artist}</p>
+              </div>
+              <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border shrink-0 ${iso.status === 'FOUND' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-transparent text-[#C8861A] border-[#C8861A]'}`}>{iso.status}</span>
+            </div>
+            {iso.pressing_notes && <p className="text-xs mt-1 text-[#8A6B4A]">Pressing: {iso.pressing_notes}</p>}
+            {iso.condition_pref && <p className="text-xs text-[#8A6B4A]">Condition: {iso.condition_pref}</p>}
+            {(iso.target_price_min || iso.target_price_max) && (
+              <p className="text-xs text-[#8A6B4A] mt-0.5">Budget: {iso.target_price_min ? `$${iso.target_price_min}` : '?'} – {iso.target_price_max ? `$${iso.target_price_max}` : '?'}</p>
+            )}
+          </div>
         </div>
-        <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${iso.status === 'FOUND' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-transparent text-[#C8861A] border-[#C8861A]'}`}>{iso.status}</span>
+        {post.caption && <p className="text-sm mt-3">{post.caption}</p>}
       </div>
-      {iso.pressing_notes && <p className="text-xs mt-2 text-[#8A6B4A]">Pressing: {iso.pressing_notes}</p>}
-      {iso.condition_pref && <p className="text-xs text-[#8A6B4A]">Condition: {iso.condition_pref}</p>}
-      {(iso.target_price_min || iso.target_price_max) && (
-        <p className="text-xs text-[#8A6B4A] mt-1">Budget: {iso.target_price_min ? `$${iso.target_price_min}` : '?'} – {iso.target_price_max ? `$${iso.target_price_max}` : '?'}</p>
-      )}
-      {post.caption && <p className="text-sm mt-3">{post.caption}</p>}
-    </div>
+    </AlbumLink>
   );
 };
 
@@ -277,7 +290,7 @@ const PostCardBody = ({ post, onAlbumClick }) => {
   switch (post.post_type) {
     case 'NOW_SPINNING': return <NowSpinningCard post={post} onAlbumClick={onAlbumClick} />;
     case 'NEW_HAUL': return <NewHaulCard post={post} onAlbumClick={onAlbumClick} />;
-    case 'ISO': return <ISOCard post={post} />;
+    case 'ISO': return <ISOCard post={post} onAlbumClick={onAlbumClick} />;
     case 'NOTE': return <NoteCard post={post} onAlbumClick={onAlbumClick} />;
     case 'ADDED_TO_COLLECTION': return <AddedToCollectionCard post={post} onAlbumClick={onAlbumClick} />;
     case 'WEEKLY_WRAP': return <WeeklyWrapCard post={post} />;

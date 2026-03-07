@@ -164,7 +164,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
               <div className="flex justify-center bg-stone-50 pt-6 pb-4 px-6">
                 <div className="relative max-w-[480px] w-full">
                   <AlbumArt
-                    src={listing.cover_url || photos[0]}
+                    src={photos[0] || listing.cover_url}
                     alt={listing.album}
                     className="w-full aspect-square object-cover rounded-2xl shadow-lg"
                     data-testid="listing-modal-art"
