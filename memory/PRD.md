@@ -314,6 +314,8 @@ COMPLETED → Mandatory rating before next trade
 
 162. **Orders Page (My Orders + My Sales)** — New `/orders` page accessible from Navbar dropdown. Two tabs: "My Orders" (buyer purchases) and "My Sales" (seller transactions). Each row shows: order number, album art + name, buyer/seller username, price, payment status badge, shipping status badge, tracking info. Sellers can update shipping/tracking inline via ShippingEditor (status dropdown + carrier + tracking number). Backend: GET /api/orders/purchases, GET /api/orders/sales (enriched with listing + user details), PUT /api/orders/{order_id}/shipping (seller-only, validates status, notifies buyer on ship). (Mar 2026)
 
+163. **Order Cancellation + Buyer DM** — Sellers can cancel orders from My Sales tab with confirmation dialog ("Are you sure? This cannot be undone."). On confirm, POST /api/orders/{order_id}/cancel issues Stripe refund (reverse_transfer), sets status to CANCELLED, re-activates listing, notifies buyer. Buyers see "Need to cancel? Send the seller a message." with DM link. Cancelled orders are dimmed with no action buttons. (Mar 2026)
+
 ## Upcoming Tasks
 - **P1: Weekly Wax Email** — Ensure scheduled "Weekly Wax" email is correctly configured (Sundays 12:00 PM ET)
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
