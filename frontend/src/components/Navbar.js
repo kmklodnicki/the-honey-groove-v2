@@ -192,7 +192,7 @@ const Navbar = () => {
       <div className="md:hidden fixed top-0 left-0 right-0 z-50 h-[52px] bg-[#FAF6EE] border-b border-[#C8861A]/10" data-testid="mobile-top-bar">
         <div className="flex items-center h-full px-3">
           <Link to="/hive" className="shrink-0 mr-auto overflow-visible">
-            <img src="/logo-wordmark.png" alt="the Honey Groove" className="h-[40px] w-auto min-w-[140px] max-w-[160px] object-contain" />
+            <img src="/logo-wordmark.png" alt="the Honey Groove" style={{minWidth: '160px', width: '160px'}} className="h-[40px] object-contain" />
           </Link>
           <div className="flex items-center gap-2 shrink-0">
             <DMBadge />

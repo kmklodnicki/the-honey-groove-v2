@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import { resolveImageUrl } from '../utils/imageUrl';
 import AlbumArt from './AlbumArt';
+import PhotoLightbox from './PhotoLightbox';
 
 const CONDITION_MAP = {
   'Mint': 'bg-emerald-100 text-emerald-800 border-emerald-200',
@@ -218,7 +219,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                 <div className="px-6 py-3 border-t border-stone-100" data-testid="listing-photos">
                   <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
                     {photos.map((url, i) => (
-                      <button key={i} onClick={() => setExpandedPhoto(url)}
+                      <button key={i} onClick={() => setExpandedPhoto(i)}
                         className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border border-stone-200 hover:border-amber-300 transition-colors"
                         data-testid={`listing-photo-thumb-${i}`}>
                         <img src={resolveImageUrl(url)} alt="" className="w-full h-full object-cover" />
@@ -400,17 +401,13 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
         </DialogContent>
       </Dialog>
 
-      {/* Expanded photo overlay */}
-      {expandedPhoto && (
-        <div className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center"
-          onClick={() => setExpandedPhoto(null)} data-testid="listing-photo-expanded">
-          <button onClick={() => setExpandedPhoto(null)}
-            className="absolute top-4 right-4 text-white/80 hover:text-white">
-            <X className="w-8 h-8" />
-          </button>
-          <img src={resolveImageUrl(expandedPhoto)} alt="" className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg" />
-        </div>
-      )}
+      {/* Photo Lightbox */}
+      <PhotoLightbox
+        photos={photos}
+        initialIndex={typeof expandedPhoto === 'number' ? expandedPhoto : 0}
+        open={expandedPhoto !== null}
+        onClose={() => setExpandedPhoto(null)}
+      />
     </>
   );
 };

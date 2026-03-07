@@ -12,7 +12,6 @@ import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { FollowListModal } from '../components/FollowList';
 import { usePageTitle } from '../hooks/usePageTitle';
-import { StreakBadge } from '../components/DailyPrompt';
 import { MoodBoardTab } from '../components/MoodBoardTab';
 import { resolveImageUrl } from '../utils/imageUrl';
 import AlbumArt from '../components/AlbumArt';
@@ -160,7 +159,7 @@ const ProfilePage = () => {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8" data-testid="profile-page">
       {/* Profile Header */}
-      <Card className="p-6 border-honey/30 mb-6">
+      <Card className="p-6 border-honey/30 mb-6" style={{ backgroundColor: '#FAF6EE' }}>
         <div className="flex flex-col sm:flex-row items-start gap-6">
           <Avatar className="h-24 w-24 border-4 border-honey/30">
             {profile.avatar_url && <AvatarImage src={resolveImageUrl(profile.avatar_url)} />}
@@ -172,6 +171,11 @@ const ProfilePage = () => {
           <div className="flex-1">
             <div className="flex items-center gap-3 flex-wrap">
               <h1 className="font-heading text-2xl" data-testid="profile-username">@{profile.username}</h1>
+              {promptStreak && promptStreak.streak > 0 && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-bold" data-testid="profile-streak-pill">
+                  {promptStreak.streak} day streak
+                </span>
+              )}
               {!isOwnProfile && token && (
                 <div className="flex gap-2">
                   <Button
@@ -207,7 +211,7 @@ const ProfilePage = () => {
             {profile.bio && <p className="text-sm text-muted-foreground mt-1">{profile.bio}</p>}
             {profile.setup && (
               <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1" data-testid="profile-setup">
-                🎚️ {profile.setup}
+                <Disc className="w-3 h-3" /> {profile.setup}
               </p>
             )}
             {(profile.location || profile.city || profile.region) && (
@@ -223,47 +227,39 @@ const ProfilePage = () => {
             {profile.founding_member && (
               <div className="mt-1.5 inline-block" data-testid="founding-badge">
                 <span className="italic text-xs" style={{ color: '#C8861A', fontFamily: '"DM Serif Display", serif' }}>
-                  🐝 founding member
+                  founding member
                 </span>
               </div>
             )}
 
-            {/* Stats */}
-            <div className="flex gap-6 mt-4" data-testid="profile-stats">
-              <div className="text-center">
+            {/* Stats - 2x2 grid */}
+            <div className="grid grid-cols-2 sm:flex sm:gap-6 gap-y-3 gap-x-6 mt-4" data-testid="profile-stats">
+              <div className="text-center sm:text-left">
                 <div className="font-heading text-2xl text-vinyl-black">{profile.collection_count}</div>
                 <div className="text-xs text-muted-foreground">Records</div>
               </div>
-              <button onClick={() => setFollowListType('following')} className="text-center hover:opacity-70 transition" data-testid="following-stat">
+              <button onClick={() => setFollowListType('following')} className="text-center sm:text-left hover:opacity-70 transition" data-testid="following-stat">
                 <div className="font-heading text-2xl text-vinyl-black">{profile.following_count}</div>
                 <div className="text-xs text-muted-foreground">Following</div>
               </button>
-              <button onClick={() => setFollowListType('followers')} className="text-center hover:opacity-70 transition" data-testid="followers-stat">
+              <button onClick={() => setFollowListType('followers')} className="text-center sm:text-left hover:opacity-70 transition" data-testid="followers-stat">
                 <div className="font-heading text-2xl text-vinyl-black">{profile.followers_count}</div>
                 <div className="text-xs text-muted-foreground">Followers</div>
               </button>
-              {profile.completed_transactions > 0 && (
-                <div className="text-center" data-testid="profile-transactions">
-                  <div className="font-heading text-2xl text-vinyl-black flex items-center justify-center gap-1">
-                    <ShoppingBag className="w-4 h-4 text-honey-amber" /> {profile.completed_transactions}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Sales</div>
-                </div>
-              )}
               {collectionValue && collectionValue.total_value > 0 && (
-                <div className="text-center" data-testid="profile-collection-value">
+                <div className="text-center sm:text-left" data-testid="profile-collection-value">
                   <div className="font-heading text-2xl text-honey-amber">
                     ${collectionValue.total_value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                   </div>
                   <div className="text-xs text-muted-foreground">Est. Value</div>
                 </div>
               )}
-              {promptStreak && promptStreak.streak > 0 && (
-                <div className="text-center" data-testid="profile-streak">
-                  <div className="font-heading text-2xl text-amber-600 flex items-center justify-center gap-1">
-                    🐝 {promptStreak.streak}
+              {profile.completed_transactions > 0 && (
+                <div className="text-center sm:text-left" data-testid="profile-transactions">
+                  <div className="font-heading text-2xl text-vinyl-black flex items-center justify-center sm:justify-start gap-1">
+                    <ShoppingBag className="w-4 h-4 text-honey-amber" /> {profile.completed_transactions}
                   </div>
-                  <div className="text-xs text-muted-foreground">Day Streak</div>
+                  <div className="text-xs text-muted-foreground">Sales</div>
                 </div>
               )}
             </div>
@@ -276,12 +272,7 @@ const ProfilePage = () => {
               </div>
             )}
 
-            {/* Prompt Streak */}
-            <div className="mt-2">
-              <StreakBadge username={profile.username} />
-            </div>
-
-            {/* Stripe Connect */}
+            {/* Stripe Connect - owner only */}
             {isOwnProfile && stripeStatus && (
               <div className="mt-3">
                 {stripeStatus.stripe_connected ? (

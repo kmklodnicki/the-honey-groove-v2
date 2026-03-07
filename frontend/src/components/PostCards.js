@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Disc, Package, Search, Moon, Plus, Music, Feather } from 'lucide-react';
 import AlbumArt from './AlbumArt';
 import { resolveImageUrl } from '../utils/imageUrl';
+import PhotoLightbox from './PhotoLightbox';
 
 const MOOD_EMOJI_MAP = {
   'Late Night': '\u{1F56F}\uFE0F', 'Good Morning': '\u2600\uFE0F', 'Sunday Morning': '\u2600\uFE0F',
@@ -202,29 +203,44 @@ const DailyPromptPostCard = ({ post }) => (
 );
 
 // NOTE card body — free-form text, optional record tag, optional image
-const NoteCard = ({ post }) => (
-  <div data-testid="note-card">
-    <p className="text-sm whitespace-pre-wrap">{post.caption || post.content}</p>
-    {/* Tagged record inline card */}
-    {post.record && (
-      <div className="flex items-center gap-2.5 bg-stone-50 rounded-lg px-3 py-2 mt-3" data-testid="note-record-tag">
-        {post.record.cover_url ? (
-          <AlbumArt src={post.record.cover_url} alt="" className="w-10 h-10 rounded object-cover shadow-sm" />
-        ) : (
-          <div className="w-10 h-10 rounded bg-stone-200 flex items-center justify-center"><Disc className="w-5 h-5 text-stone-400" /></div>
-        )}
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium truncate">{post.record.title}</p>
-          <p className="text-xs text-muted-foreground truncate">{post.record.artist}</p>
+const NoteCard = ({ post }) => {
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  return (
+    <div data-testid="note-card">
+      <p className="text-sm whitespace-pre-wrap">{post.caption || post.content}</p>
+      {/* Tagged record inline card */}
+      {post.record && (
+        <div className="flex items-center gap-2.5 bg-stone-50 rounded-lg px-3 py-2 mt-3" data-testid="note-record-tag">
+          {post.record.cover_url ? (
+            <AlbumArt src={post.record.cover_url} alt="" className="w-10 h-10 rounded object-cover shadow-sm" />
+          ) : (
+            <div className="w-10 h-10 rounded bg-stone-200 flex items-center justify-center"><Disc className="w-5 h-5 text-stone-400" /></div>
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium truncate">{post.record.title}</p>
+            <p className="text-xs text-muted-foreground truncate">{post.record.artist}</p>
+          </div>
         </div>
-      </div>
-    )}
-    {/* Optional image */}
-    {post.image_url && (
-      <img src={resolveImageUrl(post.image_url)} alt="" className="w-full rounded-lg mt-3 object-cover max-h-80" />
-    )}
-  </div>
-);
+      )}
+      {/* Optional image with lightbox */}
+      {post.image_url && (
+        <>
+          <img
+            src={resolveImageUrl(post.image_url)} alt=""
+            className="w-full rounded-lg mt-3 object-cover max-h-80 cursor-pointer"
+            onClick={() => setLightboxOpen(true)}
+          />
+          <PhotoLightbox
+            photos={[post.image_url]}
+            initialIndex={0}
+            open={lightboxOpen}
+            onClose={() => setLightboxOpen(false)}
+          />
+        </>
+      )}
+    </div>
+  );
+};
 
 // Main renderer
 const PostCardBody = ({ post }) => {
