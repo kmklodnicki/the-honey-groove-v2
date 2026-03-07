@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -8,7 +8,11 @@ import { Input } from '../components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Skeleton } from '../components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { ShoppingBag, Package, Truck, CheckCircle2, Clock, XCircle, Loader2, ExternalLink } from 'lucide-react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '../components/ui/alert-dialog';
+import { ShoppingBag, Package, Truck, CheckCircle2, Clock, XCircle, Loader2, MessageCircle, Ban } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import AlbumArt from '../components/AlbumArt';
@@ -20,6 +24,7 @@ const STATUS_BADGE = {
   PENDING: { label: 'Pending', color: 'bg-amber-100 text-amber-700', icon: Clock },
   FAILED: { label: 'Failed', color: 'bg-red-100 text-red-700', icon: XCircle },
   EXPIRED: { label: 'Expired', color: 'bg-stone-100 text-stone-500', icon: XCircle },
+  CANCELLED: { label: 'Cancelled', color: 'bg-red-50 text-red-500', icon: Ban },
 };
 
 const SHIPPING_BADGE = {
@@ -116,12 +121,14 @@ const ShippingEditor = ({ order, token, API, onUpdate }) => {
 };
 
 // Order row
-const OrderRow = ({ order, perspective, token, API, onUpdate }) => {
+const OrderRow = ({ order, perspective, token, API, onUpdate, onCancel }) => {
+  const navigate = useNavigate();
   const counterparty = order.counterparty || {};
   const timeAgo = order.created_at ? formatDistanceToNow(new Date(order.created_at), { addSuffix: true }) : '';
+  const isCancelled = order.payment_status === 'CANCELLED';
 
   return (
-    <Card className="border-honey/20" data-testid={`order-row-${order.id}`}>
+    <Card className={`border-honey/20 ${isCancelled ? 'opacity-60' : ''}`} data-testid={`order-row-${order.id}`}>
       <CardContent className="p-4">
         <div className="flex gap-4 items-start">
           {/* Album art */}
@@ -158,9 +165,10 @@ const OrderRow = ({ order, perspective, token, API, onUpdate }) => {
             {/* Status badges */}
             <div className="flex items-center gap-2 flex-wrap">
               <PaymentBadge status={order.payment_status} />
-              {perspective === 'seller' ? (
+              {!isCancelled && perspective === 'seller' && (
                 <ShippingEditor order={order} token={token} API={API} onUpdate={onUpdate} />
-              ) : (
+              )}
+              {!isCancelled && perspective === 'buyer' && (
                 <>
                   <ShippingBadge status={order.shipping_status || 'NOT_SHIPPED'} />
                   {order.tracking_number && (
@@ -171,6 +179,30 @@ const OrderRow = ({ order, perspective, token, API, onUpdate }) => {
                 </>
               )}
             </div>
+
+            {/* Cancel / DM actions */}
+            {!isCancelled && (
+              <div className="mt-2 pt-2 border-t border-stone-100">
+                {perspective === 'seller' && (order.payment_status === 'PAID' || order.payment_status === 'PENDING') && order.shipping_status !== 'DELIVERED' && (
+                  <button
+                    onClick={() => onCancel(order)}
+                    className="text-xs text-red-500 hover:text-red-700 hover:underline transition-colors"
+                    data-testid={`cancel-order-${order.id}`}
+                  >
+                    Cancel Order
+                  </button>
+                )}
+                {perspective === 'buyer' && order.payment_status === 'PAID' && (
+                  <button
+                    onClick={() => navigate(`/messages?to=${order.seller_id}`)}
+                    className="text-xs text-muted-foreground hover:text-honey-amber transition-colors flex items-center gap-1"
+                    data-testid={`dm-seller-${order.id}`}
+                  >
+                    <MessageCircle className="w-3 h-3" /> Need to cancel? Send the seller a message.
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </CardContent>
@@ -185,6 +217,8 @@ const OrdersPage = () => {
   const [sales, setSales] = useState([]);
   const [loadingPurchases, setLoadingPurchases] = useState(true);
   const [loadingSales, setLoadingSales] = useState(true);
+  const [cancelTarget, setCancelTarget] = useState(null);
+  const [cancelling, setCancelling] = useState(false);
   const headers = { Authorization: `Bearer ${token}` };
 
   useEffect(() => {
@@ -194,6 +228,21 @@ const OrdersPage = () => {
 
   const updateSale = (updated) => {
     setSales(prev => prev.map(s => s.id === updated.id ? { ...s, ...updated } : s));
+  };
+
+  const handleCancelOrder = async () => {
+    if (!cancelTarget) return;
+    setCancelling(true);
+    try {
+      await axios.post(`${API}/orders/${cancelTarget.id}/cancel`, {}, { headers });
+      setSales(prev => prev.map(s => s.id === cancelTarget.id ? { ...s, payment_status: 'CANCELLED' } : s));
+      toast.success('order cancelled. refund initiated.');
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'could not cancel order.');
+    } finally {
+      setCancelling(false);
+      setCancelTarget(null);
+    }
   };
 
   return (
@@ -222,7 +271,7 @@ const OrdersPage = () => {
           ) : (
             <div className="space-y-3">
               {purchases.map(order => (
-                <OrderRow key={order.id} order={order} perspective="buyer" token={token} API={API} onUpdate={() => {}} />
+                <OrderRow key={order.id} order={order} perspective="buyer" token={token} API={API} onUpdate={() => {}} onCancel={() => {}} />
               ))}
             </div>
           )}
@@ -240,12 +289,36 @@ const OrdersPage = () => {
           ) : (
             <div className="space-y-3">
               {sales.map(order => (
-                <OrderRow key={order.id} order={order} perspective="seller" token={token} API={API} onUpdate={updateSale} />
+                <OrderRow key={order.id} order={order} perspective="seller" token={token} API={API} onUpdate={updateSale} onCancel={setCancelTarget} />
               ))}
             </div>
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Cancel Order Confirmation */}
+      <AlertDialog open={!!cancelTarget} onOpenChange={(open) => { if (!open) setCancelTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-heading">Are you sure you want to cancel this order?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This cannot be undone. A refund will be issued to the buyer automatically.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={cancelling} data-testid="cancel-order-dismiss">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCancelOrder}
+              disabled={cancelling}
+              className="bg-red-600 text-white hover:bg-red-700"
+              data-testid="cancel-order-confirm"
+            >
+              {cancelling ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
+              Confirm
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

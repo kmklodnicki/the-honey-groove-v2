@@ -847,6 +847,63 @@ async def update_order_shipping(order_id: str, body: Dict, user: Dict = Depends(
     return {"message": "Shipping updated"}
 
 
+@router.post("/orders/{order_id}/cancel")
+async def cancel_order(order_id: str, user: Dict = Depends(require_auth)):
+    """Seller cancels an order and issues a Stripe refund to the buyer."""
+    txn = await db.payment_transactions.find_one({"id": order_id}, {"_id": 0})
+    if not txn:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if txn["seller_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Only the seller can cancel an order")
+    if txn.get("payment_status") == "CANCELLED":
+        raise HTTPException(status_code=400, detail="Order is already cancelled")
+    if txn.get("payment_status") not in ("PAID", "PENDING"):
+        raise HTTPException(status_code=400, detail="Order cannot be cancelled in its current state")
+
+    now = datetime.now(timezone.utc).isoformat()
+    refund_id = None
+
+    # Attempt Stripe refund if payment was completed
+    if txn.get("payment_status") == "PAID" and txn.get("session_id"):
+        stripe_sdk.api_key = STRIPE_API_KEY
+        try:
+            session = stripe_sdk.checkout.Session.retrieve(txn["session_id"])
+            if session.payment_intent:
+                refund = stripe_sdk.Refund.create(
+                    payment_intent=session.payment_intent,
+                    reverse_transfer=True,
+                )
+                refund_id = refund.id
+        except Exception as e:
+            logger.error(f"Stripe refund failed for order {order_id}: {e}")
+            raise HTTPException(status_code=500, detail="Refund failed. Please try again or contact support.")
+
+    # Update transaction status
+    await db.payment_transactions.update_one({"id": order_id}, {"$set": {
+        "payment_status": "CANCELLED",
+        "shipping_status": "NOT_SHIPPED",
+        "refund_id": refund_id,
+        "cancelled_at": now,
+        "updated_at": now,
+    }})
+
+    # Re-activate the listing so it can be sold again
+    if txn.get("listing_id"):
+        await db.listings.update_one({"id": txn["listing_id"]}, {"$set": {"status": "ACTIVE"}})
+
+    # Notify buyer
+    listing = await db.listings.find_one({"id": txn.get("listing_id")}, {"_id": 0, "album": 1})
+    album_name = listing.get("album", "your order") if listing else "your order"
+    await create_notification(
+        txn["buyer_id"], "ORDER_CANCELLED",
+        "Order cancelled",
+        f"The seller cancelled your order for {album_name}. A refund has been initiated.",
+        {"order_id": order_id}
+    )
+
+    return {"message": "Order cancelled and refund initiated", "refund_id": refund_id}
+
+
 @router.get("/seller/stats")
 async def get_seller_stats(user: Dict = Depends(require_auth)):
     """Get current user's seller stats (transaction count) for listing restriction checks."""
