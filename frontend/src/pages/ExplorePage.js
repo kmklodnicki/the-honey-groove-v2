@@ -18,7 +18,7 @@ import AlbumArt from '../components/AlbumArt';
 import { resolveImageUrl } from '../utils/imageUrl';
 
 const ExplorePage = () => {
-  usePageTitle('Explore');
+  usePageTitle('Nectar');
   const { user, token, API } = useAuth();
   const navigate = useNavigate();
   const [trending, setTrending] = useState([]);
@@ -158,7 +158,7 @@ const ExplorePage = () => {
   if (!user) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-24">
-        <h1 className="font-heading text-3xl text-vinyl-black mb-6">Explore</h1>
+        <h1 className="font-heading text-3xl text-vinyl-black mb-6">Nectar</h1>
         <div className="relative">
           <div className="blur-md pointer-events-none">
             {[1, 2, 3].map(i => <Card key={i} className="mb-4 p-6 border-honey/30"><div className="flex gap-4"><div className="w-12 h-12 rounded-full bg-honey/30" /><div className="flex-1 space-y-2"><div className="h-4 w-32 bg-honey/20 rounded" /><div className="h-20 w-full bg-honey/10 rounded-lg" /></div></div></Card>)}
@@ -193,13 +193,13 @@ const ExplorePage = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8" data-testid="explore-page">
-      <h1 className="font-heading text-3xl text-vinyl-black mb-1">Explore</h1>
+      <h1 className="font-heading text-3xl text-vinyl-black mb-1">Nectar</h1>
       <p className="text-sm text-muted-foreground mb-8">discover what the community is into.</p>
 
       {/* Collector Bingo — hidden until feature is ready */}
 
       {/* 1. Trending in the Hive */}
-      <ExploreSection icon={<TrendingUp className="w-4 h-4 text-honey-amber" />} title="Trending in the Hive" testId="trending-section" seeAllTo="/explore/trending">
+      <ExploreSection icon={<TrendingUp className="w-4 h-4 text-honey-amber" />} title="Trending in the Hive" testId="trending-section" seeAllTo="/nectar/trending">
         {trending.length === 0 ? (
           <EmptyCard text="No trending records yet. Start spinning!" />
         ) : (
@@ -223,7 +223,7 @@ const ExplorePage = () => {
       </ExploreSection>
 
       {/* 2. Taste Match */}
-      <ExploreSection icon={<Users className="w-4 h-4 text-honey-amber" />} title="Taste Match" testId="taste-match-section" seeAllTo="/explore/taste-match">
+      <ExploreSection icon={<Users className="w-4 h-4 text-honey-amber" />} title="Taste Match" testId="taste-match-section" seeAllTo="/nectar/taste-match">
         {suggested.length === 0 ? (
           <EmptyCard text="Add more records to your collection to find taste matches." />
         ) : (
@@ -253,7 +253,7 @@ const ExplorePage = () => {
       </ExploreSection>
 
       {/* 3. Trending in Collections */}
-      <ExploreSection icon={<TrendingUp className="w-4 h-4 text-honey-amber" />} title="Trending in Collections" testId="trending-collections-section" seeAllTo="/explore/trending-in-collections">
+      <ExploreSection icon={<TrendingUp className="w-4 h-4 text-honey-amber" />} title="Trending in Collections" testId="trending-collections-section" seeAllTo="/nectar/trending-in-collections">
         {trendingCollections.length === 0 ? (
           <EmptyCard text="No trending collection data right now." />
         ) : (
@@ -280,7 +280,7 @@ const ExplorePage = () => {
       </ExploreSection>
 
       {/* 4. Most Wanted */}
-      <ExploreSection icon={<Heart className="w-4 h-4 text-red-400" />} title="Most Wanted" testId="most-wanted-section" seeAllTo="/explore/most-wanted">
+      <ExploreSection icon={<Heart className="w-4 h-4 text-red-400" />} title="Most Wanted" testId="most-wanted-section" seeAllTo="/nectar/most-wanted">
         {mostWanted.length === 0 ? (
           <EmptyCard text="No wantlist data yet. Add records to your Wantlist!" />
         ) : (
@@ -308,7 +308,7 @@ const ExplorePage = () => {
       </ExploreSection>
 
       {/* 5. Near You */}
-      <ExploreSection icon={<MapPin className="w-4 h-4 text-honey-amber" />} title="Near You" testId="near-you-section" seeAllTo="/explore/near-you">
+      <ExploreSection icon={<MapPin className="w-4 h-4 text-honey-amber" />} title="Near You" testId="near-you-section" seeAllTo="/nectar/near-you">
         {nearYou.needs_location ? (
           <Card className="p-6 text-center border-honey/30">
             <MapPin className="w-10 h-10 text-honey/40 mx-auto mb-3" />

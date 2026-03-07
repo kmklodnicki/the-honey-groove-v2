@@ -84,13 +84,13 @@ const Navbar = () => {
                   The Hive
                 </Button>
               </Link>
-              <Link to="/explore" data-testid="nav-explore">
+              <Link to="/nectar" data-testid="nav-explore">
                 <Button 
                   variant="ghost" 
-                  className={`gap-2 ${isActive('/explore') ? 'bg-honey/20' : ''}`}
+                  className={`gap-2 ${isActive('/nectar') ? 'bg-honey/20' : ''}`}
                 >
                   <Globe className="w-4 h-4" />
-                  Explore
+                  Nectar
                 </Button>
               </Link>
               <Link to="/collection" data-testid="nav-collection">
@@ -251,8 +251,8 @@ const Navbar = () => {
           <Link to="/hive" className="flex items-center justify-center flex-1 h-full" data-testid="mobile-hive">
             <Home className="w-6 h-6" style={{ color: isActive('/hive') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
           </Link>
-          <Link to="/explore" className="flex items-center justify-center flex-1 h-full" data-testid="mobile-explore">
-            <Globe className="w-6 h-6" style={{ color: isActive('/explore') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
+          <Link to="/nectar" className="flex items-center justify-center flex-1 h-full" data-testid="mobile-explore">
+            <Globe className="w-6 h-6" style={{ color: isActive('/nectar') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
           </Link>
           <button onClick={() => setSearchOpen(true)} className="flex items-center justify-center flex-1 h-full" data-testid="mobile-search">
             <Search className="w-6 h-6" style={{ color: searchOpen ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />

@@ -26,7 +26,7 @@ const SECTIONS = {
 };
 
 const ExploreSeeAllPage = () => {
-  usePageTitle('Explore');
+  usePageTitle('Nectar');
   const { section } = useParams();
   const { user, token, API } = useAuth();
   const navigate = useNavigate();
@@ -110,7 +110,7 @@ const ExploreSeeAllPage = () => {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-24 text-center">
         <p className="text-muted-foreground">Section not found.</p>
-        <Link to="/explore" className="text-honey-amber hover:underline text-sm mt-2 inline-block">Back to Explore</Link>
+        <Link to="/nectar" className="text-honey-amber hover:underline text-sm mt-2 inline-block">Back to Nectar</Link>
       </div>
     );
   }
@@ -120,8 +120,8 @@ const ExploreSeeAllPage = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8" data-testid={`see-all-${section}`}>
       {/* Header */}
-      <Link to="/explore" className="inline-flex items-center gap-1.5 text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors mb-6" data-testid="see-all-back">
-        <ArrowLeft className="w-4 h-4" /> back to explore
+      <Link to="/nectar" className="inline-flex items-center gap-1.5 text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors mb-6" data-testid="see-all-back">
+        <ArrowLeft className="w-4 h-4" /> back to nectar
       </Link>
       <div className="flex items-center gap-2 mb-8">
         <Icon className={`w-5 h-5 ${meta.iconColor}`} />
