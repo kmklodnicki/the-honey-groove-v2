@@ -300,6 +300,10 @@ COMPLETED → Mandatory rating before next trade
 
 155. **Explore → Nectar Rename** — Renamed Explore page to "Nectar" everywhere: page title, nav labels (desktop + mobile), route /explore → /nectar, see-all sub-routes /nectar/:section. Backend API routes remain /api/explore/* unchanged. (Mar 2026)
 
+156. **Bug Fix: ISOCard Clickable in Hive** — ISOCard in PostCards.js now accepts onAlbumClick, wraps content in AlbumLink, and displays album cover art from ISO data (discogs_id, cover_url). AlbumLink updated with e.stopPropagation() to prevent parent card click interference and active:scale-[0.98] visual feedback. (Mar 2026)
+
+157. **Bug Fix: Listing Photo Priority** — ListingDetailModal main image now prioritizes uploaded photos (photos[0]) over Discogs cover_url. Previously showed Discogs cover even when user photos existed. (Mar 2026)
+
 ## Upcoming Tasks
 - **P1: Weekly Wax Email** — Ensure scheduled "Weekly Wax" email is correctly configured (Sundays 12:00 PM ET)
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
