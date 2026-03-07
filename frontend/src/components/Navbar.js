@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog';
-import { Home, Search, User, LogOut, Settings, Library, ShoppingBag, ArrowRightLeft, Bell, Check, MessageCircle, Globe, HelpCircle } from 'lucide-react';
+import { Home, Search, User, LogOut, Settings, Library, ShoppingBag, ArrowRightLeft, Bell, Check, MessageCircle, Globe, HelpCircle, Package } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import GlobalSearch from './GlobalSearch';
 import { resolveImageUrl } from '../utils/imageUrl';
@@ -150,6 +150,10 @@ const Navbar = () => {
                     <Settings className="mr-2 h-4 w-4" />
                     Settings
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/orders')} data-testid="menu-orders">
+                    <Package className="mr-2 h-4 w-4" />
+                    Orders
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => window.open('https://thehoneygroove.com/faq', '_blank')} data-testid="menu-help">
                     <HelpCircle className="mr-2 h-4 w-4" />
                     Help
@@ -217,6 +221,9 @@ const Navbar = () => {
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/settings')} data-testid="mobile-menu-settings">
                   <Settings className="mr-2 h-4 w-4" /> Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/orders')} data-testid="mobile-menu-orders">
+                  <Package className="mr-2 h-4 w-4" /> Orders
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/trades')} data-testid="mobile-menu-trades">
                   <ArrowRightLeft className="mr-2 h-4 w-4" /> Trades

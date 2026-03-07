@@ -749,6 +749,104 @@ async def get_my_sales(user: Dict = Depends(require_auth)):
     }
 
 
+# ============== ORDERS (ENRICHED) ==============
+
+async def _enrich_transactions(txns, perspective: str):
+    """Enrich transactions with listing/user details for the orders page."""
+    enriched = []
+    for t in txns:
+        item = {}
+        # Copy base transaction fields
+        for k in ("id", "session_id", "listing_id", "trade_id", "buyer_id", "seller_id",
+                   "amount", "platform_fee", "seller_payout", "currency", "payment_status",
+                   "type", "created_at", "updated_at", "shipping_status", "tracking_number",
+                   "shipping_carrier"):
+            if k in t:
+                item[k] = t[k]
+
+        # Generate short order number from id
+        item["order_number"] = (t.get("id", "")[:8]).upper()
+
+        # Fetch listing details
+        listing_id = t.get("listing_id")
+        if listing_id:
+            listing = await db.listings.find_one({"id": listing_id}, {"_id": 0, "album": 1, "artist": 1, "cover_url": 1, "photo_urls": 1, "condition": 1})
+            if listing:
+                item["album"] = listing.get("album")
+                item["artist"] = listing.get("artist")
+                item["cover_url"] = (listing.get("photo_urls") or [None])[0] or listing.get("cover_url")
+                item["condition"] = listing.get("condition")
+
+        # Fetch counterparty user
+        if perspective == "buyer":
+            other_id = t.get("seller_id")
+        else:
+            other_id = t.get("buyer_id")
+        if other_id:
+            other_user = await db.users.find_one({"id": other_id}, {"_id": 0, "username": 1, "avatar_url": 1})
+            item["counterparty"] = other_user or {}
+
+        # Defaults
+        item.setdefault("shipping_status", "NOT_SHIPPED")
+        item.setdefault("tracking_number", None)
+        item.setdefault("shipping_carrier", None)
+        enriched.append(item)
+    return enriched
+
+
+@router.get("/orders/purchases")
+async def get_my_purchases(user: Dict = Depends(require_auth)):
+    """Get current user's purchases (as buyer)."""
+    txns = await db.payment_transactions.find(
+        {"buyer_id": user["id"], "type": "marketplace_purchase"}, {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    return await _enrich_transactions(txns, "buyer")
+
+
+@router.get("/orders/sales")
+async def get_my_orders_sales(user: Dict = Depends(require_auth)):
+    """Get current user's sales (as seller)."""
+    txns = await db.payment_transactions.find(
+        {"seller_id": user["id"], "type": "marketplace_purchase"}, {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    return await _enrich_transactions(txns, "seller")
+
+
+@router.put("/orders/{order_id}/shipping")
+async def update_order_shipping(order_id: str, body: Dict, user: Dict = Depends(require_auth)):
+    """Seller updates shipping status and tracking info for an order."""
+    txn = await db.payment_transactions.find_one({"id": order_id}, {"_id": 0})
+    if not txn:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if txn["seller_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Only the seller can update shipping")
+
+    update = {"updated_at": datetime.now(timezone.utc).isoformat()}
+    if "shipping_status" in body:
+        allowed = ["NOT_SHIPPED", "SHIPPED", "DELIVERED"]
+        if body["shipping_status"] not in allowed:
+            raise HTTPException(status_code=400, detail=f"shipping_status must be one of: {allowed}")
+        update["shipping_status"] = body["shipping_status"]
+    if "tracking_number" in body:
+        update["tracking_number"] = body["tracking_number"]
+    if "shipping_carrier" in body:
+        update["shipping_carrier"] = body["shipping_carrier"]
+
+    await db.payment_transactions.update_one({"id": order_id}, {"$set": update})
+
+    # Notify buyer if shipped
+    if update.get("shipping_status") == "SHIPPED":
+        listing = await db.listings.find_one({"id": txn.get("listing_id")}, {"_id": 0, "album": 1})
+        album_name = listing.get("album", "your order") if listing else "your order"
+        tracking = body.get("tracking_number")
+        msg = f"{album_name} has been shipped!"
+        if tracking:
+            msg += f" Tracking: {tracking}"
+        await create_notification(txn["buyer_id"], "ORDER_SHIPPED", "Your order shipped!", msg, {"order_id": order_id})
+
+    return {"message": "Shipping updated"}
+
+
 @router.get("/seller/stats")
 async def get_seller_stats(user: Dict = Depends(require_auth)):
     """Get current user's seller stats (transaction count) for listing restriction checks."""
