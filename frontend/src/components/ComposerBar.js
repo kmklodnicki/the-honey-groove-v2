@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
@@ -84,28 +84,44 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const openModal = (type) => { resetAll(); setActiveModal(type); };
   const closeModal = () => { setActiveModal(null); resetAll(); };
 
-  const searchDiscogs = useCallback(async (query) => {
-    if (!query || query.length < 2) { setHaulResults([]); return; }
-    setSearchLoading(true);
-    try {
-      const resp = await axios.get(`${API}/discogs/search?q=${encodeURIComponent(query)}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setHaulResults(resp.data.slice(0, 8));
-    } catch { setHaulResults([]); }
-    finally { setSearchLoading(false); }
+  const haulSearchTimer = useRef(null);
+  const isoSearchTimer = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (haulSearchTimer.current) clearTimeout(haulSearchTimer.current);
+      if (isoSearchTimer.current) clearTimeout(isoSearchTimer.current);
+    };
+  }, []);
+
+  const searchDiscogs = useCallback((query) => {
+    if (!query || query.length < 2) { setHaulResults([]); setSearchLoading(false); return; }
+    if (haulSearchTimer.current) clearTimeout(haulSearchTimer.current);
+    haulSearchTimer.current = setTimeout(async () => {
+      setSearchLoading(true);
+      try {
+        const resp = await axios.get(`${API}/discogs/search?q=${encodeURIComponent(query)}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setHaulResults(resp.data.slice(0, 8));
+      } catch { setHaulResults([]); }
+      finally { setSearchLoading(false); }
+    }, 350);
   }, [API, token]);
 
-  const searchDiscogsForISO = useCallback(async (query) => {
-    if (!query || query.length < 2) { setIsoDiscogsResults([]); return; }
-    setIsoSearchLoading(true);
-    try {
-      const resp = await axios.get(`${API}/discogs/search?q=${encodeURIComponent(query)}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setIsoDiscogsResults(resp.data.slice(0, 8));
-    } catch { setIsoDiscogsResults([]); }
-    finally { setIsoSearchLoading(false); }
+  const searchDiscogsForISO = useCallback((query) => {
+    if (!query || query.length < 2) { setIsoDiscogsResults([]); setIsoSearchLoading(false); return; }
+    if (isoSearchTimer.current) clearTimeout(isoSearchTimer.current);
+    isoSearchTimer.current = setTimeout(async () => {
+      setIsoSearchLoading(true);
+      try {
+        const resp = await axios.get(`${API}/discogs/search?q=${encodeURIComponent(query)}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setIsoDiscogsResults(resp.data.slice(0, 8));
+      } catch { setIsoDiscogsResults([]); }
+      finally { setIsoSearchLoading(false); }
+    }, 350);
   }, [API, token]);
 
   const selectIsoRelease = (release) => {

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Dialog, DialogContent } from './ui/dialog';
@@ -43,14 +43,20 @@ const OnboardingModal = ({ open, onComplete }) => {
   const [caption, setCaption] = useState('');
   const [mood, setMood] = useState('');
 
-  const searchDiscogs = useCallback(async (q) => {
-    if (!q || q.length < 2) { setSearchResults([]); return; }
-    setSearchLoading(true);
-    try {
-      const r = await axios.get(`${API}/discogs/search?q=${encodeURIComponent(q)}`, { headers: { Authorization: `Bearer ${token}` } });
-      setSearchResults(r.data?.slice(0, 8) || []);
-    } catch { setSearchResults([]); }
-    finally { setSearchLoading(false); }
+  const searchTimerRef = useRef(null);
+  useEffect(() => { return () => { if (searchTimerRef.current) clearTimeout(searchTimerRef.current); }; }, []);
+
+  const searchDiscogs = useCallback((q) => {
+    if (!q || q.length < 2) { setSearchResults([]); setSearchLoading(false); return; }
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(async () => {
+      setSearchLoading(true);
+      try {
+        const r = await axios.get(`${API}/discogs/search?q=${encodeURIComponent(q)}`, { headers: { Authorization: `Bearer ${token}` } });
+        setSearchResults(r.data?.slice(0, 8) || []);
+      } catch { setSearchResults([]); }
+      finally { setSearchLoading(false); }
+    }, 350);
   }, [API, token]);
 
   const addRecord = async (record) => {

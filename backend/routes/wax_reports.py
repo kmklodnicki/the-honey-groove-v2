@@ -1164,19 +1164,20 @@ async def run_weekly_generation():
 
 
 async def schedule_weekly_reports():
-    """Scheduler loop — runs weekly generation every Sunday at midnight UTC."""
+    """Scheduler loop — runs weekly generation every Sunday at 12:00 PM ET."""
+    from zoneinfo import ZoneInfo
+    ET = ZoneInfo("America/New_York")
     while True:
-        now = datetime.now(timezone.utc)
-        # Next Sunday midnight
-        days_until_sunday = (6 - now.weekday()) % 7
-        if days_until_sunday == 0 and now.hour >= 0 and now.minute > 5:
-            days_until_sunday = 7
-        next_sunday = (now + timedelta(days=days_until_sunday)).replace(hour=0, minute=0, second=0, microsecond=0)
-        wait_seconds = (next_sunday - now).total_seconds()
-        if wait_seconds < 0:
-            wait_seconds = 0
+        now_utc = datetime.now(timezone.utc)
+        now_et = now_utc.astimezone(ET)
+        # Find next Sunday at 12:00 PM ET
+        days_until_sunday = (6 - now_et.weekday()) % 7
+        next_sunday_noon = now_et.replace(hour=12, minute=0, second=0, microsecond=0) + timedelta(days=days_until_sunday)
+        if next_sunday_noon <= now_et:
+            next_sunday_noon += timedelta(days=7)
+        wait_seconds = (next_sunday_noon - now_et).total_seconds()
 
-        logger.info(f"Wax Report scheduler: next run in {wait_seconds/3600:.1f}h at {next_sunday}")
+        logger.info(f"Wax Report scheduler: next run in {wait_seconds/3600:.1f}h at {next_sunday_noon.strftime('%Y-%m-%d %I:%M %p %Z')}")
         await asyncio.sleep(wait_seconds)
         await run_weekly_generation()
         await asyncio.sleep(60)  # prevent double-run

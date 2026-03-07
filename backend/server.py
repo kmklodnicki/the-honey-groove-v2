@@ -124,6 +124,7 @@ async def startup_event():
 
 async def _schedule_hold_auto_reversal():
     """Run hold auto-reversal check every 10 minutes."""
+    from routes.trades import auto_reverse_expired_holds
     await asyncio.sleep(30)
     while True:
         try:
