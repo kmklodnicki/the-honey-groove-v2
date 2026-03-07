@@ -16,7 +16,11 @@ from database import db, require_auth, logger, create_notification
 import os
 
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
-SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "The Honey Groove <hello@thehoneygroove.com>")
+_raw_sender_wr = os.environ.get("SENDER_EMAIL", "")
+if "<" in _raw_sender_wr:
+    SENDER_EMAIL = _raw_sender_wr
+else:
+    SENDER_EMAIL = f"The Honey Groove <{_raw_sender_wr}>" if _raw_sender_wr else "The Honey Groove <hello@thehoneygroove.com>"
 FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://thehoneygroove.com")
 
 router = APIRouter()

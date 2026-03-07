@@ -7,7 +7,12 @@ import logging
 logger = logging.getLogger("email_service")
 
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
-SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "The Honey Groove <hello@thehoneygroove.com>")
+_raw_sender = os.environ.get("SENDER_EMAIL", "")
+# Ensure the sender always includes the display name
+if "<" in _raw_sender:
+    SENDER_EMAIL = _raw_sender
+else:
+    SENDER_EMAIL = f"The Honey Groove <{_raw_sender}>" if _raw_sender else "The Honey Groove <hello@thehoneygroove.com>"
 
 
 async def send_email(to: str, subject: str, html: str, reply_to: str = None):
