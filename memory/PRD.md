@@ -286,6 +286,12 @@ COMPLETED → Mandatory rating before next trade
 
 148. **Explore Page Contextual Album Modal** — Complete overhaul of Explore page album modal. When clicking albums in "Trending in Collections" or "Most Wanted", modal now: (1) checks ownership via GET /api/records/check-ownership endpoint, (2) fetches Discogs release details (label, catno, country, format, color variant), (3) shows variant detail pills, (4) shows contextual action buttons — non-owner: "Add to Collection" + "Add to Wantlist"; owner: "Log a Spin" + "List for Sale" + "Offer to Trade". Adding to collection instantly switches buttons. Discogs link shown when available. Backend: new GET /api/records/check-ownership endpoint (params: discogs_id or artist+title). Enhanced get_discogs_release to return catno and color_variant. (Mar 2026)
 
+149. **Delete Own Posts with Confirmation** — Users can delete their own posts across the app. Hive feed posts show a 3-dot menu (MoreVertical) for post owners with a "Delete Post" option. Clicking triggers an AlertDialog: "Are you sure you want to delete this post? This cannot be undone." with Cancel and Delete buttons. On confirm, post + likes + comments are deleted and removed from feed. Sale/trade listing deletes in Honeypot also now show confirmation dialogs. Backend: new DELETE /api/posts/{post_id} endpoint with ownership check. (Mar 2026)
+
+150. **Navbar Logo Mobile Size Fix** — Increased mobile logo from h-[40px] to h-[48px] for better visibility on small screens. (Mar 2026)
+
+151. **Clickable Album Cards in Hive Feed** — Album cards in Hive feed posts (Now Spinning, New Haul, Added to Collection, Vinyl Mood, Note) now open an Album Detail Modal on click instead of navigating to a page. Modal shows album info, variant details (year, label, catno, format, country, color variant), and contextual action buttons based on collection ownership (same as Explore page modal). AlbumLink component updated to accept optional onAlbumClick callback. (Mar 2026)
+
 ## Upcoming Tasks
 - **P1: Weekly Wax Email** — Ensure scheduled "Weekly Wax" email is correctly configured (Sundays 12:00 PM ET)
 - **P2: Hauls Enhancement** — Dedicated hauls page with richer functionality
