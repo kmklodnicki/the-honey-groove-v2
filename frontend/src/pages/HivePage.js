@@ -413,13 +413,13 @@ const HivePage = () => {
   const [activeFilter, setActiveFilter] = useState('all');
 
   const FEED_FILTERS = [
-    { key: 'all', label: 'All', activeClass: 'bg-vinyl-black text-white', inactiveClass: 'bg-stone-100 text-stone-600 hover:bg-stone-200' },
-    { key: 'NOW_SPINNING', label: 'Now Spinning', activeClass: 'bg-honey text-vinyl-black', inactiveClass: 'bg-honey/10 text-honey-amber hover:bg-honey/20' },
-    { key: 'NEW_HAUL', label: 'New Haul', activeClass: 'bg-emerald-500 text-white', inactiveClass: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' },
-    { key: 'ISO', label: 'ISO', activeClass: 'bg-orange-500 text-white', inactiveClass: 'bg-orange-50 text-orange-700 hover:bg-orange-100' },
-    { key: 'listing', label: 'For Sale/Trade', activeClass: 'bg-teal-500 text-white', inactiveClass: 'bg-teal-50 text-teal-700 hover:bg-teal-100' },
-    { key: 'NOTE', label: 'A Note', activeClass: 'bg-stone-700 text-white', inactiveClass: 'bg-stone-100 text-stone-600 hover:bg-stone-200' },
-    { key: 'following', label: 'Following', activeClass: 'bg-vinyl-black text-white', inactiveClass: 'bg-stone-100 text-stone-600 hover:bg-stone-200' },
+    { key: 'all', label: 'All', activeClass: 'bg-stone-700 text-white', inactiveClass: 'bg-stone-100 text-stone-500 hover:bg-stone-200' },
+    { key: 'NOW_SPINNING', label: 'Now Spinning', activeClass: 'bg-blue-400 text-white', inactiveClass: 'bg-blue-50 text-blue-400 hover:bg-blue-100' },
+    { key: 'NEW_HAUL', label: 'New Haul', activeClass: 'bg-pink-400 text-white', inactiveClass: 'bg-pink-50 text-pink-400 hover:bg-pink-100' },
+    { key: 'ISO', label: 'ISO', activeClass: 'bg-orange-400 text-white', inactiveClass: 'bg-orange-50 text-orange-400 hover:bg-orange-100' },
+    { key: 'listing', label: 'For Sale/Trade', activeClass: 'bg-green-400 text-white', inactiveClass: 'bg-green-50 text-green-400 hover:bg-green-100' },
+    { key: 'NOTE', label: 'A Note', activeClass: 'bg-yellow-400 text-yellow-900', inactiveClass: 'bg-yellow-50 text-yellow-500 hover:bg-yellow-100' },
+    { key: 'following', label: 'Following', activeClass: 'bg-purple-400 text-white', inactiveClass: 'bg-purple-50 text-purple-400 hover:bg-purple-100' },
   ];
 
   const headers = { Authorization: `Bearer ${token}` };
@@ -685,12 +685,12 @@ const HivePage = () => {
       <ComposerBar onPostCreated={handlePostCreated} records={records} />
 
       {/* Filter Bar */}
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide -mx-1 px-1" data-testid="feed-filter-bar">
+      <div className="flex flex-wrap gap-1.5 mb-4" data-testid="feed-filter-bar">
         {FEED_FILTERS.map(f => (
           <button
             key={f.key}
             onClick={() => setActiveFilter(f.key)}
-            className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition-all shrink-0 ${
+            className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
               activeFilter === f.key ? f.activeClass + ' shadow-sm' : f.inactiveClass
             }`}
             data-testid={`filter-${f.key}`}
