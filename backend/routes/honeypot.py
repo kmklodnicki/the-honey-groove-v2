@@ -96,7 +96,7 @@ async def get_community_isos(limit: int = 50, user: Dict = Depends(require_auth)
     result = []
     for iso in isos:
         iso_user = users.get(iso["user_id"])
-        iso["user"] = {"id": iso_user["id"], "username": iso_user.get("username"), "avatar_url": iso_user.get("avatar_url")} if iso_user else None
+        iso["user"] = {"id": iso_user["id"], "username": iso_user.get("username"), "avatar_url": iso_user.get("avatar_url"), "country": iso_user.get("country")} if iso_user else None
         result.append(iso)
     return result
 
@@ -205,7 +205,7 @@ async def create_listing(data: ListingCreate, user: Dict = Depends(require_auth)
         )
         await send_email_fire_and_forget(user["email"], tpl["subject"], tpl["html"])
 
-    user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url")}
+    user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url"), "country": user.get("country")}
     
     # Auto-create a Hive post for this listing
     post_id = str(uuid.uuid4())
@@ -261,6 +261,7 @@ async def get_listings(listing_type: Optional[str] = None, search: Optional[str]
                 "avatar_url": seller.get("avatar_url"),
                 "rating": seller.get("rating", 5.0),
                 "completed_sales": tx_count,
+                "country": seller.get("country"),
             }
         result.append(ListingResponse(**listing, user=user_data))
     
@@ -270,7 +271,7 @@ async def get_listings(listing_type: Optional[str] = None, search: Optional[str]
 async def get_my_listings(user: Dict = Depends(require_auth)):
     """Get current user's listings"""
     listings = await db.listings.find({"user_id": user["id"]}, {"_id": 0}).sort("created_at", -1).to_list(100)
-    user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url")}
+    user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url"), "country": user.get("country")}
     return [ListingResponse(**l, user=user_data) for l in listings]
 
 @router.get("/listings/iso-matches")
@@ -298,7 +299,7 @@ async def get_iso_matches(user: Dict = Depends(require_auth)):
     result = []
     for listing in matches:
         seller = await db.users.find_one({"id": listing["user_id"]}, {"_id": 0, "password_hash": 0})
-        user_data = {"id": seller["id"], "username": seller["username"], "avatar_url": seller.get("avatar_url")} if seller else None
+        user_data = {"id": seller["id"], "username": seller["username"], "avatar_url": seller.get("avatar_url"), "country": seller.get("country")} if seller else None
         result.append(ListingResponse(**listing, user=user_data))
     
     return result
@@ -333,7 +334,7 @@ async def get_listing(listing_id: str, current_user: Optional[Dict] = Depends(ge
     similar_enriched = []
     for s in similar:
         s_seller = await db.users.find_one({"id": s["user_id"]}, {"_id": 0, "password_hash": 0})
-        s_user = {"id": s_seller["id"], "username": s_seller["username"], "avatar_url": s_seller.get("avatar_url")} if s_seller else None
+        s_user = {"id": s_seller["id"], "username": s_seller["username"], "avatar_url": s_seller.get("avatar_url"), "country": s_seller.get("country")} if s_seller else None
         similar_enriched.append({**{k: v for k, v in s.items()}, "user": s_user})
 
     # Check wantlist status for current user
