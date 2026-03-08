@@ -342,6 +342,7 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
                     placeholder={replyTo ? `Reply to @${replyTo.username}...` : "Write a comment..."}
                     value={newComment}
                     onChange={handleCommentInputChange}
+                    onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
                     className="flex-1 h-9 text-sm border-honey/50"
                     data-testid={`comment-input-${post.id}`}
                   />

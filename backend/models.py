@@ -36,6 +36,8 @@ class UserResponse(BaseModel):
     is_admin: bool = False
     email_verified: bool = True
     title_label: Optional[str] = None
+    instagram_username: Optional[str] = None
+    tiktok_username: Optional[str] = None
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None
@@ -48,6 +50,8 @@ class UserUpdate(BaseModel):
     region: Optional[str] = None
     country: Optional[str] = None
     onboarding_completed: Optional[bool] = None
+    instagram_username: Optional[str] = None
+    tiktok_username: Optional[str] = None
 
 class TokenResponse(BaseModel):
     access_token: str

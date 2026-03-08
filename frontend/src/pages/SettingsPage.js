@@ -27,6 +27,8 @@ const SettingsPage = () => {
   const [location, setLocation] = useState(user?.location || '');
   const [favoriteGenre, setFavoriteGenre] = useState(user?.favorite_genre || '');
   const [country, setCountry] = useState(user?.country || '');
+  const [instagramUsername, setInstagramUsername] = useState(user?.instagram_username || '');
+  const [tiktokUsername, setTiktokUsername] = useState(user?.tiktok_username || '');
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState(user?.avatar_url);
@@ -81,7 +83,9 @@ const SettingsPage = () => {
         location: location || '',
         country: country || undefined,
         favorite_genre: favoriteGenre || undefined,
-        avatar_url: avatarPreview !== user.avatar_url ? avatarPreview : undefined
+        avatar_url: avatarPreview !== user.avatar_url ? avatarPreview : undefined,
+        instagram_username: instagramUsername.replace(/^@/, '').trim() || '',
+        tiktok_username: tiktokUsername.replace(/^@/, '').trim() || '',
       };
       const response = await axios.put(`${API}/auth/me`, payload,
         { headers: { Authorization: `Bearer ${token}` }}
@@ -411,6 +415,38 @@ const SettingsPage = () => {
                 <option key={g} value={g}>{g}</option>
               ))}
             </select>
+          </div>
+
+          {/* Instagram */}
+          <div className="space-y-2">
+            <Label htmlFor="instagram">Instagram</Label>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">instagram.com/</span>
+              <Input
+                id="instagram"
+                placeholder="username"
+                value={instagramUsername}
+                onChange={(e) => setInstagramUsername(e.target.value.replace(/^@/, ''))}
+                className="border-honey/50 flex-1"
+                data-testid="settings-instagram"
+              />
+            </div>
+          </div>
+
+          {/* TikTok */}
+          <div className="space-y-2">
+            <Label htmlFor="tiktok">TikTok</Label>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">tiktok.com/@</span>
+              <Input
+                id="tiktok"
+                placeholder="username"
+                value={tiktokUsername}
+                onChange={(e) => setTiktokUsername(e.target.value.replace(/^@/, ''))}
+                className="border-honey/50 flex-1"
+                data-testid="settings-tiktok"
+              />
+            </div>
           </div>
 
           <Button

@@ -52,6 +52,8 @@ async def _build_user_response(user: dict) -> UserResponse:
         is_admin=user.get("is_admin", False),
         email_verified=user.get("email_verified", True),
         title_label=user.get("title_label"),
+        instagram_username=user.get("instagram_username"),
+        tiktok_username=user.get("tiktok_username"),
     )
 
 # ============== AUTH ROUTES ==============
@@ -150,7 +152,7 @@ async def update_me(update_data: UserUpdate, user: Dict = Depends(require_auth))
         if existing:
             raise HTTPException(status_code=400, detail="Username already taken")
         update_fields["username"] = update_data.username.lower()
-    for field in ("bio", "avatar_url", "city", "region", "country", "setup", "location", "favorite_genre"):
+    for field in ("bio", "avatar_url", "city", "region", "country", "setup", "location", "favorite_genre", "instagram_username", "tiktok_username"):
         val = getattr(update_data, field, None)
         if val is not None:
             update_fields[field] = val
