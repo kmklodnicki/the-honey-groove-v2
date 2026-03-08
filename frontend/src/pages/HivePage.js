@@ -707,11 +707,21 @@ const HivePage = () => {
         <Card className="p-8 text-center border-honey/30" data-testid="hive-empty-state">
           <span className="text-4xl block mb-3">🐝</span>
           <p className="italic text-muted-foreground mb-4" style={{ fontFamily: '"DM Serif Display", serif', color: '#8A6B4A' }}>
-            {activeFilter === 'all' ? 'the hive is just getting started. be the first to post.' : `no ${FEED_FILTERS.find(f => f.key === activeFilter)?.label || ''} posts yet.`}
+            {activeFilter === 'following'
+              ? 'nothing here yet. follow some collectors to see their posts.'
+              : activeFilter === 'all'
+                ? 'the hive is just getting started. be the first to post.'
+                : `no ${FEED_FILTERS.find(f => f.key === activeFilter)?.label || ''} posts yet.`}
           </p>
-          <Button onClick={() => {}} className="bg-amber-500 text-white hover:bg-amber-600 rounded-full" data-testid="hive-empty-cta">
-            post something
-          </Button>
+          {activeFilter === 'following' ? (
+            <Button onClick={() => navigate('/nectar')} className="bg-amber-500 text-white hover:bg-amber-600 rounded-full" data-testid="find-collectors-btn">
+              browse collectors
+            </Button>
+          ) : (
+            <Button onClick={() => {}} className="bg-amber-500 text-white hover:bg-amber-600 rounded-full" data-testid="hive-empty-cta">
+              post something
+            </Button>
+          )}
         </Card>
       ) : (
         <div className="space-y-4">
