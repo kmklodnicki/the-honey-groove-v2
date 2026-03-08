@@ -92,6 +92,7 @@ The Hive — Explore — Collection — The Honeypot
 80. **Listing Modal X Button Fix** — Fixed double-click-to-close bug in ListingDetailModal. Root cause: async popstate dependency + duplicate history pushState from unstable onClose ref. Fix: closingRef pattern + direct onClose() call. (Mar 2026)
 81. **Email Truncation Bug Fix** — Replaced `truncate` CSS class with `break-all` on email displays in AdminPage and SettingsPage. Added `min-w-0` to prevent overflow in flex containers. (Mar 2026)
 82. **Email Editing in Settings** — Users can click "change" next to email, enter new address, receive confirmation email (MOCKED). Old email stays active until confirmed via /confirm-email-change?token=. Backend: POST /auth/change-email, GET /auth/confirm-email-change. Rate limited (3/15min). Token expires in 24h. (Mar 2026)
+83. **Expandable Sales Rows** — My Sales rows on Orders page are now clickable. Click to expand/collapse full listing detail: album, artist, condition, pressing variant, year, listed price, listing type, description, photos gallery, shipping editor, and cancel/DM actions. Backend returns enriched listing fields. (Mar 2026)
 
 ## Code Architecture
 ```
