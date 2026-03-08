@@ -58,7 +58,7 @@ async def seed_prompts():
     count = await db.prompts.count_documents({})
     if count > 0:
         return
-    today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    today = datetime.now(ET).replace(hour=0, minute=0, second=0, microsecond=0).astimezone(timezone.utc)
     docs = []
     for i, text in enumerate(SEED_PROMPTS):
         docs.append({
@@ -108,12 +108,18 @@ async def cache_discogs_image(release_id: int) -> Optional[str]:
 
 # ─────────── Today's Prompt ───────────
 
+from zoneinfo import ZoneInfo
+
+ET = ZoneInfo("America/New_York")
+
 def _get_today_range():
-    """Return (start, end) of today in UTC."""
-    now = datetime.now(timezone.utc)
-    start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-    end = start + timedelta(days=1)
-    return start, end
+    """Return (start, end) of today in Eastern Time, as UTC datetimes."""
+    now_et = datetime.now(ET)
+    start_et = now_et.replace(hour=0, minute=0, second=0, microsecond=0)
+    end_et = start_et + timedelta(days=1)
+    start_utc = start_et.astimezone(timezone.utc)
+    end_utc = end_et.astimezone(timezone.utc)
+    return start_utc, end_utc
 
 
 @router.get("/prompts/today")
@@ -128,7 +134,7 @@ async def get_todays_prompt(user: Dict = Depends(require_auth)):
         all_prompts = await db.prompts.find({"active": True}, {"_id": 0}).sort("scheduled_date", 1).to_list(1000)
         if not all_prompts:
             return {"prompt": None}
-        day_index = (datetime.now(timezone.utc) - datetime.fromisoformat(all_prompts[0]["scheduled_date"].replace("Z", "+00:00") if "Z" in all_prompts[0]["scheduled_date"] else all_prompts[0]["scheduled_date"])).days % len(all_prompts)
+        day_index = (datetime.now(ET).replace(hour=0, minute=0, second=0, microsecond=0) - datetime.fromisoformat(all_prompts[0]["scheduled_date"].replace("Z", "+00:00") if "Z" in all_prompts[0]["scheduled_date"] else all_prompts[0]["scheduled_date"]).astimezone(ET).replace(hour=0, minute=0, second=0, microsecond=0)).days % len(all_prompts)
         prompt = all_prompts[day_index]
 
     # Check if user already buzzed in today
@@ -439,8 +445,7 @@ async def send_streak_nudge_notifications():
     - 10pm: Users with streak >= 7 who haven't buzzed in today (urgent)
     """
     now = datetime.now(timezone.utc)
-    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-    today_end = today_start + timedelta(days=1)
+    today_start, today_end = _get_today_range()
 
     # Find all users who have buzzed in within the last 30 days
     recent_responders = await db.prompt_responses.distinct(
