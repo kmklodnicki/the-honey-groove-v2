@@ -12,7 +12,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '../components/ui/alert-dialog';
-import { ShoppingBag, Package, Truck, CheckCircle2, Clock, XCircle, Loader2, MessageCircle, Ban } from 'lucide-react';
+import { ShoppingBag, Package, Truck, CheckCircle2, Clock, XCircle, Loader2, MessageCircle, Ban, ChevronDown, ChevronUp, Disc } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import AlbumArt from '../components/AlbumArt';
@@ -123,88 +123,190 @@ const ShippingEditor = ({ order, token, API, onUpdate }) => {
 // Order row
 const OrderRow = ({ order, perspective, token, API, onUpdate, onCancel }) => {
   const navigate = useNavigate();
+  const [expanded, setExpanded] = useState(false);
   const counterparty = order.counterparty || {};
   const timeAgo = order.created_at ? formatDistanceToNow(new Date(order.created_at), { addSuffix: true }) : '';
   const isCancelled = order.payment_status === 'CANCELLED';
+  const isSale = perspective === 'seller';
+  const photos = order.photo_urls || [];
 
   return (
     <Card className={`border-honey/20 overflow-hidden ${isCancelled ? 'opacity-60' : ''}`} data-testid={`order-row-${order.id}`}>
-      <CardContent className="p-4 overflow-hidden">
-        <div className="flex gap-4 items-start min-w-0">
-          {/* Album art */}
-          <div className="w-16 h-16 rounded-lg overflow-hidden bg-honey/10 shrink-0">
-            {order.cover_url ? (
-              <AlbumArt src={order.cover_url} alt="" className="w-full h-full" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center"><Package className="w-6 h-6 text-honey/40" /></div>
-            )}
-          </div>
+      <CardContent className="p-0 overflow-hidden">
+        {/* Clickable header */}
+        <button
+          onClick={() => setExpanded(prev => !prev)}
+          className="w-full p-4 text-left hover:bg-honey/5 transition-colors"
+          data-testid={`order-toggle-${order.id}`}
+        >
+          <div className="flex gap-4 items-start min-w-0">
+            {/* Album art */}
+            <div className="w-16 h-16 rounded-lg overflow-hidden bg-honey/10 shrink-0">
+              {order.cover_url ? (
+                <AlbumArt src={order.cover_url} alt="" className="w-full h-full" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center"><Package className="w-6 h-6 text-honey/40" /></div>
+              )}
+            </div>
 
-          {/* Details */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2 mb-1">
-              <div className="min-w-0">
-                <p className="font-heading text-sm leading-tight truncate" data-testid="order-album">{order.album || 'Unknown Album'}</p>
-                <p className="text-xs text-muted-foreground truncate">{order.artist}</p>
+            {/* Details */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <div className="min-w-0">
+                  <p className="font-heading text-sm leading-tight truncate" data-testid="order-album">{order.album || 'Unknown Album'}</p>
+                  <p className="text-xs text-muted-foreground truncate">{order.artist}</p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-sm font-heading text-honey-amber" data-testid="order-amount">${order.amount?.toFixed(2)}</span>
+                  {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+                </div>
               </div>
-              <span className="text-sm font-heading text-honey-amber shrink-0" data-testid="order-amount">${order.amount?.toFixed(2)}</span>
-            </div>
 
-            {/* Order meta */}
-            <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground mb-2">
-              <span className="font-mono text-[10px] bg-stone-100 px-1.5 py-0.5 rounded" data-testid="order-number">#{order.order_number}</span>
-              <span>{timeAgo}</span>
-              {counterparty.username && (
-                <Link to={`/profile/${counterparty.username}`} className="text-honey-amber hover:underline" data-testid="order-counterparty">
-                  @{counterparty.username}
-                </Link>
-              )}
-              {order.condition && <span className="text-stone-400">{order.condition}</span>}
-            </div>
+              {/* Order meta */}
+              <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground mb-2">
+                <span className="font-mono text-[10px] bg-stone-100 px-1.5 py-0.5 rounded" data-testid="order-number">#{order.order_number}</span>
+                <span>{timeAgo}</span>
+                {counterparty.username && (
+                  <span className="text-honey-amber" data-testid="order-counterparty">
+                    @{counterparty.username}
+                  </span>
+                )}
+                {order.condition && <span className="text-stone-400">{order.condition}</span>}
+              </div>
 
-            {/* Status badges */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <PaymentBadge status={order.payment_status} />
-              {!isCancelled && perspective === 'seller' && (
-                <ShippingEditor order={order} token={token} API={API} onUpdate={onUpdate} />
-              )}
-              {!isCancelled && perspective === 'buyer' && (
-                <>
+              {/* Status badges */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <PaymentBadge status={order.payment_status} />
+                {!isCancelled && !isSale && (
+                  <>
+                    <ShippingBadge status={order.shipping_status || 'NOT_SHIPPED'} />
+                    {order.tracking_number && (
+                      <span className="text-xs text-muted-foreground">
+                        {order.shipping_carrier && `${order.shipping_carrier}: `}#{order.tracking_number}
+                      </span>
+                    )}
+                  </>
+                )}
+                {!isCancelled && isSale && !expanded && (
                   <ShippingBadge status={order.shipping_status || 'NOT_SHIPPED'} />
-                  {order.tracking_number && (
-                    <span className="text-xs text-muted-foreground">
-                      {order.shipping_carrier && `${order.shipping_carrier}: `}#{order.tracking_number}
-                    </span>
-                  )}
-                </>
+                )}
+              </div>
+            </div>
+          </div>
+        </button>
+
+        {/* Expanded detail */}
+        {expanded && (
+          <div className="border-t border-honey/10 p-4 pt-3 space-y-4 bg-honey/5 animate-in slide-in-from-top-2 duration-200" data-testid={`order-detail-${order.id}`}>
+            {/* Full listing info */}
+            <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+              {order.album && (
+                <div>
+                  <span className="text-xs text-muted-foreground">Album</span>
+                  <p className="font-medium text-vinyl-black">{order.album}</p>
+                </div>
+              )}
+              {order.artist && (
+                <div>
+                  <span className="text-xs text-muted-foreground">Artist</span>
+                  <p className="font-medium text-vinyl-black">{order.artist}</p>
+                </div>
+              )}
+              {order.condition && (
+                <div>
+                  <span className="text-xs text-muted-foreground">Condition</span>
+                  <p className="font-medium text-vinyl-black">{order.condition}</p>
+                </div>
+              )}
+              {order.pressing_variant && (
+                <div>
+                  <span className="text-xs text-muted-foreground">Pressing / Variant</span>
+                  <p className="font-medium text-vinyl-black">{order.pressing_variant}</p>
+                </div>
+              )}
+              {order.year && (
+                <div>
+                  <span className="text-xs text-muted-foreground">Year</span>
+                  <p className="font-medium text-vinyl-black">{order.year}</p>
+                </div>
+              )}
+              {order.listing_price != null && (
+                <div>
+                  <span className="text-xs text-muted-foreground">Listed Price</span>
+                  <p className="font-medium text-vinyl-black">${Number(order.listing_price).toFixed(2)}</p>
+                </div>
+              )}
+              {order.listing_type && (
+                <div>
+                  <span className="text-xs text-muted-foreground">Listing Type</span>
+                  <p className="font-medium text-vinyl-black capitalize">{order.listing_type.replace('_', ' ')}</p>
+                </div>
+              )}
+              {counterparty.username && (
+                <div>
+                  <span className="text-xs text-muted-foreground">{isSale ? 'Buyer' : 'Seller'}</span>
+                  <Link to={`/profile/${counterparty.username}`} className="font-medium text-honey-amber hover:underline block" data-testid="order-detail-counterparty">
+                    @{counterparty.username}
+                  </Link>
+                </div>
               )}
             </div>
+
+            {/* Description */}
+            {order.description && (
+              <div>
+                <span className="text-xs text-muted-foreground">Description</span>
+                <p className="text-sm text-vinyl-black mt-0.5">{order.description}</p>
+              </div>
+            )}
+
+            {/* Photos */}
+            {photos.length > 0 && (
+              <div>
+                <span className="text-xs text-muted-foreground block mb-2">Photos</span>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {photos.map((url, i) => (
+                    <div key={i} className="w-20 h-20 rounded-lg overflow-hidden bg-honey/10 shrink-0">
+                      <AlbumArt src={url} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Shipping editor for sellers / tracking for buyers */}
+            {!isCancelled && isSale && (
+              <div>
+                <span className="text-xs text-muted-foreground block mb-1">Shipping</span>
+                <ShippingEditor order={order} token={token} API={API} onUpdate={onUpdate} />
+              </div>
+            )}
 
             {/* Cancel / DM actions */}
             {!isCancelled && (
-              <div className="mt-2 pt-2 border-t border-stone-100">
-                {perspective === 'seller' && (order.payment_status === 'PAID' || order.payment_status === 'PENDING') && order.shipping_status !== 'DELIVERED' && (
+              <div className="pt-2 border-t border-honey/10 flex items-center gap-3">
+                {isSale && (order.payment_status === 'PAID' || order.payment_status === 'PENDING') && order.shipping_status !== 'DELIVERED' && (
                   <button
-                    onClick={() => onCancel(order)}
+                    onClick={(e) => { e.stopPropagation(); onCancel(order); }}
                     className="text-xs text-red-500 hover:text-red-700 hover:underline transition-colors"
                     data-testid={`cancel-order-${order.id}`}
                   >
                     Cancel Order
                   </button>
                 )}
-                {perspective === 'buyer' && order.payment_status === 'PAID' && (
+                {!isSale && order.payment_status === 'PAID' && (
                   <button
-                    onClick={() => navigate(`/messages?to=${order.seller_id}`)}
+                    onClick={(e) => { e.stopPropagation(); navigate(`/messages?to=${order.seller_id}`); }}
                     className="text-xs text-muted-foreground hover:text-honey-amber transition-colors flex items-center gap-1"
                     data-testid={`dm-seller-${order.id}`}
                   >
-                    <MessageCircle className="w-3 h-3" /> Need to cancel? Send the seller a message.
+                    <MessageCircle className="w-3 h-3" /> Message {isSale ? 'buyer' : 'seller'}
                   </button>
                 )}
               </div>
             )}
           </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -807,12 +807,18 @@ async def _enrich_transactions(txns, perspective: str):
         # Fetch listing details
         listing_id = t.get("listing_id")
         if listing_id:
-            listing = await db.listings.find_one({"id": listing_id}, {"_id": 0, "album": 1, "artist": 1, "cover_url": 1, "photo_urls": 1, "condition": 1})
+            listing = await db.listings.find_one({"id": listing_id}, {"_id": 0, "album": 1, "artist": 1, "cover_url": 1, "photo_urls": 1, "condition": 1, "pressing_variant": 1, "price": 1, "description": 1, "listing_type": 1, "year": 1})
             if listing:
                 item["album"] = listing.get("album")
                 item["artist"] = listing.get("artist")
                 item["cover_url"] = (listing.get("photo_urls") or [None])[0] or listing.get("cover_url")
                 item["condition"] = listing.get("condition")
+                item["pressing_variant"] = listing.get("pressing_variant")
+                item["listing_price"] = listing.get("price")
+                item["description"] = listing.get("description")
+                item["listing_type"] = listing.get("listing_type")
+                item["photo_urls"] = listing.get("photo_urls", [])
+                item["year"] = listing.get("year")
 
         # Fetch counterparty user
         if perspective == "buyer":

@@ -1,0 +1,83 @@
+{
+  "summary": "Iteration 81: Tested expandable sales rows on Orders page. Backend: GET /api/orders/sales and /api/orders/purchases both return 200 with correct enriched data structure including new fields (pressing_variant, listing_price, description, listing_type, photo_urls, year). Frontend: Orders page loads correctly, both tabs (My Orders/My Sales) clickable and switch properly, empty states display correctly. Expandable row functionality tested with seed data - expand/collapse toggle works, detail section shows all enriched fields in grid layout, ShippingEditor and Cancel Order visible for sellers.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "passed_tests": [
+    "BACKEND: GET /api/orders/sales returns 200 - PASSED",
+    "BACKEND: GET /api/orders/purchases returns 200 - PASSED",
+    "BACKEND: GET /api/orders/sales without auth returns 401 - PASSED",
+    "BACKEND: GET /api/orders/purchases without auth returns 401 - PASSED",
+    "BACKEND: Sales response includes enriched fields (pressing_variant, listing_price, description, listing_type, photo_urls, year) - PASSED",
+    "FRONTEND: Orders page loads at /orders with data-testid='orders-page' - PASSED",
+    "FRONTEND: My Orders tab clickable (data-testid='tab-purchases') - PASSED",
+    "FRONTEND: My Sales tab clickable (data-testid='tab-sales') - PASSED",
+    "FRONTEND: Empty state 'no purchases yet' displayed correctly - PASSED",
+    "FRONTEND: Empty state 'no sales yet' displayed correctly - PASSED",
+    "FRONTEND: Order row toggle button works (data-testid='order-toggle-{id}') - PASSED",
+    "FRONTEND: Clicking sale row expands to show detail section (data-testid='order-detail-{id}') - PASSED",
+    "FRONTEND: Expanded detail shows Album field - PASSED",
+    "FRONTEND: Expanded detail shows Artist field - PASSED",
+    "FRONTEND: Expanded detail shows Condition field - PASSED",
+    "FRONTEND: Expanded detail shows Pressing / Variant field (NEW) - PASSED",
+    "FRONTEND: Expanded detail shows Year field (NEW) - PASSED",
+    "FRONTEND: Expanded detail shows Listed Price field (NEW) - PASSED",
+    "FRONTEND: Expanded detail shows Listing Type field (NEW) - PASSED",
+    "FRONTEND: Expanded detail shows Description field (NEW) - PASSED",
+    "FRONTEND: Expanded detail shows Photos grid (NEW) - PASSED",
+    "FRONTEND: ShippingEditor visible with 'update' link for sellers - PASSED",
+    "FRONTEND: Cancel Order button visible for sellers - PASSED",
+    "FRONTEND: Clicking expanded row again collapses it - PASSED"
+  ],
+
+  "test_report_links": [
+    "/app/backend/tests/test_orders_expandable.py",
+    "/app/test_reports/pytest/orders_expandable_results.xml"
+  ],
+
+  "action_items": [],
+
+  "critical_code_review_comments": [
+    "Backend _enrich_transactions correctly fetches and returns new listing fields (lines 810-821 in honeypot.py)",
+    "Frontend OrderRow component properly uses button wrapper for toggle functionality (line 137-196)",
+    "Frontend expanded detail section correctly renders all enriched fields conditionally (lines 200-308)",
+    "data-testid attributes properly implemented for all interactive elements",
+    "Photos displayed using horizontal scrollable gallery with AlbumArt component",
+    "ShippingEditor correctly shown only for seller perspective",
+    "MOCKED: Email sending via Resend is mocked"
+  ],
+
+  "updated_files": [
+    "/app/backend/tests/test_orders_expandable.py"
+  ],
+
+  "success_rate": {
+    "backend": "100% (6/6 tests passed)",
+    "frontend": "100% (18/18 features verified)"
+  },
+
+  "test_credentials": {
+    "login": "vinylcollector@honey.io / password123",
+    "note": "Token field is 'access_token'"
+  },
+
+  "seed_data_creation": "Created temporary test listing and transaction for UI testing, then cleaned up after tests",
+
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+
+  "context_for_next_testing_agent": "Expandable sales rows feature is complete and working. Test user (vinylcollector@honey.io) has no real sales/purchases, so empty states are shown by default. To test expandable functionality, create test transactions as documented in this iteration. The 404 console errors for image URLs are expected - the test images used fake discogs URLs.",
+
+  "mocked_integrations": {
+    "email_sending": "Resend email service is MOCKED - confirmation emails are logged but not sent"
+  }
+}
