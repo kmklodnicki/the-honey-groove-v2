@@ -72,6 +72,7 @@ class RecordResponse(BaseModel):
     year: Optional[int] = None
     format: Optional[str] = None
     notes: Optional[str] = None
+    color_variant: Optional[str] = None
     user_id: str
     created_at: str
     spin_count: int = 0

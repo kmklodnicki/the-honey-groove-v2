@@ -410,6 +410,11 @@ const RecordCard = ({ record, onSpin, onDelete, isSpinning, value }) => {
               {record.title}
             </h4>
             <p className="text-xs text-muted-foreground truncate">{record.artist}</p>
+            {record.color_variant && (
+              <span className="inline-block mt-0.5 text-[10px] italic text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full truncate max-w-full" data-testid={`variant-${record.id}`}>
+                {record.color_variant}
+              </span>
+            )}
           </Link>
           
           <DropdownMenu>
