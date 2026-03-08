@@ -68,18 +68,22 @@ const SettingsPage = () => {
   };
 
   const handleSave = async () => {
+    if (!username.trim()) {
+      toast.error('username is required.');
+      return;
+    }
     setSaving(true);
     try {
-      const response = await axios.put(`${API}/auth/me`, 
-        { 
-          username: username !== user.username ? username : undefined,
-          bio: bio,
-          setup: setup,
-          location: location,
-          country: country || undefined,
-          favorite_genre: favoriteGenre || undefined,
-          avatar_url: avatarPreview !== user.avatar_url ? avatarPreview : undefined
-        },
+      const payload = {
+        username: username !== user.username ? username : undefined,
+        bio: bio || '',
+        setup: setup || '',
+        location: location || '',
+        country: country || undefined,
+        favorite_genre: favoriteGenre || undefined,
+        avatar_url: avatarPreview !== user.avatar_url ? avatarPreview : undefined
+      };
+      const response = await axios.put(`${API}/auth/me`, payload,
         { headers: { Authorization: `Bearer ${token}` }}
       );
       updateUser(response.data);
@@ -411,7 +415,7 @@ const SettingsPage = () => {
 
           <Button
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || !username.trim()}
             className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2"
             data-testid="save-settings-btn"
           >
