@@ -413,13 +413,13 @@ const HivePage = () => {
   const [activeFilter, setActiveFilter] = useState('all');
 
   const FEED_FILTERS = [
-    { key: 'all', label: 'All' },
-    { key: 'NOW_SPINNING', label: 'Now Spinning' },
-    { key: 'NEW_HAUL', label: 'New Haul' },
-    { key: 'ISO', label: 'ISO' },
-    { key: 'listing', label: 'For Sale/Trade' },
-    { key: 'NOTE', label: 'A Note' },
-    { key: 'following', label: 'Following' },
+    { key: 'all', label: 'All', activeClass: 'bg-vinyl-black text-white', inactiveClass: 'bg-stone-100 text-stone-600 hover:bg-stone-200' },
+    { key: 'NOW_SPINNING', label: 'Now Spinning', activeClass: 'bg-honey text-vinyl-black', inactiveClass: 'bg-honey/10 text-honey-amber hover:bg-honey/20' },
+    { key: 'NEW_HAUL', label: 'New Haul', activeClass: 'bg-emerald-500 text-white', inactiveClass: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' },
+    { key: 'ISO', label: 'ISO', activeClass: 'bg-orange-500 text-white', inactiveClass: 'bg-orange-50 text-orange-700 hover:bg-orange-100' },
+    { key: 'listing', label: 'For Sale/Trade', activeClass: 'bg-teal-500 text-white', inactiveClass: 'bg-teal-50 text-teal-700 hover:bg-teal-100' },
+    { key: 'NOTE', label: 'A Note', activeClass: 'bg-stone-700 text-white', inactiveClass: 'bg-stone-100 text-stone-600 hover:bg-stone-200' },
+    { key: 'following', label: 'Following', activeClass: 'bg-vinyl-black text-white', inactiveClass: 'bg-stone-100 text-stone-600 hover:bg-stone-200' },
   ];
 
   const headers = { Authorization: `Bearer ${token}` };
@@ -691,9 +691,7 @@ const HivePage = () => {
             key={f.key}
             onClick={() => setActiveFilter(f.key)}
             className={`whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-medium transition-all shrink-0 ${
-              activeFilter === f.key
-                ? 'bg-vinyl-black text-white shadow-sm'
-                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+              activeFilter === f.key ? f.activeClass + ' shadow-sm' : f.inactiveClass
             }`}
             data-testid={`filter-${f.key}`}
           >

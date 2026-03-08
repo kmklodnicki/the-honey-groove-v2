@@ -88,6 +88,7 @@ The Hive — Explore — Collection — The Honeypot
 76. **UI Bug Fixes (Mar 2026)** — Fixed AlbumArt import, enlarged navbar logo, fixed Orders page layout, fixed Follow button in search, separated DM notifications, validated blank ISO posts.
 77. **Hive Feed Pagination** — "View Older Posts" button at bottom of feed loads next 50 posts via /api/feed?limit=50&skip=N. End-of-feed message when no more posts. Only shown on "All" filter. (Mar 2026)
 78. **Back to Top Button** — Floating arrow button fixed bottom-right, appears after scrolling >300px, smooth scrolls to top. vinyl-black styled. (Mar 2026)
+79. **EXIF Orientation Fix** — Added `ImageOps.exif_transpose()` to `process_image` in collection.py so uploaded photos display correctly regardless of EXIF rotation metadata. Fixes sideways profile pictures from phone cameras. (Mar 2026)
 
 ## Code Architecture
 ```

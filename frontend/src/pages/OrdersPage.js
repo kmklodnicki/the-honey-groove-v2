@@ -104,11 +104,11 @@ const ShippingEditor = ({ order, token, API, onUpdate }) => {
           </SelectContent>
         </Select>
       </div>
-      <div className="flex gap-2">
+      <div className="flex gap-2 flex-wrap">
         <Input placeholder="carrier (e.g. USPS)" value={carrier} onChange={e => setCarrier(e.target.value)}
-          className="h-8 text-xs flex-1" data-testid="shipping-carrier-input" />
+          className="h-8 text-xs flex-1 min-w-[100px]" data-testid="shipping-carrier-input" />
         <Input placeholder="tracking #" value={tracking} onChange={e => setTracking(e.target.value)}
-          className="h-8 text-xs flex-1" data-testid="shipping-tracking-input" />
+          className="h-8 text-xs flex-1 min-w-[100px]" data-testid="shipping-tracking-input" />
       </div>
       <div className="flex gap-2">
         <Button size="sm" onClick={save} disabled={saving} className="bg-honey text-vinyl-black hover:bg-honey-amber h-7 text-xs rounded-full" data-testid="save-shipping-btn">
@@ -128,9 +128,9 @@ const OrderRow = ({ order, perspective, token, API, onUpdate, onCancel }) => {
   const isCancelled = order.payment_status === 'CANCELLED';
 
   return (
-    <Card className={`border-honey/20 ${isCancelled ? 'opacity-60' : ''}`} data-testid={`order-row-${order.id}`}>
-      <CardContent className="p-4">
-        <div className="flex gap-4 items-start">
+    <Card className={`border-honey/20 overflow-hidden ${isCancelled ? 'opacity-60' : ''}`} data-testid={`order-row-${order.id}`}>
+      <CardContent className="p-4 overflow-hidden">
+        <div className="flex gap-4 items-start min-w-0">
           {/* Album art */}
           <div className="w-16 h-16 rounded-lg overflow-hidden bg-honey/10 shrink-0">
             {order.cover_url ? (
@@ -246,10 +246,10 @@ const OrdersPage = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8" data-testid="orders-page">
+    <div className="max-w-2xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8 overflow-x-hidden" data-testid="orders-page">
       <h1 className="font-heading text-3xl text-vinyl-black mb-4">Orders</h1>
 
-      <Tabs defaultValue="purchases" className="w-full">
+      <Tabs defaultValue="purchases" className="w-full overflow-hidden">
         <TabsList className="w-full grid grid-cols-2 mb-4">
           <TabsTrigger value="purchases" data-testid="tab-purchases">
             <ShoppingBag className="w-4 h-4 mr-1.5" /> My Orders {purchases.length > 0 && `(${purchases.length})`}

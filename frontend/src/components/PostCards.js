@@ -51,14 +51,14 @@ const PostTypeBadge = ({ type, mood }) => {
   if (type === 'NOTE') return null;
   const config = {
     NOW_SPINNING: { label: 'Now Spinning', icon: Disc, bg: 'bg-honey/20 text-honey-amber' },
-    NEW_HAUL: { label: 'New Haul', icon: Package, bg: 'bg-amber-100/60 text-amber-700' },
-    ISO: { label: 'ISO', icon: Search, bg: 'bg-amber-100/60 text-amber-700' },
+    NEW_HAUL: { label: 'New Haul', icon: Package, bg: 'bg-emerald-100/60 text-emerald-700' },
+    ISO: { label: 'ISO', icon: Search, bg: 'bg-orange-100/60 text-orange-700' },
     ADDED_TO_COLLECTION: { label: 'Added', icon: Plus, bg: 'bg-green-100/60 text-green-700' },
     WEEKLY_WRAP: { label: 'Weekly Wrap', icon: Music, bg: 'bg-purple-100/60 text-purple-700' },
     VINYL_MOOD: { label: 'Vinyl Mood', icon: Moon, bg: 'bg-purple-100/60 text-purple-700' },
     DAILY_PROMPT: { label: 'Daily Prompt', icon: Disc, bg: 'bg-amber-100/60 text-amber-700' },
-    listing_sale: { label: 'For Sale', icon: ShoppingBag, bg: 'bg-green-100/60 text-green-700' },
-    listing_trade: { label: 'For Trade', icon: ArrowRightLeft, bg: 'bg-blue-100/60 text-blue-700' },
+    listing_sale: { label: 'For Sale', icon: ShoppingBag, bg: 'bg-teal-100/60 text-teal-700' },
+    listing_trade: { label: 'For Trade', icon: ArrowRightLeft, bg: 'bg-teal-100/60 text-teal-700' },
   };
   const c = config[type] || config.NOW_SPINNING;
   const Icon = c.icon;
@@ -302,7 +302,7 @@ const ListingPostCard = ({ post }) => {
         <div className="flex-1 min-w-0">
           <p className="font-medium text-sm truncate">{post.record_title}</p>
           <p className="text-xs text-muted-foreground truncate">{post.record_artist}</p>
-          <span className={`inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs font-medium ${isSale ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+          <span className={`inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100/60 text-teal-700`}>
             {isSale ? <ShoppingBag className="w-3 h-3" /> : <ArrowRightLeft className="w-3 h-3" />}
             {isSale ? 'For Sale' : 'For Trade'}
           </span>

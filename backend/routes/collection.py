@@ -501,7 +501,7 @@ JPEG_QUALITY = 85
 def process_image(data: bytes, content_type: str, filename: str) -> tuple:
     """Convert HEIC/HEIF to JPEG, resize to max 1200px, compress to 85% JPEG quality.
     Returns (processed_bytes, final_content_type, final_extension)."""
-    from PIL import Image
+    from PIL import Image, ImageOps
     import io
 
     ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
@@ -512,6 +512,9 @@ def process_image(data: bytes, content_type: str, filename: str) -> tuple:
         pillow_heif.register_heif_opener()
 
     img = Image.open(io.BytesIO(data))
+
+    # Apply EXIF orientation so photos display correctly regardless of rotation metadata
+    img = ImageOps.exif_transpose(img)
 
     # Convert palette/RGBA modes for JPEG compatibility
     if img.mode in ("RGBA", "P", "LA"):
