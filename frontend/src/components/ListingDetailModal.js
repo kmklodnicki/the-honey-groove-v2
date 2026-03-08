@@ -33,6 +33,8 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
   const [wantlistLoading, setWantlistLoading] = useState(false);
   const [offerAmount, setOfferAmount] = useState('');
   const [showOfferInput, setShowOfferInput] = useState(false);
+  const onCloseRef = React.useRef(onClose);
+  onCloseRef.current = onClose;
 
   const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
@@ -56,22 +58,26 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
     if (open && listingId) fetchListing();
   }, [open, listingId, fetchListing]);
 
-  // URL management
+  // URL management — only for browser back button
+  const closingRef = React.useRef(false);
   useEffect(() => {
     if (open && listingId) {
       window.history.pushState({ modal: true }, '', `/honeypot/listing/${listingId}`);
+      closingRef.current = false;
     }
-    const handlePop = () => { onClose(); };
+    const handlePop = () => {
+      if (!closingRef.current) onCloseRef.current();
+    };
     window.addEventListener('popstate', handlePop);
     return () => window.removeEventListener('popstate', handlePop);
-  }, [open, listingId, onClose]);
+  }, [open, listingId]);
 
   const handleClose = () => {
+    closingRef.current = true;
     if (window.history.state?.modal) {
       window.history.back();
-    } else {
-      onClose();
     }
+    onClose();
   };
 
   const toggleWantlist = async () => {
