@@ -90,6 +90,8 @@ The Hive — Explore — Collection — The Honeypot
 78. **Back to Top Button** — Floating arrow button fixed bottom-right, appears after scrolling >300px, smooth scrolls to top. vinyl-black styled. (Mar 2026)
 79. **EXIF Orientation Fix** — Added `ImageOps.exif_transpose()` to `process_image` in collection.py so uploaded photos display correctly regardless of EXIF rotation metadata. Fixes sideways profile pictures from phone cameras. (Mar 2026)
 80. **Listing Modal X Button Fix** — Fixed double-click-to-close bug in ListingDetailModal. Root cause: async popstate dependency + duplicate history pushState from unstable onClose ref. Fix: closingRef pattern + direct onClose() call. (Mar 2026)
+81. **Email Truncation Bug Fix** — Replaced `truncate` CSS class with `break-all` on email displays in AdminPage and SettingsPage. Added `min-w-0` to prevent overflow in flex containers. (Mar 2026)
+82. **Email Editing in Settings** — Users can click "change" next to email, enter new address, receive confirmation email (MOCKED). Old email stays active until confirmed via /confirm-email-change?token=. Backend: POST /auth/change-email, GET /auth/confirm-email-change. Rate limited (3/15min). Token expires in 24h. (Mar 2026)
 
 ## Code Architecture
 ```
