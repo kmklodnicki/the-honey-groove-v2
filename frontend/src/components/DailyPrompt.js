@@ -50,7 +50,7 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
           {hasBuzzedIn ? (
             <div className="flex items-center gap-3">
               <span className="text-sm text-amber-700 font-medium">buzzed in</span>
-              {streak > 0 && <span className="flex items-center gap-1 text-sm text-amber-600 font-bold">🐝 {streak}</span>}
+              {streak > 0 && <span className="flex items-center gap-1 text-sm text-amber-600 font-bold">🐝 {streak} {streak === 1 ? 'day' : 'days'} in a row</span>}
             </div>
           ) : (
             <Button onClick={() => setModalOpen(true)} className="bg-amber-500 hover:bg-amber-600 text-white rounded-full px-6 text-sm font-semibold shadow-sm" data-testid="buzz-in-btn">
@@ -58,7 +58,7 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
             </Button>
           )}
           {streak > 0 && !hasBuzzedIn && (
-            <span className="flex items-center gap-1 text-sm text-amber-600 font-bold">🐝 {streak} day streak</span>
+            <span className="flex items-center gap-1 text-sm text-amber-600 font-bold">🐝 {streak} {streak === 1 ? 'day' : 'days'} in a row</span>
           )}
         </div>
       </Card>
@@ -229,7 +229,7 @@ const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
                 <p className="text-amber-700 font-medium mb-1">buzzed in!</p>
                 {responseData.streak > 0 && (
                   <p className="flex items-center justify-center gap-1 text-amber-600 font-bold text-lg">
-                    {responseData.streak} day streak
+                    {responseData.streak} {responseData.streak === 1 ? 'day' : 'days'} in a row
                   </p>
                 )}
               </div>
@@ -261,7 +261,7 @@ export const StreakBadge = ({ username }) => {
   if (streak <= 0) return null;
   return (
     <div className="flex items-center gap-1.5 text-amber-600 font-bold text-sm" data-testid="profile-streak-badge">
-      🐝 {streak} day streak
+      🐝 {streak} {streak === 1 ? 'day' : 'days'} in a row
     </div>
   );
 };
