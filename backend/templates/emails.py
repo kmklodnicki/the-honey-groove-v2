@@ -424,3 +424,23 @@ def verified_seller_renewal(username: str, expiry_date: str, days_left: int) -> 
         "subject": "Your Verified Seller badge renews soon.",
         "html": wrap_email(body),
     }
+
+
+
+def email_change_confirmation(username: str, confirm_url: str) -> dict:
+    body = f"""
+    <p style="{GREETING}">hey @{username},</p>
+    <p style="font-size:14px;color:#2A1A06;">
+        you requested to change your email address on the Honey Groove.
+        click the button below to confirm your new email.
+    </p>
+    <div style="text-align:center;margin:28px 0;">
+        <a href="{confirm_url}" style="{BTN}">confirm new email</a>
+    </div>
+    <p style="{MUTED}">if you didn't request this, you can safely ignore this email. your current email will remain unchanged.</p>
+    {SIG_SHORT}
+    """
+    return {
+        "subject": "Confirm your new email — The Honey Groove",
+        "html": wrap_email(body),
+    }

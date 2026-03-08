@@ -219,6 +219,62 @@ async def resend_verification(user: Dict = Depends(require_auth)):
     return {"status": "ok", "message": "Verification email sent"}
 
 
+@router.post("/auth/change-email")
+async def request_email_change(data: dict, user: Dict = Depends(require_auth)):
+    """Request an email change. Sends confirmation to the new address."""
+    from services.rate_limiter import rate_limiter
+    rate_limiter.check(f"change_email:{user['id']}", max_requests=3, window_seconds=900)
+
+    new_email = data.get("new_email", "").strip().lower()
+    if not new_email or "@" not in new_email:
+        raise HTTPException(status_code=400, detail="Please enter a valid email address.")
+    if new_email == user.get("email", "").lower():
+        raise HTTPException(status_code=400, detail="That's already your current email.")
+    existing = await db.users.find_one({"email": new_email}, {"_id": 0, "id": 1})
+    if existing:
+        raise HTTPException(status_code=400, detail="This email is already in use by another account.")
+
+    token = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    await db.email_change_requests.delete_many({"user_id": user["id"]})
+    await db.email_change_requests.insert_one({
+        "user_id": user["id"],
+        "new_email": new_email,
+        "token": token,
+        "created_at": now,
+    })
+
+    confirm_url = f"{FRONTEND_URL}/confirm-email-change?token={token}"
+    from templates.emails import email_change_confirmation
+    from services.email_service import send_email_fire_and_forget
+    tmpl = email_change_confirmation(user.get("username", ""), confirm_url)
+    await send_email_fire_and_forget(new_email, tmpl["subject"], tmpl["html"])
+    logger.info(f"Email change requested for user {user['id']} → {new_email} | confirm: {confirm_url}")
+
+    return {"status": "ok", "message": "Confirmation email sent to your new address. Check your inbox."}
+
+
+@router.get("/auth/confirm-email-change")
+async def confirm_email_change(token: str = Query(...)):
+    """Confirm an email change via token."""
+    doc = await db.email_change_requests.find_one({"token": token}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=400, detail="Invalid or expired confirmation link.")
+    created = datetime.fromisoformat(doc["created_at"])
+    if datetime.now(timezone.utc) - created > timedelta(hours=24):
+        await db.email_change_requests.delete_one({"token": token})
+        raise HTTPException(status_code=400, detail="This confirmation link has expired. Please request a new email change.")
+    # Check new email isn't taken in the meantime
+    existing = await db.users.find_one({"email": doc["new_email"], "id": {"$ne": doc["user_id"]}}, {"_id": 0, "id": 1})
+    if existing:
+        await db.email_change_requests.delete_one({"token": token})
+        raise HTTPException(status_code=400, detail="This email is now in use by another account.")
+    await db.users.update_one({"id": doc["user_id"]}, {"$set": {"email": doc["new_email"]}})
+    await db.email_change_requests.delete_many({"user_id": doc["user_id"]})
+    return {"status": "ok", "message": "Your email has been updated successfully!"}
+
+
+
 
 # ============== USER ROUTES ==============
 

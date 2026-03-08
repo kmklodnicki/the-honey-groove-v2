@@ -37,6 +37,9 @@ const SettingsPage = () => {
   const [stripeStatus, setStripeStatus] = useState(null); // { stripe_connected, stripe_account_id }
   const [stripeLoading, setStripeLoading] = useState(true);
   const [stripeConnecting, setStripeConnecting] = useState(false);
+  const [editingEmail, setEditingEmail] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [emailSaving, setEmailSaving] = useState(false);
 
   useEffect(() => {
     axios.get(`${API}/newsletter/status`, { headers: { Authorization: `Bearer ${token}` } })
@@ -168,6 +171,27 @@ const SettingsPage = () => {
     }
   };
 
+  const handleEmailChange = async () => {
+    if (!newEmail.trim() || !newEmail.includes('@')) {
+      toast.error('please enter a valid email address.');
+      return;
+    }
+    setEmailSaving(true);
+    try {
+      const resp = await axios.post(`${API}/auth/change-email`, 
+        { new_email: newEmail.trim() },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      toast.success(resp.data.message || 'confirmation email sent to your new address.');
+      setEditingEmail(false);
+      setNewEmail('');
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'could not request email change.');
+    } finally {
+      setEmailSaving(false);
+    }
+  };
+
   const firstLetter = user?.username?.charAt(0).toUpperCase() || '?';
   const hasCustomAvatar = avatarPreview && !avatarPreview.includes('dicebear');
 
@@ -236,9 +260,9 @@ const SettingsPage = () => {
               />
             </div>
             
-            <div>
+            <div className="min-w-0">
               <p className="font-medium">@{user?.username}</p>
-              <p className="text-sm text-muted-foreground">{user?.email}</p>
+              <p className="text-sm text-muted-foreground break-all">{user?.email}</p>
               <button 
                 onClick={handlePhotoClick}
                 className="text-sm text-honey-amber hover:underline mt-1"
@@ -258,6 +282,54 @@ const SettingsPage = () => {
               className="border-honey/50"
               data-testid="settings-username"
             />
+          </div>
+
+          {/* Email */}
+          <div className="space-y-2">
+            <Label>Email</Label>
+            {!editingEmail ? (
+              <div className="flex items-center gap-2">
+                <p className="text-sm break-all flex-1" data-testid="settings-email-display">{user?.email}</p>
+                <button
+                  onClick={() => { setEditingEmail(true); setNewEmail(user?.email || ''); }}
+                  className="text-sm text-honey-amber hover:underline whitespace-nowrap"
+                  data-testid="settings-email-edit-btn"
+                >
+                  change
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <Input
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="new email address"
+                  className="border-honey/50"
+                  data-testid="settings-email-input"
+                />
+                <p className="text-xs text-muted-foreground">a confirmation link will be sent to your new email. your current email stays active until you confirm.</p>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    onClick={handleEmailChange}
+                    disabled={emailSaving || !newEmail.trim()}
+                    className="bg-honey text-vinyl-black hover:bg-honey/90"
+                    data-testid="settings-email-save-btn"
+                  >
+                    {emailSaving ? 'sending...' : 'send confirmation'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => { setEditingEmail(false); setNewEmail(''); }}
+                    data-testid="settings-email-cancel-btn"
+                  >
+                    cancel
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Bio */}

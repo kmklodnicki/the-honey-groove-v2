@@ -1125,7 +1125,7 @@ const UserManagementSection = ({ API, headers }) => {
                   <img src={resolveImageUrl(u.avatar_url)} alt="" className="w-7 h-7 rounded-full shrink-0" />
                   <span className="text-sm font-medium truncate">@{u.username}</span>
                 </div>
-                <span className="text-xs text-muted-foreground truncate">{u.email}</span>
+                <span className="text-xs text-muted-foreground break-all">{u.email}</span>
                 <span className="text-xs text-muted-foreground">{fmtDate(u.created_at)}</span>
                 <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold w-fit ${
                   u.is_admin ? 'bg-[#E8A820]/15 text-[#C8861A] border border-[#C8861A]/30' : 'bg-gray-100 text-gray-600'
