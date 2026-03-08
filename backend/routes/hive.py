@@ -271,7 +271,7 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
         return None
 
     post_user = await db.users.find_one({"id": post["user_id"]}, {"_id": 0, "password_hash": 0})
-    user_data = {"id": post_user["id"], "username": post_user["username"], "avatar_url": post_user.get("avatar_url"), "founding_member": post_user.get("founding_member", False)} if post_user else None
+    user_data = {"id": post_user["id"], "username": post_user["username"], "avatar_url": post_user.get("avatar_url"), "founding_member": post_user.get("founding_member", False), "title_label": post_user.get("title_label")} if post_user else None
     
     record_data = None
     if post.get("record_id"):
@@ -575,7 +575,7 @@ async def search_posts(q: str = Query(..., min_length=2), user: Dict = Depends(r
     ).sort("created_at", -1).limit(20).to_list(20)
     results = []
     for p in posts:
-        poster = await db.users.find_one({"id": p.get("user_id")}, {"_id": 0, "id": 1, "username": 1, "avatar_url": 1})
+        poster = await db.users.find_one({"id": p.get("user_id")}, {"_id": 0, "id": 1, "username": 1, "avatar_url": 1, "title_label": 1})
         results.append({
             "id": p.get("id"),
             "post_type": p.get("post_type"),
@@ -718,7 +718,7 @@ async def add_comment(post_id: str, comment_data: CommentCreate, user: Dict = De
                                       {"post_id": post_id, "comment_id": comment_id})
             notified_ids.add(mentioned_user["id"])
 
-    user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url")}
+    user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url"), "title_label": user.get("title_label")}
     
     return CommentResponse(**comment_doc, user=user_data, likes_count=0, is_liked=False)
 
@@ -732,7 +732,7 @@ async def get_comments(post_id: str, current_user: Optional[Dict] = Depends(get_
     comment_map = {}
     for comment in comments:
         comment_user = await db.users.find_one({"id": comment["user_id"]}, {"_id": 0, "password_hash": 0})
-        user_data = {"id": comment_user["id"], "username": comment_user["username"], "avatar_url": comment_user.get("avatar_url")} if comment_user else None
+        user_data = {"id": comment_user["id"], "username": comment_user["username"], "avatar_url": comment_user.get("avatar_url"), "title_label": comment_user.get("title_label")} if comment_user else None
         likes_count = await db.comment_likes.count_documents({"comment_id": comment["id"]})
         is_liked = False
         if current_user_id:

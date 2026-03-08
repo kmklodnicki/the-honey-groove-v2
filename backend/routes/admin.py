@@ -460,6 +460,7 @@ async def list_users(
             "avatar_url": u.get("avatar_url"),
             "is_admin": u.get("is_admin", False),
             "created_at": u.get("created_at"),
+            "title_label": u.get("title_label"),
         }
         for u in users
     ]
@@ -483,3 +484,20 @@ async def update_user_role(data: AdminRoleUpdate, user: Dict = Depends(require_a
     await db.users.update_one({"id": data.user_id}, {"$set": {"is_admin": data.is_admin}})
     action = "granted" if data.is_admin else "revoked"
     return {"detail": f"Admin access {action} for @{target.get('username')}"}
+
+
+
+class SetTitleLabel(BaseModel):
+    user_id: str
+    title_label: Optional[str] = None
+
+@router.put("/admin/users/title-label")
+async def set_user_title_label(data: SetTitleLabel, user: Dict = Depends(require_auth)):
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    target = await db.users.find_one({"id": data.user_id}, {"_id": 0, "username": 1})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+    label = data.title_label.strip() if data.title_label else None
+    await db.users.update_one({"id": data.user_id}, {"$set": {"title_label": label}})
+    return {"detail": f"Title label for @{target.get('username')} set to '{label or '(none)'}'" }

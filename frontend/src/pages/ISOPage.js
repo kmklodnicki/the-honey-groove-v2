@@ -33,6 +33,7 @@ import RecordSearchResult from '../components/RecordSearchResult';
 import StripeGateModal from '../components/StripeGateModal';
 import CountryGateModal from '../components/CountryGateModal';
 import { countryFlag } from '../utils/countryFlag';
+import { TitleBadge } from '../components/TitleBadge';
 
 const ISO_TAGS = ['OG Press', 'Factory Sealed', 'Any', 'Promo'];
 const FILTER_OPTIONS = ['All', 'OPEN', 'FOUND'];
@@ -1048,6 +1049,7 @@ const ListingCard = ({ listing, currentUserId, onProposeTrade, onBuyNow, onMakeO
           <div className="flex items-center gap-1 mt-0.5">
             <Link to={`/profile/${listing.user.username}`} onClick={e => e.stopPropagation()}
               className="text-[11px] text-muted-foreground hover:underline">@{listing.user.username}{listing.user.country && <span className="ml-0.5">{countryFlag(listing.user.country)}</span>}</Link>
+            {listing.user.title_label && <TitleBadge label={listing.user.title_label} />}
             {listing.user.rating > 0 && <span className="text-[11px] text-muted-foreground">· {listing.user.rating.toFixed(1)} ★</span>}
           </div>
         )}

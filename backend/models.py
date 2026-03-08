@@ -35,6 +35,7 @@ class UserResponse(BaseModel):
     founding_member: bool = False
     is_admin: bool = False
     email_verified: bool = True
+    title_label: Optional[str] = None
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Heart, Reply } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import BeeAvatar from './BeeAvatar';
+import { TitleBadge } from './TitleBadge';
 
 const renderMentions = (text) => {
   const parts = text.split(/(@\w+)/g);
@@ -26,6 +27,7 @@ const SingleComment = ({ comment, onReply, onLike, isReply }) => (
           <Link to={`/profile/${comment.user?.username}`} className="font-medium text-sm hover:underline">
             @{comment.user?.username}
           </Link>
+          {comment.user?.title_label && <TitleBadge label={comment.user.title_label} />}
           <span className="text-xs text-muted-foreground">
             {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
           </span>

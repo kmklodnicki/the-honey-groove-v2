@@ -36,6 +36,7 @@ import { formatDistanceToNow } from 'date-fns';
 import ComposerBar from '../components/ComposerBar';
 import { resolveImageUrl } from '../utils/imageUrl';
 import { PostTypeBadge, PostCardBody } from '../components/PostCards';
+import { TitleBadge } from '../components/TitleBadge';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { DailyPromptCard } from '../components/DailyPrompt';
 import OnboardingModal from '../components/OnboardingModal';
@@ -243,6 +244,7 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
               {post.user?.founding_member && (
                 <span title="founding member of the Honey Groove" className="inline-block ml-1 cursor-help" style={{ color: '#C8861A', fontSize: '12px' }}>🍯</span>
               )}
+              {post.user?.title_label && <TitleBadge label={post.user.title_label} />}
               <PostTypeBadge type={post.post_type} mood={post.mood} />
             </div>
             <p className="text-xs text-muted-foreground">{timeAgo}</p>

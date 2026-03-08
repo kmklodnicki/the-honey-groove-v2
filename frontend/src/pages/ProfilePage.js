@@ -16,6 +16,7 @@ import { MoodBoardTab } from '../components/MoodBoardTab';
 import { resolveImageUrl } from '../utils/imageUrl';
 import AlbumArt from '../components/AlbumArt';
 import { countryFlag } from '../utils/countryFlag';
+import { TitleBadge } from '../components/TitleBadge';
 
 const ProfilePage = () => {
   usePageTitle('Profile');
@@ -172,6 +173,7 @@ const ProfilePage = () => {
           <div className="flex-1" style={{ minWidth: 0 }}>
             <div className="flex items-center gap-3 flex-wrap">
               <h1 className="font-heading text-2xl break-words" style={{ flexShrink: 1, minWidth: 0 }} data-testid="profile-username">@{profile.username}{profile.country && <span className="ml-1.5" data-testid="profile-country-flag">{countryFlag(profile.country)}</span>}</h1>
+              {profile.title_label && <TitleBadge label={profile.title_label} />}
               {promptStreak && promptStreak.streak > 0 && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-bold" data-testid="profile-streak-pill">
                   {promptStreak.streak} day streak

@@ -51,6 +51,7 @@ async def _build_user_response(user: dict) -> UserResponse:
         founding_member=user.get("founding_member", False),
         is_admin=user.get("is_admin", False),
         email_verified=user.get("email_verified", True),
+        title_label=user.get("title_label"),
     )
 
 # ============== AUTH ROUTES ==============

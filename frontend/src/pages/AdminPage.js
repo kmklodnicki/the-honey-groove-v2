@@ -1119,7 +1119,7 @@ const UserManagementSection = ({ API, headers }) => {
           {/* Rows */}
           <div className="divide-y divide-[#C8861A]/10">
             {users.map(u => (
-              <div key={u.id} className="flex flex-col sm:grid sm:grid-cols-[1fr_1fr_120px_80px_100px] gap-1 sm:gap-3 px-4 py-3 items-start sm:items-center hover:bg-honey/5 transition-colors"
+              <div key={u.id} className="flex flex-col sm:grid sm:grid-cols-[1fr_1fr_120px_120px_80px_100px] gap-1 sm:gap-3 px-4 py-3 items-start sm:items-center hover:bg-honey/5 transition-colors"
                 data-testid={`user-row-${u.username}`}>
                 <div className="flex items-center gap-2 min-w-0">
                   <img src={resolveImageUrl(u.avatar_url)} alt="" className="w-7 h-7 rounded-full shrink-0" />
@@ -1127,6 +1127,22 @@ const UserManagementSection = ({ API, headers }) => {
                 </div>
                 <span className="text-xs text-muted-foreground break-all">{u.email}</span>
                 <span className="text-xs text-muted-foreground">{fmtDate(u.created_at)}</span>
+                <Input
+                  defaultValue={u.title_label || ''}
+                  placeholder="title label"
+                  className="h-7 text-xs border-honey/30 w-full"
+                  data-testid={`title-label-input-${u.username}`}
+                  onBlur={async (e) => {
+                    const val = e.target.value.trim();
+                    if (val === (u.title_label || '')) return;
+                    try {
+                      await axios.put(`${API}/admin/users/title-label`, { user_id: u.id, title_label: val || null }, { headers });
+                      toast.success(`Title label updated for @${u.username}`);
+                      u.title_label = val || null;
+                    } catch { toast.error('Failed to update title label'); }
+                  }}
+                  onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); }}
+                />
                 <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold w-fit ${
                   u.is_admin ? 'bg-[#E8A820]/15 text-[#C8861A] border border-[#C8861A]/30' : 'bg-gray-100 text-gray-600'
                 }`}>
