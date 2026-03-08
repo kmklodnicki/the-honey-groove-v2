@@ -86,6 +86,15 @@ const MoodPill = ({ mood }) => {
   );
 };
 
+const VariantTag = ({ variant }) => {
+  if (!variant) return null;
+  return (
+    <span className="inline-block mt-0.5 text-[10px] italic text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full truncate max-w-full">
+      {variant}
+    </span>
+  );
+};
+
 // NOW_SPINNING card body
 const NowSpinningCard = ({ post, onAlbumClick }) => {
   const record = post.record;
@@ -103,6 +112,7 @@ const NowSpinningCard = ({ post, onAlbumClick }) => {
         <div className="flex-1 min-w-0">
           <p className="font-heading text-lg leading-tight">{record.title}</p>
           <p className="text-sm text-muted-foreground">{record.artist}</p>
+          <VariantTag variant={record.color_variant} />
           {post.track && <p className="text-xs text-honey-amber mt-1">Track: {post.track}</p>}
           {post.caption && <p className="text-sm mt-2">{post.caption}</p>}
         </div>
@@ -128,6 +138,7 @@ const NewHaulCard = ({ post, onAlbumClick }) => {
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-medium truncate">{item.title}</p>
                 <p className="text-xs text-muted-foreground truncate">{item.artist}</p>
+                <VariantTag variant={item.color_variant} />
               </div>
             </div>
           </AlbumLink>
@@ -185,6 +196,7 @@ const AddedToCollectionCard = ({ post, onAlbumClick }) => {
         <div>
           <p className="font-medium">{record.title}</p>
           <p className="text-sm text-muted-foreground">{record.artist}</p>
+          <VariantTag variant={record.color_variant} />
         </div>
       </div>
     </AlbumLink>
@@ -302,6 +314,7 @@ const ListingPostCard = ({ post }) => {
         <div className="flex-1 min-w-0">
           <p className="font-medium text-sm truncate">{post.record_title}</p>
           <p className="text-xs text-muted-foreground truncate">{post.record_artist}</p>
+          <VariantTag variant={post.color_variant || post.pressing_variant} />
           <span className={`inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100/60 text-teal-700`}>
             {isSale ? <ShoppingBag className="w-3 h-3" /> : <ArrowRightLeft className="w-3 h-3" />}
             {isSale ? 'For Sale' : 'For Trade'}
