@@ -405,7 +405,8 @@ const HivePage = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [showBackToTop, setShowBackToTop] = useState(false);
-  // Following filter works because /feed already returns only followed users + self
+  // Following filter works by fetching the user's following list
+  const [followingIds, setFollowingIds] = useState([]);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
 
@@ -492,6 +493,12 @@ const HivePage = () => {
   useEffect(() => {
     fetchFeed();
     fetchRecords();
+    // Fetch following list for the "Following" filter
+    if (user?.username) {
+      axios.get(`${API}/users/${user.username}/following`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(res => setFollowingIds((res.data || []).map(u => u.id)))
+        .catch(() => {});
+    }
     // Check if onboarding needed (only after full user data loads, not JWT-decoded partial data)
     if (user && !user._fromToken && user.onboarding_completed === false) {
       setShowOnboarding(true);
@@ -509,7 +516,7 @@ const HivePage = () => {
 
   const filteredPosts = React.useMemo(() => {
     if (activeFilter === 'all') return posts;
-    if (activeFilter === 'following') return posts.filter(p => p.user_id !== user?.id);
+    if (activeFilter === 'following') return posts.filter(p => followingIds.includes(p.user_id));
     if (activeFilter === 'listing') return posts.filter(p => p.post_type === 'listing_sale' || p.post_type === 'listing_trade');
     if (activeFilter === 'NEW_FEATURE') return posts.filter(p => p.is_new_feature);
     return posts.filter(p => p.post_type === activeFilter);

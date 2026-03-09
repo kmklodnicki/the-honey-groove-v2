@@ -332,23 +332,20 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
 
 @router.get("/feed", response_model=List[PostResponse])
 async def get_feed(user: Dict = Depends(require_auth), limit: int = 50, skip: int = 0):
-    # Get users I'm following
-    following = await db.followers.find({"follower_id": user["id"]}, {"_id": 0}).to_list(1000)
-    following_ids = [f["following_id"] for f in following]
-    following_ids.append(user["id"])  # Include own posts
-    
     hidden_ids = await get_hidden_user_ids()
-    visible_ids = [uid for uid in following_ids if uid not in hidden_ids]
-    
+
     # Fetch pinned post first (if any)
     pinned_post = await db.posts.find_one({"is_pinned": True}, {"_id": 0})
     pinned_resp = None
     if pinned_post and pinned_post.get("user_id") not in hidden_ids:
         pinned_resp = await build_post_response(pinned_post, user["id"])
 
+    query = {"is_pinned": {"$ne": True}}
+    if hidden_ids:
+        query["user_id"] = {"$nin": hidden_ids}
+
     posts = await db.posts.find(
-        {"user_id": {"$in": visible_ids}, "is_pinned": {"$ne": True}},
-        {"_id": 0}
+        query, {"_id": 0}
     ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
     
     result = []
