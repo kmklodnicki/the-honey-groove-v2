@@ -1,15 +1,17 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
+import { Input } from './ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Textarea } from './ui/textarea';
 import { Skeleton } from './ui/skeleton';
-import { Loader2, Disc, Share2, Send, Download } from 'lucide-react';
+import { Loader2, Disc, Share2, Send, Download, Search, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
+import RecordSearchResult from './RecordSearchResult';
+import AlbumArt from './AlbumArt';
 
 // ─── Daily Prompt Card (top of Hive feed) ───
 
@@ -84,6 +86,10 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
 const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
   const { user, token, API } = useAuth();
   const [selectedRecordId, setSelectedRecordId] = useState('');
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [buzzSearch, setBuzzSearch] = useState('');
+  const [buzzSearchResults, setBuzzSearchResults] = useState([]);
+  const buzzSearchTimer = useRef(null);
   const [discogsData, setDiscogsData] = useState(null);
   const [loadingDiscogs, setLoadingDiscogs] = useState(false);
   const [caption, setCaption] = useState('');
@@ -91,7 +97,50 @@ const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
   const [exporting, setExporting] = useState(false);
   const [responseData, setResponseData] = useState(null);
 
-  const selectedRecord = records?.find(r => r.id === selectedRecordId);
+  // Debounced local collection search
+  const searchCollection = useCallback((query) => {
+    if (buzzSearchTimer.current) clearTimeout(buzzSearchTimer.current);
+    if (!query || query.length < 2) { setBuzzSearchResults([]); return; }
+    buzzSearchTimer.current = setTimeout(() => {
+      const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+      const scored = records
+        ?.filter(r => {
+          const hay = `${r.artist} ${r.title}`.toLowerCase();
+          return words.every(w => hay.includes(w));
+        })
+        .map(r => {
+          const hay = `${r.artist} ${r.title}`.toLowerCase();
+          let score = 0;
+          for (const w of words) {
+            if (hay === w) score += 100;
+            else if (hay.startsWith(w)) score += 60;
+            else if (hay.includes(` ${w}`)) score += 40;
+            else if (hay.includes(w)) score += 20;
+          }
+          return { ...r, _score: score };
+        })
+        .sort((a, b) => b._score - a._score)
+        .slice(0, 10) || [];
+      setBuzzSearchResults(scored);
+    }, 300);
+  }, [records]);
+
+  const selectBuzzRecord = (rec) => {
+    setSelectedRecord(rec);
+    setSelectedRecordId(rec.id);
+    setBuzzSearch('');
+    setBuzzSearchResults([]);
+  };
+
+  const deselectBuzzRecord = () => {
+    setSelectedRecord(null);
+    setSelectedRecordId('');
+    setDiscogsData(null);
+  };
+
+  useEffect(() => {
+    return () => { if (buzzSearchTimer.current) clearTimeout(buzzSearchTimer.current); };
+  }, []);
 
   // Fetch Discogs data when record selected
   useEffect(() => {
@@ -153,7 +202,8 @@ const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
   };
 
   const reset = () => {
-    setSelectedRecordId(''); setDiscogsData(null); setCaption(''); setResponseData(null);
+    setSelectedRecordId(''); setSelectedRecord(null); setBuzzSearch(''); setBuzzSearchResults([]);
+    setDiscogsData(null); setCaption(''); setResponseData(null);
   };
 
   return (
@@ -166,17 +216,50 @@ const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
         <div className="space-y-4 pt-2">
           {!responseData ? (
             <>
-              {/* Record selector */}
-              <Select value={selectedRecordId} onValueChange={setSelectedRecordId}>
-                <SelectTrigger className="border-amber-200" data-testid="buzz-record-select">
-                  <SelectValue placeholder="Choose a record from your collection" />
-                </SelectTrigger>
-                <SelectContent>
-                  {records?.map(r => (
-                    <SelectItem key={r.id} value={r.id}>{r.artist} · {r.title}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {/* Record search */}
+              <div>
+                <label className="text-sm font-medium mb-1 block text-amber-800">Record</label>
+                {!selectedRecord ? (
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="search your collection..."
+                      value={buzzSearch}
+                      onChange={e => { setBuzzSearch(e.target.value); searchCollection(e.target.value); }}
+                      className="pl-9 border-amber-200"
+                      data-testid="buzz-record-search"
+                      autoFocus
+                    />
+                    {buzzSearchResults.length > 0 && (
+                      <div className="absolute z-50 left-0 right-0 mt-1 border border-amber-200/60 rounded-lg max-h-52 overflow-y-auto shadow-lg bg-white" data-testid="buzz-search-results">
+                        {buzzSearchResults.map(r => (
+                          <RecordSearchResult key={r.id} record={r} onClick={() => selectBuzzRecord(r)} size="sm" testId={`buzz-result-${r.id}`} />
+                        ))}
+                      </div>
+                    )}
+                    {buzzSearch.length >= 2 && buzzSearchResults.length === 0 && (
+                      <div className="absolute z-50 left-0 right-0 mt-1 border border-amber-200/60 rounded-lg p-4 text-center shadow-lg bg-white" data-testid="buzz-no-results">
+                        <p className="text-sm text-amber-700">no results in your collection</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-3 rounded-lg p-2.5 bg-amber-50/60 border border-amber-100" data-testid="buzz-selected-record">
+                    {selectedRecord.cover_url ? (
+                      <AlbumArt src={selectedRecord.cover_url} alt={`${selectedRecord.title} by ${selectedRecord.artist}`} className="w-11 h-11 rounded-md object-cover shadow-sm" />
+                    ) : (
+                      <div className="w-11 h-11 rounded-md bg-amber-100 flex items-center justify-center"><Disc className="w-5 h-5 text-amber-400" /></div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{selectedRecord.title}</p>
+                      <p className="text-xs text-muted-foreground truncate">{selectedRecord.artist}</p>
+                    </div>
+                    <button onClick={deselectBuzzRecord} className="p-1 rounded-full hover:bg-amber-100 text-amber-600" data-testid="buzz-deselect-record">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
 
               {/* Live preview */}
               {selectedRecordId && (
