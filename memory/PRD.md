@@ -17,75 +17,68 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 
 ### User System & Auth
 - Invite-only, email-verified accounts
-- Country selection on signup
-- Admin-assignable custom title labels (e.g., "Founder", "Moderator")
-- Social media links (Instagram, TikTok) on profiles
-- Email change with verification flow
-- **Golden Hive verification** (BLOCK 3.3) - ID upload, admin review, badge
+- Country selection, custom title labels, social links
+- Email change with verification, Golden Hive verification (BLOCK 3.3)
 
 ### Social Feed ("The Hive")
 - Post types: Now Spinning, New Haul, ISO, A Note, Daily Prompt
 - Full comment system with likes, nested replies, @mentions
-- Admin pin post to top, pagination, "Back to Top" button
-
-### Daily Prompt
-- Daily prompt refresh at midnight ET, streak tracking
-- Live album search in Buzz-In modal (debounced collection search)
+- **Heart button fix:** Optimistic UI, stopPropagation, type=button
 
 ### Marketplace ("The Honeypot")
-- Stripe Connect LIVE peer-to-peer payments
-- Sale/trade listings auto-post to Hive
-- International shipping toggle, country-based restrictions
-- Clickable "My Sales" rows with order details
-- **Dual Grading System** (BLOCK 2.2+2.3) - NM/VG+/VG/G+/F with Honey labels + tooltips
-- **Payout Estimator** (BLOCK 3.1) - Live fee/shipping/Take Home Honey calculation
-- **Pulse Integration** (BLOCK 3.1) - 90-day Discogs price analysis, hot zone indicator
-- **Shipping Cost** field on listings (default $6.00)
-- **Auto-Payout Cron** (BLOCK 3.2) - 72h standard / 24h for 4.5+ rated sellers
+- Stripe Connect LIVE, sale/trade listings, auto-post to Hive
+- **Dual Grading System** (NM/VG+/VG/G+/F with Honey labels + tooltips)
+- **Payout Estimator** (BLOCK 3.1) - live fee/shipping/Take Home Honey
+- **Honey Pulse** (BLOCK 4.1) - 90-day Discogs price analysis, hot zone, median/range
+- **Shipping Cost** field on listings
+- **Auto-Payout Cron** (BLOCK 3.2) - 72h standard / 24h for 4.5+ sellers
+
+### Report a Problem System (BLOCK 3.4)
+- Listing reporting (6 reasons + Other)
+- Seller reporting (5 reasons)
+- Order issue reporting (4 reasons)
+- Bug reporting with auto-captured URL + browser info
+- Rate limiting: 5 reports per user per 24 hours
+- **Admin Watchtower** - filterable queue with actions:
+  - Review, Dismiss, Resolve, Remove Listing, Warn Seller, Suspend Seller
+- Report buttons on: listing detail, seller profile, orders, settings page
 
 ### Verification Queue — The Gate (BLOCK 3.3)
-- User ID photo upload in Settings page
-- Server-side image blurring for admin preview
-- Admin dashboard section "The Gate" with:
-  - Blurred ID preview (unblur on demand)
-  - Approve/Deny actions
-  - Golden Hive badge on approval
-- `golden_hive` boolean on user model, exposed in API
+- User ID upload, server-side blur, admin approve/deny
+- Golden Hive badge on approval
 
-### Search & Discovery
-- "Psychic" global search with weighted scoring
-- Infinite scroll for records grouped by artist
-- Discogs API fallback
+### Search, Collection, SEO
+- Psychic search, infinite scroll, Discogs fallback
+- EXIF fix, pressing variants, country flags
+- JSON-LD schema, **alt tags: "Artist - Title Vinyl Record"** format
 
-### Collection Management
-- Add records via Discogs search
-- EXIF orientation fix, pressing variant display
-
-### SEO & Accessibility
-- JSON-LD schema, dynamic alt tags, country flags
-
-## Key New Files (This Session)
-- `/app/backend/routes/verification.py` - Verification Queue endpoints
-- `/app/backend/routes/payout_cron.py` - Auto-payout cron logic
-- `/app/frontend/src/components/GoldenHiveBadge.js` - Badge component
+## Key Files
+- `/app/backend/routes/reports.py` - Report system endpoints
+- `/app/backend/routes/payout_cron.py` - Auto-payout cron
+- `/app/backend/routes/verification.py` - The Gate endpoints
+- `/app/frontend/src/components/ReportModal.js` - Shared report modal
+- `/app/frontend/src/components/GradeLabel.js` - Grade with tooltip
+- `/app/frontend/src/components/GoldenHiveBadge.js` - Verified badge
+- `/app/frontend/src/utils/grading.js` - Grade mapping utility
 
 ## Mocked Integrations
-- **Email (Resend):** Logic in place but not using a live service
+- **Email (Resend):** Logic in place but not live
 
 ## Pending / Upcoming Tasks
 
 ### P1
-- Weekly Wax Email - configure scheduled email every Sunday at 12:00 PM ET
+- Weekly Wax Email - configure scheduled email every Sunday 12:00 PM ET
 
 ### P2
-- Hauls Enhancement - dedicated page and more functionality
-- Refactor ISOPage.jsx - address technical debt
-- "What do these grades mean?" Grading Guide page (optional)
+- Hauls Enhancement - dedicated page
+- Refactor ISOPage.jsx - technical debt
+- Grading Guide page (optional)
 
 ### Future / Backlog
 - Safari-compatible loading animation
 - "Pro" memberships / "Verified Seller" badge
-- Deferred Buyer Protection features
+- Buyer Protection features
 - Re-enable Instagram sharing
-- Break down GlobalSearch.js into smaller components
-- Replace star imports in backend routes
+- Golden Hive badge on user displays throughout app
+- Break down GlobalSearch.js
+- Replace star imports in backend
