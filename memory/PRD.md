@@ -89,6 +89,7 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - Grading Guide page (optional)
 
 ### Completed Recently
+- **BLOCK 55: @Mention Tagging in Hive Posts** - DONE (2026-03-09). Full @mention system: `MentionTextarea` component with autocomplete dropdown (fetches `/api/mention-search`), `MentionText` renders @mentions as clickable profile links. All 5 composer endpoints parse mentions and create MENTION notifications (capped at 10). Posts store `mentions` array. PostCards renders MentionText for all post types. CommentItem already had renderMentions. Files: `MentionTextarea.js`, `MentionText.js`, `ComposerBar.js`, `PostCards.js`, `hive.py`.
 - **BLOCK 54: Daily Prompt Founder Label Bug Fix** - DONE (2026-03-09). The "Founder" badge was showing for ALL users in Daily Prompt slides because `founding_member` is `true` for all users (first 500 get it for fee purposes). Fixed by restricting the "Founder" label display to only `katieintheafterglow` username. File: `frontend/src/components/DailyPrompt.js`.
 - **BLOCK 53: Privacy Settings + Follow Requests + DM Gating** - DONE (2026-03-09). Full 3-phase implementation:
   - **Phase 1 (Privacy + Follow Requests):** `is_private` toggle in Settings. Private profiles show locked content (Instagram-style) with mutual signals. Follow requests with accept/decline. "Request to Follow" / "Requested" button states. FollowRequestsBadge on own profile. All profile data endpoints gated.
