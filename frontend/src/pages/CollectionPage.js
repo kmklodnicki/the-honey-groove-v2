@@ -253,7 +253,7 @@ const CollectionPage = () => {
           const valRes = await axios.get(`${API}/valuation/record-value/${item.discogs_id}`, { headers: { Authorization: `Bearer ${token}` } });
           const itemVal = valRes.data?.median_value || 0;
           if (itemVal > 0) {
-            setDreamSubtractMsg(`Subtracting $${itemVal.toLocaleString('en-US', { minimumFractionDigits: 2 })} from your Dream Value... and adding it to your Collection.`);
+            setDreamSubtractMsg(`Subtracting $${itemVal.toLocaleString('en-US', { minimumFractionDigits: 2 })} from your Wishlist Value... and adding it to your Collection.`);
             setWishlistValue(prev => prev ? { ...prev, total_value: Math.max(0, prev.total_value - itemVal) } : prev);
             setTimeout(() => setDreamSubtractMsg(null), 4000);
           }
@@ -390,7 +390,7 @@ const CollectionPage = () => {
               className={`text-center transition-all px-4 py-1.5 rounded-full text-sm font-medium ${collectionTab === 'wishlist' ? 'bg-stone-100 text-vinyl-black' : 'text-stone-400 hover:text-stone-600'}`}
               data-testid="toggle-dreaming">
               <span className="block font-heading text-lg">${wishlistValue.total_value.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-              <span className="text-[10px] uppercase tracking-wide">Dream Value</span>
+              <span className="text-[10px] uppercase tracking-wide">Wishlist Value</span>
             </button>
           </div>
         )}
@@ -591,7 +591,7 @@ const CollectionPage = () => {
 
         {/* ====== DREAMING TAB ====== */}
         <TabsContent value="wishlist">
-          {/* "If only I had..." Dream Value Header */}
+          {/* "If only I had..." Wishlist Value Header */}
           <DreamDebtHeader
             totalValue={wishlistValue?.total_value || 0}
             itemCount={wishlistItems.length}
@@ -620,11 +620,11 @@ const CollectionPage = () => {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="font-heading">
-              {cleanseTarget?.type === 'dreaming' ? 'Releasing to the clouds?' : 'Back on the hunt?'}
+              {cleanseTarget?.type === 'dreaming' ? 'Moving to Wishlist?' : 'Back on the hunt?'}
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-2">
               {cleanseTarget?.type === 'dreaming' ? (
-                <span>This will remove <strong>{cleanseTarget?.title}</strong> from your Gold Standard and add it back to your dreams.</span>
+                <span>This will remove <strong>{cleanseTarget?.title}</strong> from your Gold Standard and add it to your Wishlist.</span>
               ) : (
                 <span>This will move <strong>{cleanseTarget?.title}</strong> to your active Wantlist for a potential upgrade or replacement.</span>
               )}
@@ -640,7 +640,7 @@ const CollectionPage = () => {
               className="border-0 font-medium"
               data-testid="cleanse-confirm-btn"
             >
-              {cleanseTarget?.type === 'dreaming' ? 'Move to Dreaming' : 'Move to The Hunt'}
+              {cleanseTarget?.type === 'dreaming' ? 'Add to Wishlist Value' : 'Move to The Hunt'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -675,14 +675,14 @@ const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg }) => {
       )}
       {hasDreams ? (
         <>
-          <p className="text-xs font-medium uppercase tracking-widest text-stone-400 mb-1">Dream Value</p>
+          <p className="text-xs font-medium uppercase tracking-widest text-stone-400 mb-1">Wishlist Value</p>
           <p className="font-heading text-2xl sm:text-3xl text-vinyl-black leading-tight" data-testid="dream-debt-headline">
             If only I had{' '}
             <span className="font-serif italic" style={{ color: '#C8861A' }} data-testid="dream-debt-amount">
               ${displayValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
             ...{' '}
-            <span className="text-base font-light text-stone-400 font-serif italic">(The Dream Value)</span>
+            <span className="text-base font-light text-stone-400 font-serif italic">(Wishlist Value)</span>
           </p>
           <p className="text-xs text-stone-400 mt-2">{itemCount} record{itemCount !== 1 ? 's' : ''} dreaming</p>
         </>

@@ -371,10 +371,10 @@ const ProfilePage = () => {
               </div>
             )}
 
-            {/* Dream Value sub-headline */}
+            {/* Wishlist Value sub-headline */}
             {dreamValue && dreamValue.total_value > 0 && (
               <p className="mt-2 font-serif italic text-sm" style={{ color: '#C8861A' }} data-testid="profile-dream-value">
-                If only I had ${dreamValue.total_value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}... <span className="font-light text-stone-400 text-xs">(Dream Value)</span>
+                Wishlist Value: ${dreamValue.total_value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
               </p>
             )}
 
@@ -485,7 +485,7 @@ const ProfilePage = () => {
         {/* Dreaming Tab */}
         <TabsContent value="dreaming">
           {dreamingItems.length === 0 ? (
-            <EmptyState icon={Cloud} title="No dreams yet" sub={isOwnProfile ? 'Add records to your Dreaming tab to start building your Dream Value.' : `@${username} isn't dreaming of anything right now`} />
+            <EmptyState icon={Cloud} title="No dreams yet" sub={isOwnProfile ? 'Add records to your Dreaming tab to start building your Wishlist Value.' : `@${username} isn't dreaming of anything right now`} />
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {dreamingItems.map(item => {
@@ -703,7 +703,7 @@ const ProfilePage = () => {
               {tasteMatch?.score}% Taste Match {tasteMatch?.label && `· ${tasteMatch.label}`}
               {tasteMatch?.shared_dream_value > 0 && (
                 <span className="block mt-1 font-medium" style={{ color: '#C8861A' }} data-testid="shared-dream-value">
-                  You share ${tasteMatch.shared_dream_value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} in Dream Value.
+                  You share ${tasteMatch.shared_dream_value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} in Wishlist Value.
                 </span>
               )}
             </DialogDescription>
