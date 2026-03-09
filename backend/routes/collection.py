@@ -243,6 +243,12 @@ async def get_user_records(username: str, current_user: Optional[Dict] = Depends
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
+    # Block check
+    if current_user and current_user["id"] != user["id"]:
+        block = await db.blocks.find_one({"$or": [{"blocker_id": user["id"], "blocked_id": current_user["id"]}, {"blocker_id": current_user["id"], "blocked_id": user["id"]}]})
+        if block:
+            raise HTTPException(status_code=403, detail="This profile is not available.")
+    
     records = await db.records.find({"user_id": user["id"]}, {"_id": 0}).sort("created_at", -1).to_list(1000)
     
     result = []

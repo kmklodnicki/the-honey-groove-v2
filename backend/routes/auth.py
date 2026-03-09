@@ -333,6 +333,17 @@ async def get_user_profile(username: str, current_user: Optional[Dict] = Depends
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
+    # Check if either user has blocked the other
+    if current_user and current_user["id"] != user["id"]:
+        block = await db.blocks.find_one({
+            "$or": [
+                {"blocker_id": user["id"], "blocked_id": current_user["id"]},
+                {"blocker_id": current_user["id"], "blocked_id": user["id"]}
+            ]
+        })
+        if block:
+            raise HTTPException(status_code=403, detail="This profile is not available.")
+    
     resp = await _build_user_response(user)
     if not (current_user and current_user["id"] == user["id"]):
         resp.email = ""
@@ -397,6 +408,7 @@ async def delete_account(user: Dict = Depends(require_auth)):
     await db.wax_reports.delete_many({"user_id": uid})
     await db.collection_values.delete_many({"user_id": uid})
     await db.newsletter_subscribers.delete_many({"email": user.get("email")})
+    await db.blocks.delete_many({"$or": [{"blocker_id": uid}, {"blocked_id": uid}]})
 
     # Finally delete the user
     await db.users.delete_one({"id": uid})

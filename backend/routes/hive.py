@@ -5,7 +5,7 @@ from datetime import datetime, timezone, timedelta
 import uuid
 import re
 
-from database import db, require_auth, get_current_user, security, logger, create_notification, get_hidden_user_ids
+from database import db, require_auth, get_current_user, security, logger, create_notification, get_hidden_user_ids, get_all_blocked_ids
 from services.email_service import send_email_fire_and_forget
 import templates.emails as email_tpl
 from database import hash_password, verify_password, create_token, search_discogs, get_discogs_release
@@ -335,16 +335,18 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
 @router.get("/feed", response_model=List[PostResponse])
 async def get_feed(user: Dict = Depends(require_auth), limit: int = 50, skip: int = 0):
     hidden_ids = await get_hidden_user_ids()
+    blocked_ids = await get_all_blocked_ids(user["id"])
+    exclude_ids = list(set(hidden_ids + blocked_ids))
 
     # Fetch pinned post first (if any)
     pinned_post = await db.posts.find_one({"is_pinned": True}, {"_id": 0})
     pinned_resp = None
-    if pinned_post and pinned_post.get("user_id") not in hidden_ids:
+    if pinned_post and pinned_post.get("user_id") not in exclude_ids:
         pinned_resp = await build_post_response(pinned_post, user["id"])
 
     query = {"is_pinned": {"$ne": True}}
-    if hidden_ids:
-        query["user_id"] = {"$nin": hidden_ids}
+    if exclude_ids:
+        query["user_id"] = {"$nin": exclude_ids}
 
     posts = await db.posts.find(
         query, {"_id": 0}
@@ -363,7 +365,9 @@ async def get_feed(user: Dict = Depends(require_auth), limit: int = 50, skip: in
 @router.get("/explore", response_model=List[PostResponse])
 async def get_explore_feed(current_user: Optional[Dict] = Depends(get_current_user), limit: int = 50, skip: int = 0):
     hidden_ids = await get_hidden_user_ids()
-    query = {"user_id": {"$nin": hidden_ids}} if hidden_ids else {}
+    blocked_ids = await get_all_blocked_ids(current_user["id"]) if current_user else []
+    exclude_ids = list(set(hidden_ids + blocked_ids))
+    query = {"user_id": {"$nin": exclude_ids}} if exclude_ids else {}
     posts = await db.posts.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
     
     result = []
@@ -727,10 +731,13 @@ async def get_comments(post_id: str, current_user: Optional[Dict] = Depends(get_
     comments = await db.comments.find({"post_id": post_id}, {"_id": 0}).sort("created_at", 1).to_list(200)
     
     current_user_id = current_user["id"] if current_user else None
+    blocked_ids = await get_all_blocked_ids(current_user_id) if current_user_id else []
     
     # Build response for all comments with like info
     comment_map = {}
     for comment in comments:
+        if comment.get("user_id") in blocked_ids:
+            continue
         comment_user = await db.users.find_one({"id": comment["user_id"]}, {"_id": 0, "password_hash": 0})
         user_data = {"id": comment_user["id"], "username": comment_user["username"], "avatar_url": comment_user.get("avatar_url"), "title_label": comment_user.get("title_label")} if comment_user else None
         likes_count = await db.comment_likes.count_documents({"comment_id": comment["id"]})

@@ -106,6 +106,33 @@ async def get_hidden_user_ids() -> list:
     return [u["id"] for u in hidden]
 
 
+async def get_blocked_user_ids(user_id: str) -> list:
+    """Return IDs of users that user_id has blocked."""
+    blocks = await db.blocks.find({"blocker_id": user_id}, {"_id": 0, "blocked_id": 1}).to_list(500)
+    return [b["blocked_id"] for b in blocks]
+
+
+async def get_blocked_by_ids(user_id: str) -> list:
+    """Return IDs of users who have blocked user_id."""
+    blocks = await db.blocks.find({"blocked_id": user_id}, {"_id": 0, "blocker_id": 1}).to_list(500)
+    return [b["blocker_id"] for b in blocks]
+
+
+async def get_all_blocked_ids(user_id: str) -> list:
+    """Return all user IDs that should be invisible to user_id (both directions of blocking)."""
+    blocks = await db.blocks.find(
+        {"$or": [{"blocker_id": user_id}, {"blocked_id": user_id}]},
+        {"_id": 0, "blocker_id": 1, "blocked_id": 1}
+    ).to_list(1000)
+    ids = set()
+    for b in blocks:
+        if b["blocker_id"] == user_id:
+            ids.add(b["blocked_id"])
+        else:
+            ids.add(b["blocker_id"])
+    return list(ids)
+
+
 def init_storage():
     global storage_key
     if not EMERGENT_KEY:

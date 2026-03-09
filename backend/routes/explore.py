@@ -4,7 +4,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone, timedelta
 import uuid
 
-from database import db, require_auth, get_current_user, security, logger, create_notification, get_hidden_user_ids
+from database import db, require_auth, get_current_user, security, logger, create_notification, get_hidden_user_ids, get_all_blocked_ids
 from database import DISCOGS_TOKEN, DISCOGS_USER_AGENT
 DISCOGS_API_BASE = "https://api.discogs.com"
 import requests
@@ -184,13 +184,72 @@ async def get_following(username: str, current_user: Optional[Dict] = Depends(ge
     return result
 
 
-# ============== PROFILE DATA ROUTES ==============
+# ============== BLOCK ROUTES ==============
 
-@router.get("/users/{username}/spins")
-async def get_user_spins(username: str, limit: int = 50):
+@router.post("/block/{username}")
+async def block_user(username: str, user: Dict = Depends(require_auth)):
+    """Block a user. Blocked user cannot see blocker's profile, posts, or collections."""
     target = await db.users.find_one({"username": username.lower()}, {"_id": 0})
     if not target:
         raise HTTPException(status_code=404, detail="User not found")
+    if target["id"] == user["id"]:
+        raise HTTPException(status_code=400, detail="You cannot block yourself")
+
+    existing = await db.blocks.find_one({"blocker_id": user["id"], "blocked_id": target["id"]})
+    if existing:
+        return {"status": "already_blocked"}
+
+    await db.blocks.insert_one({
+        "id": str(uuid.uuid4()),
+        "blocker_id": user["id"],
+        "blocked_id": target["id"],
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+
+    # Also unfollow in both directions
+    await db.followers.delete_one({"follower_id": user["id"], "following_id": target["id"]})
+    await db.followers.delete_one({"follower_id": target["id"], "following_id": user["id"]})
+
+    return {"status": "blocked"}
+
+
+@router.delete("/block/{username}")
+async def unblock_user(username: str, user: Dict = Depends(require_auth)):
+    """Unblock a previously blocked user."""
+    target = await db.users.find_one({"username": username.lower()}, {"_id": 0})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    result = await db.blocks.delete_one({"blocker_id": user["id"], "blocked_id": target["id"]})
+    if result.deleted_count == 0:
+        return {"status": "not_blocked"}
+    return {"status": "unblocked"}
+
+
+@router.get("/block/check/{username}")
+async def check_block_status(username: str, user: Dict = Depends(require_auth)):
+    """Check if current user has blocked a given user, or vice versa."""
+    target = await db.users.find_one({"username": username.lower()}, {"_id": 0})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    i_blocked = await db.blocks.find_one({"blocker_id": user["id"], "blocked_id": target["id"]}) is not None
+    they_blocked = await db.blocks.find_one({"blocker_id": target["id"], "blocked_id": user["id"]}) is not None
+
+    return {"is_blocked": i_blocked, "is_blocked_by": they_blocked}
+
+
+# ============== PROFILE DATA ROUTES ==============
+
+@router.get("/users/{username}/spins")
+async def get_user_spins(username: str, limit: int = 50, current_user: Optional[Dict] = Depends(get_current_user)):
+    target = await db.users.find_one({"username": username.lower()}, {"_id": 0})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+    if current_user and current_user["id"] != target["id"]:
+        block = await db.blocks.find_one({"$or": [{"blocker_id": target["id"], "blocked_id": current_user["id"]}, {"blocker_id": current_user["id"], "blocked_id": target["id"]}]})
+        if block:
+            raise HTTPException(status_code=403, detail="This profile is not available.")
     
     spins = await db.spins.find({"user_id": target["id"]}, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
     result = []
@@ -201,21 +260,29 @@ async def get_user_spins(username: str, limit: int = 50):
     return result
 
 @router.get("/users/{username}/iso")
-async def get_user_isos(username: str):
+async def get_user_isos(username: str, current_user: Optional[Dict] = Depends(get_current_user)):
     target = await db.users.find_one({"username": username.lower()}, {"_id": 0})
     if not target:
         raise HTTPException(status_code=404, detail="User not found")
+    if current_user and current_user["id"] != target["id"]:
+        block = await db.blocks.find_one({"$or": [{"blocker_id": target["id"], "blocked_id": current_user["id"]}, {"blocker_id": current_user["id"], "blocked_id": target["id"]}]})
+        if block:
+            raise HTTPException(status_code=403, detail="This profile is not available.")
     
     isos = await db.iso_items.find({"user_id": target["id"], "status": {"$ne": "WISHLIST"}}, {"_id": 0}).sort("created_at", -1).to_list(100)
     return isos
 
 
 @router.get("/users/{username}/dreaming")
-async def get_user_dreaming(username: str):
+async def get_user_dreaming(username: str, current_user: Optional[Dict] = Depends(get_current_user)):
     """Get a user's wishlist/dreaming items."""
     target = await db.users.find_one({"username": username.lower()}, {"_id": 0})
     if not target:
         raise HTTPException(status_code=404, detail="User not found")
+    if current_user and current_user["id"] != target["id"]:
+        block = await db.blocks.find_one({"$or": [{"blocker_id": target["id"], "blocked_id": current_user["id"]}, {"blocker_id": current_user["id"], "blocked_id": target["id"]}]})
+        if block:
+            raise HTTPException(status_code=403, detail="This profile is not available.")
     
     items = await db.iso_items.find({"user_id": target["id"], "status": "WISHLIST"}, {"_id": 0}).sort("created_at", -1).to_list(200)
     return items
@@ -225,6 +292,10 @@ async def get_user_posts(username: str, current_user: Optional[Dict] = Depends(g
     target = await db.users.find_one({"username": username.lower()}, {"_id": 0})
     if not target:
         raise HTTPException(status_code=404, detail="User not found")
+    if current_user and current_user["id"] != target["id"]:
+        block = await db.blocks.find_one({"$or": [{"blocker_id": target["id"], "blocked_id": current_user["id"]}, {"blocker_id": current_user["id"], "blocked_id": target["id"]}]})
+        if block:
+            raise HTTPException(status_code=403, detail="This profile is not available.")
     
     posts = await db.posts.find({"user_id": target["id"]}, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
     result = []
@@ -664,10 +735,13 @@ async def my_kinda_people(user: Dict = Depends(require_auth)):
     if not my_discogs and not my_artists:
         return []
 
+    blocked_ids = set(await get_all_blocked_ids(my_id))
+
     # Get all other users who have records
     other_user_ids = set()
     async for rec in db.records.find({"user_id": {"$ne": my_id}, "discogs_id": {"$ne": None}}, {"_id": 0, "user_id": 1}):
-        other_user_ids.add(rec["user_id"])
+        if rec["user_id"] not in blocked_ids:
+            other_user_ids.add(rec["user_id"])
 
     results = []
     for uid in list(other_user_ids)[:100]:  # cap for performance

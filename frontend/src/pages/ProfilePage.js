@@ -10,13 +10,17 @@ import { Skeleton } from '../components/ui/skeleton';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '../components/ui/dialog';
-import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, CheckCircle2, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin, ShoppingBag, Flag, Sparkles, Eye, X, Cloud } from 'lucide-react';
+import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, CheckCircle2, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin, ShoppingBag, Flag, Sparkles, Eye, X, Cloud, ShieldOff, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { FollowListModal } from '../components/FollowList';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { MoodBoardTab } from '../components/MoodBoardTab';
 import ReportModal from '../components/ReportModal';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '../components/ui/alert-dialog';
 import { resolveImageUrl } from '../utils/imageUrl';
 import AlbumArt from '../components/AlbumArt';
 import { countryFlag } from '../utils/countryFlag';
@@ -51,11 +55,16 @@ const ProfilePage = () => {
   const [myRecordDiscogs, setMyRecordDiscogs] = useState(new Set());
   const [dreamingItems, setDreamingItems] = useState([]);
   const [dreamValue, setDreamValue] = useState(null);
+  const [isBlocked, setIsBlocked] = useState(false);
+  const [blockLoading, setBlockLoading] = useState(false);
+  const [showBlockConfirm, setShowBlockConfirm] = useState(false);
+  const [profileUnavailable, setProfileUnavailable] = useState(false);
 
   const isOwnProfile = user?.username === username;
 
   const fetchProfile = useCallback(async () => {
     try {
+      setProfileUnavailable(false);
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       const [profileRes, recordsRes] = await Promise.all([
         axios.get(`${API}/users/${username}`, { headers }),
@@ -65,8 +74,12 @@ const ProfilePage = () => {
       setRecords(recordsRes.data);
 
       if (token && !isOwnProfile) {
-        const followRes = await axios.get(`${API}/follow/check/${username}`, { headers: { Authorization: `Bearer ${token}` }});
+        const [followRes, blockRes] = await Promise.all([
+          axios.get(`${API}/follow/check/${username}`, { headers: { Authorization: `Bearer ${token}` }}),
+          axios.get(`${API}/block/check/${username}`, { headers: { Authorization: `Bearer ${token}` }}),
+        ]);
         setIsFollowing(followRes.data.is_following);
+        setIsBlocked(blockRes.data.is_blocked);
       }
       if (token && isOwnProfile) {
         axios.get(`${API}/stripe/status`, { headers: { Authorization: `Bearer ${token}` }}).then(r => setStripeStatus(r.data)).catch(() => {});
@@ -94,8 +107,12 @@ const ProfilePage = () => {
           .then(r => setMyRecordDiscogs(new Set(r.data.filter(rec => rec.discogs_id).map(rec => rec.discogs_id))))
           .catch(() => {});
       }
-    } catch {
-      toast.error('Failed to load profile');
+    } catch (err) {
+      if (err.response?.status === 403) {
+        setProfileUnavailable(true);
+      } else {
+        toast.error('Failed to load profile');
+      }
     } finally {
       setLoading(false);
     }
@@ -155,6 +172,34 @@ const ProfilePage = () => {
     }
   };
 
+  const handleBlock = async () => {
+    setBlockLoading(true);
+    try {
+      await axios.post(`${API}/block/${username}`, {}, { headers: { Authorization: `Bearer ${token}` }});
+      setIsBlocked(true);
+      setIsFollowing(false);
+      toast.success(`@${username} has been blocked.`);
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to block user');
+    } finally {
+      setBlockLoading(false);
+      setShowBlockConfirm(false);
+    }
+  };
+
+  const handleUnblock = async () => {
+    setBlockLoading(true);
+    try {
+      await axios.delete(`${API}/block/${username}`, { headers: { Authorization: `Bearer ${token}` }});
+      setIsBlocked(false);
+      toast.success(`@${username} has been unblocked.`);
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to unblock user');
+    } finally {
+      setBlockLoading(false);
+    }
+  };
+
   const handleMarkFound = async (isoId) => {
     try {
       await axios.put(`${API}/iso/${isoId}/found`, {}, { headers: { Authorization: `Bearer ${token}` }});
@@ -190,11 +235,34 @@ const ProfilePage = () => {
     );
   }
 
-  if (!profile) {
+  if (!profile && !profileUnavailable) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-8 pt-16 md:pt-24 text-center">
         <h2 className="font-heading text-2xl mb-2">User not found</h2>
         <p className="text-muted-foreground">@{username} doesn't exist.</p>
+      </div>
+    );
+  }
+
+  if (profileUnavailable) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-8 pt-16 md:pt-24 text-center" data-testid="profile-unavailable">
+        <div className="flex flex-col items-center gap-4 py-16">
+          <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center">
+            <ShieldOff className="w-7 h-7 text-stone-400" />
+          </div>
+          <h2 className="font-heading text-2xl text-stone-700">Profile Unavailable</h2>
+          <p className="text-sm text-stone-500 max-w-xs">This profile is not available to you.</p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(-1)}
+            className="mt-2 rounded-full border-stone-300 text-stone-600"
+            data-testid="go-back-btn"
+          >
+            Go Back
+          </Button>
+        </div>
       </div>
     );
   }
@@ -252,6 +320,17 @@ const ProfilePage = () => {
                     data-testid="report-seller-btn"
                   >
                     <Flag className="w-3 h-3" />
+                  </Button>
+                  <Button
+                    size="sm" variant="ghost"
+                    onClick={() => isBlocked ? handleUnblock() : setShowBlockConfirm(true)}
+                    disabled={blockLoading}
+                    className={`rounded-full ${isBlocked ? 'text-red-500 hover:text-stone-600' : 'text-muted-foreground/60 hover:text-red-500'}`}
+                    data-testid="block-btn"
+                  >
+                    {blockLoading ? <Loader2 className="w-3 h-3 animate-spin" /> :
+                      isBlocked ? <ShieldCheck className="w-3 h-3" /> : <ShieldOff className="w-3 h-3" />
+                    }
                   </Button>
                 </div>
                 {/* Taste Match Pill (BLOCK 40.2) */}
@@ -880,6 +959,29 @@ const ProfilePage = () => {
         onFollowChange={fetchProfile}
       />
       <ReportModal open={reportSellerOpen} onOpenChange={setReportSellerOpen} targetType="seller" targetId={profile?.id} />
+
+      {/* Block confirmation dialog */}
+      <AlertDialog open={showBlockConfirm} onOpenChange={setShowBlockConfirm}>
+        <AlertDialogContent data-testid="block-confirm-dialog">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Block @{username}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              They won't be able to see your profile, posts, collection, or interact with you. You'll also stop seeing their content. This will remove any existing follows between you.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="block-cancel-btn">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBlock}
+              className="bg-red-600 hover:bg-red-700 text-white"
+              data-testid="block-confirm-btn"
+            >
+              {blockLoading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
+              Block
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
