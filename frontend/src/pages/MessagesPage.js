@@ -6,10 +6,11 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card } from '../components/ui/card';
 import { Skeleton } from '../components/ui/skeleton';
-import { ArrowLeft, Send, Disc, Search } from 'lucide-react';
+import { ArrowLeft, Send, Disc, Search, MessageCircleMore, Check, X, Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { resolveImageUrl } from '../utils/imageUrl';
+import { toast } from 'sonner';
 
 const MessagesPage = () => {
   usePageTitle('Messages');
@@ -23,6 +24,9 @@ const MessagesPage = () => {
   const [sending, setSending] = useState(false);
   const [convContext, setConvContext] = useState(null);
   const [otherUser, setOtherUser] = useState(null);
+  const [convStatus, setConvStatus] = useState('active');
+  const [msgTab, setMsgTab] = useState('inbox');
+  const [acceptLoading, setAcceptLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const pollRef = useRef(null);
 
@@ -94,7 +98,8 @@ const MessagesPage = () => {
       setMessages(resp.data.messages);
       setOtherUser(resp.data.other_user);
       setConvContext(resp.data.context);
-      fetchConversations(); // refresh unread counts
+      setConvStatus(resp.data.status || 'active');
+      fetchConversations();
     } catch { /* ignore */ }
   };
 
@@ -119,7 +124,11 @@ const MessagesPage = () => {
       }
       setNewMsg('');
       fetchConversations();
-    } catch { /* ignore */ }
+    } catch (err) {
+      if (err.response?.status === 403) {
+        toast.error(err.response.data?.detail || 'This user does not accept messages from you.');
+      }
+    }
     finally { setSending(false); }
   };
 
@@ -193,6 +202,36 @@ const MessagesPage = () => {
         </div>
 
         {/* Input */}
+        {convStatus === 'pending' && messages.length > 0 && messages[0].sender_id !== user?.id ? (
+          <div className="flex gap-2 items-center p-3 rounded-xl bg-amber-50 border border-amber-200" data-testid="dm-request-actions">
+            <MessageCircleMore className="w-4 h-4 text-amber-600 shrink-0" />
+            <span className="text-sm text-amber-800 flex-1">Message request from @{otherUser?.username}</span>
+            <Button size="sm" onClick={async () => {
+              setAcceptLoading(true);
+              try {
+                await axios.post(`${API}/dm/conversations/${activeConv}/accept`, {}, { headers });
+                setConvStatus('active');
+                toast.success('Message request accepted');
+                fetchConversations();
+              } catch { toast.error('Failed'); }
+              finally { setAcceptLoading(false); }
+            }} className="rounded-full bg-honey text-vinyl-black hover:bg-honey-amber h-8 px-3" data-testid="dm-accept-btn">
+              {acceptLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><Check className="w-3.5 h-3.5 mr-1" />Accept</>}
+            </Button>
+            <Button size="sm" variant="outline" onClick={async () => {
+              try {
+                await axios.post(`${API}/dm/conversations/${activeConv}/decline`, {}, { headers });
+                setActiveConv(null); setMessages([]); setConvContext(null);
+                toast.success('Message request declined');
+                fetchConversations();
+              } catch { toast.error('Failed'); }
+            }} className="rounded-full border-stone-300 h-8 px-3" data-testid="dm-decline-btn">
+              <X className="w-3.5 h-3.5 mr-1" />Decline
+            </Button>
+          </div>
+        ) : convStatus === 'pending' ? (
+          <div className="text-center text-xs text-stone-400 py-2">Waiting for {otherUser?.username} to accept your message request...</div>
+        ) : (
         <div className="flex gap-2" data-testid="dm-input-area">
           <Input
             value={newMsg} onChange={e => setNewMsg(e.target.value)} onKeyDown={handleKeyDown}
@@ -204,16 +243,40 @@ const MessagesPage = () => {
             <Send className="w-4 h-4" />
           </Button>
         </div>
+        )}
       </div>
     );
   }
 
+  // Separate active and pending conversations
+  const activeConvs = conversations.filter(c => c.status !== 'pending');
+  const requestConvs = conversations.filter(c => c.status === 'pending');
+
   // Conversation list
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 pt-16 md:pt-28 pb-24 md:pb-8" data-testid="dm-inbox">
-      <h1 className="font-heading text-3xl text-vinyl-black mb-6">Messages</h1>
+      <h1 className="font-heading text-3xl text-vinyl-black mb-4">Messages</h1>
 
-      {conversations.length === 0 ? (
+      {/* Inbox / Requests Tabs */}
+      {requestConvs.length > 0 && (
+        <div className="flex gap-2 mb-4">
+          <button
+            onClick={() => setMsgTab('inbox')}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${msgTab === 'inbox' ? 'bg-honey text-vinyl-black' : 'bg-stone-100 text-stone-500 hover:bg-stone-200'}`}
+            data-testid="msg-tab-inbox"
+          >Inbox</button>
+          <button
+            onClick={() => setMsgTab('requests')}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors flex items-center gap-1.5 ${msgTab === 'requests' ? 'bg-amber-100 text-amber-800' : 'bg-stone-100 text-stone-500 hover:bg-stone-200'}`}
+            data-testid="msg-tab-requests"
+          >
+            Requests
+            <span className="bg-amber-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">{requestConvs.length}</span>
+          </button>
+        </div>
+      )}
+
+      {(msgTab === 'inbox' ? activeConvs : requestConvs).length === 0 ? (
         <Card className="p-8 text-center border-honey/30">
           <Search className="w-12 h-12 text-honey/40 mx-auto mb-4" />
           <h3 className="font-heading text-xl mb-2">No messages yet</h3>
@@ -221,9 +284,9 @@ const MessagesPage = () => {
         </Card>
       ) : (
         <div className="space-y-2">
-          {conversations.map(conv => (
+          {(msgTab === 'inbox' ? activeConvs : requestConvs).map(conv => (
             <button key={conv.id} onClick={() => openConversation(conv.id)}
-              className="w-full text-left p-4 rounded-xl bg-white border border-honey/20 hover:border-honey/50 hover:shadow-sm transition-all flex items-center gap-3"
+              className={`w-full text-left p-4 rounded-xl bg-white border hover:shadow-sm transition-all flex items-center gap-3 ${conv.status === 'pending' ? 'border-amber-200' : 'border-honey/20 hover:border-honey/50'}`}
               data-testid={`dm-conv-${conv.id}`}>
               {conv.other_user?.avatar_url ? (
                 <img src={resolveImageUrl(conv.other_user.avatar_url)} alt="" className="w-11 h-11 rounded-full object-cover shrink-0" />

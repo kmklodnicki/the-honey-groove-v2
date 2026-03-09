@@ -76,6 +76,30 @@ async def follow_user(username: str, user: Dict = Depends(require_auth)):
     if existing:
         raise HTTPException(status_code=400, detail="Already following this user")
     
+    # If target is private, create a follow request instead
+    if target_user.get("is_private", False):
+        existing_req = await db.follow_requests.find_one({
+            "from_id": user["id"], "to_id": target_user["id"], "status": "pending"
+        })
+        if existing_req:
+            return {"message": "Follow request already sent", "status": "requested"}
+        
+        now = datetime.now(timezone.utc).isoformat()
+        await db.follow_requests.insert_one({
+            "id": str(uuid.uuid4()),
+            "from_id": user["id"],
+            "to_id": target_user["id"],
+            "status": "pending",
+            "created_at": now
+        })
+        
+        u = await db.users.find_one({"id": user["id"]}, {"_id": 0})
+        await create_notification(target_user["id"], "FOLLOW_REQUEST", "Follow request",
+                                  f"@{u.get('username','?')} requested to follow you",
+                                  {"from_username": u.get("username"), "from_id": user["id"]})
+        
+        return {"message": "Follow request sent", "status": "requested"}
+    
     follow_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
     
@@ -96,7 +120,7 @@ async def follow_user(username: str, user: Dict = Depends(require_auth)):
         tpl = email_tpl.new_follow(u.get("username", "?"), f"{FRONTEND_URL}/profile/{u.get('username','')}")
         await send_email_fire_and_forget(target_user["email"], tpl["subject"], tpl["html"])
 
-    return {"message": f"Now following {username}"}
+    return {"message": f"Now following {username}", "status": "following"}
 
 @router.delete("/follow/{username}")
 async def unfollow_user(username: str, user: Dict = Depends(require_auth)):
@@ -109,8 +133,11 @@ async def unfollow_user(username: str, user: Dict = Depends(require_auth)):
         "following_id": target_user["id"]
     })
     
+    # Also clean up any pending follow requests
+    await db.follow_requests.delete_many({"from_id": user["id"], "to_id": target_user["id"]})
+    
     if result.deleted_count == 0:
-        raise HTTPException(status_code=400, detail="Not following this user")
+        return {"message": "Cancelled follow request"}
     
     return {"message": f"Unfollowed {username}"}
 
@@ -125,7 +152,12 @@ async def check_following(username: str, user: Dict = Depends(require_auth)):
         "following_id": target_user["id"]
     })
     
-    return {"is_following": existing is not None}
+    follow_request_pending = False
+    if not existing:
+        req = await db.follow_requests.find_one({"from_id": user["id"], "to_id": target_user["id"], "status": "pending"})
+        follow_request_pending = req is not None
+    
+    return {"is_following": existing is not None, "follow_request_pending": follow_request_pending}
 
 @router.get("/users/{username}/followers")
 async def get_followers(username: str, current_user: Optional[Dict] = Depends(get_current_user)):
@@ -212,6 +244,68 @@ async def get_following(username: str, current_user: Optional[Dict] = Depends(ge
     return result
 
 
+# ============== FOLLOW REQUEST ROUTES ==============
+
+@router.get("/follow-requests")
+async def get_follow_requests(user: Dict = Depends(require_auth)):
+    """Get pending follow requests for the current user."""
+    requests = await db.follow_requests.find({"to_id": user["id"], "status": "pending"}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    result = []
+    for req in requests:
+        from_user = await db.users.find_one({"id": req["from_id"]}, {"_id": 0, "password_hash": 0})
+        if from_user:
+            result.append({
+                "id": req["id"],
+                "from_user": {
+                    "id": from_user["id"],
+                    "username": from_user["username"],
+                    "avatar_url": from_user.get("avatar_url"),
+                    "bio": from_user.get("bio"),
+                },
+                "created_at": req["created_at"]
+            })
+    return result
+
+
+@router.post("/follow-requests/{request_id}/accept")
+async def accept_follow_request(request_id: str, user: Dict = Depends(require_auth)):
+    """Accept a follow request, creating the follower relationship."""
+    req = await db.follow_requests.find_one({"id": request_id, "to_id": user["id"], "status": "pending"}, {"_id": 0})
+    if not req:
+        raise HTTPException(status_code=404, detail="Follow request not found")
+    
+    # Create follower relationship
+    now = datetime.now(timezone.utc).isoformat()
+    await db.followers.insert_one({
+        "id": str(uuid.uuid4()),
+        "follower_id": req["from_id"],
+        "following_id": user["id"],
+        "created_at": now
+    })
+    
+    # Update request status
+    await db.follow_requests.update_one({"id": request_id}, {"$set": {"status": "accepted"}})
+    
+    # Notify the requester
+    u = await db.users.find_one({"id": user["id"]}, {"_id": 0})
+    await create_notification(req["from_id"], "FOLLOW_REQUEST_ACCEPTED", "Follow request accepted",
+                              f"@{u.get('username','?')} accepted your follow request",
+                              {"username": u.get("username")})
+    
+    return {"status": "accepted"}
+
+
+@router.post("/follow-requests/{request_id}/decline")
+async def decline_follow_request(request_id: str, user: Dict = Depends(require_auth)):
+    """Decline a follow request."""
+    req = await db.follow_requests.find_one({"id": request_id, "to_id": user["id"], "status": "pending"}, {"_id": 0})
+    if not req:
+        raise HTTPException(status_code=404, detail="Follow request not found")
+    
+    await db.follow_requests.update_one({"id": request_id}, {"$set": {"status": "declined"}})
+    return {"status": "declined"}
+
+
 # ============== BLOCK ROUTES ==============
 
 @router.post("/block/{username}")
@@ -269,15 +363,27 @@ async def check_block_status(username: str, user: Dict = Depends(require_auth)):
 
 # ============== PROFILE DATA ROUTES ==============
 
+# Helper: check block + privacy gating for profile data endpoints
+async def _check_profile_access(target: Dict, current_user: Optional[Dict]):
+    """Raises HTTPException if viewer cannot access target's profile data."""
+    if current_user and current_user["id"] != target["id"]:
+        block = await db.blocks.find_one({"$or": [{"blocker_id": target["id"], "blocked_id": current_user["id"]}, {"blocker_id": current_user["id"], "blocked_id": target["id"]}]})
+        if block:
+            raise HTTPException(status_code=403, detail="This profile is not available.")
+        if target.get("is_private", False):
+            is_follower = await db.followers.find_one({"follower_id": current_user["id"], "following_id": target["id"]})
+            if not is_follower:
+                raise HTTPException(status_code=403, detail="This account is private.")
+    elif not current_user and target.get("is_private", False):
+        raise HTTPException(status_code=403, detail="This account is private.")
+
+
 @router.get("/users/{username}/spins")
 async def get_user_spins(username: str, limit: int = 50, current_user: Optional[Dict] = Depends(get_current_user)):
     target = await db.users.find_one({"username": username.lower()}, {"_id": 0})
     if not target:
         raise HTTPException(status_code=404, detail="User not found")
-    if current_user and current_user["id"] != target["id"]:
-        block = await db.blocks.find_one({"$or": [{"blocker_id": target["id"], "blocked_id": current_user["id"]}, {"blocker_id": current_user["id"], "blocked_id": target["id"]}]})
-        if block:
-            raise HTTPException(status_code=403, detail="This profile is not available.")
+    await _check_profile_access(target, current_user)
     
     spins = await db.spins.find({"user_id": target["id"]}, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
     result = []
@@ -292,10 +398,7 @@ async def get_user_isos(username: str, current_user: Optional[Dict] = Depends(ge
     target = await db.users.find_one({"username": username.lower()}, {"_id": 0})
     if not target:
         raise HTTPException(status_code=404, detail="User not found")
-    if current_user and current_user["id"] != target["id"]:
-        block = await db.blocks.find_one({"$or": [{"blocker_id": target["id"], "blocked_id": current_user["id"]}, {"blocker_id": current_user["id"], "blocked_id": target["id"]}]})
-        if block:
-            raise HTTPException(status_code=403, detail="This profile is not available.")
+    await _check_profile_access(target, current_user)
     
     isos = await db.iso_items.find({"user_id": target["id"], "status": {"$ne": "WISHLIST"}}, {"_id": 0}).sort("created_at", -1).to_list(100)
     return isos
@@ -307,10 +410,7 @@ async def get_user_dreaming(username: str, current_user: Optional[Dict] = Depend
     target = await db.users.find_one({"username": username.lower()}, {"_id": 0})
     if not target:
         raise HTTPException(status_code=404, detail="User not found")
-    if current_user and current_user["id"] != target["id"]:
-        block = await db.blocks.find_one({"$or": [{"blocker_id": target["id"], "blocked_id": current_user["id"]}, {"blocker_id": current_user["id"], "blocked_id": target["id"]}]})
-        if block:
-            raise HTTPException(status_code=403, detail="This profile is not available.")
+    await _check_profile_access(target, current_user)
     
     items = await db.iso_items.find({"user_id": target["id"], "status": "WISHLIST"}, {"_id": 0}).sort("created_at", -1).to_list(200)
     return items
@@ -320,10 +420,7 @@ async def get_user_posts(username: str, current_user: Optional[Dict] = Depends(g
     target = await db.users.find_one({"username": username.lower()}, {"_id": 0})
     if not target:
         raise HTTPException(status_code=404, detail="User not found")
-    if current_user and current_user["id"] != target["id"]:
-        block = await db.blocks.find_one({"$or": [{"blocker_id": target["id"], "blocked_id": current_user["id"]}, {"blocker_id": current_user["id"], "blocked_id": target["id"]}]})
-        if block:
-            raise HTTPException(status_code=403, detail="This profile is not available.")
+    await _check_profile_access(target, current_user)
     
     posts = await db.posts.find({"user_id": target["id"]}, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
     result = []

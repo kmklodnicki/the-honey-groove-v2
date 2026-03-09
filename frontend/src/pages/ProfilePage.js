@@ -10,10 +10,11 @@ import { Skeleton } from '../components/ui/skeleton';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '../components/ui/dialog';
-import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, CheckCircle2, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin, ShoppingBag, Flag, Sparkles, Eye, X, Cloud, ShieldOff, ShieldCheck } from 'lucide-react';
+import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, CheckCircle2, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin, ShoppingBag, Flag, Sparkles, Eye, X, Cloud, ShieldOff, ShieldCheck, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { FollowListModal } from '../components/FollowList';
+import { FollowRequestsBadge, FollowRequestsModal } from '../components/FollowRequests';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { MoodBoardTab } from '../components/MoodBoardTab';
 import ReportModal from '../components/ReportModal';
@@ -59,6 +60,9 @@ const ProfilePage = () => {
   const [blockLoading, setBlockLoading] = useState(false);
   const [showBlockConfirm, setShowBlockConfirm] = useState(false);
   const [profileUnavailable, setProfileUnavailable] = useState(false);
+  const [followRequestPending, setFollowRequestPending] = useState(false);
+  const [followRequestCount, setFollowRequestCount] = useState(0);
+  const [followRequestsOpen, setFollowRequestsOpen] = useState(false);
 
   const isOwnProfile = user?.username === username;
 
@@ -66,12 +70,20 @@ const ProfilePage = () => {
     try {
       setProfileUnavailable(false);
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const [profileRes, recordsRes] = await Promise.all([
-        axios.get(`${API}/users/${username}`, { headers }),
-        axios.get(`${API}/users/${username}/records`, { headers }),
-      ]);
+      
+      // Fetch profile first
+      const profileRes = await axios.get(`${API}/users/${username}`, { headers });
       setProfile(profileRes.data);
-      setRecords(recordsRes.data);
+      
+      const profileLocked = profileRes.data.profile_locked;
+      
+      // Only fetch records/content if profile is not locked
+      if (!profileLocked) {
+        const recordsRes = await axios.get(`${API}/users/${username}/records`, { headers });
+        setRecords(recordsRes.data);
+      } else {
+        setRecords([]);
+      }
 
       if (token && !isOwnProfile) {
         const [followRes, blockRes] = await Promise.all([
@@ -80,32 +92,35 @@ const ProfilePage = () => {
         ]);
         setIsFollowing(followRes.data.is_following);
         setIsBlocked(blockRes.data.is_blocked);
+        setFollowRequestPending(followRes.data.follow_request_pending || profileRes.data.follow_request_status === 'pending');
       }
       if (token && isOwnProfile) {
         axios.get(`${API}/stripe/status`, { headers: { Authorization: `Bearer ${token}` }}).then(r => setStripeStatus(r.data)).catch(() => {});
+        axios.get(`${API}/follow-requests`, { headers: { Authorization: `Bearer ${token}` }}).then(r => setFollowRequestCount(r.data.length)).catch(() => {});
       }
-      axios.get(`${API}/users/${username}/ratings`).then(r => setRatings(r.data)).catch(() => {});
-      axios.get(`${API}/valuation/collection/${username}`).then(r => setCollectionValue(r.data)).catch(() => {});
-      axios.get(`${API}/prompts/streak/${username}`).then(r => setPromptStreak(r.data)).catch(() => {});
-      axios.get(`${API}/valuation/wishlist/${username}`).then(r => setDreamValue(r.data)).catch(() => {});
+      
+      if (!profileLocked) {
+        axios.get(`${API}/users/${username}/ratings`).then(r => setRatings(r.data)).catch(() => {});
+        axios.get(`${API}/valuation/collection/${username}`).then(r => setCollectionValue(r.data)).catch(() => {});
+        axios.get(`${API}/prompts/streak/${username}`).then(r => setPromptStreak(r.data)).catch(() => {});
+        axios.get(`${API}/valuation/wishlist/${username}`).then(r => setDreamValue(r.data)).catch(() => {});
 
-      // Fetch taste match for other users
-      if (token && !isOwnProfile) {
-        setTasteLoading(true);
-        axios.get(`${API}/users/${username}/taste-match`, { headers: { Authorization: `Bearer ${token}` }})
-          .then(r => {
-            setTasteMatch(r.data);
-            // Auto-switch to In Common if soulmate match and no explicit tab param
-            if (r.data.score >= 90 && !new URLSearchParams(window.location.search).get('tab')) {
-              setActiveTab('in-common');
-            }
-          })
-          .catch(() => {})
-          .finally(() => setTasteLoading(false));
-        // Fetch own collection discogs IDs for "In Your Collection" badges
-        axios.get(`${API}/records`, { headers: { Authorization: `Bearer ${token}` }})
-          .then(r => setMyRecordDiscogs(new Set(r.data.filter(rec => rec.discogs_id).map(rec => rec.discogs_id))))
-          .catch(() => {});
+        // Fetch taste match for other users
+        if (token && !isOwnProfile) {
+          setTasteLoading(true);
+          axios.get(`${API}/users/${username}/taste-match`, { headers: { Authorization: `Bearer ${token}` }})
+            .then(r => {
+              setTasteMatch(r.data);
+              if (r.data.score >= 90 && !new URLSearchParams(window.location.search).get('tab')) {
+                setActiveTab('in-common');
+              }
+            })
+            .catch(() => {})
+            .finally(() => setTasteLoading(false));
+          axios.get(`${API}/records`, { headers: { Authorization: `Bearer ${token}` }})
+            .then(r => setMyRecordDiscogs(new Set(r.data.filter(rec => rec.discogs_id).map(rec => rec.discogs_id))))
+            .catch(() => {});
+        }
       }
     } catch (err) {
       if (err.response?.status === 403) {
@@ -156,14 +171,22 @@ const ProfilePage = () => {
   const handleFollow = async () => {
     setFollowLoading(true);
     try {
-      if (isFollowing) {
+      if (isFollowing || followRequestPending) {
         await axios.delete(`${API}/follow/${username}`, { headers: { Authorization: `Bearer ${token}` }});
-        setIsFollowing(false);
-        setProfile(p => p ? { ...p, followers_count: p.followers_count - 1 } : p);
+        if (isFollowing) {
+          setIsFollowing(false);
+          setProfile(p => p ? { ...p, followers_count: p.followers_count - 1 } : p);
+        }
+        setFollowRequestPending(false);
       } else {
-        await axios.post(`${API}/follow/${username}`, {}, { headers: { Authorization: `Bearer ${token}` }});
-        setIsFollowing(true);
-        setProfile(p => p ? { ...p, followers_count: p.followers_count + 1 } : p);
+        const res = await axios.post(`${API}/follow/${username}`, {}, { headers: { Authorization: `Bearer ${token}` }});
+        if (res.data.status === 'requested') {
+          setFollowRequestPending(true);
+          toast.success('Follow request sent');
+        } else {
+          setIsFollowing(true);
+          setProfile(p => p ? { ...p, followers_count: p.followers_count + 1 } : p);
+        }
       }
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Failed');
@@ -297,11 +320,17 @@ const ProfilePage = () => {
                     size="sm"
                     onClick={handleFollow}
                     disabled={followLoading}
-                    className={`rounded-full ${isFollowing ? 'bg-white border border-vinyl-black/30 text-vinyl-black hover:bg-red-50 hover:text-red-600' : 'bg-honey text-vinyl-black hover:bg-honey-amber'}`}
+                    className={`rounded-full ${
+                      isFollowing ? 'bg-white border border-vinyl-black/30 text-vinyl-black hover:bg-red-50 hover:text-red-600' :
+                      followRequestPending ? 'bg-white border border-amber-400 text-amber-700 hover:bg-red-50 hover:text-red-600' :
+                      'bg-honey text-vinyl-black hover:bg-honey-amber'
+                    }`}
                     data-testid="follow-btn"
                   >
                     {followLoading ? <Loader2 className="w-4 h-4 animate-spin" /> :
                       isFollowing ? <><UserMinus className="w-4 h-4 mr-1" />Following</> :
+                      followRequestPending ? <><Loader2 className="w-4 h-4 mr-1" />Requested</> :
+                      profile?.is_private ? <><Lock className="w-4 h-4 mr-1" />Request to Follow</> :
                       <><UserPlus className="w-4 h-4 mr-1" />Follow</>
                     }
                   </Button>
@@ -486,7 +515,51 @@ const ProfilePage = () => {
       {/* Pinned Wax Report */}
       <WaxReportPin username={username} API={API} token={token} />
 
-      {/* 4 Tabs */}
+      {/* Follow Requests Badge — own profile only */}
+      {isOwnProfile && followRequestCount > 0 && (
+        <div className="mb-4">
+          <FollowRequestsBadge count={followRequestCount} onClick={() => setFollowRequestsOpen(true)} />
+        </div>
+      )}
+
+      {/* Profile Content — Locked or Tabs */}
+      {profile?.profile_locked ? (
+        <div className="text-center py-12 px-4" data-testid="profile-locked">
+          <div className="flex flex-col items-center gap-4 max-w-sm mx-auto">
+            <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center">
+              <Lock className="w-7 h-7 text-stone-400" />
+            </div>
+            <h3 className="font-heading text-xl text-stone-700">This Account is Private</h3>
+            <p className="text-sm text-stone-500">Follow this user to see their posts, collection, ISOs, and Dream Items.</p>
+            
+            {/* Mutual signals */}
+            {profile.mutual_followers?.length > 0 && (
+              <p className="text-xs text-stone-500" data-testid="mutual-followers-hint">
+                Followed by <span className="font-medium text-stone-700">{profile.mutual_followers.join(', ')}</span>
+              </p>
+            )}
+            {profile.records_in_common > 0 && (
+              <p className="text-xs text-amber-700 flex items-center gap-1" data-testid="records-common-hint">
+                <Disc className="w-3 h-3" /> {profile.records_in_common} record{profile.records_in_common !== 1 ? 's' : ''} in common
+              </p>
+            )}
+            
+            <Button
+              size="sm"
+              onClick={handleFollow}
+              disabled={followLoading || followRequestPending}
+              className={`rounded-full mt-2 ${followRequestPending ? 'bg-white border border-amber-400 text-amber-700' : 'bg-honey text-vinyl-black hover:bg-honey-amber'}`}
+              data-testid="locked-follow-btn"
+            >
+              {followLoading ? <Loader2 className="w-4 h-4 animate-spin" /> :
+                followRequestPending ? 'Requested' :
+                <><Lock className="w-4 h-4 mr-1" /> Request to Follow</>
+              }
+            </Button>
+          </div>
+        </div>
+      ) : (
+      /* 4 Tabs */
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="bg-honey/10 mb-6 w-full grid grid-cols-7">
           <TabsTrigger value="collection" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-collection">
@@ -866,6 +939,7 @@ const ProfilePage = () => {
           <MoodBoardTab username={username} />
         </TabsContent>
       </Tabs>
+      )}
 
       {/* Common Ground Overlay (BLOCK 40.2) */}
       <Dialog open={commonGroundOpen} onOpenChange={setCommonGroundOpen}>
@@ -959,6 +1033,9 @@ const ProfilePage = () => {
         onFollowChange={fetchProfile}
       />
       <ReportModal open={reportSellerOpen} onOpenChange={setReportSellerOpen} targetType="seller" targetId={profile?.id} />
+
+      {/* Follow Requests Modal */}
+      <FollowRequestsModal open={followRequestsOpen} onOpenChange={setFollowRequestsOpen} />
 
       {/* Block confirmation dialog */}
       <AlertDialog open={showBlockConfirm} onOpenChange={setShowBlockConfirm}>

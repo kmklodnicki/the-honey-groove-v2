@@ -9,7 +9,7 @@ import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Switch } from '../components/ui/switch';
-import { ArrowLeft, Save, LogOut, Camera, Loader2, Mail, HelpCircle, ExternalLink, MessageSquare, Flag, Trash2, CreditCard, CheckCircle2, Shield, Bug } from 'lucide-react';
+import { ArrowLeft, Save, LogOut, Camera, Loader2, Mail, HelpCircle, ExternalLink, MessageSquare, Flag, Trash2, CreditCard, CheckCircle2, Shield, Bug, Lock, Globe, Users, MessageCircleMore } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
 import {
@@ -47,6 +47,8 @@ const SettingsPage = () => {
   const [verifyUploading, setVerifyUploading] = useState(false);
   const verifyInputRef = useRef(null);
   const [bugReportOpen, setBugReportOpen] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(user?.is_private || false);
+  const [dmSetting, setDmSetting] = useState(user?.dm_setting || 'everyone');
 
   useEffect(() => {
     axios.get(`${API}/newsletter/status`, { headers: { Authorization: `Bearer ${token}` } })
@@ -94,6 +96,8 @@ const SettingsPage = () => {
         avatar_url: avatarPreview !== user.avatar_url ? avatarPreview : undefined,
         instagram_username: instagramUsername.replace(/^@/, '').trim() || '',
         tiktok_username: tiktokUsername.replace(/^@/, '').trim() || '',
+        is_private: isPrivate,
+        dm_setting: dmSetting,
       };
       const response = await axios.put(`${API}/auth/me`, payload,
         { headers: { Authorization: `Bearer ${token}` }}
@@ -487,6 +491,67 @@ const SettingsPage = () => {
       </Card>
 
       {/* Newsletter */}
+      {/* Privacy & Messaging */}
+      <Card className="border-honey/30 mb-6" data-testid="privacy-settings-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Shield className="w-5 h-5 text-amber-600" /> Privacy & Messaging</CardTitle>
+          <CardDescription>control who can follow you and send you messages.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Profile Privacy */}
+          <div>
+            <Label className="text-sm font-medium mb-3 block">Profile Visibility</Label>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-stone-50/80 border border-stone-200/50">
+              <div className="flex items-center gap-3">
+                {isPrivate ? <Lock className="w-4 h-4 text-amber-600" /> : <Globe className="w-4 h-4 text-green-600" />}
+                <div>
+                  <p className="text-sm font-medium">{isPrivate ? 'Private' : 'Public'}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {isPrivate ? 'Only approved followers can see your content' : 'Anyone can see your profile and follow you'}
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={isPrivate}
+                onCheckedChange={setIsPrivate}
+                data-testid="private-account-toggle"
+              />
+            </div>
+          </div>
+
+          {/* DM Settings */}
+          <div>
+            <Label className="text-sm font-medium mb-3 block">Who can message you?</Label>
+            <div className="space-y-2">
+              {[
+                { value: 'everyone', label: 'Everyone', desc: 'Anyone can send you a direct message', icon: Globe },
+                { value: 'following', label: 'People I Follow', desc: 'Only users you follow can message you', icon: Users },
+                { value: 'requests', label: 'Allow Message Requests', desc: 'Anyone can send a request — you accept or decline', icon: MessageCircleMore },
+              ].map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => setDmSetting(opt.value)}
+                  className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-all text-left ${
+                    dmSetting === opt.value
+                      ? 'border-amber-400 bg-amber-50/50'
+                      : 'border-stone-200/50 bg-stone-50/40 hover:bg-stone-50/80'
+                  }`}
+                  data-testid={`dm-setting-${opt.value}`}
+                >
+                  <opt.icon className={`w-4 h-4 shrink-0 ${dmSetting === opt.value ? 'text-amber-600' : 'text-stone-400'}`} />
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-medium ${dmSetting === opt.value ? 'text-amber-800' : 'text-stone-700'}`}>{opt.label}</p>
+                    <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                  </div>
+                  {dmSetting === opt.value && <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />}
+                </button>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Newsletter - original */}
       <Card className="border-honey/30 mb-6" data-testid="newsletter-settings-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><Mail className="w-5 h-5 text-amber-500" /> The Weekly Wax</CardTitle>

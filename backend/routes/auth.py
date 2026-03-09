@@ -55,6 +55,8 @@ async def _build_user_response(user: dict) -> UserResponse:
         instagram_username=user.get("instagram_username"),
         tiktok_username=user.get("tiktok_username"),
         golden_hive=user.get("golden_hive", False),
+        is_private=user.get("is_private", False),
+        dm_setting=user.get("dm_setting", "everyone"),
     )
 
 # ============== AUTH ROUTES ==============
@@ -159,6 +161,10 @@ async def update_me(update_data: UserUpdate, user: Dict = Depends(require_auth))
             update_fields[field] = val
     if update_data.onboarding_completed is not None:
         update_fields["onboarding_completed"] = update_data.onboarding_completed
+    if update_data.is_private is not None:
+        update_fields["is_private"] = update_data.is_private
+    if update_data.dm_setting is not None and update_data.dm_setting in ("everyone", "following", "requests"):
+        update_fields["dm_setting"] = update_data.dm_setting
     if update_fields:
         await db.users.update_one({"id": user["id"]}, {"$set": update_fields})
     updated = await db.users.find_one({"id": user["id"]}, {"_id": 0, "password_hash": 0})
@@ -327,7 +333,7 @@ async def search_users_q(query: str = Query(..., min_length=2), user: Dict = Dep
         })
     return result
 
-@router.get("/users/{username}", response_model=UserResponse)
+@router.get("/users/{username}")
 async def get_user_profile(username: str, current_user: Optional[Dict] = Depends(get_current_user)):
     user = await db.users.find_one({"username": username.lower()}, {"_id": 0, "password_hash": 0})
     if not user:
@@ -344,10 +350,56 @@ async def get_user_profile(username: str, current_user: Optional[Dict] = Depends
         if block:
             raise HTTPException(status_code=403, detail="This profile is not available.")
     
+    is_own = current_user and current_user["id"] == user["id"]
+    is_private = user.get("is_private", False)
+    
+    # Determine if viewer is an approved follower
+    is_approved_follower = False
+    follow_request_status = None
+    if current_user and not is_own:
+        follower_doc = await db.followers.find_one({"follower_id": current_user["id"], "following_id": user["id"]})
+        is_approved_follower = follower_doc is not None
+        if not is_approved_follower and is_private:
+            req = await db.follow_requests.find_one({"from_id": current_user["id"], "to_id": user["id"], "status": "pending"})
+            if req:
+                follow_request_status = "pending"
+    
     resp = await _build_user_response(user)
-    if not (current_user and current_user["id"] == user["id"]):
+    if not is_own:
         resp.email = ""
-    return resp
+    
+    # Build extended response with privacy info
+    result = resp.dict()
+    result["is_private"] = is_private
+    result["dm_setting"] = user.get("dm_setting", "everyone")
+    result["is_approved_follower"] = is_approved_follower
+    result["follow_request_status"] = follow_request_status
+    result["profile_locked"] = is_private and not is_approved_follower and not is_own
+    
+    # For locked profiles, include mutual signals
+    if result["profile_locked"] and current_user:
+        # Records in common count
+        viewer_records = await db.records.find({"user_id": current_user["id"], "discogs_id": {"$ne": None}}, {"_id": 0, "discogs_id": 1}).to_list(5000)
+        viewer_discogs = {r["discogs_id"] for r in viewer_records if r.get("discogs_id")}
+        if viewer_discogs:
+            their_records = await db.records.find({"user_id": user["id"], "discogs_id": {"$ne": None}}, {"_id": 0, "discogs_id": 1}).to_list(5000)
+            their_discogs = {r["discogs_id"] for r in their_records if r.get("discogs_id")}
+            result["records_in_common"] = len(viewer_discogs & their_discogs)
+        else:
+            result["records_in_common"] = 0
+        
+        # Mutual followers (people the viewer follows who also follow this user)
+        viewer_following = await db.followers.find({"follower_id": current_user["id"]}, {"_id": 0, "following_id": 1}).to_list(500)
+        viewer_following_ids = {f["following_id"] for f in viewer_following}
+        mutual_followers = await db.followers.find({"following_id": user["id"], "follower_id": {"$in": list(viewer_following_ids)}}, {"_id": 0, "follower_id": 1}).to_list(5)
+        mutual_names = []
+        for mf in mutual_followers[:3]:
+            mu = await db.users.find_one({"id": mf["follower_id"]}, {"_id": 0, "username": 1})
+            if mu:
+                mutual_names.append(mu["username"])
+        result["mutual_followers"] = mutual_names
+    
+    return result
 
 
 @router.delete("/auth/account")

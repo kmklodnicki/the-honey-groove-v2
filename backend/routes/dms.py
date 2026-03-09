@@ -41,17 +41,37 @@ async def create_or_get_conversation(data: DMCreate, user: Dict = Depends(requir
     conv = await db.dm_conversations.find_one({"participant_ids": pair}, {"_id": 0})
 
     now = datetime.now(timezone.utc).isoformat()
+    
+    # Determine DM permission based on recipient's settings
+    dm_setting = recipient.get("dm_setting", "everyone")
+    is_request = False
+    
     if not conv:
+        # Only enforce DM settings for new conversations
+        if dm_setting == "following":
+            # Recipient must be following the sender
+            is_following = await db.followers.find_one({"follower_id": data.recipient_id, "following_id": user["id"]})
+            if not is_following:
+                raise HTTPException(status_code=403, detail="This user only accepts messages from people they follow.")
+        elif dm_setting == "requests":
+            # Check if recipient follows sender — if yes, direct message; if no, it's a request
+            is_following = await db.followers.find_one({"follower_id": data.recipient_id, "following_id": user["id"]})
+            if not is_following:
+                is_request = True
+        
         conv = {
             "id": str(uuid.uuid4()),
             "participant_ids": pair,
             "participants": {},
             "context": data.context,
+            "status": "pending" if is_request else "active",
             "last_message": None,
             "last_message_at": now,
             "created_at": now,
         }
         await db.dm_conversations.insert_one(conv)
+    elif conv.get("status") == "declined":
+        raise HTTPException(status_code=403, detail="This conversation has been declined.")
 
     # Send the first message
     msg = {
@@ -69,10 +89,12 @@ async def create_or_get_conversation(data: DMCreate, user: Dict = Depends(requir
     }})
 
     # Notify recipient
-    await create_notification(data.recipient_id, "dm", "New message",
+    notif_type = "dm_request" if is_request else "dm"
+    notif_title = "Message request" if is_request else "New message"
+    await create_notification(data.recipient_id, notif_type, notif_title,
         f"@{user['username']} sent you a message", {"conversation_id": conv["id"], "sender_id": user["id"]})
 
-    return {"conversation_id": conv["id"]}
+    return {"conversation_id": conv["id"], "status": conv.get("status", "active")}
 
 
 @router.get("/dm/conversations")
@@ -102,9 +124,30 @@ async def list_conversations(user: Dict = Depends(require_auth)):
             "last_message": c.get("last_message"),
             "last_message_at": c.get("last_message_at"),
             "context": c.get("context"),
+            "status": c.get("status", "active"),
             "unread_count": unread,
         })
     return result
+
+
+@router.post("/dm/conversations/{conv_id}/accept")
+async def accept_message_request(conv_id: str, user: Dict = Depends(require_auth)):
+    """Accept a pending message request."""
+    conv = await db.dm_conversations.find_one({"id": conv_id, "participant_ids": user["id"], "status": "pending"}, {"_id": 0})
+    if not conv:
+        raise HTTPException(status_code=404, detail="Message request not found")
+    await db.dm_conversations.update_one({"id": conv_id}, {"$set": {"status": "active"}})
+    return {"status": "accepted"}
+
+
+@router.post("/dm/conversations/{conv_id}/decline")
+async def decline_message_request(conv_id: str, user: Dict = Depends(require_auth)):
+    """Decline a pending message request."""
+    conv = await db.dm_conversations.find_one({"id": conv_id, "participant_ids": user["id"], "status": "pending"}, {"_id": 0})
+    if not conv:
+        raise HTTPException(status_code=404, detail="Message request not found")
+    await db.dm_conversations.update_one({"id": conv_id}, {"$set": {"status": "declined"}})
+    return {"status": "declined"}
 
 
 @router.get("/dm/conversations/{conversation_id}")
@@ -133,6 +176,7 @@ async def get_conversation(conversation_id: str, user: Dict = Depends(require_au
         "id": conv["id"],
         "other_user": other_user,
         "context": conv.get("context"),
+        "status": conv.get("status", "active"),
         "messages": messages,
     }
 

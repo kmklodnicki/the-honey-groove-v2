@@ -39,6 +39,8 @@ class UserResponse(BaseModel):
     instagram_username: Optional[str] = None
     tiktok_username: Optional[str] = None
     golden_hive: bool = False
+    is_private: bool = False
+    dm_setting: str = "everyone"  # "everyone" | "following" | "requests"
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None
@@ -53,6 +55,8 @@ class UserUpdate(BaseModel):
     onboarding_completed: Optional[bool] = None
     instagram_username: Optional[str] = None
     tiktok_username: Optional[str] = None
+    is_private: Optional[bool] = None
+    dm_setting: Optional[str] = None  # "everyone" | "following" | "requests"
 
 class TokenResponse(BaseModel):
     access_token: str
