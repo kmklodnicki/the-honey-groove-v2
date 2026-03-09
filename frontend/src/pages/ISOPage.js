@@ -28,6 +28,7 @@ import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import { ProposeTradeModal } from './TradesPage';
 import { usePageTitle } from '../hooks/usePageTitle';
 import ListingDetailModal from '../components/ListingDetailModal';
+import EssentialsUpsellModal from '../components/EssentialsUpsellModal';
 import AlbumArt from '../components/AlbumArt';
 import RecordSearchResult from '../components/RecordSearchResult';
 import StripeGateModal from '../components/StripeGateModal';
@@ -85,6 +86,8 @@ const ISOPage = () => {
   const [showCountryGate, setShowCountryGate] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null); // listing or iso id pending delete
   const [deleteConfirmType, setDeleteConfirmType] = useState(null); // 'listing' or 'iso'
+  const [showEssentialsUpsell, setShowEssentialsUpsell] = useState(false);
+  const pendingCheckoutRef = useRef(null);
 
   // Check Stripe status
   useEffect(() => {
@@ -402,11 +405,19 @@ const ISOPage = () => {
     setDeleteConfirmType(null);
   };
 
-  const handleBuyNow = async (listing) => {
-    if (!user?.country) { setShowCountryGate(true); return; }
+  // ── Essentials upsell check ──
+  const ESSENTIALS_SEEN_KEY = 'honeygroove_essentials_prompt_seen';
+
+  const proceedToCheckout = async () => {
+    const pending = pendingCheckoutRef.current;
+    if (!pending) return;
+    pendingCheckoutRef.current = null;
     setPaymentLoading(true);
     try {
-      const resp = await axios.post(`${API}/payments/checkout`, { listing_id: listing.id, origin_url: window.location.origin }, { headers: { Authorization: `Bearer ${token}` } });
+      const body = pending.type === 'offer'
+        ? { listing_id: pending.listing.id, offer_amount: pending.offerAmount, origin_url: window.location.origin }
+        : { listing_id: pending.listing.id, origin_url: window.location.origin };
+      const resp = await axios.post(`${API}/payments/checkout`, body, { headers: { Authorization: `Bearer ${token}` } });
       if (resp.data.url) window.location.href = resp.data.url;
       else toast.error('could not start checkout. try again.');
     } catch (err) {
@@ -416,27 +427,32 @@ const ISOPage = () => {
       } else {
         toast.error(err.response?.data?.detail || 'Payment failed');
       }
+    } finally {
+      setPaymentLoading(false);
+      if (pending.type === 'offer') { setOfferTarget(null); setOfferAmount(''); }
     }
-    finally { setPaymentLoading(false); }
   };
 
-  const handleMakeOfferSubmit = async () => {
+  const maybeShowUpsell = (listing, type, offerAmt) => {
+    pendingCheckoutRef.current = { listing, type, offerAmount: offerAmt };
+    const seen = localStorage.getItem(ESSENTIALS_SEEN_KEY);
+    if (!seen) {
+      localStorage.setItem(ESSENTIALS_SEEN_KEY, 'true');
+      setShowEssentialsUpsell(true);
+    } else {
+      proceedToCheckout();
+    }
+  };
+
+  const handleBuyNow = (listing) => {
+    if (!user?.country) { setShowCountryGate(true); return; }
+    maybeShowUpsell(listing, 'buy');
+  };
+
+  const handleMakeOfferSubmit = () => {
     if (!user?.country) { setShowCountryGate(true); return; }
     if (!offerTarget || !offerAmount) return;
-    setPaymentLoading(true);
-    try {
-      const resp = await axios.post(`${API}/payments/checkout`, { listing_id: offerTarget.id, offer_amount: parseFloat(offerAmount), origin_url: window.location.origin }, { headers: { Authorization: `Bearer ${token}` } });
-      if (resp.data.url) window.location.href = resp.data.url;
-      else toast.error('could not start checkout. try again.');
-    } catch (err) {
-      if (err.response?.status === 409) {
-        toast.error('Buzzkill! Someone else just grabbed this record. Keep hunting!');
-        navigate('/nectar');
-      } else {
-        toast.error(err.response?.data?.detail || 'Payment failed');
-      }
-    }
-    finally { setPaymentLoading(false); setOfferTarget(null); setOfferAmount(''); }
+    maybeShowUpsell(offerTarget, 'offer', parseFloat(offerAmount));
   };
 
   // Derived data
@@ -506,6 +522,11 @@ const ISOPage = () => {
     <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8" data-testid="honeypot-page">
       <StripeGateModal open={showStripeGate} onClose={() => setShowStripeGate(false)} />
       <CountryGateModal open={showCountryGate} onClose={() => setShowCountryGate(false)} />
+      <EssentialsUpsellModal
+        open={showEssentialsUpsell}
+        onClose={() => setShowEssentialsUpsell(false)}
+        onProceed={() => { setShowEssentialsUpsell(false); proceedToCheckout(); }}
+      />
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
