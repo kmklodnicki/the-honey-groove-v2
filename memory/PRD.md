@@ -89,7 +89,7 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 ### Completed Recently
 - Tag Color Inconsistency - DONE (shared TagPill, ListingTypeBadge, PostTypeBadge components)
 - Report Bug Screenshot Upload - DONE
-- Ghost Order Protection (BLOCK 8.1) - DONE (atomic inventory lock)
+- **Essentials Upsell Modal** - One-time checkout upsell showing Core Three products before Stripe redirect. "Yes, Show Me" opens /essentials in new tab + continues checkout. "No Thanks" continues checkout. localStorage-based one-time display
 - Honey Shop Essentials (BLOCK 5.3) - DONE (static affiliate page at /essentials)
 - Welcome to the Hive Dashboard (BLOCK 5.1) - DONE
 - HONEY Order ID Branding (BLOCK 4.3) - DONE
