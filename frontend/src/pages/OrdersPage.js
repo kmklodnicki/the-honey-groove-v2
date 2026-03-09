@@ -18,6 +18,8 @@ import { formatDistanceToNow } from 'date-fns';
 import AlbumArt from '../components/AlbumArt';
 import { resolveImageUrl } from '../utils/imageUrl';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { GradeLabel } from '../components/GradeLabel';
+import { formatGradeDisplay } from '../utils/grading';
 
 const STATUS_BADGE = {
   PAID: { label: 'Paid', color: 'bg-green-100 text-green-700', icon: CheckCircle2 },
@@ -171,7 +173,7 @@ const OrderRow = ({ order, perspective, token, API, onUpdate, onCancel }) => {
                     @{counterparty.username}
                   </span>
                 )}
-                {order.condition && <span className="text-stone-400">{order.condition}</span>}
+                {order.condition && <span className="text-stone-400">{formatGradeDisplay(order.condition)}</span>}
               </div>
 
               {/* Status badges */}
@@ -215,7 +217,7 @@ const OrderRow = ({ order, perspective, token, API, onUpdate, onCancel }) => {
               {order.condition && (
                 <div>
                   <span className="text-xs text-muted-foreground">Condition</span>
-                  <p className="font-medium text-vinyl-black">{order.condition}</p>
+                  <div className="mt-0.5"><GradeLabel condition={order.condition} variant="pill" /></div>
                 </div>
               )}
               {order.pressing_variant && (

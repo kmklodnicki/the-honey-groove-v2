@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Search, Clock, Trash2, UserPlus, Disc, Feather, ShoppingBag, Plus, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import RecordSearchResult from './RecordSearchResult';
+import { formatGradeDisplay } from '../utils/grading';
 import safeStorage from '../utils/safeStorage';
 import { resolveImageUrl } from '../utils/imageUrl';
 
@@ -392,7 +393,7 @@ const GlobalSearch = ({ onClose }) => {
                       </div>
                       <div className="text-right shrink-0">
                         {l.price && <p className="text-sm font-semibold" style={{ color: '#C8861A' }}>${l.price}</p>}
-                        {l.condition && <p className="text-[10px] text-muted-foreground">{l.condition}</p>}
+                        {l.condition && <p className="text-[10px] text-muted-foreground">{formatGradeDisplay(l.condition)}</p>}
                       </div>
                     </div>
                   ))}

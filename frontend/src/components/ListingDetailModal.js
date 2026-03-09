@@ -13,13 +13,7 @@ import { resolveImageUrl } from '../utils/imageUrl';
 import AlbumArt from './AlbumArt';
 import PhotoLightbox from './PhotoLightbox';
 
-const CONDITION_MAP = {
-  'Mint': 'bg-emerald-100 text-emerald-800 border-emerald-200',
-  'Near Mint': 'bg-green-100 text-green-700 border-green-200',
-  'Very Good Plus': 'bg-lime-100 text-lime-700 border-lime-200',
-  'Very Good': 'bg-amber-100 text-amber-700 border-amber-200',
-  'Good': 'bg-orange-100 text-orange-700 border-orange-200',
-};
+import { GradeLabel } from './GradeLabel';
 
 const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, onProposeTrade }) => {
   const { token, API, user: currentUser } = useAuth();
@@ -139,7 +133,6 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
   const isBuyNow = listing?.listing_type === 'BUY_NOW';
   const isMakeOffer = listing?.listing_type === 'MAKE_OFFER';
   const isTrade = listing?.listing_type === 'TRADE';
-  const condClass = listing?.condition ? (CONDITION_MAP[listing.condition] || 'bg-stone-100 text-stone-600 border-stone-200') : '';
   const seller = listing?.user;
   const similar = listing?.similar_listings || [];
 
@@ -194,9 +187,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
               {/* Condition + Seller row */}
               <div className="flex items-center justify-between px-6 py-3 border-t border-stone-100" data-testid="listing-modal-seller-row">
                 {listing.condition && (
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${condClass}`} data-testid="listing-condition-pill">
-                    {listing.condition}
-                  </span>
+                  <GradeLabel condition={listing.condition} variant="pill" />
                 )}
                 {seller && (
                   <Link to={`/profile/${seller.username}`} onClick={handleClose}

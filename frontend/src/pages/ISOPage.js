@@ -37,7 +37,8 @@ import { TitleBadge } from '../components/TitleBadge';
 
 const ISO_TAGS = ['OG Press', 'Factory Sealed', 'Any', 'Promo'];
 const FILTER_OPTIONS = ['All', 'OPEN', 'FOUND'];
-const LISTING_CONDITIONS = ['Mint', 'Near Mint', 'Very Good Plus', 'Very Good', 'Good Plus', 'Good', 'Fair'];
+import { GRADE_OPTIONS } from '../utils/grading';
+import { GradeLabel } from '../components/GradeLabel';
 
 const IsoMatchCover = ({ coverUrl }) => {
   return <AlbumArt src={coverUrl} className="w-8 h-8 rounded shrink-0" />;
@@ -718,7 +719,7 @@ const ISOPage = () => {
                 )}
                 <Select value={listCondition} onValueChange={setListCondition}>
                   <SelectTrigger className="border-honey/50" data-testid="list-condition-select"><SelectValue placeholder="Condition" /></SelectTrigger>
-                  <SelectContent>{LISTING_CONDITIONS.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                  <SelectContent>{GRADE_OPTIONS.map(g => <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>)}</SelectContent>
                 </Select>
                 <Input placeholder="Press / year (e.g. 1973 US press)" value={listPressing} onChange={e => setListPressing(e.target.value)} className="border-honey/50" />
 
@@ -1041,7 +1042,7 @@ const ListingCard = ({ listing, currentUserId, onProposeTrade, onBuyNow, onMakeO
         <p className="font-heading text-sm font-bold truncate leading-tight">{listing.album}</p>
         <p className="text-xs text-muted-foreground truncate">{listing.artist}{listing.year ? ` (${listing.year})` : ''}</p>
         <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-          {listing.condition && <span className="text-[10px] text-muted-foreground bg-honey/10 px-1.5 py-0.5 rounded-full">{listing.condition}</span>}
+          {listing.condition && <GradeLabel condition={listing.condition} variant="compact" />}
           <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${tc.color}`}>{tc.label}</span>
           {listing.international_shipping && <span className="text-[10px] text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded-full border border-blue-200" data-testid={`listing-intl-${listing.id}`}>Intl Shipping</span>}
         </div>

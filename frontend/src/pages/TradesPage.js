@@ -935,12 +935,14 @@ const RecordDetail = ({ record, condition, photoUrls }) => (
     )}
     <p className="text-sm font-heading truncate">{record?.title || record?.album || 'Unknown'}</p>
     <p className="text-xs text-muted-foreground truncate">{record?.artist || ''}</p>
-    {condition && <span className="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-honey/20 text-honey-amber">{condition}</span>}
+    {condition && <GradeLabel condition={condition} variant="compact" />}
   </div>
 );
 
+import { GRADE_OPTIONS } from '../utils/grading';
+import { GradeLabel } from '../components/GradeLabel';
+
 // ======= Propose Trade Modal (exported for ISOPage) =======
-const OFFER_CONDITIONS = ['Mint', 'Near Mint', 'Very Good Plus', 'Very Good', 'Good Plus', 'Good', 'Fair'];
 
 // Hold Explainer Link Component
 const HoldExplainerLink = () => {
@@ -1086,7 +1088,7 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
               <div>
                 <p className="font-heading text-base">{listing?.album}</p>
                 <p className="text-sm text-muted-foreground">{listing?.artist}</p>
-                {listing?.condition && <p className="text-xs text-honey-amber">{listing.condition}</p>}
+                {listing?.condition && <GradeLabel condition={listing.condition} variant="compact" />}
               </div>
             </div>
           </div>
@@ -1106,10 +1108,10 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
           <div>
             <p className="text-xs font-medium text-muted-foreground mb-2">CONDITION <span className="text-red-400">*</span></p>
             <div className="flex flex-wrap gap-1.5">
-              {OFFER_CONDITIONS.map(c => (
-                <button key={c} onClick={() => setOfferedCondition(c)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${offeredCondition === c ? 'bg-honey text-vinyl-black shadow-sm ring-2 ring-honey/50' : 'bg-honey/10 text-muted-foreground hover:bg-honey/20'}`}
-                  data-testid={`offer-condition-${c.toLowerCase().replace(/\s+/g, '-')}`}>{c}</button>
+              {GRADE_OPTIONS.map(g => (
+                <button key={g.value} onClick={() => setOfferedCondition(g.value)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${offeredCondition === g.value ? 'bg-honey text-vinyl-black shadow-sm ring-2 ring-honey/50' : 'bg-honey/10 text-muted-foreground hover:bg-honey/20'}`}
+                  data-testid={`offer-condition-${g.value.toLowerCase().replace(/\+/g, 'plus')}`}>{g.label}</button>
               ))}
             </div>
           </div>
