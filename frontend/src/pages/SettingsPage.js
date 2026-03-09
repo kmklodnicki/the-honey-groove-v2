@@ -372,7 +372,7 @@ const SettingsPage = () => {
               id="bio"
               placeholder="tell the hive who you are."
               value={bio}
-              onChange={(e) => { if (e.target.value.length <= 160) setBio(e.target.value); }}
+              onChange={(e) => setBio(e.target.value.slice(0, 160))}
               className="border-honey/50"
               rows={3}
               data-testid="settings-bio"
@@ -387,7 +387,7 @@ const SettingsPage = () => {
               id="setup"
               placeholder="your turntable, needle, speakers..."
               value={setup}
-              onChange={(e) => { if (e.target.value.length <= 100) setSetup(e.target.value); }}
+              onChange={(e) => setSetup(e.target.value.slice(0, 100))}
               className="border-honey/50"
               data-testid="settings-setup"
             />

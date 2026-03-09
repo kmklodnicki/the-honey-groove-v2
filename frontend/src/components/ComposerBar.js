@@ -540,7 +540,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
             <Textarea
               placeholder="what's on your mind?"
               value={noteText}
-              onChange={e => { if (e.target.value.length <= 280) setNoteText(e.target.value); }}
+              onChange={e => setNoteText(e.target.value.slice(0, 280))}
               className="border-stone-200 resize-none text-base min-h-[120px] focus-visible:ring-amber-300"
               rows={4}
               autoFocus

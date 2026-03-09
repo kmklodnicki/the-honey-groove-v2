@@ -89,6 +89,7 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - Grading Guide page (optional)
 
 ### Completed Recently
+- **Notes/Bio Paste Fix** - DONE (2026-03-09). Fixed silent paste rejection in ComposerBar Notes (280), Settings Bio (160), Settings Setup (100). Changed conditional `if (len <= max)` pattern to `.slice(0, max)` truncation so paste always works.
 - Tag Color Inconsistency - DONE (shared TagPill, ListingTypeBadge, PostTypeBadge components)
 - Report Bug Screenshot Upload - DONE
 - **Essentials Upsell Modal** - One-time checkout upsell showing Core Three products before Stripe redirect. "Yes, Show Me" opens /essentials in new tab + continues checkout. "No Thanks" continues checkout. localStorage-based one-time display
