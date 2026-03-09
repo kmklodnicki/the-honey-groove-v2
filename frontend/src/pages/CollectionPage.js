@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Skeleton } from '../components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -13,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, DollarSign, TrendingUp, RefreshCw, Heart, ArrowRight } from 'lucide-react';
+import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, DollarSign, TrendingUp, RefreshCw, Heart, ArrowRight, ShoppingBag, Cloud } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +25,7 @@ import { toast } from 'sonner';
 import DiscogsImport from '../components/DiscogsImport';
 import { usePageTitle } from '../hooks/usePageTitle';
 import AlbumArt from '../components/AlbumArt';
+import { VariantTag } from '../components/PostCards';
 
 const SORT_OPTIONS = [
   { value: 'artist_asc', label: 'Artist A → Z' },
@@ -52,6 +54,10 @@ const CollectionPage = () => {
   const [hiddenGems, setHiddenGems] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [valueMap, setValueMap] = useState({});
+  const [collectionTab, setCollectionTab] = useState('owned');
+  const [wishlistItems, setWishlistItems] = useState([]);
+  const [wishlistValue, setWishlistValue] = useState(null);
+  const navigate = useNavigate();
 
   const fetchData = useCallback(async () => {
     try {
@@ -68,6 +74,11 @@ const CollectionPage = () => {
       setCollectionValue(valueRes.data);
       setHiddenGems(gemsRes.data || []);
       setValueMap(valMapRes.data || {});
+      // Fetch wishlist (WISHLIST ISO items)
+      Promise.all([
+        axios.get(`${API}/iso`, { headers }).then(r => setWishlistItems((r.data || []).filter(i => i.status === 'WISHLIST'))),
+        axios.get(`${API}/valuation/wishlist`, { headers }).then(r => setWishlistValue(r.data)),
+      ]).catch(() => {});
     } catch (error) {
       console.error('Failed to fetch records:', error);
       toast.error('something went wrong loading your collection.');
@@ -139,6 +150,23 @@ const CollectionPage = () => {
       setRecords(prev => prev.filter(r => r.id !== recordId));
       toast.success(res.data.message || 'back on the hunt.');
     } catch { toast.error('could not move to ISO.'); }
+  };
+
+  const handleWishlistToISO = async (isoId) => {
+    try {
+      const res = await axios.put(`${API}/iso/${isoId}/promote`, {}, { headers: { Authorization: `Bearer ${token}` }});
+      const item = wishlistItems.find(i => i.id === isoId);
+      setWishlistItems(prev => prev.filter(i => i.id !== isoId));
+      toast.success(res.data.message || `${item?.album || 'Record'} is now on the hunt.`);
+    } catch { toast.error('could not promote to wantlist.'); }
+  };
+
+  const handleDeleteWishlistItem = async (isoId) => {
+    try {
+      await axios.delete(`${API}/iso/${isoId}`, { headers: { Authorization: `Bearer ${token}` }});
+      setWishlistItems(prev => prev.filter(i => i.id !== isoId));
+      toast.success('removed from wishlist.');
+    } catch { toast.error('could not remove.'); }
   };
 
   // Get the most recent spin date for each record
@@ -232,7 +260,7 @@ const CollectionPage = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="font-heading text-3xl text-vinyl-black">My Collection</h1>
-          <p className="text-muted-foreground">{records.length} records</p>
+          <p className="text-muted-foreground">{records.length} owned · {wishlistItems.length} dreaming</p>
         </div>
         <Link to="/add-record">
           <Button className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2" data-testid="add-record-btn">
@@ -242,138 +270,188 @@ const CollectionPage = () => {
         </Link>
       </div>
 
-      {/* Collection Value Banner */}
-      {collectionValue && collectionValue.valued_count > 0 && (
-        <Card className="p-4 mb-5 border-honey/30 bg-gradient-to-r from-honey/5 to-honey/15" data-testid="collection-value-banner">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-honey/20 flex items-center justify-center">
-                <DollarSign className="w-5 h-5 text-honey-amber" />
+      <Tabs value={collectionTab} onValueChange={setCollectionTab}>
+        <TabsList className="bg-honey/10 mb-6 w-full grid grid-cols-2">
+          <TabsTrigger value="owned" className="data-[state=active]:bg-honey text-sm" data-testid="tab-owned">
+            The Hive ({records.length})
+          </TabsTrigger>
+          <TabsTrigger value="wishlist" className="data-[state=active]:bg-honey text-sm" data-testid="tab-wishlist">
+            <Cloud className="w-3.5 h-3.5 mr-1.5" /> Wishlist ({wishlistItems.length})
+          </TabsTrigger>
+        </TabsList>
+
+        {/* ====== THE HIVE (OWNED) TAB ====== */}
+        <TabsContent value="owned">
+          {/* Collection Value Banner */}
+          {collectionValue && collectionValue.valued_count > 0 && (
+            <Card className="p-4 mb-5 border-honey/30 bg-gradient-to-r from-honey/5 to-honey/15" data-testid="collection-value-banner">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-honey/20 flex items-center justify-center">
+                    <DollarSign className="w-5 h-5 text-honey-amber" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">estimated value</p>
+                    <p className="font-heading text-2xl text-vinyl-black" data-testid="collection-total-value">
+                      ${collectionValue.total_value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground">based on Discogs market data · {collectionValue.valued_count} of {collectionValue.total_count} records valued</p>
+                  </div>
+                </div>
+                <Button variant="ghost" size="sm" onClick={handleRefreshValues} disabled={refreshing}
+                  className="text-xs text-honey-amber hover:bg-honey/10 rounded-full" data-testid="refresh-values-btn">
+                  <RefreshCw className={`w-3.5 h-3.5 mr-1 ${refreshing ? 'animate-spin' : ''}`} /> {refreshing ? 'Refreshing...' : 'Refresh'}
+                </Button>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">estimated value</p>
-                <p className="font-heading text-2xl text-vinyl-black" data-testid="collection-total-value">
-                  ${collectionValue.total_value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                </p>
-                <p className="text-[10px] text-muted-foreground">based on Discogs market data · {collectionValue.valued_count} of {collectionValue.total_count} records valued</p>
+            </Card>
+          )}
+
+          {/* Hidden Gems */}
+          {hiddenGems.length > 0 && (
+            <div className="mb-6" data-testid="hidden-gems-section">
+              <div className="flex items-center gap-2 mb-3">
+                <Gem className="w-4 h-4 text-honey-amber" />
+                <h2 className="font-heading text-base text-vinyl-black">Hidden Gems</h2>
+                <span className="text-[10px] text-muted-foreground ml-1">your most valuable records</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {hiddenGems.map((gem, idx) => (
+                  <Link key={gem.id} to={`/record/${gem.id}`}>
+                    <Card className="p-3 border-honey/30 flex items-center gap-3 hover:shadow-md transition-all cursor-pointer" data-testid={`hidden-gem-${idx}`}>
+                    <div className="relative shrink-0">
+                      <AlbumArt src={gem.cover_url} alt={`${gem.artist} - ${gem.title} Vinyl Record`} className="w-14 h-14 rounded-lg object-cover shadow-sm" />
+                      <span className="absolute -top-1.5 -left-1.5 w-5 h-5 bg-honey rounded-full flex items-center justify-center text-[10px] font-bold text-vinyl-black shadow">
+                        {idx + 1}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{gem.title}</p>
+                      <p className="text-xs text-muted-foreground truncate">{gem.artist}</p>
+                      <p className="text-xs font-medium text-honey-amber mt-0.5" data-testid={`gem-value-${idx}`}>
+                        ${gem.median_value.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        {gem.low_value && gem.high_value && (
+                          <span className="text-[10px] text-muted-foreground font-normal ml-1">
+                            (${gem.low_value.toFixed(0)} · ${gem.high_value.toFixed(0)})
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  </Card>
+                  </Link>
+                ))}
               </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={handleRefreshValues} disabled={refreshing}
-              className="text-xs text-honey-amber hover:bg-honey/10 rounded-full" data-testid="refresh-values-btn">
-              <RefreshCw className={`w-3.5 h-3.5 mr-1 ${refreshing ? 'animate-spin' : ''}`} /> {refreshing ? 'Refreshing...' : 'Refresh'}
-            </Button>
-          </div>
-        </Card>
-      )}
+          )}
 
-      {/* Hidden Gems */}
-      {hiddenGems.length > 0 && (
-        <div className="mb-6" data-testid="hidden-gems-section">
-          <div className="flex items-center gap-2 mb-3">
-            <Gem className="w-4 h-4 text-honey-amber" />
-            <h2 className="font-heading text-base text-vinyl-black">Hidden Gems</h2>
-            <span className="text-[10px] text-muted-foreground ml-1">your most valuable records</span>
+          {/* Your Week in Wax CTA */}
+          {collectionValue && collectionValue.valued_count > 0 && (
+            <WaxReportCTA />
+          )}
+
+          {/* Search and Sort Controls */}
+          <div className="flex flex-col sm:flex-row gap-3 mb-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search collection..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 border-honey/50"
+                data-testid="collection-search"
+              />
+            </div>
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger className="w-full sm:w-[200px] border-honey/50" data-testid="sort-select">
+                <ArrowUpDown className="w-4 h-4 mr-2" />
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                {SORT_OPTIONS.map(option => (
+                  <SelectItem key={option.value} value={option.value} data-testid={`sort-${option.value}`}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {hiddenGems.map((gem, idx) => (
-              <Link key={gem.id} to={`/record/${gem.id}`}>
-                <Card className="p-3 border-honey/30 flex items-center gap-3 hover:shadow-md transition-all cursor-pointer" data-testid={`hidden-gem-${idx}`}>
-                <div className="relative shrink-0">
-                  <AlbumArt src={gem.cover_url} alt={`${gem.artist} - ${gem.title} Vinyl Record`} className="w-14 h-14 rounded-lg object-cover shadow-sm" />
-                  <span className="absolute -top-1.5 -left-1.5 w-5 h-5 bg-honey rounded-full flex items-center justify-center text-[10px] font-bold text-vinyl-black shadow">
-                    {idx + 1}
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{gem.title}</p>
-                  <p className="text-xs text-muted-foreground truncate">{gem.artist}</p>
-                  <p className="text-xs font-medium text-honey-amber mt-0.5" data-testid={`gem-value-${idx}`}>
-                    ${gem.median_value.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                    {gem.low_value && gem.high_value && (
-                      <span className="text-[10px] text-muted-foreground font-normal ml-1">
-                        (${gem.low_value.toFixed(0)} · ${gem.high_value.toFixed(0)})
-                      </span>
-                    )}
-                  </p>
-                </div>
-              </Card>
+
+          {/* Discogs Import */}
+          <div className="mb-6">
+            <DiscogsImport onImportComplete={fetchData} />
+          </div>
+
+          {records.length === 0 ? (
+            <Card className="p-12 text-center border-honey/30">
+              <div className="w-20 h-20 bg-honey/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Disc className="w-10 h-10 text-honey-amber" />
+              </div>
+              <h3 className="font-heading text-2xl mb-2">Your collection is empty</h3>
+              <p className="text-muted-foreground mb-6">Start building your vinyl collection today!</p>
+              <Link to="/add-record">
+                <Button className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2">
+                  <Plus className="w-4 h-4" />
+                  Add Your First Record
+                </Button>
               </Link>
-            ))}
+            </Card>
+          ) : sortedAndFilteredRecords.length === 0 ? (
+            <Card className="p-8 text-center border-honey/30">
+              <p className="text-muted-foreground">No records match your search</p>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {sortedAndFilteredRecords.map(record => (
+                <RecordCard 
+                  key={record.id} 
+                  record={record}
+                  onSpin={handleLogSpin}
+                  onDelete={handleDeleteRecord}
+                  onMoveToWishlist={handleMoveToWishlist}
+                  onMoveToISO={handleMoveToISO}
+                  isSpinning={spinningRecordId === record.id}
+                  value={valueMap[record.id]}
+                />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* ====== WISHLIST (DREAMING) TAB ====== */}
+        <TabsContent value="wishlist">
+          {/* Dream Debt Banner */}
+          <div className="relative overflow-hidden rounded-2xl border border-stone-200/60 bg-gradient-to-br from-stone-50 via-white to-stone-50 p-5 mb-6" data-testid="dream-debt-banner">
+            {wishlistValue && wishlistValue.total_value > 5000 && (
+              <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-amber-950 shadow-sm" data-testid="delusional-badge-collection">
+                Certified Delusional
+              </div>
+            )}
+            <p className="text-xs font-medium uppercase tracking-widest text-stone-400 mb-1">Wishlist</p>
+            <p className="font-heading text-2xl sm:text-3xl text-vinyl-black leading-tight">
+              In your dreams... <span className="text-stone-400 text-lg font-serif italic">these are the records you'd own if you were a millionaire.</span>
+            </p>
+            {wishlistValue && wishlistValue.total_value > 0 && (
+              <p className="font-heading text-xl text-[#C8861A] mt-2" data-testid="wishlist-total-value">
+                Total Value of Your Dreams: ${wishlistValue.total_value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
+            )}
+            <p className="text-xs text-stone-400 mt-2">{wishlistItems.length} record{wishlistItems.length !== 1 ? 's' : ''} dreaming</p>
           </div>
-        </div>
-      )}
 
-      {/* Your Week in Wax CTA */}
-      {collectionValue && collectionValue.valued_count > 0 && (
-        <WaxReportCTA />
-      )}
-
-      {/* Search and Sort Controls */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search collection..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 border-honey/50"
-            data-testid="collection-search"
-          />
-        </div>
-        <Select value={sortBy} onValueChange={setSortBy}>
-          <SelectTrigger className="w-full sm:w-[200px] border-honey/50" data-testid="sort-select">
-            <ArrowUpDown className="w-4 h-4 mr-2" />
-            <SelectValue placeholder="Sort by" />
-          </SelectTrigger>
-          <SelectContent>
-            {SORT_OPTIONS.map(option => (
-              <SelectItem key={option.value} value={option.value} data-testid={`sort-${option.value}`}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Discogs Import */}
-      <div className="mb-6">
-        <DiscogsImport onImportComplete={fetchData} />
-      </div>
-
-      {records.length === 0 ? (
-        <Card className="p-12 text-center border-honey/30">
-          <div className="w-20 h-20 bg-honey/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Disc className="w-10 h-10 text-honey-amber" />
-          </div>
-          <h3 className="font-heading text-2xl mb-2">Your collection is empty</h3>
-          <p className="text-muted-foreground mb-6">Start building your vinyl collection today!</p>
-          <Link to="/add-record">
-            <Button className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2">
-              <Plus className="w-4 h-4" />
-              Add Your First Record
-            </Button>
-          </Link>
-        </Card>
-      ) : sortedAndFilteredRecords.length === 0 ? (
-        <Card className="p-8 text-center border-honey/30">
-          <p className="text-muted-foreground">No records match your search</p>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {sortedAndFilteredRecords.map(record => (
-            <RecordCard 
-              key={record.id} 
-              record={record}
-              onSpin={handleLogSpin}
-              onDelete={handleDeleteRecord}
-              onMoveToWishlist={handleMoveToWishlist}
-              onMoveToISO={handleMoveToISO}
-              isSpinning={spinningRecordId === record.id}
-              value={valueMap[record.id]}
-            />
-          ))}
-        </div>
-      )}
+          {wishlistItems.length === 0 ? (
+            <Card className="p-12 text-center border-stone-200/60">
+              <Cloud className="w-12 h-12 text-stone-300 mx-auto mb-4" />
+              <h3 className="font-heading text-xl mb-2 text-stone-500">Nothing here yet...</h3>
+              <p className="text-sm text-stone-400 mb-4">Move records from your collection to dream about them here.</p>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {wishlistItems.map(item => (
+                <WishlistCard key={item.id} item={item} onPromote={handleWishlistToISO} onDelete={handleDeleteWishlistItem} />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
@@ -484,6 +562,40 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
     </Card>
   );
 };
+
+
+const WishlistCard = ({ item, onPromote, onDelete }) => (
+  <Card className="group overflow-hidden border-stone-200/60 hover:shadow-md transition-all" data-testid={`wishlist-card-${item.id}`}>
+    <Link to={item.discogs_id ? `/record/discogs-${item.discogs_id}` : '#'} className="block">
+      <div className="relative aspect-square bg-stone-100">
+        {item.cover_url ? (
+          <AlbumArt src={item.cover_url} alt={`${item.artist} - ${item.album}`} className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center"><Disc className="w-10 h-10 text-stone-300" /></div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+      </div>
+    </Link>
+    <div className="p-3">
+      <p className="font-medium text-sm truncate">{item.album}</p>
+      <p className="text-xs text-muted-foreground truncate">{item.artist}</p>
+      {item.color_variant && <VariantTag variant={item.color_variant} ghost prefix="Dreaming of" />}
+      <div className="flex gap-1.5 mt-2">
+        <Button size="sm" onClick={() => onPromote(item.id)}
+          className="flex-1 h-7 text-[11px] rounded-full bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-amber-950 hover:from-yellow-500 hover:to-amber-500 font-medium"
+          data-testid={`promote-btn-${item.id}`}>
+          <ShoppingBag className="w-3 h-3 mr-1" /> Ready to Buy?
+        </Button>
+        <Button size="sm" variant="ghost" onClick={() => onDelete(item.id)}
+          className="h-7 w-7 p-0 text-stone-400 hover:text-red-500"
+          data-testid={`delete-wishlist-${item.id}`}>
+          <Trash2 className="w-3.5 h-3.5" />
+        </Button>
+      </div>
+    </div>
+  </Card>
+);
+
 
 const WaxReportCTA = () => (
   <Link to="/wax-reports" className="block mb-6 group" data-testid="wax-report-cta">

@@ -122,18 +122,37 @@ const MoodPill = ({ mood }) => {
   );
 };
 
-const VariantTag = ({ variant, glass }) => {
+const VariantTag = ({ variant, glass, ghost, gold, prefix }) => {
   if (!variant) return null;
   const key = variant.toLowerCase().trim();
   const match = Object.keys(VARIANT_PILL_STYLES).find(k => key.includes(k));
   const style = match ? VARIANT_PILL_STYLES[match] : VARIANT_DEFAULT;
+  const label = prefix ? `${prefix} ${variant}` : variant;
   if (glass) {
     return (
       <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-medium px-2 py-0.5 rounded-full text-white/90 border border-white/20 truncate max-w-full"
         style={{ backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', backgroundColor: 'rgba(0,0,0,0.35)' }}
         data-testid="variant-pill-glass">
         <Disc className="w-2.5 h-2.5" />
-        {variant}
+        {label}
+      </span>
+    );
+  }
+  if (ghost) {
+    return (
+      <span className="inline-flex items-center gap-1 mt-0.5 text-[10px] font-medium px-2 py-0.5 rounded-full border border-stone-300 text-stone-400 bg-transparent truncate max-w-full"
+        data-testid="variant-pill-ghost">
+        <Disc className="w-2.5 h-2.5" />
+        {label}
+      </span>
+    );
+  }
+  if (gold) {
+    return (
+      <span className="inline-flex items-center gap-1 mt-0.5 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-400 bg-gradient-to-r from-yellow-400/80 via-amber-400/80 to-yellow-500/80 text-amber-950 truncate max-w-full"
+        data-testid="variant-pill-gold">
+        <Disc className="w-2.5 h-2.5" />
+        {label}
       </span>
     );
   }
@@ -141,7 +160,7 @@ const VariantTag = ({ variant, glass }) => {
     <span className={`inline-flex items-center gap-1 mt-0.5 text-[10px] font-medium px-2 py-0.5 rounded-full border truncate max-w-full ${style}`}
       data-testid="variant-pill">
       <Disc className="w-2.5 h-2.5" />
-      {variant}
+      {label}
     </span>
   );
 };
@@ -474,4 +493,4 @@ const NewFeatureBadge = () => {
   );
 };
 
-export { PostTypeBadge, PostCardBody, ListingTypeBadge, TagPill, NewFeatureBadge, PILL_STYLES };
+export { PostTypeBadge, PostCardBody, ListingTypeBadge, TagPill, NewFeatureBadge, VariantTag, PILL_STYLES };

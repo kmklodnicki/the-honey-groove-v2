@@ -1,0 +1,80 @@
+{
+  "summary": "Block 27 UI refactor testing complete. All features working correctly: Collection page tabs (The Hive/Wishlist), Dream Debt banner, Wishlist promotion, Honeypot Wantlist tab with header tagline, and VariantTag modes.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_block27_iso_promote.py",
+    "/app/test_reports/pytest/block27_iso_promote_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": ["/app/backend/tests/test_block27_iso_promote.py"],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "admin@thehoneygroove.com/admin123",
+  "seed_data_creation": "TEST_Promote_Artist/TEST_Promote_Album ISO created for promote flow testing",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Block 27 UI refactor complete. All features verified: (1) Collection page has 'The Hive' tab for owned records and 'Wishlist' tab for dreaming items, (2) Wishlist tab shows Dream Debt banner with 'In your dreams...' copy, 'Certified Delusional' badge logic working (shows when value > $5000), (3) WishlistCard has 'Ready to Buy?' button calling PUT /api/iso/{id}/promote endpoint, (4) Honeypot tab renamed to 'Wantlist' with 'The Hunt is On' header tagline, (5) VariantTag component has glass/ghost/gold modes with proper data-testid attributes.",
+  "tests_passed": {
+    "backend": [
+      "test_wishlist_valuation_endpoint_exists - GET /api/valuation/wishlist returns 200",
+      "test_wishlist_valuation_requires_auth - Returns 401 without auth",
+      "test_wishlist_valuation_returns_proper_structure - Returns total_value, valued_count, total_count",
+      "test_promote_endpoint_requires_auth - PUT /api/iso/{id}/promote requires auth",
+      "test_promote_nonexistent_iso_returns_404 - Returns 404 for invalid ISO id",
+      "test_get_user_isos - GET /api/iso returns user's ISO items",
+      "test_iso_items_have_status_field - ISO items have status field (OPEN/WISHLIST/FOUND)",
+      "test_promote_changes_status_from_wishlist_to_open - Promotion changes status to OPEN with HIGH priority",
+      "test_iso_and_valuation_wishlist_consistency - Valuation total_count matches ISO WISHLIST count"
+    ],
+    "frontend": [
+      "Collection page has 'The Hive (N)' tab for owned records (data-testid='tab-owned')",
+      "Collection page has 'Wishlist (N)' tab for dreaming items (data-testid='tab-wishlist')",
+      "Wishlist tab shows Dream Debt banner with 'In your dreams...' copy (data-testid='dream-debt-banner')",
+      "'Certified Delusional' badge not visible when value <= $5000 (correct behavior)",
+      "WishlistCard has 'Ready to Buy?' button with gold gradient styling",
+      "Honeypot ISO tab renamed to 'Wantlist' (data-testid='tab-iso')",
+      "Wantlist tab has 'The Hunt is On.' header tagline (data-testid='wantlist-header')"
+    ]
+  },
+  "features_verified": {
+    "PUT /api/iso/{iso_id}/promote": {
+      "requires_authentication": true,
+      "returns_404_for_invalid_id": true,
+      "changes_status_to_OPEN": true,
+      "sets_priority_to_HIGH": true,
+      "returns_success_message": true
+    },
+    "GET /api/valuation/wishlist": {
+      "returns_total_value": true,
+      "returns_valued_count": true,
+      "returns_total_count": true,
+      "requires_authentication": true
+    },
+    "frontend_collection_page": {
+      "the_hive_tab": "Tab labeled 'The Hive (N)' showing owned records with value banner, gems, search, sort",
+      "wishlist_tab": "Tab labeled 'Wishlist (N)' with Cloud icon showing Dream Debt banner",
+      "dream_debt_banner": "Shows 'In your dreams...' copy, Total Value of Dreams, item count",
+      "certified_delusional_badge": "Displays when total_value > $5000",
+      "wishlist_card": "Has ghost variant pill and 'Ready to Buy?' promote button"
+    },
+    "frontend_honeypot_page": {
+      "wantlist_tab_label": "Tab renamed to 'Wantlist (N)'",
+      "header_tagline": "'The Hunt is On.' with supporting text",
+      "iso_items_display": "Shows OPEN/WISHLIST status badges correctly"
+    },
+    "variant_tag_component": {
+      "glass_mode": "data-testid='variant-pill-glass' - blur backdrop, dark bg, white text",
+      "ghost_mode": "data-testid='variant-pill-ghost' - outlined, transparent bg, stone colors",
+      "gold_mode": "data-testid='variant-pill-gold' - gold gradient bg, amber-950 text",
+      "prefix_prop": "Supports prefix like 'Dreaming of' for wishlist items"
+    }
+  }
+}

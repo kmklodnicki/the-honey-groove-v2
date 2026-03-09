@@ -88,6 +88,17 @@ async def mark_iso_found(iso_id: str, user: Dict = Depends(require_auth)):
     await db.iso_items.update_one({"id": iso_id}, {"$set": {"status": "FOUND", "found_at": now}})
     return {"message": "ISO marked as found"}
 
+@router.put("/iso/{iso_id}/promote")
+async def promote_to_active(iso_id: str, user: Dict = Depends(require_auth)):
+    """Promote a WISHLIST item to active OPEN ISO ('Ready to Buy' flow)."""
+    iso = await db.iso_items.find_one({"id": iso_id, "user_id": user["id"]})
+    if not iso:
+        raise HTTPException(status_code=404, detail="ISO not found")
+    await db.iso_items.update_one({"id": iso_id}, {"$set": {"status": "OPEN", "priority": "HIGH"}})
+    return {"message": f"{iso.get('album', 'Record')} is now on the hunt."}
+
+
+
 @router.post("/iso/{iso_id}/convert-to-collection")
 async def convert_iso_to_collection(iso_id: str, user: Dict = Depends(require_auth)):
     """Convert an ISO item to a collection record ('I Found It!' flow)."""
