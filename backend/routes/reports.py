@@ -5,11 +5,13 @@ Rate limited to 5 reports per user per 24 hours.
 """
 import logging
 import uuid
+import asyncio
 from datetime import datetime, timezone, timedelta
 from typing import Dict, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from database import db
 from routes.auth import require_auth
+from services.email_service import send_email
 
 logger = logging.getLogger("reports")
 router = APIRouter(prefix="/reports", tags=["reports"])
@@ -99,6 +101,26 @@ async def submit_report(body: Dict, user: Dict = Depends(require_auth)):
         "resolved_by": None,
     }
     await db.reports.insert_one(doc)
+
+    # Send email notification to admin
+    type_label = "General Feedback" if target_type == "feedback" else "Bug Report"
+    email_html = f"""
+    <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+      <h2 style="color:#C8861A">New {type_label}</h2>
+      <p><strong>From:</strong> @{user.get('username', 'unknown')}</p>
+      <p><strong>Type:</strong> {type_label}</p>
+      {'<p><strong>Reason:</strong> ' + reason + '</p>' if target_type != 'feedback' else ''}
+      <p><strong>Message:</strong></p>
+      <div style="background:#FAF6EE;padding:12px;border-radius:8px;margin:8px 0">{doc['notes']}</div>
+      <p style="font-size:12px;color:#888">Page: {doc.get('page_url', 'N/A')}</p>
+      <p style="font-size:12px;color:#888">Submitted: {doc['created_at']}</p>
+    </div>
+    """
+    asyncio.create_task(send_email(
+        "thello@thehoneygroove.com",
+        f"[Honey Groove] New {type_label} from @{user.get('username', 'unknown')}",
+        email_html,
+    ))
 
     return {"report_id": report_id, "status": "OPEN", "message": "Report submitted. Our team will review it shortly."}
 
@@ -195,3 +217,32 @@ async def admin_report_action(report_id: str, body: Dict, user: Dict = Depends(r
 
     await db.reports.update_one({"report_id": report_id}, {"$set": update})
     return {"message": f"Report action '{action}' applied successfully."}
+
+
+
+@router.get("/admin/feedback")
+async def get_feedback_reports(
+    mode: Optional[str] = None,
+    user: Dict = Depends(require_auth)
+):
+    """Admin: Get bug reports and general feedback with optional type filter."""
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    query = {"target_type": {"$in": ["bug", "feedback"]}}
+    if mode == "bug":
+        query["target_type"] = "bug"
+    elif mode == "feedback":
+        query["target_type"] = "feedback"
+
+    entries = await db.reports.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
+
+    for entry in entries:
+        rid = entry.get("reporter_user_id")
+        if rid:
+            u = await db.users.find_one({"id": rid}, {"_id": 0, "username": 1, "avatar_url": 1, "email": 1})
+            entry["reporter"] = u or {}
+        else:
+            entry["reporter"] = {}
+
+    return {"entries": entries}

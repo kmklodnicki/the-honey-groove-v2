@@ -8,7 +8,7 @@ import { Textarea } from '../components/ui/textarea';
 import {
   Loader2, Copy, Download, Plus, Users, Key, Check, X,
   MessageSquare, Grid3X3, Flag, Settings, ChevronRight, Search,
-  ToggleLeft, ToggleRight, Pencil, Calendar, Hash, Shield, DollarSign, ArrowRightLeft, AlertTriangle, Flame
+  ToggleLeft, ToggleRight, Pencil, Calendar, Hash, Shield, DollarSign, ArrowRightLeft, AlertTriangle, Flame, Heart
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -33,6 +33,7 @@ const AdminPage = () => {
     { key: 'holds', label: 'Hold Disputes', icon: Shield },
     { key: 'offplatform', label: 'Off-Platform Alerts', icon: Flag },
     { key: 'reports', label: 'Reports', icon: Flag },
+    { key: 'feedback', label: 'Feedback & Bug Reports', icon: Heart },
     { key: 'watchtower', label: 'Watchtower', icon: AlertTriangle },
     { key: 'gate', label: 'The Gate', icon: Shield },
     { key: 'settings', label: 'Platform Settings', icon: Settings },
@@ -67,6 +68,7 @@ const AdminPage = () => {
       {section === 'holds' && <HoldDisputesSection API={API} headers={headers} />}
       {section === 'offplatform' && <OffPlatformAlertsSection API={API} headers={headers} />}
       {section === 'reports' && <ReportsSection API={API} headers={headers} />}
+      {section === 'feedback' && <FeedbackSection API={API} headers={headers} />}
       {section === 'watchtower' && <WatchtowerSection API={API} headers={headers} />}
       {section === 'gate' && <GateSection API={API} headers={headers} />}
       {section === 'settings' && <SettingsSection API={API} headers={headers} />}
@@ -1212,6 +1214,128 @@ const UserManagementSection = ({ API, headers }) => {
 };
 
 // ═══════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════
+// FEEDBACK & BUG REPORTS
+// ═══════════════════════════════════════════════
+const FeedbackSection = ({ API, headers }) => {
+  const [entries, setEntries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all'); // 'all' | 'bug' | 'feedback'
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true);
+      try {
+        const params = filter !== 'all' ? `?mode=${filter}` : '';
+        const resp = await axios.get(`${API}/reports/admin/feedback${params}`, { headers });
+        setEntries(resp.data.entries || []);
+      } catch { toast.error('Failed to load feedback'); }
+      finally { setLoading(false); }
+    };
+    load();
+  }, [API, headers, filter]);
+
+  const FILTERS = [
+    { key: 'all', label: 'All' },
+    { key: 'bug', label: 'Report a Bug' },
+    { key: 'feedback', label: 'General Feedback' },
+  ];
+
+  return (
+    <div data-testid="admin-feedback-section">
+      <h2 className="font-heading text-xl text-vinyl-black mb-4">Feedback & Bug Reports</h2>
+
+      {/* Filter tabs */}
+      <div className="flex gap-2 mb-4" data-testid="feedback-filters">
+        {FILTERS.map(f => (
+          <button
+            key={f.key}
+            onClick={() => setFilter(f.key)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+              filter === f.key
+                ? 'bg-amber-100 text-amber-800 border-amber-300 shadow-sm'
+                : 'bg-white text-stone-500 border-stone-200 hover:border-amber-200'
+            }`}
+            data-testid={`feedback-filter-${f.key}`}
+          >
+            {f.label}
+            {f.key === 'all' && ` (${entries.length})`}
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-amber-500" /></div>
+      ) : entries.length === 0 ? (
+        <p className="text-sm text-stone-400 py-6 text-center">No submissions yet.</p>
+      ) : (
+        <div className="space-y-3">
+          {entries.map(entry => (
+            <Card key={entry.report_id} className="p-4 border-stone-200/60" data-testid={`feedback-entry-${entry.report_id}`}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  {/* Type badge + user */}
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium border ${
+                      entry.target_type === 'feedback'
+                        ? 'bg-violet-100 text-violet-700 border-violet-200'
+                        : 'bg-orange-100 text-orange-700 border-orange-200'
+                    }`} data-testid="feedback-type-badge">
+                      {entry.target_type === 'feedback' ? (
+                        <><Heart className="w-3 h-3" /> General Feedback</>
+                      ) : (
+                        <><AlertTriangle className="w-3 h-3" /> Bug Report</>
+                      )}
+                    </span>
+                    {entry.reporter?.username && (
+                      <span className="text-xs text-stone-500">@{entry.reporter.username}</span>
+                    )}
+                    {entry.reporter?.email && (
+                      <span className="text-[10px] text-stone-400">{entry.reporter.email}</span>
+                    )}
+                  </div>
+
+                  {/* Reason (bug reports only) */}
+                  {entry.target_type === 'bug' && entry.reason && (
+                    <p className="text-xs text-amber-700 font-medium mb-1">
+                      Reason: {entry.reason}
+                    </p>
+                  )}
+
+                  {/* Message */}
+                  <p className="text-sm text-stone-700 whitespace-pre-wrap leading-relaxed">
+                    {entry.notes}
+                  </p>
+
+                  {/* Screenshot */}
+                  {entry.screenshot_url && (
+                    <a href={entry.screenshot_url} target="_blank" rel="noopener noreferrer" className="inline-block mt-2">
+                      <img src={entry.screenshot_url} alt="Screenshot" className="w-20 h-20 object-cover rounded border border-stone-200" />
+                    </a>
+                  )}
+
+                  {/* Meta */}
+                  <div className="flex items-center gap-3 mt-2 text-[10px] text-stone-400">
+                    <span>{new Date(entry.created_at).toLocaleString()}</span>
+                    {entry.page_url && <span className="truncate max-w-[200px]">{entry.page_url}</span>}
+                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                      entry.status === 'OPEN' ? 'bg-yellow-100 text-yellow-700' :
+                      entry.status === 'REVIEWING' ? 'bg-blue-100 text-blue-700' :
+                      'bg-green-100 text-green-700'
+                    }`}>{entry.status}</span>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+
 // THE WATCHTOWER — REPORT MODERATION QUEUE
 // ═══════════════════════════════════════════════
 const WatchtowerSection = ({ API, headers }) => {
