@@ -79,13 +79,21 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 ## Pending / Upcoming Tasks
 
 ### P1
-- Tag Color Inconsistency - unify PostTypeBadge colors between Hive feed and marketplace listing cards
 - Weekly Wax Email - configure scheduled email every Sunday 12:00 PM ET
 
 ### P2
 - Hauls Enhancement - dedicated page
 - Refactor ISOPage.jsx - technical debt
 - Grading Guide page (optional)
+
+### Completed Recently
+- Tag Color Inconsistency - DONE (shared TagPill, ListingTypeBadge, PostTypeBadge components)
+- Report Bug Screenshot Upload - DONE
+- Ghost Order Protection (BLOCK 8.1) - DONE (atomic inventory lock)
+- Honey Shop Essentials (BLOCK 5.3) - DONE (static affiliate page at /essentials)
+- Welcome to the Hive Dashboard (BLOCK 5.1) - DONE
+- HONEY Order ID Branding (BLOCK 4.3) - DONE
+- Navbar Report Button - DONE
 
 ### Future / Backlog
 - Safari-compatible loading animation

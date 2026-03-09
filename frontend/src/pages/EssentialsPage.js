@@ -10,7 +10,7 @@ const HONEY_SHOP_ITEMS = [
     name: 'Outer Sleeves (4mil Clarity)',
     descriptor: 'Crystal-clear outer protection for the records worth showing off.',
     url: 'https://amzn.to/4cxAUEJ',
-    image: 'https://static.prod-images.emergentagent.com/jobs/088a9581-bbfd-42c2-ad31-f5535df4814c/images/003cc18cbe94235b06ae5e84c4d7555d2aafff5fecbdd0fc19177ae3512849a1.png',
+    image: 'https://customer-assets.emergentagent.com/job_088a9581-bbfd-42c2-ad31-f5535df4814c/artifacts/ktj27oem_product1.jpg',
   },
   {
     id: 'vault',
@@ -18,7 +18,7 @@ const HONEY_SHOP_ITEMS = [
     name: 'Inner Sleeves (Antistatic Rice Paper)',
     descriptor: 'Antistatic inner sleeves that keep your vinyl clean and properly tucked away.',
     url: 'https://amzn.to/3MR1RJ9',
-    image: 'https://static.prod-images.emergentagent.com/jobs/088a9581-bbfd-42c2-ad31-f5535df4814c/images/270f1ef0c78249dc2bef20519291dad14dbc31bba66c64257a0f509c69aa525c.png',
+    image: 'https://customer-assets.emergentagent.com/job_088a9581-bbfd-42c2-ad31-f5535df4814c/artifacts/0ujfxzay_product2.jpg',
   },
   {
     id: 'polish',
@@ -26,7 +26,7 @@ const HONEY_SHOP_ITEMS = [
     name: 'Complete Cleaning Kit',
     descriptor: 'A complete care kit for records that deserve a little extra love.',
     url: 'https://amzn.to/4unqpdG',
-    image: 'https://static.prod-images.emergentagent.com/jobs/088a9581-bbfd-42c2-ad31-f5535df4814c/images/a9719d18d2e4b5ff6646469f8208dcd7bcaf089424a7f5a579593116d2db9308.png',
+    image: 'https://customer-assets.emergentagent.com/job_088a9581-bbfd-42c2-ad31-f5535df4814c/artifacts/obo7sks1_image3.jpg',
   },
 ];
 
