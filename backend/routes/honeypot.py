@@ -7,6 +7,20 @@ import os
 import logging
 
 from database import db, require_auth, get_current_user, security, logger, create_notification, get_hidden_user_ids
+
+# ---------- HONEY Order ID Generator ----------
+HONEY_ORDER_START = 134208789
+
+async def _next_honey_order_id() -> str:
+    """Atomically increment a counter and return HONEY-XXXXXXXXX."""
+    doc = await db.counters.find_one_and_update(
+        {"_id": "order_id"},
+        {"$inc": {"seq": 1}},
+        upsert=True,
+        return_document=True,
+    )
+    seq = doc["seq"] + HONEY_ORDER_START - 1
+    return f"HONEY-{seq}"
 from services.email_service import send_email_fire_and_forget
 from database import hash_password, verify_password, create_token, search_discogs, get_discogs_release
 from database import put_object, get_object, init_storage, storage_key
@@ -571,8 +585,9 @@ async def create_payment_checkout(request: Request, body: Dict, user: Dict = Dep
         raise HTTPException(status_code=500, detail=f"Stripe checkout error: {str(e)}")
 
     now = datetime.now(timezone.utc).isoformat()
+    honey_id = await _next_honey_order_id()
     await db.payment_transactions.insert_one({
-        "id": str(uuid.uuid4()), "session_id": session.id,
+        "id": honey_id, "session_id": session.id,
         "listing_id": listing_id, "buyer_id": user["id"],
         "seller_id": listing["user_id"], "amount": amount,
         "platform_fee": platform_fee, "seller_payout": round(amount - platform_fee, 2),
@@ -765,8 +780,9 @@ async def pay_trade_sweetener(trade_id: str, request: Request, body: Dict, user:
         raise HTTPException(status_code=500, detail=f"Stripe checkout error: {str(e)}")
 
     now = datetime.now(timezone.utc).isoformat()
+    honey_trade_id = await _next_honey_order_id()
     await db.payment_transactions.insert_one({
-        "id": str(uuid.uuid4()), "session_id": session.id,
+        "id": honey_trade_id, "session_id": session.id,
         "trade_id": trade_id, "buyer_id": payer_id,
         "seller_id": recipient_id, "amount": amount,
         "platform_fee": platform_fee, "seller_payout": round(amount - platform_fee, 2),
@@ -806,8 +822,9 @@ async def _enrich_transactions(txns, perspective: str):
             if k in t:
                 item[k] = t[k]
 
-        # Generate short order number from id
-        item["order_number"] = (t.get("id", "")[:8]).upper()
+        # Order number — use HONEY-ID directly for new orders, truncate for legacy UUIDs
+        order_id = t.get("id", "")
+        item["order_number"] = order_id if order_id.startswith("HONEY-") else order_id[:8].upper()
 
         # Fetch listing details
         listing_id = t.get("listing_id")

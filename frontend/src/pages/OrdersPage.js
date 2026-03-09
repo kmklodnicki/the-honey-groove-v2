@@ -168,7 +168,7 @@ const OrderRow = ({ order, perspective, token, API, onUpdate, onCancel }) => {
 
               {/* Order meta */}
               <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground mb-2">
-                <span className="font-mono text-[10px] bg-stone-100 px-1.5 py-0.5 rounded" data-testid="order-number">#{order.order_number}</span>
+                <span className="font-mono text-[10px] bg-stone-100 px-1.5 py-0.5 rounded" data-testid="order-number">{order.order_number?.startsWith('HONEY-') ? order.order_number : `#${order.order_number}`}</span>
                 <span>{timeAgo}</span>
                 {counterparty.username && (
                   <span className="text-honey-amber" data-testid="order-counterparty">
