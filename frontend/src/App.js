@@ -1,9 +1,10 @@
 import React, { useEffect } from "react";
 import "@/App.css";
-import { BrowserRouter, Routes, Route, Navigate, useLocation, useParams } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { Toaster } from "./components/ui/sonner";
 import { HelmetProvider } from "react-helmet-async";
+import { ArrowLeft } from "lucide-react";
 import Navbar from "./components/Navbar";
 
 const ScrollToTop = () => {
@@ -67,10 +68,24 @@ const AdminRoute = ({ children }) => {
 // App Layout with Navbar
 const AppLayout = ({ children }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const isHome = location.pathname === '/' || location.pathname === '/hive';
   
   return (
     <div className="min-h-screen bg-honey-cream relative">
       {user && <Navbar />}
+      {user && !isHome && (
+        <button
+          onClick={() => navigate(-1)}
+          className="fixed z-40 flex items-center justify-center w-8 h-8 rounded-full text-stone-400/70 hover:text-stone-600 hover:bg-stone-200/40 transition-all top-[56px] md:top-[94px] left-3 md:left-5"
+          data-testid="global-back-btn"
+          aria-label="Go back"
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </button>
+      )}
       <main className="relative z-10">
         {children}
       </main>
