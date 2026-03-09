@@ -507,8 +507,8 @@ const ISOPage = () => {
   };
 
   // Dynamic labels
-  const ctaLabels = { shop: 'List a Record', trade: 'List for Trade', iso: 'Add to Wantlist' };
-  const modalTitles = { shop: 'List a Record', trade: 'List for Trade', iso: 'Add to Wantlist' };
+  const ctaLabels = { shop: 'List a Record', trade: 'List for Trade', iso: 'Add to Actively Seeking' };
+  const modalTitles = { shop: 'List a Record', trade: 'List for Trade', iso: 'Add to Actively Seeking' };
 
   // Discogs picker
   const DiscogsPicker = () => (
@@ -576,7 +576,7 @@ const ISOPage = () => {
             Shop ({shopListings.length})
           </TabsTrigger>
           <TabsTrigger value="iso" className="data-[state=active]:bg-honey text-sm" data-testid="tab-iso">
-            Wantlist ({openCount})
+            Actively Seeking ({openCount})
           </TabsTrigger>
           <TabsTrigger value="trade" className="data-[state=active]:bg-honey text-sm" data-testid="tab-trade">
             Trade ({tradeListings.length})
@@ -647,14 +647,14 @@ const ISOPage = () => {
 
         {/* ====== WANTLIST (READY TO BUY) TAB ====== */}
         <TabsContent value="iso">
-          {/* Wantlist Header */}
+          {/* Actively Seeking Header */}
           <div className="mb-5 p-4 rounded-xl bg-gradient-to-r from-amber-50/80 to-stone-50" data-testid="wantlist-header">
             <p className="font-heading text-lg text-vinyl-black">The Hunt is On.</p>
             <p className="text-sm text-stone-500 font-serif italic">You're actively looking, and we're actively matching. No more gatekeeping.</p>
           </div>
 
           {/* Your Hunt List */}
-          <h3 className="font-heading text-lg text-vinyl-black mb-3" data-testid="your-wantlist-title">Your Wantlist</h3>
+          <h3 className="font-heading text-lg text-vinyl-black mb-3" data-testid="your-wantlist-title">Actively Seeking</h3>
           <div className="flex gap-3 mb-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -671,7 +671,7 @@ const ISOPage = () => {
             <Card className="p-6 text-center border-honey/30 mb-8">
               <Search className="w-10 h-10 text-[#C8861A]/30 mx-auto mb-3" />
               <h3 className="font-heading text-lg mb-1">{isos.length === 0 ? 'No ISOs yet' : 'No results'}</h3>
-              <p className="text-muted-foreground text-sm">{isos.length === 0 ? 'Tap "Add to Wantlist" to start your vinyl hunt!' : 'Try a different filter.'}</p>
+              <p className="text-muted-foreground text-sm">{isos.length === 0 ? 'Tap "Add to Actively Seeking" to start your vinyl hunt!' : 'Try a different filter.'}</p>
             </Card>
           ) : (
             <div className="space-y-3 mb-8">
@@ -786,7 +786,7 @@ const ISOPage = () => {
                 <Button onClick={submitISO} disabled={submitting || (manualMode && (!isoArtist || !isoAlbum)) || (!manualMode && !selectedRelease)}
                   className="w-full bg-[#E8A820]/15 text-[#C8861A] hover:bg-[#E8A820]/25 rounded-full" data-testid="iso-form-submit">
                   {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Search className="w-4 h-4 mr-2" />}
-                  Add to Wantlist
+                  Add to Actively Seeking
                 </Button>
               </>
             )}

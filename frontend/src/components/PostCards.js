@@ -174,9 +174,18 @@ const NowSpinningCard = ({ post, onAlbumClick }) => {
         {record.cover_url ? (
           <div className="relative shrink-0">
             <AlbumArt src={record.cover_url} alt={`${record.artist} - ${record.title} Vinyl Record`} className="w-24 h-24 rounded-lg object-cover shadow-md" />
-            {record.color_variant && (
-              <div className="absolute bottom-1 right-1">
-                <VariantTag variant={record.color_variant} glass />
+            {post.honeypot_rating && (
+              <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
+                style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
+                data-testid="feed-rating-pill">
+                🍯 {post.honeypot_rating}
+              </div>
+            )}
+            {(record.color_variant || post.color_variant || post.pressing_variant) && (
+              <div className="absolute bottom-1 left-1 max-w-[90%] truncate px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
+                style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
+                data-testid="feed-variant-pill">
+                {record.color_variant || post.color_variant || post.pressing_variant}
               </div>
             )}
           </div>
@@ -271,9 +280,11 @@ const AddedToCollectionCard = ({ post, onAlbumClick }) => {
       <div className="flex gap-3 items-center" data-testid="added-card">
         <div className="relative shrink-0">
           <AlbumArt src={record.cover_url} alt={`${record.artist} - ${record.title} Vinyl Record`} className="w-16 h-16 rounded-lg object-cover shadow" />
-          {record.color_variant && (
-            <div className="absolute bottom-0.5 right-0.5">
-              <VariantTag variant={record.color_variant} glass />
+          {(record.color_variant || post.color_variant) && (
+            <div className="absolute bottom-0.5 left-0.5 max-w-[90%] truncate px-1 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wide"
+              style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
+              data-testid="feed-variant-pill">
+              {record.color_variant || post.color_variant}
             </div>
           )}
         </div>
@@ -331,9 +342,18 @@ const DailyPromptPostCard = ({ post }) => (
       {post.cover_url ? (
         <div className="relative shrink-0">
           <AlbumArt src={post.cover_url} alt={`${post.record_artist} - ${post.record_title} Vinyl Record`} className="w-20 h-20 rounded-lg object-cover shadow-md" />
-          {post.color_variant && (
-            <div className="absolute bottom-1 right-1">
-              <VariantTag variant={post.color_variant} glass />
+          {post.honeypot_rating && (
+            <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
+              style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
+              data-testid="feed-rating-pill">
+              🍯 {post.honeypot_rating}
+            </div>
+          )}
+          {(post.color_variant || post.pressing_variant) && (
+            <div className="absolute bottom-1 left-1 max-w-[90%] truncate px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
+              style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
+              data-testid="feed-variant-pill">
+              {post.color_variant || post.pressing_variant}
             </div>
           )}
         </div>
