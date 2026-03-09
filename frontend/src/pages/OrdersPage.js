@@ -143,7 +143,7 @@ const OrderRow = ({ order, perspective, token, API, onUpdate, onCancel }) => {
             {/* Album art */}
             <div className="w-16 h-16 rounded-lg overflow-hidden bg-honey/10 shrink-0">
               {order.cover_url ? (
-                <AlbumArt src={order.cover_url} alt="" className="w-full h-full" />
+                <AlbumArt src={order.cover_url} alt={`${order.album || 'Album'} by ${order.artist || 'Artist'}`} className="w-full h-full" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center"><Package className="w-6 h-6 text-honey/40" /></div>
               )}
