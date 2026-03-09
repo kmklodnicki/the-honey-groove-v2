@@ -84,7 +84,7 @@ const ProductCard = ({ item }) => (
 );
 
 const EssentialsPage = () => {
-  usePageTitle('Honey Shop');
+  usePageTitle('Honey Essentials');
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-[#FDFAF5]">
@@ -92,7 +92,7 @@ const EssentialsPage = () => {
         {/* Header */}
         <div className="text-center mb-10 sm:mb-14 space-y-3" data-testid="essentials-header">
           <h1 className="font-heading text-4xl sm:text-5xl text-stone-900 tracking-tight">
-            Honey Shop
+            Honey Essentials
           </h1>
           <p className="text-base text-stone-500 max-w-md mx-auto">
             The curated essentials that keep your collection sweet.
