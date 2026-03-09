@@ -39,7 +39,7 @@ import { TagPill, ListingTypeBadge } from '../components/PostCards';
 import confetti from 'canvas-confetti';
 
 const ISO_TAGS = ['OG Press', 'Factory Sealed', 'Any', 'Promo'];
-const FILTER_OPTIONS = ['All', 'OPEN', 'FOUND'];
+const FILTER_OPTIONS = ['All', 'OPEN', 'WISHLIST', 'FOUND'];
 import { GRADE_OPTIONS } from '../utils/grading';
 import { GradeLabel } from '../components/GradeLabel';
 
@@ -169,6 +169,7 @@ const ISOPage = () => {
   const [listShippingCost, setListShippingCost] = useState('6.00');
   const [payoutEstimate, setPayoutEstimate] = useState(null);
   const [pulseData, setPulseData] = useState(null);
+  const [wishlistValue, setWishlistValue] = useState(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -189,6 +190,8 @@ const ISOPage = () => {
       setIsoMatches(matchesRes.data);
       setTrades(tradesRes.data);
       setSellerStats(statsRes.data);
+      // Fetch wishlist value
+      axios.get(`${API}/valuation/wishlist`, { headers }).then(r => setWishlistValue(r.data)).catch(() => {});
     } catch { /* ignore */ }
     finally { setLoading(false); }
   }, [API, token]);
@@ -474,6 +477,8 @@ const ISOPage = () => {
     return true;
   });
   const openCount = isos.filter(i => i.status === 'OPEN').length;
+  const wishlistItems = isos.filter(i => i.status === 'WISHLIST');
+  const wishlistCount = wishlistItems.length;
 
   const handleSetPriceAlert = async (isoId, targetPrice) => {
     try {
@@ -649,6 +654,32 @@ const ISOPage = () => {
           ) : (
             <div className="space-y-3 mb-8">
               {filteredIsos.map(iso => <ISOCard key={iso.id} iso={iso} isOwn={true} onMarkFound={handleMarkFound} onDelete={(id) => { setDeleteConfirmId(id); setDeleteConfirmType('iso'); }} onSetPriceAlert={handleSetPriceAlert} />)}
+            </div>
+          )}
+
+          {/* ═══ WISHLIST: DREAM DEBT ═══ */}
+          {wishlistCount > 0 && (
+            <div className="mb-8" data-testid="wishlist-section">
+              <div className="relative overflow-hidden rounded-2xl border border-amber-200/60 bg-gradient-to-br from-amber-50 via-[#FFF8ED] to-stone-50 p-5 mb-4" data-testid="dream-debt-card">
+                {wishlistValue && wishlistValue.total_value > 5000 && (
+                  <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-amber-950 shadow-sm" data-testid="delusional-badge">
+                    Certified Delusional
+                  </div>
+                )}
+                <p className="text-xs font-medium uppercase tracking-widest text-stone-400 mb-1">Your Wishlist</p>
+                <p className="font-heading text-2xl sm:text-3xl text-vinyl-black leading-tight">
+                  Total Value of Your Dreams: <span className="text-[#C8861A]">${wishlistValue ? wishlistValue.total_value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '—'}</span>
+                </p>
+                <p className="text-sm text-stone-500 font-serif italic mt-1.5">You've got expensive taste, babe. Start playing the lottery.</p>
+                <div className="flex gap-4 mt-3 text-xs text-stone-400">
+                  <span>{wishlistCount} record{wishlistCount !== 1 ? 's' : ''} on the list</span>
+                  {wishlistValue && wishlistValue.valued_count > 0 && <span>{wishlistValue.valued_count} priced</span>}
+                </div>
+              </div>
+              <h3 className="font-heading text-lg text-vinyl-black mb-3">Wishlist</h3>
+              <div className="space-y-3 mb-8">
+                {wishlistItems.map(iso => <ISOCard key={iso.id} iso={iso} isOwn={true} onMarkFound={handleMarkFound} onDelete={(id) => { setDeleteConfirmId(id); setDeleteConfirmType('iso'); }} onSetPriceAlert={handleSetPriceAlert} />)}
+              </div>
             </div>
           )}
 
