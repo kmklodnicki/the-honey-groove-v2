@@ -116,8 +116,8 @@ const Navbar = () => {
               </Link>
               <Link to="/essentials" data-testid="nav-essentials">
                 <Button 
-                  variant="ghost" 
-                  className={`gap-2 ${isActive('/essentials') ? 'bg-honey/20' : ''}`}
+                  variant="outline" 
+                  className={`gap-2 border-[#C8861A]/30 text-[#C8861A] hover:bg-[#C8861A]/10 ${isActive('/essentials') ? 'bg-[#C8861A]/15 border-[#C8861A]/50' : ''}`}
                 >
                   <Sparkles className="w-4 h-4" />
                   Essentials
