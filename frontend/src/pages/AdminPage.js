@@ -33,6 +33,7 @@ const AdminPage = () => {
     { key: 'holds', label: 'Hold Disputes', icon: Shield },
     { key: 'offplatform', label: 'Off-Platform Alerts', icon: Flag },
     { key: 'reports', label: 'Reports', icon: Flag },
+    { key: 'gate', label: 'The Gate', icon: Shield },
     { key: 'settings', label: 'Platform Settings', icon: Settings },
   ];
 
@@ -65,6 +66,7 @@ const AdminPage = () => {
       {section === 'holds' && <HoldDisputesSection API={API} headers={headers} />}
       {section === 'offplatform' && <OffPlatformAlertsSection API={API} headers={headers} />}
       {section === 'reports' && <ReportsSection API={API} headers={headers} />}
+      {section === 'gate' && <GateSection API={API} headers={headers} />}
       {section === 'settings' && <SettingsSection API={API} headers={headers} />}
     </div>
   );
@@ -1206,5 +1208,133 @@ const UserManagementSection = ({ API, headers }) => {
     </div>
   );
 };
+
+// ═══════════════════════════════════════════════
+// THE GATE — VERIFICATION QUEUE
+// ═══════════════════════════════════════════════
+const GateSection = ({ API, headers }) => {
+  const [queue, setQueue] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [unblurred, setUnblurred] = useState({});
+  const [processing, setProcessing] = useState(null);
+
+  const fetchQueue = useCallback(async () => {
+    try {
+      const resp = await axios.get(`${API}/verification/admin/queue`, { headers });
+      setQueue(resp.data);
+    } catch { toast.error('Failed to load verification queue'); }
+    finally { setLoading(false); }
+  }, [API, headers]);
+
+  useEffect(() => { fetchQueue(); }, [fetchQueue]);
+
+  const handleUnblur = async (requestId) => {
+    try {
+      const resp = await axios.get(`${API}/verification/admin/unblur/${requestId}`, { headers });
+      setUnblurred(prev => ({ ...prev, [requestId]: resp.data.original_image_url }));
+    } catch { toast.error('Failed to unblur'); }
+  };
+
+  const handleApprove = async (requestId) => {
+    setProcessing(requestId);
+    try {
+      await axios.post(`${API}/verification/admin/approve/${requestId}`, {}, { headers });
+      toast.success('Verification approved — Golden Hive granted');
+      fetchQueue();
+    } catch (err) { toast.error(err.response?.data?.detail || 'Failed'); }
+    finally { setProcessing(null); }
+  };
+
+  const handleDeny = async (requestId) => {
+    setProcessing(requestId);
+    try {
+      await axios.post(`${API}/verification/admin/deny/${requestId}`, { notes: 'Photo not clear enough' }, { headers });
+      toast.success('Verification denied');
+      fetchQueue();
+    } catch (err) { toast.error(err.response?.data?.detail || 'Failed'); }
+    finally { setProcessing(null); }
+  };
+
+  if (loading) return <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-honey" /></div>;
+
+  return (
+    <div className="space-y-4" data-testid="admin-gate-section">
+      <div className="flex items-center gap-3">
+        <h2 className="font-heading text-xl text-vinyl-black">The Gate</h2>
+        <span className="text-xs text-muted-foreground bg-amber-50 px-2 py-1 rounded-full border border-amber-200">{queue.length} pending</span>
+      </div>
+
+      {queue.length === 0 ? (
+        <Card className="p-8 text-center border-honey/20">
+          <Shield className="w-8 h-8 text-honey mx-auto mb-3 opacity-50" />
+          <p className="text-sm text-muted-foreground">No pending verification requests</p>
+        </Card>
+      ) : (
+        <div className="space-y-3">
+          {queue.map(req => (
+            <Card key={req.id} className="p-4 border-honey/20" data-testid={`gate-request-${req.id}`}>
+              <div className="flex items-start gap-4">
+                {/* ID Photo (blurred by default) */}
+                <div className="w-32 h-24 rounded-lg overflow-hidden bg-gray-100 border border-honey/20 shrink-0 relative group">
+                  <img
+                    src={unblurred[req.id] ? resolveImageUrl(unblurred[req.id]) : resolveImageUrl(req.blurred_image_url)}
+                    alt="Verification ID"
+                    className="w-full h-full object-cover"
+                  />
+                  {!unblurred[req.id] && (
+                    <button
+                      onClick={() => handleUnblur(req.id)}
+                      className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity"
+                      data-testid={`unblur-btn-${req.id}`}
+                    >
+                      <span className="text-white text-xs font-medium bg-black/60 px-3 py-1.5 rounded-full">Unblur</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* User Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    {req.user?.profile_pic && (
+                      <img src={resolveImageUrl(req.user.profile_pic)} alt="" className="w-6 h-6 rounded-full object-cover" />
+                    )}
+                    <span className="font-heading text-sm font-bold">@{req.user?.username || req.username}</span>
+                    {req.user?.country && <span className="text-xs">{req.user.country}</span>}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">{req.user?.email}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Submitted {new Date(req.submitted_at).toLocaleDateString()}</p>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2 shrink-0">
+                  <Button
+                    onClick={() => handleApprove(req.id)}
+                    disabled={processing === req.id}
+                    className="bg-emerald-600 text-white hover:bg-emerald-700 rounded-full text-xs px-4"
+                    data-testid={`approve-btn-${req.id}`}
+                  >
+                    {processing === req.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3 mr-1" />}
+                    Approve
+                  </Button>
+                  <Button
+                    onClick={() => handleDeny(req.id)}
+                    disabled={processing === req.id}
+                    variant="outline"
+                    className="border-red-300 text-red-600 hover:bg-red-50 rounded-full text-xs px-4"
+                    data-testid={`deny-btn-${req.id}`}
+                  >
+                    <X className="w-3 h-3 mr-1" />
+                    Deny
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 
 export default AdminPage;

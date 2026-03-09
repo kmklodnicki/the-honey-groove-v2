@@ -161,6 +161,9 @@ const ISOPage = () => {
   const [showInsurancePrompt, setShowInsurancePrompt] = useState(false);
   const [insuranceChoice, setInsuranceChoice] = useState(null);
   const [internationalShipping, setInternationalShipping] = useState(false);
+  const [listShippingCost, setListShippingCost] = useState('6.00');
+  const [payoutEstimate, setPayoutEstimate] = useState(null);
+  const [pulseData, setPulseData] = useState(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -232,9 +235,13 @@ const ISOPage = () => {
       // Fetch pricing assist for the listing modal
       if (release.discogs_id) {
         setPricingAssist(null);
+        setPulseData(null);
         axios.get(`${API}/valuation/pricing-assist/${release.discogs_id}`, {
           headers: { Authorization: `Bearer ${token}` }
         }).then(r => { if (r.data && r.data.low !== null) setPricingAssist(r.data); }).catch(() => {});
+        axios.get(`${API}/valuation/pulse/${release.discogs_id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }).then(r => { if (r.data) setPulseData(r.data); }).catch(() => {});
       }
     }
   };
@@ -249,7 +256,21 @@ const ISOPage = () => {
     setListPhotos([]); setUploadingPhotos(false); setPricingAssist(null);
     setShowInsurancePrompt(false); setInsuranceChoice(null);
     setInternationalShipping(false);
+    setListShippingCost('6.00'); setPayoutEstimate(null); setPulseData(null);
   };
+
+  // Live payout estimator
+  useEffect(() => {
+    const price = parseFloat(listPrice);
+    const ship = parseFloat(listShippingCost) || 0;
+    if (!price || price <= 0 || listType === 'TRADE') { setPayoutEstimate(null); return; }
+    const t = setTimeout(() => {
+      axios.post(`${API}/estimate-payout`, { price, shipping_cost: ship }, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).then(r => setPayoutEstimate(r.data)).catch(() => setPayoutEstimate(null));
+    }, 300);
+    return () => clearTimeout(t);
+  }, [listPrice, listShippingCost, listType, API, token]);
 
   const openModal = (type) => {
     if (type === 'listing' && !stripeEnabled) {
@@ -352,6 +373,7 @@ const ISOPage = () => {
         pressing_notes: listPressing || null,
         listing_type: listType,
         price: listPrice ? parseFloat(listPrice) : null,
+        shipping_cost: listShippingCost ? parseFloat(listShippingCost) : null,
         description: listDesc || null,
         photo_urls: photoUrls,
         insured: insuranceChoice,
@@ -743,20 +765,52 @@ const ISOPage = () => {
                 )}
 
                 {listType !== 'TRADE' && (
-                  <div>
+                  <div className="space-y-2">
                     <div className="relative">
                       <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input placeholder="Price" type="number" value={listPrice} onChange={e => setListPrice(e.target.value)} className="pl-9 border-honey/50" data-testid="list-price-input" />
                     </div>
                     {pricingAssist && pricingAssist.low !== null && (
-                      <p className="text-[11px] text-muted-foreground mt-1 pl-1" data-testid="pricing-assist-hint">
+                      <p className="text-[11px] text-muted-foreground pl-1" data-testid="pricing-assist-hint">
                         recent sales: ${pricingAssist.low?.toFixed(2)} · ${pricingAssist.high?.toFixed(2)} on Discogs
+                        {pulseData?.confident && parseFloat(listPrice) >= pulseData.hot_low && parseFloat(listPrice) <= pulseData.hot_high && (
+                          <span className="ml-1.5 text-orange-500 font-semibold" data-testid="pulse-hot-badge" title={`Hot range: $${pulseData.hot_low} - $${pulseData.hot_high} (median $${pulseData.median})`}>in the hot zone</span>
+                        )}
                       </p>
                     )}
                     {sellerStats && sellerStats.completed_transactions < 3 && parseFloat(listPrice) > 150 && (
-                      <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2" data-testid="new-seller-restriction-msg">
+                      <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2" data-testid="new-seller-restriction-msg">
                         New sellers can list items up to $150. Complete 3 transactions to unlock higher value listings.
                       </p>
+                    )}
+
+                    {/* Shipping Cost */}
+                    <div className="relative">
+                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input placeholder="Shipping cost" type="number" value={listShippingCost} onChange={e => setListShippingCost(e.target.value)} className="pl-9 border-honey/50" data-testid="list-shipping-cost-input" />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">shipping</span>
+                    </div>
+
+                    {/* Payout Estimator */}
+                    {payoutEstimate && (
+                      <div className="bg-amber-50/70 border border-amber-200/60 rounded-xl p-3 space-y-1.5" data-testid="payout-estimator">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span>listing price</span>
+                          <span>${payoutEstimate.price.toFixed(2)}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span>platform fee ({payoutEstimate.fee_percent}%{payoutEstimate.is_inner_hive ? ' · inner hive' : ''})</span>
+                          <span className="text-red-500">-${payoutEstimate.fee_amount.toFixed(2)}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span>shipping</span>
+                          <span className="text-red-500">-${payoutEstimate.shipping_cost.toFixed(2)}</span>
+                        </div>
+                        <div className="border-t border-amber-200/60 pt-1.5 flex items-center justify-between">
+                          <span className="text-sm font-semibold text-amber-800">Take Home Honey</span>
+                          <span className="text-sm font-bold text-amber-800" data-testid="take-home-honey">${payoutEstimate.take_home.toFixed(2)}</span>
+                        </div>
+                      </div>
                     )}
                   </div>
                 )}

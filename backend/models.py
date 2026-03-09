@@ -38,6 +38,7 @@ class UserResponse(BaseModel):
     title_label: Optional[str] = None
     instagram_username: Optional[str] = None
     tiktok_username: Optional[str] = None
+    golden_hive: bool = False
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None
@@ -285,6 +286,7 @@ class ListingCreate(BaseModel):
     pressing_notes: Optional[str] = None
     listing_type: str
     price: Optional[float] = None
+    shipping_cost: Optional[float] = None
     description: Optional[str] = None
     photo_urls: List[str] = Field(..., min_length=1, max_length=10)
     insured: Optional[bool] = None
@@ -303,6 +305,7 @@ class ListingResponse(BaseModel):
     pressing_notes: Optional[str] = None
     listing_type: str
     price: Optional[float] = None
+    shipping_cost: Optional[float] = None
     description: Optional[str] = None
     photo_urls: List[str] = []
     insured: Optional[bool] = None

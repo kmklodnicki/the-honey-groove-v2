@@ -9,7 +9,7 @@ import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Switch } from '../components/ui/switch';
-import { ArrowLeft, Save, LogOut, Camera, Loader2, Mail, HelpCircle, ExternalLink, MessageSquare, Flag, Trash2, CreditCard, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Save, LogOut, Camera, Loader2, Mail, HelpCircle, ExternalLink, MessageSquare, Flag, Trash2, CreditCard, CheckCircle2, Shield } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
 import {
@@ -42,6 +42,9 @@ const SettingsPage = () => {
   const [editingEmail, setEditingEmail] = useState(false);
   const [newEmail, setNewEmail] = useState('');
   const [emailSaving, setEmailSaving] = useState(false);
+  const [verificationStatus, setVerificationStatus] = useState(null);
+  const [verifyUploading, setVerifyUploading] = useState(false);
+  const verifyInputRef = useRef(null);
 
   useEffect(() => {
     axios.get(`${API}/newsletter/status`, { headers: { Authorization: `Bearer ${token}` } })
@@ -51,6 +54,9 @@ const SettingsPage = () => {
       .then(r => setStripeStatus(r.data))
       .catch(() => setStripeStatus({ stripe_connected: false, stripe_account_id: null }))
       .finally(() => setStripeLoading(false));
+    axios.get(`${API}/verification/status`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => setVerificationStatus(r.data))
+      .catch(() => {});
   }, [API, token]);
 
   const toggleNewsletter = async () => {
@@ -160,6 +166,23 @@ const SettingsPage = () => {
     } finally {
       setStripeConnecting(false);
     }
+  };
+
+  const handleVerificationUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setVerifyUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('id_photo', file);
+      await axios.post(`${API}/verification/submit`, formData, {
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+      });
+      toast.success('Verification submitted! You\'ll be notified once reviewed.');
+      setVerificationStatus({ status: 'PENDING', golden_hive: false });
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Upload failed');
+    } finally { setVerifyUploading(false); }
   };
 
   const handleDeleteAccount = async () => {
@@ -597,6 +620,42 @@ const SettingsPage = () => {
             <LogOut className="w-4 h-4" />
             Log Out
           </Button>
+
+          {/* Golden Hive Verification */}
+          <div className="border-t border-honey/20 pt-4">
+            <Label className="text-sm font-medium text-amber-800 mb-2 block">Golden Hive Verification</Label>
+            {verificationStatus?.golden_hive ? (
+              <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2" data-testid="golden-hive-verified">
+                <CheckCircle2 className="w-4 h-4" />
+                <span className="font-medium">Verified Golden Hive Member</span>
+              </div>
+            ) : verificationStatus?.status === 'PENDING' ? (
+              <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2" data-testid="verification-pending">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Verification under review</span>
+              </div>
+            ) : verificationStatus?.status === 'DENIED' ? (
+              <div className="space-y-2">
+                <p className="text-sm text-red-600">Your previous verification was not approved. Please resubmit with a clearer photo.</p>
+                <Button onClick={() => verifyInputRef.current?.click()} disabled={verifyUploading}
+                  variant="outline" className="rounded-full text-xs border-honey/50" data-testid="resubmit-verification-btn">
+                  {verifyUploading ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Shield className="w-3 h-3 mr-1" />}
+                  Resubmit ID Photo
+                </Button>
+                <input ref={verifyInputRef} type="file" accept="image/*" onChange={handleVerificationUpload} className="hidden" />
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground">Upload a government-issued ID to become a verified Golden Hive member. Your ID will be securely processed and reviewed by an admin.</p>
+                <Button onClick={() => verifyInputRef.current?.click()} disabled={verifyUploading}
+                  variant="outline" className="rounded-full text-xs border-honey/50" data-testid="submit-verification-btn">
+                  {verifyUploading ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Shield className="w-3 h-3 mr-1" />}
+                  Upload ID Photo
+                </Button>
+                <input ref={verifyInputRef} type="file" accept="image/*" onChange={handleVerificationUpload} className="hidden" />
+              </div>
+            )}
+          </div>
 
           <div className="border-t border-honey/20 pt-4">
             <button

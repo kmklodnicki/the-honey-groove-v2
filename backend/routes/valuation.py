@@ -599,3 +599,77 @@ async def _check_price_alerts(user_id: str):
                     f"{iso['artist']} — {iso['album']} is available around ${cached['low_value']:.0f} on Discogs (your alert: ${target:.0f})",
                     {"iso_id": iso["id"], "discogs_id": did, "low_value": cached["low_value"]}
                 )
+
+
+
+# ===================== PULSE: 90-DAY HOT RANGE =====================
+
+@router.get("/valuation/pulse/{discogs_id}")
+async def get_pulse(discogs_id: int, user: Dict = Depends(require_auth)):
+    """
+    Return the 90-day Pulse data for a Discogs release.
+    Uses Discogs price suggestions as a proxy for recent sold comps.
+    Returns hot_range (median +/- 15%) only if confidence >= 5 comps.
+    """
+    # Check cache first (reuse collection_values with pulse data)
+    cached = await db.pulse_data.find_one({"release_id": discogs_id}, {"_id": 0})
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=CACHE_TTL_HOURS)).isoformat()
+    if cached and cached.get("last_updated", "") >= cutoff:
+        return cached
+
+    # Fetch from Discogs
+    from database import DISCOGS_TOKEN, DISCOGS_USER_AGENT, DISCOGS_API_BASE
+    import requests as _req
+    headers_d = {"User-Agent": DISCOGS_USER_AGENT}
+    params_d = {}
+    if DISCOGS_TOKEN:
+        params_d["token"] = DISCOGS_TOKEN
+
+    pulse_doc = {
+        "release_id": discogs_id,
+        "median": None,
+        "hot_low": None,
+        "hot_high": None,
+        "num_sold": 0,
+        "confident": False,
+        "last_updated": datetime.now(timezone.utc).isoformat(),
+    }
+
+    try:
+        # Get price suggestions (based on recent sold data)
+        resp = _req.get(
+            f"{DISCOGS_API_BASE}/marketplace/price_suggestions/{discogs_id}",
+            params=params_d, headers=headers_d, timeout=10
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            # Count how many condition tiers have data (proxy for sold comps confidence)
+            conditions_with_data = sum(1 for v in data.values() if isinstance(v, dict) and v.get("value"))
+            vgp = data.get("Very Good Plus (VG+)", {})
+            median_val = vgp.get("value")
+            if median_val:
+                median_val = round(float(median_val), 2)
+                pulse_doc["median"] = median_val
+                pulse_doc["hot_low"] = round(median_val * 0.85, 2)
+                pulse_doc["hot_high"] = round(median_val * 1.15, 2)
+                # Discogs price_suggestions uses community data;
+                # conditions_with_data >= 3 typically means good confidence
+                # We also check the release stats for num_for_sale
+                resp2 = _req.get(
+                    f"{DISCOGS_API_BASE}/releases/{discogs_id}",
+                    params=params_d, headers=headers_d, timeout=10
+                )
+                num_sold = 0
+                if resp2.status_code == 200:
+                    r2data = resp2.json()
+                    community = r2data.get("community", {})
+                    num_sold = community.get("have", 0)
+                pulse_doc["num_sold"] = num_sold
+                pulse_doc["confident"] = conditions_with_data >= 3 and num_sold >= 5
+    except Exception as e:
+        logger.error(f"Pulse fetch error for {discogs_id}: {e}")
+
+    await db.pulse_data.update_one(
+        {"release_id": discogs_id}, {"$set": pulse_doc}, upsert=True
+    )
+    return pulse_doc

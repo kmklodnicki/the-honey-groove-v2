@@ -96,7 +96,7 @@ async def get_community_isos(limit: int = 50, user: Dict = Depends(require_auth)
     result = []
     for iso in isos:
         iso_user = users.get(iso["user_id"])
-        iso["user"] = {"id": iso_user["id"], "username": iso_user.get("username"), "avatar_url": iso_user.get("avatar_url"), "country": iso_user.get("country"), "title_label": iso_user.get("title_label")} if iso_user else None
+        iso["user"] = {"id": iso_user["id"], "username": iso_user.get("username"), "avatar_url": iso_user.get("avatar_url"), "country": iso_user.get("country"), "title_label": iso_user.get("title_label"), "golden_hive": iso_user.get("golden_hive", False)} if iso_user else None
         result.append(iso)
     return result
 
@@ -147,6 +147,7 @@ async def create_listing(data: ListingCreate, user: Dict = Depends(require_auth)
         "pressing_notes": data.pressing_notes,
         "listing_type": data.listing_type,
         "price": data.price,
+        "shipping_cost": data.shipping_cost,
         "description": data.description,
         "photo_urls": data.photo_urls,
         "insured": data.insured,
@@ -205,7 +206,7 @@ async def create_listing(data: ListingCreate, user: Dict = Depends(require_auth)
         )
         await send_email_fire_and_forget(user["email"], tpl["subject"], tpl["html"])
 
-    user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url"), "country": user.get("country"), "title_label": user.get("title_label")}
+    user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url"), "country": user.get("country"), "title_label": user.get("title_label"), "golden_hive": user.get("golden_hive", False)}
     
     # Auto-create a Hive post for this listing
     post_id = str(uuid.uuid4())
@@ -263,6 +264,7 @@ async def get_listings(listing_type: Optional[str] = None, search: Optional[str]
                 "completed_sales": tx_count,
                 "country": seller.get("country"),
                 "title_label": seller.get("title_label"),
+                "golden_hive": seller.get("golden_hive", False),
             }
         result.append(ListingResponse(**listing, user=user_data))
     
@@ -272,7 +274,7 @@ async def get_listings(listing_type: Optional[str] = None, search: Optional[str]
 async def get_my_listings(user: Dict = Depends(require_auth)):
     """Get current user's listings"""
     listings = await db.listings.find({"user_id": user["id"]}, {"_id": 0}).sort("created_at", -1).to_list(100)
-    user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url"), "country": user.get("country"), "title_label": user.get("title_label")}
+    user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url"), "country": user.get("country"), "title_label": user.get("title_label"), "golden_hive": user.get("golden_hive", False)}
     return [ListingResponse(**l, user=user_data) for l in listings]
 
 @router.get("/listings/iso-matches")
@@ -880,6 +882,13 @@ async def update_order_shipping(order_id: str, body: Dict, user: Dict = Depends(
 
     await db.payment_transactions.update_one({"id": order_id}, {"$set": update})
 
+    # Record delivered_at timestamp for auto-payout cron
+    if update.get("shipping_status") == "DELIVERED":
+        await db.payment_transactions.update_one(
+            {"id": order_id, "delivered_at": {"$exists": False}},
+            {"$set": {"delivered_at": datetime.now(timezone.utc).isoformat(), "payout_status": "PENDING"}}
+        )
+
     # Notify buyer if shipped
     if update.get("shipping_status") == "SHIPPED":
         listing = await db.listings.find_one({"id": txn.get("listing_id")}, {"_id": 0, "album": 1})
@@ -955,6 +964,34 @@ async def get_seller_stats(user: Dict = Depends(require_auth)):
     """Get current user's seller stats (transaction count) for listing restriction checks."""
     tx_count = await _get_seller_transaction_count(user["id"])
     return {"completed_transactions": tx_count}
+
+
+# ============== PAYOUT ESTIMATOR ==============
+
+@router.post("/estimate-payout")
+async def estimate_payout(body: Dict, user: Dict = Depends(require_auth)):
+    """
+    Calculate Take Home Honey for a seller.
+    Inner Hive sellers (founding_member) → 4% fee, all others → 6%.
+    """
+    price = float(body.get("price", 0))
+    shipping_cost = float(body.get("shipping_cost", 0))
+    if price <= 0:
+        return {"price": 0, "fee_percent": 0, "fee_amount": 0, "shipping_cost": 0, "take_home": 0}
+
+    is_inner_hive = user.get("founding_member", False)
+    fee_percent = 4.0 if is_inner_hive else await _get_platform_fee_percent()
+    fee_amount = round(price * fee_percent / 100, 2)
+    take_home = round(price - fee_amount - shipping_cost, 2)
+
+    return {
+        "price": price,
+        "fee_percent": fee_percent,
+        "fee_amount": fee_amount,
+        "shipping_cost": shipping_cost,
+        "take_home": max(take_home, 0),
+        "is_inner_hive": is_inner_hive,
+    }
 
 
 # ============== ADMIN OFF-PLATFORM ALERTS ==============

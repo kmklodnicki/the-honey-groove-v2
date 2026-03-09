@@ -254,6 +254,20 @@ const OrderRow = ({ order, perspective, token, API, onUpdate, onCancel }) => {
               )}
             </div>
 
+            {/* Payout Status (for sellers) */}
+            {isSale && order.payout_status && (
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-muted-foreground">Payout:</span>
+                <span className={`px-2 py-0.5 rounded-full font-medium ${
+                  order.payout_status === 'RELEASED' ? 'bg-emerald-100 text-emerald-700' :
+                  order.payout_status === 'PENDING' ? 'bg-amber-100 text-amber-700' :
+                  'bg-stone-100 text-stone-600'
+                }`} data-testid="payout-status-badge">
+                  {order.payout_status === 'RELEASED' ? 'Released' : order.payout_status === 'PENDING' ? 'Pending (auto-release after delivery)' : order.payout_status}
+                </span>
+              </div>
+            )}
+
             {/* Description */}
             {order.description && (
               <div>

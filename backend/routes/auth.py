@@ -54,6 +54,7 @@ async def _build_user_response(user: dict) -> UserResponse:
         title_label=user.get("title_label"),
         instagram_username=user.get("instagram_username"),
         tiktok_username=user.get("tiktok_username"),
+        golden_hive=user.get("golden_hive", False),
     )
 
 # ============== AUTH ROUTES ==============

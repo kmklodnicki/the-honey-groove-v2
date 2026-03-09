@@ -25,6 +25,7 @@ from routes.bingo import router as bingo_router, seed_bingo_squares
 from routes.reports import router as reports_router
 from routes.admin import router as admin_router
 from routes.search import router as search_router
+from routes.verification import router as verification_router
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -34,7 +35,8 @@ app = FastAPI(title="HoneyGroove API")
 for r in [auth_router, hive_router, collection_router, honeypot_router,
           trades_router, notifications_router, dms_router, explore_router,
           valuation_router, wax_reports_router, daily_prompts_router, newsletter_router,
-          mood_boards_router, bingo_router, reports_router, admin_router, search_router]:
+          mood_boards_router, bingo_router, reports_router, admin_router, search_router,
+          verification_router]:
     app.include_router(r, prefix="/api")
 
 app.add_middleware(
@@ -100,6 +102,8 @@ async def startup_event():
     # Start hold auto-reversal scheduler
     from routes.trades import auto_reverse_expired_holds
     asyncio.create_task(_schedule_hold_auto_reversal())
+    # Start auto-payout scheduler
+    asyncio.create_task(_schedule_auto_payouts())
     # Seed prompts
     await seed_prompts()
     # Seed bingo squares
@@ -110,6 +114,11 @@ async def startup_event():
     await db.bingo_cards.create_index("week_start", unique=True)
     await db.bingo_marks.create_index([("user_id", 1), ("card_id", 1)], unique=True)
     await db.bingo_squares.create_index("id", unique=True)
+
+    # Verification + payout indexes
+    await db.verification_requests.create_index("user_id")
+    await db.verification_requests.create_index("status")
+    await db.pulse_data.create_index("release_id", unique=True)
 
     # Beta & invite code indexes
     await db.beta_signups.create_index("email", unique=True)
@@ -138,6 +147,18 @@ async def _schedule_hold_auto_reversal():
         except Exception as e:
             logger.error(f"Hold auto-reversal error: {e}")
         await asyncio.sleep(600)
+
+
+async def _schedule_auto_payouts():
+    """Run auto-payout check every 30 minutes."""
+    from routes.payout_cron import run_auto_payouts
+    await asyncio.sleep(60)
+    while True:
+        try:
+            await run_auto_payouts()
+        except Exception as e:
+            logger.error(f"Auto-payout cron error: {e}")
+        await asyncio.sleep(1800)
 
 
 @app.on_event("shutdown")
