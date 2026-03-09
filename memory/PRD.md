@@ -42,6 +42,7 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - **Admin Watchtower** - filterable queue with actions:
   - Review, Dismiss, Resolve, Remove Listing, Warn Seller, Suspend Seller
 - Report buttons on: listing detail, seller profile, orders, settings page
+- **Global Navbar Report Button** - AlertTriangle icon in desktop navbar + mobile top bar, opens ReportModal with type "bug" (March 2026)
 
 ### Verification Queue — The Gate (BLOCK 3.3)
 - User ID upload, server-side blur, admin approve/deny
@@ -67,6 +68,7 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 ## Pending / Upcoming Tasks
 
 ### P1
+- Tag Color Inconsistency - unify PostTypeBadge colors between Hive feed and marketplace listing cards
 - Weekly Wax Email - configure scheduled email every Sunday 12:00 PM ET
 
 ### P2
