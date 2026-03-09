@@ -43,6 +43,9 @@ REPORT_REASONS = {
         "Performance problem",
         "Other",
     ],
+    "feedback": [
+        "General Feedback",
+    ],
 }
 
 
