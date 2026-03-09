@@ -32,6 +32,7 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - **Honey Pulse** (BLOCK 4.1) - 90-day Discogs price analysis, hot zone, median/range
 - **Shipping Cost** field on listings
 - **Auto-Payout Cron** (BLOCK 3.2) - 72h standard / 24h for 4.5+ sellers
+- **HONEY Order ID Branding** (BLOCK 4.3) - Sequential `HONEY-XXXXXXXXX` IDs starting at 134208789, new orders only. Legacy UUID orders retain `#XXXXXXXX` display
 
 ### Report a Problem System (BLOCK 3.4)
 - Listing reporting (6 reasons + Other)
