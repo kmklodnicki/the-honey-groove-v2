@@ -206,8 +206,19 @@ async def get_user_isos(username: str):
     if not target:
         raise HTTPException(status_code=404, detail="User not found")
     
-    isos = await db.iso_items.find({"user_id": target["id"]}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    isos = await db.iso_items.find({"user_id": target["id"], "status": {"$ne": "WISHLIST"}}, {"_id": 0}).sort("created_at", -1).to_list(100)
     return isos
+
+
+@router.get("/users/{username}/dreaming")
+async def get_user_dreaming(username: str):
+    """Get a user's wishlist/dreaming items."""
+    target = await db.users.find_one({"username": username.lower()}, {"_id": 0})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    items = await db.iso_items.find({"user_id": target["id"], "status": "WISHLIST"}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    return items
 
 @router.get("/users/{username}/posts")
 async def get_user_posts(username: str, current_user: Optional[Dict] = Depends(get_current_user), limit: int = 50):

@@ -10,7 +10,7 @@ import { Skeleton } from '../components/ui/skeleton';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '../components/ui/dialog';
-import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, CheckCircle2, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin, ShoppingBag, Flag, Sparkles, Eye, X } from 'lucide-react';
+import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, CheckCircle2, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin, ShoppingBag, Flag, Sparkles, Eye, X, Cloud } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { FollowListModal } from '../components/FollowList';
@@ -49,6 +49,8 @@ const ProfilePage = () => {
   const [commonGroundOpen, setCommonGroundOpen] = useState(false);
   const [showCommonOnly, setShowCommonOnly] = useState(false);
   const [myRecordDiscogs, setMyRecordDiscogs] = useState(new Set());
+  const [dreamingItems, setDreamingItems] = useState([]);
+  const [dreamValue, setDreamValue] = useState(null);
 
   const isOwnProfile = user?.username === username;
 
@@ -72,6 +74,7 @@ const ProfilePage = () => {
       axios.get(`${API}/users/${username}/ratings`).then(r => setRatings(r.data)).catch(() => {});
       axios.get(`${API}/valuation/collection/${username}`).then(r => setCollectionValue(r.data)).catch(() => {});
       axios.get(`${API}/prompts/streak/${username}`).then(r => setPromptStreak(r.data)).catch(() => {});
+      axios.get(`${API}/valuation/wishlist/${username}`).then(r => setDreamValue(r.data)).catch(() => {});
 
       // Fetch taste match for other users
       if (token && !isOwnProfile) {
@@ -98,6 +101,8 @@ const ProfilePage = () => {
     setTasteMatch(null);
     setShowCommonOnly(false);
     setCommonGroundOpen(false);
+    setDreamingItems([]);
+    setDreamValue(null);
     fetchProfile();
   }, [fetchProfile]);
 
@@ -118,7 +123,12 @@ const ProfilePage = () => {
         .then(r => setTrades(r.data))
         .catch(() => {});
     }
-  }, [activeTab, API, username, spins.length, isos.length, trades.length]);
+    if (activeTab === 'dreaming' && dreamingItems.length === 0) {
+      axios.get(`${API}/users/${username}/dreaming`)
+        .then(r => setDreamingItems(r.data))
+        .catch(() => {});
+    }
+  }, [activeTab, API, username, spins.length, isos.length, trades.length, dreamingItems.length]);
 
   const handleFollow = async () => {
     setFollowLoading(true);
@@ -361,6 +371,13 @@ const ProfilePage = () => {
               </div>
             )}
 
+            {/* Dream Value sub-headline */}
+            {dreamValue && dreamValue.total_value > 0 && (
+              <p className="mt-2 font-serif italic text-sm" style={{ color: '#C8861A' }} data-testid="profile-dream-value">
+                If only I had ${dreamValue.total_value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}... <span className="font-light text-stone-400 text-xs">(Dream Value)</span>
+              </p>
+            )}
+
             {/* Stripe Connect - owner only */}
             {isOwnProfile && stripeStatus && (
               <div className="mt-3">
@@ -386,9 +403,12 @@ const ProfilePage = () => {
 
       {/* 4 Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-honey/10 mb-6 w-full grid grid-cols-5">
+        <TabsList className="bg-honey/10 mb-6 w-full grid grid-cols-6">
           <TabsTrigger value="collection" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-collection">
             Collection
+          </TabsTrigger>
+          <TabsTrigger value="dreaming" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-dreaming">
+            Dreaming
           </TabsTrigger>
           <TabsTrigger value="iso" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-iso">
             ISO
@@ -400,7 +420,7 @@ const ProfilePage = () => {
             Trades
           </TabsTrigger>
           <TabsTrigger value="mood" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-mood">
-            Mood Board
+            Mood
           </TabsTrigger>
         </TabsList>
 
@@ -432,10 +452,14 @@ const ProfilePage = () => {
                 .filter(record => !showCommonOnly || (tasteMatch?.shared_reality || []).some(s => s.discogs_id && s.discogs_id === record.discogs_id))
                 .map(record => {
                   const isCommon = !isOwnProfile && tasteMatch && (tasteMatch.shared_reality || []).some(s => s.discogs_id && s.discogs_id === record.discogs_id);
-                  const dimmed = !isOwnProfile && showCommonOnly === false && tasteMatch && !isCommon;
                   return (
                 <Link to={`/record/${record.id}`} key={record.id}>
-                  <Card className={`border-honey/30 overflow-hidden hover:shadow-honey transition-all hover:-translate-y-1 ${isCommon ? 'ring-2 ring-honey/60 shadow-md shadow-honey/20' : ''} ${dimmed ? '' : ''}`}>
+                  <Card
+                    className={`border-honey/30 overflow-hidden hover:shadow-honey transition-all hover:-translate-y-1`}
+                    style={isCommon
+                      ? { boxShadow: '0 0 15px #FFD700' }
+                      : (showCommonOnly ? { opacity: 0.3 } : {})}
+                  >
                     <div className="aspect-square bg-vinyl-black">
                       {record.cover_url ? (
                         <AlbumArt src={record.cover_url} alt={record.title} className="w-full h-full object-cover" />
@@ -454,6 +478,50 @@ const ProfilePage = () => {
                 </Link>
                   );
                 })}
+            </div>
+          )}
+        </TabsContent>
+
+        {/* Dreaming Tab */}
+        <TabsContent value="dreaming">
+          {dreamingItems.length === 0 ? (
+            <EmptyState icon={Cloud} title="No dreams yet" sub={isOwnProfile ? 'Add records to your Dreaming tab to start building your Dream Value.' : `@${username} isn't dreaming of anything right now`} />
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {dreamingItems.map(item => {
+                const ownerHasIt = !isOwnProfile && item.discogs_id && myRecordDiscogs.has(item.discogs_id);
+                return (
+                  <Card key={item.id} className="border-honey/30 overflow-hidden transition-all hover:-translate-y-1" style={ownerHasIt ? { boxShadow: '0 0 15px #FFD700' } : {}} data-testid={`dreaming-item-${item.id}`}>
+                    <div className="aspect-square bg-vinyl-black">
+                      {item.cover_url ? (
+                        <AlbumArt src={item.cover_url} alt={item.album} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Disc className="w-12 h-12 text-honey" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="p-3">
+                      <h4 className="font-medium text-sm truncate">{item.album}</h4>
+                      <p className="text-xs text-muted-foreground truncate">{item.artist}</p>
+                      {ownerHasIt && (
+                        <>
+                          <span className="inline-block mt-1 text-[10px] font-medium text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full" data-testid={`in-collection-dream-${item.id}`}>
+                            In Your Collection
+                          </span>
+                          <button
+                            onClick={() => navigate(`/messages?to=${profile.id}&text=${encodeURIComponent(`Hey! I saw you're dreaming of ${item.album}. It's one of my favorites — tell me about your ideal pressing!`)}`)}
+                            className="block mt-1.5 text-[10px] font-medium text-honey-amber hover:underline"
+                            data-testid={`tell-them-${item.id}`}
+                          >
+                            Tell them about this pressing.
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </TabsContent>

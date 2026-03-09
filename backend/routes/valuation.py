@@ -137,8 +137,29 @@ async def get_wishlist_value(user: Dict = Depends(require_auth)):
     }
 
 
-
-
+@router.get("/valuation/wishlist/{username}")
+async def get_user_wishlist_value(username: str):
+    """Total Dream Value for any user's wishlist (public)."""
+    target = await db.users.find_one({"username": username.lower()}, {"_id": 0, "id": 1})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+    items = await db.iso_items.find(
+        {"user_id": target["id"], "status": "WISHLIST", "discogs_id": {"$ne": None}},
+        {"_id": 0, "discogs_id": 1}
+    ).to_list(5000)
+    discogs_ids = list({i["discogs_id"] for i in items if i.get("discogs_id")})
+    total_count = await db.iso_items.count_documents({"user_id": target["id"], "status": "WISHLIST"})
+    if not discogs_ids:
+        return {"total_value": 0, "valued_count": 0, "total_count": total_count}
+    values = await db.collection_values.find(
+        {"release_id": {"$in": discogs_ids}}, {"_id": 0}
+    ).to_list(5000)
+    total = sum(v["median_value"] for v in values if v.get("median_value"))
+    return {
+        "total_value": round(total, 2),
+        "valued_count": len([v for v in values if v.get("median_value")]),
+        "total_count": total_count,
+    }
 # ===================== HIDDEN GEMS =====================
 
 @router.get("/valuation/hidden-gems")
