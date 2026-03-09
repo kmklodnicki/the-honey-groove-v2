@@ -390,16 +390,37 @@ const ISOPage = () => {
     finally { setSubmitting(false); }
   };
 
-  const handleMarkFound = async (id) => {
+  // "Upgrade to Reality" modal state
+  const [acquireTarget, setAcquireTarget] = useState(null);
+  const [acquireMediaCond, setAcquireMediaCond] = useState('');
+  const [acquireSleeveCond, setAcquireSleeveCond] = useState('');
+  const [acquirePrice, setAcquirePrice] = useState('');
+  const [acquireSubmitting, setAcquireSubmitting] = useState(false);
+
+  const handleMarkFound = (id) => {
+    const iso = isos.find(i => i.id === id);
+    setAcquireTarget(iso || { id });
+    setAcquireMediaCond('');
+    setAcquireSleeveCond('');
+    setAcquirePrice('');
+  };
+
+  const handleAcquireConfirm = async () => {
+    if (!acquireTarget) return;
+    setAcquireSubmitting(true);
     try {
-      const res = await axios.post(`${API}/iso/${id}/convert-to-collection`, {}, { headers: { Authorization: `Bearer ${token}` }});
-      setIsos(prev => prev.filter(i => i.id !== id));
-      // Confetti celebration
+      const res = await axios.post(`${API}/iso/${acquireTarget.id}/acquire`, {
+        media_condition: acquireMediaCond || null,
+        sleeve_condition: acquireSleeveCond || null,
+        price_paid: acquirePrice ? parseFloat(acquirePrice) : null,
+      }, { headers: { Authorization: `Bearer ${token}` }});
+      setIsos(prev => prev.filter(i => i.id !== acquireTarget.id));
+      setAcquireTarget(null);
       confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 }, colors: ['#E8A820', '#C8861A', '#8A6B4A', '#FFD700'] });
-      toast.success(`Congrats! ${res.data.title || 'Your record'} is now in your Hive.`);
-      // Redirect to collection after a brief pause for the celebration
+      toast.success(`Congrats! ${res.data.title || 'Your record'} is now in your Reality.`);
       setTimeout(() => navigate('/collection'), 1500);
     } catch { toast.error('something went wrong.'); }
+    finally { setAcquireSubmitting(false); }
   };
   const handleDeleteIso = async (id) => {
     try { await axios.delete(`${API}/iso/${id}`, { headers: { Authorization: `Bearer ${token}` }}); setIsos(prev => prev.filter(i => i.id !== id)); toast.success('iso removed.'); } catch { toast.error('something went wrong.'); }
@@ -981,6 +1002,69 @@ const ISOPage = () => {
         onMakeOffer={(l) => setOfferTarget(l)}
         onProposeTrade={(l) => { if (!user?.country) { setShowCountryGate(true); return; } setTradeTarget(l); }}
       />
+
+      {/* ===== Upgrade to Reality Modal ===== */}
+      <Dialog open={!!acquireTarget} onOpenChange={(open) => { if (!open) setAcquireTarget(null); }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-heading flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-[#C8861A]" /> Upgrade to Reality
+            </DialogTitle>
+            <DialogDescription>
+              {acquireTarget?.album && acquireTarget?.artist
+                ? <><span className="font-semibold text-foreground">{acquireTarget.album}</span> by {acquireTarget.artist}</>
+                : 'Finalize the details before adding to your collection.'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">Media Condition</label>
+              <Select value={acquireMediaCond} onValueChange={setAcquireMediaCond}>
+                <SelectTrigger className="border-honey/50" data-testid="acquire-media-condition">
+                  <SelectValue placeholder="Select media condition" />
+                </SelectTrigger>
+                <SelectContent>
+                  {GRADE_OPTIONS.map(g => <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">Sleeve Condition</label>
+              <Select value={acquireSleeveCond} onValueChange={setAcquireSleeveCond}>
+                <SelectTrigger className="border-honey/50" data-testid="acquire-sleeve-condition">
+                  <SelectValue placeholder="Select sleeve condition" />
+                </SelectTrigger>
+                <SelectContent>
+                  {GRADE_OPTIONS.map(g => <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1.5 block">Price Paid <span className="text-muted-foreground font-normal">(optional)</span></label>
+              <div className="relative">
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="0.00"
+                  type="number"
+                  value={acquirePrice}
+                  onChange={e => setAcquirePrice(e.target.value)}
+                  className="pl-9 border-honey/50"
+                  data-testid="acquire-price-paid"
+                />
+              </div>
+            </div>
+            <Button
+              onClick={handleAcquireConfirm}
+              disabled={acquireSubmitting}
+              className="w-full bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2"
+              data-testid="acquire-confirm-btn"
+            >
+              {acquireSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+              Bring to Reality
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteConfirmId} onOpenChange={(open) => { if (!open) { setDeleteConfirmId(null); setDeleteConfirmType(null); } }}>
