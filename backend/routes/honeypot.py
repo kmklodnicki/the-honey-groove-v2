@@ -88,6 +88,45 @@ async def mark_iso_found(iso_id: str, user: Dict = Depends(require_auth)):
     await db.iso_items.update_one({"id": iso_id}, {"$set": {"status": "FOUND", "found_at": now}})
     return {"message": "ISO marked as found"}
 
+@router.post("/iso/{iso_id}/convert-to-collection")
+async def convert_iso_to_collection(iso_id: str, user: Dict = Depends(require_auth)):
+    """Convert an ISO item to a collection record ('I Found It!' flow)."""
+    iso = await db.iso_items.find_one({"id": iso_id, "user_id": user["id"]})
+    if not iso:
+        raise HTTPException(status_code=404, detail="ISO not found")
+
+    now = datetime.now(timezone.utc).isoformat()
+    record_id = str(uuid.uuid4())
+
+    record_doc = {
+        "id": record_id,
+        "user_id": user["id"],
+        "discogs_id": iso.get("discogs_id"),
+        "title": iso.get("album", "Unknown Album"),
+        "artist": iso.get("artist", "Unknown Artist"),
+        "cover_url": iso.get("cover_url"),
+        "year": iso.get("year"),
+        "format": "Vinyl",
+        "notes": "Found via ISO",
+        "source": "iso",
+        "created_at": now,
+    }
+    await db.records.insert_one(record_doc)
+
+    # Mark ISO as found then delete
+    await db.iso_items.update_one({"id": iso_id}, {"$set": {"status": "FOUND", "found_at": now}})
+    await db.iso_items.delete_one({"id": iso_id})
+
+    # Also update linked post if any
+    await db.posts.update_many({"iso_id": iso_id}, {"$set": {"iso_status": "FOUND"}})
+
+    return {
+        "message": f"{iso.get('album')} is now in your Hive.",
+        "record_id": record_id,
+        "title": iso.get("album"),
+        "artist": iso.get("artist"),
+    }
+
 @router.delete("/iso/{iso_id}")
 async def delete_iso(iso_id: str, user: Dict = Depends(require_auth)):
     iso = await db.iso_items.find_one({"id": iso_id, "user_id": user["id"]})

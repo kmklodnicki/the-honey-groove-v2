@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, DollarSign, TrendingUp, RefreshCw } from 'lucide-react';
+import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, DollarSign, TrendingUp, RefreshCw, Heart, ArrowRight } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -123,6 +123,22 @@ const CollectionPage = () => {
       console.error('Failed to delete record:', error);
       toast.error('could not remove record. try again.');
     }
+  };
+
+  const handleMoveToWishlist = async (recordId) => {
+    try {
+      const res = await axios.post(`${API}/records/${recordId}/move-to-wishlist`, {}, { headers: { Authorization: `Bearer ${token}` }});
+      setRecords(prev => prev.filter(r => r.id !== recordId));
+      toast.success(res.data.message || 'moved to wishlist.');
+    } catch { toast.error('could not move to wishlist.'); }
+  };
+
+  const handleMoveToISO = async (recordId) => {
+    try {
+      const res = await axios.post(`${API}/records/${recordId}/move-to-iso`, {}, { headers: { Authorization: `Bearer ${token}` }});
+      setRecords(prev => prev.filter(r => r.id !== recordId));
+      toast.success(res.data.message || 'back on the hunt.');
+    } catch { toast.error('could not move to ISO.'); }
   };
 
   // Get the most recent spin date for each record
@@ -350,6 +366,8 @@ const CollectionPage = () => {
               record={record}
               onSpin={handleLogSpin}
               onDelete={handleDeleteRecord}
+              onMoveToWishlist={handleMoveToWishlist}
+              onMoveToISO={handleMoveToISO}
               isSpinning={spinningRecordId === record.id}
               value={valueMap[record.id]}
             />
@@ -360,7 +378,7 @@ const CollectionPage = () => {
   );
 };
 
-const RecordCard = ({ record, onSpin, onDelete, isSpinning, value }) => {
+const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, isSpinning, value }) => {
   return (
     <Card 
       className="group border-honey/30 overflow-hidden hover:shadow-honey transition-all hover:-translate-y-1"
@@ -428,13 +446,21 @@ const RecordCard = ({ record, onSpin, onDelete, isSpinning, value }) => {
                 <Play className="w-4 h-4 mr-2" />
                 Log Spin
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onMoveToWishlist(record.id)} data-testid={`wishlist-btn-${record.id}`}>
+                <Heart className="w-4 h-4 mr-2" />
+                Move to Wishlist
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onMoveToISO(record.id)} data-testid={`iso-btn-${record.id}`}>
+                <ArrowRight className="w-4 h-4 mr-2" />
+                Put back on ISO
+              </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => onDelete(record.id)} 
                 className="text-red-600"
                 data-testid={`delete-btn-${record.id}`}
               >
                 <Trash2 className="w-4 h-4 mr-2" />
-                Remove
+                Remove Completely
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

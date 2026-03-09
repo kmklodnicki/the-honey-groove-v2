@@ -1,0 +1,52 @@
+{
+  "summary": "Hunt Completed workflow (Block 18.1 and 18.2) testing complete. All backend endpoints work correctly, frontend flows function as expected.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "GET /api/records/{id}", "issue": "RecordResponse model does not include 'source' field, though it is stored in DB. This is a design choice, not a bug - 'notes' field serves as the user-visible indicator for ISO-sourced records."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_hunt_completed_block18.py",
+    "/app/test_reports/pytest/hunt_completed_block18_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": ["/app/backend/tests/test_hunt_completed_block18.py"],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "admin@thehoneygroove.com/admin123",
+  "seed_data_creation": "Created test ISO and record during testing (cleaned up via API)",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Hunt Completed workflow tested successfully. BLOCK 18.1: ISO to Collection migration works - POST /api/iso/{id}/convert-to-collection converts ISO to collection record with notes='Found via ISO', triggers confetti, shows toast, redirects to /collection. BLOCK 18.2: Collection Quick Actions dropdown has all 4 options (Log Spin, Move to Wishlist, Put back on ISO, Remove Completely). move-to-wishlist creates ISO with WISHLIST status, move-to-iso creates ISO with OPEN status.",
+  "tests_passed": {
+    "backend": [
+      "test_convert_iso_to_collection_endpoint_exists",
+      "test_convert_iso_to_collection_requires_auth",
+      "test_convert_iso_to_collection_full_flow",
+      "test_convert_iso_returns_proper_fields",
+      "test_move_to_wishlist_endpoint_exists",
+      "test_move_to_iso_endpoint_exists",
+      "test_move_to_wishlist_requires_auth",
+      "test_move_to_iso_requires_auth",
+      "test_move_to_wishlist_full_flow",
+      "test_move_to_iso_full_flow",
+      "test_delete_record_endpoint",
+      "test_converted_record_has_found_via_iso_notes",
+      "test_converted_record_has_iso_source"
+    ],
+    "frontend": [
+      "ISO page Found button triggers convert-to-collection API",
+      "Confetti animation displays with honey-colored particles",
+      "Toast shows 'Congrats! {title} is now in your Hive.'",
+      "Redirect to /collection after 1.5s",
+      "Collection page RecordCard dropdown has 4 options: Log Spin, Move to Wishlist, Put back on ISO, Remove Completely",
+      "Move to Wishlist action removes record from collection and shows success toast"
+    ]
+  }
+}

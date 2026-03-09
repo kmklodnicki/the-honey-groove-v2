@@ -263,6 +263,58 @@ async def delete_record(record_id: str, user: Dict = Depends(require_auth)):
     return {"message": "Record deleted"}
 
 
+@router.post("/records/{record_id}/move-to-wishlist")
+async def move_to_wishlist(record_id: str, user: Dict = Depends(require_auth)):
+    """Move a collection record to the passive wishlist (ISO with WISHLIST status)."""
+    record = await db.records.find_one({"id": record_id, "user_id": user["id"]})
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found")
+
+    now = datetime.now(timezone.utc).isoformat()
+    iso_doc = {
+        "id": str(uuid.uuid4()),
+        "user_id": user["id"],
+        "artist": record.get("artist", ""),
+        "album": record.get("title", ""),
+        "discogs_id": record.get("discogs_id"),
+        "cover_url": record.get("cover_url"),
+        "year": record.get("year"),
+        "status": "WISHLIST",
+        "priority": "LOW",
+        "created_at": now,
+    }
+    await db.iso_items.insert_one(iso_doc)
+    await db.records.delete_one({"id": record_id})
+    await db.spins.delete_many({"record_id": record_id})
+    return {"message": f"{record.get('title')} moved to wishlist."}
+
+@router.post("/records/{record_id}/move-to-iso")
+async def move_to_iso(record_id: str, user: Dict = Depends(require_auth)):
+    """Move a collection record back to the active ISO hunt list."""
+    record = await db.records.find_one({"id": record_id, "user_id": user["id"]})
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found")
+
+    now = datetime.now(timezone.utc).isoformat()
+    iso_doc = {
+        "id": str(uuid.uuid4()),
+        "user_id": user["id"],
+        "artist": record.get("artist", ""),
+        "album": record.get("title", ""),
+        "discogs_id": record.get("discogs_id"),
+        "cover_url": record.get("cover_url"),
+        "year": record.get("year"),
+        "status": "OPEN",
+        "priority": "MED",
+        "created_at": now,
+    }
+    await db.iso_items.insert_one(iso_doc)
+    await db.records.delete_one({"id": record_id})
+    await db.spins.delete_many({"record_id": record_id})
+    return {"message": f"{record.get('title')} is back on the hunt."}
+
+
+
 # ============== SPIN ROUTES ==============
 
 @router.post("/spins", response_model=SpinResponse)

@@ -36,6 +36,7 @@ import CountryGateModal from '../components/CountryGateModal';
 import { countryFlag } from '../utils/countryFlag';
 import { TitleBadge } from '../components/TitleBadge';
 import { TagPill, ListingTypeBadge } from '../components/PostCards';
+import confetti from 'canvas-confetti';
 
 const ISO_TAGS = ['OG Press', 'Factory Sealed', 'Any', 'Promo'];
 const FILTER_OPTIONS = ['All', 'OPEN', 'FOUND'];
@@ -390,7 +391,15 @@ const ISOPage = () => {
   };
 
   const handleMarkFound = async (id) => {
-    try { await axios.put(`${API}/iso/${id}/found`, {}, { headers: { Authorization: `Bearer ${token}` }}); setIsos(prev => prev.map(i => i.id === id ? { ...i, status: 'FOUND' } : i)); toast.success('marked as found.'); } catch { toast.error('something went wrong.'); }
+    try {
+      const res = await axios.post(`${API}/iso/${id}/convert-to-collection`, {}, { headers: { Authorization: `Bearer ${token}` }});
+      setIsos(prev => prev.filter(i => i.id !== id));
+      // Confetti celebration
+      confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 }, colors: ['#E8A820', '#C8861A', '#8A6B4A', '#FFD700'] });
+      toast.success(`Congrats! ${res.data.title || 'Your record'} is now in your Hive.`);
+      // Redirect to collection after a brief pause for the celebration
+      setTimeout(() => navigate('/collection'), 1500);
+    } catch { toast.error('something went wrong.'); }
   };
   const handleDeleteIso = async (id) => {
     try { await axios.delete(`${API}/iso/${id}`, { headers: { Authorization: `Bearer ${token}` }}); setIsos(prev => prev.filter(i => i.id !== id)); toast.success('iso removed.'); } catch { toast.error('something went wrong.'); }
