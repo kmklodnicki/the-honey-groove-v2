@@ -205,3 +205,54 @@ async def search_discogs_external(q: str = Query(..., min_length=2), user: Dict 
     import asyncio
     results = await asyncio.to_thread(search_discogs, q)
     return results[:20]
+
+
+@router.get("/search/records")
+async def search_records_paginated(
+    q: str = Query(..., min_length=2),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=50),
+    user: Dict = Depends(require_auth),
+):
+    """Paginated record search across local collections + Discogs for infinite scroll."""
+    hidden_ids = await get_hidden_user_ids()
+    words = [w.lower() for w in q.strip().split() if len(w) >= 1]
+    if not words:
+        return {"records": [], "has_more": False}
+
+    regex_patterns = _build_regex_filter(q)
+    def field_or(field: str):
+        return [{field: p} for p in regex_patterns]
+
+    # Fetch more than needed for scoring then paginate
+    fetch_limit = skip + limit + 50
+    rec_filter = {"$or": field_or("artist") + field_or("title")}
+    raw_records = await db.records.find(rec_filter, {"_id": 0}).limit(fetch_limit).to_list(fetch_limit)
+
+    # Deduplicate by discogs_id
+    seen = set()
+    unique = []
+    for r in raw_records:
+        did = r.get("discogs_id")
+        key = did if did else r.get("id")
+        if key not in seen:
+            seen.add(key)
+            unique.append(r)
+
+    scored = sorted(unique, key=lambda r: _record_score(r, words), reverse=True)
+    page = scored[skip:skip + limit]
+    has_more = len(scored) > skip + limit
+
+    records_out = [{
+        "discogs_id": r.get("discogs_id"),
+        "title": r.get("title", ""),
+        "artist": r.get("artist", ""),
+        "cover_url": r.get("cover_url"),
+        "year": r.get("year"),
+        "format": r.get("format"),
+        "label": r.get("label"),
+        "color_variant": r.get("color_variant"),
+        "source": "collection",
+    } for r in page]
+
+    return {"records": records_out, "has_more": has_more}

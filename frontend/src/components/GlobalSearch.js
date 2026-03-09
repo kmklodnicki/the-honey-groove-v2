@@ -43,6 +43,14 @@ const GlobalSearch = ({ onClose }) => {
   const abortRef = useRef(null);
   const discogsAbortRef = useRef(null);
 
+  // Infinite scroll state for records
+  const [paginatedRecords, setPaginatedRecords] = useState([]);
+  const [recordsSkip, setRecordsSkip] = useState(0);
+  const [recordsHasMore, setRecordsHasMore] = useState(false);
+  const [recordsLoadingMore, setRecordsLoadingMore] = useState(false);
+  const scrollRef = useRef(null);
+  const recordsSentinelRef = useRef(null);
+
   useEffect(() => { inputRef.current?.focus(); }, []);
 
   // Cleanup on unmount
@@ -58,6 +66,9 @@ const GlobalSearch = ({ onClose }) => {
     if (!q || q.length < 2) {
       setResults({ records: [], collectors: [], posts: [], listings: [] });
       setDiscogsResults([]);
+      setPaginatedRecords([]);
+      setRecordsSkip(0);
+      setRecordsHasMore(false);
       setLoading(false);
       setDiscogsLoading(false);
       return;
@@ -74,17 +85,30 @@ const GlobalSearch = ({ onClose }) => {
 
     const headers = { Authorization: `Bearer ${token}` };
 
-    // Fast local search
+    // Fast local search (collectors, posts, listings) + paginated records
     setLoading(true);
+    setPaginatedRecords([]);
+    setRecordsSkip(0);
     try {
-      const resp = await axios.get(`${API}/search/unified?q=${encodeURIComponent(q)}`, {
-        headers, timeout: 5000, signal: localController.signal,
-      });
-      setResults(resp.data);
+      const [unifiedResp, recordsResp] = await Promise.all([
+        axios.get(`${API}/search/unified?q=${encodeURIComponent(q)}`, {
+          headers, timeout: 5000, signal: localController.signal,
+        }),
+        axios.get(`${API}/search/records?q=${encodeURIComponent(q)}&skip=0&limit=20`, {
+          headers, timeout: 5000, signal: localController.signal,
+        }),
+      ]);
+      setResults(unifiedResp.data);
+      setPaginatedRecords(recordsResp.data.records || []);
+      setRecordsHasMore(recordsResp.data.has_more || false);
+      setRecordsSkip(20);
       addRecent(q);
       setRecentSearches(getRecent());
     } catch (e) {
-      if (!axios.isCancel(e)) setResults({ records: [], collectors: [], posts: [], listings: [] });
+      if (!axios.isCancel(e)) {
+        setResults({ records: [], collectors: [], posts: [], listings: [] });
+        setPaginatedRecords([]);
+      }
     } finally {
       if (!localController.signal.aborted) setLoading(false);
     }
@@ -102,6 +126,21 @@ const GlobalSearch = ({ onClose }) => {
       if (!discogsController.signal.aborted) setDiscogsLoading(false);
     }
   }, [API, token]);
+
+  const loadMoreRecords = useCallback(async () => {
+    if (recordsLoadingMore || !recordsHasMore || query.length < 2) return;
+    setRecordsLoadingMore(true);
+    try {
+      const resp = await axios.get(`${API}/search/records?q=${encodeURIComponent(query)}&skip=${recordsSkip}&limit=20`, {
+        headers: { Authorization: `Bearer ${token}` }, timeout: 5000,
+      });
+      const newRecords = resp.data.records || [];
+      setPaginatedRecords(prev => [...prev, ...newRecords]);
+      setRecordsHasMore(resp.data.has_more || false);
+      setRecordsSkip(prev => prev + 20);
+    } catch { /* silent */ }
+    finally { setRecordsLoadingMore(false); }
+  }, [API, token, query, recordsSkip, recordsHasMore, recordsLoadingMore]);
 
   // Debounced search trigger — input state updates instantly, search fires after 300ms pause
   useEffect(() => {
@@ -145,15 +184,43 @@ const GlobalSearch = ({ onClose }) => {
   };
 
   const hasQuery = query.length >= 2;
-  const { records, collectors, posts, listings } = results;
+  const { collectors, posts, listings } = results;
 
-  // Merge local records + discogs (deduped by discogs_id)
-  const seenIds = new Set(records.map(r => r.discogs_id).filter(Boolean));
+  // Merge paginated records + discogs (deduped by discogs_id)
+  const seenIds = new Set(paginatedRecords.map(r => r.discogs_id).filter(Boolean));
   const extraDiscogs = discogsResults.filter(r => r.discogs_id && !seenIds.has(r.discogs_id));
-  const allRecords = [...records, ...extraDiscogs.map(r => ({ ...r, source: 'discogs' }))];
+  const allRecords = [...paginatedRecords, ...extraDiscogs.map(r => ({ ...r, source: 'discogs' }))];
+
+  // Group records by artist with sticky headers
+  const groupedByArtist = React.useMemo(() => {
+    const groups = [];
+    const artistMap = new Map();
+    for (const r of allRecords) {
+      const artist = r.artist || 'Unknown Artist';
+      if (!artistMap.has(artist)) {
+        const group = { artist, records: [] };
+        artistMap.set(artist, group);
+        groups.push(group);
+      }
+      artistMap.get(artist).records.push(r);
+    }
+    return groups;
+  }, [allRecords]);
 
   const totalResults = allRecords.length + collectors.length + posts.length + listings.length;
   const noResults = hasQuery && !loading && !discogsLoading && totalResults === 0;
+
+  // IntersectionObserver for infinite scroll
+  useEffect(() => {
+    const sentinel = recordsSentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) loadMoreRecords(); },
+      { root: scrollRef.current, rootMargin: '200px' }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [loadMoreRecords]);
 
   return (
     <div className="flex flex-col h-full" data-testid="global-search">
@@ -175,7 +242,7 @@ const GlobalSearch = ({ onClose }) => {
       </div>
 
       {/* Results */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-4" ref={scrollRef}>
         {/* Recent searches (before typing) */}
         {!hasQuery && !loading && (
           <div>
@@ -220,29 +287,43 @@ const GlobalSearch = ({ onClose }) => {
         {/* Unified results grouped by section */}
         {hasQuery && !noResults && (totalResults > 0 || loading || discogsLoading) && (
           <div className="space-y-6">
-            {/* Records Section */}
+            {/* Records Section - grouped by artist, infinite scroll */}
             {allRecords.length > 0 && (
               <section data-testid="search-records-section">
                 <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
                   <Disc className="w-3.5 h-3.5" /> Records
-                  <span className="text-[10px] opacity-60">({allRecords.length})</span>
+                  <span className="text-[10px] opacity-60">({allRecords.length}{recordsHasMore ? '+' : ''})</span>
                   {discogsLoading && <Loader2 className="w-3 h-3 animate-spin ml-1" />}
                 </h3>
                 <div className="space-y-0.5">
-                  {allRecords.slice(0, 10).map((r, i) => (
-                    <RecordSearchResult
-                      key={r.discogs_id || i}
-                      record={r}
-                      onClick={() => goToRecord(r)}
-                      testId={`search-record-${i}`}
-                      actions={
-                        <button onClick={(e) => { e.stopPropagation(); addToCollection(r); }}
-                          className="text-xs text-amber-600 hover:text-amber-800 px-2 py-1 rounded-full border border-amber-300 hover:bg-amber-50 opacity-0 group-hover:opacity-100 transition-opacity"
-                          data-testid={`search-add-collection-${i}`}
-                        >+ collection</button>
-                      }
-                    />
+                  {groupedByArtist.map(group => (
+                    <div key={group.artist}>
+                      <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm px-2 py-1 -mx-1 border-b border-honey/10">
+                        <span className="text-[11px] font-semibold text-honey-amber tracking-wide">{group.artist}</span>
+                      </div>
+                      {group.records.map((r, i) => (
+                        <RecordSearchResult
+                          key={r.discogs_id || `${r.title}-${i}`}
+                          record={r}
+                          onClick={() => goToRecord(r)}
+                          testId={`search-record-${r.discogs_id || i}`}
+                          actions={
+                            <button onClick={(e) => { e.stopPropagation(); addToCollection(r); }}
+                              className="text-xs text-amber-600 hover:text-amber-800 px-2 py-1 rounded-full border border-amber-300 hover:bg-amber-50 opacity-0 group-hover:opacity-100 transition-opacity"
+                              data-testid={`search-add-collection-${r.discogs_id || i}`}
+                            >+ collection</button>
+                          }
+                        />
+                      ))}
+                    </div>
                   ))}
+                  {/* Infinite scroll sentinel */}
+                  <div ref={recordsSentinelRef} className="py-2 text-center">
+                    {recordsLoadingMore && <Loader2 className="w-4 h-4 animate-spin mx-auto text-honey" />}
+                    {!recordsHasMore && allRecords.length > 20 && (
+                      <p className="text-[10px] text-muted-foreground italic">end of results</p>
+                    )}
+                  </div>
                 </div>
               </section>
             )}
