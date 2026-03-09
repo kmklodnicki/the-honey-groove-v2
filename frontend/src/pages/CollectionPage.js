@@ -14,13 +14,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, DollarSign, TrendingUp, RefreshCw, Heart, ArrowRight, ShoppingBag, Cloud, Sparkles } from 'lucide-react';
+import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, DollarSign, TrendingUp, RefreshCw, Heart, ArrowRight, ShoppingBag, Cloud, Sparkles, CheckSquare, Square, ListChecks } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '../components/ui/alert-dialog';
 import { toast } from 'sonner';
 import DiscogsImport from '../components/DiscogsImport';
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -84,7 +88,12 @@ const CollectionPage = () => {
   const [wishlistItems, setWishlistItems] = useState([]);
   const [wishlistValue, setWishlistValue] = useState(null);
   const [dreamSubtractMsg, setDreamSubtractMsg] = useState(null);
-  const [countKey, setCountKey] = useState(0); // bump to retrigger count-up animation
+  const [countKey, setCountKey] = useState(0);
+  // Confirmation dialog for "Collection Cleanse" moves
+  const [cleanseTarget, setCleanseTarget] = useState(null); // { id, title, type: 'dreaming'|'hunt' }
+  // Multi-select mode
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(new Set());
   const navigate = useNavigate();
 
   // Trigger counting animation when switching to dreaming tab
@@ -170,20 +179,65 @@ const CollectionPage = () => {
     }
   };
 
-  const handleMoveToWishlist = async (recordId) => {
-    try {
-      const res = await axios.post(`${API}/records/${recordId}/move-to-wishlist`, {}, { headers: { Authorization: `Bearer ${token}` }});
-      setRecords(prev => prev.filter(r => r.id !== recordId));
-      toast.success(res.data.message || 'moved to wishlist.');
-    } catch { toast.error('could not move to wishlist.'); }
+  // Confirmation-based moves (Collection Cleanse)
+  const requestMoveToDreaming = (recordId) => {
+    const rec = records.find(r => r.id === recordId);
+    setCleanseTarget({ id: recordId, title: rec?.title || 'this record', type: 'dreaming' });
+  };
+  const requestMoveToHunt = (recordId) => {
+    const rec = records.find(r => r.id === recordId);
+    setCleanseTarget({ id: recordId, title: rec?.title || 'this record', type: 'hunt' });
   };
 
-  const handleMoveToISO = async (recordId) => {
+  const handleConfirmCleanse = async () => {
+    if (!cleanseTarget) return;
+    const { id, type } = cleanseTarget;
+    setCleanseTarget(null);
     try {
-      const res = await axios.post(`${API}/records/${recordId}/move-to-iso`, {}, { headers: { Authorization: `Bearer ${token}` }});
-      setRecords(prev => prev.filter(r => r.id !== recordId));
-      toast.success(res.data.message || 'back on the hunt.');
-    } catch { toast.error('could not move to ISO.'); }
+      if (type === 'dreaming') {
+        const res = await axios.post(`${API}/records/${id}/move-to-wishlist`, {}, { headers: { Authorization: `Bearer ${token}` }});
+        setRecords(prev => prev.filter(r => r.id !== id));
+        // Optimistically update Reality value
+        const itemVal = valueMap[id] || 0;
+        if (itemVal > 0 && collectionValue) {
+          setCollectionValue(prev => prev ? { ...prev, total_value: Math.max(0, prev.total_value - itemVal) } : prev);
+          setWishlistValue(prev => prev ? { ...prev, total_value: prev.total_value + itemVal } : prev);
+        }
+        toast.success(res.data.message || 'moved to dreaming.');
+      } else {
+        const res = await axios.post(`${API}/records/${id}/move-to-iso`, {}, { headers: { Authorization: `Bearer ${token}` }});
+        setRecords(prev => prev.filter(r => r.id !== id));
+        toast.success(res.data.message || 'back on the hunt.');
+      }
+    } catch { toast.error('could not move record.'); }
+  };
+
+  // Multi-select helpers
+  const toggleSelect = (id) => setSelectedIds(prev => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
+  const exitSelectMode = () => { setSelectMode(false); setSelectedIds(new Set()); };
+  const selectAll = () => setSelectedIds(new Set(sortedAndFilteredRecords.map(r => r.id)));
+
+  const handleBulkDreamify = async () => {
+    if (selectedIds.size === 0) return;
+    try {
+      const res = await axios.post(`${API}/records/bulk-move-to-wishlist`, { record_ids: [...selectedIds] }, { headers: { Authorization: `Bearer ${token}` }});
+      setRecords(prev => prev.filter(r => !selectedIds.has(r.id)));
+      exitSelectMode();
+      toast.success(`Reality Refined. Your shelf is looking lighter.`);
+    } catch { toast.error('bulk move failed.'); }
+  };
+  const handleBulkHuntify = async () => {
+    if (selectedIds.size === 0) return;
+    try {
+      const res = await axios.post(`${API}/records/bulk-move-to-iso`, { record_ids: [...selectedIds] }, { headers: { Authorization: `Bearer ${token}` }});
+      setRecords(prev => prev.filter(r => !selectedIds.has(r.id)));
+      exitSelectMode();
+      toast.success(`Reality Refined. Your shelf is looking lighter.`);
+    } catch { toast.error('bulk move failed.'); }
   };
 
   const handleWishlistToISO = async (isoId) => {
@@ -451,7 +505,45 @@ const CollectionPage = () => {
                 ))}
               </SelectContent>
             </Select>
+            <Button
+              variant={selectMode ? "default" : "outline"}
+              size="sm"
+              onClick={selectMode ? exitSelectMode : () => setSelectMode(true)}
+              className={`gap-1.5 shrink-0 ${selectMode ? 'bg-honey text-vinyl-black hover:bg-honey-amber' : 'border-honey/50 text-stone-600'}`}
+              data-testid="select-mode-btn"
+            >
+              <ListChecks className="w-4 h-4" />
+              {selectMode ? 'Cancel' : 'Select'}
+            </Button>
           </div>
+
+          {/* Multi-select action bar */}
+          {selectMode && (
+            <div className="flex items-center gap-3 mb-4 p-3 rounded-xl bg-honey/10 border border-honey/30" data-testid="bulk-action-bar">
+              <span className="text-sm font-medium text-stone-600">{selectedIds.size} selected</span>
+              <Button variant="ghost" size="sm" onClick={selectAll} className="text-xs text-honey-amber hover:text-honey" data-testid="select-all-btn">Select All</Button>
+              <div className="ml-auto flex gap-2">
+                <Button
+                  size="sm"
+                  disabled={selectedIds.size === 0}
+                  onClick={handleBulkDreamify}
+                  className="bg-stone-100 text-stone-700 hover:bg-stone-200 gap-1.5 rounded-full text-xs"
+                  data-testid="bulk-dreamify-btn"
+                >
+                  <Cloud className="w-3.5 h-3.5" /> Dreamify
+                </Button>
+                <Button
+                  size="sm"
+                  disabled={selectedIds.size === 0}
+                  onClick={handleBulkHuntify}
+                  className="bg-amber-100 text-amber-800 hover:bg-amber-200 gap-1.5 rounded-full text-xs"
+                  data-testid="bulk-huntify-btn"
+                >
+                  <ArrowRight className="w-3.5 h-3.5" /> Huntify
+                </Button>
+              </div>
+            </div>
+          )}
 
           {/* Discogs Import */}
           <div className="mb-6">
@@ -484,10 +576,13 @@ const CollectionPage = () => {
                   record={record}
                   onSpin={handleLogSpin}
                   onDelete={handleDeleteRecord}
-                  onMoveToWishlist={handleMoveToWishlist}
-                  onMoveToISO={handleMoveToISO}
+                  onMoveToWishlist={requestMoveToDreaming}
+                  onMoveToISO={requestMoveToHunt}
                   isSpinning={spinningRecordId === record.id}
                   value={valueMap[record.id]}
+                  selectMode={selectMode}
+                  isSelected={selectedIds.has(record.id)}
+                  onToggleSelect={toggleSelect}
                 />
               ))}
             </div>
@@ -519,6 +614,36 @@ const CollectionPage = () => {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Collection Cleanse Confirmation Dialog */}
+      <AlertDialog open={!!cleanseTarget} onOpenChange={(open) => { if (!open) setCleanseTarget(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-heading">
+              {cleanseTarget?.type === 'dreaming' ? 'Releasing to the clouds?' : 'Back on the hunt?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              {cleanseTarget?.type === 'dreaming' ? (
+                <span>This will remove <strong>{cleanseTarget?.title}</strong> from your Gold Standard and add it back to your dreams.</span>
+              ) : (
+                <span>This will move <strong>{cleanseTarget?.title}</strong> to your active Wantlist for a potential upgrade or replacement.</span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="cleanse-cancel-btn">Keep it</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmCleanse}
+              className={cleanseTarget?.type === 'dreaming'
+                ? 'bg-stone-600 hover:bg-stone-700'
+                : 'bg-amber-600 hover:bg-amber-700'}
+              data-testid="cleanse-confirm-btn"
+            >
+              {cleanseTarget?.type === 'dreaming' ? 'Move to Dreaming' : 'Move to The Hunt'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
@@ -576,14 +701,20 @@ const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg }) => {
   );
 };
 
-const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, isSpinning, value }) => {
+const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, isSpinning, value, selectMode, isSelected, onToggleSelect }) => {
   return (
     <Card 
-      className="group border-honey/20 overflow-hidden hover:shadow-honey transition-all hover:-translate-y-1"
+      className={`relative group border-honey/20 overflow-hidden hover:shadow-honey transition-all hover:-translate-y-1 ${isSelected ? 'ring-2 ring-honey shadow-honey' : ''} ${selectMode ? 'cursor-pointer' : ''}`}
       style={{ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', background: 'rgba(255,255,255,0.75)' }}
       data-testid={`record-card-${record.id}`}
+      onClick={selectMode ? () => onToggleSelect(record.id) : undefined}
     >
-      <Link to={`/record/${record.id}`}>
+      {selectMode && (
+        <div className="absolute top-2 left-2 z-10" data-testid={`select-checkbox-${record.id}`}>
+          {isSelected ? <CheckSquare className="w-5 h-5 text-honey drop-shadow" /> : <Square className="w-5 h-5 text-stone-400 drop-shadow" />}
+        </div>
+      )}
+      <Link to={selectMode ? '#' : `/record/${record.id}`} onClick={selectMode ? (e) => e.preventDefault() : undefined}>
         <div className="relative aspect-square bg-vinyl-black">
           {record.cover_url ? (
             <AlbumArt 

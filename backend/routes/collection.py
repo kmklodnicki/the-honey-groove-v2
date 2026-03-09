@@ -308,12 +308,72 @@ async def move_to_iso(record_id: str, user: Dict = Depends(require_auth)):
         "year": record.get("year"),
         "status": "OPEN",
         "priority": "MED",
+        "tags": ["Seeking Upgrade"],
         "created_at": now,
     }
     await db.iso_items.insert_one(iso_doc)
     await db.records.delete_one({"id": record_id})
     await db.spins.delete_many({"record_id": record_id})
-    return {"message": f"{record.get('title')} is back on the hunt."}
+    return {"message": f"{record.get('title')} is back on the hunt.", "title": record.get("title")}
+
+
+class BulkMoveRequest(BaseModel):
+    record_ids: List[str]
+
+
+@router.post("/records/bulk-move-to-wishlist")
+async def bulk_move_to_wishlist(body: BulkMoveRequest, user: Dict = Depends(require_auth)):
+    """Bulk move collection records to the passive wishlist."""
+    moved = 0
+    for rid in body.record_ids:
+        record = await db.records.find_one({"id": rid, "user_id": user["id"]})
+        if not record:
+            continue
+        now = datetime.now(timezone.utc).isoformat()
+        await db.iso_items.insert_one({
+            "id": str(uuid.uuid4()),
+            "user_id": user["id"],
+            "artist": record.get("artist", ""),
+            "album": record.get("title", ""),
+            "discogs_id": record.get("discogs_id"),
+            "cover_url": record.get("cover_url"),
+            "year": record.get("year"),
+            "status": "WISHLIST",
+            "priority": "LOW",
+            "created_at": now,
+        })
+        await db.records.delete_one({"id": rid})
+        await db.spins.delete_many({"record_id": rid})
+        moved += 1
+    return {"message": f"{moved} record{'s' if moved != 1 else ''} moved to Dreaming.", "moved": moved}
+
+
+@router.post("/records/bulk-move-to-iso")
+async def bulk_move_to_iso(body: BulkMoveRequest, user: Dict = Depends(require_auth)):
+    """Bulk move collection records to the active hunt list."""
+    moved = 0
+    for rid in body.record_ids:
+        record = await db.records.find_one({"id": rid, "user_id": user["id"]})
+        if not record:
+            continue
+        now = datetime.now(timezone.utc).isoformat()
+        await db.iso_items.insert_one({
+            "id": str(uuid.uuid4()),
+            "user_id": user["id"],
+            "artist": record.get("artist", ""),
+            "album": record.get("title", ""),
+            "discogs_id": record.get("discogs_id"),
+            "cover_url": record.get("cover_url"),
+            "year": record.get("year"),
+            "status": "OPEN",
+            "priority": "MED",
+            "tags": ["Seeking Upgrade"],
+            "created_at": now,
+        })
+        await db.records.delete_one({"id": rid})
+        await db.spins.delete_many({"record_id": rid})
+        moved += 1
+    return {"message": f"{moved} record{'s' if moved != 1 else ''} moved to The Hunt.", "moved": moved}
 
 
 
