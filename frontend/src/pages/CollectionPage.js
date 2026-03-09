@@ -273,15 +273,21 @@ const CollectionPage = () => {
       <Tabs value={collectionTab} onValueChange={setCollectionTab}>
         <TabsList className="bg-honey/10 mb-6 w-full grid grid-cols-2">
           <TabsTrigger value="owned" className="data-[state=active]:bg-honey text-sm" data-testid="tab-owned">
-            The Hive ({records.length})
+            Reality ({records.length})
           </TabsTrigger>
           <TabsTrigger value="wishlist" className="data-[state=active]:bg-honey text-sm" data-testid="tab-wishlist">
-            <Cloud className="w-3.5 h-3.5 mr-1.5" /> Wishlist ({wishlistItems.length})
+            <Cloud className="w-3.5 h-3.5 mr-1.5" /> Dreaming ({wishlistItems.length})
           </TabsTrigger>
         </TabsList>
 
-        {/* ====== THE HIVE (OWNED) TAB ====== */}
+        {/* ====== REALITY (OWNED) TAB ====== */}
         <TabsContent value="owned">
+          {/* Reality Tagline */}
+          <div className="mb-4 px-1">
+            <p className="font-heading text-lg text-vinyl-black">The Main Chamber.</p>
+            <p className="text-sm text-stone-500 font-serif italic">Every spin, every memory. This is your reality in 12-inch wax.</p>
+          </div>
+
           {/* Collection Value Banner */}
           {collectionValue && collectionValue.valued_count > 0 && (
             <Card className="p-4 mb-5 border-honey/30 bg-gradient-to-r from-honey/5 to-honey/15" data-testid="collection-value-banner">
@@ -303,6 +309,11 @@ const CollectionPage = () => {
                   <RefreshCw className={`w-3.5 h-3.5 mr-1 ${refreshing ? 'animate-spin' : ''}`} /> {refreshing ? 'Refreshing...' : 'Refresh'}
                 </Button>
               </div>
+              {wishlistValue && wishlistValue.total_value > 0 && (
+                <button onClick={() => setCollectionTab('wishlist')} className="text-[11px] text-honey-amber hover:underline mt-1 block" data-testid="reality-vs-dream-link">
+                  Reality: ${collectionValue.total_value.toLocaleString(undefined, { maximumFractionDigits: 0 })} vs. Dream Debt: ${wishlistValue.total_value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                </button>
+              )}
             </Card>
           )}
 
@@ -416,7 +427,7 @@ const CollectionPage = () => {
           )}
         </TabsContent>
 
-        {/* ====== WISHLIST (DREAMING) TAB ====== */}
+        {/* ====== DREAMING TAB ====== */}
         <TabsContent value="wishlist">
           {/* Dream Debt Banner */}
           <div className="relative overflow-hidden rounded-2xl border border-stone-200/60 bg-gradient-to-br from-stone-50 via-white to-stone-50 p-5 mb-6" data-testid="dream-debt-banner">
@@ -425,7 +436,7 @@ const CollectionPage = () => {
                 Certified Delusional
               </div>
             )}
-            <p className="text-xs font-medium uppercase tracking-widest text-stone-400 mb-1">Wishlist</p>
+            <p className="text-xs font-medium uppercase tracking-widest text-stone-400 mb-1">Dreaming</p>
             <p className="font-heading text-2xl sm:text-3xl text-vinyl-black leading-tight">
               In your dreams... <span className="text-stone-400 text-lg font-serif italic">these are the records you'd own if you were a millionaire.</span>
             </p>
@@ -526,11 +537,11 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onMoveToWishlist(record.id)} data-testid={`wishlist-btn-${record.id}`}>
                 <Heart className="w-4 h-4 mr-2" />
-                Move to Wishlist
+                Move to Dreaming
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onMoveToISO(record.id)} data-testid={`iso-btn-${record.id}`}>
                 <ArrowRight className="w-4 h-4 mr-2" />
-                Put back on ISO
+                Put on The Hunt
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => onDelete(record.id)} 

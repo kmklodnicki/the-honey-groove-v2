@@ -102,7 +102,7 @@ const Navbar = () => {
                   className={`gap-2 ${isActive('/collection') ? 'bg-honey/20' : ''}`}
                 >
                   <Library className="w-4 h-4" />
-                  Collection
+                  Reality
                 </Button>
               </Link>
               <Link to="/honeypot" data-testid="nav-honeypot">
@@ -312,7 +312,7 @@ const Navbar = () => {
           </Link>
           <Link to="/collection" className="flex flex-col items-center justify-center flex-1 h-full gap-0.5" data-testid="mobile-collection">
             <Library className="w-5 h-5" style={{ color: isActive('/collection') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
-            <span className="text-[10px] font-medium" style={{ color: isActive('/collection') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }}>Collection</span>
+            <span className="text-[10px] font-medium" style={{ color: isActive('/collection') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }}>Reality</span>
           </Link>
           <Link to="/honeypot" className="flex flex-col items-center justify-center flex-1 h-full gap-0.5" data-testid="mobile-honeypot">
             <ShoppingBag className="w-5 h-5" style={{ color: isActive('/honeypot') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
