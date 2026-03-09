@@ -4,6 +4,7 @@ import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
+import MentionTextarea from './MentionTextarea';
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from '../components/ui/dialog';
@@ -407,9 +408,9 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               </div>
             </div>
 
-            <Textarea
+            <MentionTextarea
               placeholder={moodCfg ? moodCfg.placeholder : 'add a note...'}
-              value={spinCaption} onChange={e => setSpinCaption(e.target.value)}
+              value={spinCaption} onChange={setSpinCaption}
               className="resize-none"
               style={moodCfg ? { background: 'rgba(255,255,255,0.08)', color: '#eee', borderColor: moodCfg.btnColor + '60' } : { borderColor: 'rgba(200,134,26,0.5)' }}
               rows={2} data-testid="spin-caption-input" />
@@ -462,7 +463,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                 <p className="text-xs text-muted-foreground">{haulItems.length} record{haulItems.length !== 1 ? 's' : ''}</p>
               </div>
             )}
-            <Textarea placeholder="Caption (optional)" value={haulCaption} onChange={e => setHaulCaption(e.target.value)} className="border-honey/50 resize-none" rows={2} data-testid="haul-caption-input" />
+            <MentionTextarea placeholder="Caption (optional)" value={haulCaption} onChange={setHaulCaption} className="border-honey/50 resize-none" rows={2} data-testid="haul-caption-input" />
             <Button onClick={submitNewHaul} disabled={submitting || haulItems.length === 0} className="w-full bg-amber-100 text-amber-800 hover:bg-amber-200 rounded-full" data-testid="haul-submit-btn">
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Package className="w-4 h-4 mr-2" />}
               Post Haul ({haulItems.length} record{haulItems.length !== 1 ? 's' : ''})
@@ -518,7 +519,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                   <Input placeholder="Min budget ($)" type="number" value={isoPriceMin} onChange={e => setIsoPriceMin(e.target.value)} className="border-honey/50" />
                   <Input placeholder="Max budget ($)" type="number" value={isoPriceMax} onChange={e => setIsoPriceMax(e.target.value)} className="border-honey/50" />
                 </div>
-                <Textarea placeholder="Caption (optional)" value={isoCaption} onChange={e => setIsoCaption(e.target.value)} className="border-honey/50 resize-none" rows={2} data-testid="iso-caption-input" />
+                <MentionTextarea placeholder="Caption (optional)" value={isoCaption} onChange={setIsoCaption} className="border-honey/50 resize-none" rows={2} data-testid="iso-caption-input" />
                 <Button onClick={submitISO} disabled={submitting || (isoManualMode && (!isoArtist || !isoAlbum)) || (!isoManualMode && !isoSelectedRelease)}
                   className="w-full bg-blue-100 text-blue-800 hover:bg-blue-200 rounded-full" data-testid="iso-submit-btn">
                   {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Search className="w-4 h-4 mr-2" />}
@@ -537,12 +538,13 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
             <DialogTitle className="sr-only">A Note</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <Textarea
+            <MentionTextarea
               placeholder="what's on your mind?"
               value={noteText}
-              onChange={e => setNoteText(e.target.value.slice(0, 280))}
+              onChange={v => setNoteText(v.slice(0, 280))}
               className="border-stone-200 resize-none text-base min-h-[120px] focus-visible:ring-amber-300"
               rows={4}
+              maxLength={280}
               autoFocus
               data-testid="note-text-input"
             />

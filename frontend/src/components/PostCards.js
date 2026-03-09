@@ -4,6 +4,7 @@ import { Disc, Package, Search, Moon, Plus, Music, Feather, ShoppingBag, ArrowRi
 import AlbumArt from './AlbumArt';
 import { resolveImageUrl } from '../utils/imageUrl';
 import PhotoLightbox from './PhotoLightbox';
+import MentionText from './MentionText';
 
 const MOOD_EMOJI_MAP = {
   'Late Night': '\u{1F56F}\uFE0F', 'Good Morning': '\u2600\uFE0F', 'Sunday Morning': '\u2600\uFE0F',
@@ -199,7 +200,7 @@ const NowSpinningCard = ({ post, onAlbumClick }) => {
           <p className="text-sm text-muted-foreground">{record.artist}</p>
           {!record.cover_url && <VariantTag variant={record.color_variant} />}
           {post.track && <p className="text-xs text-honey-amber mt-1">Track: {post.track}</p>}
-          {post.caption && <p className="text-sm mt-2">{post.caption}</p>}
+          {post.caption && <p className="text-sm mt-2"><MentionText text={post.caption} /></p>}
           {record.notes && <p className="text-xs italic text-stone-500 font-serif mt-1.5 line-clamp-2">{record.notes.length > 60 ? record.notes.slice(0, 60) + '...' : record.notes}</p>}
         </div>
       </div>
@@ -210,12 +211,12 @@ const NowSpinningCard = ({ post, onAlbumClick }) => {
 // NEW_HAUL card body
 const NewHaulCard = ({ post, onAlbumClick }) => {
   const haul = post.haul;
-  if (!haul) return <p className="text-sm">{post.caption}</p>;
+  if (!haul) return <p className="text-sm"><MentionText text={post.caption} /></p>;
   const items = haul.items || [];
   return (
     <div data-testid="new-haul-card">
       {haul.store_name && <p className="text-sm text-amber-700 font-medium mb-2">Found at {haul.store_name}</p>}
-      {post.caption && <p className="text-sm mb-3">{post.caption}</p>}
+      {post.caption && <p className="text-sm mb-3"><MentionText text={post.caption} /></p>}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {items.slice(0, 6).map((item, idx) => (
           <AlbumLink key={idx} record={item} onAlbumClick={onAlbumClick}>
@@ -238,7 +239,7 @@ const NewHaulCard = ({ post, onAlbumClick }) => {
 // ISO card body
 const ISOCard = ({ post, onAlbumClick }) => {
   const iso = post.iso;
-  if (!iso) return <p className="text-sm">{post.caption}</p>;
+  if (!iso) return <p className="text-sm"><MentionText text={post.caption} /></p>;
   // Construct a record-like object from ISO data for AlbumLink
   const isoRecord = { title: iso.album, artist: iso.artist, discogs_id: iso.discogs_id, cover_url: iso.cover_url, year: iso.year };
   return (
@@ -265,7 +266,7 @@ const ISOCard = ({ post, onAlbumClick }) => {
             )}
           </div>
         </div>
-        {post.caption && <p className="text-sm mt-3">{post.caption}</p>}
+        {post.caption && <p className="text-sm mt-3"><MentionText text={post.caption} /></p>}
       </div>
     </AlbumLink>
   );
@@ -274,7 +275,7 @@ const ISOCard = ({ post, onAlbumClick }) => {
 // ADDED_TO_COLLECTION card body
 const AddedToCollectionCard = ({ post, onAlbumClick }) => {
   const record = post.record;
-  if (!record) return <p className="text-sm">{post.caption}</p>;
+  if (!record) return <p className="text-sm"><MentionText text={post.caption} /></p>;
   return (
     <AlbumLink record={record} onAlbumClick={onAlbumClick}>
       <div className="flex gap-3 items-center" data-testid="added-card">
@@ -302,7 +303,7 @@ const WeeklyWrapCard = ({ post }) => {
   const content = post.caption || post.content || '';
   return (
     <div className="bg-gradient-to-br from-purple-50 to-honey/10 rounded-lg p-4" data-testid="weekly-wrap-card">
-      <p className="text-sm font-medium text-purple-700">{content}</p>
+      <p className="text-sm font-medium text-purple-700"><MentionText text={content} /></p>
     </div>
   );
 };
@@ -374,7 +375,7 @@ const NoteCard = ({ post, onAlbumClick }) => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   return (
     <div data-testid="note-card">
-      <p className="text-sm whitespace-pre-wrap">{post.caption || post.content}</p>
+      <p className="text-sm whitespace-pre-wrap"><MentionText text={post.caption || post.content} /></p>
       {post.record && (
         <AlbumLink record={post.record} onAlbumClick={onAlbumClick}>
           <div className="flex items-center gap-2.5 bg-stone-50 rounded-lg px-3 py-2 mt-3" data-testid="note-record-tag">
@@ -469,7 +470,7 @@ const PostCardBody = ({ post, onAlbumClick }) => {
               </div>
             </AlbumLink>
           )}
-          <p className="text-sm">{post.caption || post.content}</p>
+          <p className="text-sm"><MentionText text={post.caption || post.content} /></p>
         </div>
       );
   }

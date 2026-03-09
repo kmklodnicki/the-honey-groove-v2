@@ -414,6 +414,7 @@ async def composer_now_spinning(data: NowSpinningCreate, user: Dict = Depends(re
         "created_at": now
     }
     await db.posts.insert_one(post_doc)
+    await parse_and_notify_mentions(post_doc.get("caption", ""), post_doc["id"], user["id"])
     
     return await build_post_response(post_doc, user["id"])
 
@@ -469,6 +470,7 @@ async def composer_new_haul(data: NewHaulCreate, user: Dict = Depends(require_au
         "created_at": now
     }
     await db.posts.insert_one(post_doc)
+    await parse_and_notify_mentions(post_doc.get("caption", ""), post_doc["id"], user["id"])
     
     return await build_post_response(post_doc, user["id"])
 
@@ -510,6 +512,7 @@ async def composer_iso(data: ISOPostCreate, user: Dict = Depends(require_auth)):
         "created_at": now
     }
     await db.posts.insert_one(post_doc)
+    await parse_and_notify_mentions(post_doc.get("caption", ""), post_doc["id"], user["id"])
     
     return await build_post_response(post_doc, user["id"])
 
@@ -529,6 +532,7 @@ async def composer_vinyl_mood(data: VinylMoodCreate, user: Dict = Depends(requir
         "created_at": now
     }
     await db.posts.insert_one(post_doc)
+    await parse_and_notify_mentions(post_doc.get("caption", ""), post_doc["id"], user["id"])
     
     return await build_post_response(post_doc, user["id"])
 
@@ -560,6 +564,7 @@ async def composer_note(data: NoteCreate, user: Dict = Depends(require_auth)):
         "created_at": now,
     }
     await db.posts.insert_one(post_doc)
+    await parse_and_notify_mentions(post_doc.get("caption", "") or post_doc.get("text", ""), post_doc["id"], user["id"])
     return await build_post_response(post_doc, user["id"])
 
 
@@ -798,6 +803,31 @@ async def unlike_comment(comment_id: str, user: Dict = Depends(require_auth)):
 
 
 # ============== @MENTION USER SEARCH ==============
+
+MENTION_RE = re.compile(r'@(\w+)')
+
+async def parse_and_notify_mentions(text: str, post_id: str, author_id: str):
+    """Extract @mentions from text, store on post, and notify mentioned users."""
+    if not text:
+        return []
+    matches = MENTION_RE.findall(text)
+    if not matches:
+        return []
+    unique_usernames = list(dict.fromkeys(u.lower() for u in matches))
+    mentioned_ids = []
+    author = await db.users.find_one({"id": author_id}, {"_id": 0, "username": 1})
+    author_name = author.get("username", "?") if author else "?"
+    for uname in unique_usernames[:10]:  # cap at 10 mentions
+        u = await db.users.find_one({"username": uname}, {"_id": 0, "id": 1})
+        if u and u["id"] != author_id:
+            mentioned_ids.append(u["id"])
+            await create_notification(u["id"], "MENTION", "You were mentioned",
+                                      f"@{author_name} mentioned you in a post",
+                                      {"post_id": post_id, "from_username": author_name})
+    if mentioned_ids:
+        await db.posts.update_one({"id": post_id}, {"$set": {"mentions": unique_usernames}})
+    return unique_usernames
+
 
 @router.get("/mention-search")
 async def search_users_mention(q: str = "", user: Dict = Depends(require_auth)):
