@@ -540,3 +540,92 @@ async def get_active_iso_matches(user: Dict = Depends(require_auth)):
             listing_item["matched_iso"] = {"artist": iso["artist"], "album": iso["album"]}
             matches.append(listing_item)
     return matches
+
+
+
+@router.get("/users/{username}/taste-match")
+async def get_taste_match(username: str, user: Dict = Depends(require_auth)):
+    """Calculate taste match between current user and target user's collections/wishlists/ISOs."""
+    target = await db.users.find_one({"username": username}, {"_id": 0, "id": 1})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    target_id = target["id"]
+    my_id = user["id"]
+
+    if target_id == my_id:
+        return {"score": 100, "label": None, "shared_reality": [], "shared_dreams": [], "swap_potential": []}
+
+    # Fetch collections
+    my_records = await db.records.find({"user_id": my_id}, {"_id": 0}).to_list(5000)
+    their_records = await db.records.find({"user_id": target_id}, {"_id": 0}).to_list(5000)
+
+    # Fetch wishlists/ISOs
+    my_isos = await db.iso_items.find({"user_id": my_id}, {"_id": 0}).to_list(1000)
+    their_isos = await db.iso_items.find({"user_id": target_id}, {"_id": 0}).to_list(1000)
+
+    # Build lookup sets by discogs_id (most reliable) and artist
+    my_discogs = {r["discogs_id"] for r in my_records if r.get("discogs_id")}
+    their_discogs = {r["discogs_id"] for r in their_records if r.get("discogs_id")}
+    my_artists = {r.get("artist", "").lower().strip() for r in my_records if r.get("artist")}
+    their_artists = {r.get("artist", "").lower().strip() for r in their_records if r.get("artist")}
+
+    my_wish_discogs = {i["discogs_id"] for i in my_isos if i.get("discogs_id")}
+    their_wish_discogs = {i["discogs_id"] for i in their_isos if i.get("discogs_id")}
+    my_wish_artists = {i.get("artist", "").lower().strip() for i in my_isos if i.get("artist")}
+    their_wish_artists = {i.get("artist", "").lower().strip() for i in their_isos if i.get("artist")}
+
+    # Shared Reality: records both own (by discogs_id)
+    shared_discogs = my_discogs & their_discogs
+    shared_reality = []
+    seen_shared = set()
+    for r in their_records:
+        did = r.get("discogs_id")
+        if did and did in shared_discogs and did not in seen_shared:
+            seen_shared.add(did)
+            shared_reality.append({"title": r.get("title"), "artist": r.get("artist"), "cover_url": r.get("cover_url"), "discogs_id": did})
+
+    # Shared Dreams: both dreaming of same record
+    shared_wish = my_wish_discogs & their_wish_discogs
+    shared_dreams = []
+    seen_dreams = set()
+    for i in their_isos:
+        did = i.get("discogs_id")
+        if did and did in shared_wish and did not in seen_dreams:
+            seen_dreams.add(did)
+            shared_dreams.append({"title": i.get("album"), "artist": i.get("artist"), "cover_url": i.get("cover_url"), "discogs_id": did})
+
+    # Swap Potential: they own what I'm dreaming of
+    swap_discogs = my_wish_discogs & their_discogs
+    swap_potential = []
+    seen_swap = set()
+    for r in their_records:
+        did = r.get("discogs_id")
+        if did and did in swap_discogs and did not in seen_swap:
+            seen_swap.add(did)
+            swap_potential.append({"title": r.get("title"), "artist": r.get("artist"), "cover_url": r.get("cover_url"), "discogs_id": did})
+
+    # Calculate score
+    shared_artist_count = len(my_artists & their_artists)
+    shared_wish_artist_count = len(my_wish_artists & their_wish_artists)
+    total_artists = len(my_artists | their_artists) or 1
+    total_wish_artists = len(my_wish_artists | their_wish_artists) or 1
+
+    artist_score = shared_artist_count / total_artists
+    record_score = len(shared_discogs) / max(len(my_discogs | their_discogs), 1)
+    wish_score = shared_wish_artist_count / total_wish_artists
+
+    score = round((artist_score * 50 + record_score * 30 + wish_score * 20) * 100)
+    score = min(score, 100)
+
+    label = None
+    if score >= 90:
+        label = "Record Soulmates"
+
+    return {
+        "score": score,
+        "label": label,
+        "shared_reality": shared_reality[:20],
+        "shared_dreams": shared_dreams[:20],
+        "swap_potential": swap_potential[:20],
+    }

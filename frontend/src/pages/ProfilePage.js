@@ -7,7 +7,10 @@ import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Skeleton } from '../components/ui/skeleton';
-import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, CheckCircle2, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin, ShoppingBag, Flag } from 'lucide-react';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
+} from '../components/ui/dialog';
+import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, CheckCircle2, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin, ShoppingBag, Flag, Sparkles, Eye, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { FollowListModal } from '../components/FollowList';
@@ -41,6 +44,11 @@ const ProfilePage = () => {
   const [collectionValue, setCollectionValue] = useState(null);
   const [promptStreak, setPromptStreak] = useState(null);
   const [reportSellerOpen, setReportSellerOpen] = useState(false);
+  const [tasteMatch, setTasteMatch] = useState(null);
+  const [tasteLoading, setTasteLoading] = useState(false);
+  const [commonGroundOpen, setCommonGroundOpen] = useState(false);
+  const [showCommonOnly, setShowCommonOnly] = useState(false);
+  const [myRecordDiscogs, setMyRecordDiscogs] = useState(new Set());
 
   const isOwnProfile = user?.username === username;
 
@@ -64,6 +72,19 @@ const ProfilePage = () => {
       axios.get(`${API}/users/${username}/ratings`).then(r => setRatings(r.data)).catch(() => {});
       axios.get(`${API}/valuation/collection/${username}`).then(r => setCollectionValue(r.data)).catch(() => {});
       axios.get(`${API}/prompts/streak/${username}`).then(r => setPromptStreak(r.data)).catch(() => {});
+
+      // Fetch taste match for other users
+      if (token && !isOwnProfile) {
+        setTasteLoading(true);
+        axios.get(`${API}/users/${username}/taste-match`, { headers: { Authorization: `Bearer ${token}` }})
+          .then(r => setTasteMatch(r.data))
+          .catch(() => {})
+          .finally(() => setTasteLoading(false));
+        // Fetch own collection discogs IDs for "In Your Collection" badges
+        axios.get(`${API}/records`, { headers: { Authorization: `Bearer ${token}` }})
+          .then(r => setMyRecordDiscogs(new Set(r.data.filter(rec => rec.discogs_id).map(rec => rec.discogs_id))))
+          .catch(() => {});
+      }
     } catch {
       toast.error('Failed to load profile');
     } finally {
@@ -74,6 +95,9 @@ const ProfilePage = () => {
   useEffect(() => {
     setLoading(true);
     setActiveTab('collection');
+    setTasteMatch(null);
+    setShowCommonOnly(false);
+    setCommonGroundOpen(false);
     fetchProfile();
   }, [fetchProfile]);
 
@@ -183,6 +207,7 @@ const ProfilePage = () => {
                 </span>
               )}
               {!isOwnProfile && token && (
+                <>
                 <div className="flex gap-2">
                   <Button
                     size="sm"
@@ -213,6 +238,25 @@ const ProfilePage = () => {
                     <Flag className="w-3 h-3" />
                   </Button>
                 </div>
+                {/* Taste Match Pill (BLOCK 40.2) */}
+                {tasteMatch && !tasteLoading && (
+                  <button
+                    onClick={() => setCommonGroundOpen(true)}
+                    className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all hover:scale-105 group relative"
+                    style={{ background: 'linear-gradient(135deg, #FAEDC7, #F5D78E)', color: '#8A6B4A', border: '1px solid rgba(200,134,26,0.2)' }}
+                    data-testid="taste-match-pill"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" style={{ color: '#C8861A' }} />
+                    {tasteMatch.score}% Taste Match
+                    {tasteMatch.label && <span className="ml-1">· {tasteMatch.label}</span>}
+                    {profile.founding_member && (
+                      <span className="absolute -bottom-8 left-0 right-0 text-center text-[10px] font-normal italic text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none" data-testid="founder-taste-tooltip">
+                        Founder Taste: Compare your collection to the creator of the Groove.
+                      </span>
+                    )}
+                  </button>
+                )}
+                </>
               )}
               {isOwnProfile && (
                 <Link to="/settings">
@@ -268,36 +312,44 @@ const ProfilePage = () => {
               </div>
             )}
 
-            {/* Stats - 2x2 grid */}
-            <div className="grid grid-cols-2 sm:flex sm:gap-6 gap-y-3 gap-x-6 mt-4" data-testid="profile-stats">
-              <div className="text-center sm:text-left">
-                <div className="font-heading text-2xl text-vinyl-black">{profile.collection_count}</div>
-                <div className="text-xs text-muted-foreground">Records</div>
+            {/* Stats - Social first, then collection */}
+            <div className="mt-4 space-y-2" data-testid="profile-stats">
+              {/* Row 1: Following / Followers */}
+              <div className="flex gap-6">
+                <button onClick={() => setFollowListType('following')} className="text-center sm:text-left hover:opacity-70 transition" data-testid="following-stat">
+                  <div className="font-heading text-2xl text-vinyl-black">{profile.following_count}</div>
+                  <div className="text-[11px] text-muted-foreground">Following</div>
+                </button>
+                <button onClick={() => setFollowListType('followers')} className="text-center sm:text-left hover:opacity-70 transition" data-testid="followers-stat">
+                  <div className="font-heading text-2xl text-vinyl-black">{profile.followers_count}</div>
+                  <div className="text-[11px] text-muted-foreground">Followers</div>
+                </button>
               </div>
-              <button onClick={() => setFollowListType('following')} className="text-center sm:text-left hover:opacity-70 transition" data-testid="following-stat">
-                <div className="font-heading text-2xl text-vinyl-black">{profile.following_count}</div>
-                <div className="text-xs text-muted-foreground">Following</div>
-              </button>
-              <button onClick={() => setFollowListType('followers')} className="text-center sm:text-left hover:opacity-70 transition" data-testid="followers-stat">
-                <div className="font-heading text-2xl text-vinyl-black">{profile.followers_count}</div>
-                <div className="text-xs text-muted-foreground">Followers</div>
-              </button>
-              {collectionValue && collectionValue.total_value > 0 && (
-                <div className="text-center sm:text-left" data-testid="profile-collection-value">
-                  <div className="font-heading text-2xl text-honey-amber">
-                    ${collectionValue.total_value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Est. Value</div>
+              {/* Row 2: Records / Est. Value / Sales */}
+              <div className="flex gap-6">
+                <div className="text-center sm:text-left">
+                  <div className="font-heading text-2xl text-vinyl-black">{profile.collection_count}</div>
+                  <div className="text-[11px] text-muted-foreground">Records</div>
                 </div>
-              )}
-              {profile.completed_transactions > 0 && (
-                <div className="text-center sm:text-left" data-testid="profile-transactions">
-                  <div className="font-heading text-2xl text-vinyl-black flex items-center justify-center sm:justify-start gap-1">
-                    <ShoppingBag className="w-4 h-4 text-honey-amber" /> {profile.completed_transactions}
+                {collectionValue && collectionValue.total_value > 0 && (
+                  <Link to={isOwnProfile ? '/collection' : '#'} className={isOwnProfile ? 'hover:opacity-70 transition' : ''} data-testid="profile-collection-value">
+                    <div className="text-center sm:text-left">
+                      <div className="font-heading text-2xl text-honey-amber">
+                        ${collectionValue.total_value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground">Est. Value</div>
+                    </div>
+                  </Link>
+                )}
+                {profile.completed_transactions > 0 && (
+                  <div className="text-center sm:text-left" data-testid="profile-transactions">
+                    <div className="font-heading text-2xl text-vinyl-black flex items-center justify-center sm:justify-start gap-1">
+                      <ShoppingBag className="w-4 h-4 text-honey-amber" /> {profile.completed_transactions}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground">Sales</div>
                   </div>
-                  <div className="text-xs text-muted-foreground">Sales</div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
 
             {/* Trade rating */}
@@ -353,13 +405,36 @@ const ProfilePage = () => {
 
         {/* Collection Tab */}
         <TabsContent value="collection">
+          {/* Show Common Records toggle (BLOCK 39.1) */}
+          {!isOwnProfile && tasteMatch && records.length > 0 && (
+            <div className="flex items-center gap-2 mb-4">
+              <Button
+                variant={showCommonOnly ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowCommonOnly(!showCommonOnly)}
+                className={`rounded-full gap-1.5 text-xs ${showCommonOnly ? 'bg-honey text-vinyl-black hover:bg-honey-amber' : 'border-honey/50'}`}
+                data-testid="show-common-btn"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                {showCommonOnly ? 'Showing Common Records' : 'Show Common Records'}
+              </Button>
+              {showCommonOnly && (
+                <span className="text-xs text-muted-foreground">{tasteMatch.shared_reality.length} shared</span>
+              )}
+            </div>
+          )}
           {records.length === 0 ? (
             <EmptyState icon={Disc} title="No records yet" sub={isOwnProfile ? 'Start building your collection!' : `@${username} hasn't added any records yet`} />
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {records.map(record => (
+              {records
+                .filter(record => !showCommonOnly || (tasteMatch?.shared_reality || []).some(s => s.discogs_id && s.discogs_id === record.discogs_id))
+                .map(record => {
+                  const isCommon = !isOwnProfile && tasteMatch && (tasteMatch.shared_reality || []).some(s => s.discogs_id && s.discogs_id === record.discogs_id);
+                  const dimmed = !isOwnProfile && showCommonOnly === false && tasteMatch && !isCommon;
+                  return (
                 <Link to={`/record/${record.id}`} key={record.id}>
-                  <Card className="border-honey/30 overflow-hidden hover:shadow-honey transition-all hover:-translate-y-1">
+                  <Card className={`border-honey/30 overflow-hidden hover:shadow-honey transition-all hover:-translate-y-1 ${isCommon ? 'ring-2 ring-honey/60 shadow-md shadow-honey/20' : ''} ${dimmed ? '' : ''}`}>
                     <div className="aspect-square bg-vinyl-black">
                       {record.cover_url ? (
                         <AlbumArt src={record.cover_url} alt={record.title} className="w-full h-full object-cover" />
@@ -372,10 +447,12 @@ const ProfilePage = () => {
                     <div className="p-3">
                       <h4 className="font-medium text-sm truncate">{record.title}</h4>
                       <p className="text-xs text-muted-foreground truncate">{record.artist}</p>
+                      {isCommon && <span className="inline-block mt-1 text-[10px] font-medium text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full" data-testid="common-badge">In Your Collection</span>}
                     </div>
                   </Card>
                 </Link>
-              ))}
+                  );
+                })}
             </div>
           )}
         </TabsContent>
@@ -395,6 +472,12 @@ const ProfilePage = () => {
                         <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                           iso.status === 'FOUND' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'
                         }`}>{iso.status}</span>
+                        {/* "In Your Collection" badge (BLOCK 39.2) */}
+                        {!isOwnProfile && iso.discogs_id && myRecordDiscogs.has(iso.discogs_id) && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-honey/20 text-amber-700" data-testid={`in-your-collection-${iso.id}`}>
+                            In Your Collection
+                          </span>
+                        )}
                       </div>
                       <p className="text-sm text-muted-foreground">{iso.artist}</p>
                       <div className="flex flex-wrap gap-1.5 mt-2">
@@ -408,6 +491,17 @@ const ProfilePage = () => {
                         <p className="text-xs text-muted-foreground mt-1">
                           Budget: {iso.target_price_min ? `$${iso.target_price_min}` : '?'} – {iso.target_price_max ? `$${iso.target_price_max}` : '?'}
                         </p>
+                      )}
+                      {/* Pre-filled chat CTA (BLOCK 39.2) */}
+                      {!isOwnProfile && iso.discogs_id && myRecordDiscogs.has(iso.discogs_id) && iso.status !== 'FOUND' && (
+                        <Button
+                          size="sm" variant="outline"
+                          className="mt-2 rounded-full text-xs border-honey/50 text-honey-amber hover:bg-honey/10 gap-1"
+                          onClick={() => navigate(`/messages?to=${profile.id}&text=${encodeURIComponent(`Hey! I saw you're dreaming of ${iso.album}. It's one of my favorites in my collection. Are you looking for a specific variant?`)}`)}
+                          data-testid={`chat-about-${iso.id}`}
+                        >
+                          <MessageCircle className="w-3 h-3" /> Start a Chat
+                        </Button>
                       )}
                     </div>
                     {isOwnProfile && iso.status === 'OPEN' && (
@@ -528,6 +622,84 @@ const ProfilePage = () => {
           <MoodBoardTab username={username} />
         </TabsContent>
       </Tabs>
+
+      {/* Common Ground Overlay (BLOCK 40.2) */}
+      <Dialog open={commonGroundOpen} onOpenChange={setCommonGroundOpen}>
+        <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-heading flex items-center gap-2">
+              <Sparkles className="w-5 h-5" style={{ color: '#C8861A' }} /> Common Ground with @{username}
+            </DialogTitle>
+            <DialogDescription>
+              {tasteMatch?.score}% Taste Match {tasteMatch?.label && `· ${tasteMatch.label}`}
+            </DialogDescription>
+          </DialogHeader>
+          {tasteMatch && (
+            <div className="space-y-5 pt-2">
+              {/* Shared Reality */}
+              <div>
+                <h4 className="text-sm font-semibold text-vinyl-black mb-2">Shared Collection</h4>
+                <p className="text-xs text-muted-foreground mb-2">You both own these.</p>
+                {tasteMatch.shared_reality.length === 0 ? (
+                  <p className="text-xs text-stone-400 italic">No shared records yet.</p>
+                ) : (
+                  <div className="flex gap-2 overflow-x-auto pb-2" data-testid="shared-reality-list">
+                    {tasteMatch.shared_reality.map((r, i) => (
+                      <div key={i} className="shrink-0 w-20">
+                        <div className="w-20 h-20 rounded-lg overflow-hidden bg-vinyl-black">
+                          {r.cover_url ? <AlbumArt src={r.cover_url} alt={r.title} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>}
+                        </div>
+                        <p className="text-[10px] font-medium truncate mt-1">{r.title}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">{r.artist}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {/* Shared Dreams */}
+              <div>
+                <h4 className="text-sm font-semibold text-vinyl-black mb-2">Shared Dreams</h4>
+                <p className="text-xs text-muted-foreground mb-2">You're both dreaming of these.</p>
+                {tasteMatch.shared_dreams.length === 0 ? (
+                  <p className="text-xs text-stone-400 italic">No shared dreams yet.</p>
+                ) : (
+                  <div className="flex gap-2 overflow-x-auto pb-2" data-testid="shared-dreams-list">
+                    {tasteMatch.shared_dreams.map((r, i) => (
+                      <div key={i} className="shrink-0 w-20">
+                        <div className="w-20 h-20 rounded-lg overflow-hidden bg-vinyl-black">
+                          {r.cover_url ? <AlbumArt src={r.cover_url} alt={r.title} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>}
+                        </div>
+                        <p className="text-[10px] font-medium truncate mt-1">{r.title}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">{r.artist}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {/* Swap Potential */}
+              <div>
+                <h4 className="text-sm font-semibold text-vinyl-black mb-2">Perfect Swap</h4>
+                <p className="text-xs text-muted-foreground mb-2">They own what you're hunting for.</p>
+                {tasteMatch.swap_potential.length === 0 ? (
+                  <p className="text-xs text-stone-400 italic">No swap matches right now.</p>
+                ) : (
+                  <div className="flex gap-2 overflow-x-auto pb-2" data-testid="swap-potential-list">
+                    {tasteMatch.swap_potential.map((r, i) => (
+                      <div key={i} className="shrink-0 w-20">
+                        <div className="w-20 h-20 rounded-lg overflow-hidden bg-vinyl-black ring-2 ring-honey/40">
+                          {r.cover_url ? <AlbumArt src={r.cover_url} alt={r.title} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>}
+                        </div>
+                        <p className="text-[10px] font-medium truncate mt-1">{r.title}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">{r.artist}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Follow List Modal */}
       <FollowListModal
