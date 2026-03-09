@@ -53,6 +53,7 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - Psychic search, infinite scroll, Discogs fallback
 - EXIF fix, pressing variants, country flags
 - JSON-LD schema, **alt tags: "Artist - Title Vinyl Record"** format
+- **Welcome to the Hive Dashboard** (BLOCK 5.1) - One-time post-Discogs-import page showing collection value with count-up animation, witty message, stats (records/artists/top artist), 3 CTAs. Route: `/onboarding/welcome-to-the-hive`
 
 ## Key Files
 - `/app/backend/routes/reports.py` - Report system endpoints
