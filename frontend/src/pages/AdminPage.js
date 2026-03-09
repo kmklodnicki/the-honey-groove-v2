@@ -6,7 +6,7 @@ import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import {
-  Loader2, Copy, Download, Plus, Users, Key, Check, X,
+  Loader2, Copy, Download, Plus, Users, Key, Check, X, Trash2,
   MessageSquare, Grid3X3, Flag, Settings, ChevronRight, Search,
   ToggleLeft, ToggleRight, Pencil, Calendar, Hash, Shield, DollarSign, ArrowRightLeft, AlertTriangle, Flame, Heart
 } from 'lucide-react';
@@ -1050,6 +1050,7 @@ const UserManagementSection = ({ API, headers }) => {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [confirmModal, setConfirmModal] = useState(null); // { userId, username, action: 'grant'|'revoke' }
+  const [removeModal, setRemoveModal] = useState(null); // { userId, username }
   const [actionLoading, setActionLoading] = useState(false);
 
   const fetchUsers = useCallback(async () => {
@@ -1077,6 +1078,19 @@ const UserManagementSection = ({ API, headers }) => {
       fetchUsers();
     } catch (err) {
       toast.error(err.response?.data?.detail || 'could not update role.');
+    } finally { setActionLoading(false); }
+  };
+
+  const handleRemoveUser = async () => {
+    if (!removeModal) return;
+    setActionLoading(true);
+    try {
+      await axios.delete(`${API}/admin/users/${removeModal.userId}`, { headers });
+      toast.success(`@${removeModal.username} has been removed.`);
+      setRemoveModal(null);
+      setUsers(prev => prev.filter(u => u.id !== removeModal.userId));
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'could not remove user.');
     } finally { setActionLoading(false); }
   };
 
@@ -1154,7 +1168,7 @@ const UserManagementSection = ({ API, headers }) => {
                 }`}>
                   {u.is_admin ? 'Admin' : 'User'}
                 </span>
-                <div>
+                <div className="flex items-center gap-1.5">
                   {u.is_admin ? (
                     <Button size="sm" variant="outline"
                       onClick={() => setConfirmModal({ userId: u.id, username: u.username, action: 'revoke' })}
@@ -1170,6 +1184,14 @@ const UserManagementSection = ({ API, headers }) => {
                       Make Admin
                     </Button>
                   )}
+                  <button
+                    onClick={() => setRemoveModal({ userId: u.id, username: u.username })}
+                    className="p-1.5 rounded-full text-stone-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                    title="Remove user"
+                    data-testid={`remove-user-${u.username}`}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
             ))}
@@ -1209,13 +1231,38 @@ const UserManagementSection = ({ API, headers }) => {
           </div>
         </div>
       )}
+
+      {/* Remove User Confirmation Modal */}
+      {removeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setRemoveModal(null)}>
+          <div className="bg-[#FAF6EE] rounded-2xl p-6 max-w-sm mx-4 shadow-xl" onClick={e => e.stopPropagation()} data-testid="remove-user-modal">
+            <h3 className="font-heading text-xl text-vinyl-black mb-3">Remove User?</h3>
+            <p className="text-sm text-vinyl-black/70 font-serif italic leading-relaxed mb-5">
+              Are you sure you want to remove <strong>@{removeModal.username}</strong>? This will permanently delete their account, posts, comments, collection, and all associated data. This action cannot be undone.
+            </p>
+            <div className="flex flex-col gap-2">
+              <Button
+                variant="outline"
+                onClick={handleRemoveUser}
+                disabled={actionLoading}
+                className="w-full rounded-full border-red-300 text-red-600 hover:bg-red-50"
+                data-testid="confirm-remove-btn">
+                {actionLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Trash2 className="w-4 h-4 mr-2" />}
+                Yes, remove user
+              </Button>
+              <Button
+                onClick={() => setRemoveModal(null)}
+                className="w-full bg-[#E8A820] text-vinyl-black hover:bg-[#C8861A] rounded-full"
+                data-testid="cancel-remove-btn">
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
-
-// ═══════════════════════════════════════════════
-
-// ═══════════════════════════════════════════════
 // FEEDBACK & BUG REPORTS
 // ═══════════════════════════════════════════════
 const FeedbackSection = ({ API, headers }) => {

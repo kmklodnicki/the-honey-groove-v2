@@ -501,3 +501,32 @@ async def set_user_title_label(data: SetTitleLabel, user: Dict = Depends(require
     label = data.title_label.strip() if data.title_label else None
     await db.users.update_one({"id": data.user_id}, {"$set": {"title_label": label}})
     return {"detail": f"Title label for @{target.get('username')} set to '{label or '(none)'}'" }
+
+
+@router.delete("/admin/users/{user_id}")
+async def remove_user(user_id: str, user: Dict = Depends(require_admin)):
+    """Permanently remove a user and all their associated data."""
+    if user_id == user["id"]:
+        raise HTTPException(status_code=400, detail="You cannot remove your own account.")
+
+    target = await db.users.find_one({"id": user_id}, {"_id": 0, "username": 1})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    username = target.get("username", "unknown")
+
+    # Remove all associated data
+    await db.posts.delete_many({"user_id": user_id})
+    await db.comments.delete_many({"user_id": user_id})
+    await db.likes.delete_many({"user_id": user_id})
+    await db.followers.delete_many({"$or": [{"follower_id": user_id}, {"following_id": user_id}]})
+    await db.records.delete_many({"user_id": user_id})
+    await db.spins.delete_many({"user_id": user_id})
+    await db.iso_items.delete_many({"user_id": user_id})
+    await db.notifications.delete_many({"$or": [{"user_id": user_id}, {"from_user_id": user_id}]})
+    await db.reports.delete_many({"reporter_user_id": user_id})
+    await db.users.delete_one({"id": user_id})
+
+    logger.info(f"Admin @{user.get('username')} removed user @{username} ({user_id})")
+    return {"detail": f"User @{username} and all associated data have been removed."}
+
