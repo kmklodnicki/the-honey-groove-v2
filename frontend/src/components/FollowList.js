@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../components/ui/dialog';
-import { UserPlus, UserMinus, Loader2 } from 'lucide-react';
+import { UserPlus, UserMinus, Loader2, Disc } from 'lucide-react';
 import { toast } from 'sonner';
 
 const UserRow = ({ u, currentUserId, token, API, onFollowChange }) => {
@@ -49,9 +49,13 @@ const UserRow = ({ u, currentUserId, token, API, onFollowChange }) => {
         <div className="min-w-0">
           <p className="font-medium text-sm truncate">@{u.username}</p>
           {u.bio && <p className="text-xs text-muted-foreground truncate">{u.bio}</p>}
-          {u.record_count !== undefined && (
+          {!isMe && u.records_in_common > 0 ? (
+            <p className="text-xs text-amber-700 flex items-center gap-1" data-testid={`common-records-${u.username}`}>
+              <Disc className="w-3 h-3" /> {u.records_in_common} record{u.records_in_common !== 1 ? 's' : ''} in common
+            </p>
+          ) : u.record_count !== undefined ? (
             <p className="text-xs text-muted-foreground">{u.record_count} records</p>
-          )}
+          ) : null}
         </div>
       </Link>
       {!isMe && token && (

@@ -135,6 +135,12 @@ async def get_followers(username: str, current_user: Optional[Dict] = Depends(ge
     
     followers = await db.followers.find({"following_id": user["id"]}, {"_id": 0}).to_list(1000)
     
+    # Pre-fetch viewer's discogs IDs for "records in common"
+    viewer_discogs = set()
+    if current_user:
+        viewer_records = await db.records.find({"user_id": current_user["id"], "discogs_id": {"$ne": None}}, {"_id": 0, "discogs_id": 1}).to_list(5000)
+        viewer_discogs = {r["discogs_id"] for r in viewer_records if r.get("discogs_id")}
+    
     result = []
     for f in followers:
         follower_user = await db.users.find_one({"id": f["follower_id"]}, {"_id": 0, "password_hash": 0})
@@ -145,12 +151,20 @@ async def get_followers(username: str, current_user: Optional[Dict] = Depends(ge
                     "follower_id": current_user["id"],
                     "following_id": follower_user["id"]
                 }) is not None
+            
+            records_in_common = 0
+            if viewer_discogs and current_user and current_user["id"] != follower_user["id"]:
+                their_records = await db.records.find({"user_id": follower_user["id"], "discogs_id": {"$ne": None}}, {"_id": 0, "discogs_id": 1}).to_list(5000)
+                their_discogs = {r["discogs_id"] for r in their_records if r.get("discogs_id")}
+                records_in_common = len(viewer_discogs & their_discogs)
+            
             result.append({
                 "id": follower_user["id"],
                 "username": follower_user["username"],
                 "avatar_url": follower_user.get("avatar_url"),
                 "bio": follower_user.get("bio"),
-                "is_following": is_following
+                "is_following": is_following,
+                "records_in_common": records_in_common
             })
     
     return result
@@ -163,6 +177,12 @@ async def get_following(username: str, current_user: Optional[Dict] = Depends(ge
     
     following = await db.followers.find({"follower_id": user["id"]}, {"_id": 0}).to_list(1000)
     
+    # Pre-fetch viewer's discogs IDs for "records in common"
+    viewer_discogs = set()
+    if current_user:
+        viewer_records = await db.records.find({"user_id": current_user["id"], "discogs_id": {"$ne": None}}, {"_id": 0, "discogs_id": 1}).to_list(5000)
+        viewer_discogs = {r["discogs_id"] for r in viewer_records if r.get("discogs_id")}
+    
     result = []
     for f in following:
         following_user = await db.users.find_one({"id": f["following_id"]}, {"_id": 0, "password_hash": 0})
@@ -173,12 +193,20 @@ async def get_following(username: str, current_user: Optional[Dict] = Depends(ge
                     "follower_id": current_user["id"],
                     "following_id": following_user["id"]
                 }) is not None
+            
+            records_in_common = 0
+            if viewer_discogs and current_user and current_user["id"] != following_user["id"]:
+                their_records = await db.records.find({"user_id": following_user["id"], "discogs_id": {"$ne": None}}, {"_id": 0, "discogs_id": 1}).to_list(5000)
+                their_discogs = {r["discogs_id"] for r in their_records if r.get("discogs_id")}
+                records_in_common = len(viewer_discogs & their_discogs)
+            
             result.append({
                 "id": following_user["id"],
                 "username": following_user["username"],
                 "avatar_url": following_user.get("avatar_url"),
                 "bio": following_user.get("bio"),
-                "is_following": is_following
+                "is_following": is_following,
+                "records_in_common": records_in_common
             })
     
     return result
