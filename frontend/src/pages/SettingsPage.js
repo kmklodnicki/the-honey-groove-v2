@@ -9,12 +9,13 @@ import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Switch } from '../components/ui/switch';
-import { ArrowLeft, Save, LogOut, Camera, Loader2, Mail, HelpCircle, ExternalLink, MessageSquare, Flag, Trash2, CreditCard, CheckCircle2, Shield } from 'lucide-react';
+import { ArrowLeft, Save, LogOut, Camera, Loader2, Mail, HelpCircle, ExternalLink, MessageSquare, Flag, Trash2, CreditCard, CheckCircle2, Shield, Bug } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '../components/ui/dialog';
+import ReportModal from '../components/ReportModal';
 
 const SettingsPage = () => {
   usePageTitle('Settings');
@@ -45,6 +46,7 @@ const SettingsPage = () => {
   const [verificationStatus, setVerificationStatus] = useState(null);
   const [verifyUploading, setVerifyUploading] = useState(false);
   const verifyInputRef = useRef(null);
+  const [bugReportOpen, setBugReportOpen] = useState(false);
 
   useEffect(() => {
     axios.get(`${API}/newsletter/status`, { headers: { Authorization: `Bearer ${token}` } })
@@ -659,6 +661,18 @@ const SettingsPage = () => {
 
           <div className="border-t border-honey/20 pt-4">
             <button
+              type="button"
+              onClick={() => setBugReportOpen(true)}
+              className="flex items-center gap-2 text-sm text-[#8A6B4A] hover:text-amber-600 transition-colors"
+              data-testid="report-bug-btn"
+            >
+              <Bug className="w-4 h-4" />
+              Report a Bug
+            </button>
+          </div>
+
+          <div className="border-t border-honey/20 pt-4">
+            <button
               onClick={() => setShowDeleteModal(true)}
               className="flex items-center gap-2 text-sm text-[#8A6B4A] hover:text-[#6B5238] transition-colors"
               data-testid="delete-account-btn"
@@ -700,6 +714,8 @@ const SettingsPage = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <ReportModal open={bugReportOpen} onOpenChange={setBugReportOpen} targetType="bug" targetId={null} />
     </div>
   );
 };

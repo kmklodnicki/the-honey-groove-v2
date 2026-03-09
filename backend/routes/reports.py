@@ -1,82 +1,194 @@
-"""Report system — report posts, listings, and users."""
-from fastapi import APIRouter, HTTPException, Depends
-from typing import Dict
-from datetime import datetime, timezone
+"""
+BLOCK 3.4: Report a Problem System
+Unified reporting for listings, sellers, orders, and platform bugs.
+Rate limited to 5 reports per user per 24 hours.
+"""
+import logging
 import uuid
+from datetime import datetime, timezone, timedelta
+from typing import Dict, Optional
+from fastapi import APIRouter, Depends, HTTPException
+from database import db
+from routes.auth import require_auth
 
-from database import db, require_auth, logger
+logger = logging.getLogger("reports")
+router = APIRouter(prefix="/reports", tags=["reports"])
 
-router = APIRouter()
+REPORT_REASONS = {
+    "listing": [
+        "Incorrect grading",
+        "Misleading photos",
+        "Counterfeit / bootleg",
+        "Wrong pressing",
+        "Item not as described",
+        "Suspected scam",
+        "Other",
+    ],
+    "seller": [
+        "Misleading listings",
+        "Poor grading practices",
+        "Suspected fraud",
+        "Harassment",
+        "Other",
+    ],
+    "order": [
+        "Item never shipped",
+        "Item not as described",
+        "Damage during shipping",
+        "Wrong item received",
+    ],
+    "bug": [
+        "UI / display issue",
+        "Feature not working",
+        "Performance problem",
+        "Other",
+    ],
+}
 
-REPORT_REASONS_POST = ["Spam", "Inappropriate content", "Incorrect information", "Harassment", "Other"]
-REPORT_REASONS_LISTING = ["Spam", "Misleading description", "Prohibited item", "Other"]
-REPORT_REASONS_USER = ["Spam", "Inappropriate behavior", "Harassment", "Other"]
 
-@router.post("/reports")
-async def create_report(data: dict, user: Dict = Depends(require_auth)):
-    report_type = data.get("type")  # post, listing, user
-    target_id = data.get("target_id")
-    reason = data.get("reason")
-    notes = data.get("notes", "")
+async def _check_rate_limit(user_id: str):
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+    count = await db.reports.count_documents({
+        "reporter_user_id": user_id,
+        "created_at": {"$gte": cutoff},
+    })
+    if count >= 5:
+        raise HTTPException(status_code=429, detail="Rate limit reached (5 reports per 24 hours)")
 
-    if not report_type or not target_id or not reason:
-        raise HTTPException(status_code=400, detail="type, target_id, and reason are required")
 
-    valid_reasons = {
-        "post": REPORT_REASONS_POST,
-        "listing": REPORT_REASONS_LISTING,
-        "user": REPORT_REASONS_USER,
-    }
-    if report_type not in valid_reasons:
-        raise HTTPException(status_code=400, detail="Invalid report type")
-    if reason not in valid_reasons[report_type]:
-        raise HTTPException(status_code=400, detail="Invalid reason for this report type")
+@router.get("/reasons/{target_type}")
+async def get_report_reasons(target_type: str):
+    reasons = REPORT_REASONS.get(target_type)
+    if not reasons:
+        raise HTTPException(status_code=400, detail=f"Invalid target type: {target_type}")
+    return {"reasons": reasons}
 
-    # Get content preview
-    preview = ""
-    if report_type == "post":
-        post = await db.posts.find_one({"id": target_id}, {"_id": 0})
-        preview = (post.get("caption") or post.get("content") or "")[:100] if post else ""
-    elif report_type == "listing":
-        listing = await db.listings.find_one({"id": target_id}, {"_id": 0})
-        preview = listing.get("title", "")[:100] if listing else ""
-    elif report_type == "user":
-        target = await db.users.find_one({"id": target_id}, {"_id": 0, "username": 1})
-        preview = f"@{target['username']}" if target else ""
 
-    report_id = str(uuid.uuid4())
-    now = datetime.now(timezone.utc).isoformat()
-    report_doc = {
-        "id": report_id,
-        "type": report_type,
-        "target_id": target_id,
-        "reporter_id": user["id"],
-        "reporter_username": user.get("username"),
+@router.post("/submit")
+async def submit_report(body: Dict, user: Dict = Depends(require_auth)):
+    """Submit a report for a listing, seller, order, or bug."""
+    target_type = body.get("target_type")
+    if target_type not in REPORT_REASONS:
+        raise HTTPException(status_code=400, detail=f"Invalid target_type. Must be one of: {list(REPORT_REASONS.keys())}")
+
+    reason = body.get("reason", "")
+    if not reason:
+        raise HTTPException(status_code=400, detail="Reason is required")
+
+    await _check_rate_limit(user["id"])
+
+    report_id = uuid.uuid4().hex[:16]
+    doc = {
+        "report_id": report_id,
+        "reporter_user_id": user["id"],
+        "reporter_username": user.get("username", ""),
+        "target_type": target_type,
+        "target_id": body.get("target_id"),
         "reason": reason,
-        "notes": notes,
-        "content_preview": preview,
-        "status": "Pending",
-        "created_at": now,
+        "notes": body.get("notes", ""),
+        "page_url": body.get("page_url", ""),
+        "browser_info": body.get("browser_info", ""),
+        "screenshot_url": body.get("screenshot_url"),
+        "status": "OPEN",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "admin_action": None,
+        "resolved_at": None,
+        "resolved_by": None,
     }
-    await db.reports.insert_one(report_doc)
-    logger.info(f"Report created: {report_type} {target_id} by {user['username']}")
-    return {"message": "thanks for letting us know. we'll review it shortly.", "id": report_id}
+    await db.reports.insert_one(doc)
+
+    return {"report_id": report_id, "status": "OPEN", "message": "Report submitted. Our team will review it shortly."}
 
 
-@router.get("/reports/admin")
-async def admin_get_reports(user: Dict = Depends(require_auth)):
+# ============== ADMIN ENDPOINTS ==============
+
+@router.get("/admin/queue")
+async def get_report_queue(
+    target_type: Optional[str] = None,
+    status: Optional[str] = None,
+    user: Dict = Depends(require_auth)
+):
+    """Admin: Get reports queue with optional filters."""
     if not user.get("is_admin"):
-        raise HTTPException(status_code=403, detail="Admin only")
-    reports = await db.reports.find({}, {"_id": 0}).sort("created_at", -1).to_list(200)
-    return reports
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    query = {}
+    if target_type:
+        query["target_type"] = target_type
+    if status:
+        query["status"] = status
+
+    reports_list = await db.reports.find(query, {"_id": 0}).sort("created_at", -1).to_list(200)
+
+    for report in reports_list:
+        reporter_id = report.get("reporter_user_id")
+        if reporter_id:
+            reporter = await db.users.find_one(
+                {"id": reporter_id},
+                {"_id": 0, "username": 1, "avatar_url": 1}
+            )
+            report["reporter"] = reporter or {}
+        else:
+            report["reporter"] = {}
+
+        target_id = report.get("target_id")
+        if report.get("target_type") == "listing" and target_id:
+            listing = await db.listings.find_one({"id": target_id}, {"_id": 0, "artist": 1, "album": 1, "status": 1})
+            report["target_info"] = listing or {}
+        elif report.get("target_type") == "seller" and target_id:
+            seller = await db.users.find_one({"id": target_id}, {"_id": 0, "username": 1})
+            report["target_info"] = seller or {}
+        elif report.get("target_type") == "order" and target_id:
+            order = await db.payment_transactions.find_one({"id": target_id}, {"_id": 0, "artist": 1, "album": 1, "amount": 1})
+            report["target_info"] = order or {}
+        else:
+            report["target_info"] = {}
+
+    return reports_list
 
 
-@router.put("/reports/admin/{report_id}")
-async def admin_update_report(report_id: str, data: dict, user: Dict = Depends(require_auth)):
+@router.post("/admin/{report_id}/action")
+async def admin_report_action(report_id: str, body: Dict, user: Dict = Depends(require_auth)):
+    """Admin: Take action on a report."""
     if not user.get("is_admin"):
-        raise HTTPException(status_code=403, detail="Admin only")
-    status = data.get("status")
-    if status not in ("Pending", "Reviewed", "Actioned", "Dismissed"):
-        raise HTTPException(status_code=400, detail="Invalid status")
-    await db.reports.update_one({"id": report_id}, {"$set": {"status": status}})
-    return await db.reports.find_one({"id": report_id}, {"_id": 0})
+        raise HTTPException(status_code=403, detail="Admin access required")
+
+    action = body.get("action")
+    valid_actions = ["REVIEWING", "DISMISSED", "RESOLVED", "REMOVE_LISTING", "WARN_SELLER", "SUSPEND_SELLER"]
+    if action not in valid_actions:
+        raise HTTPException(status_code=400, detail=f"Invalid action. Must be one of: {valid_actions}")
+
+    report = await db.reports.find_one({"report_id": report_id}, {"_id": 0})
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+
+    now = datetime.now(timezone.utc).isoformat()
+    update = {
+        "admin_action": action,
+        "admin_notes": body.get("notes", ""),
+        "resolved_by": user["id"],
+    }
+
+    if action in ["DISMISSED", "RESOLVED", "REMOVE_LISTING", "WARN_SELLER", "SUSPEND_SELLER"]:
+        update["status"] = "RESOLVED"
+        update["resolved_at"] = now
+    elif action == "REVIEWING":
+        update["status"] = "REVIEWING"
+
+    if action == "REMOVE_LISTING" and report.get("target_id"):
+        await db.listings.update_one({"id": report["target_id"]}, {"$set": {"status": "REMOVED_BY_ADMIN"}})
+
+    if action == "WARN_SELLER" and report.get("target_id"):
+        from routes.notifications import create_notification
+        await create_notification(
+            report["target_id"], "ADMIN_WARNING",
+            "Account Warning",
+            "Your account has received a warning due to a reported issue. Please review our community guidelines.",
+            {"report_id": report_id}
+        )
+
+    if action == "SUSPEND_SELLER" and report.get("target_id"):
+        await db.users.update_one({"id": report["target_id"]}, {"$set": {"is_suspended": True, "suspended_at": now}})
+
+    await db.reports.update_one({"report_id": report_id}, {"$set": update})
+    return {"message": f"Report action '{action}' applied successfully."}

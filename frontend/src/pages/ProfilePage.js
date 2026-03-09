@@ -7,12 +7,13 @@ import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Skeleton } from '../components/ui/skeleton';
-import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, CheckCircle2, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin, ShoppingBag } from 'lucide-react';
+import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, CheckCircle2, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin, ShoppingBag, Flag } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { FollowListModal } from '../components/FollowList';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { MoodBoardTab } from '../components/MoodBoardTab';
+import ReportModal from '../components/ReportModal';
 import { resolveImageUrl } from '../utils/imageUrl';
 import AlbumArt from '../components/AlbumArt';
 import { countryFlag } from '../utils/countryFlag';
@@ -38,6 +39,7 @@ const ProfilePage = () => {
   const [ratings, setRatings] = useState(null);
   const [collectionValue, setCollectionValue] = useState(null);
   const [promptStreak, setPromptStreak] = useState(null);
+  const [reportSellerOpen, setReportSellerOpen] = useState(false);
 
   const isOwnProfile = user?.username === username;
 
@@ -200,6 +202,14 @@ const ProfilePage = () => {
                     data-testid="profile-message-btn"
                   >
                     <MessageCircle className="w-4 h-4 mr-1" /> Message
+                  </Button>
+                  <Button
+                    size="sm" variant="ghost"
+                    onClick={() => setReportSellerOpen(true)}
+                    className="rounded-full text-muted-foreground/60 hover:text-red-500"
+                    data-testid="report-seller-btn"
+                  >
+                    <Flag className="w-3 h-3" />
                   </Button>
                 </div>
               )}
@@ -526,6 +536,7 @@ const ProfilePage = () => {
         listType={followListType || 'followers'}
         onFollowChange={fetchProfile}
       />
+      <ReportModal open={reportSellerOpen} onOpenChange={setReportSellerOpen} targetType="seller" targetId={profile?.id} />
     </div>
   );
 };

@@ -778,6 +778,11 @@ const ISOPage = () => {
                         )}
                       </p>
                     )}
+                    {pulseData?.confident && (
+                      <p className="text-[11px] text-amber-600 pl-1" data-testid="pulse-suggest">
+                        Honey Pulse Suggests: ${pulseData.hot_low?.toFixed(2)} - ${pulseData.hot_high?.toFixed(2)}
+                      </p>
+                    )}
                     {sellerStats && sellerStats.completed_transactions < 3 && parseFloat(listPrice) > 150 && (
                       <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2" data-testid="new-seller-restriction-msg">
                         New sellers can list items up to $150. Complete 3 transactions to unlock higher value listings.

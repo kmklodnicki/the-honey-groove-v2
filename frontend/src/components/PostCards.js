@@ -103,7 +103,7 @@ const NowSpinningCard = ({ post, onAlbumClick }) => {
     <AlbumLink record={record} onAlbumClick={onAlbumClick}>
       <div className="flex gap-4 items-start" data-testid="now-spinning-card">
         {record.cover_url ? (
-          <AlbumArt src={record.cover_url} alt={record.title} className="w-24 h-24 rounded-lg object-cover shadow-md" />
+          <AlbumArt src={record.cover_url} alt={`${record.artist} - ${record.title} Vinyl Record`} className="w-24 h-24 rounded-lg object-cover shadow-md" />
         ) : (
           <div className="w-24 h-24 rounded-lg bg-vinyl-black flex items-center justify-center">
             <Disc className="w-10 h-10 text-honey animate-spin" style={{ animationDuration: '3s' }} />
@@ -134,7 +134,7 @@ const NewHaulCard = ({ post, onAlbumClick }) => {
         {items.slice(0, 6).map((item, idx) => (
           <AlbumLink key={idx} record={item} onAlbumClick={onAlbumClick}>
             <div className="flex items-center gap-2 bg-amber-50 rounded-lg p-2">
-              <AlbumArt src={item.cover_url} alt={`${item.title} by ${item.artist}`} className="w-10 h-10 rounded object-cover" />
+              <AlbumArt src={item.cover_url} alt={`${item.artist} - ${item.title} Vinyl Record`} className="w-10 h-10 rounded object-cover" />
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-medium truncate">{item.title}</p>
                 <p className="text-xs text-muted-foreground truncate">{item.artist}</p>
@@ -160,7 +160,7 @@ const ISOCard = ({ post, onAlbumClick }) => {
       <div className="bg-[#FAF6EE] border border-[#C8861A]/15 rounded-xl p-4 hover:border-[#C8861A]/40 transition-colors" data-testid="iso-card">
         <div className="flex items-start gap-3">
           {iso.cover_url ? (
-            <AlbumArt src={iso.cover_url} alt={`${iso.album} by ${iso.artist}`} className="w-14 h-14 rounded-lg object-cover shadow-sm shrink-0" />
+            <AlbumArt src={iso.cover_url} alt={`${iso.artist} - ${iso.album} Vinyl Record`} className="w-14 h-14 rounded-lg object-cover shadow-sm shrink-0" />
           ) : (
             <div className="w-14 h-14 rounded-lg bg-[#C8861A]/10 flex items-center justify-center shrink-0"><Search className="w-5 h-5 text-[#C8861A]/50" /></div>
           )}
@@ -192,7 +192,7 @@ const AddedToCollectionCard = ({ post, onAlbumClick }) => {
   return (
     <AlbumLink record={record} onAlbumClick={onAlbumClick}>
       <div className="flex gap-3 items-center" data-testid="added-card">
-        <AlbumArt src={record.cover_url} alt={`${record.title} by ${record.artist}`} className="w-16 h-16 rounded-lg object-cover shadow" />
+        <AlbumArt src={record.cover_url} alt={`${record.artist} - ${record.title} Vinyl Record`} className="w-16 h-16 rounded-lg object-cover shadow" />
         <div>
           <p className="font-medium">{record.title}</p>
           <p className="text-sm text-muted-foreground">{record.artist}</p>
@@ -227,7 +227,7 @@ const VinylMoodCard = ({ post, onAlbumClick }) => {
       {record && (
         <AlbumLink record={record} onAlbumClick={onAlbumClick}>
           <div className="flex gap-3 items-center mt-2 rounded-lg p-2" style={{ backgroundColor: color + '15' }}>
-            <AlbumArt src={record.cover_url} alt={`${record.title} by ${record.artist}`} className="w-10 h-10 rounded object-cover" />
+            <AlbumArt src={record.cover_url} alt={`${record.artist} - ${record.title} Vinyl Record`} className="w-10 h-10 rounded object-cover" />
             <div>
               <p className="text-sm font-medium">{record.title}</p>
               <p className="text-xs text-muted-foreground">{record.artist}</p>
@@ -246,7 +246,7 @@ const DailyPromptPostCard = ({ post }) => (
     <p className="text-sm italic text-amber-700 mb-3">{post.prompt_text}</p>
     <div className="flex gap-4 items-start bg-amber-50/60 rounded-lg p-3">
       {post.cover_url ? (
-        <AlbumArt src={post.cover_url} alt={`${post.record_title} by ${post.record_artist}`} className="w-20 h-20 rounded-lg object-cover shadow-md" />
+        <AlbumArt src={post.cover_url} alt={`${post.record_artist} - ${post.record_title} Vinyl Record`} className="w-20 h-20 rounded-lg object-cover shadow-md" />
       ) : (
         <div className="w-20 h-20 rounded-lg bg-amber-100 flex items-center justify-center"><Disc className="w-8 h-8 text-amber-300" /></div>
       )}
@@ -269,7 +269,7 @@ const NoteCard = ({ post, onAlbumClick }) => {
         <AlbumLink record={post.record} onAlbumClick={onAlbumClick}>
           <div className="flex items-center gap-2.5 bg-stone-50 rounded-lg px-3 py-2 mt-3" data-testid="note-record-tag">
             {post.record.cover_url ? (
-              <AlbumArt src={post.record.cover_url} alt={`${post.record.title} by ${post.record.artist}`} className="w-10 h-10 rounded object-cover shadow-sm" />
+              <AlbumArt src={post.record.cover_url} alt={`${post.record.artist} - ${post.record.title} Vinyl Record`} className="w-10 h-10 rounded object-cover shadow-sm" />
             ) : (
               <div className="w-10 h-10 rounded bg-stone-200 flex items-center justify-center"><Disc className="w-5 h-5 text-stone-400" /></div>
             )}
@@ -307,7 +307,7 @@ const ListingPostCard = ({ post }) => {
     <Link to={post.listing_id ? `/honeypot/listing/${post.listing_id}` : '/honeypot'} className="block" data-testid={`listing-post-${post.id}`}>
       <div className="flex gap-3 items-center bg-stone-50 rounded-xl p-3 hover:bg-stone-100 transition-colors">
         {post.cover_url ? (
-          <AlbumArt src={post.cover_url} alt={`${post.record_title || 'Album'} by ${post.record_artist || 'Artist'}`} className="w-16 h-16 rounded-lg object-cover shadow-sm" />
+          <AlbumArt src={post.cover_url} alt={`${post.record_artist || 'Artist'} - ${post.record_title || 'Album'} Vinyl Record`} className="w-16 h-16 rounded-lg object-cover shadow-sm" />
         ) : (
           <div className="w-16 h-16 rounded-lg bg-amber-100 flex items-center justify-center"><Disc className="w-6 h-6 text-amber-400" /></div>
         )}
@@ -343,7 +343,7 @@ const PostCardBody = ({ post, onAlbumClick }) => {
           {post.record && (
             <AlbumLink record={post.record} onAlbumClick={onAlbumClick}>
               <div className="flex gap-3 items-center mb-2">
-                <AlbumArt src={post.record.cover_url} alt={`${post.record.title} by ${post.record.artist}`} className="w-14 h-14 rounded object-cover" />
+                <AlbumArt src={post.record.cover_url} alt={`${post.record.artist} - ${post.record.title} Vinyl Record`} className="w-14 h-14 rounded object-cover" />
                 <div>
                   <p className="font-medium">{post.record.title}</p>
                   <p className="text-sm text-muted-foreground">{post.record.artist}</p>

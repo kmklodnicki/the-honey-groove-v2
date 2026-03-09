@@ -281,7 +281,8 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
       {/* Actions */}
       <div className="px-4 py-3 flex items-center gap-4 border-t border-honey/20">
         <button
-          onClick={() => onLike(post.id, post.is_liked)}
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onLike(post.id, post.is_liked); }}
           className={`flex items-center gap-1.5 text-sm transition-colors ${post.is_liked ? 'text-red-500' : 'text-muted-foreground hover:text-red-500'}`}
           data-testid={`like-btn-${post.id}`}
         >
@@ -507,19 +508,28 @@ const HivePage = () => {
   }, [posts, activeFilter, user?.id]);
 
   const handleLike = async (postId, isLiked) => {
+    // Optimistic update — instant visual feedback
+    setPosts(prev => prev.map(post => {
+      if (post.id === postId) {
+        return { ...post, is_liked: !isLiked, likes_count: isLiked ? Math.max(0, post.likes_count - 1) : post.likes_count + 1 };
+      }
+      return post;
+    }));
     try {
       if (isLiked) {
         await axios.delete(`${API}/posts/${postId}/like`, { headers: { Authorization: `Bearer ${token}` }});
       } else {
         await axios.post(`${API}/posts/${postId}/like`, {}, { headers: { Authorization: `Bearer ${token}` }});
       }
+    } catch {
+      // Revert on failure
       setPosts(prev => prev.map(post => {
         if (post.id === postId) {
-          return { ...post, is_liked: !isLiked, likes_count: isLiked ? post.likes_count - 1 : post.likes_count + 1 };
+          return { ...post, is_liked: isLiked, likes_count: isLiked ? post.likes_count + 1 : Math.max(0, post.likes_count - 1) };
         }
         return post;
       }));
-    } catch { /* ignore */ }
+    }
   };
 
   const updatePostCommentCount = (postId, delta) => {

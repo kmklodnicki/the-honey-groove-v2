@@ -8,7 +8,7 @@ import { Textarea } from '../components/ui/textarea';
 import {
   Loader2, Copy, Download, Plus, Users, Key, Check, X,
   MessageSquare, Grid3X3, Flag, Settings, ChevronRight, Search,
-  ToggleLeft, ToggleRight, Pencil, Calendar, Hash, Shield, DollarSign, ArrowRightLeft
+  ToggleLeft, ToggleRight, Pencil, Calendar, Hash, Shield, DollarSign, ArrowRightLeft, AlertTriangle, Flame
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -33,6 +33,7 @@ const AdminPage = () => {
     { key: 'holds', label: 'Hold Disputes', icon: Shield },
     { key: 'offplatform', label: 'Off-Platform Alerts', icon: Flag },
     { key: 'reports', label: 'Reports', icon: Flag },
+    { key: 'watchtower', label: 'Watchtower', icon: AlertTriangle },
     { key: 'gate', label: 'The Gate', icon: Shield },
     { key: 'settings', label: 'Platform Settings', icon: Settings },
   ];
@@ -66,6 +67,7 @@ const AdminPage = () => {
       {section === 'holds' && <HoldDisputesSection API={API} headers={headers} />}
       {section === 'offplatform' && <OffPlatformAlertsSection API={API} headers={headers} />}
       {section === 'reports' && <ReportsSection API={API} headers={headers} />}
+      {section === 'watchtower' && <WatchtowerSection API={API} headers={headers} />}
       {section === 'gate' && <GateSection API={API} headers={headers} />}
       {section === 'settings' && <SettingsSection API={API} headers={headers} />}
     </div>
@@ -1208,6 +1210,133 @@ const UserManagementSection = ({ API, headers }) => {
     </div>
   );
 };
+
+// ═══════════════════════════════════════════════
+// THE WATCHTOWER — REPORT MODERATION QUEUE
+// ═══════════════════════════════════════════════
+const WatchtowerSection = ({ API, headers }) => {
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [processing, setProcessing] = useState(null);
+
+  const fetchReports = useCallback(async () => {
+    try {
+      const params = new URLSearchParams();
+      if (filter) params.set('target_type', filter);
+      if (statusFilter) params.set('status', statusFilter);
+      const resp = await axios.get(`${API}/reports/admin/queue?${params.toString()}`, { headers });
+      setReports(resp.data);
+    } catch { toast.error('Failed to load reports'); }
+    finally { setLoading(false); }
+  }, [API, headers, filter, statusFilter]);
+
+  useEffect(() => { fetchReports(); }, [fetchReports]);
+
+  const handleAction = async (reportId, action) => {
+    setProcessing(reportId);
+    try {
+      await axios.post(`${API}/reports/admin/${reportId}/action`, { action }, { headers });
+      toast.success(`Action '${action}' applied`);
+      fetchReports();
+    } catch (err) { toast.error(err.response?.data?.detail || 'Failed'); }
+    finally { setProcessing(null); }
+  };
+
+  const typeColors = { listing: 'bg-blue-100 text-blue-700', seller: 'bg-purple-100 text-purple-700', order: 'bg-orange-100 text-orange-700', bug: 'bg-gray-100 text-gray-700' };
+  const statusColors = { OPEN: 'bg-red-100 text-red-700', REVIEWING: 'bg-amber-100 text-amber-700', RESOLVED: 'bg-emerald-100 text-emerald-700', DISMISSED: 'bg-gray-100 text-gray-500' };
+
+  if (loading) return <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-honey" /></div>;
+
+  return (
+    <div className="space-y-4" data-testid="admin-watchtower-section">
+      <div className="flex items-center gap-3 flex-wrap">
+        <h2 className="font-heading text-xl text-vinyl-black">The Watchtower</h2>
+        <span className="text-xs text-muted-foreground bg-amber-50 px-2 py-1 rounded-full border border-amber-200">{reports.length} reports</span>
+      </div>
+
+      <div className="flex gap-2 flex-wrap">
+        {['', 'listing', 'seller', 'order', 'bug'].map(t => (
+          <button key={t || 'all'} onClick={() => setFilter(t)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filter === t ? 'bg-honey text-vinyl-black' : 'bg-honey/10 text-muted-foreground hover:bg-honey/20'}`}
+            data-testid={`watchtower-filter-${t || 'all'}`}>{t || 'All'}
+          </button>
+        ))}
+        <div className="w-px h-6 bg-honey/20 self-center" />
+        {['', 'OPEN', 'REVIEWING', 'RESOLVED'].map(s => (
+          <button key={s || 'any'} onClick={() => setStatusFilter(s)}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${statusFilter === s ? 'bg-honey text-vinyl-black' : 'bg-honey/10 text-muted-foreground hover:bg-honey/20'}`}
+            data-testid={`watchtower-status-${s || 'any'}`}>{s || 'Any Status'}
+          </button>
+        ))}
+      </div>
+
+      {reports.length === 0 ? (
+        <Card className="p-8 text-center border-honey/20">
+          <AlertTriangle className="w-8 h-8 text-honey mx-auto mb-3 opacity-50" />
+          <p className="text-sm text-muted-foreground">No reports matching filters</p>
+        </Card>
+      ) : (
+        <div className="space-y-3">
+          {reports.map(r => (
+            <Card key={r.report_id} className="p-4 border-honey/20" data-testid={`report-card-${r.report_id}`}>
+              <div className="flex items-start gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${typeColors[r.target_type] || ''}`}>{r.target_type}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${statusColors[r.status] || ''}`}>{r.status}</span>
+                    <span className="text-xs text-muted-foreground">by @{r.reporter?.username || r.reporter_username}</span>
+                    <span className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</span>
+                  </div>
+                  <p className="text-sm font-medium">{r.reason}</p>
+                  {r.notes && <p className="text-xs text-muted-foreground mt-0.5">{r.notes}</p>}
+                  {r.target_info && (
+                    <p className="text-xs text-amber-700 mt-0.5">
+                      {r.target_info.artist && `${r.target_info.artist} - ${r.target_info.album}`}
+                      {r.target_info.username && `@${r.target_info.username}`}
+                    </p>
+                  )}
+                </div>
+                <div className="flex gap-1.5 shrink-0 flex-wrap">
+                  {r.status === 'OPEN' && (
+                    <>
+                      <Button size="sm" onClick={() => handleAction(r.report_id, 'REVIEWING')} disabled={processing === r.report_id}
+                        className="rounded-full text-xs bg-amber-500 text-white hover:bg-amber-600 h-7" data-testid={`watchtower-review-${r.report_id}`}>Review</Button>
+                      <Button size="sm" variant="outline" onClick={() => handleAction(r.report_id, 'DISMISSED')} disabled={processing === r.report_id}
+                        className="rounded-full text-xs h-7" data-testid={`watchtower-dismiss-${r.report_id}`}>Dismiss</Button>
+                    </>
+                  )}
+                  {r.status === 'REVIEWING' && (
+                    <>
+                      <Button size="sm" onClick={() => handleAction(r.report_id, 'RESOLVED')} disabled={processing === r.report_id}
+                        className="rounded-full text-xs bg-emerald-600 text-white hover:bg-emerald-700 h-7" data-testid={`watchtower-resolve-${r.report_id}`}>Resolve</Button>
+                      {r.target_type === 'listing' && (
+                        <Button size="sm" variant="outline" onClick={() => handleAction(r.report_id, 'REMOVE_LISTING')} disabled={processing === r.report_id}
+                          className="rounded-full text-xs text-red-600 border-red-300 h-7" data-testid={`watchtower-remove-listing-${r.report_id}`}>Remove Listing</Button>
+                      )}
+                      {r.target_type === 'seller' && (
+                        <>
+                          <Button size="sm" variant="outline" onClick={() => handleAction(r.report_id, 'WARN_SELLER')} disabled={processing === r.report_id}
+                            className="rounded-full text-xs text-amber-600 border-amber-300 h-7" data-testid={`watchtower-warn-${r.report_id}`}>Warn</Button>
+                          <Button size="sm" variant="outline" onClick={() => handleAction(r.report_id, 'SUSPEND_SELLER')} disabled={processing === r.report_id}
+                            className="rounded-full text-xs text-red-600 border-red-300 h-7" data-testid={`watchtower-suspend-${r.report_id}`}>Suspend</Button>
+                        </>
+                      )}
+                      <Button size="sm" variant="outline" onClick={() => handleAction(r.report_id, 'DISMISSED')} disabled={processing === r.report_id}
+                        className="rounded-full text-xs h-7">Dismiss</Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 
 // ═══════════════════════════════════════════════
 // THE GATE — VERIFICATION QUEUE

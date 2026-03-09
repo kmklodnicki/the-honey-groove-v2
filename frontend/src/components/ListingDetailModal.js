@@ -6,12 +6,13 @@ import { Dialog, DialogContent } from './ui/dialog';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { X, Star, Loader2, ChevronLeft, ChevronRight, DollarSign, ArrowRightLeft, Disc, Check, Heart, AlertTriangle, Package } from 'lucide-react';
+import { X, Star, Loader2, ChevronLeft, ChevronRight, DollarSign, ArrowRightLeft, Disc, Check, Heart, AlertTriangle, Package, Flag, Flame } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import { resolveImageUrl } from '../utils/imageUrl';
 import AlbumArt from './AlbumArt';
 import PhotoLightbox from './PhotoLightbox';
+import ReportModal from './ReportModal';
 
 import { GradeLabel } from './GradeLabel';
 
@@ -27,6 +28,8 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
   const [wantlistLoading, setWantlistLoading] = useState(false);
   const [offerAmount, setOfferAmount] = useState('');
   const [showOfferInput, setShowOfferInput] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [pulseData, setPulseData] = useState(null);
   const onCloseRef = React.useRef(onClose);
   onCloseRef.current = onClose;
 
@@ -40,6 +43,12 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
       setListing(r.data);
       setOnWantlist(r.data.on_wantlist || false);
       setPhotoIdx(0);
+      // Fetch Honey Pulse
+      if (r.data.discogs_id) {
+        axios.get(`${API}/valuation/pulse/${r.data.discogs_id}`, { headers })
+          .then(p => setPulseData(p.data))
+          .catch(() => setPulseData(null));
+      } else { setPulseData(null); }
     } catch (err) {
       toast.error('listing not found.');
       onClose();
@@ -241,6 +250,30 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                 )}
               </div>
 
+              {/* Honey Pulse - 90-Day Market Signal */}
+              {pulseData?.confident && listing.price && (
+                <div className="mx-6 mt-2 mb-1 bg-amber-50/70 border border-amber-200/60 rounded-xl p-3" data-testid="honey-pulse-module">
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <Flame className="w-4 h-4 text-orange-500" />
+                    <span className="text-xs font-bold text-amber-800">Honey Pulse</span>
+                    <span className="text-[10px] text-muted-foreground">90-Day Market Signal</span>
+                  </div>
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                    <span>Median: <span className="font-semibold text-amber-800">${pulseData.median?.toFixed(2)}</span></span>
+                    <span>Hot Range: <span className="font-semibold text-amber-800">${pulseData.hot_low?.toFixed(2)} - ${pulseData.hot_high?.toFixed(2)}</span></span>
+                  </div>
+                  {listing.price >= pulseData.hot_low && listing.price <= pulseData.hot_high ? (
+                    <p className="text-xs font-semibold text-orange-600 mt-1.5 flex items-center gap-1" data-testid="pulse-price-signal">
+                      <Flame className="w-3 h-3" /> Priced in the Honey Zone
+                    </p>
+                  ) : listing.price > pulseData.hot_high ? (
+                    <p className="text-xs text-muted-foreground mt-1.5" data-testid="pulse-price-signal">Over Market Range</p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground mt-1.5" data-testid="pulse-price-signal">Below Market Range</p>
+                  )}
+                </div>
+              )}
+
               {/* Description */}
               {listing.description && (
                 <div className="px-6 py-3" data-testid="listing-description">
@@ -391,6 +424,18 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                   </button>
                 </div>
               )}
+              {!isOwn && (
+                <div className="px-6 py-1 text-center">
+                  <button
+                    type="button"
+                    onClick={() => setReportOpen(true)}
+                    className="text-[11px] text-muted-foreground/60 hover:text-red-500 transition-colors inline-flex items-center gap-1"
+                    data-testid="report-listing-btn"
+                  >
+                    <Flag className="w-3 h-3" /> Report Listing
+                  </button>
+                </div>
+              )}
 
               {/* Similar listings */}
               {similar.length > 0 && (
@@ -421,6 +466,14 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
         initialIndex={typeof expandedPhoto === 'number' ? expandedPhoto : 0}
         open={expandedPhoto !== null}
         onClose={() => setExpandedPhoto(null)}
+      />
+
+      {/* Report Modal */}
+      <ReportModal
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        targetType="listing"
+        targetId={listingId}
       />
     </>
   );

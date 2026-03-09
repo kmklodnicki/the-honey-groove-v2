@@ -26,6 +26,7 @@ from routes.reports import router as reports_router
 from routes.admin import router as admin_router
 from routes.search import router as search_router
 from routes.verification import router as verification_router
+from routes.reports import router as reports_router
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -36,7 +37,7 @@ for r in [auth_router, hive_router, collection_router, honeypot_router,
           trades_router, notifications_router, dms_router, explore_router,
           valuation_router, wax_reports_router, daily_prompts_router, newsletter_router,
           mood_boards_router, bingo_router, reports_router, admin_router, search_router,
-          verification_router]:
+          verification_router, reports_router]:
     app.include_router(r, prefix="/api")
 
 app.add_middleware(
@@ -119,6 +120,8 @@ async def startup_event():
     await db.verification_requests.create_index("user_id")
     await db.verification_requests.create_index("status")
     await db.pulse_data.create_index("release_id", unique=True)
+    await db.reports.create_index("reporter_user_id")
+    await db.reports.create_index([("status", 1), ("target_type", 1)])
 
     # Beta & invite code indexes
     await db.beta_signups.create_index("email", unique=True)

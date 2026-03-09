@@ -12,7 +12,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '../components/ui/alert-dialog';
-import { ShoppingBag, Package, Truck, CheckCircle2, Clock, XCircle, Loader2, MessageCircle, Ban, ChevronDown, ChevronUp, Disc } from 'lucide-react';
+import { ShoppingBag, Package, Truck, CheckCircle2, Clock, XCircle, Loader2, MessageCircle, Ban, ChevronDown, ChevronUp, Disc, Flag } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import AlbumArt from '../components/AlbumArt';
@@ -20,6 +20,7 @@ import { resolveImageUrl } from '../utils/imageUrl';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { GradeLabel } from '../components/GradeLabel';
 import { formatGradeDisplay } from '../utils/grading';
+import ReportModal from '../components/ReportModal';
 
 const STATUS_BADGE = {
   PAID: { label: 'Paid', color: 'bg-green-100 text-green-700', icon: CheckCircle2 },
@@ -126,6 +127,7 @@ const ShippingEditor = ({ order, token, API, onUpdate }) => {
 const OrderRow = ({ order, perspective, token, API, onUpdate, onCancel }) => {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
+  const [orderReportOpen, setOrderReportOpen] = useState(false);
   const counterparty = order.counterparty || {};
   const timeAgo = order.created_at ? formatDistanceToNow(new Date(order.created_at), { addSuffix: true }) : '';
   const isCancelled = order.payment_status === 'CANCELLED';
@@ -319,11 +321,19 @@ const OrderRow = ({ order, perspective, token, API, onUpdate, onCancel }) => {
                     <MessageCircle className="w-3 h-3" /> Message {isSale ? 'buyer' : 'seller'}
                   </button>
                 )}
+                <button
+                  onClick={(e) => { e.stopPropagation(); setOrderReportOpen(true); }}
+                  className="text-xs text-muted-foreground/60 hover:text-red-500 transition-colors flex items-center gap-1 ml-auto"
+                  data-testid={`report-order-${order.id}`}
+                >
+                  <Flag className="w-3 h-3" /> Report Issue
+                </button>
               </div>
             )}
           </div>
         )}
       </CardContent>
+      <ReportModal open={orderReportOpen} onOpenChange={setOrderReportOpen} targetType="order" targetId={order.id} />
     </Card>
   );
 };
