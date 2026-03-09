@@ -18,7 +18,7 @@ const HONEY_SHOP_ITEMS = [
     name: 'Inner Sleeves (Antistatic Rice Paper)',
     descriptor: 'Antistatic inner sleeves that keep your vinyl clean and properly tucked away.',
     url: 'https://amzn.to/4bfoyP4',
-    image: 'https://customer-assets.emergentagent.com/job_088a9581-bbfd-42c2-ad31-f5535df4814c/artifacts/0ujfxzay_product2.jpg',
+    image: 'https://customer-assets.emergentagent.com/job_088a9581-bbfd-42c2-ad31-f5535df4814c/artifacts/6g7drwvn_product2.jpg',
   },
   {
     id: 'polish',
