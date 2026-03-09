@@ -987,6 +987,7 @@ async def get_import_progress(user: Dict = Depends(require_auth)):
                 "error_message": None,
                 "discogs_username": last_import.get("discogs_username"),
                 "sample_covers": last_import.get("sample_covers", []),
+                "skipped_records": last_import.get("skipped_records", []),
                 "last_synced": last_import.get("completed_at")
             }
         return {"status": "idle", "total": 0, "imported": 0, "skipped": 0, "errors": 0, "sample_covers": []}
@@ -1078,6 +1079,7 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
         errors = 0
         imported_discogs_ids = []
         sample_covers = []
+        skipped_records = []
         now = datetime.now(timezone.utc).isoformat()
         
         for release in all_releases:
@@ -1085,9 +1087,15 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
                 basic_info = release.get("basic_information", {})
                 discogs_id = basic_info.get("id")
                 
+                # Extract title/artist early for skip logging
+                artists = basic_info.get("artists", [])
+                release_title = basic_info.get("title", "Unknown Title")
+                release_artist = ", ".join(a.get("name", "") for a in artists) if artists else "Unknown Artist"
+                
                 if not discogs_id:
                     skipped += 1
                     import_progress[user_id]["skipped"] = skipped
+                    skipped_records.append({"title": release_title, "artist": release_artist, "discogs_id": None, "reason": "missing_data"})
                     continue
                 
                 # Check if already exists in user's collection
@@ -1100,10 +1108,9 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
                     skipped += 1
                     import_progress[user_id]["skipped"] = skipped
                     import_progress[user_id]["imported"] = imported
+                    skipped_records.append({"title": release_title, "artist": release_artist, "discogs_id": discogs_id, "reason": "duplicate"})
                     continue
                 
-                artists = basic_info.get("artists", [])
-                artist_name = ", ".join(a.get("name", "") for a in artists) if artists else "Unknown Artist"
                 cover_url = basic_info.get("cover_image") or basic_info.get("thumb")
                 formats = basic_info.get("formats", [])
                 format_name = formats[0].get("name", "Vinyl") if formats else "Vinyl"
@@ -1113,8 +1120,8 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
                     "id": record_id,
                     "user_id": user_id,
                     "discogs_id": discogs_id,
-                    "title": basic_info.get("title", "Unknown Title"),
-                    "artist": artist_name,
+                    "title": release_title,
+                    "artist": release_artist,
                     "cover_url": cover_url,
                     "year": basic_info.get("year"),
                     "format": format_name,
@@ -1130,13 +1137,14 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
                 
                 # Collect sample covers for summary (first 12)
                 if cover_url and len(sample_covers) < 12:
-                    sample_covers.append({"title": record_doc["title"], "artist": artist_name, "cover_url": cover_url})
+                    sample_covers.append({"title": record_doc["title"], "artist": release_artist, "cover_url": cover_url})
                 
             except Exception as e:
                 logger.error(f"Failed to import release: {e}")
                 errors += 1
                 skipped += 1
                 import_progress[user_id]["skipped"] = skipped
+                skipped_records.append({"title": release_title, "artist": release_artist, "discogs_id": discogs_id, "reason": "error", "error_detail": str(e)[:120]})
         
         # Mark complete with enriched summary
         import_progress[user_id]["status"] = "completed"
@@ -1144,6 +1152,7 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
         import_progress[user_id]["skipped"] = skipped
         import_progress[user_id]["errors"] = errors
         import_progress[user_id]["sample_covers"] = sample_covers
+        import_progress[user_id]["skipped_records"] = skipped_records
         
         # Store import record
         await db.discogs_imports.update_one(
@@ -1156,6 +1165,7 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
                 "skipped": skipped,
                 "errors": errors,
                 "sample_covers": sample_covers,
+                "skipped_records": skipped_records,
                 "completed_at": datetime.now(timezone.utc).isoformat()
             }},
             upsert=True
@@ -1292,6 +1302,7 @@ async def get_import_summary(user: Dict = Depends(require_auth)):
         "total": last_import.get("total", 0),
         "discogs_username": last_import.get("discogs_username"),
         "sample_covers": last_import.get("sample_covers", []),
+        "skipped_records": last_import.get("skipped_records", []),
         "completed_at": last_import.get("completed_at"),
         "collection_stats": {
             "total_records": total_records,

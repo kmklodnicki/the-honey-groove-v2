@@ -9,7 +9,7 @@ import { Progress } from '../components/ui/progress';
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from '../components/ui/dialog';
-import { ExternalLink, RefreshCw, CheckCircle2, AlertCircle, Loader2, Unplug, Disc, ArrowRight, XCircle } from 'lucide-react';
+import { ExternalLink, RefreshCw, CheckCircle2, AlertCircle, Loader2, Unplug, Disc, ArrowRight, XCircle, ChevronDown, ChevronUp, Ban, Copy, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import AlbumArt from './AlbumArt';
@@ -363,6 +363,11 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
                 </div>
               )}
 
+              {/* Skipped Records Log */}
+              {summary.skipped_records?.length > 0 && (
+                <SkippedRecordsLog records={summary.skipped_records} />
+              )}
+
               <Button onClick={() => setShowSummary(false)}
                 className="w-full bg-honey text-vinyl-black hover:bg-honey-amber rounded-full"
                 data-testid="close-summary-btn">
@@ -423,6 +428,80 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
         </DialogContent>
       </Dialog>
     </>
+  );
+};
+
+const REASON_CONFIG = {
+  duplicate: { label: 'Already in Collection', icon: Copy, color: 'text-stone-500', bg: 'bg-stone-50' },
+  missing_data: { label: 'Missing Data', icon: Ban, color: 'text-amber-600', bg: 'bg-amber-50' },
+  error: { label: 'Import Error', icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-50' },
+};
+
+const SkippedRecordsLog = ({ records }) => {
+  const [expanded, setExpanded] = useState(false);
+
+  // Group by reason
+  const grouped = records.reduce((acc, r) => {
+    const key = r.reason || 'unknown';
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(r);
+    return acc;
+  }, {});
+
+  const reasonOrder = ['duplicate', 'missing_data', 'error'];
+
+  return (
+    <div className="border border-stone-200/60 rounded-xl overflow-hidden" data-testid="skipped-records-section">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center justify-between p-3 text-sm font-medium text-stone-600 hover:bg-stone-50/50 transition-colors"
+        data-testid="skipped-records-toggle"
+      >
+        <span className="flex items-center gap-2">
+          <AlertCircle className="w-3.5 h-3.5 text-stone-400" />
+          {records.length} record{records.length !== 1 ? 's' : ''} skipped
+        </span>
+        {expanded ? <ChevronUp className="w-4 h-4 text-stone-400" /> : <ChevronDown className="w-4 h-4 text-stone-400" />}
+      </button>
+      {expanded && (
+        <div className="border-t border-stone-100 max-h-[280px] overflow-y-auto">
+          {reasonOrder.filter(r => grouped[r]).map(reason => {
+            const cfg = REASON_CONFIG[reason] || REASON_CONFIG.error;
+            const Icon = cfg.icon;
+            const items = grouped[reason];
+            return (
+              <div key={reason} className="px-3 py-2" data-testid={`skipped-group-${reason}`}>
+                <div className={`flex items-center gap-1.5 mb-1.5 px-2 py-1 rounded-md ${cfg.bg} w-fit`}>
+                  <Icon className={`w-3 h-3 ${cfg.color}`} />
+                  <span className={`text-[11px] font-semibold uppercase tracking-wide ${cfg.color}`}>
+                    {cfg.label} ({items.length})
+                  </span>
+                </div>
+                <div className="space-y-0.5">
+                  {items.map((item, i) => (
+                    <div key={i} className="flex items-center gap-2 text-xs text-stone-500 py-0.5 px-1" data-testid={`skipped-item-${reason}-${i}`}>
+                      <span className="truncate font-medium text-stone-700">{item.artist}</span>
+                      <span className="text-stone-300">-</span>
+                      <span className="truncate">{item.title}</span>
+                      {item.discogs_id && (
+                        <a
+                          href={`https://www.discogs.com/release/${item.discogs_id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="shrink-0 text-[10px] text-honey-amber hover:underline ml-auto"
+                        >
+                          #{item.discogs_id}
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 };
 
