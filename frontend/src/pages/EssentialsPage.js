@@ -10,7 +10,7 @@ const HONEY_SHOP_ITEMS = [
     name: 'Outer Sleeves (4mil Clarity)',
     descriptor: 'Crystal-clear outer protection for the records worth showing off.',
     url: 'https://amzn.to/4cxAUEJ',
-    image: 'https://customer-assets.emergentagent.com/job_088a9581-bbfd-42c2-ad31-f5535df4814c/artifacts/ktj27oem_product1.jpg',
+    image: 'https://customer-assets.emergentagent.com/job_088a9581-bbfd-42c2-ad31-f5535df4814c/artifacts/gpztxclu_71NmJBFvbyL._AC_SL1500_.jpg',
   },
   {
     id: 'vault',
