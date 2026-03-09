@@ -67,7 +67,7 @@ class TestSafariBugFix:
         response = requests.options(
             f"{BASE_URL}/api/auth/me",
             headers={
-                "Origin": "https://vinyl-hive.preview.emergentagent.com",
+                "Origin": "https://spin-circle.preview.emergentagent.com",
                 "Access-Control-Request-Method": "GET"
             }
         )
