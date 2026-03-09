@@ -9,7 +9,25 @@ import Navbar from "./components/Navbar";
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
-  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    // iOS Safari fix: clean up stale scroll locks left by Radix UI dialogs/sheets
+    // When navigating while a modal is open, the cleanup can fail, leaving body frozen
+    const body = document.body;
+    if (body.hasAttribute('data-scroll-locked')) {
+      body.removeAttribute('data-scroll-locked');
+    }
+    body.style.overflow = '';
+    body.style.paddingRight = '';
+    body.style.position = '';
+    body.style.top = '';
+    body.style.left = '';
+    body.style.right = '';
+    body.style.width = '';
+    // Also clean html element (some scroll-lock libs target both)
+    const html = document.documentElement;
+    html.style.overflow = '';
+  }, [pathname]);
   return null;
 };
 
@@ -172,6 +190,37 @@ function App() {
     // Also remove the fallback screen since the app mounted successfully
     const fallback = document.getElementById('safari-fallback');
     if (fallback) fallback.remove();
+
+    // iOS Safari scroll-freeze safety net:
+    // Clean up orphaned scroll locks on visibility change (tab switch back)
+    // and periodically check for stale locks with no visible overlay
+    const cleanScrollLock = () => {
+      const body = document.body;
+      if (body.hasAttribute('data-scroll-locked')) {
+        // Only clean if no Radix overlay is actually visible
+        const hasOverlay = document.querySelector('[data-radix-focus-guard], [role="dialog"], [data-state="open"]');
+        if (!hasOverlay) {
+          body.removeAttribute('data-scroll-locked');
+          body.style.overflow = '';
+          body.style.paddingRight = '';
+          body.style.position = '';
+          body.style.top = '';
+          body.style.left = '';
+          body.style.right = '';
+          body.style.width = '';
+          document.documentElement.style.overflow = '';
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') cleanScrollLock();
+    });
+
+    // Check every 3s for stale locks (cheap DOM check, no-op if lock is absent)
+    const interval = setInterval(cleanScrollLock, 3000);
+
+    return () => clearInterval(interval);
   }, []);
 
   return (

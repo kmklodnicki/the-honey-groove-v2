@@ -4,6 +4,12 @@
 @tailwind components;
 @tailwind utilities;
 
+html, body {
+    /* iOS Safari: ensure touch scrolling works reliably */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: none;
+}
+
 body {
     margin: 0;
     font-family: "Inter", sans-serif;
