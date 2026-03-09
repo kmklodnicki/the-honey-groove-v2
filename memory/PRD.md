@@ -89,6 +89,7 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - Grading Guide page (optional)
 
 ### Completed Recently
+- **CRITICAL: Feed Visibility Fix** - DONE (2026-03-09). GET /api/feed now returns ALL posts from all non-hidden users instead of only followed users + self. New users can see all posts in The Hive. Frontend "Following" filter updated to use actual following list fetched from /api/users/{username}/following.
 - **Admin Remove User** - DONE (2026-03-09). Trash icon on each user row in Admin Panel > User Management. Confirmation modal with permanent deletion warning. Backend DELETE /api/admin/users/{user_id} removes user + all associated data (posts, comments, likes, followers, records, spins, ISOs, notifications, reports). Self-deletion prevented.
 - **"New Feature" Tag System** - DONE (2026-03-09). Admin-only tag for Hive posts with muted green pill badge, subtle card emphasis (#f3faf5 background + shadow-md), feed filter support, and admin dropdown toggle via POST /api/posts/{post_id}/new-feature.
 - **Notes/Bio Paste Fix** - DONE (2026-03-09). Fixed silent paste rejection in ComposerBar Notes (280), Settings Bio (160), Settings Setup (100). Changed conditional `if (len <= max)` pattern to `.slice(0, max)` truncation so paste always works.
