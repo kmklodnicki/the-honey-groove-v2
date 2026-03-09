@@ -460,12 +460,21 @@ const ProfilePage = () => {
                       ? { boxShadow: '0 0 15px #FFD700' }
                       : (showCommonOnly ? { opacity: 0.3 } : {})}
                   >
-                    <div className="aspect-square bg-vinyl-black">
+                    <div className="relative aspect-square bg-vinyl-black">
                       {record.cover_url ? (
                         <AlbumArt src={record.cover_url} alt={record.title} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <Disc className="w-12 h-12 text-honey" />
+                        </div>
+                      )}
+                      {record.color_variant && (
+                        <div
+                          className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] tracking-wider font-medium px-2 py-0.5 rounded-full"
+                          style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid #FFD700', color: '#FFD700' }}
+                          data-testid={`variant-pill-${record.id}`}
+                        >
+                          {record.color_variant}
                         </div>
                       )}
                     </div>
@@ -492,12 +501,20 @@ const ProfilePage = () => {
                 const ownerHasIt = !isOwnProfile && item.discogs_id && myRecordDiscogs.has(item.discogs_id);
                 return (
                   <Card key={item.id} className="border-honey/30 overflow-hidden transition-all hover:-translate-y-1" style={ownerHasIt ? { boxShadow: '0 0 15px #FFD700' } : {}} data-testid={`dreaming-item-${item.id}`}>
-                    <div className="aspect-square bg-vinyl-black">
+                    <div className="relative aspect-square bg-vinyl-black">
                       {item.cover_url ? (
                         <AlbumArt src={item.cover_url} alt={item.album} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <Disc className="w-12 h-12 text-honey" />
+                        </div>
+                      )}
+                      {item.color_variant && (
+                        <div
+                          className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] tracking-wider font-medium px-2 py-0.5 rounded-full"
+                          style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid #FFD700', color: '#FFD700' }}
+                        >
+                          {item.color_variant}
                         </div>
                       )}
                     </div>

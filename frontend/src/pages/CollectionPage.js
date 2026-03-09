@@ -737,6 +737,17 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
             </div>
           )}
 
+          {/* Variant pill overlay */}
+          {record.color_variant && (
+            <div
+              className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] tracking-wider font-medium px-2 py-0.5 rounded-full z-[5]"
+              style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid #FFD700', color: '#FFD700' }}
+              data-testid={`variant-${record.id}`}
+            >
+              {record.color_variant}
+            </div>
+          )}
+
           {/* Never spun indicator */}
           {record.spin_count === 0 && (
             <div className="absolute bottom-2 left-2 bg-white/80 text-muted-foreground text-xs px-2 py-1 rounded-full">
@@ -760,11 +771,6 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
               {record.title}
             </h4>
             <p className="text-xs text-muted-foreground truncate">{record.artist}</p>
-            {record.color_variant && (
-              <span className="inline-block mt-0.5 text-[10px] italic text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full truncate max-w-full" data-testid={`variant-${record.id}`}>
-                {record.color_variant}
-              </span>
-            )}
           </Link>
           
           <DropdownMenu>
@@ -828,12 +834,20 @@ const WishlistCard = ({ item, onPromote, onDelete }) => (
           <div className="w-full h-full flex items-center justify-center"><Disc className="w-10 h-10 text-stone-300" /></div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+        {item.color_variant && (
+          <div
+            className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] tracking-wider font-medium px-2 py-0.5 rounded-full z-[5]"
+            style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid #FFD700', color: '#FFD700' }}
+            data-testid={`variant-wishlist-${item.id}`}
+          >
+            {item.color_variant}
+          </div>
+        )}
       </div>
     </Link>
     <div className="p-3">
       <p className="font-medium text-sm truncate">{item.album}</p>
       <p className="text-xs text-muted-foreground truncate">{item.artist}</p>
-      {item.color_variant && <VariantTag variant={item.color_variant} ghost prefix="Dreaming of" />}
       <div className="flex gap-1.5 mt-2">
         <Button size="sm" onClick={() => onPromote(item.id)}
           className="flex-1 h-7 text-[11px] rounded-full bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-amber-950 hover:from-yellow-500 hover:to-amber-500 font-medium"
