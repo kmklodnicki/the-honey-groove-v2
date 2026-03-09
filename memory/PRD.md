@@ -21,60 +21,56 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - Admin-assignable custom title labels (e.g., "Founder", "Moderator")
 - Social media links (Instagram, TikTok) on profiles
 - Email change with verification flow
+- **Golden Hive verification** (BLOCK 3.3) - ID upload, admin review, badge
 
 ### Social Feed ("The Hive")
 - Post types: Now Spinning, New Haul, ISO, A Note, Daily Prompt
 - Full comment system with likes, nested replies, @mentions
-- Admin pin post to top of feed
-- Pagination ("View Older Posts") and "Back to Top" button
-- Mood-themed Now Spinning posts
+- Admin pin post to top, pagination, "Back to Top" button
 
 ### Daily Prompt
-- Daily prompt refresh at midnight ET
-- Streak tracking
-- Live album search in Buzz-In modal (debounced collection search) - **Feb 2026**
-- Export card feature, Post to Hive option
+- Daily prompt refresh at midnight ET, streak tracking
+- Live album search in Buzz-In modal (debounced collection search)
 
 ### Marketplace ("The Honeypot")
 - Stripe Connect LIVE peer-to-peer payments
 - Sale/trade listings auto-post to Hive
 - International shipping toggle, country-based restrictions
 - Clickable "My Sales" rows with order details
+- **Dual Grading System** (BLOCK 2.2+2.3) - NM/VG+/VG/G+/F with Honey labels + tooltips
+- **Payout Estimator** (BLOCK 3.1) - Live fee/shipping/Take Home Honey calculation
+- **Pulse Integration** (BLOCK 3.1) - 90-day Discogs price analysis, hot zone indicator
+- **Shipping Cost** field on listings (default $6.00)
+- **Auto-Payout Cron** (BLOCK 3.2) - 72h standard / 24h for 4.5+ rated sellers
 
-### Dual Grading System (BLOCK 2.2 + 2.3) - **Feb 2026**
-- Standard vinyl grades (NM, VG+, VG, G+, F) stored in DB
-- Honey-branded labels derived from mapping layer:
-  - NM -> Queen's Choice
-  - VG+ -> The Sweet Spot
-  - VG -> Hive Classic
-  - G+/G -> Well-Worn Honeycomb
-  - F/P -> Sticky Situation
-- GradeLabel component with 3 variants: pill, compact, inline
-- Tooltips with full descriptions on hover (Radix UI)
-- Listing form dropdown shows dual format (code + honey label)
-- Legacy long-form values (Near Mint, Very Good Plus, etc.) backward-compatible via normalizeGrade()
-- Applied across: marketplace cards, listing detail modal, trade proposals, orders, global search
+### Verification Queue — The Gate (BLOCK 3.3)
+- User ID photo upload in Settings page
+- Server-side image blurring for admin preview
+- Admin dashboard section "The Gate" with:
+  - Blurred ID preview (unblur on demand)
+  - Approve/Deny actions
+  - Golden Hive badge on approval
+- `golden_hive` boolean on user model, exposed in API
 
 ### Search & Discovery
 - "Psychic" global search with weighted scoring
 - Infinite scroll for records grouped by artist
-- Discogs API fallback for sparse results
+- Discogs API fallback
 
 ### Collection Management
 - Add records via Discogs search
-- EXIF orientation fix for uploaded images
-- Pressing variant display on cards
+- EXIF orientation fix, pressing variant display
 
 ### SEO & Accessibility
-- JSON-LD schema, dynamic alt tags for all album art
-- Country flags on profiles and listings
+- JSON-LD schema, dynamic alt tags, country flags
+
+## Key New Files (This Session)
+- `/app/backend/routes/verification.py` - Verification Queue endpoints
+- `/app/backend/routes/payout_cron.py` - Auto-payout cron logic
+- `/app/frontend/src/components/GoldenHiveBadge.js` - Badge component
 
 ## Mocked Integrations
 - **Email (Resend):** Logic in place but not using a live service
-
-## Key New Files (Grading System)
-- `/app/frontend/src/utils/grading.js` - GRADE_MAP, GRADE_OPTIONS, normalizeGrade, formatGradeDisplay, gradeCode, gradeColorClass
-- `/app/frontend/src/components/GradeLabel.js` - Reusable component with tooltip support
 
 ## Pending / Upcoming Tasks
 
@@ -84,7 +80,7 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 ### P2
 - Hauls Enhancement - dedicated page and more functionality
 - Refactor ISOPage.jsx - address technical debt
-- Optional: "What do these grades mean?" link to Honey Groove Grading Guide page
+- "What do these grades mean?" Grading Guide page (optional)
 
 ### Future / Backlog
 - Safari-compatible loading animation
