@@ -89,6 +89,9 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - Grading Guide page (optional)
 
 ### Completed Recently
+- **BLOCK 27.1: Collection Tabs Refactor** - DONE (2026-03-09). Collection page split into "The Hive" (Owned) + "Wishlist" (Dreaming) tabs. Wishlist tab: Dream Debt banner with total value, "In your dreams..." copy, Certified Delusional badge (>$5K), WishlistCards with ghost variant pills and "Ready to Buy?" promote button.
+- **BLOCK 27.2: Honeypot Wantlist Refactor** - DONE (2026-03-09). ISO tab renamed to "Wantlist" with "The Hunt is On." header tagline. WISHLIST items moved to Collection's Wishlist tab.
+- **BLOCK 27.3: Variant Pill Sync** - DONE (2026-03-09). VariantTag now has 4 modes: solid (owned), glass (album art overlay), ghost (dreaming, outlined), gold (hunting, gradient). Supports prefix prop ("Dreaming of", "Hunting"). New PUT /api/iso/{id}/promote endpoint changes WISHLIST → OPEN status.
 - **"Dream Debt" Wishlist Calculator** - DONE (2026-03-09). GET /api/valuation/wishlist returns total median value of WISHLIST ISO items. Frontend shows editorial "Dream Debt" card at top of Wishlist section ("Total Value of Your Dreams: $X" / "You've got expensive taste, babe. Start playing the lottery."). Gold "Certified Delusional" badge when value > $5,000. WISHLIST filter added to ISO tab.
 - **BLOCK 18.1: ISO "I Found It!" Hunt Flow** - DONE (2026-03-09). POST /api/iso/{id}/convert-to-collection migrates ISO → collection record (notes='Found via ISO'). Frontend: confetti cannon (honey colors), toast celebration, auto-redirect to /collection after 1.5s.
 - **BLOCK 18.2: Collection Quick Actions** - DONE (2026-03-09). RecordCard dropdown now has 4 options: Log Spin, Move to Wishlist (→ ISO WISHLIST status), Put back on ISO (→ ISO OPEN status), Remove Completely. Backend: POST /api/records/{id}/move-to-wishlist and /move-to-iso.
