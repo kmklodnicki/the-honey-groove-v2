@@ -43,6 +43,7 @@ import StripeConnectRefreshPage from "./pages/StripeConnectRefreshPage";
 import OrdersPage from "./pages/OrdersPage";
 import ConfirmEmailChangePage from "./pages/ConfirmEmailChangePage";
 import WelcomeHivePage from "./pages/WelcomeHivePage";
+import EssentialsPage from "./pages/EssentialsPage";
 
 // Auth guards — loading is ALWAYS false. No gates.
 // If user exists (from JWT decode or login), render children.
@@ -128,6 +129,7 @@ function AppContent() {
       <Route path="/messages" element={<ProtectedRoute><AppLayout><MessagesPage /></AppLayout></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><AppLayout><SettingsPage /></AppLayout></ProtectedRoute>} />
       <Route path="/orders" element={<ProtectedRoute><AppLayout><OrdersPage /></AppLayout></ProtectedRoute>} />
+      <Route path="/essentials" element={<ProtectedRoute><AppLayout><EssentialsPage /></AppLayout></ProtectedRoute>} />
       <Route path="/wax-reports" element={<ProtectedRoute><AppLayout><WaxReportPage /></AppLayout></ProtectedRoute>} />
       <Route path="/wax-reports/history" element={<ProtectedRoute><AppLayout><WaxReportHistory /></AppLayout></ProtectedRoute>} />
       <Route path="/wax-reports/:reportId" element={<ProtectedRoute><AppLayout><WaxReportPage /></AppLayout></ProtectedRoute>} />
