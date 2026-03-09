@@ -13,21 +13,45 @@ def _score(text: str, words: list[str]) -> int:
     if not text:
         return 0
     low = text.lower()
+    query_full = " ".join(words)
     score = 0
-    for w in words:
-        if low == w:
-            score += 100
-        elif low.startswith(w):
-            score += 60
-        elif f" {w}" in f" {low}":
-            score += 40
-        elif w in low:
-            score += 20
+    # Exact full match
+    if low == query_full:
+        score += 100
+    # Starts with full query
+    elif low.startswith(query_full):
+        score += 70
+    else:
+        # Per-word scoring
+        for w in words:
+            if low == w:
+                score += 60
+            elif low.startswith(w):
+                score += 40
+            elif f" {w}" in f" {low}":
+                score += 25
+            elif w in low:
+                score += 10
     return score
 
 
 def _record_score(rec: dict, words: list[str]) -> int:
-    return _score(rec.get("artist", ""), words) + _score(rec.get("title", ""), words)
+    """Weighted: Exact Artist (100) > Exact Album (80)."""
+    artist = rec.get("artist", "").lower()
+    title = rec.get("title", "").lower()
+    query_full = " ".join(words)
+    score = 0
+    # Exact artist match bonus
+    if artist == query_full:
+        score += 100
+    else:
+        score += _score(rec.get("artist", ""), words)
+    # Exact album match bonus
+    if title == query_full:
+        score += 80
+    else:
+        score += _score(rec.get("title", ""), words) * 0.8
+    return score
 
 
 def _user_score(u: dict, words: list[str]) -> int:
@@ -39,7 +63,20 @@ def _post_score(p: dict, words: list[str]) -> int:
 
 
 def _listing_score(listing: dict, words: list[str]) -> int:
-    return _score(listing.get("artist", ""), words) + _score(listing.get("album", ""), words)
+    """Weighted: Exact Artist (100) > Exact Album (80) > Boosted Listing (+50)."""
+    artist = listing.get("artist", "").lower()
+    album = listing.get("album", "").lower()
+    query_full = " ".join(words)
+    score = 50  # Base boost for being an active listing
+    if artist == query_full:
+        score += 100
+    else:
+        score += _score(listing.get("artist", ""), words)
+    if album == query_full:
+        score += 80
+    else:
+        score += _score(listing.get("album", ""), words) * 0.8
+    return score
 
 
 def _build_regex_filter(q: str) -> dict:
@@ -108,9 +145,10 @@ async def unified_search(q: str = Query(..., min_length=2), user: Dict = Depends
 
     scored_users = sorted(raw_users, key=lambda u: _user_score(u, words), reverse=True)[:12]
 
-    # Batch fetch record counts & following status
+    # Batch fetch record counts, following status, and seller status (+20 boost)
     user_ids = [u["id"] for u in scored_users]
     rec_counts = {}
+    seller_ids_set = set()
     if user_ids:
         pipeline = [
             {"$match": {"user_id": {"$in": user_ids}}},
@@ -118,6 +156,12 @@ async def unified_search(q: str = Query(..., min_length=2), user: Dict = Depends
         ]
         async for doc in db.records.aggregate(pipeline):
             rec_counts[doc["_id"]] = doc["count"]
+        # Check which users are active sellers (Inner Hive Seller boost)
+        seller_docs = await db.listings.find(
+            {"user_id": {"$in": user_ids}, "status": "ACTIVE"},
+            {"_id": 0, "user_id": 1}
+        ).to_list(100)
+        seller_ids_set = {d["user_id"] for d in seller_docs}
 
     following_set = set()
     if user_ids:
@@ -134,7 +178,15 @@ async def unified_search(q: str = Query(..., min_length=2), user: Dict = Depends
         "bio": u.get("bio"),
         "record_count": rec_counts.get(u["id"], 0),
         "is_following": u["id"] in following_set,
+        "is_seller": u["id"] in seller_ids_set,
     } for u in scored_users]
+    # Re-sort with Inner Hive Seller boost (+20)
+    collectors_out.sort(
+        key=lambda c: _user_score(
+            next((u for u in scored_users if u["id"] == c["id"]), {}), words
+        ) + (20 if c["is_seller"] else 0),
+        reverse=True
+    )
 
     # --- Posts ---
     post_or = field_or("caption") + field_or("content")
@@ -191,11 +243,23 @@ async def unified_search(q: str = Query(..., min_length=2), user: Dict = Depends
         "seller": sellers.get(ls.get("user_id")),
     } for ls in scored_listings]
 
+    # If local records are few, auto-fetch Discogs in parallel as fallback
+    discogs_fallback = []
+    if len(records_out) < 5:
+        import asyncio
+        try:
+            discogs_raw = await asyncio.to_thread(search_discogs, q)
+            seen_d = {r.get("discogs_id") for r in records_out if r.get("discogs_id")}
+            discogs_fallback = [r for r in (discogs_raw or [])[:8] if r.get("discogs_id") not in seen_d]
+        except Exception:
+            pass
+
     return {
         "records": records_out,
         "collectors": collectors_out,
         "posts": posts_out,
         "listings": listings_out,
+        "discogs_fallback": discogs_fallback,
     }
 
 

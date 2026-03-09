@@ -99,6 +99,11 @@ const GlobalSearch = ({ onClose }) => {
         }),
       ]);
       setResults(unifiedResp.data);
+      // Use discogs_fallback from unified search if local results were few
+      const fallback = unifiedResp.data.discogs_fallback || [];
+      if (fallback.length > 0) {
+        setDiscogsResults(fallback);
+      }
       setPaginatedRecords(recordsResp.data.records || []);
       setRecordsHasMore(recordsResp.data.has_more || false);
       setRecordsSkip(20);
