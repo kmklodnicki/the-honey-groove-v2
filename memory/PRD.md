@@ -89,6 +89,7 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - Grading Guide page (optional)
 
 ### Completed Recently
+- **"Dream Debt" Wishlist Calculator** - DONE (2026-03-09). GET /api/valuation/wishlist returns total median value of WISHLIST ISO items. Frontend shows editorial "Dream Debt" card at top of Wishlist section ("Total Value of Your Dreams: $X" / "You've got expensive taste, babe. Start playing the lottery."). Gold "Certified Delusional" badge when value > $5,000. WISHLIST filter added to ISO tab.
 - **BLOCK 18.1: ISO "I Found It!" Hunt Flow** - DONE (2026-03-09). POST /api/iso/{id}/convert-to-collection migrates ISO → collection record (notes='Found via ISO'). Frontend: confetti cannon (honey colors), toast celebration, auto-redirect to /collection after 1.5s.
 - **BLOCK 18.2: Collection Quick Actions** - DONE (2026-03-09). RecordCard dropdown now has 4 options: Log Spin, Move to Wishlist (→ ISO WISHLIST status), Put back on ISO (→ ISO OPEN status), Remove Completely. Backend: POST /api/records/{id}/move-to-wishlist and /move-to-iso.
 - **BLOCK 19.1: Optimistic Likes** - DONE (2026-03-09). Like button now has instant visual feedback with rollback on failure + "Sticky situation—try again" toast. Larger mobile touch target (p-2, 20px hitSlop), active:scale-125 tap animation, touchAction:manipulation.
