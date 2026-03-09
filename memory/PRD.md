@@ -33,6 +33,7 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - **Shipping Cost** field on listings
 - **Auto-Payout Cron** (BLOCK 3.2) - 72h standard / 24h for 4.5+ sellers
 - **HONEY Order ID Branding** (BLOCK 4.3) - Sequential `HONEY-XXXXXXXXX` IDs starting at 134208789, new orders only. Legacy UUID orders retain `#XXXXXXXX` display
+- **Ghost Order Protection** (BLOCK 8.1) - Atomic inventory lock via `find_one_and_update` prevents double-sales. Listing locked as PENDING before Stripe session. Rollback to ACTIVE on failure. 409 → toast + redirect to /nectar
 
 ### Report a Problem System (BLOCK 3.4)
 - Listing reporting (6 reasons + Other)
