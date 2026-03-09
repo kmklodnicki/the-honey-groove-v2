@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -26,6 +26,31 @@ import DiscogsImport from '../components/DiscogsImport';
 import { usePageTitle } from '../hooks/usePageTitle';
 import AlbumArt from '../components/AlbumArt';
 import { VariantTag } from '../components/PostCards';
+
+// Counting animation hook
+const useCountUp = (target, duration = 1400, enabled = true) => {
+  const [value, setValue] = useState(0);
+  const prevTarget = useRef(0);
+  useEffect(() => {
+    if (!enabled || target <= 0) { setValue(target); prevTarget.current = target; return; }
+    const start = prevTarget.current;
+    prevTarget.current = target;
+    const diff = target - start;
+    if (diff === 0) return;
+    const startTime = performance.now();
+    let raf;
+    const step = (now) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+      setValue(start + diff * eased);
+      if (progress < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration, enabled]);
+  return value;
+};
 
 const SORT_OPTIONS = [
   { value: 'artist_asc', label: 'Artist A → Z' },
@@ -58,7 +83,15 @@ const CollectionPage = () => {
   const [collectionTab, setCollectionTab] = useState(searchParamsCollection.get('tab') === 'wishlist' ? 'wishlist' : 'owned');
   const [wishlistItems, setWishlistItems] = useState([]);
   const [wishlistValue, setWishlistValue] = useState(null);
+  const [dreamSubtractMsg, setDreamSubtractMsg] = useState(null);
+  const [countKey, setCountKey] = useState(0); // bump to retrigger count-up animation
   const navigate = useNavigate();
+
+  // Trigger counting animation when switching to dreaming tab
+  const handleTabChange = (val) => {
+    setCollectionTab(val);
+    if (val === 'wishlist') setCountKey(k => k + 1);
+  };
 
   const fetchData = useCallback(async () => {
     try {
@@ -155,10 +188,25 @@ const CollectionPage = () => {
 
   const handleWishlistToISO = async (isoId) => {
     try {
-      const res = await axios.put(`${API}/iso/${isoId}/promote`, {}, { headers: { Authorization: `Bearer ${token}` }});
       const item = wishlistItems.find(i => i.id === isoId);
+      const res = await axios.put(`${API}/iso/${isoId}/promote`, {}, { headers: { Authorization: `Bearer ${token}` }});
       setWishlistItems(prev => prev.filter(i => i.id !== isoId));
       toast.success(res.data.message || `${item?.album || 'Record'} is now on the hunt.`);
+      // Show subtraction message and update dream debt counter
+      if (item?.discogs_id && wishlistValue) {
+        // Fetch this item's value from the valuation cache
+        try {
+          const valRes = await axios.get(`${API}/valuation/record-value/${item.discogs_id}`, { headers: { Authorization: `Bearer ${token}` } });
+          const itemVal = valRes.data?.median_value || 0;
+          if (itemVal > 0) {
+            setDreamSubtractMsg(`Subtracting $${itemVal.toLocaleString('en-US', { minimumFractionDigits: 2 })} from your Dream Debt... and adding it to your Reality.`);
+            setWishlistValue(prev => prev ? { ...prev, total_value: Math.max(0, prev.total_value - itemVal) } : prev);
+            setTimeout(() => setDreamSubtractMsg(null), 4000);
+          }
+        } catch {
+          // Silently proceed; value subtraction is cosmetic
+        }
+      }
     } catch { toast.error('could not promote to wantlist.'); }
   };
 
@@ -271,12 +319,12 @@ const CollectionPage = () => {
         </Link>
       </div>
 
-      <Tabs value={collectionTab} onValueChange={setCollectionTab}>
+      <Tabs value={collectionTab} onValueChange={handleTabChange}>
         {/* Reality Check Toggle */}
         {collectionValue && collectionValue.total_value > 0 && wishlistValue && wishlistValue.total_value > 0 && (
           <div className="flex items-center justify-center gap-4 mb-4 p-3 rounded-xl border border-honey/20 bg-gradient-to-r from-honey/5 to-stone-50" data-testid="reality-check-toggle">
             <button
-              onClick={() => setCollectionTab('owned')}
+              onClick={() => handleTabChange('owned')}
               className={`text-center transition-all px-4 py-1.5 rounded-full text-sm font-medium ${collectionTab === 'owned' ? 'bg-honey/20 text-vinyl-black' : 'text-stone-400 hover:text-stone-600'}`}
               data-testid="toggle-reality">
               <span className="block font-heading text-lg">${collectionValue.total_value.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
@@ -284,7 +332,7 @@ const CollectionPage = () => {
             </button>
             <span className="text-stone-300 text-xs">vs</span>
             <button
-              onClick={() => setCollectionTab('wishlist')}
+              onClick={() => handleTabChange('wishlist')}
               className={`text-center transition-all px-4 py-1.5 rounded-full text-sm font-medium ${collectionTab === 'wishlist' ? 'bg-stone-100 text-vinyl-black' : 'text-stone-400 hover:text-stone-600'}`}
               data-testid="toggle-dreaming">
               <span className="block font-heading text-lg">${wishlistValue.total_value.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
@@ -305,8 +353,10 @@ const CollectionPage = () => {
         {/* ====== REALITY (OWNED) TAB ====== */}
         <TabsContent value="owned">
           {/* Reality Tagline */}
-          <div className="mb-4 px-1">
-            <p className="font-heading text-lg"><span style={{ background: 'linear-gradient(90deg, #C8861A, #E8A820, #D4A017)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>The Gold Standard.</span></p>
+          <div className="mb-4 px-1 transition-opacity duration-500" data-testid="reality-header">
+            <p className="font-heading text-lg">
+              <span style={{ background: 'linear-gradient(90deg, #C8861A, #E8A820, #D4A017)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>The Gold Standard{collectionValue && collectionValue.total_value > 0 ? `: $${collectionValue.total_value.toLocaleString(undefined, { maximumFractionDigits: 0 })} worth of wax on your shelf.` : '.'}</span>
+            </p>
             <p className="text-sm text-stone-500 font-serif italic">Your collection, curated and captured in the light.</p>
           </div>
 
@@ -446,24 +496,13 @@ const CollectionPage = () => {
 
         {/* ====== DREAMING TAB ====== */}
         <TabsContent value="wishlist">
-          {/* Dream Debt Banner */}
-          <div className="relative overflow-hidden rounded-2xl border border-stone-200/60 bg-gradient-to-br from-blue-50/40 via-white to-stone-50/40 p-5 mb-6" data-testid="dream-debt-banner">
-            {wishlistValue && wishlistValue.total_value > 5000 && (
-              <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-amber-950 shadow-sm" data-testid="delusional-badge-collection">
-                Certified Delusional
-              </div>
-            )}
-            <p className="text-xs font-medium uppercase tracking-widest text-stone-400 mb-1">Dreaming</p>
-            <p className="font-heading text-2xl sm:text-3xl text-vinyl-black leading-tight">
-              In the Clouds. <span className="text-stone-400 text-lg font-serif italic">The millionaire's wishlist for your future shelf.</span>
-            </p>
-            {wishlistValue && wishlistValue.total_value > 0 && (
-              <p className="font-heading text-xl text-[#C8861A] mt-2" data-testid="wishlist-total-value">
-                Total Value of Your Dreams: ${wishlistValue.total_value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </p>
-            )}
-            <p className="text-xs text-stone-400 mt-2">{wishlistItems.length} record{wishlistItems.length !== 1 ? 's' : ''} dreaming</p>
-          </div>
+          {/* "If only I had..." Dream Debt Header */}
+          <DreamDebtHeader
+            totalValue={wishlistValue?.total_value || 0}
+            itemCount={wishlistItems.length}
+            countKey={countKey}
+            subtractMsg={dreamSubtractMsg}
+          />
 
           {wishlistItems.length === 0 ? (
             <Card className="p-12 text-center border-stone-200/60">
@@ -480,6 +519,59 @@ const CollectionPage = () => {
           )}
         </TabsContent>
       </Tabs>
+    </div>
+  );
+};
+
+const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg }) => {
+  const animatedValue = useCountUp(totalValue, 1400, true);
+  // Reset count animation on key change (tab switch)
+  const [localKey, setLocalKey] = useState(countKey);
+  const [showAnim, setShowAnim] = useState(false);
+  useEffect(() => {
+    if (countKey !== localKey) {
+      setLocalKey(countKey);
+      setShowAnim(true);
+    }
+  }, [countKey, localKey]);
+  // After animation completes, stop re-triggering
+  useEffect(() => { if (showAnim) { const t = setTimeout(() => setShowAnim(false), 1500); return () => clearTimeout(t); } }, [showAnim]);
+
+  const displayValue = showAnim ? animatedValue : totalValue;
+  const hasDreams = itemCount > 0;
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-stone-200/60 bg-gradient-to-br from-amber-50/40 via-white to-stone-50/40 p-5 mb-6 transition-all duration-500" data-testid="dream-debt-banner">
+      {totalValue > 5000 && (
+        <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-amber-950 shadow-sm" data-testid="delusional-badge-collection">
+          Certified Delusional
+        </div>
+      )}
+      {hasDreams ? (
+        <>
+          <p className="text-xs font-medium uppercase tracking-widest text-stone-400 mb-1">Dream Debt</p>
+          <p className="font-heading text-2xl sm:text-3xl text-vinyl-black leading-tight" data-testid="dream-debt-headline">
+            If only I had{' '}
+            <span className="font-serif italic" style={{ color: '#C8861A' }} data-testid="dream-debt-amount">
+              ${displayValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+            ...
+          </p>
+          <p className="text-xs text-stone-400 mt-2">{itemCount} record{itemCount !== 1 ? 's' : ''} dreaming</p>
+        </>
+      ) : (
+        <>
+          <p className="text-xs font-medium uppercase tracking-widest text-stone-400 mb-1">Dreaming</p>
+          <p className="font-heading text-xl sm:text-2xl text-stone-500 leading-tight font-serif italic" data-testid="dream-debt-empty">
+            Your dreams are currently free. Go find some grails.
+          </p>
+        </>
+      )}
+      {subtractMsg && (
+        <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-3 animate-pulse font-serif italic" data-testid="dream-subtract-msg">
+          {subtractMsg}
+        </p>
+      )}
     </div>
   );
 };

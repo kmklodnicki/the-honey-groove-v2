@@ -174,6 +174,15 @@ async def get_hidden_gems(user: Dict = Depends(require_auth), limit: int = 3):
     return enriched[:limit]
 
 
+@router.get("/valuation/record-value/{discogs_id}")
+async def get_single_record_value(discogs_id: int, user: Dict = Depends(require_auth)):
+    """Return the cached median value for a single Discogs release."""
+    val = await db.collection_values.find_one({"release_id": discogs_id}, {"_id": 0})
+    if not val:
+        return {"median_value": 0}
+    return {"median_value": val.get("median_value", 0)}
+
+
 @router.get("/valuation/record-values")
 async def get_record_values(user: Dict = Depends(require_auth)):
     """Return a map of record_id -> median_value for the user's collection."""
