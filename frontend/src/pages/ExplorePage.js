@@ -16,6 +16,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import CollectorBingo from '../components/CollectorBingo';
 import AlbumArt from '../components/AlbumArt';
 import { resolveImageUrl } from '../utils/imageUrl';
+import { ListingTypeBadge } from '../components/PostCards';
 
 const ExplorePage = () => {
   usePageTitle('Nectar');
@@ -355,9 +356,7 @@ const ExplorePage = () => {
                       <p className="text-xs font-medium truncate">{l.album}</p>
                       <p className="text-[10px] text-muted-foreground truncate">{l.artist}</p>
                       <div className="flex items-center justify-between mt-1">
-                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${l.listing_type === 'TRADE' ? 'bg-purple-100 text-purple-700' : 'bg-green-100 text-green-700'}`}>
-                          {l.listing_type === 'TRADE' ? 'Trade' : `$${l.price}`}
-                        </span>
+                        <ListingTypeBadge type={l.listing_type} price={l.price} size="xs" />
                         {l.user && <span className="text-[10px] text-muted-foreground">@{l.user.username}</span>}
                       </div>
                     </Card>

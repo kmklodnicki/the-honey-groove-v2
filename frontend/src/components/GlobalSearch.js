@@ -11,6 +11,7 @@ import RecordSearchResult from './RecordSearchResult';
 import { formatGradeDisplay } from '../utils/grading';
 import safeStorage from '../utils/safeStorage';
 import { resolveImageUrl } from '../utils/imageUrl';
+import { PostTypeBadge } from './PostCards';
 
 const POST_ICONS = {
   NOW_SPINNING: Disc, ISO: Search, NEW_HAUL: Plus, NOTE: Feather,
@@ -419,7 +420,7 @@ const GlobalSearch = ({ onClose }) => {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
                             {p.post_type !== 'NOTE' && p.post_type && (
-                              <span className="text-[10px] font-medium text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">{p.post_type?.replace('_', ' ')}</span>
+                              <PostTypeBadge type={p.post_type} />
                             )}
                             <span className="text-xs text-muted-foreground">@{p.user?.username}</span>
                           </div>

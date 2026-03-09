@@ -18,6 +18,7 @@ import { resolveImageUrl } from '../utils/imageUrl';
 import AlbumArt from '../components/AlbumArt';
 import { countryFlag } from '../utils/countryFlag';
 import { TitleBadge } from '../components/TitleBadge';
+import { TagPill } from '../components/PostCards';
 
 const ProfilePage = () => {
   usePageTitle('Profile');
@@ -398,7 +399,7 @@ const ProfilePage = () => {
                       <p className="text-sm text-muted-foreground">{iso.artist}</p>
                       <div className="flex flex-wrap gap-1.5 mt-2">
                         {(iso.tags || []).map(tag => (
-                          <span key={tag} className="px-2 py-0.5 rounded-full text-xs bg-honey/20 text-honey-amber font-medium">{tag}</span>
+                          <TagPill key={tag} tag={tag} />
                         ))}
                         {iso.pressing_notes && <span className="text-xs text-muted-foreground">Press: {iso.pressing_notes}</span>}
                         {iso.condition_pref && <span className="text-xs text-muted-foreground">Cond: {iso.condition_pref}</span>}

@@ -357,4 +357,38 @@ const PostCardBody = ({ post, onAlbumClick }) => {
   }
 };
 
-export { PostTypeBadge, PostCardBody };
+// Listing type badge (For Sale / For Trade) — shared across Explore, Honeypot, Search
+const ListingTypeBadge = ({ type, price, size = 'sm' }) => {
+  const isTrade = type === 'TRADE';
+  const cls = size === 'xs'
+    ? 'px-1.5 py-0.5 rounded text-[10px] font-bold'
+    : 'px-2 py-0.5 rounded-full text-xs font-medium border';
+  return (
+    <span
+      className={`${cls} ${isTrade ? 'bg-teal-100/60 text-teal-700 border-teal-200/50' : 'bg-green-100/60 text-green-700 border-green-200/50'}`}
+      data-testid="listing-type-badge"
+    >
+      {isTrade ? 'Trade' : `$${price}`}
+    </span>
+  );
+};
+
+// Tag pill — shared across ISO cards, Hive feed, Profile, listing detail
+const TAG_COLOR_MAP = {
+  'OG Press':        'bg-amber-100/70 text-amber-800',
+  'Factory Sealed':  'bg-emerald-100/70 text-emerald-800',
+  'Any':             'bg-stone-100 text-stone-600',
+  'Promo':           'bg-violet-100/70 text-violet-800',
+};
+const TAG_DEFAULT = 'bg-honey/15 text-honey-amber';
+
+const TagPill = ({ tag }) => (
+  <span
+    className={`px-2 py-0.5 rounded-full text-xs font-medium ${TAG_COLOR_MAP[tag] || TAG_DEFAULT}`}
+    data-testid={`tag-pill-${tag}`}
+  >
+    {tag}
+  </span>
+);
+
+export { PostTypeBadge, PostCardBody, ListingTypeBadge, TagPill };

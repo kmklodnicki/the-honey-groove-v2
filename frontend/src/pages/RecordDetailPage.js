@@ -12,6 +12,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import { toast } from 'sonner';
 import AlbumArt from '../components/AlbumArt';
 import { resolveImageUrl } from '../utils/imageUrl';
+import { PostTypeBadge } from '../components/PostCards';
 
 const RecordDetailPage = () => {
   usePageTitle('Record Details');
@@ -279,21 +280,6 @@ const StatCard = ({ icon: Icon, label, value, noSpinsLabel }) => (
     <p className="text-xs text-muted-foreground">{label}</p>
   </Card>
 );
-
-const PostTypeBadge = ({ type }) => {
-  const labels = {
-    'NOW_SPINNING': 'Now Spinning',
-    'ADDED_TO_COLLECTION': 'Added',
-    'NEW_HAUL': 'Haul',
-    'ISO': 'ISO',
-    'NOTE': 'Note',
-  };
-  return (
-    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-honey/15 text-honey-amber">
-      {labels[type] || type}
-    </span>
-  );
-};
 
 const TimeAgo = ({ date }) => {
   const diff = Date.now() - new Date(date).getTime();

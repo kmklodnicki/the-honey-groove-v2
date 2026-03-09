@@ -34,6 +34,7 @@ import StripeGateModal from '../components/StripeGateModal';
 import CountryGateModal from '../components/CountryGateModal';
 import { countryFlag } from '../utils/countryFlag';
 import { TitleBadge } from '../components/TitleBadge';
+import { TagPill, ListingTypeBadge } from '../components/PostCards';
 
 const ISO_TAGS = ['OG Press', 'Factory Sealed', 'Any', 'Promo'];
 const FILTER_OPTIONS = ['All', 'OPEN', 'FOUND'];
@@ -531,7 +532,7 @@ const ISOPage = () => {
                       <IsoMatchCover coverUrl={m.cover_url} />
                       <div className="min-w-0 flex-1"><p className="text-xs font-medium truncate">{m.album}</p><p className="text-xs text-muted-foreground truncate">{m.artist}</p></div>
                     </div>
-                    <span className="text-xs text-[#C8861A] font-medium bg-amber-50 px-2 py-0.5 rounded-full border border-[#C8861A]/20">{m.listing_type === 'TRADE' ? 'Trade' : `$${m.price}`}</span>
+                    <ListingTypeBadge type={m.listing_type} price={m.price} size="sm" />
                     <Link to={`/profile/${m.user?.username}`} onClick={e => e.stopPropagation()}
                       className="text-xs text-muted-foreground hover:text-[#C8861A] hover:underline ml-1" data-testid={`iso-match-seller-${m.id}`}>by @{m.user?.username}</Link>
                   </div>
@@ -966,7 +967,7 @@ const ISOCard = ({ iso, isOwn, onMarkFound, onDelete, onSetPriceAlert }) => {
           </div>
           <p className="text-sm text-muted-foreground">{iso.artist}{iso.year ? ` (${iso.year})` : ''}</p>
           <div className="flex flex-wrap gap-1.5 mt-1">
-            {(iso.tags || []).map(tag => <span key={tag} className="px-2 py-0.5 rounded-full text-xs bg-honey/20 text-honey-amber font-medium">{tag}</span>)}
+            {(iso.tags || []).map(tag => <TagPill key={tag} tag={tag} />)}
           </div>
           <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
             {iso.pressing_notes && <span>Press: {iso.pressing_notes}</span>}
