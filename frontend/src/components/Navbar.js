@@ -226,6 +226,14 @@ const Navbar = () => {
             <img src="/logo-wordmark.png" alt="the Honey Groove" style={{minWidth: '120px', width: '120px'}} className="object-contain" />
           </Link>
           <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="relative h-8 w-8 flex items-center justify-center rounded-full"
+              data-testid="mobile-search-top"
+              title="Search"
+            >
+              <Search className="h-5 w-5 text-vinyl-black" />
+            </button>
             <DMBadge />
             <NotificationBell />
             <Button
@@ -294,20 +302,25 @@ const Navbar = () => {
         data-testid="mobile-bottom-nav"
       >
         <div className="flex justify-around items-center h-16">
-          <Link to="/hive" className="flex items-center justify-center flex-1 h-full" data-testid="mobile-hive">
-            <Home className="w-6 h-6" style={{ color: isActive('/hive') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
+          <Link to="/hive" className="flex flex-col items-center justify-center flex-1 h-full gap-0.5" data-testid="mobile-hive">
+            <Home className="w-5 h-5" style={{ color: isActive('/hive') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
+            <span className="text-[10px] font-medium" style={{ color: isActive('/hive') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }}>Hive</span>
           </Link>
-          <Link to="/nectar" className="flex items-center justify-center flex-1 h-full" data-testid="mobile-explore">
-            <Globe className="w-6 h-6" style={{ color: isActive('/nectar') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
+          <Link to="/nectar" className="flex flex-col items-center justify-center flex-1 h-full gap-0.5" data-testid="mobile-explore">
+            <Globe className="w-5 h-5" style={{ color: isActive('/nectar') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
+            <span className="text-[10px] font-medium" style={{ color: isActive('/nectar') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }}>Nectar</span>
           </Link>
-          <button onClick={() => setSearchOpen(true)} className="flex items-center justify-center flex-1 h-full" data-testid="mobile-search">
-            <Search className="w-6 h-6" style={{ color: searchOpen ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
-          </button>
-          <Link to="/collection" className="flex items-center justify-center flex-1 h-full" data-testid="mobile-collection">
-            <Library className="w-6 h-6" style={{ color: isActive('/collection') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
+          <Link to="/collection" className="flex flex-col items-center justify-center flex-1 h-full gap-0.5" data-testid="mobile-collection">
+            <Library className="w-5 h-5" style={{ color: isActive('/collection') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
+            <span className="text-[10px] font-medium" style={{ color: isActive('/collection') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }}>Collection</span>
           </Link>
-          <Link to="/honeypot" className="flex items-center justify-center flex-1 h-full" data-testid="mobile-honeypot">
-            <ShoppingBag className="w-6 h-6" style={{ color: isActive('/honeypot') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
+          <Link to="/honeypot" className="flex flex-col items-center justify-center flex-1 h-full gap-0.5" data-testid="mobile-honeypot">
+            <ShoppingBag className="w-5 h-5" style={{ color: isActive('/honeypot') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
+            <span className="text-[10px] font-medium" style={{ color: isActive('/honeypot') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }}>Honeypot</span>
+          </Link>
+          <Link to="/essentials" className="flex flex-col items-center justify-center flex-1 h-full gap-0.5" data-testid="mobile-essentials">
+            <Sparkles className="w-5 h-5" style={{ color: isActive('/essentials') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
+            <span className="text-[10px] font-medium" style={{ color: isActive('/essentials') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }}>Essentials</span>
           </Link>
         </div>
       </div>
