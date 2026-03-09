@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Dialog, DialogContent } from './ui/dialog';
@@ -19,6 +20,7 @@ const MOOD_OPTIONS = [
 
 const OnboardingModal = ({ open, onComplete }) => {
   const { token, API, updateUser } = useAuth();
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [submitting, setSubmitting] = useState(false);
 
@@ -131,6 +133,7 @@ const OnboardingModal = ({ open, onComplete }) => {
           if (resp.data.status === 'completed' && resp.data.imported > 0) {
             setImportDone(true);
             toast.success('collection imported successfully.');
+            navigate('/onboarding/welcome-to-the-hive');
           } else if (resp.data.status === 'error') {
             toast.error(resp.data.error_message || 'Import failed');
           }

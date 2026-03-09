@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
@@ -15,6 +16,7 @@ import AlbumArt from './AlbumArt';
 
 const DiscogsImport = ({ onImportComplete, compact = false }) => {
   const { token, API } = useAuth();
+  const navigate = useNavigate();
   const [status, setStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
@@ -63,8 +65,11 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
           if (resp.data.status === 'completed') {
             toast.success('collection imported successfully.');
             trackEvent('discogs_import_completed', { records_imported: resp.data.imported });
-            // Fetch summary and show modal
-            fetchSummary();
+            if (resp.data.imported > 0) {
+              navigate('/onboarding/welcome-to-the-hive');
+            } else {
+              fetchSummary();
+            }
             onImportComplete?.();
           } else {
             toast.error(resp.data.error_message || 'Import failed. Please try again.');

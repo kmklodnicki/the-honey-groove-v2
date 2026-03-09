@@ -1047,6 +1047,37 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
             upsert=True
         )
         
+        # Mark user as having completed a Discogs import (for welcome dashboard)
+        if imported > 0:
+            # Calculate and cache welcome stats
+            records = await db.records.find(
+                {"user_id": user_id},
+                {"_id": 0, "discogs_id": 1, "artist": 1}
+            ).to_list(10000)
+            discogs_ids_all = list({r["discogs_id"] for r in records if r.get("discogs_id")})
+            total_value = 0.0
+            if discogs_ids_all:
+                values = await db.collection_values.find(
+                    {"release_id": {"$in": discogs_ids_all}}, {"_id": 0}
+                ).to_list(10000)
+                for v in values:
+                    total_value += v.get("median_value") or v.get("low_value") or 0
+            artist_counts = {}
+            for r in records:
+                a = r.get("artist", "Unknown Artist")
+                if a and a != "Unknown Artist":
+                    artist_counts[a] = artist_counts.get(a, 0) + 1
+            top_artist = max(artist_counts, key=artist_counts.get) if artist_counts else None
+            
+            await db.users.update_one({"id": user_id}, {"$set": {
+                "discogs_import_completed": True,
+                "has_seen_welcome_hive_dashboard": False,
+                "last_imported_record_count": imported,
+                "last_imported_collection_value": round(total_value, 2),
+                "last_imported_artist_count": len(artist_counts),
+                "last_imported_top_artist": top_artist,
+            }})
+        
         # Create activity post for the import
         if imported > 0:
             post_id = str(uuid.uuid4())
@@ -1213,3 +1244,75 @@ async def connect_discogs_with_token(data: DiscogsTokenConnect, user: Dict = Dep
     
     return {"message": f"Connected as {username}", "discogs_username": username, "collection_count": collection_count}
 
+
+
+@router.get("/welcome-hive-data")
+async def get_welcome_hive_data(user: Dict = Depends(require_auth)):
+    """Return data for the Welcome to the Hive dashboard."""
+    u = await db.users.find_one({"id": user["id"]}, {"_id": 0})
+    if not u:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # If cached values exist, use them; otherwise compute fresh
+    cached_value = u.get("last_imported_collection_value")
+    cached_records = u.get("last_imported_record_count")
+    cached_artists = u.get("last_imported_artist_count")
+    cached_top = u.get("last_imported_top_artist")
+
+    if cached_records is not None and cached_value is not None:
+        return {
+            "total_collection_value": cached_value,
+            "total_records_imported": cached_records,
+            "total_unique_artists": cached_artists or 0,
+            "top_artist_by_count": cached_top,
+            "has_seen": u.get("has_seen_welcome_hive_dashboard", False),
+        }
+
+    # Compute fresh
+    records = await db.records.find(
+        {"user_id": user["id"]},
+        {"_id": 0, "discogs_id": 1, "artist": 1}
+    ).to_list(10000)
+    total_records = len(records)
+    discogs_ids = list({r["discogs_id"] for r in records if r.get("discogs_id")})
+
+    total_value = 0.0
+    if discogs_ids:
+        values = await db.collection_values.find(
+            {"release_id": {"$in": discogs_ids}}, {"_id": 0}
+        ).to_list(10000)
+        for v in values:
+            total_value += v.get("median_value") or v.get("low_value") or 0
+
+    artist_counts = {}
+    for r in records:
+        a = r.get("artist", "Unknown Artist")
+        if a and a != "Unknown Artist":
+            artist_counts[a] = artist_counts.get(a, 0) + 1
+    top_artist = max(artist_counts, key=artist_counts.get) if artist_counts else None
+
+    # Cache on user
+    await db.users.update_one({"id": user["id"]}, {"$set": {
+        "last_imported_collection_value": round(total_value, 2),
+        "last_imported_record_count": total_records,
+        "last_imported_artist_count": len(artist_counts),
+        "last_imported_top_artist": top_artist,
+    }})
+
+    return {
+        "total_collection_value": round(total_value, 2),
+        "total_records_imported": total_records,
+        "total_unique_artists": len(artist_counts),
+        "top_artist_by_count": top_artist,
+        "has_seen": u.get("has_seen_welcome_hive_dashboard", False),
+    }
+
+
+@router.post("/mark-welcome-seen")
+async def mark_welcome_seen(user: Dict = Depends(require_auth)):
+    """Mark the Welcome to the Hive dashboard as seen."""
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {"has_seen_welcome_hive_dashboard": True}}
+    )
+    return {"ok": True}
