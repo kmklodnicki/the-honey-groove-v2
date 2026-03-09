@@ -68,6 +68,7 @@ class RecordCreate(BaseModel):
     year: Optional[int] = None
     format: Optional[str] = "Vinyl"
     notes: Optional[str] = None
+    color_variant: Optional[str] = None
 
 class RecordResponse(BaseModel):
     id: str
@@ -228,6 +229,7 @@ class ISOResponse(BaseModel):
     discogs_id: Optional[int] = None
     cover_url: Optional[str] = None
     year: Optional[int] = None
+    color_variant: Optional[str] = None
     priority: str = "MED"
     pressing_notes: Optional[str] = None
     condition_pref: Optional[str] = None

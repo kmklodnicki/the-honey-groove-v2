@@ -54,7 +54,8 @@ const CollectionPage = () => {
   const [hiddenGems, setHiddenGems] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
   const [valueMap, setValueMap] = useState({});
-  const [collectionTab, setCollectionTab] = useState('owned');
+  const searchParamsCollection = new URLSearchParams(window.location.search);
+  const [collectionTab, setCollectionTab] = useState(searchParamsCollection.get('tab') === 'wishlist' ? 'wishlist' : 'owned');
   const [wishlistItems, setWishlistItems] = useState([]);
   const [wishlistValue, setWishlistValue] = useState(null);
   const navigate = useNavigate();
@@ -262,10 +263,10 @@ const CollectionPage = () => {
           <h1 className="font-heading text-3xl text-vinyl-black">My Collection</h1>
           <p className="text-muted-foreground">{records.length} owned · {wishlistItems.length} dreaming</p>
         </div>
-        <Link to="/add-record">
+        <Link to={`/add-record?mode=${collectionTab === 'wishlist' ? 'dreaming' : 'reality'}`}>
           <Button className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2" data-testid="add-record-btn">
             <Plus className="w-4 h-4" />
-            Add Record
+            {collectionTab === 'wishlist' ? 'Add to Dreaming' : 'Add to Reality'}
           </Button>
         </Link>
       </div>

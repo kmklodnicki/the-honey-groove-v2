@@ -30,6 +30,7 @@ from database import DISCOGS_TOKEN, DISCOGS_USER_AGENT, DISCOGS_CONSUMER_KEY, DI
 from database import DISCOGS_REQUEST_TOKEN_URL, DISCOGS_AUTHORIZE_URL, DISCOGS_ACCESS_TOKEN_URL, DISCOGS_API_BASE
 from database import oauth_request_tokens, import_progress, EMERGENT_KEY
 from models import *
+from pydantic import BaseModel
 import stripe as stripe_sdk
 from fastapi.responses import Response
 
@@ -66,6 +67,41 @@ async def get_platform_fee():
 
 
 # ============== ISO ROUTES ==============
+
+# Model for creating ISO items directly (e.g., from AddRecordPage dreaming mode)
+class ISODirectCreate(BaseModel):
+    artist: str
+    album: str
+    discogs_id: Optional[int] = None
+    cover_url: Optional[str] = None
+    year: Optional[int] = None
+    color_variant: Optional[str] = None
+    notes: Optional[str] = None
+    status: Optional[str] = "WISHLIST"
+    priority: Optional[str] = "LOW"
+
+@router.post("/iso", response_model=ISOResponse)
+async def create_iso_direct(data: ISODirectCreate, user: Dict = Depends(require_auth)):
+    """Create an ISO item directly (for Dreaming/wishlist mode in AddRecordPage)."""
+    now = datetime.now(timezone.utc).isoformat()
+    iso_id = str(uuid.uuid4())
+    
+    iso_doc = {
+        "id": iso_id,
+        "user_id": user["id"],
+        "artist": data.artist,
+        "album": data.album,
+        "discogs_id": data.discogs_id,
+        "cover_url": data.cover_url,
+        "year": data.year,
+        "color_variant": data.color_variant,
+        "pressing_notes": data.notes,
+        "status": data.status or "WISHLIST",
+        "priority": data.priority or "LOW",
+        "created_at": now,
+    }
+    await db.iso_items.insert_one(iso_doc)
+    return ISOResponse(**iso_doc)
 
 @router.get("/iso", response_model=List[ISOResponse])
 async def get_my_isos(user: Dict = Depends(require_auth)):

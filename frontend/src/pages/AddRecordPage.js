@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
@@ -8,7 +8,7 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Skeleton } from '../components/ui/skeleton';
-import { Search, Disc, Plus, Check, ArrowLeft, Loader2 } from 'lucide-react';
+import { Search, Disc, Plus, Check, ArrowLeft, Loader2, Sparkles, Cloud } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -19,11 +19,16 @@ const AddRecordPage = () => {
   usePageTitle('Add Record');
   const { token, API } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const mode = searchParams.get('mode') || 'reality'; // 'reality' or 'dreaming'
+  const isDreaming = mode === 'dreaming';
+
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [notes, setNotes] = useState('');
+  const [colorVariant, setColorVariant] = useState('');
   const [adding, setAdding] = useState(false);
 
   // Manual entry state
@@ -68,6 +73,7 @@ const AddRecordPage = () => {
 
   const handleSelectRecord = (record) => {
     setSelectedRecord(record);
+    setColorVariant(record.color_variant || '');
     setSearchResults([]);
     setSearchQuery('');
   };
@@ -85,29 +91,58 @@ const AddRecordPage = () => {
 
     setAdding(true);
     try {
-      const recordData = manualMode ? {
-        title: manualTitle,
-        artist: manualArtist,
-        year: manualYear ? parseInt(manualYear) : null,
-        notes: notes || null
-      } : {
-        discogs_id: selectedRecord.discogs_id,
-        title: selectedRecord.title,
-        artist: selectedRecord.artist,
-        cover_url: selectedRecord.cover_url,
-        year: selectedRecord.year,
-        format: selectedRecord.format,
-        notes: notes || null
-      };
+      if (isDreaming) {
+        // Add to Dreaming (WISHLIST ISO)
+        const isoData = manualMode ? {
+          artist: manualArtist,
+          album: manualTitle,
+          year: manualYear ? parseInt(manualYear) : null,
+          color_variant: colorVariant || null,
+          notes: notes || null,
+        } : {
+          discogs_id: selectedRecord.discogs_id,
+          artist: selectedRecord.artist,
+          album: selectedRecord.title,
+          cover_url: selectedRecord.cover_url,
+          year: selectedRecord.year,
+          color_variant: colorVariant || selectedRecord.color_variant || null,
+          notes: notes || null,
+        };
+        await axios.post(`${API}/iso`, { ...isoData, status: 'WISHLIST', priority: 'LOW' }, {
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 15000,
+        });
+        toast.success('Added to Dreaming. Keep building that millionaire mood board.');
+        trackEvent('dreaming_record_added');
+        navigate('/collection?tab=wishlist');
+      } else {
+        // Add to Reality (Collection)
+        const recordData = manualMode ? {
+          title: manualTitle,
+          artist: manualArtist,
+          year: manualYear ? parseInt(manualYear) : null,
+          notes: notes || null,
+          color_variant: colorVariant || null,
+        } : {
+          discogs_id: selectedRecord.discogs_id,
+          title: selectedRecord.title,
+          artist: selectedRecord.artist,
+          cover_url: selectedRecord.cover_url,
+          year: selectedRecord.year,
+          format: selectedRecord.format,
+          notes: notes || null,
+          color_variant: colorVariant || selectedRecord.color_variant || null,
+        };
 
-      await axios.post(`${API}/records`, recordData, {
-        headers: { Authorization: `Bearer ${token}` },
-        timeout: 15000,
-      });
+        await axios.post(`${API}/records`, recordData, {
+          headers: { Authorization: `Bearer ${token}` },
+          timeout: 15000,
+        });
 
-      toast.success('record added to your collection.');
-      trackEvent('collection_record_added');
-      navigate('/collection');
+        toast.success('Added to Reality. Your Gold Standard just grew.');
+        trackEvent('collection_record_added');
+        navigate('/collection');
+      }
     } catch (error) {
       console.error('Add error:', error);
       if (error.response?.data?.detail) {
@@ -132,7 +167,13 @@ const AddRecordPage = () => {
         Back
       </Button>
 
-      <h1 className="font-heading text-3xl text-vinyl-black mb-6">Add Record</h1>
+      <div className="flex items-center gap-3 mb-6">
+        {isDreaming ? <Cloud className="w-6 h-6 text-stone-400" /> : <Sparkles className="w-6 h-6 text-honey-amber" />}
+        <div>
+          <h1 className="font-heading text-3xl text-vinyl-black">{isDreaming ? 'Add to Dreaming' : 'Add to Reality'}</h1>
+          <p className="text-sm text-muted-foreground font-serif italic">{isDreaming ? 'The millionaire mood board grows.' : 'Your Gold Standard just got richer.'}</p>
+        </div>
+      </div>
 
       {selectedRecord ? (
         // Selected record preview
@@ -171,6 +212,18 @@ const AddRecordPage = () => {
 
           <div className="mt-6 space-y-4">
             <div>
+              <Label htmlFor="variant">Color Variant (optional)</Label>
+              <Input
+                id="variant"
+                placeholder="e.g. Blue Marble, 180g Black, Limited Edition Clear..."
+                value={colorVariant}
+                onChange={(e) => setColorVariant(e.target.value.slice(0, 80))}
+                className="mt-2 border-honey/50"
+                data-testid="record-variant"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">The specific pressing or color of your vinyl</p>
+            </div>
+            <div>
               <Label htmlFor="notes">Notes (optional)</Label>
               <Textarea
                 id="notes"
@@ -185,13 +238,13 @@ const AddRecordPage = () => {
             <Button
               onClick={handleAddRecord}
               disabled={adding}
-              className="w-full bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2"
+              className={`w-full rounded-full gap-2 ${isDreaming ? 'bg-stone-200 text-stone-700 hover:bg-stone-300' : 'bg-honey text-vinyl-black hover:bg-honey-amber'}`}
               data-testid="confirm-add-btn"
             >
               {adding ? 'Adding...' : (
                 <>
-                  <Check className="w-4 h-4" />
-                  Add to Collection
+                  {isDreaming ? <Cloud className="w-4 h-4" /> : <Check className="w-4 h-4" />}
+                  {isDreaming ? 'Save to Dreams' : 'Confirm to Reality'}
                 </>
               )}
             </Button>
@@ -237,6 +290,17 @@ const AddRecordPage = () => {
               />
             </div>
             <div>
+              <Label htmlFor="variant-manual">Color Variant (optional)</Label>
+              <Input
+                id="variant-manual"
+                placeholder="e.g. Blue Marble, 180g Black..."
+                value={colorVariant}
+                onChange={(e) => setColorVariant(e.target.value.slice(0, 80))}
+                className="mt-2 border-honey/50"
+                data-testid="manual-variant"
+              />
+            </div>
+            <div>
               <Label htmlFor="notes">Notes (optional)</Label>
               <Textarea
                 id="notes"
@@ -258,10 +322,10 @@ const AddRecordPage = () => {
               <Button
                 onClick={handleAddRecord}
                 disabled={adding || !manualTitle || !manualArtist}
-                className="flex-1 bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2"
+                className={`flex-1 rounded-full gap-2 ${isDreaming ? 'bg-stone-200 text-stone-700 hover:bg-stone-300' : 'bg-honey text-vinyl-black hover:bg-honey-amber'}`}
                 data-testid="manual-add-btn"
               >
-                {adding ? 'Adding...' : 'Add Record'}
+                {adding ? 'Adding...' : isDreaming ? 'Save to Dreams' : 'Confirm to Reality'}
               </Button>
             </div>
           </div>
