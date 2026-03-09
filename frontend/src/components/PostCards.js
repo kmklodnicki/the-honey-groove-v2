@@ -122,14 +122,25 @@ const MoodPill = ({ mood }) => {
   );
 };
 
-const VariantTag = ({ variant }) => {
+const VariantTag = ({ variant, glass }) => {
   if (!variant) return null;
   const key = variant.toLowerCase().trim();
   const match = Object.keys(VARIANT_PILL_STYLES).find(k => key.includes(k));
   const style = match ? VARIANT_PILL_STYLES[match] : VARIANT_DEFAULT;
+  if (glass) {
+    return (
+      <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-medium px-2 py-0.5 rounded-full text-white/90 border border-white/20 truncate max-w-full"
+        style={{ backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', backgroundColor: 'rgba(0,0,0,0.35)' }}
+        data-testid="variant-pill-glass">
+        <Disc className="w-2.5 h-2.5" />
+        {variant}
+      </span>
+    );
+  }
   return (
-    <span className={`inline-block mt-0.5 text-[10px] font-medium px-2 py-0.5 rounded-full border truncate max-w-full ${style}`}
+    <span className={`inline-flex items-center gap-1 mt-0.5 text-[10px] font-medium px-2 py-0.5 rounded-full border truncate max-w-full ${style}`}
       data-testid="variant-pill">
+      <Disc className="w-2.5 h-2.5" />
       {variant}
     </span>
   );
@@ -143,7 +154,14 @@ const NowSpinningCard = ({ post, onAlbumClick }) => {
     <AlbumLink record={record} onAlbumClick={onAlbumClick}>
       <div className="flex gap-4 items-start" data-testid="now-spinning-card">
         {record.cover_url ? (
-          <AlbumArt src={record.cover_url} alt={`${record.artist} - ${record.title} Vinyl Record`} className="w-24 h-24 rounded-lg object-cover shadow-md" />
+          <div className="relative shrink-0">
+            <AlbumArt src={record.cover_url} alt={`${record.artist} - ${record.title} Vinyl Record`} className="w-24 h-24 rounded-lg object-cover shadow-md" />
+            {record.color_variant && (
+              <div className="absolute bottom-1 left-1">
+                <VariantTag variant={record.color_variant} glass />
+              </div>
+            )}
+          </div>
         ) : (
           <div className="w-24 h-24 rounded-lg bg-vinyl-black flex items-center justify-center">
             <Disc className="w-10 h-10 text-honey animate-spin" style={{ animationDuration: '3s' }} />
@@ -152,9 +170,10 @@ const NowSpinningCard = ({ post, onAlbumClick }) => {
         <div className="flex-1 min-w-0">
           <p className="font-heading text-lg leading-tight">{record.title}</p>
           <p className="text-sm text-muted-foreground">{record.artist}</p>
-          <VariantTag variant={record.color_variant} />
+          {!record.cover_url && <VariantTag variant={record.color_variant} />}
           {post.track && <p className="text-xs text-honey-amber mt-1">Track: {post.track}</p>}
           {post.caption && <p className="text-sm mt-2">{post.caption}</p>}
+          {record.notes && <p className="text-xs italic text-stone-500 font-serif mt-1.5 line-clamp-2">{record.notes.length > 60 ? record.notes.slice(0, 60) + '...' : record.notes}</p>}
         </div>
       </div>
     </AlbumLink>
@@ -286,7 +305,14 @@ const DailyPromptPostCard = ({ post }) => (
     <p className="text-sm italic text-amber-700 mb-3">{post.prompt_text}</p>
     <div className="flex gap-4 items-start bg-amber-50/60 rounded-lg p-3">
       {post.cover_url ? (
-        <AlbumArt src={post.cover_url} alt={`${post.record_artist} - ${post.record_title} Vinyl Record`} className="w-20 h-20 rounded-lg object-cover shadow-md" />
+        <div className="relative shrink-0">
+          <AlbumArt src={post.cover_url} alt={`${post.record_artist} - ${post.record_title} Vinyl Record`} className="w-20 h-20 rounded-lg object-cover shadow-md" />
+          {post.color_variant && (
+            <div className="absolute bottom-1 left-1">
+              <VariantTag variant={post.color_variant} glass />
+            </div>
+          )}
+        </div>
       ) : (
         <div className="w-20 h-20 rounded-lg bg-amber-100 flex items-center justify-center"><Disc className="w-8 h-8 text-amber-300" /></div>
       )}
@@ -347,18 +373,26 @@ const ListingPostCard = ({ post }) => {
     <Link to={post.listing_id ? `/honeypot/listing/${post.listing_id}` : '/honeypot'} className="block" data-testid={`listing-post-${post.id}`}>
       <div className="flex gap-3 items-center bg-stone-50 rounded-xl p-3 hover:bg-stone-100 transition-colors">
         {post.cover_url ? (
-          <AlbumArt src={post.cover_url} alt={`${post.record_artist || 'Artist'} - ${post.record_title || 'Album'} Vinyl Record`} className="w-16 h-16 rounded-lg object-cover shadow-sm" />
+          <div className="relative shrink-0">
+            <AlbumArt src={post.cover_url} alt={`${post.record_artist || 'Artist'} - ${post.record_title || 'Album'} Vinyl Record`} className="w-16 h-16 rounded-lg object-cover shadow-sm" />
+            {(post.color_variant || post.pressing_variant) && (
+              <div className="absolute bottom-0.5 left-0.5">
+                <VariantTag variant={post.color_variant || post.pressing_variant} glass />
+              </div>
+            )}
+          </div>
         ) : (
           <div className="w-16 h-16 rounded-lg bg-amber-100 flex items-center justify-center"><Disc className="w-6 h-6 text-amber-400" /></div>
         )}
         <div className="flex-1 min-w-0">
           <p className="font-medium text-sm truncate">{post.record_title}</p>
           <p className="text-xs text-muted-foreground truncate">{post.record_artist}</p>
-          <VariantTag variant={post.color_variant || post.pressing_variant} />
+          {!post.cover_url && <VariantTag variant={post.color_variant || post.pressing_variant} />}
           <span className={`inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100/60 text-teal-700`}>
             {isSale ? <ShoppingBag className="w-3 h-3" /> : <ArrowRightLeft className="w-3 h-3" />}
             {isSale ? 'For Sale' : 'For Trade'}
           </span>
+          {post.pressing_notes && <p className="text-xs italic text-stone-500 font-serif mt-1 truncate">{post.pressing_notes.length > 60 ? post.pressing_notes.slice(0, 60) + '...' : post.pressing_notes}</p>}
         </div>
       </div>
     </Link>

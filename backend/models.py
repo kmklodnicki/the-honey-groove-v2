@@ -175,6 +175,8 @@ class PostResponse(BaseModel):
     record_title: Optional[str] = None
     record_artist: Optional[str] = None
     cover_url: Optional[str] = None
+    color_variant: Optional[str] = None
+    pressing_notes: Optional[str] = None
     created_at: str
     likes_count: int = 0
     comments_count: int = 0
