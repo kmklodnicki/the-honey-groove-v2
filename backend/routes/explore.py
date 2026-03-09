@@ -648,3 +648,79 @@ async def get_taste_match(username: str, user: Dict = Depends(require_auth)):
         "swap_potential": swap_potential[:20],
         "shared_dream_value": round(shared_dream_value, 2),
     }
+
+
+
+@router.get("/discover/my-kinda-people")
+async def my_kinda_people(user: Dict = Depends(require_auth)):
+    """Find users with high taste overlap for the 'My Kinda People' carousel."""
+    my_id = user["id"]
+    my_records = await db.records.find({"user_id": my_id}, {"_id": 0, "discogs_id": 1, "artist": 1, "cover_url": 1, "title": 1}).to_list(5000)
+    my_isos = await db.iso_items.find({"user_id": my_id}, {"_id": 0, "discogs_id": 1}).to_list(1000)
+    my_discogs = {r["discogs_id"] for r in my_records if r.get("discogs_id")}
+    my_artists = {r.get("artist", "").lower().strip() for r in my_records if r.get("artist")}
+    my_wish_discogs = {i["discogs_id"] for i in my_isos if i.get("discogs_id")}
+
+    if not my_discogs and not my_artists:
+        return []
+
+    # Get all other users who have records
+    other_user_ids = set()
+    async for rec in db.records.find({"user_id": {"$ne": my_id}, "discogs_id": {"$ne": None}}, {"_id": 0, "user_id": 1}):
+        other_user_ids.add(rec["user_id"])
+
+    results = []
+    for uid in list(other_user_ids)[:100]:  # cap for performance
+        their_records = await db.records.find({"user_id": uid}, {"_id": 0, "discogs_id": 1, "artist": 1, "cover_url": 1, "title": 1}).to_list(5000)
+        their_discogs = {r["discogs_id"] for r in their_records if r.get("discogs_id")}
+        their_artists = {r.get("artist", "").lower().strip() for r in their_records if r.get("artist")}
+
+        shared_discogs = my_discogs & their_discogs
+        shared_artist_count = len(my_artists & their_artists)
+        owns_my_wish = their_discogs & my_wish_discogs
+
+        total_artists = len(my_artists | their_artists) or 1
+        artist_score = shared_artist_count / total_artists
+        record_score = len(shared_discogs) / max(len(my_discogs | their_discogs), 1)
+        score = round((artist_score * 60 + record_score * 40) * 100)
+        score = min(score, 100)
+
+        if score < 20 and len(shared_discogs) < 1 and len(owns_my_wish) < 1:
+            continue
+
+        # Get shared album covers (up to 3)
+        shared_covers = []
+        for r in their_records:
+            if r.get("discogs_id") in shared_discogs and r.get("cover_url"):
+                shared_covers.append({"title": r.get("title"), "cover_url": r.get("cover_url")})
+                if len(shared_covers) >= 3:
+                    break
+
+        # Priority: common realities >= 3, then owns wishlist items, then score
+        priority = len(shared_discogs) * 10 + len(owns_my_wish) * 5 + score
+
+        results.append({
+            "user_id": uid,
+            "score": score,
+            "label": "Record Soulmates" if score >= 90 else None,
+            "common_count": len(shared_discogs),
+            "wishlist_match_count": len(owns_my_wish),
+            "shared_covers": shared_covers,
+            "priority": priority,
+        })
+
+    results.sort(key=lambda x: x["priority"], reverse=True)
+    results = results[:20]
+
+    # Enrich with user data
+    for r in results:
+        u = await db.users.find_one({"id": r["user_id"]}, {"_id": 0, "id": 1, "username": 1, "display_name": 1, "avatar_url": 1, "founding_member": 1})
+        if u:
+            r["username"] = u.get("username")
+            r["display_name"] = u.get("display_name")
+            r["avatar_url"] = u.get("avatar_url")
+            r["founding_member"] = u.get("founding_member", False)
+        del r["user_id"]
+        del r["priority"]
+
+    return [r for r in results if r.get("username")]

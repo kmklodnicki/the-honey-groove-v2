@@ -21,6 +21,7 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
   const [hasBuzzedIn, setHasBuzzedIn] = useState(false);
   const [buzzResponse, setBuzzResponse] = useState(null);
   const [streak, setStreak] = useState(0);
+  const [buzzCount, setBuzzCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -31,6 +32,7 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
       setHasBuzzedIn(r.data.has_buzzed_in);
       setBuzzResponse(r.data.response);
       setStreak(r.data.streak);
+      setBuzzCount(r.data.buzz_count || 0);
     } catch { /* ignore */ }
     finally { setLoading(false); }
   }, [API, token]);
@@ -59,9 +61,20 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
               buzz in 🐝
             </Button>
           )}
-          {streak > 0 && !hasBuzzedIn && (
-            <span className="flex items-center gap-1 text-sm text-amber-600 font-bold">🐝 {streak} {streak === 1 ? 'day' : 'days'} in a row</span>
-          )}
+          <div className="flex items-center gap-3">
+            {streak > 0 && !hasBuzzedIn && (
+              <span className="flex items-center gap-1 text-sm text-amber-600 font-bold">🐝 {streak} {streak === 1 ? 'day' : 'days'} in a row</span>
+            )}
+            {buzzCount > 0 && (
+              <a
+                href={`/hive?prompt_id=${prompt.id}`}
+                className="text-xs text-amber-600 hover:text-amber-800 hover:underline font-medium transition"
+                data-testid="buzz-count-link"
+              >
+                {buzzCount} member{buzzCount !== 1 ? 's' : ''} of the hive buzzed in!
+              </a>
+            )}
+          </div>
         </div>
       </Card>
 

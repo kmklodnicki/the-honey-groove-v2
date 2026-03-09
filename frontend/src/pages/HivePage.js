@@ -423,6 +423,16 @@ const HivePage = () => {
   const [addingAlbum, setAddingAlbum] = useState(false);
 
   const [activeFilter, setActiveFilter] = useState('all');
+  const promptFilter = searchParams.get('prompt_id');
+  const [promptFilterText, setPromptFilterText] = useState(null);
+
+  // Fetch prompt text for the filter banner
+  useEffect(() => {
+    if (!promptFilter) { setPromptFilterText(null); return; }
+    axios.get(`${API}/prompts/today`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => { if (r.data.prompt?.id === promptFilter) setPromptFilterText(r.data.prompt.text); else setPromptFilterText('a daily prompt'); })
+      .catch(() => setPromptFilterText('a daily prompt'));
+  }, [promptFilter, API, token]);
 
   const FEED_FILTERS = [
     { key: 'all', label: 'All' },
@@ -516,12 +526,17 @@ const HivePage = () => {
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   const filteredPosts = React.useMemo(() => {
-    if (activeFilter === 'all') return posts;
-    if (activeFilter === 'following') return posts.filter(p => followingIds.includes(p.user_id));
-    if (activeFilter === 'listing') return posts.filter(p => p.post_type === 'listing_sale' || p.post_type === 'listing_trade');
-    if (activeFilter === 'NEW_FEATURE') return posts.filter(p => p.is_new_feature);
-    return posts.filter(p => p.post_type === activeFilter);
-  }, [posts, activeFilter, user?.id]);
+    let result = posts;
+    // Apply prompt filter first if active
+    if (promptFilter) {
+      result = result.filter(p => p.prompt_id === promptFilter);
+    }
+    if (activeFilter === 'all') return result;
+    if (activeFilter === 'following') return result.filter(p => followingIds.includes(p.user_id));
+    if (activeFilter === 'listing') return result.filter(p => p.post_type === 'listing_sale' || p.post_type === 'listing_trade');
+    if (activeFilter === 'NEW_FEATURE') return result.filter(p => p.is_new_feature);
+    return result.filter(p => p.post_type === activeFilter);
+  }, [posts, activeFilter, user?.id, promptFilter]);
 
   const handleLike = async (postId, isLiked) => {
     // Optimistic update — instant visual feedback
@@ -747,6 +762,23 @@ const HivePage = () => {
           );
         })}
       </div>
+
+      {/* Prompt Filter Banner */}
+      {promptFilter && promptFilterText && (
+        <div className="mb-4 px-4 py-3 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-between gap-3" data-testid="prompt-filter-banner">
+          <p className="text-sm text-amber-800 font-medium italic truncate">
+            Viewing responses to: {promptFilterText}
+          </p>
+          <Button
+            size="sm" variant="ghost"
+            onClick={() => setSearchParams({})}
+            className="shrink-0 text-xs text-amber-600 hover:text-amber-800"
+            data-testid="clear-prompt-filter"
+          >
+            Clear Filter
+          </Button>
+        </div>
+      )}
 
       {/* Daily Prompt */}
       <DailyPromptCard records={records} onPostCreated={handlePostCreated} />

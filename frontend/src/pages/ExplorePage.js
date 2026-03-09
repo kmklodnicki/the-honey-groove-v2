@@ -28,6 +28,7 @@ const ExplorePage = () => {
   const [mostWanted, setMostWanted] = useState([]);
   const [nearYou, setNearYou] = useState({ collectors: [], listings: [], needs_location: true });
   const [loading, setLoading] = useState(true);
+  const [myKindaPeople, setMyKindaPeople] = useState([]);
 
   // Trending modal
   const [trendingModal, setTrendingModal] = useState(null); // { record, posts }
@@ -59,6 +60,8 @@ const ExplorePage = () => {
       setTrendingCollections(tcRes.data);
       setMostWanted(mwRes.data);
       setNearYou(nyRes.data);
+      // Fetch discovery carousel
+      axios.get(`${API}/discover/my-kinda-people`, { headers }).then(r => setMyKindaPeople(r.data)).catch(() => {});
     } catch { /* ignore */ }
     finally { setLoading(false); }
   }, [API, token]);
@@ -196,6 +199,41 @@ const ExplorePage = () => {
     <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8" data-testid="explore-page">
       <h1 className="font-heading text-3xl text-vinyl-black mb-1">Nectar</h1>
       <p className="text-sm text-muted-foreground mb-8">what the hive is into right now.</p>
+
+      {/* My Kinda People Discovery Carousel */}
+      {myKindaPeople.length > 0 && (
+        <section className="mb-8" data-testid="my-kinda-people-section">
+          <div className="flex items-center gap-2 mb-3">
+            <Users className="w-4 h-4 text-honey-amber" />
+            <h2 className="font-heading text-lg text-vinyl-black">My Kinda People</h2>
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">Collectors who share your vibe.</p>
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+            {myKindaPeople.map(p => (
+              <Link key={p.username} to={`/profile/${p.username}`} className="flex-shrink-0 w-40 group" data-testid={`kinda-${p.username}`}>
+                <Card className="p-3 border-honey/30 hover:shadow-honey transition-all text-center">
+                  <div className="w-14 h-14 mx-auto rounded-full overflow-hidden bg-honey/10 mb-2">
+                    {p.avatar_url ? <img src={p.avatar_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Users className="w-6 h-6 text-honey" /></div>}
+                  </div>
+                  <p className="text-sm font-medium truncate">@{p.username}</p>
+                  <p className="text-xs font-bold mt-0.5" style={{ color: '#C8861A' }}>{p.score}% Match {p.label ? `· ${p.label}` : ''}</p>
+                  {/* Shared covers stack */}
+                  {p.shared_covers?.length > 0 && (
+                    <div className="flex justify-center gap-1 mt-2">
+                      {p.shared_covers.slice(0, 3).map((c, i) => (
+                        <div key={i} className="w-10 h-10 rounded-md overflow-hidden bg-vinyl-black">
+                          <AlbumArt src={c.cover_url} alt={c.title} className="w-full h-full object-cover" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-[10px] text-muted-foreground mt-1">{p.common_count} in common</p>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Collector Bingo — hidden until feature is ready */}
 

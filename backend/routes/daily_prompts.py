@@ -144,11 +144,14 @@ async def get_todays_prompt(user: Dict = Depends(require_auth)):
     )
     # Get user streak
     streak = await _calculate_streak(user["id"])
+    # Count how many buzzed in today
+    buzz_count = await db.prompt_responses.count_documents({"prompt_id": prompt["id"]})
     return {
         "prompt": prompt,
         "has_buzzed_in": response is not None,
         "response": response,
         "streak": streak,
+        "buzz_count": buzz_count,
     }
 
 

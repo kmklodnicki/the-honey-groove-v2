@@ -130,10 +130,9 @@ const VariantTag = ({ variant, glass, ghost, gold, prefix }) => {
   const label = prefix ? `${prefix} ${variant}` : variant;
   if (glass) {
     return (
-      <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-medium px-2 py-0.5 rounded-full text-white/90 border border-white/20 truncate max-w-full"
-        style={{ backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', backgroundColor: 'rgba(0,0,0,0.35)' }}
+      <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-full truncate max-w-full"
+        style={{ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', backgroundColor: 'rgba(255,255,255,0.15)', border: '1px solid #FFD700', color: '#FFD700' }}
         data-testid="variant-pill-glass">
-        <Disc className="w-2.5 h-2.5" />
         {label}
       </span>
     );
@@ -176,7 +175,7 @@ const NowSpinningCard = ({ post, onAlbumClick }) => {
           <div className="relative shrink-0">
             <AlbumArt src={record.cover_url} alt={`${record.artist} - ${record.title} Vinyl Record`} className="w-24 h-24 rounded-lg object-cover shadow-md" />
             {record.color_variant && (
-              <div className="absolute bottom-1 left-1">
+              <div className="absolute bottom-1 right-1">
                 <VariantTag variant={record.color_variant} glass />
               </div>
             )}
@@ -270,11 +269,17 @@ const AddedToCollectionCard = ({ post, onAlbumClick }) => {
   return (
     <AlbumLink record={record} onAlbumClick={onAlbumClick}>
       <div className="flex gap-3 items-center" data-testid="added-card">
-        <AlbumArt src={record.cover_url} alt={`${record.artist} - ${record.title} Vinyl Record`} className="w-16 h-16 rounded-lg object-cover shadow" />
+        <div className="relative shrink-0">
+          <AlbumArt src={record.cover_url} alt={`${record.artist} - ${record.title} Vinyl Record`} className="w-16 h-16 rounded-lg object-cover shadow" />
+          {record.color_variant && (
+            <div className="absolute bottom-0.5 right-0.5">
+              <VariantTag variant={record.color_variant} glass />
+            </div>
+          )}
+        </div>
         <div>
           <p className="font-medium">{record.title}</p>
           <p className="text-sm text-muted-foreground">{record.artist}</p>
-          <VariantTag variant={record.color_variant} />
         </div>
       </div>
     </AlbumLink>
@@ -327,7 +332,7 @@ const DailyPromptPostCard = ({ post }) => (
         <div className="relative shrink-0">
           <AlbumArt src={post.cover_url} alt={`${post.record_artist} - ${post.record_title} Vinyl Record`} className="w-20 h-20 rounded-lg object-cover shadow-md" />
           {post.color_variant && (
-            <div className="absolute bottom-1 left-1">
+            <div className="absolute bottom-1 right-1">
               <VariantTag variant={post.color_variant} glass />
             </div>
           )}

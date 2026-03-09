@@ -403,13 +403,18 @@ const ProfilePage = () => {
 
       {/* 4 Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-honey/10 mb-6 w-full grid grid-cols-6">
+        <TabsList className="bg-honey/10 mb-6 w-full grid grid-cols-7">
           <TabsTrigger value="collection" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-collection">
             Collection
           </TabsTrigger>
           <TabsTrigger value="dreaming" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-dreaming">
             Dreaming
           </TabsTrigger>
+          {!isOwnProfile && tasteMatch && (
+            <TabsTrigger value="in-common" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-in-common">
+              In Common
+            </TabsTrigger>
+          )}
           <TabsTrigger value="iso" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-iso">
             ISO
           </TabsTrigger>
@@ -542,6 +547,74 @@ const ProfilePage = () => {
             </div>
           )}
         </TabsContent>
+
+        {/* In Common Tab (only when viewing another user with taste match) */}
+        {!isOwnProfile && tasteMatch && (
+          <TabsContent value="in-common">
+            <div className="space-y-8" data-testid="in-common-tab">
+              {/* Shared Realities */}
+              <div>
+                <h3 className="font-heading text-lg mb-1">Shared Realities</h3>
+                <p className="text-xs text-muted-foreground mb-3">You both own these specific records.</p>
+                {tasteMatch.shared_reality.length === 0 ? (
+                  <p className="text-sm text-stone-400 italic py-4" data-testid="no-shared-reality">No matching records yet. Maybe you're the first with this specific taste!</p>
+                ) : (
+                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3" data-testid="shared-realities-grid">
+                    {tasteMatch.shared_reality.map((r, i) => (
+                      <div key={i} className="group" style={{ boxShadow: '0 0 12px rgba(255,215,0,0.3)' }}>
+                        <div className="aspect-square rounded-lg overflow-hidden bg-vinyl-black">
+                          {r.cover_url ? <AlbumArt src={r.cover_url} alt={r.title} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Disc className="w-8 h-8 text-honey" /></div>}
+                        </div>
+                        <p className="text-xs font-medium truncate mt-1">{r.title}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">{r.artist}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {/* Shared Visions */}
+              <div>
+                <h3 className="font-heading text-lg mb-1">Shared Visions</h3>
+                <p className="text-xs text-muted-foreground mb-3">You are both dreaming of these.</p>
+                {tasteMatch.shared_dreams.length === 0 ? (
+                  <p className="text-sm text-stone-400 italic py-4" data-testid="no-shared-dreams">No shared dreams yet.</p>
+                ) : (
+                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3" data-testid="shared-visions-grid">
+                    {tasteMatch.shared_dreams.map((r, i) => (
+                      <div key={i}>
+                        <div className="aspect-square rounded-lg overflow-hidden bg-vinyl-black">
+                          {r.cover_url ? <AlbumArt src={r.cover_url} alt={r.title} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Disc className="w-8 h-8 text-honey" /></div>}
+                        </div>
+                        <p className="text-xs font-medium truncate mt-1">{r.title}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">{r.artist}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {/* The Cross-Over */}
+              <div>
+                <h3 className="font-heading text-lg mb-1">The Cross-Over</h3>
+                <p className="text-xs text-muted-foreground mb-3">Records they own that you want, and vice-versa.</p>
+                {tasteMatch.swap_potential.length === 0 ? (
+                  <p className="text-sm text-stone-400 italic py-4" data-testid="no-crossover">No cross-over matches right now.</p>
+                ) : (
+                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3" data-testid="crossover-grid">
+                    {tasteMatch.swap_potential.map((r, i) => (
+                      <div key={i} style={{ boxShadow: '0 0 12px rgba(200,134,26,0.3)' }}>
+                        <div className="aspect-square rounded-lg overflow-hidden bg-vinyl-black ring-1 ring-honey/40">
+                          {r.cover_url ? <AlbumArt src={r.cover_url} alt={r.title} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Disc className="w-8 h-8 text-honey" /></div>}
+                        </div>
+                        <p className="text-xs font-medium truncate mt-1">{r.title}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">{r.artist}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </TabsContent>
+        )}
 
         {/* ISO Tab */}
         <TabsContent value="iso">
