@@ -326,6 +326,7 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
         iso=iso_data,
         is_liked=is_liked,
         is_pinned=post.get("is_pinned", False),
+        is_new_feature=post.get("is_new_feature", False),
         content=post.get("content")
     )
 
@@ -827,6 +828,21 @@ async def unpin_post(post_id: str, user: Dict = Depends(require_auth)):
         raise HTTPException(status_code=403, detail="Admin access required")
     await db.posts.update_one({"id": post_id}, {"$set": {"is_pinned": False}})
     return {"message": "Post unpinned"}
+
+
+# ============== ADMIN NEW FEATURE TAG ==============
+
+@router.post("/posts/{post_id}/new-feature")
+async def toggle_new_feature(post_id: str, user: Dict = Depends(require_auth)):
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    post = await db.posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    new_val = not post.get("is_new_feature", False)
+    await db.posts.update_one({"id": post_id}, {"$set": {"is_new_feature": new_val}})
+    return {"is_new_feature": new_val, "message": f"New Feature tag {'added' if new_val else 'removed'}"}
+
 
 
 # ============== SHARE GRAPHICS ROUTES ==============

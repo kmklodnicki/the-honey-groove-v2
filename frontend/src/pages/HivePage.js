@@ -7,7 +7,7 @@ import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Skeleton } from '../components/ui/skeleton';
-import { Heart, MessageCircle, Share2, Disc, Send, ChevronDown, ChevronUp, MoreVertical, Trash2, Play, ShoppingBag, ArrowRightLeft, Plus, Calendar, Music2, Loader2, Pin, Reply, ArrowUp } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Disc, Send, ChevronDown, ChevronUp, MoreVertical, Trash2, Play, ShoppingBag, ArrowRightLeft, Plus, Calendar, Music2, Loader2, Pin, Reply, ArrowUp, Sparkles } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -35,7 +35,7 @@ import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import ComposerBar from '../components/ComposerBar';
 import { resolveImageUrl } from '../utils/imageUrl';
-import { PostTypeBadge, PostCardBody, PILL_STYLES } from '../components/PostCards';
+import { PostTypeBadge, PostCardBody, NewFeatureBadge, PILL_STYLES } from '../components/PostCards';
 import { TitleBadge } from '../components/TitleBadge';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { DailyPromptCard } from '../components/DailyPrompt';
@@ -63,7 +63,7 @@ const BeeAvatar = ({ user, className = "h-10 w-10" }) => {
 
 import CommentThread from '../components/CommentItem';
 
-const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, onPin, token, API, currentUserId, isAdmin, highlighted, autoOpenComments }) => {
+const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, onPin, onToggleFeature, token, API, currentUserId, isAdmin, highlighted, autoOpenComments }) => {
   const [showComments, setShowComments] = useState(!!autoOpenComments);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
@@ -223,7 +223,7 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
   };
 
   return (
-    <Card ref={cardRef} className={`border-honey/30 overflow-hidden hover:shadow-honey transition-all ${highlighted ? 'ring-2 ring-honey shadow-lg shadow-honey/20' : ''}`} data-testid={`post-${post.id}`}>
+    <Card ref={cardRef} className={`border-honey/30 overflow-hidden hover:shadow-honey transition-all ${highlighted ? 'ring-2 ring-honey shadow-lg shadow-honey/20' : ''} ${post.is_new_feature ? 'shadow-md' : ''}`} style={post.is_new_feature ? { backgroundColor: '#f3faf5' } : undefined} data-testid={`post-${post.id}`}>
       {/* Pinned indicator */}
       {post.is_pinned && (
         <div className="px-4 py-1.5 bg-honey/10 border-b border-honey/20 flex items-center gap-1.5 text-xs text-honey-amber" data-testid={`pinned-${post.id}`}>
@@ -246,6 +246,7 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
               )}
               {post.user?.title_label && <TitleBadge label={post.user.title_label} />}
               <PostTypeBadge type={post.post_type} mood={post.mood} />
+              {post.is_new_feature && <NewFeatureBadge />}
             </div>
             <p className="text-xs text-muted-foreground">{timeAgo}</p>
           </div>
@@ -265,6 +266,11 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
                 {isAdmin && (
                   <DropdownMenuItem onClick={() => onPin(post.id, post.is_pinned)} data-testid={`pin-post-${post.id}`}>
                     <Pin className="mr-2 h-4 w-4" /> {post.is_pinned ? 'Unpin Post' : 'Pin to Top'}
+                  </DropdownMenuItem>
+                )}
+                {isAdmin && (
+                  <DropdownMenuItem onClick={() => onToggleFeature(post.id, post.is_new_feature)} data-testid={`toggle-feature-${post.id}`}>
+                    <Sparkles className="mr-2 h-4 w-4" /> {post.is_new_feature ? 'Remove New Feature' : 'Tag as New Feature'}
                   </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
@@ -423,6 +429,7 @@ const HivePage = () => {
     { key: 'ISO', label: 'ISO' },
     { key: 'listing', label: 'For Sale/Trade' },
     { key: 'NOTE', label: 'A Note' },
+    { key: 'NEW_FEATURE', label: 'New Feature' },
     { key: 'following', label: 'Following' },
   ];
 
@@ -504,6 +511,7 @@ const HivePage = () => {
     if (activeFilter === 'all') return posts;
     if (activeFilter === 'following') return posts.filter(p => p.user_id !== user?.id);
     if (activeFilter === 'listing') return posts.filter(p => p.post_type === 'listing_sale' || p.post_type === 'listing_trade');
+    if (activeFilter === 'NEW_FEATURE') return posts.filter(p => p.is_new_feature);
     return posts.filter(p => p.post_type === activeFilter);
   }, [posts, activeFilter, user?.id]);
 
@@ -569,6 +577,17 @@ const HivePage = () => {
       toast.error('could not update pin status.');
     }
   };
+
+  const handleToggleFeature = async (postId, isNewFeature) => {
+    try {
+      const resp = await axios.post(`${API}/posts/${postId}/new-feature`, {}, { headers });
+      setPosts(prev => prev.map(p => p.id === postId ? { ...p, is_new_feature: resp.data.is_new_feature } : p));
+      toast.success(resp.data.is_new_feature ? 'tagged as New Feature.' : 'New Feature tag removed.');
+    } catch {
+      toast.error('could not update feature tag.');
+    }
+  };
+
 
   // Album detail modal
   const handleAlbumClick = async (record) => {
@@ -754,6 +773,7 @@ const HivePage = () => {
               onDelete={handleDeletePost}
               onAlbumClick={handleAlbumClick}
               onPin={handlePinPost}
+              onToggleFeature={handleToggleFeature}
               token={token}
               API={API}
               currentUserId={user?.id}

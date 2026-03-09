@@ -184,6 +184,7 @@ class PostResponse(BaseModel):
     iso: Optional[Dict[str, Any]] = None
     is_liked: bool = False
     is_pinned: bool = False
+    is_new_feature: bool = False
     content: Optional[str] = None
 
 # Comment Models

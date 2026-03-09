@@ -61,6 +61,7 @@ const PILL_STYLES = {
   VINYL_MOOD:           { bg: 'bg-purple-100',   text: 'text-purple-700',  border: 'border-purple-200' },
   DAILY_PROMPT:         { bg: 'bg-amber-100',    text: 'text-amber-700',   border: 'border-amber-200' },
   NOTE:                 { bg: 'bg-yellow-100',   text: 'text-yellow-700',  border: 'border-yellow-200' },
+  NEW_FEATURE:          { bg: 'bg-green-100',    text: 'text-green-700',   border: 'border-green-200' },
   following:            { bg: 'bg-violet-100',   text: 'text-violet-700',  border: 'border-violet-200' },
   all:                  { bg: 'bg-stone-100',    text: 'text-stone-600',   border: 'border-stone-200' },
 };
@@ -430,4 +431,13 @@ const TagPill = ({ tag }) => (
   </span>
 );
 
-export { PostTypeBadge, PostCardBody, ListingTypeBadge, TagPill, PILL_STYLES };
+const NewFeatureBadge = () => {
+  const s = PILL_STYLES.NEW_FEATURE;
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${s.bg} ${s.text} ${s.border}`} data-testid="new-feature-badge">
+      <span className="text-[10px]">&#10024;</span> New Feature
+    </span>
+  );
+};
+
+export { PostTypeBadge, PostCardBody, ListingTypeBadge, TagPill, NewFeatureBadge, PILL_STYLES };
