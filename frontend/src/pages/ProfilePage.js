@@ -314,20 +314,20 @@ const ProfilePage = () => {
 
             {/* Stats - Social first, then collection */}
             <div className="mt-4 space-y-3" data-testid="profile-stats">
-              {/* Row 1: Following / Followers — centered, equal weight */}
-              <div className="flex items-center gap-6">
-                <button onClick={() => setFollowListType('following')} className="hover:opacity-70 transition" data-testid="following-stat">
+              {/* Row 1: Following / Followers — same horizontal line */}
+              <div className="flex flex-row items-center justify-around sm:justify-start sm:gap-8">
+                <button onClick={() => setFollowListType('following')} className="hover:opacity-70 transition text-center" data-testid="following-stat">
                   <span className="font-heading text-2xl text-vinyl-black">{profile.following_count}</span>
                   <span className="text-[11px] text-muted-foreground ml-1.5">Following</span>
                 </button>
-                <span className="text-stone-300">|</span>
-                <button onClick={() => setFollowListType('followers')} className="hover:opacity-70 transition" data-testid="followers-stat">
+                <span className="text-stone-300 hidden sm:inline">|</span>
+                <button onClick={() => setFollowListType('followers')} className="hover:opacity-70 transition text-center" data-testid="followers-stat">
                   <span className="font-heading text-2xl text-vinyl-black">{profile.followers_count}</span>
                   <span className="text-[11px] text-muted-foreground ml-1.5">Followers</span>
                 </button>
               </div>
               {/* Row 2: Records / Est. Value / Sales */}
-              <div className="flex gap-6">
+              <div className="flex flex-row items-center justify-around sm:justify-start sm:gap-8">
                 <div className="text-center sm:text-left">
                   <div className="font-heading text-2xl text-vinyl-black">{profile.collection_count}</div>
                   <div className="text-[11px] text-muted-foreground">Records</div>
@@ -633,6 +633,11 @@ const ProfilePage = () => {
             </DialogTitle>
             <DialogDescription>
               {tasteMatch?.score}% Taste Match {tasteMatch?.label && `· ${tasteMatch.label}`}
+              {tasteMatch?.shared_dream_value > 0 && (
+                <span className="block mt-1 font-medium" style={{ color: '#C8861A' }} data-testid="shared-dream-value">
+                  You share ${tasteMatch.shared_dream_value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} in Dream Value.
+                </span>
+              )}
             </DialogDescription>
           </DialogHeader>
           {tasteMatch && (

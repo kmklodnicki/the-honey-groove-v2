@@ -605,6 +605,13 @@ async def get_taste_match(username: str, user: Dict = Depends(require_auth)):
             seen_swap.add(did)
             swap_potential.append({"title": r.get("title"), "artist": r.get("artist"), "cover_url": r.get("cover_url"), "discogs_id": did})
 
+    # Calculate shared dream value from cached valuations
+    shared_dream_value = 0.0
+    shared_dream_discogs = my_wish_discogs & their_wish_discogs
+    if shared_dream_discogs:
+        async for val in db.collection_values.find({"release_id": {"$in": list(shared_dream_discogs)}}, {"_id": 0}):
+            shared_dream_value += val.get("median_value", 0)
+
     # Calculate score
     shared_artist_count = len(my_artists & their_artists)
     shared_wish_artist_count = len(my_wish_artists & their_wish_artists)
@@ -628,4 +635,5 @@ async def get_taste_match(username: str, user: Dict = Depends(require_auth)):
         "shared_reality": shared_reality[:20],
         "shared_dreams": shared_dreams[:20],
         "swap_potential": swap_potential[:20],
+        "shared_dream_value": round(shared_dream_value, 2),
     }
