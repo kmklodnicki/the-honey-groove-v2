@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog';
-import { Home, Search, User, LogOut, Settings, Library, ShoppingBag, ArrowRightLeft, Bell, Check, MessageCircle, Globe, HelpCircle, Package, AlertTriangle } from 'lucide-react';
+import { Home, Search, User, LogOut, Settings, Library, ShoppingBag, ArrowRightLeft, Bell, Check, MessageCircle, Globe, HelpCircle, Package, AlertTriangle, Sparkles } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import GlobalSearch from './GlobalSearch';
 import ReportModal from './ReportModal';
@@ -114,6 +114,15 @@ const Navbar = () => {
                   The Honeypot
                 </Button>
               </Link>
+              <Link to="/essentials" data-testid="nav-essentials">
+                <Button 
+                  variant="ghost" 
+                  className={`gap-2 ${isActive('/essentials') ? 'bg-honey/20' : ''}`}
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Essentials
+                </Button>
+              </Link>
               <Button 
                 variant="ghost" 
                 className="gap-2"
@@ -167,6 +176,10 @@ const Navbar = () => {
                   <DropdownMenuItem onClick={() => navigate('/orders')} data-testid="menu-orders">
                     <Package className="mr-2 h-4 w-4" />
                     Orders
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/essentials')} data-testid="menu-essentials">
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    Honey Essentials
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => window.open('https://thehoneygroove.com/faq', '_blank')} data-testid="menu-help">
                     <HelpCircle className="mr-2 h-4 w-4" />
@@ -247,6 +260,9 @@ const Navbar = () => {
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/orders')} data-testid="mobile-menu-orders">
                   <Package className="mr-2 h-4 w-4" /> Orders
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/essentials')} data-testid="mobile-menu-essentials">
+                  <Sparkles className="mr-2 h-4 w-4" /> Honey Essentials
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/trades')} data-testid="mobile-menu-trades">
                   <ArrowRightLeft className="mr-2 h-4 w-4" /> Trades
