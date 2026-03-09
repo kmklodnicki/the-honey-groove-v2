@@ -19,7 +19,7 @@ from templates.emails import beta_waitlist, invite_code as invite_code_tpl
 
 router = APIRouter()
 
-ADMIN_NOTIFY_EMAIL = "hello@thehoneygroove.com"
+ADMIN_NOTIFY_EMAIL = "katie@thehoneygroove.com"
 
 
 # ─── Helpers ───
