@@ -47,24 +47,59 @@ const AlbumLink = ({ record, children, className = '', onAlbumClick }) => {
 };
 
 // Badge showing post type
+// ── Shared Pill Style System ──
+// Used by both filter pills (HivePage) and card badges (PostCards)
+const PILL_STYLES = {
+  NOW_SPINNING:         { bg: 'bg-amber-100',   text: 'text-amber-700',   border: 'border-amber-200' },
+  NEW_HAUL:             { bg: 'bg-pink-100',     text: 'text-pink-600',    border: 'border-pink-200' },
+  ISO:                  { bg: 'bg-orange-100',   text: 'text-orange-600',  border: 'border-orange-200' },
+  ADDED_TO_COLLECTION:  { bg: 'bg-green-100',    text: 'text-green-700',   border: 'border-green-200' },
+  listing_sale:         { bg: 'bg-teal-100',     text: 'text-teal-700',    border: 'border-teal-200' },
+  listing_trade:        { bg: 'bg-teal-100',     text: 'text-teal-700',    border: 'border-teal-200' },
+  listing:              { bg: 'bg-teal-100',     text: 'text-teal-700',    border: 'border-teal-200' },
+  WEEKLY_WRAP:          { bg: 'bg-purple-100',   text: 'text-purple-700',  border: 'border-purple-200' },
+  VINYL_MOOD:           { bg: 'bg-purple-100',   text: 'text-purple-700',  border: 'border-purple-200' },
+  DAILY_PROMPT:         { bg: 'bg-amber-100',    text: 'text-amber-700',   border: 'border-amber-200' },
+  NOTE:                 { bg: 'bg-yellow-100',   text: 'text-yellow-700',  border: 'border-yellow-200' },
+  following:            { bg: 'bg-violet-100',   text: 'text-violet-700',  border: 'border-violet-200' },
+  all:                  { bg: 'bg-stone-100',    text: 'text-stone-600',   border: 'border-stone-200' },
+};
+
+const VARIANT_PILL_STYLES = {
+  red:     'bg-red-100 text-red-700 border-red-200',
+  blue:    'bg-blue-100 text-blue-700 border-blue-200',
+  pink:    'bg-pink-100 text-pink-700 border-pink-200',
+  green:   'bg-green-100 text-green-700 border-green-200',
+  yellow:  'bg-yellow-100 text-yellow-700 border-yellow-200',
+  orange:  'bg-orange-100 text-orange-700 border-orange-200',
+  purple:  'bg-purple-100 text-purple-700 border-purple-200',
+  white:   'bg-gray-50 text-gray-600 border-gray-200',
+  black:   'bg-gray-900/10 text-gray-800 border-gray-300',
+  clear:   'bg-gray-100 text-gray-600 border-gray-200',
+  gold:    'bg-amber-100 text-amber-700 border-amber-200',
+  silver:  'bg-slate-100 text-slate-600 border-slate-200',
+};
+const VARIANT_DEFAULT = 'bg-stone-100 text-stone-600 border-stone-200';
+
 const PostTypeBadge = ({ type, mood }) => {
   if (type === 'NOTE') return null;
   const config = {
-    NOW_SPINNING: { label: 'Now Spinning', icon: Disc, bg: 'bg-honey/20 text-honey-amber' },
-    NEW_HAUL: { label: 'New Haul', icon: Package, bg: 'bg-emerald-100/60 text-emerald-700' },
-    ISO: { label: 'ISO', icon: Search, bg: 'bg-orange-100/60 text-orange-700' },
-    ADDED_TO_COLLECTION: { label: 'Added', icon: Plus, bg: 'bg-green-100/60 text-green-700' },
-    WEEKLY_WRAP: { label: 'Weekly Wrap', icon: Music, bg: 'bg-purple-100/60 text-purple-700' },
-    VINYL_MOOD: { label: 'Vinyl Mood', icon: Moon, bg: 'bg-purple-100/60 text-purple-700' },
-    DAILY_PROMPT: { label: 'Daily Prompt', icon: Disc, bg: 'bg-amber-100/60 text-amber-700' },
-    listing_sale: { label: 'For Sale', icon: ShoppingBag, bg: 'bg-teal-100/60 text-teal-700' },
-    listing_trade: { label: 'For Trade', icon: ArrowRightLeft, bg: 'bg-teal-100/60 text-teal-700' },
+    NOW_SPINNING: { label: 'Now Spinning', icon: Disc },
+    NEW_HAUL: { label: 'New Haul', icon: Package },
+    ISO: { label: 'ISO', icon: Search },
+    ADDED_TO_COLLECTION: { label: 'Added', icon: Plus },
+    WEEKLY_WRAP: { label: 'Weekly Wrap', icon: Music },
+    VINYL_MOOD: { label: 'Vinyl Mood', icon: Moon },
+    DAILY_PROMPT: { label: 'Daily Prompt', icon: Disc },
+    listing_sale: { label: 'For Sale', icon: ShoppingBag },
+    listing_trade: { label: 'For Trade', icon: ArrowRightLeft },
   };
   const c = config[type] || config.NOW_SPINNING;
+  const s = PILL_STYLES[type] || PILL_STYLES.NOW_SPINNING;
   const Icon = c.icon;
   return (
     <span className="inline-flex items-center gap-1.5">
-      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${c.bg}`}>
+      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${s.bg} ${s.text} ${s.border}`}>
         <Icon className="w-3 h-3" />
         {c.label}
       </span>
@@ -88,8 +123,12 @@ const MoodPill = ({ mood }) => {
 
 const VariantTag = ({ variant }) => {
   if (!variant) return null;
+  const key = variant.toLowerCase().trim();
+  const match = Object.keys(VARIANT_PILL_STYLES).find(k => key.includes(k));
+  const style = match ? VARIANT_PILL_STYLES[match] : VARIANT_DEFAULT;
   return (
-    <span className="inline-block mt-0.5 text-[10px] italic text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full truncate max-w-full">
+    <span className={`inline-block mt-0.5 text-[10px] font-medium px-2 py-0.5 rounded-full border truncate max-w-full ${style}`}
+      data-testid="variant-pill">
       {variant}
     </span>
   );
@@ -391,4 +430,4 @@ const TagPill = ({ tag }) => (
   </span>
 );
 
-export { PostTypeBadge, PostCardBody, ListingTypeBadge, TagPill };
+export { PostTypeBadge, PostCardBody, ListingTypeBadge, TagPill, PILL_STYLES };

@@ -35,7 +35,7 @@ import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import ComposerBar from '../components/ComposerBar';
 import { resolveImageUrl } from '../utils/imageUrl';
-import { PostTypeBadge, PostCardBody } from '../components/PostCards';
+import { PostTypeBadge, PostCardBody, PILL_STYLES } from '../components/PostCards';
 import { TitleBadge } from '../components/TitleBadge';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { DailyPromptCard } from '../components/DailyPrompt';
@@ -417,13 +417,13 @@ const HivePage = () => {
   const [activeFilter, setActiveFilter] = useState('all');
 
   const FEED_FILTERS = [
-    { key: 'all', label: 'All', activeClass: 'bg-stone-700 text-white', inactiveClass: 'bg-stone-100 text-stone-500 hover:bg-stone-200' },
-    { key: 'NOW_SPINNING', label: 'Now Spinning', activeClass: 'bg-blue-400 text-white', inactiveClass: 'bg-blue-50 text-blue-400 hover:bg-blue-100' },
-    { key: 'NEW_HAUL', label: 'New Haul', activeClass: 'bg-pink-400 text-white', inactiveClass: 'bg-pink-50 text-pink-400 hover:bg-pink-100' },
-    { key: 'ISO', label: 'ISO', activeClass: 'bg-orange-400 text-white', inactiveClass: 'bg-orange-50 text-orange-400 hover:bg-orange-100' },
-    { key: 'listing', label: 'For Sale/Trade', activeClass: 'bg-green-400 text-white', inactiveClass: 'bg-green-50 text-green-400 hover:bg-green-100' },
-    { key: 'NOTE', label: 'A Note', activeClass: 'bg-yellow-400 text-yellow-900', inactiveClass: 'bg-yellow-50 text-yellow-500 hover:bg-yellow-100' },
-    { key: 'following', label: 'Following', activeClass: 'bg-purple-400 text-white', inactiveClass: 'bg-purple-50 text-purple-400 hover:bg-purple-100' },
+    { key: 'all', label: 'All' },
+    { key: 'NOW_SPINNING', label: 'Now Spinning' },
+    { key: 'NEW_HAUL', label: 'New Haul' },
+    { key: 'ISO', label: 'ISO' },
+    { key: 'listing', label: 'For Sale/Trade' },
+    { key: 'NOTE', label: 'A Note' },
+    { key: 'following', label: 'Following' },
   ];
 
   const headers = { Authorization: `Bearer ${token}` };
@@ -699,18 +699,25 @@ const HivePage = () => {
 
       {/* Filter Bar */}
       <div className="flex flex-wrap gap-1.5 mb-4" data-testid="feed-filter-bar">
-        {FEED_FILTERS.map(f => (
-          <button
-            key={f.key}
-            onClick={() => setActiveFilter(f.key)}
-            className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
-              activeFilter === f.key ? f.activeClass + ' shadow-sm' : f.inactiveClass
-            }`}
-            data-testid={`filter-${f.key}`}
-          >
-            {f.label}
-          </button>
-        ))}
+        {FEED_FILTERS.map(f => {
+          const s = PILL_STYLES[f.key] || PILL_STYLES.all;
+          const isActive = activeFilter === f.key;
+          return (
+            <button
+              key={f.key}
+              onClick={() => setActiveFilter(f.key)}
+              className={`px-3 py-1 rounded-full text-xs font-medium transition-all border ${
+                isActive
+                  ? `${s.bg} ${s.text} ${s.border} shadow-sm font-semibold`
+                  : `bg-white ${s.text} ${s.border} hover:${s.bg}`
+              }`}
+              style={!isActive ? { opacity: 0.65 } : undefined}
+              data-testid={`filter-${f.key}`}
+            >
+              {f.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Daily Prompt */}
