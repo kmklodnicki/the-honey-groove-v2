@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, DollarSign, TrendingUp, RefreshCw, Heart, ArrowRight, ShoppingBag, Cloud } from 'lucide-react';
+import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, DollarSign, TrendingUp, RefreshCw, Heart, ArrowRight, ShoppingBag, Cloud, Sparkles } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -271,12 +271,33 @@ const CollectionPage = () => {
       </div>
 
       <Tabs value={collectionTab} onValueChange={setCollectionTab}>
+        {/* Reality Check Toggle */}
+        {collectionValue && collectionValue.total_value > 0 && wishlistValue && wishlistValue.total_value > 0 && (
+          <div className="flex items-center justify-center gap-4 mb-4 p-3 rounded-xl border border-honey/20 bg-gradient-to-r from-honey/5 to-stone-50" data-testid="reality-check-toggle">
+            <button
+              onClick={() => setCollectionTab('owned')}
+              className={`text-center transition-all px-4 py-1.5 rounded-full text-sm font-medium ${collectionTab === 'owned' ? 'bg-honey/20 text-vinyl-black' : 'text-stone-400 hover:text-stone-600'}`}
+              data-testid="toggle-reality">
+              <span className="block font-heading text-lg">${collectionValue.total_value.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+              <span className="text-[10px] uppercase tracking-wide">Reality</span>
+            </button>
+            <span className="text-stone-300 text-xs">vs</span>
+            <button
+              onClick={() => setCollectionTab('wishlist')}
+              className={`text-center transition-all px-4 py-1.5 rounded-full text-sm font-medium ${collectionTab === 'wishlist' ? 'bg-stone-100 text-vinyl-black' : 'text-stone-400 hover:text-stone-600'}`}
+              data-testid="toggle-dreaming">
+              <span className="block font-heading text-lg">${wishlistValue.total_value.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+              <span className="text-[10px] uppercase tracking-wide">Dream Debt</span>
+            </button>
+          </div>
+        )}
+
         <TabsList className="bg-honey/10 mb-6 w-full grid grid-cols-2">
-          <TabsTrigger value="owned" className="data-[state=active]:bg-honey text-sm" data-testid="tab-owned">
-            Reality ({records.length})
+          <TabsTrigger value="owned" className="data-[state=active]:bg-honey text-sm gap-1.5" data-testid="tab-owned">
+            <Sparkles className="w-3.5 h-3.5" /> Reality ({records.length})
           </TabsTrigger>
-          <TabsTrigger value="wishlist" className="data-[state=active]:bg-honey text-sm" data-testid="tab-wishlist">
-            <Cloud className="w-3.5 h-3.5 mr-1.5" /> Dreaming ({wishlistItems.length})
+          <TabsTrigger value="wishlist" className="data-[state=active]:bg-honey text-sm gap-1.5" data-testid="tab-wishlist">
+            <Cloud className="w-3.5 h-3.5" /> Dreaming ({wishlistItems.length})
           </TabsTrigger>
         </TabsList>
 
@@ -284,8 +305,8 @@ const CollectionPage = () => {
         <TabsContent value="owned">
           {/* Reality Tagline */}
           <div className="mb-4 px-1">
-            <p className="font-heading text-lg text-vinyl-black">The Main Chamber.</p>
-            <p className="text-sm text-stone-500 font-serif italic">Every spin, every memory. This is your reality in 12-inch wax.</p>
+            <p className="font-heading text-lg"><span style={{ background: 'linear-gradient(90deg, #C8861A, #E8A820, #D4A017)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>The Gold Standard.</span></p>
+            <p className="text-sm text-stone-500 font-serif italic">Your collection, curated and captured in the light.</p>
           </div>
 
           {/* Collection Value Banner */}
@@ -309,11 +330,6 @@ const CollectionPage = () => {
                   <RefreshCw className={`w-3.5 h-3.5 mr-1 ${refreshing ? 'animate-spin' : ''}`} /> {refreshing ? 'Refreshing...' : 'Refresh'}
                 </Button>
               </div>
-              {wishlistValue && wishlistValue.total_value > 0 && (
-                <button onClick={() => setCollectionTab('wishlist')} className="text-[11px] text-honey-amber hover:underline mt-1 block" data-testid="reality-vs-dream-link">
-                  Reality: ${collectionValue.total_value.toLocaleString(undefined, { maximumFractionDigits: 0 })} vs. Dream Debt: ${wishlistValue.total_value.toLocaleString(undefined, { maximumFractionDigits: 0 })}
-                </button>
-              )}
             </Card>
           )}
 
@@ -430,7 +446,7 @@ const CollectionPage = () => {
         {/* ====== DREAMING TAB ====== */}
         <TabsContent value="wishlist">
           {/* Dream Debt Banner */}
-          <div className="relative overflow-hidden rounded-2xl border border-stone-200/60 bg-gradient-to-br from-stone-50 via-white to-stone-50 p-5 mb-6" data-testid="dream-debt-banner">
+          <div className="relative overflow-hidden rounded-2xl border border-stone-200/60 bg-gradient-to-br from-blue-50/40 via-white to-stone-50/40 p-5 mb-6" data-testid="dream-debt-banner">
             {wishlistValue && wishlistValue.total_value > 5000 && (
               <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-amber-950 shadow-sm" data-testid="delusional-badge-collection">
                 Certified Delusional
@@ -438,7 +454,7 @@ const CollectionPage = () => {
             )}
             <p className="text-xs font-medium uppercase tracking-widest text-stone-400 mb-1">Dreaming</p>
             <p className="font-heading text-2xl sm:text-3xl text-vinyl-black leading-tight">
-              In your dreams... <span className="text-stone-400 text-lg font-serif italic">these are the records you'd own if you were a millionaire.</span>
+              In the Clouds. <span className="text-stone-400 text-lg font-serif italic">The millionaire's wishlist for your future shelf.</span>
             </p>
             {wishlistValue && wishlistValue.total_value > 0 && (
               <p className="font-heading text-xl text-[#C8861A] mt-2" data-testid="wishlist-total-value">
@@ -470,7 +486,8 @@ const CollectionPage = () => {
 const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, isSpinning, value }) => {
   return (
     <Card 
-      className="group border-honey/30 overflow-hidden hover:shadow-honey transition-all hover:-translate-y-1"
+      className="group border-honey/20 overflow-hidden hover:shadow-honey transition-all hover:-translate-y-1"
+      style={{ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', background: 'rgba(255,255,255,0.75)' }}
       data-testid={`record-card-${record.id}`}
     >
       <Link to={`/record/${record.id}`}>
@@ -595,7 +612,7 @@ const WishlistCard = ({ item, onPromote, onDelete }) => (
         <Button size="sm" onClick={() => onPromote(item.id)}
           className="flex-1 h-7 text-[11px] rounded-full bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-amber-950 hover:from-yellow-500 hover:to-amber-500 font-medium"
           data-testid={`promote-btn-${item.id}`}>
-          <ShoppingBag className="w-3 h-3 mr-1" /> Ready to Buy?
+          <Sparkles className="w-3 h-3 mr-1" /> Bring to Reality
         </Button>
         <Button size="sm" variant="ghost" onClick={() => onDelete(item.id)}
           className="h-7 w-7 p-0 text-stone-400 hover:text-red-500"
