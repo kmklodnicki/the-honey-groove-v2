@@ -518,23 +518,37 @@ async def stripe_connect_status(user: Dict = Depends(require_auth)):
 async def create_payment_checkout(request: Request, body: Dict, user: Dict = Depends(require_auth)):
     listing_id = body.get("listing_id")
     offer_amount = body.get("offer_amount")
-    listing = await db.listings.find_one({"id": listing_id, "status": "ACTIVE"}, {"_id": 0})
+
+    # ── ATOMIC INVENTORY LOCK ──
+    # Atomically claim the listing: only succeeds if status is still ACTIVE
+    listing = await db.listings.find_one_and_update(
+        {"id": listing_id, "status": "ACTIVE"},
+        {"$set": {"status": "PENDING", "locked_at": datetime.now(timezone.utc).isoformat(), "locked_by": user["id"]}},
+        return_document=False,  # returns the BEFORE-update doc
+    )
+    if listing:
+        listing.pop("_id", None)
     if not listing:
-        raise HTTPException(status_code=404, detail="Listing not found or not active")
+        raise HTTPException(status_code=409, detail="This honey has already been claimed!")
     if listing["user_id"] == user["id"]:
+        # Rollback — can't buy your own listing
+        await db.listings.update_one({"id": listing_id}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
         raise HTTPException(status_code=400, detail="Cannot buy your own listing")
     if listing["listing_type"] == "BUY_NOW":
         amount = float(listing["price"])
     elif listing["listing_type"] == "MAKE_OFFER" and offer_amount:
         amount = float(offer_amount)
     else:
+        await db.listings.update_one({"id": listing_id}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
         raise HTTPException(status_code=400, detail="Invalid listing type or missing offer amount")
 
     # Verify seller has Stripe Connect account with charges enabled
     seller = await db.users.find_one({"id": listing["user_id"]}, {"_id": 0})
     if not seller or not seller.get("stripe_account_id"):
+        await db.listings.update_one({"id": listing_id}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
         raise HTTPException(status_code=400, detail="Seller has not connected their Stripe account")
     if not seller.get("stripe_charges_enabled"):
+        await db.listings.update_one({"id": listing_id}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
         raise HTTPException(status_code=400, detail="Seller's Stripe account is not fully set up yet")
     
     # International shipping check
@@ -542,6 +556,7 @@ async def create_payment_checkout(request: Request, body: Dict, user: Dict = Dep
         seller_country = seller.get("country")
         buyer_country = user.get("country")
         if seller_country and buyer_country and seller_country != buyer_country:
+            await db.listings.update_one({"id": listing_id}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
             raise HTTPException(status_code=400, detail="This seller only ships domestically. International shipping is not available for this listing.")
 
     fee_pct = await _get_platform_fee_percent()
@@ -582,6 +597,9 @@ async def create_payment_checkout(request: Request, body: Dict, user: Dict = Dep
             },
         )
     except Exception as e:
+        # ── ROLLBACK on Stripe failure ──
+        await db.listings.update_one({"id": listing_id}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
+        logger.error(f"Stripe checkout error, listing {listing_id} rolled back to ACTIVE: {e}")
         raise HTTPException(status_code=500, detail=f"Stripe checkout error: {str(e)}")
 
     now = datetime.now(timezone.utc).isoformat()
@@ -961,7 +979,7 @@ async def cancel_order(order_id: str, user: Dict = Depends(require_auth)):
 
     # Re-activate the listing so it can be sold again
     if txn.get("listing_id"):
-        await db.listings.update_one({"id": txn["listing_id"]}, {"$set": {"status": "ACTIVE"}})
+        await db.listings.update_one({"id": txn["listing_id"]}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
 
     # Notify buyer
     listing = await db.listings.find_one({"id": txn.get("listing_id")}, {"_id": 0, "album": 1})

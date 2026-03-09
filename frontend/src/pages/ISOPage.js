@@ -409,7 +409,14 @@ const ISOPage = () => {
       const resp = await axios.post(`${API}/payments/checkout`, { listing_id: listing.id, origin_url: window.location.origin }, { headers: { Authorization: `Bearer ${token}` } });
       if (resp.data.url) window.location.href = resp.data.url;
       else toast.error('could not start checkout. try again.');
-    } catch (err) { toast.error(err.response?.data?.detail || 'Payment failed'); }
+    } catch (err) {
+      if (err.response?.status === 409) {
+        toast.error('Buzzkill! Someone else just grabbed this record. Keep hunting!');
+        navigate('/nectar');
+      } else {
+        toast.error(err.response?.data?.detail || 'Payment failed');
+      }
+    }
     finally { setPaymentLoading(false); }
   };
 
@@ -421,7 +428,14 @@ const ISOPage = () => {
       const resp = await axios.post(`${API}/payments/checkout`, { listing_id: offerTarget.id, offer_amount: parseFloat(offerAmount), origin_url: window.location.origin }, { headers: { Authorization: `Bearer ${token}` } });
       if (resp.data.url) window.location.href = resp.data.url;
       else toast.error('could not start checkout. try again.');
-    } catch (err) { toast.error(err.response?.data?.detail || 'Payment failed'); }
+    } catch (err) {
+      if (err.response?.status === 409) {
+        toast.error('Buzzkill! Someone else just grabbed this record. Keep hunting!');
+        navigate('/nectar');
+      } else {
+        toast.error(err.response?.data?.detail || 'Payment failed');
+      }
+    }
     finally { setPaymentLoading(false); setOfferTarget(null); setOfferAmount(''); }
   };
 
