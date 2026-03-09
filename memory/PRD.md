@@ -28,21 +28,32 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - Admin pin post to top of feed
 - Pagination ("View Older Posts") and "Back to Top" button
 - Mood-themed Now Spinning posts
-- Post type label colors standardized
 
 ### Daily Prompt
 - Daily prompt refresh at midnight ET
 - Streak tracking
-- Live album search in Buzz-In modal (searches user's collection with debounced input) - **COMPLETED Feb 2026**
-- Export card feature
-- Post to Hive option
+- Live album search in Buzz-In modal (debounced collection search) - **Feb 2026**
+- Export card feature, Post to Hive option
 
 ### Marketplace ("The Honeypot")
 - Stripe Connect LIVE peer-to-peer payments
 - Sale/trade listings auto-post to Hive
-- International shipping toggle
-- Country-based purchase restrictions
+- International shipping toggle, country-based restrictions
 - Clickable "My Sales" rows with order details
+
+### Dual Grading System (BLOCK 2.2 + 2.3) - **Feb 2026**
+- Standard vinyl grades (NM, VG+, VG, G+, F) stored in DB
+- Honey-branded labels derived from mapping layer:
+  - NM -> Queen's Choice
+  - VG+ -> The Sweet Spot
+  - VG -> Hive Classic
+  - G+/G -> Well-Worn Honeycomb
+  - F/P -> Sticky Situation
+- GradeLabel component with 3 variants: pill, compact, inline
+- Tooltips with full descriptions on hover (Radix UI)
+- Listing form dropdown shows dual format (code + honey label)
+- Legacy long-form values (Near Mint, Very Good Plus, etc.) backward-compatible via normalizeGrade()
+- Applied across: marketplace cards, listing detail modal, trade proposals, orders, global search
 
 ### Search & Discovery
 - "Psychic" global search with weighted scoring
@@ -55,12 +66,15 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - Pressing variant display on cards
 
 ### SEO & Accessibility
-- JSON-LD schema
-- Dynamic alt tags for all album art
+- JSON-LD schema, dynamic alt tags for all album art
 - Country flags on profiles and listings
 
 ## Mocked Integrations
 - **Email (Resend):** Logic in place but not using a live service
+
+## Key New Files (Grading System)
+- `/app/frontend/src/utils/grading.js` - GRADE_MAP, GRADE_OPTIONS, normalizeGrade, formatGradeDisplay, gradeCode, gradeColorClass
+- `/app/frontend/src/components/GradeLabel.js` - Reusable component with tooltip support
 
 ## Pending / Upcoming Tasks
 
@@ -70,6 +84,7 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 ### P2
 - Hauls Enhancement - dedicated page and more functionality
 - Refactor ISOPage.jsx - address technical debt
+- Optional: "What do these grades mean?" link to Honey Groove Grading Guide page
 
 ### Future / Backlog
 - Safari-compatible loading animation
@@ -78,12 +93,3 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - Re-enable Instagram sharing
 - Break down GlobalSearch.js into smaller components
 - Replace star imports in backend routes
-
-## Key Files
-- `frontend/src/components/DailyPrompt.js` - Daily Prompt card + Buzz-In modal with live search
-- `frontend/src/components/ComposerBar.js` - Post composer (Now Spinning, Haul, ISO, Note)
-- `frontend/src/components/layout/GlobalSearch.js` - Psychic search with infinite scroll
-- `frontend/src/pages/HivePage.js` - Main social feed
-- `backend/routes/buzz.py` - Daily prompt backend
-- `backend/routes/search.py` - Search endpoints
-- `backend/routes/honeypot.py` - Marketplace
