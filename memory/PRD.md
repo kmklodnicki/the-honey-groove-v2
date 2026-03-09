@@ -39,11 +39,19 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - Seller reporting (5 reasons)
 - Order issue reporting (4 reasons)
 - Bug reporting with auto-captured URL + browser info
+- **Screenshot upload** for bug reports (optional, JPG/PNG/WebP, 10MB max, preview + remove)
+- **Required description** field for bug reports ("What happened?")
 - Rate limiting: 5 reports per user per 24 hours
 - **Admin Watchtower** - filterable queue with actions:
   - Review, Dismiss, Resolve, Remove Listing, Warn Seller, Suspend Seller
 - Report buttons on: listing detail, seller profile, orders, settings page
 - **Global Navbar Report Button** - AlertTriangle icon in desktop navbar + mobile top bar, opens ReportModal with type "bug" (March 2026)
+
+### UI Consistency (March 2026)
+- **Shared tag components**: `PostTypeBadge`, `ListingTypeBadge`, `TagPill` exported from PostCards.js
+- All tag pills use single color mapping: OG Press=amber, Factory Sealed=emerald, Promo=violet, Any=stone
+- Listing type badges: teal for Trade, green for Sale — consistent across Explore, Honeypot, Search
+- Post type badges: distinct colors per type — used across Hive, Record Detail, Global Search
 
 ### Verification Queue — The Gate (BLOCK 3.3)
 - User ID upload, server-side blur, admin approve/deny
