@@ -28,6 +28,30 @@ const HONEY_SHOP_ITEMS = [
     url: 'https://amzn.to/4unqpdG',
     image: 'https://customer-assets.emergentagent.com/job_088a9581-bbfd-42c2-ad31-f5535df4814c/artifacts/obo7sks1_image3.jpg',
   },
+  {
+    id: 'cracked-ice',
+    honeyLabel: 'The Prism',
+    name: 'Holographic Outer Sleeves - Cracked Ice',
+    descriptor: 'Iridescent protection that makes your shelf shimmer like a disco ball.',
+    url: 'https://vinylsupplyco.com/products/holographic-outer-sleeves?ref=KATHRYNKLODNICKI',
+    image: 'https://customer-assets.emergentagent.com/job_088a9581-bbfd-42c2-ad31-f5535df4814c/artifacts/1rzzzzu9_1.webp',
+  },
+  {
+    id: 'lovely',
+    honeyLabel: 'The Sweetheart',
+    name: 'Holographic Outer Sleeves - Lovely',
+    descriptor: 'Heart-patterned holographic sleeves for the records you love most.',
+    url: 'https://vinylsupplyco.com/collections/holographic-sleeves/products/holographic-outer-sleeves-lovely?ref=KATHRYNKLODNICKI',
+    image: 'https://customer-assets.emergentagent.com/job_088a9581-bbfd-42c2-ad31-f5535df4814c/artifacts/5vhwif93_2.webp',
+  },
+  {
+    id: 'pearl-shimmer',
+    honeyLabel: 'The Glow',
+    name: 'Holographic Outer Sleeves - Pearl Shimmer',
+    descriptor: 'Soft pearl iridescence that gives your collection an ethereal glow.',
+    url: 'https://vinylsupplyco.com/collections/holographic-sleeves/products/holographic-outer-sleeves-pearl-shimmer?ref=KATHRYNKLODNICKI',
+    image: 'https://customer-assets.emergentagent.com/job_088a9581-bbfd-42c2-ad31-f5535df4814c/artifacts/tvavxlin_3.webp',
+  },
 ];
 
 const ApprovedSeal = () => (
@@ -75,7 +99,7 @@ const ProductCard = ({ item }) => (
         data-testid={`cta-${item.id}`}
       >
         <a href={item.url} target="_blank" rel="noopener noreferrer">
-          View on Amazon
+          {item.url.includes('amzn.to') ? 'View on Amazon' : 'Shop Now'}
           <ExternalLink className="w-3.5 h-3.5" />
         </a>
       </Button>
