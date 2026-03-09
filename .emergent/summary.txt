@@ -4,55 +4,50 @@ The user wants to build a web app called **The HoneyGroove**, a social platform 
 **PRODUCT REQUIREMENTS (Synthesized from initial request and user directives in this session):**
 *   **Core App:** A full-stack application for vinyl collectors to track their collection, log spins, and interact socially.
 *   **Branding & UI/UX:** A warm, honey-inspired theme with a clean, modern UI, amber color palette, and specific fonts.
-*   **Key Features Implemented This Session:**
-    1.  **Paste Bug Fix:** Fixed a bug where pasting text into input fields with character limits was silently failing.
-    2.  **New Feature Admin Tag:** Implemented an admin-only ✨ New Feature tag for Hive posts, with special styling, card emphasis, and a feed filter.
-    3.  **Admin User Deletion:** Added a Remove User feature to the admin panel, allowing admins to delete users and all their associated data with a confirmation modal.
-    4.  **Critical Feed Bug Fix:** Fixed a bug where new users could only see their own posts. The fix involved changing the main feed query and updating the client-side Following filter.
-    5.  **UI/UX Enhancements (Optimistic Likes, Variant Pills, Notes):**
-        *   Improved the Like button with an error toast and a larger mobile touch target.
-        *   Added a Color Variant pill with a glassmorphism style to various post cards.
-        *   Added truncated user notes to sale/listing cards.
-    6.  **The Hunt Completed Workflow:** Implemented a flow where clicking Found on an In Search Of (ISO) item moves it to the user's main collection, removes it from the ISO list, and triggers a confetti animation.
-    7.  **Collection Quick Actions:** Added a dropdown on collection items to move them to a Wishlist or back to the ISO hunt.
-    8.  **Dream Debt Calculator:** Added a feature to the Wishlist that calculates and displays the total value of all records on it, with a Certified Delusional 💅 badge for high totals.
-    9.  **Major Architectural Refactor (Reality/Dreaming/Hunt):**
-        *   Clarified the app's core concepts by splitting user items into three distinct categories:
-            *   **Reality:** The user's owned collection (formerly The Hive tab within Collection).
-            *   **Dreaming:** A passive wishlist (formerly just Wishlist).
-            *   **The Hunt:** An active wantlist where the user is Ready to Buy (formerly ISO).
-        *   Refactored the Collection and Honeypot (Marketplace) pages to reflect this new structure with distinct tabs, styling (solid vs. ghost pills), and user flows.
-    10. **Context-Aware Add Record Flow:** The Add Record button and flow are now dynamic. Depending on whether the user is on the Reality or Dreaming tab, the entire add process (labels, toasts, database action) adapts accordingly. This includes adding a variant selector during the add process.
-    11. **Upgrade to Reality Modal:** (IN PROGRESS) When a user finds an item from their Hunt (Wantlist), a confirmation modal should appear, allowing them to set the final condition before moving it to their Reality (Collection).
+*   **Key Features & Terminology:**
+    1.  **Core Concepts:** The app is built around three user-item categories with specific terminology:
+        *   **Collection:** Records the user owns (formerly Reality).
+        *   **Dream Items:** A passive wishlist of desired records (formerly Dreaming, Wishlist).
+        *   **Actively Seeking:** An active wantlist of records the user is ready to buy (formerly The Hunt, Wantlist).
+    2.  **Upgrade to Reality Workflow:** A modal appears when a user moves a record from Actively Seeking to their Collection, allowing them to set the final condition and price.
+    3.  **Reverse Flow & Bulk Actions:** Users can move items from their Collection back to Dream Items or Actively Seeking individually (with confirmation) or in bulk.
+    4.  **Taste Match Social Engine:** A comprehensive social feature that:
+        *   Calculates a Taste Match percentage score between users.
+        *   Displays a Record Soulmates 🍯 badge for high matches.
+        *   Features an In Common tab on profiles to view shared records and dream items.
+        *   Calculates and displays the monetary value of shared Dream Items.
+    5.  **My Kinda People Discovery:** A carousel on the homepage suggesting other users with a high Taste Match.
+    6.  **Gated Daily Prompt:** Users must Buzz In (answer the daily prompt) before they can view other users' answers in a new carousel interface.
+    7.  **Consistent UI Overlays:** Frosted-glass pills for Variant Name and Honeypot Rating are now consistently overlaid on album art across all feed and collection cards for immediate visibility.
+    8.  **UI/Terminology Refinement:** Multiple sessions of refining UI text, button colors, and layout for brand consistency, culminating in the Collection / Dream Items / Actively Seeking terminology.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A sophisticated full-stack application for vinyl collectors. This session dramatically refactored the app's core data model and UX around three concepts: Reality (what you own), Dreaming (what you want someday), and The Hunt (what you are actively trying to buy). The UI is now highly context-aware, with dynamic buttons and workflows that adapt to the user's intent. Numerous features were added, including robust admin tools (user deletion, feature tagging), critical bug fixes (feed visibility, paste functionality), and significant UI/UX polishing (optimistic likes, consistent variant pills, refined branding).
+A sophisticated full-stack application for vinyl collectors with a strong social graph. The app's core data model and UX are centered on the concepts of Collection (owned), Dream Items (wishlist), and Actively Seeking (active wantlist). The UI is highly interactive and context-aware, featuring dynamic workflows, animated value counters, and a consistent, polished honey-gold aesthetic. This session introduced major social features (Taste Match, My Kinda People), a gamified Daily Prompt with a participation gate, and numerous UI/UX enhancements and terminology standardizations requested by the user.
 
 **Last working item**:
-    - Last item agent was working: Implementing the **Upgrade to Reality Modal**. When a user moves an item from The Hunt (Wantlist) to their Reality (Collection), a confirmation modal should appear to finalize the record's condition and price. The agent was in the initial exploration phase, viewing  to understand the current workflow before coding.
-    - Status: NOT STARTED
+    - Last item agent was working: The user requested a final round of UI and terminology changes: replacing the add to reality button with add to collection, changing dream value to value of ISOs, and renaming the reality pill to collection value. The agent was exploring  and  to assess the scope of these changes.
+    - Status: IN PROGRESS
     - Agent Testing Done: N
-    - Which testing method agent to use? both
+    - Which testing method agent to use? frontend testing agent
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  - Issue 1: Implement the Upgrade to Reality Modal (P0)
+  - Issue 1: Final UI and terminology cleanup (P0)
 
   Issues Detail:
   - Issue 1: 
-     - Attempted fixes: None.
-     - Next debug checklist:
-        1.  Create a new confirmation modal component.
-        2.  In , modify the Found It button/handler. Instead of the current  call, it should trigger the new modal.
-        3.  The modal should contain dropdowns for Media Condition and Sleeve Condition, and an optional Price Paid input field.
-        4.  Create a new backend endpoint (e.g., ) that takes the new data (condition, price) and performs the move from ISO to the user's collection.
-        5.  On successful confirmation in the modal, call the new backend endpoint and trigger a success animation/toast.
-     - Why fix this issue and what will be achieved with the fix? This adds a necessary confirmation step to a critical workflow, preventing accidental data changes and allowing the user to record important details (like condition and price paid) at the moment of acquisition. It makes the win of finding a record more intentional and satisfying.
-     - Status:  NOT STARTED
-     - Is recurring issue? N
-     - Should Test frontend/backend/both after fix? both
+     - Attempted fixes: None. The agent was in the exploration phase.
+     - Next debug checklist: 
+        1.  In , rename the Add to Reality button to Add to Collection.
+        2.  Clarify the dream value to value of ISOs request. The current term is Wishlist Value (for Dream Items). ISOs now refers to Actively Seeking. This may be a request to add a value counter for the Actively Seeking list. Implement based on clarification.
+        3.  Search for the Reality pill and rename its text to Collection Value.
+        4.  Run a global search for Reality, Dream Value to catch any other lingering instances in user-facing text.
+     - Why fix this issue and what will be achieved with the fix? This will bring the application's terminology into final alignment with the user's explicit requests, ensuring a clear and consistent user experience.
+     - Status:  IN PROGRESS
+     - Is recurring issue? Y
+     - Should Test frontend/backend/both after fix? frontend
      - Blocked on other issue: None
 
 **In progress Task List**:
@@ -70,101 +65,93 @@ A sophisticated full-stack application for vinyl collectors. This session dramat
     - Re-enable Instagram sharing features.
 
 **Completed work in this session**
-- **Bug Fix: Paste Input:** Fixed silent rejection of pasted text in inputs with character limits (, ).
-- **Feature: Admin New Feature Tag:** Implemented an admin-only tag for Hive posts, including a backend toggle endpoint and frontend UI/filtering (, , ).
-- **Feature: Admin User Deletion:** Added a Remove User button with a confirmation modal in the admin panel, with a backend endpoint to cascade-delete the user and their data (, ).
-- **Bug Fix: New User Feed Visibility:** Fixed a critical bug where new users could not see posts from others (, ).
-- **Feature: The Hunt Completed Workflow:** Created a flow to move records from ISO to Collection with a confetti celebration (, ).
-- **Feature: Dream Debt Calculator:** Added a wishlist value calculator with custom copy and a conditional badge (, ).
-- **Refactor: Architectural Split (Reality/Dreaming/Hunt):** A major refactor separating user items into owned (Reality), passive wishlist (Dreaming), and active wantlist (The Hunt). This involved new backend endpoints, new tabbed UI on the collection page, and renaming the ISO page (, , , ).
-- **Feature: Context-Aware Add Record Flow:** Made the Add Record button and modal dynamic based on the user's active tab (Reality or Dreaming), including a variant selector (, , ).
-- **UI/UX Polish:** Improved optimistic Likes, added glassmorphism variant pills to cards, displayed collector notes, and refined branding/copy across the app (The Gold Standard, Bring to Reality).
+- **Feature: Upgrade to Reality Modal:** Implemented the full workflow for moving a record from Actively Seeking to Collection via a confirmation modal to set condition/price.
+- **Feature: Reverse Flow & Bulk Actions:** Implemented workflows to move records from Collection back to Dream Items or Actively Seeking, both individually and in bulk.
+- **Feature: Taste Match Engine:** Created a full social comparison feature, including a score, Record Soulmates badge, and an In Common tab on profiles showing shared records and dream items.
+- **Feature: My Kinda People Discovery:** Added a discovery carousel on the home page suggesting users with similar tastes.
+- **Feature: Gated Daily Prompt Carousel:** Refactored the daily prompt to require users to answer (Buzz In) before being able to browse other users' responses in a new carousel UI.
+- **Feature: Feed Filtering:** Enabled filtering the main feed by daily prompt responses.
+- **UI: Consistent Card Overlays:** Refactored all album art cards (feed, collection, profile) to display variant and rating information in consistent frosted-glass overlay pills.
+- **UI/Terminology Overhaul:** Performed multiple, session-wide refactors of UI text, component names, and variable names to align with user feedback, evolving from Reality/Dreaming to Collection/Dream Items.
+- **UI: Profile Stats Refactor:** Iteratively refined the mobile and desktop layout of profile statistics to meet user specifications.
 
 **Earlier issues found/mentioned but not fixed**
-- None.
+   - None.
 
 **Known issue recurrence from previous fork**
-  - **Issue recurrence in previous fork:**  test data appearing; Image uploads not working.
-  - **Recurrence count:** 3+
-  - **Status:** RESOLVED. No recurrence of these issues was observed in this session.
+  - None observed in this session.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- **Context-Aware UI:** The core theme of this session. The UI (buttons, labels, modals) and backend logic now dynamically adapt based on the user's current context (e.g., the Reality vs. Dreaming tabs).
-- **State-Driven Workflows:** Using URL parameters () and React state () to manage and persist user intent across different pages and components, creating seamless user flows.
-- **Conceptual Data Modeling:** Evolving the data model to distinguish between a passive wishlist and an active ISO/hunt list, which provides clearer user intent and enables more powerful features.
-- **Robust Admin Tooling:** Building safe and effective admin features, such as user deletion with a confirmation modal and cascading database cleanup.
-- **Defensive Frontend Logic:** Proactively fixing the Following filter on the frontend after a backend change, demonstrating an understanding of how backend and frontend dependencies work.
-- **Iterative UI Refinement:** Continuously improving components and branding based on user feedback, such as evolving the  with multiple styles (solid, ghost, gold) and refining brand copy from The Main Chamber to The Gold Standard.
+- **Iterative Refinement:** The session was characterized by rapid, iterative cycles of implementing features and then refining their UI, terminology, and styling based on precise user feedback.
+- **Feature Gating:** Implemented a participation gate for the Daily Prompt, a pattern where content is locked until the user contributes.
+- **API-Driven Social Graph:** Built out multiple backend endpoints (, ) to power social discovery and comparison features, making the app more of a network.
+- **Component-Level Styling Consistency:** Refactored and applied consistent styling for UI elements like the Variant Pill across many different components and pages to create a unified look and feel.
+- **URL-based State Management:** Used URL parameters (, ) to control page state, enabling deep-linking into filtered views and specific tabs.
+- **Optimistic UI:** Used for the Dream Value counter to provide immediate feedback to the user when an item is moved, enhancing the user experience.
 
 **key DB schema**
-- **posts:** Added  (boolean).
-- **collection_items:** Added  (string) and  (string, e.g., 'Found via ISO').
-- **iso_items:** Schema now implicitly handles two states: active hunt ('iso') and passive wishlist ('wishlist'), likely differentiated by a flag.
+- No direct schema changes were made. The existing  collection is used for both Dream Items (status: 'WISHLIST') and Actively Seeking (status: 'OPEN'). The logic in the backend routes now cleanly separates these concepts.
 
 **changes in tech stack**
-- **Added:**  for UI celebrations.
+- None.
 
 **All files of reference**
-- **Core Refactor:** , , 
-- **Backend Logic:** , , , 
+- **Core Logic:** , , , 
+- **Backend Endpoints:** , , , , 
 - **Key Components:** , , 
-- **Bug Fixes:** , 
 
 **Areas that need refactoring**:
--  and  have undergone significant changes but remain large, stateful components. They could potentially be broken down further into more specialized hooks and components.
-- The distinction between  being used for both The Hunt and Wishlist might benefit from a dedicated  collection in the future to simplify queries, though the current approach works.
+-  and  have become monolithic components managing a large amount of state and conditional logic. They are prime candidates to be broken down into smaller, more focused components and custom hooks to improve maintainability.
 
 **key api endpoints**
-- ****: (NEW) Deletes a user and all their associated data.
-- ****: (NEW) Toggles the  flag on a post (admin-only).
-- ****: (UPDATED/REPLACED) Moves an ISO item to the main collection.
-- ****: (NEW) Moves an owned record to the wishlist.
-- ****: (NEW) Moves an owned record back to the active hunt.
-- ****: (NEW) Moves a wishlist item to the active hunt (Wantlist).
-- ****: (NEW) Calculates the total value of a user's wishlist.
-- ****: (UPDATED) Now accepts  ('owned' or 'wishlist') and .
+- ****: Moves an Actively Seeking item to the user's Collection.
+- ****: Moves multiple Collection items to Dream Items or Actively Seeking.
+- ****: Calculates social compatibility score and shared items between two users.
+- ****: Gets a list of users with high taste match for the discovery feature.
+- ****: Gets responses for the daily prompt (gated by user participation).
+- ****: Gets the public Dream Items list for a user profile.
+- ****: Gets the total value of a user's public Dream Items.
 
 **Critical Info for New Agent**
-- The app's entire collection/wishlist concept has been refactored into **Reality (owned), Dreaming (wishlist), and The Hunt (active wantlist)**. Understanding this three-part distinction is critical for any future work.
-- The UI is highly context-aware. Changes often need to be considered for all three contexts.
-- The  now uses a URL parameter () to determine its behavior.
-- The user is currently focused on creating satisfying, intentional workflows with clear confirmation steps, as seen in the request for the Upgrade to Reality modal.
+- **Terminology is King:** The user has very specific terms for core features. Do not deviate from the latest set: **Collection**, **Dream Items**, and **Actively Seeking**. A significant portion of this session was spent standardizing this terminology.
+- **UI/UX Precision:** The user is highly attentive to visual details like colors (e.g., Sunset Gold), gradients, shadows, and layout alignment. Adhere strictly to UI instructions.
+- **Social First:** The application's focus has heavily shifted towards social interaction. Taste Match, My Kinda People, and the In Common views are central to the product vision.
+- **Check for Existing Endpoints:** Before building new logic, check the  directory. Many utility endpoints for fetching public user data (collections, wishlists, values) have been added.
 
 **documents and test reports created in this job**
--  (updated after each completed feature)
-- Numerous test reports from  were generated and are available in .
+-  (updated after each major feature block)
+- Multiple test reports in , with the latest being .
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Requested context-sensitive Add Record button. (COMPLETED)
-2.  **Agent:** Started implementing the context-aware add flow. (COMPLETED)
-3.  **Agent:** Completed the context-aware add flow, including testing agent fixes. (COMPLETED)
-4.  **User:** Requested Upgrade to Reality modal for moving items from The Hunt to Reality. (IN PROGRESS)
-5.  **Agent:** Started exploring the codebase for the modal implementation. (IN PROGRESS)
-(The remaining messages are the agent's internal thoughts and tool calls for the last working item).
+1.  **User:** Requested terminology change from Wishlist/Wantlist to Dream Items/Actively Seeking and new feed card overlays. (COMPLETED)
+2.  **Agent:** Began implementing the terminology and UI changes. (IN PROGRESS)
+3.  **Agent:** Successfully renamed Wantlist references found by the testing agent. (COMPLETED)
+4.  **User:** Requested final terminology cleanup: add to reality -> add to collection, dream value -> value of ISOs, reality pill -> collection value. (PENDING)
+5.  **Agent:** Started exploring the codebase to address the final cleanup request. (IN PROGRESS)
 
 **Project Health Check:**
 - **Broken:** None.
-- **Mocked:** The  integration for general platform emails (e.g., invites, password resets) is still mocked. It is LIVE for feedback/bug report emails.
+- **Mocked:** The  integration for general platform emails (e.g., invites, password resets) is still mocked. It is live for feedback/bug report emails.
 
 **3rd Party Integrations**
 - **Stripe Connect:** **LIVE MODE**.
 - **Discogs API:** For record data and pricing.
-- **Resend:** **Partially Live**. Used for admin notifications.
+- **Resend:** **Partially Live**. Used for admin notifications and feedback emails.
 - **Google Tag Manager / Google Analytics:** For analytics.
 - **Emergent Storage:** For all file uploads.
-- **canvas-confetti:** (NEW) For UI celebrations.
+- **canvas-confetti:** For UI celebrations.
 
 **Testing status**
-- **Testing agent used after significant changes:** YES. The agent ran comprehensive tests after every feature and bug fix, consistently achieving a 100% pass rate. The testing agent also found and fixed two bugs during the session.
+- **Testing agent used after significant changes:** YES. The agent ran comprehensive tests after every major feature implementation and terminology refactor, consistently achieving 100% pass rates and using the feedback to fix regressions.
 - **Troubleshoot agent used after agent stuck in loop:** NO
 - **Test files created:** None.
-- **Known regressions:** None.
+- **Known regressions:** The testing agent caught several lingering instances of old terminology (Wantlist), which the agent then successfully resolved.
 
 **Credentials to test flow:**
-- Use the Admin Panel to send an invite to a test email address to register a new user.
+- Use the Admin Panel to send an invite to a test email address to register a new user for testing social features.
 
 **What agent forgot to execute**
-- Nothing. The agent successfully completed all user requests in the session.</analysis>
+- The agent has not forgotten any tasks, but is in the middle of implementing the user's most recent request for terminology and UI text changes.</analysis>

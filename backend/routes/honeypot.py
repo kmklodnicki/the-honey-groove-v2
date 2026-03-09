@@ -226,7 +226,7 @@ async def acquire_iso(iso_id: str, body: ISOAcquireRequest, user: Dict = Depends
     await db.posts.update_many({"iso_id": iso_id}, {"$set": {"iso_status": "FOUND"}})
 
     return {
-        "message": f"{iso.get('album')} is now in your Reality.",
+        "message": f"{iso.get('album')} is now in your Collection.",
         "record_id": record_id,
         "title": iso.get("album"),
         "artist": iso.get("artist"),

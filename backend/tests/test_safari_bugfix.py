@@ -67,7 +67,7 @@ class TestSafariBugFix:
         response = requests.options(
             f"{BASE_URL}/api/auth/me",
             headers={
-                "Origin": "https://wax-collector-dev.preview.emergentagent.com",
+                "Origin": "https://groove-collector-hub.preview.emergentagent.com",
                 "Access-Control-Request-Method": "GET"
             }
         )

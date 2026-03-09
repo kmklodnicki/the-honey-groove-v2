@@ -390,7 +390,7 @@ const ISOPage = () => {
     finally { setSubmitting(false); }
   };
 
-  // "Upgrade to Reality" modal state
+  // "Upgrade to Collection" modal state
   const [acquireTarget, setAcquireTarget] = useState(null);
   const [acquireMediaCond, setAcquireMediaCond] = useState('');
   const [acquireSleeveCond, setAcquireSleeveCond] = useState('');
@@ -417,7 +417,7 @@ const ISOPage = () => {
       setIsos(prev => prev.filter(i => i.id !== acquireTarget.id));
       setAcquireTarget(null);
       confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 }, colors: ['#E8A820', '#C8861A', '#8A6B4A', '#FFD700'] });
-      toast.success(`Congrats! ${res.data.title || 'Your record'} is now in your Reality.`);
+      toast.success(`Congrats! ${res.data.title || 'Your record'} is now in your Collection.`);
       setTimeout(() => navigate('/collection'), 1500);
     } catch { toast.error('something went wrong.'); }
     finally { setAcquireSubmitting(false); }
@@ -1003,12 +1003,12 @@ const ISOPage = () => {
         onProposeTrade={(l) => { if (!user?.country) { setShowCountryGate(true); return; } setTradeTarget(l); }}
       />
 
-      {/* ===== Upgrade to Reality Modal ===== */}
+      {/* ===== Upgrade to Collection Modal ===== */}
       <Dialog open={!!acquireTarget} onOpenChange={(open) => { if (!open) setAcquireTarget(null); }}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle className="font-heading flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-[#C8861A]" /> Upgrade to Reality
+              <CheckCircle2 className="w-5 h-5 text-[#C8861A]" /> Upgrade to Collection
             </DialogTitle>
             <DialogDescription>
               {acquireTarget?.album && acquireTarget?.artist
@@ -1060,7 +1060,7 @@ const ISOPage = () => {
               data-testid="acquire-confirm-btn"
             >
               {acquireSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-              Bring to Reality
+              Bring to Collection
             </Button>
           </div>
         </DialogContent>
