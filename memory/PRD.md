@@ -89,6 +89,7 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - Grading Guide page (optional)
 
 ### Completed Recently
+- **BLOCK 54: Daily Prompt Founder Label Bug Fix** - DONE (2026-03-09). The "Founder" badge was showing for ALL users in Daily Prompt slides because `founding_member` is `true` for all users (first 500 get it for fee purposes). Fixed by restricting the "Founder" label display to only `katieintheafterglow` username. File: `frontend/src/components/DailyPrompt.js`.
 - **BLOCK 53: Privacy Settings + Follow Requests + DM Gating** - DONE (2026-03-09). Full 3-phase implementation:
   - **Phase 1 (Privacy + Follow Requests):** `is_private` toggle in Settings. Private profiles show locked content (Instagram-style) with mutual signals. Follow requests with accept/decline. "Request to Follow" / "Requested" button states. FollowRequestsBadge on own profile. All profile data endpoints gated.
   - **Phase 2 (DM Gating):** `dm_setting` (everyone/following/requests) in Settings. DM creation enforces setting. Message requests with pending status. Accept/decline in thread view. Separate "Requests" tab in Messages inbox.

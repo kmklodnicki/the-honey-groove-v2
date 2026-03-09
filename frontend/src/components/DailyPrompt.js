@@ -125,7 +125,7 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
                       <Link to={`/profile/${currentResp.username}`} className="text-xs font-bold text-vinyl-black hover:text-honey-amber transition" data-testid="carousel-username">
                         @{currentResp.username}
                       </Link>
-                      {currentResp.founding_member && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-honey/20 text-amber-700 font-bold">Founder</span>}
+                      {currentResp.username?.toLowerCase() === 'katieintheafterglow' && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-honey/20 text-amber-700 font-bold">Founder</span>}
                     </div>
                     <p className="text-sm font-medium truncate">{currentResp.record_title}</p>
                     <p className="text-xs text-muted-foreground truncate">{currentResp.record_artist}</p>
