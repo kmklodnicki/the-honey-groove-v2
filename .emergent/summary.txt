@@ -3,176 +3,197 @@ The user wants to build a web app called **The HoneyGroove**, a social platform 
 
 **PRODUCT REQUIREMENTS (Synthesized from initial request and subsequent user directives):**
 *   **Core App:** A full-stack application for vinyl collectors to track their collection, log spins, and interact socially.
-*   **Branding & UI/UX:** A warm, honey-inspired theme with a clean, modern UI, amber color palette, and specific fonts. The navbar logo must be prominent.
-*   **User System & Onboarding:** Invite-only, email-verified accounts. Beta invite links must lead directly to the onboarding flow. **UPDATE:** The email verification requirement has been removed. Users must select their country during onboarding.
+*   **Branding & UI/UX:** A warm, honey-inspired theme with a clean, modern UI, amber color palette, and specific fonts. The user has introduced a branded Honey grading system to complement the standard vinyl grading.
+*   **User System & Onboarding:** Invite-only, email-verified accounts. Users can add social links. A Golden Hive verification system for sellers has been introduced, managed by an admin queue (The Gate).
 *   **Social & Engagement Features:**
-    *   A social feed (The Hive) with filters (All, Now Spinning, New Haul, ISO, Sale/Trade, Following).
-    *   Users can like and reply to comments. Replies are nested.
-    *   Users can @mention others in comments, triggering an autocomplete search and a notification.
-    *   Admin users can pin one post to the top of the Hive feed.
-*   **Notifications:** Must be interactive, deep-linking to the relevant post or comment. Message notifications should be separated from activity notifications.
+    *   A social feed (The Hive) with filters and pagination.
+    *   Full comment system.
+    *   A unified reporting system for users to flag listings, sellers, orders, or platform bugs.
 *   **Marketplace (The Honeypot):**
-    *   Sellers can mark listings as Open to international shipping.
-    *   Listings are only visible/purchasable by users in the same country unless international shipping is enabled.
-    *   Users must have a country set on their profile to buy, sell, or trade.
-    *   During checkout, the buyer's shipping address country must match their profile country.
-    *   Creating a new sale/trade listing automatically creates a corresponding post in the Hive feed.
-*   **Data Integrity:** Test and demo data must be hidden. Blank ISO posts must be prevented and removed.
+    *   Sellers can set shipping costs.
+    *   A Honey Pulse feature provides market pricing intelligence based on Discogs sales data.
+    *   A Take Home Honey payout estimator is shown in the listing form.
+    *   An automated cron job handles seller payouts based on delivery status and seller rating.
+*   **Search & Discovery:**
+    *   A psychic global search with weighted scoring and infinite scroll.
+*   **Data & Content:**
+    *   A daily prompt that refreshes at midnight ET, featuring a live album search.
+*   **SEO:** The site should have JSON-LD schema and dynamic alt tags for all album art.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack application (React, FastAPI, MongoDB) for vinyl collectors. The platform features user accounts, collection management, a social feed (The Hive), and a sales/trades marketplace (The Honeypot) using live Stripe keys.
+A comprehensive full-stack application (React, FastAPI, MongoDB) for vinyl collectors. The platform features user accounts, collection management, a social feed (The Hive), and a live Stripe-powered marketplace (The Honeypot).
 
-In this session, a significant number of features and bug fixes were implemented, including: a complete comment system overhaul (likes, nested replies, @mentions), an admin post-pinning system, deep-linking for notifications, international shipping logic for the marketplace, a country selector for user profiles, automatic Hive posts for new listings, and various UI/UX polishes and critical bug fixes. The application is significantly more feature-rich and stable than at the start of the session.
+This session saw the implementation of several major features:
+1.  **Dual Grading System:** A branded Honey grading system (e.g., VG+ - The Sweet Spot 🍯) with tooltips was implemented across the entire application, while the standard grading codes are preserved in the database.
+2.  **Payout & Pricing Tools:** A live Take Home Honey payout estimator and a Honey Pulse market signal (based on Discogs data) were added to the listing process.
+3.  **Seller Verification (The Gate):** A secure admin queue was built for verifying seller IDs. This includes server-side image blurring to protect user data.
+4.  **Automated Payouts:** A backend cron job was created to automate seller payouts 24-72 hours after an order is marked as delivered, with timing dependent on seller rating.
+5.  **Reporting System (The Watchtower):** A unified system was created allowing users to report listings, sellers, orders, and bugs, all feeding into a new admin moderation queue.
+6.  **Daily Prompt UX:** The daily prompt modal was upgraded with a live, real-time album search, mirroring the Now Spinning feature.
+7.  **Bug Fixes & SEO:** A bug preventing the like button from working on desktop was fixed, and all album art  tags were updated to a more SEO-friendly format.
 
 **Last working item**:
-- **Last item agent was working:** Implementing a filter bar at the top of The Hive feed. The filter bar allows users to filter posts by type (, , , , etc.) and to see posts only from users they follow. The filtering logic was implemented on the client-side in .
-- **Status:** USER VERIFICATION PENDING
-- **Agent Testing Done:** N
-- **Which testing method agent to use?** Frontend testing agent. The agent should create various post types, log in as a user, and click each filter option in the new filter bar on the Hive page to verify that the feed content updates correctly according to the selected filter.
-- **User Testing Done:** N
+    - **Last item agent was working:** The agent was analyzing the codebase to address two new user requests:
+        1.  Add a Report a Problem icon to the main top navigation bar.
+        2.  Ensure tag color styling is consistent between The Hive feed and marketplace listing cards.
+    - **Status:** NOT STARTED
+    - **Agent Testing Done:** N
+    - **Which testing method agent to use?** Frontend testing agent. Tests should verify the new navbar icon opens the correct modal and that tag components in different locations render with identical CSS colors.
+    - **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-- None.
+  - **Issue 1: Report a Problem Icon & Modal (P0)**
+     - **Description:** Add a Report a Problem entry point in the main navigation bar. Clicking it should open a modal for submitting bug reports or other issues.
+     - **Status:** NOT STARTED
+  - **Issue 2: Tag Color Inconsistency (P1)**
+     - **Description:** Tags (PostTypeBadge) displayed in The Hive feed have different colors than the same tags on listing cards. The styling needs to be unified.
+     - **Status:** NOT STARTED
+
+  **Issues Detail:**
+  - **Issue 1: Report a Problem Icon & Modal (P0)**
+     - **Attempted fixes:** None.
+     - **Next debug checklist:**
+        - : Add the new icon button to the navigation bar.
+        - : Reuse or adapt the existing report modal for this new entry point. A new state will need to be added to the  or a global context to manage the modal's visibility.
+     - **Why fix this issue and what will be achieved with the fix?** This will provide a global, easily accessible way for users to report platform-wide issues, improving moderation and user trust.
+     - **Status:** NOT STARTED
+     - **Is recurring issue?** N
+     - **Should Test frontend/backend/both after fix?** Frontend
+     - **Blocked on other issue:** None.
+  - **Issue 2: Tag Color Inconsistency (P1)**
+     - **Attempted fixes:** None.
+     - **Next debug checklist:**
+        - : Analyze how colors are currently assigned.
+        -  & components rendering listing cards (e.g., ): Compare how the  component is used in different contexts.
+        - Create a centralized color mapping utility (e.g., in ) and refactor  to use it, ensuring a single source of truth for tag colors.
+     - **Why fix this issue and what will be achieved with the fix?** This will create a more polished and visually consistent user experience across the application.
+     - **Status:** NOT STARTED
+     - **Is recurring issue?** N
+     - **Should Test frontend/backend/both after fix?** Frontend
+     - **Blocked on other issue:** None.
 
 **In progress Task List**:
-- None.
+  - None.
 
 **Upcoming and Future Tasks**
 - **Upcoming Tasks:**
-  - **P1: Implement Weekly Wax Email:** Ensure the scheduled Weekly Wax email is correctly configured to be sent every Sunday at 12:00 PM ET.
-  - **P2: Hauls Enhancement:** Develop a dedicated page and more functionality for Haul posts.
-  - **P2: Refactor :** Address known technical debt in this complex component.
+    - **P1: Implement Weekly Wax Email:** Ensure the scheduled Weekly Wax email is correctly configured to be sent every Sunday at 12:00 PM ET.
+    - **P2: Hauls Enhancement:** Develop a dedicated page and more functionality for Haul posts.
+    - **P2: Refactor :** Address known technical debt in this complex component.
 - **Future Tasks:**
-  - Re-implement a new, fully Safari-compatible loading animation.
-  - Implement Pro memberships or a Verified Seller badge.
-  - Implement deferred Buyer Protection features.
-  - Re-enable Instagram sharing features.
+    - Re-implement a new, fully Safari-compatible loading animation.
+    - Implement Pro memberships or a Verified Seller badge (partially implemented with Golden Hive status).
+    - Implement deferred Buyer Protection features.
+    - Re-enable Instagram sharing features.
 
 **Completed work in this session**
-- **Feature: Comment System Overhaul:** Implemented comment likes, nested replies, and @mention functionality with user search autocomplete in  and .
-- **Feature: Admin Pin Post:** Added backend endpoints and frontend UI for admins to pin/unpin a single post to the top of the Hive feed.
-- **Feature: Notification Deep-Linking:** Notifications now navigate users to the specific post and highlight the relevant comment upon clicking.
-- **Feature: International Shipping & Country Profiles:**
-    - Added an Open to international shipping checkbox for listings.
-    - Implemented country-based filtering and purchase restrictions in the marketplace.
-    - Added a mandatory country selection step to user onboarding and an editable field in Settings.
-    - Implemented a Country Gate modal to prompt existing users to set their country.
-- **Feature: Auto-post Listings to Hive:** New marketplace listings for sale or trade now automatically generate a post in the Hive feed.
-- **Feature: Hive Feed Filters:** Added a client-side filter bar to the Hive feed for filtering posts by type.
-- **Bug Fix: Broken Beta Invite Flow (P0):** Resolved a critical bug where invite links were redirecting to the homepage instead of the sign-up flow.
-- **Bug Fixes & UI Polish:**
-    - Fixed broken  import in the Add Record modal.
-    - Increased the navbar logo size for better visibility.
-    - Fixed the  layout where content was hidden by the navbar.
-    - Fixed the non-functional Follow button in the global search dropdown.
-    - Separated DM notifications from the main notification feed.
-    - Added validation to prevent and hide blank/empty ISO posts.
-- **Improvement: Removed Email Verification:** Users can now access the app fully immediately after registration without needing to verify their email.
+- **Feature: Live Search for Daily Prompt:** Implemented a real-time album search in the Daily Prompt modal for a better user experience.
+- **Feature: Dual Grading System:** Deployed a branded Honey grading system with tooltips across all listing forms, cards, and detail pages.
+- **Feature: Payout Estimator & Honey Pulse:** Added a live payout calculator and a market price signal () to the listing creation process.
+- **Feature: Automated Payouts:** Created a backend cron job to automatically process seller payouts after order delivery confirmation.
+- **Feature: Seller Verification (The Gate):** Implemented a secure admin dashboard for verifying seller IDs, featuring server-side image blurring.
+- **Feature: Unified Reporting System (The Watchtower):** Built a comprehensive system for users to report listings, sellers, orders, and bugs, with a dedicated admin moderation queue.
+- **Bug Fix: Desktop Like Button:** Resolved an issue where the heart/like button on posts was unresponsive on desktop by adding  and improving the handler logic.
+- **SEO: Dynamic Alt Tags:** Updated all album art images to use a consistent, SEO-friendly  tag format ().
 
 **Earlier issues found/mentioned but not fixed**
 - None.
 
 **Known issue recurrence from previous fork**
-- **Issue recurrence in previous fork:**  test data appearing; Image uploads not working.
-- **Recurrence count:** 3+
-- **Status:** RESOLVED. No recurrence of these issues was observed in this session.
+  - **Issue recurrence in previous fork:**  test data appearing; Image uploads not working.
+  - **Recurrence count:** 3+
+  - **Status:** RESOLVED. No recurrence of these issues was observed in this session.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- **Component Refactoring:** The  component was extracted from  into its own file () and refactored to be non-recursive to resolve a Maximum call stack size exceeded build error from Babel.
-- **Client-Side Filtering:** Implemented filtering logic directly in React state within  for instant feed filtering without new API calls.
-- **Deep-Linking:** Used React Router's query parameters () to navigate to and highlight specific content within a page.
-- **Conditional UI Gating:** Implemented modals () and disabled buttons to enforce user actions like setting a profile country before accessing marketplace features.
-- **Stripe Enforcement:** Leveraged Stripe Checkout's  with  to enforce that a buyer's shipping address country matches their profile country, offloading validation to Stripe.
-- **Cross-Feature Logic:** Implemented a feature where one action (creating a listing in ) automatically triggers another (creating a post in ).
+- **Centralized Frontend Constants:** Created  to act as a single source of truth for the vinyl grading data (labels, descriptions, colors), ensuring consistency across the app.
+- **Server-Side Image Blurring:** Used  library on the backend in  to generate a blurred version of uploaded ID images, enhancing privacy in the admin panel.
+- **Scheduled Cron Jobs:** Implemented a scheduled background task using  for the automated seller payout system ().
+- **Dynamic Real-time UI:** Built a live payout estimator in React () that recalculates on input changes (, ) by calling a backend endpoint.
+- **Optimistic UI with Error Handling:** Refactored the like button handler in  to update the UI instantly (optimistic update) before the API call completes and included robust error handling and event propagation stoppage.
+- **Rate Limiting:** Applied rate limiting to the report submission endpoint () using  to prevent abuse.
+- **Modular Admin Panel:** Extended the  with new, distinct sections (The Gate, The Watchtower) for different moderation tasks, improving organization.
 
 **key DB schema**
--   **posts:**  (bool),  array now holds nested comment objects with  (ObjectId),  ([ObjectId]), and  ([str]).
--   **listings:**  (bool).
--   **users:** The  field (str, 2-letter ISO code) is now required for marketplace interactions.
--   **notifications:** Added new types: , . The  type is now filtered out of the main notification endpoints.
+- **users:** Added  (bool),  (str, optional),  (datetime),  (int).
+- **listings:** Added  (float),  (str, default: PENDING),  (datetime).
+- **reports:** (NEW collection) Stores ,  (listing | seller | order | bug), , , , , .
+- **verification_requests:** (NEW collection) Stores , , , , , .
 
 **changes in tech stack**
--   None.
+- None.
 
 **All files of reference**
--   **Core Social Features:**
-    -   
-    -   
-    -    (New file)
--   **Marketplace & Country Logic:**
-    -   
-    -   
-    -    (New file)
-    -   
-    -   
--   **Bug Fixes:**
-    -    (Invite fix)
-    -    (Follow button fix)
-    -    (DM notification fix)
-    -    (Blank post fix)
+- **Navbar Report Button:** 
+- **Tag Color Consistency:** , 
+- **Reporting System:** , , 
+- **Verification System:** , , 
+- **Payout System:** , , , 
+- **Grading System:** , 
 
 **Areas that need refactoring**:
--    remains a large and complex component that could benefit from being broken down.
--   Backend routes still use star imports (), which should be replaced with explicit imports for clarity and to avoid namespace pollution.
+-  and  have become very large and complex. They should be broken down into smaller, more focused components.
+- Backend routes still use star imports (), which should be replaced with explicit imports for better code clarity and maintenance.
 
 **key api endpoints**
--   ****: (NEW) Toggles a like on a comment.
--   ****: (UPDATED) Supports a  for creating nested replies.
--   ****: (NEW) Searches for users to @mention in comments.
--   ****: (NEW) Admin endpoint to pin a post.
--   ****: (UPDATED) Now creates a Hive post on success and requires  flag.
--   ****: (UPDATED) Now includes  to enforce country matching.
--   ****: (UPDATED) No longer returns notifications of type .
--   ****: (UPDATED) Now validates that post content is not empty.
+- ****: (NEW) Submits a new report.
+- ****: (NEW) Fetches all reports for The Watchtower.
+- ****: (NEW) Updates the status of a report.
+- ****: (NEW) Uploads an ID for seller verification.
+- ****: (NEW) Fetches pending verifications for The Gate.
+- ****: (NEW) Approves a verification request.
+- ****: (NEW) Rejects a verification request.
+- ****: (NEW) Fetches Honey Pulse market data for a record.
+- ****: (UPDATED) Logic improved.
+- ****: (UPDATED) Now accepts .
 
 **Critical Info for New Agent**
--   **STRIPE IS LIVE.** All payment-related actions are real. Exercise extreme caution.
--   **Country Field is Critical:** The  field on user profiles is now essential for all marketplace functions (listing, buying, trading). The app will block users without a country set.
--   **HivePage.js Complexity:** This file is the hub for most social features. It was recently refactored to extract the  component to fix a build error. Be mindful of its size and complexity when making further changes.
--   **Testing Agent:** The testing agent was used extensively and successfully in this session, catching several bugs before they reached the user. It is a reliable tool for verifying complex features.
+- The immediate priorities are UI tasks: adding a Report a Problem icon to the global navbar and fixing the inconsistent coloring of tags. The necessary components () and data () from previous tasks should be reused.
+- The backend for the reporting system is fully implemented; the new task is just about adding a new frontend entry point for it.
+- **Stripe is LIVE.** Exercise extreme caution with any payment or payout-related code.
 
 **documents and test reports created in this job**
--    (updated multiple times)
--   Multiple test reports in  detailing the successful implementation of new features and bug fixes.
+-  (updated with all new features)
+-  (Daily Prompt live search)
+-  (Grading system)
+-  (Payout Estimator, Verification, Payout Cron)
+-  (Reporting System, Like Button Fix, SEO Alt Tags)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Requests features for comment replies, comment likes, @-mentions, and admin post pinning. (Status: COMPLETED)
-2.  **User:** Requests a fix for the navbar logo being too small. (Status: COMPLETED)
-3.  **User:** Approves the agent's plan to implement the requested features. (Status: COMPLETED)
-4.  **User:** Requests adding international shipping logic to the marketplace and auto-posting new listings to the Hive feed. (Status: COMPLETED)
-5.  **User:** Approves the plan and clarifies that users should set their country in onboarding/settings. (Status: COMPLETED)
-6.  **User:** Requests a gate for users without a country set and validation for shipping address country at checkout. (Status: COMPLETED)
-7.  **User:** Requests removing the email verification requirement and changing placeholder text in the settings location input. (Status: COMPLETED)
-8.  **User:** Reports the Orders page layout is broken on desktop. (Status: COMPLETED)
-9.  **User:** Reports the follow button in search results is not working. (Status: COMPLETED)
-10. **User:** Reports that message notifications should be separate from the main notification dropdown. (Status: COMPLETED)
-11. **User:** Reports a blank ISO post is appearing in the feed. (Status: COMPLETED)
-12. **User:** Requests filters for the Hive feed. (Status: **USER VERIFICATION PENDING**)
+1.  **User:** Provided detailed specs for a new Payout Estimator, Automated Payout Cron, and a The Gate verification queue. (COMPLETED)
+2.  **User:** Confirmed implementation plan for the above, specifying Discogs as the data source for Pulse and server-side blur for ID verification. (COMPLETED)
+3.  **User:** Provided detailed specs for a new unified Report a Problem system. (COMPLETED)
+4.  **User:** Provided specs for mapping album metadata to image  tags for SEO. (COMPLETED)
+5.  **User:** Reported a bug: the heart/like button is not working on desktop. (COMPLETED)
+6.  **User:** Provided detailed specs for The Honey Pulse pricing intelligence feature. (COMPLETED)
+7.  **User:** Requested the agent prioritize the heart button bug fix. (COMPLETED)
+8.  **User:** Provided detailed specs to add a Report a Problem icon to the main navigation bar. (PENDING)
+9.  **User:** Provided detailed specs to ensure tag colors are consistent across the application. (PENDING)
+10. **Agent:** Started exploring the code to implement the navbar icon and tag color fix. (IN PROGRESS)
 
 **Project Health Check:**
--   **Broken:** None.
--   **Mocked:** Email sending via Resend remains mocked.
+- **Broken:** None.
+- **Mocked:** Email sending via Resend is still mocked. The logic is in place, but it doesn't use a live API key.
 
 **3rd Party Integrations**
--   **Stripe Connect:** **LIVE MODE**. For peer-to-peer payments.
--   **Discogs API:** For all record data and search.
--   **Resend:** For transactional emails (mocked).
--   **Google Tag Manager / Google Analytics:** For analytics.
--   **Emergent Storage:** For all file uploads.
+- **Stripe Connect:** **LIVE MODE**. For peer-to-peer payments.
+- **Discogs API:** For all record data, search, and market price (Pulse) intelligence.
+- **Resend:** For transactional emails (mocked).
+- **Google Tag Manager / Google Analytics:** For analytics.
+- **Emergent Storage:** For all file uploads (profile pictures, ID documents).
 
 **Testing status**
--   **Testing agent used after significant changes:** YES. The testing agent was used multiple times to validate large feature drops and successfully identified and fixed several backend and frontend bugs.
--   **Troubleshoot agent used after agent stuck in loop:** NO
--   **Test files created:** None.
--   **Known regressions:** None identified in this session.
+- **Testing agent used after significant changes:** YES. The agent successfully ran comprehensive tests after implementing the grading system, the payout/verification features, and the reporting system, achieving 100% success on all test runs.
+- **Troubleshoot agent used after agent stuck in loop:** NO
+- **Test files created:** None.
+- **Known regressions:** None.
 
 **Credentials to test flow:**
--   To test protected flows, use the Admin Panel to send an invite to a test email address. Use that invite link to register a new user. This flow is now working correctly.
+- To test protected flows, use the Admin Panel to send an invite to a test email address. Use that invite link to register a new user. This flow is working correctly.
 
 **What agent forgot to execute**
--   The agent successfully implemented all user requests from this session. The remaining tasks are from the long-term backlog defined in previous sessions.</analysis>
+- The agent successfully completed all requested tasks and bug fixes from the session.</analysis>

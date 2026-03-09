@@ -12,9 +12,10 @@ import {
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog';
-import { Home, Search, User, LogOut, Settings, Library, ShoppingBag, ArrowRightLeft, Bell, Check, MessageCircle, Globe, HelpCircle, Package } from 'lucide-react';
+import { Home, Search, User, LogOut, Settings, Library, ShoppingBag, ArrowRightLeft, Bell, Check, MessageCircle, Globe, HelpCircle, Package, AlertTriangle } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import GlobalSearch from './GlobalSearch';
+import ReportModal from './ReportModal';
 import { resolveImageUrl } from '../utils/imageUrl';
 
 // Bee icon SVG component
@@ -50,6 +51,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchOpen, setSearchOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -127,6 +129,17 @@ const Navbar = () => {
           <div className="flex items-center gap-2">
             {user && <DMBadge />}
             {user && <NotificationBell />}
+            {user && (
+              <Button
+                variant="ghost"
+                className="relative h-9 w-9 rounded-full"
+                onClick={() => setReportOpen(true)}
+                data-testid="nav-report-btn"
+                title="Report a Problem"
+              >
+                <AlertTriangle className="h-5 w-5 text-vinyl-black" />
+              </Button>
+            )}
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -202,6 +215,15 @@ const Navbar = () => {
           <div className="flex items-center gap-2 shrink-0">
             <DMBadge />
             <NotificationBell />
+            <Button
+              variant="ghost"
+              className="relative h-8 w-8 rounded-full p-0"
+              onClick={() => setReportOpen(true)}
+              data-testid="mobile-report-btn"
+              title="Report a Problem"
+            >
+              <AlertTriangle className="h-5 w-5 text-vinyl-black" />
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0" data-testid="mobile-user-menu">
@@ -283,6 +305,14 @@ const Navbar = () => {
         <GlobalSearch onClose={() => setSearchOpen(false)} />
       </DialogContent>
     </Dialog>
+
+    {/* Report a Problem Modal */}
+    <ReportModal
+      open={reportOpen}
+      onOpenChange={setReportOpen}
+      targetType="bug"
+      targetId={null}
+    />
     </>
   );
 };
