@@ -631,12 +631,13 @@ const CollectionPage = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel data-testid="cleanse-cancel-btn">Keep it</AlertDialogCancel>
+            <AlertDialogCancel className="border-amber-100 hover:bg-amber-50/50" data-testid="cleanse-cancel-btn">Keep it</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmCleanse}
-              className={cleanseTarget?.type === 'dreaming'
-                ? 'bg-stone-600 hover:bg-stone-700'
-                : 'bg-amber-600 hover:bg-amber-700'}
+              style={cleanseTarget?.type === 'dreaming'
+                ? { background: 'linear-gradient(135deg, #FFD700 0%, #FDB931 100%)', color: '#3E2723', boxShadow: '0 4px 15px rgba(253, 185, 49, 0.3)' }
+                : { background: 'linear-gradient(135deg, #E8A820, #C8861A)', color: '#fff' }}
+              className="border-0 font-medium"
               data-testid="cleanse-confirm-btn"
             >
               {cleanseTarget?.type === 'dreaming' ? 'Move to Dreaming' : 'Move to The Hunt'}

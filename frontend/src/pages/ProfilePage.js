@@ -243,7 +243,7 @@ const ProfilePage = () => {
                   <button
                     onClick={() => setCommonGroundOpen(true)}
                     className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all hover:scale-105 group relative"
-                    style={{ background: 'linear-gradient(135deg, #FAEDC7, #F5D78E)', color: '#8A6B4A', border: '1px solid rgba(200,134,26,0.2)' }}
+                    style={{ background: 'linear-gradient(135deg, #FFD700 0%, #FDB931 100%)', color: '#3E2723', border: '1px solid rgba(253,185,49,0.3)', boxShadow: '0 2px 10px rgba(253,185,49,0.25)' }}
                     data-testid="taste-match-pill"
                   >
                     <Sparkles className="w-3.5 h-3.5" style={{ color: '#C8861A' }} />
@@ -313,16 +313,17 @@ const ProfilePage = () => {
             )}
 
             {/* Stats - Social first, then collection */}
-            <div className="mt-4 space-y-2" data-testid="profile-stats">
-              {/* Row 1: Following / Followers */}
-              <div className="flex gap-6">
-                <button onClick={() => setFollowListType('following')} className="text-center sm:text-left hover:opacity-70 transition" data-testid="following-stat">
-                  <div className="font-heading text-2xl text-vinyl-black">{profile.following_count}</div>
-                  <div className="text-[11px] text-muted-foreground">Following</div>
+            <div className="mt-4 space-y-3" data-testid="profile-stats">
+              {/* Row 1: Following / Followers — centered, equal weight */}
+              <div className="flex items-center gap-6">
+                <button onClick={() => setFollowListType('following')} className="hover:opacity-70 transition" data-testid="following-stat">
+                  <span className="font-heading text-2xl text-vinyl-black">{profile.following_count}</span>
+                  <span className="text-[11px] text-muted-foreground ml-1.5">Following</span>
                 </button>
-                <button onClick={() => setFollowListType('followers')} className="text-center sm:text-left hover:opacity-70 transition" data-testid="followers-stat">
-                  <div className="font-heading text-2xl text-vinyl-black">{profile.followers_count}</div>
-                  <div className="text-[11px] text-muted-foreground">Followers</div>
+                <span className="text-stone-300">|</span>
+                <button onClick={() => setFollowListType('followers')} className="hover:opacity-70 transition" data-testid="followers-stat">
+                  <span className="font-heading text-2xl text-vinyl-black">{profile.followers_count}</span>
+                  <span className="text-[11px] text-muted-foreground ml-1.5">Followers</span>
                 </button>
               </div>
               {/* Row 2: Records / Est. Value / Sales */}
