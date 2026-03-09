@@ -7,11 +7,13 @@ import { Input } from './ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Textarea } from './ui/textarea';
 import { Skeleton } from './ui/skeleton';
-import { Loader2, Disc, Share2, Send, Download, Search, X } from 'lucide-react';
+import { Loader2, Disc, Share2, Send, Download, Search, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import RecordSearchResult from './RecordSearchResult';
 import AlbumArt from './AlbumArt';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { Link } from 'react-router-dom';
 
 // ─── Daily Prompt Card (top of Hive feed) ───
 
@@ -24,6 +26,10 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
   const [buzzCount, setBuzzCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  // Carousel state
+  const [responses, setResponses] = useState([]);
+  const [carouselIdx, setCarouselIdx] = useState(0);
+  const [loadingResponses, setLoadingResponses] = useState(false);
 
   const fetchPrompt = useCallback(async () => {
     try {
@@ -39,43 +45,109 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
 
   useEffect(() => { fetchPrompt(); }, [fetchPrompt]);
 
+  // Fetch carousel responses after buzzing in
+  const fetchResponses = useCallback(async () => {
+    if (!prompt || !hasBuzzedIn) return;
+    setLoadingResponses(true);
+    try {
+      const r = await axios.get(`${API}/prompts/${prompt.id}/responses`, { headers: { Authorization: `Bearer ${token}` } });
+      setResponses(r.data);
+      setCarouselIdx(0);
+    } catch { /* ignore */ }
+    finally { setLoadingResponses(false); }
+  }, [API, token, prompt, hasBuzzedIn]);
+
+  useEffect(() => { fetchResponses(); }, [fetchResponses]);
+
   if (loading) return <Skeleton className="h-32 w-full rounded-xl mb-4" />;
   if (!prompt) return null;
+
+  const currentResp = responses[carouselIdx];
 
   return (
     <>
       <Card className="mb-4 p-5 border-amber-200/60 bg-gradient-to-br from-amber-50/80 to-orange-50/40 relative overflow-hidden" data-testid="daily-prompt-card">
         <div className="absolute top-0 right-0 w-24 h-24 bg-amber-100/40 rounded-full -translate-y-8 translate-x-8" />
         <p className="text-[11px] uppercase tracking-widest text-amber-600/70 font-medium mb-2">Daily Prompt</p>
-        <p className="font-heading text-xl md:text-2xl text-vinyl-black leading-snug mb-4 italic" data-testid="daily-prompt-text">
+        <p className="font-heading text-xl md:text-2xl text-vinyl-black leading-snug mb-3 italic" data-testid="daily-prompt-text">
           {prompt.text}
         </p>
-        <div className="flex items-center justify-between">
-          {hasBuzzedIn ? (
-            <div className="flex items-center gap-3">
+
+        {!hasBuzzedIn ? (
+          /* ── GATEKEEPER: Pre-buzz state ── */
+          <div>
+            {buzzCount > 0 && (
+              <p className="text-sm text-amber-700 mb-3 font-medium" data-testid="buzz-gate-msg">
+                {buzzCount} member{buzzCount !== 1 ? 's' : ''} of the Hive {buzzCount === 1 ? 'has' : 'have'} buzzed in, it's your turn!
+              </p>
+            )}
+            <div className="flex items-center justify-between">
+              <Button onClick={() => setModalOpen(true)} className="bg-amber-500 hover:bg-amber-600 text-white rounded-full px-6 text-sm font-semibold shadow-sm" data-testid="buzz-in-btn">
+                buzz in 🐝
+              </Button>
+              {streak > 0 && (
+                <span className="flex items-center gap-1 text-sm text-amber-600 font-bold">🐝 {streak} {streak === 1 ? 'day' : 'days'} in a row</span>
+              )}
+            </div>
+          </div>
+        ) : (
+          /* ── REVIEW MODE: Post-buzz carousel ── */
+          <div data-testid="prompt-review-mode">
+            <div className="flex items-center gap-3 mb-3">
               <span className="text-sm text-amber-700 font-medium">buzzed in</span>
               {streak > 0 && <span className="flex items-center gap-1 text-sm text-amber-600 font-bold">🐝 {streak} {streak === 1 ? 'day' : 'days'} in a row</span>}
+              {buzzCount > 0 && (
+                <a href={`/hive?prompt_id=${prompt.id}`} className="text-xs text-amber-600 hover:text-amber-800 hover:underline font-medium transition ml-auto" data-testid="buzz-count-link">
+                  {buzzCount} buzzed in
+                </a>
+              )}
             </div>
-          ) : (
-            <Button onClick={() => setModalOpen(true)} className="bg-amber-500 hover:bg-amber-600 text-white rounded-full px-6 text-sm font-semibold shadow-sm" data-testid="buzz-in-btn">
-              buzz in 🐝
-            </Button>
-          )}
-          <div className="flex items-center gap-3">
-            {streak > 0 && !hasBuzzedIn && (
-              <span className="flex items-center gap-1 text-sm text-amber-600 font-bold">🐝 {streak} {streak === 1 ? 'day' : 'days'} in a row</span>
-            )}
-            {buzzCount > 0 && (
-              <a
-                href={`/hive?prompt_id=${prompt.id}`}
-                className="text-xs text-amber-600 hover:text-amber-800 hover:underline font-medium transition"
-                data-testid="buzz-count-link"
-              >
-                {buzzCount} member{buzzCount !== 1 ? 's' : ''} of the hive buzzed in!
-              </a>
-            )}
+
+            {/* Carousel */}
+            {loadingResponses ? (
+              <div className="flex items-center justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-amber-500" /></div>
+            ) : responses.length > 0 && currentResp ? (
+              <div className="relative" data-testid="prompt-carousel">
+                <div className="flex items-center gap-3 transition-all duration-300">
+                  {/* Album art */}
+                  <div className="relative shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-vinyl-black">
+                    {currentResp.cover_url ? <AlbumArt src={currentResp.cover_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>}
+                    {currentResp.color_variant && (
+                      <div className="absolute bottom-0.5 right-0.5 max-w-[90%] truncate uppercase text-[8px] tracking-wider font-medium px-1 py-0.5 rounded-full"
+                        style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', border: '1px solid #FFD700', color: '#FFD700' }}>
+                        {currentResp.color_variant}
+                      </div>
+                    )}
+                  </div>
+                  {/* Response content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <Link to={`/profile/${currentResp.username}`} className="text-xs font-bold text-vinyl-black hover:text-honey-amber transition" data-testid="carousel-username">
+                        @{currentResp.username}
+                      </Link>
+                      {currentResp.founding_member && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-honey/20 text-amber-700 font-bold">Founder</span>}
+                    </div>
+                    <p className="text-sm font-medium truncate">{currentResp.record_title}</p>
+                    <p className="text-xs text-muted-foreground truncate">{currentResp.record_artist}</p>
+                    {currentResp.caption && <p className="text-xs text-stone-600 mt-1 italic line-clamp-2">{currentResp.caption}</p>}
+                  </div>
+                </div>
+                {/* Navigation arrows */}
+                {responses.length > 1 && (
+                  <div className="flex items-center justify-between mt-3">
+                    <Button size="sm" variant="ghost" onClick={() => setCarouselIdx(i => (i - 1 + responses.length) % responses.length)} className="rounded-full h-8 w-8 p-0" data-testid="carousel-prev">
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+                    <span className="text-[10px] text-muted-foreground">{carouselIdx + 1} / {responses.length}</span>
+                    <Button size="sm" variant="ghost" onClick={() => setCarouselIdx(i => (i + 1) % responses.length)} className="rounded-full h-8 w-8 p-0" data-testid="carousel-next">
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ) : null}
           </div>
-        </div>
+        )}
       </Card>
 
       <BuzzInModal
@@ -87,6 +159,7 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
           setHasBuzzedIn(true);
           setBuzzResponse(resp);
           setStreak(resp.streak);
+          setBuzzCount(c => c + 1);
           onPostCreated?.();
         }}
       />

@@ -210,7 +210,7 @@ const ExplorePage = () => {
           <p className="text-xs text-muted-foreground mb-3">Collectors who share your vibe.</p>
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
             {myKindaPeople.map(p => (
-              <Link key={p.username} to={`/profile/${p.username}`} className="flex-shrink-0 w-40 group" data-testid={`kinda-${p.username}`}>
+              <Link key={p.username} to={`/profile/${p.username}?tab=in-common`} className="flex-shrink-0 w-40 group" data-testid={`kinda-${p.username}`}>
                 <Card className="p-3 border-honey/30 hover:shadow-honey transition-all text-center">
                   <div className="w-14 h-14 mx-auto rounded-full overflow-hidden bg-honey/10 mb-2">
                     {p.avatar_url ? <img src={p.avatar_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Users className="w-6 h-6 text-honey" /></div>}

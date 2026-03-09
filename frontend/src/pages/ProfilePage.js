@@ -80,7 +80,13 @@ const ProfilePage = () => {
       if (token && !isOwnProfile) {
         setTasteLoading(true);
         axios.get(`${API}/users/${username}/taste-match`, { headers: { Authorization: `Bearer ${token}` }})
-          .then(r => setTasteMatch(r.data))
+          .then(r => {
+            setTasteMatch(r.data);
+            // Auto-switch to In Common if soulmate match and no explicit tab param
+            if (r.data.score >= 90 && !new URLSearchParams(window.location.search).get('tab')) {
+              setActiveTab('in-common');
+            }
+          })
           .catch(() => {})
           .finally(() => setTasteLoading(false));
         // Fetch own collection discogs IDs for "In Your Collection" badges
@@ -97,7 +103,7 @@ const ProfilePage = () => {
 
   useEffect(() => {
     setLoading(true);
-    setActiveTab('collection');
+    setActiveTab(new URLSearchParams(window.location.search).get('tab') || 'collection');
     setTasteMatch(null);
     setShowCommonOnly(false);
     setCommonGroundOpen(false);

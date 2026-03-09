@@ -255,7 +255,34 @@ async def buzz_in(data: dict, user: Dict = Depends(require_auth)):
     }
 
 
-# ─────────── Export Card Generation ───────────
+@router.get("/prompts/{prompt_id}/responses")
+async def get_prompt_responses(prompt_id: str, user: Dict = Depends(require_auth)):
+    """Get all responses for a prompt (for the carousel). Only available after buzzing in."""
+    my_response = await db.prompt_responses.find_one({"user_id": user["id"], "prompt_id": prompt_id})
+    if not my_response:
+        raise HTTPException(status_code=403, detail="Buzz in first to see other responses")
+
+    responses = await db.prompt_responses.find(
+        {"prompt_id": prompt_id},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+
+    # Enrich with user data
+    for r in responses:
+        u = await db.users.find_one({"id": r["user_id"]}, {"_id": 0, "username": 1, "display_name": 1, "avatar_url": 1, "founding_member": 1})
+        if u:
+            r["username"] = u.get("username")
+            r["display_name"] = u.get("display_name")
+            r["avatar_url"] = u.get("avatar_url")
+            r["founding_member"] = u.get("founding_member", False)
+        # Get the record's color_variant if available
+        if r.get("record_id"):
+            rec = await db.records.find_one({"id": r["record_id"]}, {"_id": 0, "color_variant": 1})
+            r["color_variant"] = rec.get("color_variant") if rec else None
+        else:
+            r["color_variant"] = None
+
+    return responses
 
 @router.post("/prompts/export-card")
 async def generate_export_card(data: dict, user: Dict = Depends(require_auth)):
