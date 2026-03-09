@@ -49,6 +49,8 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - **Global Navbar Report Button** - AlertTriangle icon in desktop navbar + mobile top bar, opens ReportModal with type "bug" (March 2026)
 
 ### UI Consistency (March 2026)
+- **Shared pill style system**: `PILL_STYLES` config in PostCards.js drives both Hive filter pills and card badges with matching colors (amber/pink/orange/teal/yellow/purple/violet)
+- **Variant pills**: `VariantTag` uses `VARIANT_PILL_STYLES` color map (red/blue/pink/green/gold etc.) for pressing color display
 - **Shared tag components**: `PostTypeBadge`, `ListingTypeBadge`, `TagPill` exported from PostCards.js
 - All tag pills use single color mapping: OG Press=amber, Factory Sealed=emerald, Promo=violet, Any=stone
 - Listing type badges: teal for Trade, green for Sale — consistent across Explore, Honeypot, Search
