@@ -582,3 +582,17 @@ main {
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(200, 134, 26, 0.2) 20%, rgba(200, 134, 26, 0.3) 50%, rgba(200, 134, 26, 0.2) 80%, transparent);
 }
+
+/* --- Live Equalizer Bars (Now Spinning) --- */
+@keyframes eqBar1 {
+  0% { height: 20%; }
+  100% { height: 90%; }
+}
+@keyframes eqBar2 {
+  0% { height: 60%; }
+  100% { height: 30%; }
+}
+@keyframes eqBar3 {
+  0% { height: 35%; }
+  100% { height: 100%; }
+}

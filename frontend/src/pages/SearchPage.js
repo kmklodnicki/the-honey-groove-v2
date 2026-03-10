@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, TrendingUp, Gem, Heart, Clock, ChevronRight, Loader2, SlidersHorizontal, X, ChevronDown, Users } from 'lucide-react';
 import { Card } from '../components/ui/card';
-import { RarityPill } from '../components/RarityBadge';
 import AlbumArt from '../components/AlbumArt';
 import ScrollRow from '../components/ScrollRow';
 import SEOHead from '../components/SEOHead';
@@ -65,7 +64,6 @@ const VariantCard = ({ v, onOpen }) => (
         )}
       </div>
     </div>
-    {v.rarity_tier && <RarityPill tier={v.rarity_tier} size="sm" />}
   </button>
 );
 

@@ -18,7 +18,6 @@ import ReportModal from './ReportModal';
 import { GradeLabel } from './GradeLabel';
 import { GRADE_OPTIONS } from '../utils/grading';
 import SEOHead from './SEOHead';
-import { RarityPill } from './RarityBadge';
 
 const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, onProposeTrade }) => {
   const { token, API, user: currentUser } = useAuth();
@@ -34,7 +33,6 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
   const [showOfferInput, setShowOfferInput] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [pulseData, setPulseData] = useState(null);
-  const [rarityData, setRarityData] = useState(null);
   const onCloseRef = React.useRef(onClose);
   onCloseRef.current = onClose;
 
@@ -68,10 +66,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
         axios.get(`${API}/valuation/pulse/${r.data.discogs_id}`, { headers })
           .then(p => setPulseData(p.data))
           .catch(() => setPulseData(null));
-        axios.get(`${API}/vinyl/rarity/${r.data.discogs_id}`)
-          .then(r => setRarityData(r.data))
-          .catch(() => setRarityData(null));
-      } else { setPulseData(null); setRarityData(null); }
+      } else { setPulseData(null); }
     } catch (err) {
       toast.error('listing not found.');
       onClose();
@@ -469,11 +464,6 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                       <p className="text-[13px] text-[#8A6B4A]/80 mt-1.5 font-medium tracking-wide">
                         {[listing.pressing_notes, listing.year && `${listing.year} pressing`].filter(Boolean).join(' \u00b7 ')}
                       </p>
-                    )}
-                    {rarityData?.tier && (
-                      <div className="mt-2.5" data-testid="listing-rarity-badge">
-                        <RarityPill tier={rarityData.tier} size="sm" />
-                      </div>
                     )}
                   </div>
 

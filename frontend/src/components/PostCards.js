@@ -179,6 +179,29 @@ const EditionTag = ({ number }) => {
   );
 };
 
+// Spinning vinyl disc overlay for Now Spinning cards
+const SpinningVinyl = () => (
+  <div className="absolute top-1.5 left-1.5 z-[6] pointer-events-none" data-testid="spinning-vinyl-icon">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="drop-shadow-md" style={{ animation: 'spin 4s linear infinite' }}>
+      <circle cx="12" cy="12" r="11" fill="#1A1A1A" />
+      <circle cx="12" cy="12" r="9" fill="none" stroke="#333" strokeWidth="0.5" />
+      <circle cx="12" cy="12" r="7" fill="none" stroke="#333" strokeWidth="0.3" />
+      <circle cx="12" cy="12" r="5" fill="none" stroke="#333" strokeWidth="0.3" />
+      <circle cx="12" cy="12" r="3.5" fill="#DAA520" />
+      <circle cx="12" cy="12" r="1.5" fill="#1A1A1A" />
+    </svg>
+  </div>
+);
+
+// Animated 3-bar equalizer for Now Spinning cards
+const LiveEqualizer = () => (
+  <div className="absolute bottom-1.5 right-1.5 z-[6] flex items-end gap-[2px] h-4 pointer-events-none" data-testid="live-equalizer">
+    <span className="w-[3px] rounded-full" style={{ background: '#DAA520', animation: 'eqBar1 0.8s ease-in-out infinite alternate', height: '40%' }} />
+    <span className="w-[3px] rounded-full" style={{ background: '#DAA520', animation: 'eqBar2 0.6s ease-in-out infinite alternate', height: '70%' }} />
+    <span className="w-[3px] rounded-full" style={{ background: '#DAA520', animation: 'eqBar3 0.9s ease-in-out infinite alternate', height: '50%' }} />
+  </div>
+);
+
 // NOW_SPINNING card body
 const NowSpinningCard = ({ post, onAlbumClick }) => {
   const record = post.record;
@@ -190,6 +213,8 @@ const NowSpinningCard = ({ post, onAlbumClick }) => {
         {record.cover_url ? (
           <div className="relative shrink-0">
             <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-24 h-24 rounded-[10px] object-cover shadow-md album-art-hover" />
+            <SpinningVinyl />
+            <LiveEqualizer />
             {post.honeypot_rating && (
               <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
                 style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
