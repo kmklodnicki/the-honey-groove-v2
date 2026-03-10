@@ -94,11 +94,13 @@ const AppLayout = ({ children }) => {
   const location = useLocation();
 
   const isHome = location.pathname === '/' || location.pathname === '/hive';
+  // Pages with their own inline back button don't need the global floating one
+  const hasInlineBack = location.pathname.startsWith('/record/') || location.pathname.startsWith('/vinyl/');
   
   return (
     <div className="min-h-screen bg-honey-cream relative">
       {user && <Navbar />}
-      {user && !isHome && (
+      {user && !isHome && !hasInlineBack && (
         <button
           onClick={() => navigate(-1)}
           className="fixed z-40 flex items-center justify-center w-8 h-8 rounded-full text-stone-400/70 hover:text-stone-600 hover:bg-stone-200/40 transition-all top-[56px] md:top-[94px] left-3 md:left-5"

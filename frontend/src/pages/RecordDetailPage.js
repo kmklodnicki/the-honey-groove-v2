@@ -64,7 +64,7 @@ const RecordDetailPage = () => {
   };
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center pt-20">
+    <div className="min-h-screen flex items-center justify-center pt-16 md:pt-24">
       <Loader2 className="w-8 h-8 animate-spin text-honey-amber" />
     </div>
   );
@@ -78,7 +78,7 @@ const RecordDetailPage = () => {
   const recordDesc = `${record.artist} - ${record.title}${record.color_variant ? ` — ${record.color_variant} pressing` : ''}${record.year ? ` (${record.year})` : ''} in a collector's vinyl library on The Honey Groove. ${community?.total_owners || 0} collectors own this record.`;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 pt-20 pb-28" data-testid="record-detail-page">
+    <div className="max-w-4xl mx-auto px-4 pt-16 md:pt-24 pb-28" data-testid="record-detail-page">
       <SEOHead
         title={recordTitle}
         description={recordDesc}
@@ -107,8 +107,8 @@ const RecordDetailPage = () => {
         }}
       />
       {/* Back nav */}
-      <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-vinyl-black mb-6 transition-colors" data-testid="back-btn">
-        <ArrowLeft className="w-4 h-4" /> Back
+      <button onClick={() => navigate(-1)} className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-vinyl-black mb-8 transition-colors group" data-testid="back-btn">
+        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" /> Back
       </button>
 
       {/* Hero section */}
