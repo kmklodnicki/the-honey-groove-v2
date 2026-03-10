@@ -25,6 +25,7 @@ import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import { formatDistanceToNow } from 'date-fns';
 import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import Fuse from 'fuse.js';
 import { ProposeTradeModal } from './TradesPage';
 import { usePageTitle } from '../hooks/usePageTitle';
 import ListingDetailModal from '../components/ListingDetailModal';
@@ -63,6 +64,7 @@ const ISOPage = () => {
   const [showCreate, setShowCreate] = useState(null);
   const [filter, setFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [marketSearch, setMarketSearch] = useState('');
   const [tradeTarget, setTradeTarget] = useState(null);
   const [offerTarget, setOfferTarget] = useState(null);
   const [offerAmount, setOfferAmount] = useState('');
@@ -100,7 +102,10 @@ const ISOPage = () => {
       setSelectedListingId(match[1]);
       setActiveTab('shop');
     }
-  }, []);
+    // Pre-fill search from ?q= param (e.g., from Variant Detail "Buy Now" bridge)
+    const q = searchParams.get('q');
+    if (q) { setMarketSearch(q); setActiveTab('shop'); }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle Stripe payment return
   useEffect(() => {
@@ -484,8 +489,25 @@ const ISOPage = () => {
   };
 
   // Derived data
-  const shopListings = listings.filter(l => l.listing_type === 'BUY_NOW' || l.listing_type === 'MAKE_OFFER');
-  const tradeListings = listings.filter(l => l.listing_type === 'TRADE');
+  const shopListingsRaw = listings.filter(l => l.listing_type === 'BUY_NOW' || l.listing_type === 'MAKE_OFFER');
+  const tradeListingsRaw = listings.filter(l => l.listing_type === 'TRADE');
+
+  // Fuse.js fuzzy search for marketplace
+  const fuseOptions = {
+    keys: ['artist', 'album', 'pressing_notes', 'color_variant', 'description'],
+    threshold: 0.35,
+    includeScore: true,
+    shouldSort: true,
+  };
+  const fuseShop = new Fuse(shopListingsRaw, fuseOptions);
+  const fuseTrade = new Fuse(tradeListingsRaw, fuseOptions);
+
+  const shopListings = marketSearch.trim()
+    ? fuseShop.search(marketSearch.trim()).map(r => r.item)
+    : shopListingsRaw;
+  const tradeListings = marketSearch.trim()
+    ? fuseTrade.search(marketSearch.trim()).map(r => r.item)
+    : tradeListingsRaw;
   const activeTrades = trades.filter(t => ['PROPOSED', 'COUNTERED', 'ACCEPTED', 'HOLD_PENDING', 'SHIPPING', 'CONFIRMING', 'DISPUTED'].includes(t.status));
   const filteredIsos = isos.filter(iso => {
     if (filter !== 'All' && iso.status !== filter) return false;
@@ -567,17 +589,58 @@ const ISOPage = () => {
         onClose={() => setShowEssentialsUpsell(false)}
         onProceed={() => { setShowEssentialsUpsell(false); proceedToCheckout(); }}
       />
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="ml-12 md:ml-0">
-          <h1 className="font-heading text-3xl text-vinyl-black" data-testid="honeypot-title">The Honeypot</h1>
-          <p className="text-sm text-muted-foreground mt-1">buy, trade, and hunt with collectors like you.</p>
+      {/* Sticky Glass Vault Header with Search */}
+      <div
+        className="sticky top-0 z-[1000] rounded-2xl overflow-hidden mb-6"
+        style={{
+          background: 'rgba(255, 255, 255, 0.01)',
+          backdropFilter: 'blur(60px) saturate(210%)',
+          WebkitBackdropFilter: 'blur(60px) saturate(210%)',
+          border: '1px solid rgba(255, 255, 255, 0.12)',
+        }}
+        data-testid="honeypot-glass-header"
+      >
+        {/* Ambient Hive Glow */}
+        <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(90deg, #FFD700 0%, #FF8C00 50%, #8B4513 100%)', filter: 'blur(80px)', opacity: 0.35 }} aria-hidden="true" />
+
+        <div className="relative p-4 sm:p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="ml-10 md:ml-0">
+              <h1 className="font-heading text-2xl sm:text-3xl text-vinyl-black" data-testid="honeypot-title">The Honeypot</h1>
+              <p className="text-xs sm:text-sm text-muted-foreground">buy, trade, and hunt with collectors like you.</p>
+            </div>
+            <Button onClick={() => openModal(activeTab === 'iso' ? 'iso' : 'listing')}
+              className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2 shrink-0" data-testid="honeypot-cta-btn">
+              <span className="hidden sm:inline">{ctaLabels[activeTab]}</span>
+              <span className="sm:hidden">New</span>
+            </Button>
+          </div>
+
+          {/* Glass Search Bar */}
+          <div className="relative" data-testid="honeypot-search-bar">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#C8861A]/60 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search artist, album, or variant..."
+              value={marketSearch}
+              onChange={e => setMarketSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm placeholder:text-stone-400 outline-none transition-all duration-200"
+              style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                border: '1px solid rgba(255, 215, 0, 0.3)',
+                color: '#2A1A06',
+              }}
+              onFocus={e => { e.target.style.borderColor = '#DAA520'; e.target.style.boxShadow = '0 0 0 3px rgba(218,165,32,0.15)'; }}
+              onBlur={e => { e.target.style.borderColor = 'rgba(255, 215, 0, 0.3)'; e.target.style.boxShadow = 'none'; }}
+              data-testid="honeypot-fuzzy-search"
+            />
+            {marketSearch && (
+              <button onClick={() => setMarketSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600" data-testid="clear-market-search">
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
-        <Button onClick={() => openModal(activeTab === 'iso' ? 'iso' : 'listing')}
-          className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2" data-testid="honeypot-cta-btn">
-          <span className="hidden sm:inline">{ctaLabels[activeTab]}</span>
-          <span className="sm:hidden">New</span>
-        </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
