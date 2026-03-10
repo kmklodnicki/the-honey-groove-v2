@@ -259,6 +259,7 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - **Honey-Orange Spectrum Reflux & Hive Layout (BLOCK 141):** Progressive 135deg gradients. Hive page reordered: Title → All/Following Toggle → Composer Bar → Filter Chips → Feed.
 - **Monochromatic Honey Spectrum (BLOCK 144):** Removed all red/burnt-orange. Pure honey/amber fade: Spin=#FFB300→#FFA000, Haul=#FFA000→#FF8F00, ISO=#FF8F00→#FF6F00, Note=#FF6F00→#F57C00, Shuffle=#F57C00→#E65100. All primary buttons (Buzz In, All/Following active) synced to Icon 1 gradient.
 - **Boutique Flow Restructuring (BLOCK 145):** Reordered Hive: Title → Toggle → Composer → Daily Prompt (my-4 margins) → Filter Chips → Feed. Purged all purple from mood chips: bg=#FFF8E1 (soft honey), text=#5D4037 (deep amber/brown), thin amber border. Selected mood state uses Honey Gradient bg with black text.
+- **Crown Jewel Expansion (BLOCK 143):** Added CrownJewelsAll renderer to See All page (/nectar/crown-jewels) — full grid with honey-orange value badges, variant info with Crown icon, global owner counts. Fixed Crown Jewel navigation: onClick now navigates to /variant/:discogs_id (was opening modal). Variant page stats show "—" for null values instead of "0".
 
 ### Future / Backlog
 - **P0:** User's secret search feature (details TBD — user has mentioned multiple times)
