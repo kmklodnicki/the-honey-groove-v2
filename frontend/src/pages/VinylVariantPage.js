@@ -174,6 +174,11 @@ export default function VinylVariantPage() {
                   Cat# {ov.catalog_number}
                 </span>
               )}
+              {ov.barcode && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-honey/10 text-xs text-vinyl-black/70 font-mono" data-testid="variant-upc">
+                  UPC: {ov.barcode}
+                </span>
+              )}
               {ov.discogs_id && (
                 <a
                   href={`https://www.discogs.com/release/${ov.discogs_id}`}

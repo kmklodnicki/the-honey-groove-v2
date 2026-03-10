@@ -250,6 +250,7 @@ async def get_variant_page(artist_slug: str, album_slug: str, variant_slug: str)
         label = label_raw or canonical_record.get("label")
 
     catno = discogs_data.get("catno") or canonical_record.get("catno")
+    barcode = discogs_data.get("barcode")
 
     # Format from Discogs
     format_raw = discogs_data.get("format")
@@ -341,6 +342,7 @@ async def get_variant_page(artist_slug: str, album_slug: str, variant_slug: str)
             "format": fmt,
             "label": label,
             "catalog_number": catno,
+            "barcode": barcode,
             "pressing_country": country,
             "discogs_id": discogs_id,
             "notes": notes[:300] if notes else None,
