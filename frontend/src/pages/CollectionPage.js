@@ -68,11 +68,12 @@ const TreasuryHeader = ({ collectionValue, dreamValue, collectionTab, onTabChang
     <div
       className="relative mb-5 rounded-2xl overflow-hidden sticky top-14 md:top-[88px] z-10"
       style={{
-        background: 'rgba(255, 255, 255, 0.01)',
-        backdropFilter: 'blur(50px) saturate(200%)',
-        WebkitBackdropFilter: 'blur(50px) saturate(200%)',
-        border: '1px solid rgba(255, 255, 255, 0.15)',
-        boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+        background: 'linear-gradient(135deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.25) 100%)',
+        backdropFilter: 'blur(16px) saturate(200%)',
+        WebkitBackdropFilter: 'blur(16px) saturate(200%)',
+        border: '1px solid rgba(255, 255, 255, 0.6)',
+        borderTop: '1.5px solid rgba(255, 255, 255, 0.85)',
+        boxShadow: '0 8px 32px rgba(31, 38, 135, 0.06), 0 2px 6px rgba(0,0,0,0.03), inset 0 1px 0 rgba(255,255,255,0.6)',
       }}
       data-testid="treasury-header"
     >

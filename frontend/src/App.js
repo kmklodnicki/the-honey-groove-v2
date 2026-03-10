@@ -98,7 +98,7 @@ const AppLayout = ({ children }) => {
   const hasInlineBack = location.pathname.startsWith('/record/') || location.pathname.startsWith('/vinyl/');
   
   return (
-    <div className="min-h-screen bg-honey-cream relative">
+    <div className="min-h-screen relative" style={{ background: 'transparent' }}>
       {user && <Navbar />}
       {user && !isHome && !hasInlineBack && (
         <button
