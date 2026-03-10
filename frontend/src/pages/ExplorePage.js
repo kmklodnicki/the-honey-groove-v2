@@ -241,6 +241,7 @@ const ExplorePage = () => {
 
       {/* 4. Most Wanted */}
       <ExploreSection icon={<Heart className="w-4 h-4 text-red-400" />} title="Most Wanted" testId="most-wanted-section" seeAllTo="/nectar/most-wanted">
+        <p className="text-xs text-muted-foreground italic -mt-2 mb-3 pl-1">Hive members have their eyes on these records.</p>
         {mostWanted.length === 0 ? (
           <EmptyCard text="No Dream List data yet. Add records to your Dream List!" />
         ) : (
