@@ -746,31 +746,27 @@ const HivePage = () => {
 
       {/* Feed Mode Toggle: All | Following */}
       <div className="flex items-center mb-3" data-testid="feed-mode-toggle">
-        <div className="relative inline-flex bg-stone-100 rounded-full p-0.5">
-          {/* Sliding indicator */}
-          <div
-            className="absolute top-0.5 bottom-0.5 rounded-full transition-all duration-300 ease-out"
-            style={{
-              width: 'calc(50% - 2px)',
-              left: feedMode === 'all' ? '2px' : 'calc(50% + 0px)',
-              background: 'linear-gradient(135deg, #F4B942 0%, #C8861A 100%)',
-              boxShadow: '0 1px 4px rgba(200, 134, 26, 0.3)',
-            }}
-          />
+        <div className="flex w-52 bg-stone-100 rounded-full p-1">
           <button
             onClick={() => setFeedMode('all')}
-            className={`relative z-10 px-5 py-1.5 rounded-full text-sm font-medium transition-colors duration-200 ${
-              feedMode === 'all' ? 'text-white' : 'text-stone-500 hover:text-stone-700'
+            className={`flex-1 py-1.5 rounded-full text-sm font-medium text-center transition-all duration-250 ${
+              feedMode === 'all'
+                ? 'text-white shadow-sm'
+                : 'text-stone-500 hover:text-stone-700'
             }`}
+            style={feedMode === 'all' ? { background: 'linear-gradient(135deg, #F4B942 0%, #C8861A 100%)' } : {}}
             data-testid="feed-mode-all"
           >
             All
           </button>
           <button
             onClick={() => setFeedMode('following')}
-            className={`relative z-10 px-5 py-1.5 rounded-full text-sm font-medium transition-colors duration-200 ${
-              feedMode === 'following' ? 'text-white' : 'text-stone-500 hover:text-stone-700'
+            className={`flex-1 py-1.5 rounded-full text-sm font-medium text-center transition-all duration-250 ${
+              feedMode === 'following'
+                ? 'text-white shadow-sm'
+                : 'text-stone-500 hover:text-stone-700'
             }`}
+            style={feedMode === 'following' ? { background: 'linear-gradient(135deg, #F4B942 0%, #C8861A 100%)' } : {}}
             data-testid="feed-mode-following"
           >
             Following
