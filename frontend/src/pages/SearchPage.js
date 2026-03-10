@@ -99,7 +99,6 @@ export default function SearchPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(0);
   const [activeFilters, setActiveFilters] = useState(new Set());
-  const [activeColors, setActiveColors] = useState(new Set());
   const [yearFrom, setYearFrom] = useState(null);
   const [yearTo, setYearTo] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -117,12 +116,6 @@ export default function SearchPage() {
     { key: 'Tour',      label: 'Tour' },
   ];
 
-  const COLOR_KEYWORDS = [
-    'Pink', 'Red', 'Blue', 'Green', 'Yellow', 'Orange', 'Purple', 'Gold',
-    'White', 'Clear', 'Black', 'Silver', 'Marbled', 'Splatter', 'Transparent',
-    'Translucent', 'Mint', 'Teal', 'Cream', 'Brown', 'Grey', 'Gray',
-  ];
-
   const toggleFilter = (key) => {
     setActiveFilters(prev => {
       const next = new Set(prev);
@@ -131,24 +124,15 @@ export default function SearchPage() {
     });
   };
 
-  const toggleColor = (c) => {
-    setActiveColors(prev => {
-      const next = new Set(prev);
-      if (next.has(c)) next.delete(c); else next.add(c);
-      return next;
-    });
-  };
-
   const clearAllFilters = () => {
     setActiveFilters(new Set());
-    setActiveColors(new Set());
     setYearFrom(null);
     setYearTo(null);
   };
 
   const hasYearFilter = yearFrom !== null || yearTo !== null;
-  const hasAnyFilter = activeFilters.size > 0 || activeColors.size > 0 || hasYearFilter;
-  const totalFilterCount = activeFilters.size + activeColors.size + (hasYearFilter ? 1 : 0);
+  const hasAnyFilter = activeFilters.size > 0 || hasYearFilter;
+  const totalFilterCount = activeFilters.size + (hasYearFilter ? 1 : 0);
 
   // Close filter drawer on outside click
   useEffect(() => {
@@ -226,23 +210,8 @@ export default function SearchPage() {
   const showDiscover = !query.trim() && discover;
   const hasResults = results && (results.variants?.length > 0 || results.albums?.length > 0);
 
-  // Client-side filtering (tags + colors + years)
+  // Client-side filtering (tags + years)
   const allVariants = results?.variants || [];
-
-  // Extract available colors from variant names
-  const availableColors = {};
-  allVariants.forEach(v => {
-    const vname = (v.variant || '').toLowerCase();
-    for (const c of COLOR_KEYWORDS) {
-      if (vname.includes(c.toLowerCase())) {
-        availableColors[c] = (availableColors[c] || 0) + 1;
-      }
-    }
-  });
-  const colorList = Object.entries(availableColors)
-    .sort((a, b) => b[1] - a[1])
-    .map(([name]) => name)
-    .slice(0, 10);
 
   // Extract available years (full sorted list for dropdown)
   const availableYears = {};
@@ -264,11 +233,6 @@ export default function SearchPage() {
     if (activeFilters.size > 0) {
       const tags = v.tags || [];
       if (![...activeFilters].every(f => tags.includes(f))) return false;
-    }
-    // Color filter
-    if (activeColors.size > 0) {
-      const vname = (v.variant || '').toLowerCase();
-      if (![...activeColors].some(c => vname.includes(c.toLowerCase()))) return false;
     }
     // Year range filter
     if (hasYearFilter) {
@@ -364,31 +328,6 @@ export default function SearchPage() {
                       </div>
                     )}
 
-                    {colorList.length > 0 && (
-                      <div className="mb-4">
-                        <p className="text-[10px] uppercase tracking-wider text-stone-400 font-semibold mb-2">Color</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {colorList.slice(0, 5).map(c => {
-                            const active = activeColors.has(c);
-                            return (
-                              <button
-                                key={c}
-                                onClick={() => toggleColor(c)}
-                                className={`text-[11px] font-medium px-2.5 py-1 rounded-full border transition-all ${
-                                  active
-                                    ? 'bg-vinyl-black text-white border-vinyl-black'
-                                    : 'bg-stone-50 text-stone-600 border-stone-200 hover:border-stone-300'
-                                }`}
-                                data-testid={`filter-color-${c.toLowerCase()}`}
-                              >
-                                {c}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-
                     {/* Year range */}
                     {yearList.length > 0 && (
                       <div className="mb-3">
@@ -453,16 +392,6 @@ export default function SearchPage() {
                     data-testid={`active-filter-${f.toLowerCase()}`}
                   >
                     {f}<X className="w-3 h-3 text-stone-400" />
-                  </button>
-                ))}
-                {[...activeColors].map(c => (
-                  <button
-                    key={`ac-${c}`}
-                    onClick={() => toggleColor(c)}
-                    className="shrink-0 flex items-center gap-1 text-[11px] font-medium pl-2.5 pr-1.5 py-1 rounded-full bg-stone-100 text-stone-600 border border-stone-200 hover:bg-stone-200 transition-all"
-                    data-testid={`active-color-${c.toLowerCase()}`}
-                  >
-                    {c}<X className="w-3 h-3 text-stone-400" />
                   </button>
                 ))}
                 {hasYearFilter && (
