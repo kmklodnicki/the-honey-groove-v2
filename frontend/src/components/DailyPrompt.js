@@ -66,7 +66,7 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
 
   return (
     <>
-      <Card className="mb-4 p-5 border-orange-200/60 bg-gradient-to-br from-amber-50/80 to-orange-50/60 relative overflow-hidden" data-testid="daily-prompt-card">
+      <Card className="my-4 p-5 border-orange-200/60 bg-gradient-to-br from-amber-50/80 to-orange-50/60 relative overflow-hidden" data-testid="daily-prompt-card">
         <div className="absolute top-0 right-0 w-24 h-24 bg-amber-100/40 rounded-full -translate-y-8 translate-x-8" />
         <p className="text-[11px] uppercase tracking-widest text-amber-600/70 font-medium mb-2">Daily Prompt</p>
         <p className="font-heading text-xl md:text-2xl text-vinyl-black leading-snug mb-3 italic" data-testid="daily-prompt-text">

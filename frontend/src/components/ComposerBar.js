@@ -437,9 +437,9 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                       onClick={() => setSpinMood(isSelected ? '' : m)}
                       className="px-3 py-2 rounded-lg text-xs font-medium transition-all"
                       style={{
-                        background: isSelected ? mc.btnColor + '26' : (moodCfg ? 'rgba(255,255,255,0.08)' : '#faf5ff'),
-                        color: isSelected ? mc.btnColor : (moodCfg ? '#ccc' : '#7e22ce'),
-                        border: isSelected ? `2px solid ${mc.btnColor}` : '2px solid transparent',
+                        background: isSelected ? 'linear-gradient(135deg, #FFB300, #FFA000)' : (moodCfg ? 'rgba(255,255,255,0.08)' : '#FFF8E1'),
+                        color: isSelected ? '#000' : (moodCfg ? '#ccc' : '#5D4037'),
+                        border: isSelected ? '2px solid #FFA000' : (moodCfg ? '2px solid transparent' : '2px solid rgba(255,179,0,0.2)'),
                         transform: isSelected ? 'scale(1.06)' : 'scale(1)',
                         transition: 'transform 180ms ease-in-out, background 200ms, border 200ms, color 200ms',
                       }}

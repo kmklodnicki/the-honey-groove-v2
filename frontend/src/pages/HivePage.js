@@ -727,6 +727,9 @@ const HivePage = () => {
       {/* Composer Bar */}
       <ComposerBar onPostCreated={handlePostCreated} records={records} />
 
+      {/* Daily Prompt */}
+      <DailyPromptCard records={records} onPostCreated={handlePostCreated} />
+
       {/* Content Filter Bar */}
       <div className="flex flex-wrap gap-1.5 mb-4" data-testid="feed-filter-bar">
         {FEED_FILTERS.map(f => {
@@ -766,9 +769,6 @@ const HivePage = () => {
           </Button>
         </div>
       )}
-
-      {/* Daily Prompt */}
-      <DailyPromptCard records={records} onPostCreated={handlePostCreated} />
 
       {filteredPosts.length === 0 ? (
         <Card className="p-8 text-center border-honey/30" data-testid="hive-empty-state">
