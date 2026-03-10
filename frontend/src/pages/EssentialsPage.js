@@ -182,19 +182,16 @@ const GrooveGatewayModal = ({ item, open, onClose }) => {
   );
 };
 
-/* ─── BLOCK 115.2: The Groove Terminal (VinylSupplyCo) ─── */
+/* ─── BLOCK 119.1: The Groove Terminal — Branded Gateway (VinylSupplyCo) ─── */
 const GrooveTerminalModal = ({ item, open, onClose }) => {
-  const [iframeLoaded, setIframeLoaded] = useState(false);
-  const [showFallback, setShowFallback] = useState(false);
+  const [phase, setPhase] = useState('pulse');
   useEscapeKey(open, onClose);
 
   useEffect(() => {
-    if (!open) { setIframeLoaded(false); setShowFallback(false); return; }
-    const fallbackTimer = setTimeout(() => {
-      if (!iframeLoaded) setShowFallback(true);
-    }, 5000);
-    return () => clearTimeout(fallbackTimer);
-  }, [open, iframeLoaded]);
+    if (!open) { setPhase('pulse'); return; }
+    const t = setTimeout(() => setPhase('ready'), 1500);
+    return () => clearTimeout(t);
+  }, [open]);
 
   if (!open || !item) return null;
 
@@ -203,26 +200,18 @@ const GrooveTerminalModal = ({ item, open, onClose }) => {
       <div className="absolute inset-0 bg-black/50 backdrop-blur-md" onClick={onClose} />
 
       <div
-        className="relative w-full sm:max-w-3xl mx-auto flex flex-col overflow-hidden"
+        className="relative w-full sm:max-w-lg mx-auto rounded-t-3xl sm:rounded-3xl overflow-hidden"
         style={{
-          background: 'rgba(255, 252, 245, 0.92)',
-          backdropFilter: 'blur(24px) saturate(1.4)',
-          WebkitBackdropFilter: 'blur(24px) saturate(1.4)',
+          background: 'linear-gradient(180deg, rgba(255,248,230,0.97) 0%, rgba(255,255,255,0.98) 100%)',
           border: '1px solid rgba(218,165,32,0.3)',
-          boxShadow: '0 8px 60px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.1) inset',
-          borderRadius: '24px 24px 0 0',
-          height: 'calc(90vh - 60px)',
-          maxHeight: 'calc(90vh - 60px)',
-          marginTop: '60px',
+          boxShadow: '0 -8px 40px rgba(0,0,0,0.2)',
+          maxHeight: '90vh',
         }}
       >
-        {/* Sticky Diamond Glass Header */}
+        {/* Diamond Glass Header */}
         <div
-          className="flex items-center justify-between px-5 py-3.5 shrink-0"
-          style={{
-            background: 'linear-gradient(180deg, rgba(255,248,230,0.98) 0%, rgba(255,252,245,0.95) 100%)',
-            borderBottom: '1px solid rgba(218,165,32,0.2)',
-          }}
+          className="flex items-center justify-between px-5 py-4 border-b"
+          style={{ background: 'rgba(255,215,0,0.08)', borderColor: 'rgba(218,165,32,0.15)' }}
           data-testid="groove-terminal-header"
         >
           <div className="flex items-center gap-2">
@@ -239,59 +228,66 @@ const GrooveTerminalModal = ({ item, open, onClose }) => {
           </button>
         </div>
 
-        {/* iframe body */}
-        <div className="flex-1 relative overflow-hidden bg-white">
-          {(!iframeLoaded && !showFallback) && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-[#FDFAF5]" data-testid="groove-terminal-loading">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style={{ animation: 'spin 1.5s linear infinite' }}>
-                <circle cx="12" cy="12" r="11" fill="#1A1A1A" />
-                <circle cx="12" cy="12" r="9" fill="none" stroke="#333" strokeWidth="0.4" />
-                <circle cx="12" cy="12" r="7" fill="none" stroke="#333" strokeWidth="0.3" />
-                <circle cx="12" cy="12" r="3.5" fill="#DAA520" />
-                <circle cx="12" cy="12" r="1.5" fill="#1A1A1A" />
-              </svg>
-              <p className="text-sm text-[#C8861A] font-medium mt-4">Loading curated boutique...</p>
+        {/* Body */}
+        <div className="p-6 sm:p-8">
+          {phase === 'pulse' ? (
+            <div className="flex flex-col items-center justify-center py-12" data-testid="groove-terminal-pulse">
+              {/* Nectar Pulse — glowing gold ring around spinning vinyl */}
+              <div className="relative flex items-center justify-center" style={{ width: 88, height: 88 }}>
+                <div
+                  className="absolute rounded-full"
+                  style={{
+                    inset: 0,
+                    border: '2px solid rgba(218,165,32,0.5)',
+                    animation: 'nectarPulse 1.5s ease-in-out infinite',
+                  }}
+                />
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" style={{ animation: 'spin 1.5s linear infinite' }}>
+                  <circle cx="12" cy="12" r="11" fill="#1A1A1A" />
+                  <circle cx="12" cy="12" r="9.5" fill="none" stroke="#333" strokeWidth="0.4" />
+                  <circle cx="12" cy="12" r="8" fill="none" stroke="#333" strokeWidth="0.3" />
+                  <circle cx="12" cy="12" r="6.5" fill="none" stroke="#333" strokeWidth="0.3" />
+                  <circle cx="12" cy="12" r="5" fill="none" stroke="#333" strokeWidth="0.3" />
+                  <circle cx="12" cy="12" r="3.5" fill="#DAA520" />
+                  <circle cx="12" cy="12" r="1.5" fill="#1A1A1A" />
+                </svg>
+              </div>
+              <p className="text-sm text-[#C8861A] font-medium mt-6 tracking-wide">Securing your request...</p>
             </div>
-          )}
-          {showFallback && !iframeLoaded ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-[#FDFAF5] px-6" data-testid="groove-terminal-fallback">
+          ) : (
+            <div className="text-center" data-testid="groove-terminal-ready">
               <div className="w-24 h-24 mx-auto rounded-xl overflow-hidden shadow-md mb-5">
                 <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
               </div>
+
               <p className="text-xs font-bold uppercase tracking-widest text-[#C8861A] mb-2">{item.honeyLabel}</p>
               <h3 className="font-heading text-xl text-vinyl-black mb-4">{item.name}</h3>
+
               <div
-                className="rounded-xl p-4 mb-6 text-sm text-vinyl-black/70 leading-relaxed max-w-sm text-center"
+                className="rounded-xl p-4 mb-6 text-sm text-vinyl-black/70 leading-relaxed"
                 style={{ background: 'rgba(255,215,0,0.06)', border: '1px solid rgba(218,165,32,0.2)' }}
               >
-                This boutique prefers a direct visit. You are being directed to our VinylSupplyCo partner. Your Groove status remains active.
+                You are being directed to our fulfillment partner to complete your acquisition. Your Groove status remains active.
               </div>
+
               <button
                 onClick={() => { window.open(item.url, '_blank', 'noopener,noreferrer'); onClose(); }}
-                className="py-3.5 px-8 rounded-2xl text-sm font-bold uppercase tracking-wider transition-all duration-200 active:scale-[0.98]"
+                className="w-full py-4 rounded-2xl text-base font-bold uppercase tracking-wider transition-all duration-200 active:scale-[0.98]"
                 style={{
                   background: 'linear-gradient(135deg, #FFD700, #DAA520, #C8861A)',
                   color: '#2A1A06',
                   border: '2px solid rgba(218,165,32,0.6)',
                   boxShadow: '0 4px 20px rgba(218,165,32,0.3), inset 0 1px 0 rgba(255,255,255,0.3)',
                 }}
-                data-testid="groove-terminal-fallback-btn"
+                data-testid="groove-terminal-purchase-btn"
               >
                 <Diamond className="w-4 h-4 inline-block mr-2 -mt-0.5" />
-                Visit VinylSupplyCo Boutique
+                Complete Purchase on VinylSupplyCo
               </button>
+
               <p className="text-[10px] text-muted-foreground mt-3">Secured by The Honey Groove</p>
             </div>
-          ) : null}
-          <iframe
-            src={item.url}
-            title={`The Honey Groove × VinylSupplyCo — ${item.name}`}
-            className="w-full h-full border-0"
-            style={{ opacity: iframeLoaded ? 1 : 0, transition: 'opacity 0.3s ease' }}
-            onLoad={() => setIframeLoaded(true)}
-            sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-top-navigation-by-user-activation"
-            data-testid="groove-terminal-iframe"
-          />
+          )}
         </div>
       </div>
     </div>
