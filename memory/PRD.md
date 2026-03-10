@@ -204,6 +204,11 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 
 ### Recent Fixes (March 10, 2026 - continued)
 - **Golden Hive ID Modal UI Update:** Removed $9.99 price from the profile "Get Golden Hive ID" button. Clicking now opens a detailed modal explaining benefits (verified badge, priority visibility, increased trust, admin-verified identity) with the price revealed only at the bottom as "One-time verification — $9.99" and a "Get Verified Now" CTA. Files: ProfilePage.js.
+- **FAQ Page Update:** Rewrote all FAQ content across 8 sections matching user-provided copy. Sections: Getting Started, The Hive, Collection, Dream List, The Honeypot Marketplace, Shipping/Ratings/Disputes, Trades, Safety and Trust.
+- **48-Hour Window Standardization:** All trade-related windows updated from 24h to 48h across the entire platform. Backend auto-completion, hold confirmation deadlines, and dispute eligibility all use 48h. Frontend copy updated on FAQ, Terms, Landing, and Trades pages.
+- **Full Dispute System for Sales:** Implemented buyer dispute flow within 48h of delivery. Structured reasons (5 options) + required photo evidence. Backend: `POST /api/orders/{id}/dispute` (buyer opens), `POST /api/orders/{id}/dispute/respond` (seller responds), admin endpoints for listing and resolving. Payout freezes on dispute open (`PAYOUT_ON_HOLD`). Admin approve → refund via Stripe, reject → payout proceeds. Abuse tracking via `dispute_losses` counter.
+- **Trade Dispute Enhancement:** Updated trade disputes to use same structured reason dropdown (5 options) and require photo evidence. UI uses Select component instead of free-text. Reason labels displayed human-readable in dispute display.
+- **Admin Sale Disputes Panel:** New "Sale Disputes" tab in admin panel. Shows open disputes with buyer evidence, seller response, listing details. Admin can approve (refund buyer) or reject (pay seller) with resolution notes.
 
 ### Future / Backlog
 - **P0:** User's secret search feature (details TBD — user has mentioned multiple times)
