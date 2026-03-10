@@ -592,9 +592,16 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               data-testid="note-text-input"
             />
             <div className="flex items-center justify-between">
-              <span className={`text-xs ${noteText.length > 260 ? 'text-amber-600 font-medium' : 'text-muted-foreground'}`}>
-                {isAdmin ? `${noteText.length} chars` : `${noteText.length}/1500`}
-              </span>
+              {isAdmin ? (
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200" data-testid="admin-changelog-badge">
+                  <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  Admin: Change Log Mode
+                </span>
+              ) : (
+                <span className={`text-xs ${noteText.length > 260 ? 'text-amber-600 font-medium' : 'text-muted-foreground'}`}>
+                  {noteText.length}/1500
+                </span>
+              )}
               <div className="flex items-center gap-3">
                 {/* Tag a record */}
                 <button
