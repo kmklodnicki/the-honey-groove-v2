@@ -1172,22 +1172,33 @@ const ProfilePage = () => {
             <div className="border-t pt-3">
               <p className="text-center text-xs text-muted-foreground mb-3">One-time verification — <span className="font-semibold text-amber-700">$9.99</span></p>
               <Button
-                className="w-full rounded-full bg-gradient-to-r from-amber-400 to-yellow-400 text-vinyl-black hover:from-amber-500 hover:to-yellow-500 font-medium"
+                className="w-full rounded-full bg-gradient-to-r from-amber-400 to-yellow-400 text-vinyl-black hover:from-amber-500 hover:to-yellow-500 font-medium h-11"
                 disabled={goldenHiveCheckoutLoading}
                 data-testid="golden-hive-checkout-btn"
                 onClick={async () => {
                   setGoldenHiveCheckoutLoading(true);
                   try {
                     const resp = await axios.post(`${API}/golden-hive/checkout`, {}, { headers: { Authorization: `Bearer ${token}` } });
+                    if (!resp.data?.url) {
+                      toast.error('Could not get checkout URL. Please try again.');
+                      setGoldenHiveCheckoutLoading(false);
+                      return;
+                    }
+                    // Small delay so the user sees the loading state
+                    await new Promise(r => setTimeout(r, 300));
                     window.location.href = resp.data.url;
                   } catch (err) {
-                    toast.error(err.response?.data?.detail || 'Could not start checkout');
+                    toast.error(err.response?.data?.detail || 'Could not start checkout. Please try again.');
                     setGoldenHiveCheckoutLoading(false);
                   }
                 }}
               >
-                {goldenHiveCheckoutLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                {goldenHiveCheckoutLoading ? 'Redirecting to Stripe...' : 'Get Verified Now'}
+                {goldenHiveCheckoutLoading ? (
+                  <span className="flex items-center gap-2">
+                    <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" strokeOpacity="0.25" /><path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" /></svg>
+                    Taking you to checkout...
+                  </span>
+                ) : 'Get Verified Now'}
               </Button>
             </div>
           </div>

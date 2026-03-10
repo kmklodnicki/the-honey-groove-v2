@@ -990,7 +990,18 @@ async def golden_hive_checkout(request: Request, user: Dict = Depends(require_au
         raise HTTPException(status_code=400, detail="Your verification is already pending review")
 
     stripe_sdk.api_key = STRIPE_API_KEY
-    frontend_url = FRONTEND_URL
+
+    # Derive redirect base URL from the request origin (handles preview + production)
+    origin = request.headers.get("origin") or request.headers.get("referer", "")
+    if origin:
+        # Strip trailing path from referer
+        from urllib.parse import urlparse
+        parsed = urlparse(origin)
+        redirect_base = f"{parsed.scheme}://{parsed.netloc}"
+    else:
+        redirect_base = FRONTEND_URL
+
+    username = u.get("username", "")
     try:
         session = stripe_sdk.checkout.Session.create(
             payment_method_types=["card"],
@@ -1006,12 +1017,16 @@ async def golden_hive_checkout(request: Request, user: Dict = Depends(require_au
                 "quantity": 1,
             }],
             mode="payment",
-            success_url=f"{frontend_url}/profile/{u.get('username', '')}?golden_hive=success&session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url=f"{frontend_url}/profile/{u.get('username', '')}?golden_hive=cancelled",
+            success_url=f"{redirect_base}/profile/{username}?golden_hive=success&session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{redirect_base}/profile/{username}?golden_hive=cancelled",
             metadata={"type": "golden_hive_verification", "user_id": user["id"]},
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Stripe error: {str(e)}")
+        logger.error(f"Golden Hive Stripe checkout error: {e}")
+        raise HTTPException(status_code=500, detail=f"Could not create checkout session. Please try again.")
+
+    if not session.url:
+        raise HTTPException(status_code=500, detail="Stripe did not return a checkout URL. Please try again.")
 
     now = datetime.now(timezone.utc).isoformat()
     await db.golden_hive_payments.insert_one({
