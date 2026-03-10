@@ -36,8 +36,9 @@ export const RarityPill = ({ tier, size = 'md' }) => {
   );
 };
 
-export const RarityCard = ({ rarity }) => {
+export const RarityCard = ({ rarity, label }) => {
   if (!rarity?.tier) return null;
+  const cardLabel = label || 'Global Variant Rarity';
 
   return (
     <div
@@ -54,7 +55,7 @@ export const RarityCard = ({ rarity }) => {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Disc className="w-4 h-4 text-[#DAA520] opacity-50" />
-          <span className="font-heading text-base font-bold text-vinyl-black">Global Variant Rarity</span>
+          <span className="font-heading text-base font-bold text-vinyl-black">{cardLabel}</span>
         </div>
         <RarityPill tier={rarity.tier} size="md" />
       </div>

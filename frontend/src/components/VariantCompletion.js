@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Check, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Check, ChevronDown, ChevronUp, ChevronRight, Loader2 } from 'lucide-react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import {
@@ -32,34 +33,55 @@ const ProgressBar = ({ pct }) => (
   </div>
 );
 
-const VariantRow = ({ variant, onAdd, adding }) => (
-  <div
-    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${variant.owned ? 'bg-emerald-50/80' : 'bg-stone-50/60 hover:bg-stone-100/60'}`}
-    data-testid={`variant-row-${variant.name.toLowerCase().replace(/\s+/g, '-')}`}
-  >
-    {variant.owned ? (
-      <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
-        <Check className="w-3 h-3 text-white" strokeWidth={3} />
-      </div>
-    ) : (
-      <button
-        onClick={() => onAdd(variant)}
-        disabled={adding}
-        className="w-5 h-5 rounded border-2 border-stone-300 shrink-0 hover:border-honey hover:bg-honey/10 transition-colors cursor-pointer"
-        data-testid={`variant-add-btn-${variant.name.toLowerCase().replace(/\s+/g, '-')}`}
-        aria-label={`Add ${variant.name} to collection`}
-      />
-    )}
-    <span className={`text-sm ${variant.owned ? 'font-medium text-emerald-800' : 'text-stone-500'}`}>
-      {variant.name}
-    </span>
-    {variant.release_ids?.length > 1 && (
-      <span className="text-[10px] text-muted-foreground ml-auto">
-        {variant.release_ids.length} pressings
+const VariantRow = ({ variant, onAdd, adding }) => {
+  const navigate = useNavigate();
+  const releaseId = variant.release_ids?.[0];
+  const handleNavigate = (e) => {
+    // Don't navigate if clicking the add checkbox
+    if (e.target.closest('[data-variant-add]')) return;
+    if (releaseId) navigate(`/variant/${releaseId}`);
+  };
+
+  return (
+    <div
+      className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 cursor-pointer ${
+        variant.owned
+          ? 'bg-emerald-50/80 hover:bg-emerald-50'
+          : 'bg-stone-50/60 hover:bg-amber-50/60'
+      }`}
+      style={{ '--hover-border': 'rgba(218,165,32,0.2)' }}
+      onClick={handleNavigate}
+      role="link"
+      data-testid={`variant-row-${variant.name.toLowerCase().replace(/\s+/g, '-')}`}
+    >
+      {variant.owned ? (
+        <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
+          <Check className="w-3 h-3 text-white" strokeWidth={3} />
+        </div>
+      ) : (
+        <button
+          data-variant-add="true"
+          onClick={(e) => { e.stopPropagation(); onAdd(variant); }}
+          disabled={adding}
+          className="w-5 h-5 rounded border-2 border-stone-300 shrink-0 hover:border-honey hover:bg-honey/10 transition-colors cursor-pointer"
+          data-testid={`variant-add-btn-${variant.name.toLowerCase().replace(/\s+/g, '-')}`}
+          aria-label={`Add ${variant.name} to collection`}
+        />
+      )}
+      <span className={`text-sm flex-1 ${variant.owned ? 'font-medium text-emerald-800' : 'text-stone-500'}`}>
+        {variant.name}
       </span>
-    )}
-  </div>
-);
+      {variant.release_ids?.length > 1 && (
+        <span className="text-[10px] text-muted-foreground">
+          {variant.release_ids.length} pressings
+        </span>
+      )}
+      {releaseId && (
+        <ChevronRight className="w-3.5 h-3.5 text-stone-300 shrink-0" />
+      )}
+    </div>
+  );
+};
 
 const TrackerSkeleton = () => (
   <Card className="p-5 border-honey/20 animate-pulse" data-testid="variant-tracker-skeleton">

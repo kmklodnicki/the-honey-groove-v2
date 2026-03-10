@@ -66,6 +66,7 @@ import ConfirmEmailChangePage from "./pages/ConfirmEmailChangePage";
 import WelcomeHivePage from "./pages/WelcomeHivePage";
 import EssentialsPage from "./pages/EssentialsPage";
 import VinylVariantPage from "./pages/VinylVariantPage";
+import VariantReleasePage from "./pages/VariantReleasePage";
 import SearchPage from "./pages/SearchPage";
 
 // Auth guards — loading is ALWAYS false. No gates.
@@ -155,6 +156,7 @@ function AppContent() {
 
       {/* Public vinyl variant SEO pages */}
       <Route path="/vinyl/:artist/:album/:variant" element={<AppLayout><VinylVariantPage /></AppLayout>} />
+      <Route path="/variant/:releaseId" element={<AppLayout><VariantReleasePage /></AppLayout>} />
 
       {/* Full search page */}
       <Route path="/search" element={<AppLayout><SearchPage /></AppLayout>} />

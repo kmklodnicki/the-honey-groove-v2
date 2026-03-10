@@ -362,6 +362,93 @@ async def get_rarity_by_discogs_id(discogs_id: int):
     return rarity
 
 
+# ========== Release-ID based Variant Detail ==========
+
+@router.get("/release/{release_id}")
+async def get_variant_by_release_id(release_id: int):
+    """Return variant detail data for a specific Discogs release ID.
+
+    This ensures Owners, Wantlist, and Market Price are variant-specific,
+    NOT master album stats.
+    """
+    discogs_data = await _get_cached_discogs_release(release_id)
+    if not discogs_data:
+        return {"error": "Release not found on Discogs", "release_id": release_id}
+
+    market_raw = get_discogs_market_data(release_id)
+    discogs_market = market_raw if market_raw else {}
+
+    artist = discogs_data.get("artist", "Unknown Artist")
+    album = discogs_data.get("title", "Unknown Album")
+    variant = discogs_data.get("color_variant", "Standard")
+    year = discogs_data.get("year")
+    cover_url = discogs_data.get("cover_url")
+    country = discogs_data.get("country")
+
+    label_raw = discogs_data.get("label")
+    label = label_raw[0] if isinstance(label_raw, list) and label_raw else label_raw
+
+    catno = discogs_data.get("catno")
+    barcode = discogs_data.get("barcode")
+
+    format_raw = discogs_data.get("format")
+    fmt = format_raw[0] if isinstance(format_raw, list) and format_raw else (format_raw or "Vinyl")
+
+    # Variant-specific community stats from Discogs
+    discogs_have = discogs_data.get("community_have", 0)
+    discogs_want = discogs_data.get("community_want", 0)
+    discogs_for_sale = discogs_data.get("num_for_sale", 0)
+    lowest_price = discogs_market.get("low_value")
+
+    rarity = calculate_rarity(discogs_have, discogs_want, discogs_for_sale)
+
+    # Internal owners of this exact pressing
+    records = await db.records.find(
+        {"discogs_id": release_id},
+        {"_id": 0, "id": 1, "user_id": 1}
+    ).to_list(200)
+
+    owner_ids = list(set(r.get("user_id") for r in records if r.get("user_id")))
+    owners = []
+    if owner_ids:
+        owners = await db.users.find(
+            {"id": {"$in": owner_ids[:20]}},
+            {"_id": 0, "id": 1, "username": 1, "avatar_url": 1}
+        ).to_list(20)
+
+    return {
+        "release_id": release_id,
+        "variant_overview": {
+            "artist": artist,
+            "album": album,
+            "variant": variant,
+            "year": year,
+            "cover_url": cover_url,
+            "format": fmt,
+            "label": label,
+            "catalog_number": catno,
+            "barcode": barcode,
+            "pressing_country": country,
+            "discogs_id": release_id,
+        },
+        "scarcity": {
+            **rarity,
+            "discogs_have": discogs_have,
+            "discogs_want": discogs_want,
+            "lowest_price": lowest_price,
+        },
+        "value": {
+            "discogs_median": discogs_market.get("median_value"),
+            "discogs_low": discogs_market.get("low_value"),
+            "discogs_high": discogs_market.get("high_value"),
+        },
+        "community": {
+            "internal_owners_count": len(owner_ids),
+            "owners": owners,
+        },
+    }
+
+
 # ========== Variant Ownership & Actions ==========
 
 @router.get("/ownership/{discogs_id}")
