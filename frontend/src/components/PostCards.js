@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Disc, Package, Search, Moon, Plus, Music, Feather, ShoppingBag, ArrowRightLeft } from 'lucide-react';
+import { Disc, Package, Search, Moon, Plus, Music, Feather, ShoppingBag, ArrowRightLeft, Shuffle } from 'lucide-react';
 import AlbumArt from './AlbumArt';
 import { resolveImageUrl } from '../utils/imageUrl';
 import PhotoLightbox from './PhotoLightbox';
@@ -61,6 +61,7 @@ const PILL_STYLES = {
   WEEKLY_WRAP:          { bg: 'bg-purple-100',   text: 'text-purple-700',  border: 'border-purple-200' },
   VINYL_MOOD:           { bg: 'bg-purple-100',   text: 'text-purple-700',  border: 'border-purple-200' },
   DAILY_PROMPT:         { bg: 'bg-amber-100',    text: 'text-amber-700',   border: 'border-amber-200' },
+  RANDOMIZER:           { bg: 'bg-orange-50',    text: 'text-orange-600',  border: 'border-orange-200' },
   NOTE:                 { bg: 'bg-yellow-100',   text: 'text-yellow-700',  border: 'border-yellow-200' },
   NEW_FEATURE:          { bg: 'bg-green-100',    text: 'text-green-700',   border: 'border-green-200' },
   following:            { bg: 'bg-violet-100',   text: 'text-violet-700',  border: 'border-violet-200' },
@@ -93,6 +94,7 @@ const PostTypeBadge = ({ type, mood }) => {
     WEEKLY_WRAP: { label: 'Weekly Wrap', icon: Music },
     VINYL_MOOD: { label: 'Vinyl Mood', icon: Moon },
     DAILY_PROMPT: { label: 'Daily Prompt', icon: Disc },
+    RANDOMIZER: { label: 'Randomizer', icon: Shuffle },
     listing_sale: { label: 'For Sale', icon: ShoppingBag },
     listing_trade: { label: 'For Trade', icon: ArrowRightLeft },
   };

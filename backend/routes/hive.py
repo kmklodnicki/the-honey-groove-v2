@@ -440,6 +440,29 @@ async def composer_now_spinning(data: NowSpinningCreate, user: Dict = Depends(re
     
     return await build_post_response(post_doc, user["id"])
 
+@router.post("/composer/randomizer", response_model=PostResponse)
+async def composer_randomizer(data: NowSpinningCreate, user: Dict = Depends(require_auth)):
+    """Create a Randomizer post – a playful, spontaneous discovery post."""
+    record = await db.records.find_one({"id": data.record_id, "user_id": user["id"]}, {"_id": 0})
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found in your collection")
+    now = datetime.now(timezone.utc).isoformat()
+    post_id = str(uuid.uuid4())
+    post_doc = {
+        "id": post_id,
+        "user_id": user["id"],
+        "post_type": "RANDOMIZER",
+        "caption": data.caption,
+        "record_id": data.record_id,
+        "color_variant": record.get("color_variant") or record.get("pressing_notes"),
+        "created_at": now,
+    }
+    await db.posts.insert_one(post_doc)
+    await parse_and_notify_mentions(post_doc.get("caption", ""), post_doc["id"], user["id"])
+    return await build_post_response(post_doc, user["id"])
+
+
+
 @router.post("/composer/new-haul", response_model=PostResponse)
 async def composer_new_haul(data: NewHaulCreate, user: Dict = Depends(require_auth)):
     """Create a New Haul post + add records to collection in one flow"""

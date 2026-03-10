@@ -209,30 +209,12 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     if (!randRecord) return;
     setSubmitting(true);
     try {
-      await axios.post(`${API}/composer/now-spinning`, {
+      await axios.post(`${API}/composer/randomizer`, {
         record_id: randRecord.id,
         caption: randCaption || null,
-        mood: null,
       }, { headers: { Authorization: `Bearer ${token}` } });
       toast.success('posted to the hive.');
       trackEvent('randomizer_post');
-      closeModal(); onPostCreated?.();
-    } catch (err) { toast.error(err.response?.data?.detail || 'Failed to post'); }
-    finally { setSubmitting(false); }
-  };
-
-  const submitRandomSpin = async () => {
-    if (!randRecord) return;
-    setSubmitting(true);
-    try {
-      await axios.post(`${API}/composer/now-spinning`, {
-        record_id: randRecord.id,
-        caption: randCaption ? `${randCaption}` : null,
-        track: null,
-        mood: null,
-      }, { headers: { Authorization: `Bearer ${token}` } });
-      toast.success('now spinning!');
-      trackEvent('randomizer_spin');
       closeModal(); onPostCreated?.();
     } catch (err) { toast.error(err.response?.data?.detail || 'Failed to post'); }
     finally { setSubmitting(false); }
@@ -747,12 +729,6 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                     data-testid="randomizer-post-btn">
                     {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Feather className="w-4 h-4 mr-2" />}
                     Post to Hive
-                  </Button>
-                  <Button onClick={submitRandomSpin} disabled={submitting}
-                    className="w-full rounded-full bg-amber-100 text-amber-800 hover:bg-amber-200 border border-amber-300/50"
-                    data-testid="randomizer-spin-btn">
-                    {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Disc className="w-4 h-4 mr-2" />}
-                    Spin This Now
                   </Button>
                   <div className="flex gap-2">
                     <Button onClick={() => { setRandCaption(''); fetchRandomRecord(); }} disabled={randLoading}
