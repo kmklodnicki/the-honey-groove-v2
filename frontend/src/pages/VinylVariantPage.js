@@ -50,7 +50,7 @@ export default function VinylVariantPage() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 pt-24 pb-28 flex items-center justify-center">
+      <div className="max-w-4xl mx-auto px-4 pt-16 md:pt-24 pb-28 flex items-center justify-center">
         <Disc className="w-8 h-8 animate-spin text-honey" />
       </div>
     );
@@ -58,7 +58,7 @@ export default function VinylVariantPage() {
 
   if (error || !data) {
     return (
-      <div className="max-w-4xl mx-auto px-4 pt-24 pb-28 text-center">
+      <div className="max-w-4xl mx-auto px-4 pt-16 md:pt-24 pb-28 text-center">
         <Disc className="w-12 h-12 text-honey/40 mx-auto mb-4" />
         <h1 className="text-xl font-heading mb-2">Variant Not Found</h1>
         <p className="text-muted-foreground text-sm mb-6">We don't have data for this variant yet. As collectors add it, this page will come alive.</p>
@@ -74,7 +74,7 @@ export default function VinylVariantPage() {
   const { variant_overview: ov, marketplace: mp, value: val, demand: dm, activity: act, seo, rarity } = data;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 pt-20 pb-28" data-testid="vinyl-variant-page">
+    <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-28" data-testid="vinyl-variant-page">
       <SEOHead
         title={seo.title}
         description={seo.description}
@@ -127,7 +127,7 @@ export default function VinylVariantPage() {
           {/* Album Art */}
           <div className="w-full md:w-64 shrink-0">
             <div
-              className="relative aspect-square overflow-hidden bg-vinyl-black transition-transform duration-150 ease-out hover:-translate-y-[3px]"
+              className="relative aspect-square overflow-hidden bg-stone-200 transition-transform duration-150 ease-out hover:-translate-y-[3px]"
               style={{ borderRadius: '14px', boxShadow: '0 12px 28px rgba(0,0,0,0.12)' }}
             >
               {ov.cover_url ? (
@@ -259,7 +259,7 @@ export default function VinylVariantPage() {
               <Card key={listing.id || i} className="p-4 border-honey/20 hover:shadow-honey transition-all cursor-pointer" data-testid={`listing-${listing.id}`}
                 onClick={() => navigate(`/honeypot/listing/${listing.id}`)}>
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-lg overflow-hidden bg-vinyl-black shrink-0">
+                  <div className="w-14 h-14 rounded-lg overflow-hidden bg-stone-200 shrink-0">
                     <AlbumArt
                       src={listing.photo_urls?.[0] || listing.cover_url || ov.cover_url}
                       alt={`${listing.artist} ${listing.album}${listing.pressing_notes ? ` ${listing.pressing_notes}` : ''} vinyl record`}
