@@ -12,6 +12,7 @@ from database import DISCOGS_TOKEN, DISCOGS_USER_AGENT, DISCOGS_CONSUMER_KEY, DI
 from database import DISCOGS_REQUEST_TOKEN_URL, DISCOGS_AUTHORIZE_URL, DISCOGS_ACCESS_TOKEN_URL, DISCOGS_API_BASE
 from database import oauth_request_tokens, import_progress, EMERGENT_KEY
 from models import *
+from util.content_filter import detect_offplatform_payment, BLOCK_MESSAGE as OFFPLATFORM_BLOCK_MESSAGE
 
 
 router = APIRouter()
@@ -160,6 +161,11 @@ async def update_me(update_data: UserUpdate, user: Dict = Depends(require_auth))
     for field in ("bio", "avatar_url", "city", "region", "country", "setup", "location", "favorite_genre", "instagram_username", "tiktok_username"):
         val = getattr(update_data, field, None)
         if val is not None:
+            # Check bio for off-platform payment mentions
+            if field == "bio":
+                flagged, _ = detect_offplatform_payment(val)
+                if flagged:
+                    raise HTTPException(status_code=400, detail=OFFPLATFORM_BLOCK_MESSAGE)
             update_fields[field] = val
     if update_data.onboarding_completed is not None:
         update_fields["onboarding_completed"] = update_data.onboarding_completed

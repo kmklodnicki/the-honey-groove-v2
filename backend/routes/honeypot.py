@@ -38,8 +38,8 @@ import re
 
 router = APIRouter()
 
-# Off-platform payment keywords to detect
-OFFPLATFORM_KEYWORDS = ["venmo", "paypal", "cashapp", "zelle", "wire transfer", "western union", "bank transfer"]
+# Off-platform payment keywords to detect (fuzzy engine)
+from util.content_filter import detect_offplatform_payment, BLOCK_MESSAGE as OFFPLATFORM_BLOCK_MESSAGE
 
 
 async def _get_seller_transaction_count(user_id: str) -> int:
@@ -305,15 +305,13 @@ async def create_listing(data: ListingCreate, user: Dict = Depends(require_auth)
     now = datetime.now(timezone.utc).isoformat()
     listing_id = str(uuid.uuid4())
 
-    # Off-platform payment detection — scan description
+    # Off-platform payment detection — fuzzy scan description
     offplatform_flagged = False
     offplatform_keywords_found = []
     if data.description:
-        desc_lower = data.description.lower()
-        for kw in OFFPLATFORM_KEYWORDS:
-            if kw in desc_lower:
-                offplatform_flagged = True
-                offplatform_keywords_found.append(kw)
+        offplatform_flagged, offplatform_keywords_found = detect_offplatform_payment(data.description)
+    if offplatform_flagged:
+        raise HTTPException(status_code=400, detail=OFFPLATFORM_BLOCK_MESSAGE)
     
     listing_doc = {
         "id": listing_id,
@@ -340,19 +338,6 @@ async def create_listing(data: ListingCreate, user: Dict = Depends(require_auth)
     }
     await db.listings.insert_one(listing_doc)
 
-    # Log off-platform alert for admin
-    if offplatform_flagged:
-        await db.offplatform_alerts.insert_one({
-            "id": str(uuid.uuid4()),
-            "listing_id": listing_id,
-            "user_id": user["id"],
-            "username": user.get("username", ""),
-            "keywords": offplatform_keywords_found,
-            "description_snippet": (data.description[:200] + "...") if len(data.description) > 200 else data.description,
-            "status": "open",
-            "created_at": now,
-        })
-    
     # Check for ISO matches and notify
     iso_matches = await db.iso_items.find({
         "status": "OPEN",
@@ -573,27 +558,12 @@ async def update_listing(listing_id: str, data: ListingUpdate, user: Dict = Depe
     if data.shipping_cost is not None:
         update_fields["shipping_cost"] = data.shipping_cost
     if data.description is not None:
-        # Re-run off-platform detection
-        offplatform_flagged = False
-        offplatform_keywords_found = []
-        desc_lower = data.description.lower()
-        for kw in OFFPLATFORM_KEYWORDS:
-            if kw in desc_lower:
-                offplatform_flagged = True
-                offplatform_keywords_found.append(kw)
-        update_fields["description"] = data.description
-        update_fields["offplatform_flagged"] = offplatform_flagged
+        # Fuzzy off-platform detection — block save if detected
+        offplatform_flagged, offplatform_keywords_found = detect_offplatform_payment(data.description)
         if offplatform_flagged:
-            await db.offplatform_alerts.insert_one({
-                "id": str(uuid.uuid4()),
-                "listing_id": listing_id,
-                "user_id": user["id"],
-                "username": user.get("username", ""),
-                "keywords": offplatform_keywords_found,
-                "description_snippet": (data.description[:200] + "...") if len(data.description) > 200 else data.description,
-                "status": "open",
-                "created_at": datetime.now(timezone.utc).isoformat(),
-            })
+            raise HTTPException(status_code=400, detail=OFFPLATFORM_BLOCK_MESSAGE)
+        update_fields["description"] = data.description
+        update_fields["offplatform_flagged"] = False
     if data.condition is not None:
         update_fields["condition"] = data.condition
     if data.pressing_notes is not None:
