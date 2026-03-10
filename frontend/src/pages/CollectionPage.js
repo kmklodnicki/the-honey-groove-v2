@@ -70,7 +70,7 @@ const TreasuryHeader = ({ collectionValue, dreamValue, collectionTab, onTabChang
       className="relative rounded-2xl overflow-hidden"
       style={{
         position: 'fixed',
-        top: 0,
+        top: 52,
         left: 0,
         width: '100%',
         zIndex: 99999,
@@ -161,8 +161,8 @@ const TreasuryHeader = ({ collectionValue, dreamValue, collectionTab, onTabChang
         </div>
       </div>
     </div>
-    {/* Spacer to preserve layout since header is position: fixed */}
-    <div style={{ height: 180 }} aria-hidden="true" />
+    {/* Spacer: combined nav + vault height */}
+    <div className="h-[200px] md:h-[240px]" aria-hidden="true" />
     </>
   );
 };
