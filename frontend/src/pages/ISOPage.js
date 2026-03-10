@@ -562,7 +562,7 @@ const ISOPage = () => {
       />
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
-        <div>
+        <div className="ml-10 md:ml-0">
           <h1 className="font-heading text-3xl text-vinyl-black" data-testid="honeypot-title">The Honeypot</h1>
           <p className="text-sm text-muted-foreground mt-1">buy, trade, and hunt with collectors like you.</p>
         </div>
