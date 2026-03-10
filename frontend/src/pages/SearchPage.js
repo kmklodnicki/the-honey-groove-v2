@@ -12,6 +12,17 @@ import axios from 'axios';
 
 const API = process.env.REACT_APP_BACKEND_URL + '/api';
 
+/* ─── Tag color map for collector metadata pills ─── */
+const TAG_STYLES = {
+  RSD:            { bg: '#FCEED6', color: '#B97A00' },
+  Limited:        { bg: '#F4EFFF', color: '#6C54E8' },
+  Exclusive:      { bg: '#EAF7F2', color: '#2F8F6B' },
+  Numbered:       { bg: '#FFF3F0', color: '#C15A3A' },
+  Signed:         { bg: '#F7EAF3', color: '#A14578' },
+  'Test Pressing':{ bg: '#F0F4FF', color: '#4A6FA5' },
+  Tour:           { bg: '#FFF8E6', color: '#9A7B2D' },
+};
+
 /* ─── Variant Quick Card ─── */
 const VariantCard = ({ v, onOpen }) => (
   <button
@@ -32,14 +43,22 @@ const VariantCard = ({ v, onOpen }) => (
       </p>
       <p className="text-xs text-muted-foreground truncate">{v.artist}</p>
       <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-        <span className="text-[11px] font-medium text-honey-amber bg-honey/10 px-2 py-0.5 rounded-full truncate max-w-[160px]">
+        <span className="text-[11px] font-medium text-honey-amber bg-honey/10 px-2.5 py-0.5 rounded-full truncate max-w-[160px]">
           {v.variant}
         </span>
-        {v.tags?.map(tag => (
-          <span key={tag} className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-vinyl-black/90 text-white">
-            {tag}
-          </span>
-        ))}
+        {v.tags?.map(tag => {
+          const style = TAG_STYLES[tag] || { bg: '#F5F5F5', color: '#666' };
+          return (
+            <span
+              key={tag}
+              className="text-[11px] font-medium px-2.5 leading-none rounded-full"
+              style={{ background: style.bg, color: style.color, padding: '4px 10px' }}
+              data-testid={`tag-${tag.toLowerCase().replace(/\s+/g, '-')}`}
+            >
+              {tag}
+            </span>
+          );
+        })}
         {v.collectors > 0 && (
           <span className="text-[10px] text-muted-foreground">{v.collectors} have</span>
         )}
