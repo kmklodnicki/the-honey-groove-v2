@@ -117,7 +117,6 @@ async def get_my_records(user: Dict = Depends(require_auth)):
     pipeline = [
         {"$match": {"user_id": user["id"]}},
         {"$sort": {"created_at": -1}},
-        {"$limit": 1000},
         {"$lookup": {
             "from": "spins",
             "localField": "id",
@@ -127,7 +126,7 @@ async def get_my_records(user: Dict = Depends(require_auth)):
         {"$addFields": {"spin_count": {"$size": "$_spins"}}},
         {"$project": {"_spins": 0, "_id": 0}}
     ]
-    records = await db.records.aggregate(pipeline).to_list(1000)
+    records = await db.records.aggregate(pipeline).to_list(None)
     return [RecordResponse(**r) for r in records]
 
 @router.get("/records/{record_id}", response_model=RecordResponse)
@@ -256,7 +255,7 @@ async def get_user_records(username: str, current_user: Optional[Dict] = Depends
     elif not current_user and user.get("is_private", False):
         raise HTTPException(status_code=403, detail="This account is private.")
     
-    records = await db.records.find({"user_id": user["id"]}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    records = await db.records.find({"user_id": user["id"]}, {"_id": 0}).sort("created_at", -1).to_list(None)
     
     result = []
     for record in records:
