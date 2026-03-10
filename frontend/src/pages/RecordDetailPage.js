@@ -14,6 +14,7 @@ import AlbumArt from '../components/AlbumArt';
 import { resolveImageUrl } from '../utils/imageUrl';
 import { PostTypeBadge } from '../components/PostCards';
 import SEOHead from '../components/SEOHead';
+import { RarityPill } from '../components/RarityBadge';
 
 const RecordDetailPage = () => {
   usePageTitle('Record Details');
@@ -23,6 +24,7 @@ const RecordDetailPage = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [spinning, setSpinning] = useState(false);
+  const [rarity, setRarity] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -31,6 +33,11 @@ const RecordDetailPage = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         setData(res.data);
+        if (res.data.record?.discogs_id) {
+          axios.get(`${API}/vinyl/rarity/${res.data.record.discogs_id}`)
+            .then(r => setRarity(r.data))
+            .catch(() => {});
+        }
       } catch {
         toast.error('record not found.');
         navigate('/collection');
@@ -144,6 +151,7 @@ const RecordDetailPage = () => {
                 <Music2 className="w-3.5 h-3.5" /> Discogs
               </a>
             )}
+            {rarity?.tier && <RarityPill tier={rarity.tier} size="sm" />}
           </div>
 
           {/* Spin button */}

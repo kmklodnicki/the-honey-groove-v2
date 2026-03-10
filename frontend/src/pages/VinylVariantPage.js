@@ -5,6 +5,7 @@ import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import AlbumArt from '../components/AlbumArt';
 import SEOHead from '../components/SEOHead';
+import { RarityCard } from '../components/RarityBadge';
 import { useAuth } from '../context/AuthContext';
 import { resolveImageUrl } from '../utils/imageUrl';
 import axios from 'axios';
@@ -58,7 +59,7 @@ export default function VinylVariantPage() {
     );
   }
 
-  const { variant_overview: ov, marketplace: mp, value: val, demand: dm, activity: act, seo } = data;
+  const { variant_overview: ov, marketplace: mp, value: val, demand: dm, activity: act, seo, rarity } = data;
 
   return (
     <div className="max-w-4xl mx-auto px-4 pt-20 pb-28" data-testid="vinyl-variant-page">
@@ -179,6 +180,13 @@ export default function VinylVariantPage() {
           </div>
         </div>
       </section>
+
+      {/* ===== RARITY SCORE ===== */}
+      {rarity && (
+        <section className="mb-10" data-testid="rarity-section">
+          <RarityCard rarity={rarity} />
+        </section>
+      )}
 
       {/* ===== MARKET VALUE ===== */}
       <section className="mb-10" data-testid="value-section">
