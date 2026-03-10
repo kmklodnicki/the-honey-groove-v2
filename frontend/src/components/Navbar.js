@@ -14,7 +14,6 @@ import {
 import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog';
 import { Home, Search, User, LogOut, Settings, Library, ShoppingBag, ArrowRightLeft, Bell, Check, MessageCircle, Globe, HelpCircle, Package, AlertTriangle, Sparkles } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import GlobalSearch from './GlobalSearch';
 import ReportModal from './ReportModal';
 import { resolveImageUrl } from '../utils/imageUrl';
 
@@ -50,7 +49,7 @@ const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false); // kept for legacy, unused
   const [reportOpen, setReportOpen] = useState(false);
 
   const handleLogout = () => {
@@ -126,7 +125,7 @@ const Navbar = () => {
               <Button 
                 variant="ghost" 
                 className="gap-2"
-                onClick={() => setSearchOpen(true)}
+                onClick={() => navigate('/search')}
                 data-testid="nav-search-btn"
               >
                 <Search className="w-4 h-4" />
@@ -227,7 +226,7 @@ const Navbar = () => {
           </Link>
           <div className="flex items-center gap-2 shrink-0">
             <button
-              onClick={() => setSearchOpen(true)}
+              onClick={() => navigate('/search')}
               className="relative h-8 w-8 flex items-center justify-center rounded-full"
               data-testid="mobile-search-top"
               title="Search"
@@ -330,15 +329,6 @@ const Navbar = () => {
         </div>
       </div>
     )}
-
-    {/* Global Search Dialog */}
-    <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
-      <DialogContent className="sm:max-w-2xl max-h-[80vh] p-0 overflow-hidden [&>button:last-child]:hidden" aria-describedby="global-search-desc">
-        <DialogTitle className="sr-only">Search</DialogTitle>
-        <span id="global-search-desc" className="sr-only">Search records, collectors, and posts</span>
-        <GlobalSearch onClose={() => setSearchOpen(false)} />
-      </DialogContent>
-    </Dialog>
 
     {/* Report a Problem Modal */}
     <ReportModal

@@ -1,9 +1,9 @@
-"""Unified global search — records, collectors, posts, listings."""
+"""Unified global search — records, collectors, posts, listings, variants."""
 from fastapi import APIRouter, Query, Depends
-from typing import Dict, List
+from typing import Dict, List, Optional
 from datetime import datetime, timezone
 
-from database import db, require_auth, search_discogs, get_hidden_user_ids, logger
+from database import db, require_auth, get_current_user, search_discogs, get_hidden_user_ids, logger
 
 router = APIRouter()
 
@@ -15,14 +15,11 @@ def _score(text: str, words: list[str]) -> int:
     low = text.lower()
     query_full = " ".join(words)
     score = 0
-    # Exact full match
     if low == query_full:
         score += 100
-    # Starts with full query
     elif low.startswith(query_full):
         score += 70
     else:
-        # Per-word scoring
         for w in words:
             if low == w:
                 score += 60
@@ -35,18 +32,48 @@ def _score(text: str, words: list[str]) -> int:
     return score
 
 
+def _variant_score(rec: dict, words: list[str]) -> int:
+    """Variant-first scoring: variant > color > album > artist."""
+    query_full = " ".join(words)
+    s = 0
+    variant = (rec.get("color_variant") or "").lower()
+    artist = (rec.get("artist") or "").lower()
+    title = (rec.get("title") or "").lower()
+
+    # Exact variant match — highest priority
+    if variant and variant == query_full:
+        s += 200
+    elif variant:
+        s += _score(rec.get("color_variant", ""), words) * 2
+
+    # Album match
+    if title == query_full:
+        s += 80
+    else:
+        s += _score(rec.get("title", ""), words)
+
+    # Artist match
+    if artist == query_full:
+        s += 60
+    else:
+        s += _score(rec.get("artist", ""), words) * 0.7
+
+    # Bonus for having a real variant
+    if variant and variant != "black" and any(w in variant for w in words):
+        s += 50
+
+    return int(s)
+
+
 def _record_score(rec: dict, words: list[str]) -> int:
-    """Weighted: Exact Artist (100) > Exact Album (80)."""
     artist = rec.get("artist", "").lower()
     title = rec.get("title", "").lower()
     query_full = " ".join(words)
     score = 0
-    # Exact artist match bonus
     if artist == query_full:
         score += 100
     else:
         score += _score(rec.get("artist", ""), words)
-    # Exact album match bonus
     if title == query_full:
         score += 80
     else:
@@ -63,11 +90,10 @@ def _post_score(p: dict, words: list[str]) -> int:
 
 
 def _listing_score(listing: dict, words: list[str]) -> int:
-    """Weighted: Exact Artist (100) > Exact Album (80) > Boosted Listing (+50)."""
     artist = listing.get("artist", "").lower()
     album = listing.get("album", "").lower()
     query_full = " ".join(words)
-    score = 50  # Base boost for being an active listing
+    score = 50
     if artist == query_full:
         score += 100
     else:
@@ -80,12 +106,226 @@ def _listing_score(listing: dict, words: list[str]) -> int:
 
 
 def _build_regex_filter(q: str) -> dict:
-    """Build an OR regex filter matching any word in the query."""
     words = q.strip().split()
     patterns = []
     for w in words:
         patterns.append({"$regex": w, "$options": "i"})
     return patterns
+
+
+def _slugify(text: str) -> str:
+    import re as _re
+    return _re.sub(r"[^a-z0-9]+", "-", (text or "").lower()).strip("-")
+
+
+# ========== Variant-first search ==========
+
+@router.get("/search/variants")
+async def search_variants(
+    q: str = Query(..., min_length=2),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=50),
+    user: Optional[Dict] = Depends(get_current_user),
+):
+    """Variant-first search across all records. Returns deduplicated variants with slug URLs."""
+    words = [w.lower() for w in q.strip().split() if len(w) >= 1]
+    if not words:
+        return {"variants": [], "albums": [], "artists": [], "has_more": False}
+
+    regex_patterns = _build_regex_filter(q)
+    def field_or(field: str):
+        return [{field: p} for p in regex_patterns]
+
+    # Search across artist, title, color_variant, catno
+    rec_filter = {"$or": field_or("artist") + field_or("title") + field_or("color_variant") + field_or("catno")}
+    fetch_limit = skip + limit + 100
+    raw = await db.records.find(rec_filter, {"_id": 0}).limit(fetch_limit).to_list(fetch_limit)
+
+    # Deduplicate by discogs_id → keep best per variant
+    seen = {}
+    for r in raw:
+        did = r.get("discogs_id")
+        key = did or r.get("id")
+        if key not in seen:
+            seen[key] = r
+
+    unique = list(seen.values())
+    scored = sorted(unique, key=lambda r: _variant_score(r, words), reverse=True)
+
+    # Split into: variants (have color_variant), albums (grouped by title)
+    variants_out = []
+    album_groups = {}
+    artist_set = {}
+
+    for r in scored:
+        artist = r.get("artist", "")
+        title = r.get("title", "")
+        variant = r.get("color_variant", "")
+        a_low = artist.lower().strip()
+
+        # Track unique artists
+        if a_low and a_low not in artist_set:
+            artist_set[a_low] = {"name": artist, "score": _score(artist, words)}
+
+        # Track albums
+        album_key = f"{a_low}|{title.lower().strip()}"
+        if album_key not in album_groups:
+            album_groups[album_key] = {
+                "artist": artist, "title": title,
+                "cover_url": r.get("cover_url"), "year": r.get("year"),
+                "discogs_id": r.get("discogs_id"),
+                "variant_count": 0,
+            }
+        album_groups[album_key]["variant_count"] += 1
+
+        # Build variant entry
+        slug_artist = _slugify(artist)
+        slug_album = _slugify(title)
+        slug_variant = _slugify(variant) if variant else "standard"
+        variants_out.append({
+            "discogs_id": r.get("discogs_id"),
+            "artist": artist,
+            "album": title,
+            "variant": variant or "Standard Black Vinyl",
+            "cover_url": r.get("cover_url"),
+            "year": r.get("year"),
+            "label": r.get("label"),
+            "slug": f"/vinyl/{slug_artist}/{slug_album}/{slug_variant}",
+            "score": _variant_score(r, words),
+        })
+
+    page = variants_out[skip:skip + limit]
+    has_more = len(variants_out) > skip + limit
+
+    # Top albums (sorted by variant count)
+    albums = sorted(album_groups.values(), key=lambda a: a["variant_count"], reverse=True)[:8]
+    for a in albums:
+        a["slug"] = f"/vinyl/{_slugify(a['artist'])}/{_slugify(a['title'])}/standard"
+
+    # Top artists
+    artists = sorted(artist_set.values(), key=lambda a: a["score"], reverse=True)[:6]
+
+    return {
+        "variants": page,
+        "albums": albums,
+        "artists": [a["name"] for a in artists],
+        "has_more": has_more,
+        "total": len(variants_out),
+    }
+
+
+# ========== Discovery endpoints ==========
+
+@router.get("/search/discover")
+async def search_discover(user: Optional[Dict] = Depends(get_current_user)):
+    """Return discovery sections for the empty search state."""
+    import asyncio
+
+    async def trending():
+        """Most-owned variants."""
+        pipeline = [
+            {"$match": {"discogs_id": {"$ne": None}, "color_variant": {"$ne": None}}},
+            {"$group": {
+                "_id": "$discogs_id",
+                "count": {"$sum": 1},
+                "artist": {"$first": "$artist"},
+                "title": {"$first": "$title"},
+                "variant": {"$first": "$color_variant"},
+                "cover_url": {"$first": "$cover_url"},
+            }},
+            {"$sort": {"count": -1}},
+            {"$limit": 10},
+        ]
+        results = []
+        async for doc in db.records.aggregate(pipeline):
+            results.append({
+                "discogs_id": doc["_id"],
+                "artist": doc.get("artist"),
+                "album": doc.get("title"),
+                "variant": doc.get("variant"),
+                "cover_url": doc.get("cover_url"),
+                "collectors": doc["count"],
+                "slug": f"/vinyl/{_slugify(doc.get('artist'))}/{_slugify(doc.get('title'))}/{_slugify(doc.get('variant'))}",
+            })
+        return results
+
+    async def rare():
+        """Variants with high rarity score from Discogs cache."""
+        results = []
+        async for doc in db.discogs_releases.find(
+            {"community_have": {"$gt": 0, "$lte": 200}, "community_want": {"$gt": 50}},
+            {"_id": 0, "discogs_id": 1, "artist": 1, "title": 1, "color_variant": 1,
+             "cover_url": 1, "community_have": 1, "community_want": 1}
+        ).sort("community_want", -1).limit(10):
+            results.append({
+                "discogs_id": doc.get("discogs_id"),
+                "artist": doc.get("artist"),
+                "album": doc.get("title"),
+                "variant": doc.get("color_variant"),
+                "cover_url": doc.get("cover_url"),
+                "collectors": doc.get("community_have", 0),
+                "wantlist": doc.get("community_want", 0),
+                "slug": f"/vinyl/{_slugify(doc.get('artist'))}/{_slugify(doc.get('title'))}/{_slugify(doc.get('color_variant'))}",
+            })
+        return results
+
+    async def most_wanted():
+        """Variants with most ISO demand."""
+        pipeline = [
+            {"$match": {"status": {"$in": ["OPEN", "WISHLIST"]}, "discogs_id": {"$ne": None}}},
+            {"$group": {
+                "_id": "$discogs_id",
+                "count": {"$sum": 1},
+                "artist": {"$first": "$artist"},
+                "album": {"$first": "$album"},
+                "cover_url": {"$first": "$cover_url"},
+            }},
+            {"$sort": {"count": -1}},
+            {"$limit": 10},
+        ]
+        results = []
+        async for doc in db.iso_items.aggregate(pipeline):
+            # Get variant name from records
+            rec = await db.records.find_one({"discogs_id": doc["_id"]}, {"_id": 0, "color_variant": 1})
+            variant = rec.get("color_variant", "") if rec else ""
+            results.append({
+                "discogs_id": doc["_id"],
+                "artist": doc.get("artist"),
+                "album": doc.get("album"),
+                "variant": variant,
+                "cover_url": doc.get("cover_url"),
+                "seeking": doc["count"],
+                "slug": f"/vinyl/{_slugify(doc.get('artist'))}/{_slugify(doc.get('album'))}/{_slugify(variant)}",
+            })
+        return results
+
+    async def recently_added():
+        """Recently added variants."""
+        results = []
+        async for doc in db.records.find(
+            {"discogs_id": {"$ne": None}, "color_variant": {"$ne": None}},
+            {"_id": 0, "discogs_id": 1, "artist": 1, "title": 1, "color_variant": 1, "cover_url": 1, "created_at": 1}
+        ).sort("created_at", -1).limit(10):
+            results.append({
+                "discogs_id": doc.get("discogs_id"),
+                "artist": doc.get("artist"),
+                "album": doc.get("title"),
+                "variant": doc.get("color_variant"),
+                "cover_url": doc.get("cover_url"),
+                "slug": f"/vinyl/{_slugify(doc.get('artist'))}/{_slugify(doc.get('title'))}/{_slugify(doc.get('color_variant'))}",
+            })
+        return results
+
+    t, ra, mw, rec = await asyncio.gather(trending(), rare(), most_wanted(), recently_added())
+    return {
+        "trending": t,
+        "rare": ra,
+        "most_wanted": mw,
+        "recently_added": rec,
+    }
+
+
+# ========== Original unified search (kept for backward compat) ==========
 
 
 @router.get("/search/unified")
@@ -279,7 +519,6 @@ async def search_records_paginated(
     user: Dict = Depends(require_auth),
 ):
     """Paginated record search across local collections + Discogs for infinite scroll."""
-    hidden_ids = await get_hidden_user_ids()
     words = [w.lower() for w in q.strip().split() if len(w) >= 1]
     if not words:
         return {"records": [], "has_more": False}
