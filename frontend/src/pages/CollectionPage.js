@@ -66,12 +66,18 @@ const TreasuryHeader = ({ collectionValue, dreamValue, collectionTab, onTabChang
 
   return (
     <div
-      className="relative mb-5 rounded-2xl overflow-hidden sticky top-0 z-[1000]"
+      className="relative mb-5 rounded-2xl overflow-hidden"
       style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: 9999,
         background: 'rgba(255, 255, 255, 0.01)',
         backdropFilter: 'blur(60px) saturate(210%)',
         WebkitBackdropFilter: 'blur(60px) saturate(210%)',
         border: '1px solid rgba(255, 255, 255, 0.12)',
+        WebkitTransform: 'translateZ(0)',
+        transform: 'translateZ(0)',
+        willChange: 'transform',
       }}
       data-testid="treasury-header"
     >

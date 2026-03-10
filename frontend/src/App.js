@@ -99,7 +99,7 @@ const AppLayout = ({ children }) => {
   const hasInlineBack = location.pathname.startsWith('/record/') || location.pathname.startsWith('/vinyl/');
   
   return (
-    <div className="min-h-screen relative" style={{ background: 'transparent' }}>
+    <div className="min-h-screen relative" style={{ background: 'transparent', overflow: 'visible' }}>
       {user && <Navbar />}
       {user && !isHome && !hasInlineBack && (
         <button
@@ -111,7 +111,7 @@ const AppLayout = ({ children }) => {
           <ArrowLeft className="w-4 h-4" />
         </button>
       )}
-      <main className="relative z-10">
+      <main className="relative z-10" style={{ overflow: 'visible' }}>
         {children}
       </main>
     </div>

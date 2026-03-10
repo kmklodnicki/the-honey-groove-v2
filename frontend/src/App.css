@@ -584,6 +584,16 @@ main {
 }
 
 /* --- Live Equalizer Bars (Now Spinning) --- */
+
+/* --- Sticky Glass Vault enforcement (iOS/Mobile) --- */
+[data-testid="treasury-header"] {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 9999 !important;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
 @keyframes eqBar1 {
   0% { height: 20%; }
   100% { height: 90%; }
