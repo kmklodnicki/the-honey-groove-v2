@@ -386,6 +386,21 @@ async def get_explore_feed(current_user: Optional[Dict] = Depends(get_current_us
     return result
 
 
+
+@router.get("/collection/random")
+async def get_random_record(user: Dict = Depends(require_auth)):
+    """Return a random record from the user's owned collection (excludes wishlists/ISOs)."""
+    pipeline = [
+        {"$match": {"user_id": user["id"], "source": {"$nin": ["wantlist", "dreamlist", "iso"]}}},
+        {"$sample": {"size": 1}},
+        {"$project": {"_id": 0}},
+    ]
+    results = await db.records.aggregate(pipeline).to_list(1)
+    if not results:
+        raise HTTPException(status_code=404, detail="No records in your collection")
+    return results[0]
+
+
 # ============== COMPOSER ENDPOINTS (one-shot post creation) ==============
 
 @router.post("/composer/now-spinning", response_model=PostResponse)

@@ -11,7 +11,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '../components/ui/select';
-import { Disc, Package, Search, Loader2, X, Feather, ImagePlus, Tag } from 'lucide-react';
+import { Disc, Package, Search, Loader2, X, Feather, ImagePlus, Tag, Shuffle } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import AlbumArt from './AlbumArt';
@@ -78,6 +78,12 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const [noteUploading, setNoteUploading] = useState(false);
   const noteFileRef = useRef(null);
 
+  // Randomizer
+  const [randRecord, setRandRecord] = useState(null);
+  const [randCaption, setRandCaption] = useState('');
+  const [randLoading, setRandLoading] = useState(false);
+  const [randAnimating, setRandAnimating] = useState(false);
+
   const resetAll = () => {
     setSpinRecordId(''); setSpinTrack(''); setSpinCaption(''); setSpinMood('');
     setSpinSearch(''); setSpinSearchResults([]); setSpinSelectedRecord(null);
@@ -86,6 +92,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     setIsoPriceMin(''); setIsoPriceMax(''); setIsoCaption('');
     setIsoDiscogsQuery(''); setIsoDiscogsResults([]); setIsoSelectedRelease(null); setIsoManualMode(false);
     setNoteText(''); setNoteRecordId(''); setNoteShowRecordPicker(false); setNoteImageUrl(''); setNoteUploading(false);
+    setRandRecord(null); setRandCaption(''); setRandLoading(false); setRandAnimating(false);
   };
 
   const openModal = (type) => { resetAll(); setActiveModal(type); };
@@ -181,6 +188,54 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     if (haulItems.find(h => h.discogs_id === item.discogs_id)) return;
     setHaulItems(prev => [...prev, { discogs_id: item.discogs_id, title: item.title, artist: item.artist, cover_url: item.cover_url, year: item.year }]);
     setHaulSearch(''); setHaulResults([]);
+  };
+
+  // Randomizer helpers
+  const fetchRandomRecord = useCallback(async () => {
+    setRandLoading(true);
+    setRandAnimating(true);
+    try {
+      const resp = await axios.get(`${API}/collection/random`, { headers: { Authorization: `Bearer ${token}` } });
+      setTimeout(() => { setRandRecord(resp.data); setRandAnimating(false); }, 400);
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Could not pick a random record');
+      setRandAnimating(false);
+    } finally { setRandLoading(false); }
+  }, [API, token]);
+
+  const openRandomizer = () => { resetAll(); setActiveModal('RANDOMIZER'); fetchRandomRecord(); };
+
+  const submitRandomPost = async () => {
+    if (!randRecord) return;
+    setSubmitting(true);
+    try {
+      await axios.post(`${API}/composer/now-spinning`, {
+        record_id: randRecord.id,
+        caption: randCaption || null,
+        mood: null,
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success('posted to the hive.');
+      trackEvent('randomizer_post');
+      closeModal(); onPostCreated?.();
+    } catch (err) { toast.error(err.response?.data?.detail || 'Failed to post'); }
+    finally { setSubmitting(false); }
+  };
+
+  const submitRandomSpin = async () => {
+    if (!randRecord) return;
+    setSubmitting(true);
+    try {
+      await axios.post(`${API}/composer/now-spinning`, {
+        record_id: randRecord.id,
+        caption: randCaption ? `${randCaption}` : null,
+        track: null,
+        mood: null,
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success('now spinning!');
+      trackEvent('randomizer_spin');
+      closeModal(); onPostCreated?.();
+    } catch (err) { toast.error(err.response?.data?.detail || 'Failed to post'); }
+    finally { setSubmitting(false); }
   };
 
   // Submit handlers
@@ -299,6 +354,12 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
             className="px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition-all hover:scale-105 hover:shadow-sm border border-stone-300 text-stone-500 hover:border-amber-400 hover:text-amber-700 bg-transparent"
             data-testid="composer-chip-note">
             <Feather className="w-4 h-4" /> A Note
+          </button>
+          {/* Randomizer */}
+          <button onClick={openRandomizer}
+            className="px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition-all hover:scale-105 hover:shadow-md bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-300/50"
+            data-testid="composer-chip-randomizer">
+            <Shuffle className="w-4 h-4" /> Randomizer
           </button>
         </div>
       </div>
@@ -625,6 +686,88 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Feather className="w-4 h-4 mr-2" />}
               post to the hive
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ═══ Randomizer Modal ═══ */}
+      <Dialog open={activeModal === 'RANDOMIZER'} onOpenChange={(open) => !open && closeModal()}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-heading flex items-center gap-2 text-amber-700">
+              <Shuffle className="w-5 h-5" /> Randomizer
+            </DialogTitle>
+            <DialogDescription>What record should you spin today?</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            {/* Record display */}
+            {randAnimating ? (
+              <div className="flex flex-col items-center py-8" data-testid="randomizer-shuffling">
+                <div className="w-40 h-40 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center animate-pulse">
+                  <Shuffle className="w-10 h-10 text-amber-600 animate-spin" />
+                </div>
+                <p className="text-sm text-muted-foreground mt-3">shuffling your collection...</p>
+              </div>
+            ) : randRecord ? (
+              <div className="flex flex-col items-center" data-testid="randomizer-result">
+                <div className="w-40 h-40 rounded-xl overflow-hidden shadow-lg border border-honey/30">
+                  {randRecord.cover_url ? (
+                    <AlbumArt src={randRecord.cover_url} alt={`${randRecord.artist} ${randRecord.title}`} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-stone-100 flex items-center justify-center"><Disc className="w-12 h-12 text-stone-300" /></div>
+                  )}
+                </div>
+                <p className="font-heading text-base mt-3 text-center" data-testid="randomizer-album">{randRecord.title}</p>
+                <p className="text-sm text-muted-foreground text-center" data-testid="randomizer-artist">{randRecord.artist}</p>
+                {(randRecord.color_variant || randRecord.pressing_notes) && (
+                  <p className="text-xs text-amber-600 mt-0.5" data-testid="randomizer-variant">{randRecord.color_variant || randRecord.pressing_notes}</p>
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center py-8 text-muted-foreground">
+                <Disc className="w-10 h-10 mb-2 opacity-50" />
+                <p className="text-sm">No records found in your collection</p>
+              </div>
+            )}
+
+            {/* Caption */}
+            {randRecord && !randAnimating && (
+              <>
+                <MentionTextarea
+                  placeholder="Add a caption (optional)"
+                  value={randCaption} onChange={setRandCaption}
+                  className="border-honey/50 resize-none"
+                  rows={2} data-testid="randomizer-caption-input"
+                />
+
+                {/* Buttons */}
+                <div className="space-y-2">
+                  <Button onClick={submitRandomPost} disabled={submitting}
+                    className="w-full rounded-full bg-honey text-vinyl-black hover:bg-honey-amber"
+                    data-testid="randomizer-post-btn">
+                    {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Feather className="w-4 h-4 mr-2" />}
+                    Post to Hive
+                  </Button>
+                  <Button onClick={submitRandomSpin} disabled={submitting}
+                    className="w-full rounded-full bg-amber-100 text-amber-800 hover:bg-amber-200 border border-amber-300/50"
+                    data-testid="randomizer-spin-btn">
+                    {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Disc className="w-4 h-4 mr-2" />}
+                    Spin This Now
+                  </Button>
+                  <div className="flex gap-2">
+                    <Button onClick={() => { setRandCaption(''); fetchRandomRecord(); }} disabled={randLoading}
+                      variant="outline" className="flex-1 rounded-full border-honey/50"
+                      data-testid="randomizer-try-another-btn">
+                      <Shuffle className="w-4 h-4 mr-2" /> Try Another
+                    </Button>
+                    <Button onClick={closeModal} variant="ghost" className="flex-1 rounded-full text-muted-foreground"
+                      data-testid="randomizer-cancel-btn">
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </DialogContent>
       </Dialog>
