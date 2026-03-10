@@ -525,6 +525,75 @@ async def delete_listing(listing_id: str, user: Dict = Depends(require_auth)):
     return {"message": "Listing deleted"}
 
 
+@router.put("/listings/{listing_id}", response_model=ListingResponse)
+async def update_listing(listing_id: str, data: ListingUpdate, user: Dict = Depends(require_auth)):
+    """Update a listing. Only the owner can edit. Only ACTIVE listings can be edited."""
+    listing = await db.listings.find_one({"id": listing_id, "user_id": user["id"]}, {"_id": 0})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+    if listing.get("status") != "ACTIVE":
+        raise HTTPException(status_code=400, detail="Only active listings can be edited")
+
+    update_fields = {}
+    if data.price is not None:
+        # New seller restriction
+        if data.price > 150:
+            tx_count = await _get_seller_transaction_count(user["id"])
+            if tx_count < 3:
+                raise HTTPException(status_code=400, detail="New sellers can list items up to $150. Complete 3 transactions to unlock higher value listings.")
+        update_fields["price"] = data.price
+    if data.shipping_cost is not None:
+        update_fields["shipping_cost"] = data.shipping_cost
+    if data.description is not None:
+        # Re-run off-platform detection
+        offplatform_flagged = False
+        offplatform_keywords_found = []
+        desc_lower = data.description.lower()
+        for kw in OFFPLATFORM_KEYWORDS:
+            if kw in desc_lower:
+                offplatform_flagged = True
+                offplatform_keywords_found.append(kw)
+        update_fields["description"] = data.description
+        update_fields["offplatform_flagged"] = offplatform_flagged
+        if offplatform_flagged:
+            await db.offplatform_alerts.insert_one({
+                "id": str(uuid.uuid4()),
+                "listing_id": listing_id,
+                "user_id": user["id"],
+                "username": user.get("username", ""),
+                "keywords": offplatform_keywords_found,
+                "description_snippet": (data.description[:200] + "...") if len(data.description) > 200 else data.description,
+                "status": "open",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            })
+    if data.condition is not None:
+        update_fields["condition"] = data.condition
+    if data.pressing_notes is not None:
+        update_fields["pressing_notes"] = data.pressing_notes
+    if data.listing_type is not None:
+        update_fields["listing_type"] = data.listing_type
+    if data.photo_urls is not None:
+        if len(data.photo_urls) == 0:
+            raise HTTPException(status_code=400, detail="At least 1 photo is required")
+        update_fields["photo_urls"] = data.photo_urls
+    if data.insured is not None:
+        update_fields["insured"] = data.insured
+    if data.international_shipping is not None:
+        update_fields["international_shipping"] = data.international_shipping
+    if data.color_variant is not None:
+        update_fields["color_variant"] = data.color_variant
+
+    if not update_fields:
+        raise HTTPException(status_code=400, detail="No fields to update")
+
+    update_fields["updated_at"] = datetime.now(timezone.utc).isoformat()
+    await db.listings.update_one({"id": listing_id}, {"$set": update_fields})
+
+    updated = await db.listings.find_one({"id": listing_id}, {"_id": 0})
+    user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url"), "country": user.get("country"), "title_label": user.get("title_label"), "golden_hive": user.get("golden_hive", False)}
+    return ListingResponse(**{k: v for k, v in updated.items() if k != '_id'}, user=user_data)
+
+
 # ============== STRIPE CONNECT & PAYMENTS ==============
 
 

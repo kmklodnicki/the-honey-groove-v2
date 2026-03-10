@@ -324,6 +324,18 @@ class ListingResponse(BaseModel):
     created_at: str
     user: Optional[Dict[str, Any]] = None
 
+class ListingUpdate(BaseModel):
+    price: Optional[float] = None
+    shipping_cost: Optional[float] = None
+    description: Optional[str] = None
+    condition: Optional[str] = None
+    pressing_notes: Optional[str] = None
+    listing_type: Optional[str] = None
+    photo_urls: Optional[List[str]] = None
+    insured: Optional[bool] = None
+    international_shipping: Optional[bool] = None
+    color_variant: Optional[str] = None
+
 class WeeklySummaryResponse(BaseModel):
     id: str
     user_id: str
