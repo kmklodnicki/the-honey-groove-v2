@@ -58,6 +58,15 @@ const HONEY_SHOP_ITEMS = [
     partner: 'vinylsupplyco',
     image: 'https://customer-assets.emergentagent.com/job_088a9581-bbfd-42c2-ad31-f5535df4814c/artifacts/tvavxlin_3.webp',
   },
+  {
+    id: 'led-turntable',
+    honeyLabel: 'The Stage',
+    name: 'LED Turntable Kit',
+    descriptor: 'Transform your setup with a neon glow ring that turns every spin into a light show.',
+    url: 'https://vinylsupplyco.com/products/led-turntable-kit?ref=KATHRYNKLODNICKI',
+    partner: 'vinylsupplyco',
+    image: 'https://images.unsplash.com/photo-1746127609033-78c30b79038e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2OTV8MHwxfHNlYXJjaHwzfHx0dXJudGFibGUlMjBMRUQlMjBsaWdodCUyMGtpdCUyMHZpbnlsJTIwZ2xvdyUyMG5lb258ZW58MHx8fHwxNzczMTc2Mjg0fDA&ixlib=rb-4.1.0&q=85',
+  },
 ];
 
 const ApprovedSeal = () => (
@@ -291,7 +300,6 @@ const GrooveTerminalModal = ({ item, open, onClose }) => {
 
 /* ─── Product Card ─── */
 const ProductCard = ({ item, onAcquire }) => {
-  const isAmazon = item.partner === 'amazon';
   return (
     <div
       className="group bg-white rounded-2xl border border-stone-200/60 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col"
@@ -328,7 +336,7 @@ const ProductCard = ({ item, onAcquire }) => {
           data-testid={`cta-${item.id}`}
         >
           <Diamond className="w-3.5 h-3.5" />
-          {isAmazon ? 'Acquire via The Honey Groove Partner' : 'Browse Curated Boutique'}
+          Acquire via The Honey Groove Partner
         </Button>
       </div>
     </div>
