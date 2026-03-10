@@ -14,7 +14,7 @@ import AlbumArt from '../components/AlbumArt';
 import { resolveImageUrl } from '../utils/imageUrl';
 import { PostTypeBadge } from '../components/PostCards';
 import SEOHead from '../components/SEOHead';
-import { RarityPill } from '../components/RarityBadge';
+import { RarityPill, RarityCard } from '../components/RarityBadge';
 import VariantCompletion from '../components/VariantCompletion';
 
 const RecordDetailPage = () => {
@@ -169,6 +169,13 @@ const RecordDetailPage = () => {
               {spinning ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Play className="w-4 h-4 mr-2" />}
               Log a Spin
             </Button>
+          )}
+
+          {/* Global Rarity Card */}
+          {rarity?.tier && (
+            <div className="mb-6">
+              <RarityCard rarity={rarity} />
+            </div>
           )}
 
           {/* Owner */}
