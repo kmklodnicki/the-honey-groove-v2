@@ -6,6 +6,7 @@ Admin can review blurred previews, unblur, and approve/deny.
 import logging
 import uuid
 import io
+import asyncio
 from datetime import datetime, timezone
 from typing import Dict
 from PIL import Image, ImageFilter
@@ -13,6 +14,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from database import db
 from routes.auth import require_auth
 from routes.admin import require_admin
+from services.email_service import send_email
 
 logger = logging.getLogger("verification")
 router = APIRouter(prefix="/verification", tags=["verification"])
@@ -177,21 +179,37 @@ async def approve_verification(request_id: str, user: Dict = Depends(require_adm
         {"$set": {"golden_hive": True, "golden_hive_at": now}}
     )
 
-    # Notify user
+    # In-App: Golden celebration notification
     from routes.notifications import create_notification
     await create_notification(
         req["user_id"], "VERIFICATION_APPROVED",
-        "Welcome to Golden Hive!",
-        "Your identity has been verified. You now have Golden Hive status!",
-        {"request_id": request_id}
+        "Welcome to the Inner Circle!",
+        "Your Golden ID has been approved. You're now a verified member of The Honey Groove.",
+        {"request_id": request_id, "icon": "sparkle"}
     )
+
+    # Email: Verification Success (async, non-blocking)
+    target_user = await db.users.find_one({"id": req["user_id"]}, {"_id": 0})
+    if target_user and target_user.get("email"):
+        try:
+            from templates.base import wrap_email
+            html = wrap_email(f"""
+                <h2 style="color:#D98C2F;font-family:serif;">You're Verified</h2>
+                <p>Congratulations, <strong>@{target_user.get('username', 'collector')}</strong>!</p>
+                <p>Your Golden Hive ID has been approved. You now have a trusted collector badge and access to premium features.</p>
+                <p>Welcome to the Inner Circle.</p>
+                <p style="color:#8A6B4A;font-size:12px;">— The Honey Groove Team</p>
+            """)
+            asyncio.create_task(send_email(target_user["email"], "The Honey Groove: You're Verified.", html))
+        except Exception as e:
+            logger.warning(f"Failed to send approval email: {e}")
 
     return {"message": "Verification approved. User granted Golden Hive status."}
 
 
 @router.post("/admin/deny/{request_id}")
 async def deny_verification(request_id: str, body: Dict = {}, user: Dict = Depends(require_admin)):
-    """Admin: Deny a verification request."""
+    """Admin: Deny a verification request with optional reason."""
     req = await db.verification_requests.find_one({"id": request_id}, {"_id": 0})
     if not req:
         raise HTTPException(status_code=404, detail="Request not found")
@@ -200,17 +218,42 @@ async def deny_verification(request_id: str, body: Dict = {}, user: Dict = Depen
 
     now = datetime.now(timezone.utc).isoformat()
     notes = body.get("notes", "") if isinstance(body, dict) else ""
+    reason = body.get("reason", notes) if isinstance(body, dict) else ""
     await db.verification_requests.update_one(
         {"id": request_id},
-        {"$set": {"status": "DENIED", "reviewed_at": now, "reviewed_by": user["id"], "admin_notes": notes}}
+        {"$set": {"status": "DENIED", "reviewed_at": now, "reviewed_by": user["id"], "admin_notes": notes, "denial_reason": reason}}
     )
+
+    # In-App: Denial notification with reason
+    denial_msg = "We couldn't verify your ID at this time."
+    if reason:
+        denial_msg += f" Reason: {reason}."
+    denial_msg += " Please check your submission or reach out for help."
 
     from routes.notifications import create_notification
     await create_notification(
         req["user_id"], "VERIFICATION_DENIED",
         "Verification Update",
-        "Your verification request was not approved. Please resubmit with a clearer photo.",
-        {"request_id": request_id}
+        denial_msg,
+        {"request_id": request_id, "reason": reason}
     )
+
+    # Email: Verification Update (async, non-blocking)
+    target_user = await db.users.find_one({"id": req["user_id"]}, {"_id": 0})
+    if target_user and target_user.get("email"):
+        try:
+            from templates.base import wrap_email
+            reason_html = f'<p style="background:#FFF8E1;padding:12px;border-radius:8px;border-left:4px solid #FFB300;"><strong>Reason:</strong> {reason}</p>' if reason else ''
+            html = wrap_email(f"""
+                <h2 style="color:#D98C2F;font-family:serif;">Verification Update</h2>
+                <p>Hi <strong>@{target_user.get('username', 'collector')}</strong>,</p>
+                <p>We weren't able to verify your Golden Hive ID at this time.</p>
+                {reason_html}
+                <p>You can re-submit your verification from your profile settings. If you have any questions, reach out to our support team.</p>
+                <p style="color:#8A6B4A;font-size:12px;">— The Honey Groove Team</p>
+            """)
+            asyncio.create_task(send_email(target_user["email"], "The Honey Groove: Verification Update", html))
+        except Exception as e:
+            logger.warning(f"Failed to send denial email: {e}")
 
     return {"message": "Verification denied."}

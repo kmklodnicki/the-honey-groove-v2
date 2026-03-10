@@ -5,6 +5,7 @@ import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import {
   Loader2, Copy, Download, Plus, Users, Key, Check, X, Trash2,
   MessageSquare, Grid3X3, Flag, Settings, ChevronRight, Search,
@@ -1698,6 +1699,11 @@ const GateSection = ({ API, headers }) => {
     } catch { toast.error('Failed to unblur'); }
   };
 
+  const [denyTarget, setDenyTarget] = useState(null);
+  const [denyReason, setDenyReason] = useState('');
+
+  const QUICK_REASONS = ['Blurry', 'Expired', 'Wrong Document', 'Name Does Not Match'];
+
   const handleApprove = async (requestId) => {
     setProcessing(requestId);
     try {
@@ -1708,12 +1714,20 @@ const GateSection = ({ API, headers }) => {
     finally { setProcessing(null); }
   };
 
-  const handleDeny = async (requestId) => {
-    setProcessing(requestId);
+  const openDenyModal = (requestId) => {
+    setDenyTarget(requestId);
+    setDenyReason('');
+  };
+
+  const submitDeny = async () => {
+    if (!denyTarget) return;
+    setProcessing(denyTarget);
     try {
-      await axios.post(`${API}/verification/admin/deny/${requestId}`, { notes: 'Photo not clear enough' }, { headers });
+      await axios.post(`${API}/verification/admin/deny/${denyTarget}`, { reason: denyReason, notes: denyReason }, { headers });
       toast.success('Verification denied');
       fetchQueue();
+      setDenyTarget(null);
+      setDenyReason('');
     } catch (err) { toast.error(err.response?.data?.detail || 'Failed'); }
     finally { setProcessing(null); }
   };
@@ -1780,7 +1794,7 @@ const GateSection = ({ API, headers }) => {
                     Approve
                   </Button>
                   <Button
-                    onClick={() => handleDeny(req.id)}
+                    onClick={() => openDenyModal(req.id)}
                     disabled={processing === req.id}
                     variant="outline"
                     className="border-red-300 text-red-600 hover:bg-red-50 rounded-full text-xs px-4"
@@ -1795,10 +1809,67 @@ const GateSection = ({ API, headers }) => {
           ))}
         </div>
       )}
+
+      {/* Denial Reasons Modal */}
+      <Dialog open={!!denyTarget} onOpenChange={(open) => { if (!open) { setDenyTarget(null); setDenyReason(''); } }}>
+        <DialogContent className="sm:max-w-sm" aria-describedby="deny-reason-desc">
+          <DialogHeader>
+            <DialogTitle className="font-heading" style={{ color: '#D98C2F' }}>
+              Reason for Denial
+            </DialogTitle>
+            <p id="deny-reason-desc" className="text-sm text-muted-foreground mt-1">
+              This will be included in the user's notification and email.
+            </p>
+          </DialogHeader>
+          <div className="space-y-3 pt-2" data-testid="deny-reason-modal">
+            <div className="flex flex-wrap gap-2">
+              {QUICK_REASONS.map(r => (
+                <button
+                  key={r}
+                  onClick={() => setDenyReason(r)}
+                  className="text-xs px-3 py-1.5 rounded-full font-medium transition-all"
+                  style={{
+                    background: denyReason === r ? 'linear-gradient(135deg, #FFB300, #FFA000)' : '#FFF8E1',
+                    color: denyReason === r ? '#000' : '#3E2723',
+                    border: denyReason === r ? '2px solid #FFA000' : '2px solid rgba(255,179,0,0.2)',
+                  }}
+                  data-testid={`quick-reason-${r.toLowerCase().replace(/\s/g, '-')}`}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+            <Input
+              placeholder="Or type a custom reason..."
+              value={denyReason}
+              onChange={(e) => setDenyReason(e.target.value)}
+              className="border-honey/50"
+              data-testid="deny-reason-input"
+            />
+            <div className="flex gap-2 pt-1">
+              <Button
+                onClick={() => { setDenyTarget(null); setDenyReason(''); }}
+                variant="outline"
+                className="flex-1 rounded-full"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={submitDeny}
+                disabled={processing === denyTarget}
+                className="flex-1 rounded-full text-white"
+                style={{ background: 'linear-gradient(135deg, #EF4444, #DC2626)' }}
+                data-testid="submit-deny-btn"
+              >
+                {processing === denyTarget ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Deny Verification'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
-};
-
+}; 
 
 const GoldenHiveAdminSection = ({ API, headers }) => {
   const [pending, setPending] = useState([]);
