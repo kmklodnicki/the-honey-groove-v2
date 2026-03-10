@@ -81,6 +81,8 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 ## Pending / Upcoming Tasks
 
 ### Completed Recently (March 2026)
+- **ISO Album Modal UX** - DONE (2026-03-10). Redesigned ISO items on ProfilePage from flat text list to visual card grid with album artwork (matching Collection tab layout). Added click-to-open modal with full album details: artwork, title, artist, year, variant/pressing, condition, tags, budget, status, and contextual actions (Mark Found, Remove, Chat, Discogs link). File: `frontend/src/pages/ProfilePage.js`.
+- **Alt Text Standardization** - DONE (2026-03-10). Updated all AlbumArt alt tags across 18+ files to `{artist} {album} {variant} vinyl record` format. Zero empty AlbumArt alt tags remaining.
 - **Full SEO & Metadata System** - DONE (2026-03-10). Comprehensive metadata implementation across all page types:
   - **Backend SSR endpoints** (`/api/ssr/*`): Pre-rendered HTML with full OG tags, Twitter Cards, JSON-LD, and vinyl-specific metadata for social preview bots. Covers: listings, records, profiles, collections, ISO lists, marketplace, Hive posts, and landing page.
   - **Bot detection middleware** (CRACO `onBeforeSetupMiddleware`): Intercepts requests from known bots (Twitterbot, facebookexternalhit, Discordbot, Slackbot, Googlebot, etc.) and proxies to backend SSR endpoints. Normal users get the React SPA.
