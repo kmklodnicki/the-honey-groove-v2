@@ -135,16 +135,25 @@ const TreasuryHeader = ({ collectionValue, dreamValue, collectionTab, onTabChang
           </button>
         </div>
 
-        {/* Refresh button */}
-        <button
-          onClick={onRefresh}
-          disabled={refreshing}
-          className="absolute top-3 right-3 flex items-center gap-1 text-[10px] font-medium text-[#C8861A] hover:text-[#DAA520] transition-colors disabled:opacity-50"
-          data-testid="treasury-refresh-btn"
-        >
-          <RefreshCw className={`w-3 h-3 ${refreshing ? 'animate-spin' : ''}`} />
-          {refreshing ? 'Refreshing' : 'Refresh'}
-        </button>
+        {/* Refresh pull-tab — bottom-centered circular gold glass button */}
+        <div className="flex justify-center mt-3">
+          <button
+            onClick={onRefresh}
+            disabled={refreshing}
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 disabled:opacity-50 active:scale-95"
+            style={{
+              background: 'linear-gradient(135deg, rgba(218,165,32,0.25), rgba(200,134,26,0.15))',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1.5px solid rgba(218,165,32,0.4)',
+              boxShadow: '0 2px 8px rgba(218,165,32,0.15), inset 0 1px 0 rgba(255,255,255,0.3)',
+            }}
+            data-testid="treasury-refresh-btn"
+            aria-label="Refresh collection values"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-[#C8861A] ${refreshing ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
       </div>
     </div>
   );
