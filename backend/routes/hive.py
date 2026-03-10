@@ -549,7 +549,7 @@ async def composer_note(data: NoteCreate, user: Dict = Depends(require_auth)):
     """Create a free-form text Note post"""
     if not data.text or not data.text.strip():
         raise HTTPException(status_code=400, detail="Text is required")
-    if len(data.text) > 280:
+    if len(data.text) > 1500:
         raise HTTPException(status_code=400, detail="Text must be 280 characters or less")
 
     now = datetime.now(timezone.utc).isoformat()

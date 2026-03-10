@@ -541,16 +541,16 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
             <MentionTextarea
               placeholder="what's on your mind?"
               value={noteText}
-              onChange={v => setNoteText(v.slice(0, 280))}
+              onChange={v => setNoteText(v.slice(0, 1500))}
               className="border-stone-200 resize-none text-base min-h-[120px] focus-visible:ring-amber-300"
               rows={4}
-              maxLength={280}
+              maxLength={1500}
               autoFocus
               data-testid="note-text-input"
             />
             <div className="flex items-center justify-between">
               <span className={`text-xs ${noteText.length > 260 ? 'text-amber-600 font-medium' : 'text-muted-foreground'}`}>
-                {noteText.length}/280
+                {noteText.length}/1500
               </span>
               <div className="flex items-center gap-3">
                 {/* Tag a record */}
