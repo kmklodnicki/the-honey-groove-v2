@@ -4,6 +4,7 @@ import { Search, ArrowLeft, TrendingUp, Gem, Heart, Clock, ChevronRight, Loader2
 import { Card } from '../components/ui/card';
 import { RarityPill } from '../components/RarityBadge';
 import AlbumArt from '../components/AlbumArt';
+import ScrollRow from '../components/ScrollRow';
 import SEOHead from '../components/SEOHead';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
@@ -204,7 +205,7 @@ export default function SearchPage() {
             {results.albums?.length > 0 && (
               <section className="mb-8" data-testid="search-albums">
                 <h2 className="font-heading text-base font-bold text-vinyl-black mb-3">Albums</h2>
-                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                <ScrollRow>
                   {results.albums.map((a, i) => (
                     <Link
                       key={`${a.discogs_id}-${i}`}
@@ -224,7 +225,7 @@ export default function SearchPage() {
                       <p className="text-[10px] text-honey-amber">{a.variant_count} variant{a.variant_count !== 1 ? 's' : ''}</p>
                     </Link>
                   ))}
-                </div>
+                </ScrollRow>
               </section>
             )}
 
@@ -232,7 +233,7 @@ export default function SearchPage() {
             {results.artists?.length > 0 && (
               <section className="mb-8" data-testid="search-artists">
                 <h2 className="font-heading text-base font-bold text-vinyl-black mb-3">Artists</h2>
-                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                <ScrollRow>
                   {results.artists.map(a => (
                     <button
                       key={a.name}
@@ -254,7 +255,7 @@ export default function SearchPage() {
                       </p>
                     </button>
                   ))}
-                </div>
+                </ScrollRow>
               </section>
             )}
           </>

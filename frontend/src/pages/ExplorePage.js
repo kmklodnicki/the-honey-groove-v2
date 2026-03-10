@@ -17,6 +17,7 @@ import CollectorBingo from '../components/CollectorBingo';
 import AlbumArt from '../components/AlbumArt';
 import { resolveImageUrl } from '../utils/imageUrl';
 import { ListingTypeBadge } from '../components/PostCards';
+import ScrollRow from '../components/ScrollRow';
 
 const ExplorePage = () => {
   usePageTitle('Nectar');
@@ -208,7 +209,7 @@ const ExplorePage = () => {
             <h2 className="font-heading text-lg text-vinyl-black">Make Friends</h2>
           </div>
           <p className="text-xs text-muted-foreground mb-3">Collectors who share your vibe.</p>
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+          <ScrollRow>
             {myKindaPeople.map(p => (
               <Link key={p.username} to={`/profile/${p.username}?tab=in-common`} className="flex-shrink-0 w-40 group" data-testid={`kinda-${p.username}`}>
                 <Card className="p-3 border-honey/30 hover:shadow-honey transition-all text-center">
@@ -231,7 +232,7 @@ const ExplorePage = () => {
                 </Card>
               </Link>
             ))}
-          </div>
+          </ScrollRow>
         </section>
       )}
 
@@ -242,7 +243,7 @@ const ExplorePage = () => {
         {trending.length === 0 ? (
           <EmptyCard text="No trending records yet. Start spinning!" />
         ) : (
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+          <ScrollRow>
             {trending.map(r => (
               <button key={r.id} onClick={() => openTrendingModal(r)}
                 className="flex-shrink-0 w-36 text-left group" data-testid={`trending-${r.id}`}>
@@ -257,7 +258,7 @@ const ExplorePage = () => {
                 </div>
               </button>
             ))}
-          </div>
+          </ScrollRow>
         )}
       </ExploreSection>
 
@@ -296,7 +297,7 @@ const ExplorePage = () => {
         {trendingCollections.length === 0 ? (
           <EmptyCard text="No trending collection data right now." />
         ) : (
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
+          <ScrollRow>
             {trendingCollections.map((r, idx) => (
               <button key={r.discogs_id || idx} onClick={() => openTrendingModal(r)} className="flex-shrink-0 w-40 text-left group" data-testid={`trending-collection-${r.discogs_id || idx}`}>
                 <div className="aspect-square rounded-xl overflow-hidden bg-honey/10 mb-2 shadow-sm relative group-hover:shadow-md transition-shadow">
@@ -314,7 +315,7 @@ const ExplorePage = () => {
                 {r.have > 0 && <p className="text-[10px] text-muted-foreground">owned by {r.have.toLocaleString()} collectors</p>}
               </button>
             ))}
-          </div>
+          </ScrollRow>
         )}
       </ExploreSection>
 
@@ -384,7 +385,7 @@ const ExplorePage = () => {
             {nearYou.listings.length > 0 && (
               <>
                 <p className="text-xs font-medium text-muted-foreground mb-2">Listings near you</p>
-                <div className="flex gap-3 overflow-x-auto pb-2">
+                <ScrollRow>
                   {nearYou.listings.map(l => (
                     <Card key={l.id} className="flex-shrink-0 w-40 p-2 border-honey/30" data-testid={`nearby-listing-${l.id}`}>
                       <div className="aspect-square rounded-lg overflow-hidden bg-honey/10 mb-1.5">
@@ -399,7 +400,7 @@ const ExplorePage = () => {
                       </div>
                     </Card>
                   ))}
-                </div>
+                </ScrollRow>
               </>
             )}
           </div>
