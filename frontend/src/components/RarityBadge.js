@@ -41,8 +41,9 @@ export const RarityCard = ({ rarity, label, honeypotListings, onForSaleClick }) 
   const cardLabel = label || 'Global Variant Rarity';
   const useHoneypot = honeypotListings != null;
   const forSaleCount = useHoneypot ? honeypotListings : (rarity.listings_available ?? 0);
+  const isEmptyHoneypot = useHoneypot && forSaleCount === 0;
   const forSaleLabel = useHoneypot
-    ? (forSaleCount === 0 ? '0 available in Honeypot' : `${forSaleCount} in Honeypot`)
+    ? (isEmptyHoneypot ? 'Notify me when listed' : `${forSaleCount} in Honeypot`)
     : 'For Sale';
 
   return (
@@ -79,18 +80,31 @@ export const RarityCard = ({ rarity, label, honeypotListings, onForSaleClick }) 
           role={onForSaleClick ? 'link' : undefined}
           data-testid="rarity-listings"
         >
-          <p
-            className="text-2xl font-heading font-bold"
-            style={{ color: useHoneypot ? '#FFD700' : undefined }}
-          >
-            {forSaleCount.toLocaleString()}
-          </p>
-          <p
-            className="text-[11px] uppercase tracking-wider mt-0.5"
-            style={{ color: useHoneypot ? '#DAA520' : undefined }}
-          >
-            {forSaleLabel}
-          </p>
+          {isEmptyHoneypot ? (
+            <>
+              <p
+                className="text-[11px] font-bold uppercase tracking-wider rounded-full px-3 py-1.5 inline-block mt-1"
+                style={{ color: '#DAA520', border: '1.5px solid rgba(218,165,32,0.5)', background: 'rgba(255,215,0,0.06)' }}
+              >
+                {forSaleLabel}
+              </p>
+            </>
+          ) : (
+            <>
+              <p
+                className="text-2xl font-heading font-bold"
+                style={{ color: useHoneypot ? '#FFD700' : undefined }}
+              >
+                {forSaleCount.toLocaleString()}
+              </p>
+              <p
+                className="text-[11px] uppercase tracking-wider mt-0.5"
+                style={{ color: useHoneypot ? '#DAA520' : undefined }}
+              >
+                {forSaleLabel}
+              </p>
+            </>
+          )}
         </div>
       </div>
     </div>
