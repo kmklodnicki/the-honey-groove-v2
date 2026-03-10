@@ -1,0 +1,65 @@
+{
+  "summary": "BLOCK 143 Crown Jewel Expansion & Hierarchy - All features verified and working correctly",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend-only test)",
+    "frontend": "100%"
+  },
+  "seed_data_creation": "",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "BLOCK 143 testing complete. All Crown Jewel features verified: (1) See All Crown Jewels page at /nectar/crown-jewels shows full grid with 37 cards including value badges ($381, $177, etc. in honey-orange style), variant info (Crown icon + variant name), and global owner counts. (2) Crown Jewel cards on Nectar page (12 cards) navigate correctly to /variant/:discogs_id. (3) Crown Jewel cards on See All page navigate correctly to /variant/:discogs_id. (4) Variant page shows loading spinner (Loader2 animate-spin). (5) Variant page stats display real data (Owners: 8,564, Wantlist: 14,408, Lowest: $146.67) - uses '—' placeholder for null values instead of '0'. (6) 'back to nectar' link works correctly. All data-testid attributes properly implemented.",
+  "verified_features": [
+    {
+      "feature": "See All Crown Jewels page (/nectar/crown-jewels) shows grid with value badges",
+      "status": "PASS",
+      "notes": "Grid displays 37 cards, value badges show prices in honey-orange style (e.g., $381, $177, $97)"
+    },
+    {
+      "feature": "Crown Jewel cards on Nectar page navigate to /variant/:discogs_id",
+      "status": "PASS",
+      "notes": "12 cards on Nectar page, clicking navigates to correct variant URL (tested with discogs_id 26090860)"
+    },
+    {
+      "feature": "Crown Jewel cards on See All page navigate to /variant/:discogs_id",
+      "status": "PASS",
+      "notes": "37 cards on See All page, clicking sa-cj-26090860 navigates to /variant/26090860"
+    },
+    {
+      "feature": "Variant page has loading spinner while fetching data",
+      "status": "PASS",
+      "notes": "Loader2 component with animate-spin class displays during page load"
+    },
+    {
+      "feature": "Variant page stats show real data (not '0' for loading)",
+      "status": "PASS",
+      "notes": "Stats display: Owners=8,564, Wantlist=14,408, Lowest=$146.67. Code uses '—' placeholder for null values"
+    },
+    {
+      "feature": "See All page shows variant info with Crown icon and global owner count",
+      "status": "PASS",
+      "notes": "Each card shows variant type (e.g., 'Compilation, Special Edition'), Crown icon, and 'X global owners'"
+    },
+    {
+      "feature": "See All 'back to nectar' link navigates correctly",
+      "status": "PASS",
+      "notes": "data-testid='see-all-back' link text 'back to nectar' navigates to /nectar"
+    }
+  ],
+  "mocked_api": {
+    "has_mocked_apis": true,
+    "mocked_apis_list": ["Resend email"]
+  }
+}

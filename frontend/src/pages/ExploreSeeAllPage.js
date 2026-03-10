@@ -135,6 +135,7 @@ const ExploreSeeAllPage = () => {
           {section === 'trending' && <TrendingAll data={data} onOpen={openTrendingModal} />}
           {section === 'make-friends' && <TasteMatchAll data={data} navigate={navigate} />}
           {section === 'trending-in-collections' && <TrendingCollectionsAll data={data} addToSeekingList={addToSeekingList} />}
+          {section === 'crown-jewels' && <CrownJewelsAll data={data} navigate={navigate} addToSeekingList={addToSeekingList} />}
           {section === 'most-wanted' && <MostWantedAll data={data} addToSeekingList={addToSeekingList} />}
           {section === 'near-you' && (
             <NearYouAll
@@ -337,6 +338,44 @@ const NearYouAll = ({ data, navigate, onSetLocation }) => {
 };
 
 /* ========================== Shared Components ========================== */
+
+const CrownJewelsAll = ({ data, navigate, addToSeekingList }) => {
+  if (!data || data.length === 0) return <EmptyState text="No Crown Jewels found yet. Add rare records to your collection!" />;
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4" data-testid="crown-jewels-grid">
+      {data.map((r, idx) => (
+        <button key={r.discogs_id || idx} onClick={() => navigate(`/variant/${r.discogs_id}`)} className="text-left group" data-testid={`sa-cj-${r.discogs_id || idx}`}>
+          <div className="aspect-square rounded-xl overflow-hidden bg-honey/10 mb-2 shadow-sm relative group-hover:shadow-md transition-shadow">
+            <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} className="w-full h-full object-cover" />
+            {r.estimated_value > 0 && (
+              <span
+                className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                style={{ background: 'rgba(255,179,0,0.85)', color: '#2A1A06', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,160,0,0.6)' }}
+              >
+                ${r.estimated_value >= 1000 ? (r.estimated_value / 1000).toFixed(1) + 'k' : r.estimated_value.toFixed(0)}
+              </span>
+            )}
+            <span
+              role="button"
+              onClick={(e) => { e.stopPropagation(); addToSeekingList(r.artist, r.title, r.discogs_id, r.cover_url, r.year); }}
+              className="absolute bottom-2 right-2 bg-white/90 hover:bg-white rounded-full p-1.5 shadow opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+            >
+              <Plus className="w-4 h-4 text-honey-amber" />
+            </span>
+          </div>
+          <p className="text-sm font-medium truncate">{r.title}</p>
+          <p className="text-xs text-muted-foreground truncate">{r.artist}</p>
+          {r.variant && (
+            <p className="text-[10px] text-muted-foreground flex items-center gap-1 truncate">
+              <Crown className="w-2.5 h-2.5 text-[#FFD700] shrink-0" /> {r.variant}
+            </p>
+          )}
+          {r.have > 0 && <p className="text-[10px] text-muted-foreground">{r.have.toLocaleString()} global owners</p>}
+        </button>
+      ))}
+    </div>
+  );
+};
 
 const EmptyState = ({ text }) => (
   <Card className="p-8 text-center border-honey/30" data-testid="see-all-empty">

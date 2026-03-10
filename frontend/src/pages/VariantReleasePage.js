@@ -141,8 +141,8 @@ export default function VariantReleasePage() {
 
           {/* Variant-specific quick stats */}
           <div className="grid grid-cols-3 gap-3">
-            <Stat icon={Users} label="Owners" value={(scarcity.discogs_have ?? 0).toLocaleString()} sub="global (this pressing)" />
-            <Stat icon={Heart} label="Wantlist" value={(scarcity.discogs_want ?? 0).toLocaleString()} sub="global (this pressing)" />
+            <Stat icon={Users} label="Owners" value={scarcity.discogs_have != null ? scarcity.discogs_have.toLocaleString() : '—'} sub="global (this pressing)" />
+            <Stat icon={Heart} label="Wantlist" value={scarcity.discogs_want != null ? scarcity.discogs_want.toLocaleString() : '—'} sub="global (this pressing)" />
             <Stat icon={DollarSign} label="Lowest" value={scarcity.lowest_price ? `$${scarcity.lowest_price.toFixed(2)}` : '—'} sub="current listing" />
           </div>
         </div>

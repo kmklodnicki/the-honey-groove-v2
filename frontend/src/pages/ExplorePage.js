@@ -220,7 +220,7 @@ const ExplorePage = () => {
         ) : (
           <ScrollRow>
             {crownJewels.map((r, idx) => (
-              <button key={r.discogs_id || idx} onClick={() => openTrendingModal(r)} className="flex-shrink-0 w-40 text-left group" data-testid={`crown-jewel-${r.discogs_id || idx}`}>
+              <button key={r.discogs_id || idx} onClick={() => navigate(`/variant/${r.discogs_id}`)} className="flex-shrink-0 w-40 text-left group" data-testid={`crown-jewel-${r.discogs_id || idx}`}>
                 <div className="aspect-square rounded-xl overflow-hidden bg-honey/10 mb-2 shadow-sm relative group-hover:shadow-md transition-shadow">
                   <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} artist={r.artist} title={r.title} className="w-full h-full object-cover" />
                   {r.estimated_value > 0 && (
