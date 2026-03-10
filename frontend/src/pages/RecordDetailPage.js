@@ -135,6 +135,12 @@ const RecordDetailPage = () => {
             {record.artist}
           </p>
 
+          {record.color_variant && (
+            <p className="text-sm font-medium text-vinyl-black/80 mb-4" data-testid="record-variant">
+              {record.color_variant}
+            </p>
+          )}
+
           <div className="flex flex-wrap gap-2 mb-6">
             {record.year && (
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-honey/10 text-sm text-vinyl-black/70">
