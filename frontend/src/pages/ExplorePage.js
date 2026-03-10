@@ -133,12 +133,12 @@ const ExplorePage = () => {
       <h1 className="font-heading text-3xl text-vinyl-black mb-1">Nectar</h1>
       <p className="text-sm text-muted-foreground mb-8">what the hive is into right now.</p>
 
-      {/* Make Friends Discovery Carousel */}
+      {/* Your Kinda People Discovery Carousel */}
       {myKindaPeople.length > 0 && (
         <section className="mb-8" data-testid="make-friends-carousel">
           <div className="flex items-center gap-2 mb-3">
             <Users className="w-4 h-4 text-honey-amber" />
-            <h2 className="font-heading text-lg text-vinyl-black">Make Friends</h2>
+            <h2 className="font-heading text-lg text-vinyl-black font-bold">Your Kinda People</h2>
           </div>
           <p className="text-xs text-muted-foreground mb-3">Collectors who share your vibe.</p>
           <ScrollRow>

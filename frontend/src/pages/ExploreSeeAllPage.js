@@ -20,7 +20,7 @@ import { useVariantModal } from '../context/VariantModalContext';
 
 const SECTIONS = {
   trending: { title: 'Trending in the Hive', icon: TrendingUp, iconColor: 'text-honey-amber' },
-  'make-friends': { title: 'Make Friends', icon: Users, iconColor: 'text-honey-amber' },
+  'make-friends': { title: 'Your Kinda People', icon: Users, iconColor: 'text-honey-amber' },
   'trending-in-collections': { title: 'Trending in Collections', icon: TrendingUp, iconColor: 'text-honey-amber' },
   'most-wanted': { title: 'Most Wanted', icon: Heart, iconColor: 'text-red-400' },
   'near-you': { title: 'Near You', icon: MapPin, iconColor: 'text-honey-amber' },
