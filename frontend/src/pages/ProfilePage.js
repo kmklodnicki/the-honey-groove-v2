@@ -10,7 +10,7 @@ import { Skeleton } from '../components/ui/skeleton';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '../components/ui/dialog';
-import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, CheckCircle2, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin, ShoppingBag, Flag, Sparkles, Eye, X, Cloud, ShieldOff, ShieldCheck, Lock } from 'lucide-react';
+import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, CheckCircle2, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin, ShoppingBag, Flag, Sparkles, Eye, X, Cloud, ShieldOff, ShieldCheck, Lock, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { FollowListModal } from '../components/FollowList';
@@ -700,7 +700,13 @@ const ProfilePage = () => {
               {dreamingItems.map(item => {
                 const ownerHasIt = !isOwnProfile && item.discogs_id && myRecordDiscogs.has(item.discogs_id);
                 return (
-                  <Card key={item.id} className="border-honey/30 overflow-hidden transition-all hover:-translate-y-1" style={ownerHasIt ? { boxShadow: '0 0 15px #FFD700' } : {}} data-testid={`dreaming-item-${item.id}`}>
+                  <Card
+                    key={item.id}
+                    className="border-honey/30 overflow-hidden transition-all hover:-translate-y-1 cursor-pointer"
+                    style={ownerHasIt ? { boxShadow: '0 0 15px #FFD700' } : {}}
+                    onClick={() => setIsoModal(item)}
+                    data-testid={`dreaming-item-${item.id}`}
+                  >
                     <div className="relative aspect-square bg-vinyl-black">
                       {item.cover_url ? (
                         <AlbumArt src={item.cover_url} alt={`${item.artist} ${item.album}${item.color_variant ? ` ${item.color_variant}` : ''} vinyl record`} className="w-full h-full object-cover" />
@@ -717,41 +723,18 @@ const ProfilePage = () => {
                           {item.color_variant}
                         </div>
                       )}
+                      <div className="absolute bottom-2 right-2">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-pink-500/90 text-white">DREAMING</span>
+                      </div>
+                      {ownerHasIt && (
+                        <div className="absolute top-2 right-2">
+                          <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-honey/90 text-vinyl-black">In Yours</span>
+                        </div>
+                      )}
                     </div>
                     <div className="p-3">
                       <h4 className="font-medium text-sm truncate">{item.album}</h4>
                       <p className="text-xs text-muted-foreground truncate">{item.artist}</p>
-                      {isOwnProfile && (
-                        <Button
-                          size="sm" variant="outline"
-                          className="mt-2 w-full rounded-full text-[10px] border-purple-200 text-purple-700 hover:bg-purple-50 gap-1 h-7"
-                          onClick={async () => {
-                            try {
-                              await axios.put(`${API}/iso/${item.id}/promote`, {}, { headers: { Authorization: `Bearer ${token}` }});
-                              setDreamingItems(prev => prev.filter(d => d.id !== item.id));
-                              setIsos(prev => [...prev, { ...item, status: 'OPEN', priority: 'HIGH' }]);
-                              toast.success(`${item.album} moved to Actively Seeking`);
-                            } catch { toast.error('Could not promote item'); }
-                          }}
-                          data-testid={`promote-to-iso-${item.id}`}
-                        >
-                          <Search className="w-3 h-3" /> Actively Searching
-                        </Button>
-                      )}
-                      {ownerHasIt && (
-                        <>
-                          <span className="inline-block mt-1 text-[10px] font-medium text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full" data-testid={`in-collection-dream-${item.id}`}>
-                            In Your Collection
-                          </span>
-                          <button
-                            onClick={() => navigate(`/messages?to=${profile.id}&text=${encodeURIComponent(`Hey! I saw you're dreaming of ${item.album}. It's one of my favorites — tell me about your ideal pressing!`)}`)}
-                            className="block mt-1.5 text-[10px] font-medium text-honey-amber hover:underline"
-                            data-testid={`tell-them-${item.id}`}
-                          >
-                            Tell them about this pressing.
-                          </button>
-                        </>
-                      )}
                     </div>
                   </Card>
                 );
@@ -1104,19 +1087,19 @@ const ProfilePage = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* ISO Album Modal — mirrors the HivePage album modal layout */}
+      {/* Album Modal — shared between ISO, Dreaming, and Collection items */}
       <Dialog open={!!isoModal} onOpenChange={(open) => { if (!open) setIsoModal(null); }}>
         <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto" aria-describedby="iso-modal-desc">
           <DialogHeader>
             <DialogTitle className="font-heading text-lg">Album Details</DialogTitle>
-            <DialogDescription id="iso-modal-desc" className="sr-only">Details for this ISO album</DialogDescription>
+            <DialogDescription id="iso-modal-desc" className="sr-only">Details for this album</DialogDescription>
           </DialogHeader>
           {isoModal && (
             <div>
-              {/* Album card — same layout as HivePage */}
+              {/* Album hero card */}
               <div className="flex items-center gap-4 mb-3 bg-honey/10 rounded-xl p-3">
                 {isoModal.cover_url ? (
-                  <AlbumArt src={isoModal.cover_url} alt={`${isoModal.artist} ${isoModal.album}${isoModal.pressing_notes ? ` ${isoModal.pressing_notes}` : ''} vinyl record`} className="w-20 h-20 rounded-lg object-cover shadow" />
+                  <AlbumArt src={isoModal.cover_url} alt={`${isoModal.artist} ${isoModal.album}${isoModal.pressing_notes || isoModal.color_variant ? ` ${isoModal.pressing_notes || isoModal.color_variant}` : ''} vinyl record`} className="w-20 h-20 rounded-lg object-cover shadow" />
                 ) : (
                   <div className="w-20 h-20 rounded-lg bg-honey/20 flex items-center justify-center"><Disc className="w-8 h-8 text-honey" /></div>
                 )}
@@ -1124,21 +1107,36 @@ const ProfilePage = () => {
                   <p className="font-heading text-base leading-tight" data-testid="iso-modal-album-title">{isoModal.album}</p>
                   <p className="text-sm text-honey-amber italic" data-testid="iso-modal-album-artist">{isoModal.artist}{isoModal.year ? ` (${isoModal.year})` : ''}</p>
                   <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                    isoModal.status === 'FOUND' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'
-                  }`}>{isoModal.status}</span>
+                    isoModal.status === 'FOUND' ? 'bg-green-100 text-green-700' :
+                    isoModal.status === 'WISHLIST' ? 'bg-pink-100 text-pink-700' :
+                    'bg-purple-100 text-purple-700'
+                  }`} data-testid="iso-modal-status">{
+                    isoModal.status === 'WISHLIST' ? 'DREAMING' :
+                    isoModal.status === 'FOUND' ? 'FOUND' : 'ACTIVELY SEEKING'
+                  }</span>
                 </div>
               </div>
 
-              {/* Variant / Pressing / Condition Details */}
+              {/* Variant / Pressing / Condition / Format Details */}
               <div className="flex flex-wrap gap-1.5 mb-4" data-testid="iso-modal-details">
                 {isoModal.year && (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-honey/10 text-xs text-vinyl-black/70">
-                    {isoModal.year}
+                    <Calendar className="w-3 h-3" /> {isoModal.year}
                   </span>
                 )}
-                {isoModal.pressing_notes && (
+                {isoModal.format && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-honey/10 text-xs text-vinyl-black/70">
+                    <Disc className="w-3 h-3" /> {isoModal.format}
+                  </span>
+                )}
+                {(isoModal.pressing_notes || isoModal.color_variant) && (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-xs text-amber-800 font-medium">
-                    {isoModal.pressing_notes}
+                    {isoModal.pressing_notes || isoModal.color_variant}
+                  </span>
+                )}
+                {isoModal.pressing_notes && isoModal.color_variant && isoModal.pressing_notes !== isoModal.color_variant && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-xs text-amber-800 font-medium">
+                    {isoModal.color_variant}
                   </span>
                 )}
                 {isoModal.condition_pref && (
@@ -1146,9 +1144,14 @@ const ProfilePage = () => {
                     Condition: {isoModal.condition_pref}
                   </span>
                 )}
-                {isoModal.color_variant && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-xs text-amber-800 font-medium">
-                    {isoModal.color_variant}
+                {isoModal.label && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-honey/10 text-xs text-vinyl-black/70">
+                    {isoModal.label}
+                  </span>
+                )}
+                {isoModal.catno && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-honey/10 text-xs text-vinyl-black/70">
+                    Cat# {isoModal.catno}
                   </span>
                 )}
                 {(isoModal.tags || []).map(tag => (
@@ -1172,8 +1175,35 @@ const ProfilePage = () => {
                 </div>
               )}
 
-              {/* Actions */}
+              {/* Actions — status-aware */}
               <div className="flex flex-wrap gap-2 mb-4">
+                {/* WISHLIST: primary action is Move to Actively Seeking */}
+                {isOwnProfile && isoModal.status === 'WISHLIST' && (
+                  <>
+                    <Button size="sm" className="bg-purple-600 text-white hover:bg-purple-700 rounded-full text-xs gap-1"
+                      onClick={async () => {
+                        try {
+                          await axios.put(`${API}/iso/${isoModal.id}/promote`, {}, { headers: { Authorization: `Bearer ${token}` }});
+                          setDreamingItems(prev => prev.filter(d => d.id !== isoModal.id));
+                          setIsos(prev => [...prev, { ...isoModal, status: 'OPEN', priority: 'HIGH' }]);
+                          setIsoModal(prev => prev ? { ...prev, status: 'OPEN' } : null);
+                          toast.success(`${isoModal.album} moved to Actively Seeking`);
+                        } catch { toast.error('Could not promote item'); }
+                      }}
+                      data-testid="iso-modal-promote"
+                    >
+                      <Search className="w-3 h-3" /> Move to Actively Seeking
+                    </Button>
+                    <Button size="sm" variant="outline" className="rounded-full text-xs border-red-200 text-red-500 hover:bg-red-50 gap-1"
+                      onClick={() => { handleDeleteIso(isoModal.id); setDreamingItems(prev => prev.filter(d => d.id !== isoModal.id)); setIsoModal(null); }}
+                      data-testid="iso-modal-delete-dream"
+                    >
+                      <X className="w-3 h-3" /> Remove
+                    </Button>
+                  </>
+                )}
+
+                {/* OPEN: Mark as Found / Remove */}
                 {isOwnProfile && isoModal.status === 'OPEN' && (
                   <>
                     <Button size="sm" className="bg-green-600 text-white hover:bg-green-700 rounded-full text-xs gap-1"
@@ -1190,14 +1220,21 @@ const ProfilePage = () => {
                     </Button>
                   </>
                 )}
+
+                {/* Other user: Chat CTA */}
                 {!isOwnProfile && isoModal.discogs_id && myRecordDiscogs.has(isoModal.discogs_id) && isoModal.status !== 'FOUND' && (
                   <Button size="sm" className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full text-xs gap-1"
-                    onClick={() => { setIsoModal(null); navigate(`/messages?to=${profile.id}&text=${encodeURIComponent(`Hey! I saw you're searching for ${isoModal.album} by ${isoModal.artist}. I have it in my collection — interested in working something out?`)}`); }}
+                    onClick={() => {
+                      const verb = isoModal.status === 'WISHLIST' ? 'dreaming of' : 'searching for';
+                      setIsoModal(null);
+                      navigate(`/messages?to=${profile.id}&text=${encodeURIComponent(`Hey! I saw you're ${verb} ${isoModal.album} by ${isoModal.artist}. I have it in my collection — interested in working something out?`)}`);
+                    }}
                     data-testid="iso-modal-chat"
                   >
                     <MessageCircle className="w-3 h-3" /> Start a Chat
                   </Button>
                 )}
+
                 {isoModal.discogs_id && (
                   <a href={`https://www.discogs.com/release/${isoModal.discogs_id}`} target="_blank" rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-vinyl-black/5 text-xs text-vinyl-black/60 hover:bg-vinyl-black/10 transition-colors"
