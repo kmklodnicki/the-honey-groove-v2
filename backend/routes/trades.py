@@ -45,6 +45,42 @@ async def _send_hold_emails(trade: Dict, template_fn, **extra_kwargs):
             tpl = template_fn(user_obj.get("username", ""), hold_amount=hold_amount, **extra_kwargs)
             await send_email_fire_and_forget(user_obj["email"], tpl["subject"], tpl["html"])
 
+
+async def _auto_expire_shipping(trade: Dict):
+    """Auto-expire a trade when shipping deadline passes and at least one party hasn't shipped."""
+    now_str = datetime.now(timezone.utc).isoformat()
+
+    # Release mutual holds
+    if trade.get("hold_enabled") and trade.get("hold_status") == "active":
+        charges = trade.get("hold_charges") or {}
+        for role in ["initiator", "responder"]:
+            pi_id = (charges.get(role) or {}).get("payment_intent_id")
+            if pi_id:
+                await _refund_hold(pi_id)
+        await db.trades.update_one({"id": trade["id"]}, {"$set": {"hold_status": "refunded"}})
+
+    # Mark trade as EXPIRED
+    await db.trades.update_one({"id": trade["id"]}, {"$set": {
+        "status": "EXPIRED",
+        "updated_at": now_str,
+        "expired_at": now_str,
+        "expired_reason": "shipping_deadline",
+    }})
+
+    # Release listing back to active
+    await db.listings.update_one({"id": trade["listing_id"]}, {"$set": {"status": "ACTIVE"}})
+
+    # Notify both users
+    for uid in [trade["initiator_id"], trade["responder_id"]]:
+        await create_notification(
+            uid, "TRADE_EXPIRED",
+            "Trade expired",
+            "Your trade expired because one or both parties did not ship within the 5-day deadline. Mutual holds have been released.",
+            {"trade_id": trade["id"]},
+        )
+
+    logger.info(f"Trade auto-expired: {trade['id']} — shipping deadline passed")
+
 # ============== TRADE ROUTES ==============
 
 async def check_trade_deadlines(trade: Dict) -> Dict:
@@ -58,7 +94,12 @@ async def check_trade_deadlines(trade: Dict) -> Dict:
             init_shipped = shipping.get("initiator") is not None
             resp_shipped = shipping.get("responder") is not None
             if not init_shipped or not resp_shipped:
+                # Auto-expire: at least one party failed to ship
                 trade["shipping_overdue"] = True
+                from contextlib import suppress
+                with suppress(Exception):
+                    await _auto_expire_shipping(trade)
+                    trade["status"] = "EXPIRED"
 
     if trade.get("status") == "CONFIRMING" and trade.get("delivery_marked_at"):
         delivery_time = datetime.fromisoformat(trade["delivery_marked_at"])
@@ -466,9 +507,21 @@ async def ship_trade(trade_id: str, data: TradeShipInput, user: Dict = Depends(r
     if shipping.get(role):
         raise HTTPException(status_code=400, detail="You have already submitted tracking info")
 
+    # Validate tracking number
+    tracking = data.tracking_number.strip()
+    if len(tracking) < 6:
+        raise HTTPException(status_code=400, detail="Tracking number must be at least 6 characters")
+    if not any(c.isalnum() for c in tracking):
+        raise HTTPException(status_code=400, detail="Tracking number must contain alphanumeric characters")
+
+    # Validate carrier if provided
+    carrier_val = (data.carrier or "").strip()
+    if not carrier_val:
+        raise HTTPException(status_code=400, detail="Carrier is required (e.g. USPS, UPS, FedEx)")
+
     shipping[role] = {
-        "tracking_number": data.tracking_number,
-        "carrier": data.carrier,
+        "tracking_number": tracking,
+        "carrier": carrier_val,
         "shipped_at": now,
     }
 

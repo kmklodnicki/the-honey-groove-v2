@@ -369,7 +369,7 @@ class DiscogsImportStatus(BaseModel):
 
 # Trade Models
 TRADE_STATUSES = ["PROPOSED", "COUNTERED", "ACCEPTED", "DECLINED", "CANCELLED",
-                  "HOLD_PENDING", "SHIPPING", "CONFIRMING", "COMPLETED", "DISPUTED"]
+                  "HOLD_PENDING", "SHIPPING", "CONFIRMING", "COMPLETED", "DISPUTED", "EXPIRED"]
 
 class TradePropose(BaseModel):
     listing_id: str

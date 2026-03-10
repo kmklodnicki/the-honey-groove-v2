@@ -48,6 +48,85 @@ const STATUS_CONFIG = {
   CONFIRMING: { label: 'Confirming', color: 'bg-cyan-100 text-cyan-700', dot: 'bg-cyan-400' },
   COMPLETED: { label: 'Completed', color: 'bg-green-100 text-green-700', dot: 'bg-green-500' },
   DISPUTED: { label: 'Disputed', color: 'bg-red-100 text-red-700', dot: 'bg-red-500' },
+  EXPIRED: { label: 'Expired', color: 'bg-orange-100 text-orange-700', dot: 'bg-orange-500' },
+};
+
+// Countdown helper - returns human-readable time left
+const formatCountdown = (deadline) => {
+  if (!deadline) return null;
+  const diff = new Date(deadline) - new Date();
+  if (diff <= 0) return 'Overdue';
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  if (days > 0) return `${days}d ${hours}h remaining`;
+  const mins = Math.floor((diff % 3600000) / 60000);
+  return hours > 0 ? `${hours}h ${mins}m remaining` : `${mins}m remaining`;
+};
+
+// Trade Timeline
+const TIMELINE_STEPS = [
+  { key: 'ACCEPTED', label: 'Accepted' },
+  { key: 'SHIPPING', label: 'Awaiting Shipment' },
+  { key: 'IN_TRANSIT', label: 'In Transit' },
+  { key: 'CONFIRMING', label: 'Awaiting Confirmation' },
+  { key: 'COMPLETED', label: 'Completed' },
+];
+
+const getActiveStep = (trade) => {
+  const s = trade.status;
+  if (s === 'COMPLETED') return 4;
+  if (s === 'CONFIRMING') return 3;
+  if (s === 'SHIPPING') {
+    const shipping = trade.shipping || {};
+    const bothShipped = shipping.initiator && shipping.responder;
+    return bothShipped ? 2 : 1;
+  }
+  if (s === 'HOLD_PENDING' || s === 'ACCEPTED') return 0;
+  return -1; // EXPIRED, DISPUTED, etc
+};
+
+const TradeTimeline = ({ trade }) => {
+  const active = getActiveStep(trade);
+  if (active < 0) return null; // Don't show for expired/disputed
+
+  return (
+    <div className="py-3" data-testid="trade-timeline">
+      <div className="flex items-center justify-between">
+        {TIMELINE_STEPS.map((step, i) => (
+          <React.Fragment key={step.key}>
+            <div className="flex flex-col items-center gap-1" style={{ flex: '0 0 auto' }}>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
+                i < active ? 'bg-green-500 text-white'
+                : i === active ? 'bg-honey text-vinyl-black ring-2 ring-honey/30'
+                : 'bg-stone-200 text-stone-400'
+              }`}>
+                {i < active ? <Check className="w-3 h-3" /> : i + 1}
+              </div>
+              <span className={`text-[9px] text-center leading-tight max-w-[60px] ${
+                i <= active ? 'text-foreground font-medium' : 'text-muted-foreground'
+              }`}>{step.label}</span>
+            </div>
+            {i < TIMELINE_STEPS.length - 1 && (
+              <div className={`flex-1 h-0.5 mx-1 ${i < active ? 'bg-green-400' : 'bg-stone-200'}`} />
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+      {/* Countdown */}
+      {trade.status === 'SHIPPING' && trade.shipping_deadline && (
+        <p className="text-xs text-purple-600 text-center mt-2 font-medium" data-testid="shipping-countdown">
+          <Clock className="w-3 h-3 inline mr-1" />
+          Ship within {formatCountdown(trade.shipping_deadline)}
+        </p>
+      )}
+      {trade.status === 'CONFIRMING' && trade.confirmation_deadline && (
+        <p className="text-xs text-cyan-600 text-center mt-2 font-medium" data-testid="confirmation-countdown">
+          <Clock className="w-3 h-3 inline mr-1" />
+          Confirm within {formatCountdown(trade.confirmation_deadline)}
+        </p>
+      )}
+    </div>
+  );
 };
 
 // Shipping Address Exchange component for trade parties
@@ -416,7 +495,9 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
 
   const handleShip = async () => {
     if (!trackingNumber.trim()) { toast.error('Enter a tracking number'); return; }
-    if (await apiCall('put', `${API}/trades/${trade.id}/ship`, { tracking_number: trackingNumber, carrier: carrier || null })) {
+    if (trackingNumber.trim().length < 6) { toast.error('Tracking number must be at least 6 characters'); return; }
+    if (!carrier.trim()) { toast.error('Enter a carrier (e.g. USPS, UPS, FedEx)'); return; }
+    if (await apiCall('put', `${API}/trades/${trade.id}/ship`, { tracking_number: trackingNumber.trim(), carrier: carrier.trim() })) {
       toast.success('Tracking added!'); onUpdate();
     }
   };
@@ -487,6 +568,24 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
         </DialogHeader>
 
         <div className="space-y-4 pt-2">
+          {/* Trade Timeline */}
+          {['ACCEPTED','HOLD_PENDING','SHIPPING','CONFIRMING','COMPLETED'].includes(trade.status) && (
+            <TradeTimeline trade={trade} />
+          )}
+
+          {/* Expired notice */}
+          {trade.status === 'EXPIRED' && (
+            <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 text-center" data-testid="trade-expired-notice">
+              <XCircle className="w-6 h-6 text-orange-500 mx-auto mb-1" />
+              <p className="text-sm font-medium text-orange-700">Trade Expired</p>
+              <p className="text-xs text-orange-600 mt-1">
+                {trade.expired_reason === 'shipping_deadline'
+                  ? 'This trade expired because one or both parties did not ship within the 5-day deadline. Mutual holds have been released.'
+                  : 'This trade has expired.'}
+              </p>
+            </div>
+          )}
+
           {/* THE EXCHANGE */}
           <div className="bg-honey/5 rounded-xl p-4">
             <p className="text-xs font-medium text-muted-foreground mb-3">THE EXCHANGE</p>
@@ -607,10 +706,12 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
                 );
               })}
               {trade.shipping_deadline && (
-                <p className="text-xs text-purple-600 mt-2">
+                <p className="text-xs text-purple-600 mt-2 font-medium">
                   <Clock className="w-3 h-3 inline mr-1" />
-                  Ship by {new Date(trade.shipping_deadline).toLocaleDateString()}
-                  {trade.shipping_overdue && <span className="text-red-600 font-bold ml-1">OVERDUE</span>}
+                  {formatCountdown(trade.shipping_deadline) === 'Overdue'
+                    ? <span className="text-red-600 font-bold">OVERDUE — Shipping deadline passed</span>
+                    : <>Ship by {new Date(trade.shipping_deadline).toLocaleDateString()} · {formatCountdown(trade.shipping_deadline)}</>
+                  }
                 </p>
               )}
             </div>
