@@ -71,50 +71,50 @@ const Navbar = () => {
               src="/logo-wordmark.png" 
               alt="the Honey Groove" 
               style={{width: '140px', minWidth: '140px'}}
-              className="group-hover:scale-105 transition-transform object-contain"
+              className="group-hover:scale-105 transition-all duration-300 object-contain group-hover:drop-shadow-[0_2px_8px_rgba(244,185,66,0.3)]"
             />
           </Link>
 
           {/* Navigation Links */}
           {user && (
             <div className="hidden md:flex items-center gap-1">
-              <Link to="/hive" data-testid="nav-hive">
+              <Link to="/hive" data-testid="nav-hive" className={`nav-honey-link ${isActive('/hive') ? 'nav-active' : ''}`}>
                 <Button 
                   variant="ghost" 
-                  className={`gap-2 ${isActive('/hive') ? 'bg-honey/20' : ''}`}
+                  className={`gap-2 ${isActive('/hive') ? 'bg-honey/20 text-[#C8861A]' : ''}`}
                 >
                   <Home className="w-4 h-4" />
                   The Hive
                 </Button>
               </Link>
-              <Link to="/nectar" data-testid="nav-explore">
+              <Link to="/nectar" data-testid="nav-explore" className={`nav-honey-link ${isActive('/nectar') ? 'nav-active' : ''}`}>
                 <Button 
                   variant="ghost" 
-                  className={`gap-2 ${isActive('/nectar') ? 'bg-honey/20' : ''}`}
+                  className={`gap-2 ${isActive('/nectar') ? 'bg-honey/20 text-[#C8861A]' : ''}`}
                 >
                   <Globe className="w-4 h-4" />
                   Nectar
                 </Button>
               </Link>
-              <Link to="/collection" data-testid="nav-collection">
+              <Link to="/collection" data-testid="nav-collection" className={`nav-honey-link ${isActive('/collection') ? 'nav-active' : ''}`}>
                 <Button 
                   variant="ghost" 
-                  className={`gap-2 ${isActive('/collection') ? 'bg-honey/20' : ''}`}
+                  className={`gap-2 ${isActive('/collection') ? 'bg-honey/20 text-[#C8861A]' : ''}`}
                 >
                   <Library className="w-4 h-4" />
                   Collection
                 </Button>
               </Link>
-              <Link to="/honeypot" data-testid="nav-honeypot">
+              <Link to="/honeypot" data-testid="nav-honeypot" className={`nav-honey-link ${isActive('/honeypot') ? 'nav-active' : ''}`}>
                 <Button 
                   variant="ghost" 
-                  className={`gap-2 ${isActive('/honeypot') ? 'bg-honey/20' : ''}`}
+                  className={`gap-2 ${isActive('/honeypot') ? 'bg-honey/20 text-[#C8861A]' : ''}`}
                 >
                   <ShoppingBag className="w-4 h-4" />
                   The Honeypot
                 </Button>
               </Link>
-              <Link to="/essentials" data-testid="nav-essentials">
+              <Link to="/essentials" data-testid="nav-essentials" className={`nav-honey-link ${isActive('/essentials') ? 'nav-active' : ''}`}>
                 <Button 
                   variant="outline" 
                   className={`gap-2 border-[#C8861A]/30 text-[#C8861A] hover:bg-[#C8861A]/10 ${isActive('/essentials') ? 'bg-[#C8861A]/15 border-[#C8861A]/50' : ''}`}
@@ -152,7 +152,7 @@ const Navbar = () => {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full" data-testid="user-menu-trigger">
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full avatar-honey-ring" data-testid="user-menu-trigger">
                     <BeeAvatar user={user} className="h-10 w-10" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -302,25 +302,30 @@ const Navbar = () => {
         data-testid="mobile-bottom-nav"
       >
         <div className="flex justify-around items-center h-16">
-          <Link to="/hive" className="flex flex-col items-center justify-center flex-1 h-full gap-0.5" data-testid="mobile-hive">
-            <Home className="w-5 h-5" style={{ color: isActive('/hive') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
-            <span className="text-[10px] font-medium" style={{ color: isActive('/hive') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }}>Hive</span>
+          <Link to="/hive" className={`mobile-nav-item flex flex-col items-center justify-center flex-1 h-full gap-0.5 ${isActive('/hive') ? 'nav-active' : ''}`} data-testid="mobile-hive">
+            <Home className="w-5 h-5 transition-all duration-200" style={{ color: isActive('/hive') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
+            <span className="text-[10px] font-medium transition-colors duration-200" style={{ color: isActive('/hive') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }}>Hive</span>
+            <span className="mobile-nav-dot" />
           </Link>
-          <Link to="/nectar" className="flex flex-col items-center justify-center flex-1 h-full gap-0.5" data-testid="mobile-explore">
-            <Globe className="w-5 h-5" style={{ color: isActive('/nectar') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
-            <span className="text-[10px] font-medium" style={{ color: isActive('/nectar') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }}>Nectar</span>
+          <Link to="/nectar" className={`mobile-nav-item flex flex-col items-center justify-center flex-1 h-full gap-0.5 ${isActive('/nectar') ? 'nav-active' : ''}`} data-testid="mobile-explore">
+            <Globe className="w-5 h-5 transition-all duration-200" style={{ color: isActive('/nectar') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
+            <span className="text-[10px] font-medium transition-colors duration-200" style={{ color: isActive('/nectar') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }}>Nectar</span>
+            <span className="mobile-nav-dot" />
           </Link>
-          <Link to="/collection" className="flex flex-col items-center justify-center flex-1 h-full gap-0.5" data-testid="mobile-collection">
-            <Library className="w-5 h-5" style={{ color: isActive('/collection') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
-            <span className="text-[10px] font-medium" style={{ color: isActive('/collection') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }}>Collection</span>
+          <Link to="/collection" className={`mobile-nav-item flex flex-col items-center justify-center flex-1 h-full gap-0.5 ${isActive('/collection') ? 'nav-active' : ''}`} data-testid="mobile-collection">
+            <Library className="w-5 h-5 transition-all duration-200" style={{ color: isActive('/collection') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
+            <span className="text-[10px] font-medium transition-colors duration-200" style={{ color: isActive('/collection') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }}>Collection</span>
+            <span className="mobile-nav-dot" />
           </Link>
-          <Link to="/honeypot" className="flex flex-col items-center justify-center flex-1 h-full gap-0.5" data-testid="mobile-honeypot">
-            <ShoppingBag className="w-5 h-5" style={{ color: isActive('/honeypot') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
-            <span className="text-[10px] font-medium" style={{ color: isActive('/honeypot') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }}>Honeypot</span>
+          <Link to="/honeypot" className={`mobile-nav-item flex flex-col items-center justify-center flex-1 h-full gap-0.5 ${isActive('/honeypot') ? 'nav-active' : ''}`} data-testid="mobile-honeypot">
+            <ShoppingBag className="w-5 h-5 transition-all duration-200" style={{ color: isActive('/honeypot') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
+            <span className="text-[10px] font-medium transition-colors duration-200" style={{ color: isActive('/honeypot') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }}>Honeypot</span>
+            <span className="mobile-nav-dot" />
           </Link>
-          <Link to="/essentials" className="flex flex-col items-center justify-center flex-1 h-full gap-0.5" data-testid="mobile-essentials">
-            <Sparkles className="w-5 h-5" style={{ color: isActive('/essentials') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
-            <span className="text-[10px] font-medium" style={{ color: isActive('/essentials') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }}>Essentials</span>
+          <Link to="/essentials" className={`mobile-nav-item flex flex-col items-center justify-center flex-1 h-full gap-0.5 ${isActive('/essentials') ? 'nav-active' : ''}`} data-testid="mobile-essentials">
+            <Sparkles className="w-5 h-5 transition-all duration-200" style={{ color: isActive('/essentials') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
+            <span className="text-[10px] font-medium transition-colors duration-200" style={{ color: isActive('/essentials') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }}>Essentials</span>
+            <span className="mobile-nav-dot" />
           </Link>
         </div>
       </div>
@@ -365,7 +370,7 @@ const DMBadge = () => {
     <Button variant="ghost" className="relative h-9 w-9 rounded-full" onClick={() => navigate('/messages')} data-testid="dm-badge-btn">
       <MessageCircle className="h-5 w-5 text-vinyl-black" />
       {unreadCount > 0 && (
-        <span className="absolute -top-0.5 -right-0.5 bg-honey text-vinyl-black text-[10px] font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center" data-testid="dm-unread-badge">
+        <span className="absolute -top-0.5 -right-0.5 bg-honey text-vinyl-black text-[10px] font-bold min-w-[18px] h-[18px] rounded-full flex items-center justify-center badge-pulse" data-testid="dm-unread-badge">
           {unreadCount > 9 ? '9+' : unreadCount}
         </span>
       )}
@@ -493,7 +498,7 @@ const NotificationBell = () => {
         <Button variant="ghost" className="relative h-9 w-9 rounded-full" data-testid="notification-bell">
           <Bell className="w-5 h-5" />
           {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 bg-[#C8861A] text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1" data-testid="notification-badge">
+            <span className="absolute -top-0.5 -right-0.5 bg-[#C8861A] text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 badge-pulse" data-testid="notification-badge">
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}

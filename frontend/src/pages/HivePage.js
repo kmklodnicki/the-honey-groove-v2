@@ -289,12 +289,12 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); onLike(post.id, post.is_liked); }}
-          className={`flex items-center gap-1.5 text-sm transition-colors p-2 -m-2 rounded-full active:scale-125 ${post.is_liked ? 'text-red-500' : 'text-muted-foreground hover:text-red-500'}`}
+          className={`flex items-center gap-1.5 text-sm transition-all p-2 -m-2 rounded-full ${post.is_liked ? 'text-amber-600 honey-like-burst' : 'text-muted-foreground hover:text-amber-500'}`}
           style={{ touchAction: 'manipulation' }}
           data-testid={`like-btn-${post.id}`}
         >
-          <Heart className={`w-4 h-4 transition-transform ${post.is_liked ? 'fill-current scale-110' : ''}`} />
-          {post.likes_count > 0 && post.likes_count}
+          <Heart className={`w-4 h-4 transition-all duration-200 ${post.is_liked ? 'fill-current scale-110 honey-like-pop' : 'hover:scale-110'}`} />
+          {post.likes_count > 0 && <span className={post.is_liked ? 'count-bump' : ''}>{post.likes_count}</span>}
         </button>
         <button
           onClick={handleToggleComments}

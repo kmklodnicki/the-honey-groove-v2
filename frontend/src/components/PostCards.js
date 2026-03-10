@@ -175,7 +175,7 @@ const NowSpinningCard = ({ post, onAlbumClick }) => {
       <div className="flex gap-4 items-start" data-testid="now-spinning-card">
         {record.cover_url ? (
           <div className="relative shrink-0">
-            <AlbumArt src={record.cover_url} alt={`${record.artist} - ${record.title} Vinyl Record`} className="w-24 h-24 rounded-[10px] object-cover shadow-md" />
+            <AlbumArt src={record.cover_url} alt={`${record.artist} - ${record.title} Vinyl Record`} className="w-24 h-24 rounded-[10px] object-cover shadow-md album-art-hover" />
             {post.honeypot_rating && (
               <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
                 style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}

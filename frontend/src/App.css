@@ -4,48 +4,68 @@
 .btn-primary {
     @apply inline-flex items-center justify-center rounded-full text-sm font-medium h-10 px-8 py-2;
     @apply bg-honey text-vinyl-black;
-    transition: background-color 0.2s ease, transform 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
 }
 
 .btn-primary:hover {
     @apply bg-honey-amber;
-    transform: scale(1.05);
+    transform: scale(1.03);
+    box-shadow: 0 4px 20px rgba(244, 185, 66, 0.3);
+}
+
+.btn-primary:active {
+    transform: scale(0.97);
+    box-shadow: 0 2px 8px rgba(244, 185, 66, 0.2);
 }
 
 .btn-secondary {
     @apply inline-flex items-center justify-center rounded-full text-sm font-medium h-10 px-8 py-2;
     @apply bg-honey-soft text-vinyl-black;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
 }
 
 .btn-secondary:hover {
     @apply bg-honey;
+    transform: scale(1.02);
+}
+
+.btn-secondary:active {
+    transform: scale(0.97);
 }
 
 .btn-outline {
     @apply inline-flex items-center justify-center rounded-full text-sm font-medium h-10 px-8 py-2;
     @apply border-2 border-vinyl-black bg-transparent text-vinyl-black;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
 }
 
 .btn-outline:hover {
     @apply bg-vinyl-black text-white;
+    transform: scale(1.02);
+}
+
+.btn-outline:active {
+    transform: scale(0.97);
 }
 
 .btn-ghost {
     @apply inline-flex items-center justify-center rounded-full text-sm font-medium h-10 px-8 py-2;
     @apply bg-transparent text-vinyl-black;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.2s ease, transform 0.15s ease;
 }
 
 .btn-ghost:hover {
     @apply bg-honey-soft/50;
 }
 
+.btn-ghost:active {
+    transform: scale(0.96);
+}
+
 /* Card Styles */
 .honey-card {
     @apply rounded-2xl border border-honey/30 bg-white/70 backdrop-blur-sm;
-    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    transition: box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .honey-card:hover {
@@ -60,7 +80,7 @@
 
 .vinyl-card:hover {
     @apply shadow-vinyl;
-    transform: translateY(-4px);
+    transform: translateY(-4px) rotate(-1deg);
 }
 
 /* Input Styles */
@@ -69,6 +89,11 @@
     @apply placeholder:text-muted-foreground;
     @apply focus:outline-none focus:ring-2 focus:ring-honey focus:border-transparent;
     @apply disabled:cursor-not-allowed disabled:opacity-50;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.honey-input:focus {
+    box-shadow: 0 0 0 3px rgba(244, 185, 66, 0.15), 0 2px 8px rgba(244, 185, 66, 0.1);
 }
 
 /* Record Cover Animation */
@@ -89,7 +114,7 @@
 /* Activity Feed Post */
 .feed-post {
     @apply p-6 border-b border-honey/20;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.25s ease, transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .feed-post:hover {
@@ -108,16 +133,23 @@
 
 /* Hover Lift Effect */
 .hover-lift {
-    transition: transform 0.3s ease-out;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
 }
 
 .hover-lift:hover {
     transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(200, 134, 26, 0.12);
 }
 
-/* Bee Animation */
+/* Bee Float Animation */
 .bee-float {
     animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    33% { transform: translateY(-6px) rotate(2deg); }
+    66% { transform: translateY(-3px) rotate(-1deg); }
 }
 
 /* Page Transitions */
@@ -134,35 +166,33 @@
 
 /* Scrollbar Styling */
 ::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-    background: #FFF6E6;
+    background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #F4B942;
-    border-radius: 4px;
+    background: rgba(200, 134, 26, 0.25);
+    border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #D98C2F;
+    background: rgba(200, 134, 26, 0.45);
 }
 
 /* Staggered Animation Delays */
-.stagger-1 { animation-delay: 0.1s; }
-.stagger-2 { animation-delay: 0.2s; }
-.stagger-3 { animation-delay: 0.3s; }
-.stagger-4 { animation-delay: 0.4s; }
-.stagger-5 { animation-delay: 0.5s; }
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
 
 /* Hexagon Badge */
 .hex-badge {
     clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
 }
-
-/* (Removed: honey jar SVG fill animation - Safari incompatible) */
 
 /* Custom HoneyGroove Toast */
 .honey-toast {
@@ -178,7 +208,7 @@
   font-family: 'Cormorant Garamond', Georgia, serif;
   max-width: 320px;
   margin: 0 auto;
-  animation: toastSlideIn 0.3s ease-out;
+  animation: toastSlideIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 /* Safari <14.1 flex-gap fallback */
 .honey-toast > * + * {
@@ -198,8 +228,8 @@
   font-size: 14px;
 }
 @keyframes toastSlideIn {
-  from { opacity: 0; transform: translateY(-12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(-16px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /* Album art shimmer loading */
@@ -213,61 +243,333 @@
   animation: shimmer 1.5s ease-in-out infinite;
 }
 
-/* ===== Micro-Interactions ===== */
 
-/* Button press - all buttons scale down slightly on active */
-button, [role="button"], a.btn-primary, a.btn-secondary, a.btn-outline {
-  transition: transform 0.12s ease, opacity 0.12s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+/* ==========================================
+   MICRO-INTERACTIONS — Honey/Bee Theme
+   Luxurious & Professional
+   ========================================== */
+
+/* --- Global Button Press --- */
+button, [role="button"] {
+  transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1), 
+              opacity 0.1s ease, 
+              background-color 0.2s ease, 
+              box-shadow 0.25s ease,
+              color 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   transform: scale(0.96);
 }
 
-/* Card lift on hover - subtle elevation */
-[data-testid*="listing-"] .flex.items-center.gap-3,
-.feed-post,
-[data-testid*="now-spinning-card"],
-[data-testid*="added-card"],
-[data-testid*="active-trade-"] > div {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-[data-testid*="listing-"] .flex.items-center.gap-3:hover {
-  transform: translateY(-1px);
-}
-.feed-post:hover {
-  transform: translateY(-1px);
-}
-
-/* Like / Favorite heart pop */
-@keyframes heartPop {
+/* --- Like Button: Honey Drip Animation --- */
+@keyframes honeyLike {
   0% { transform: scale(1); }
-  30% { transform: scale(1.3); }
-  60% { transform: scale(0.9); }
+  15% { transform: scale(1.35); }
+  30% { transform: scale(0.85); }
+  45% { transform: scale(1.15); }
+  60% { transform: scale(0.95); }
   100% { transform: scale(1); }
 }
-.heart-pop {
-  animation: heartPop 0.35s ease-out;
+.honey-like-pop {
+  animation: honeyLike 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Smooth dialog/modal entrance */
-[data-state="open"][role="dialog"] {
-  animation: modalIn 0.2s ease-out;
+/* Honey burst particle effect on like */
+@keyframes honeyBurst {
+  0% { 
+    box-shadow: 0 0 0 0 rgba(244, 185, 66, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(244, 185, 66, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(244, 185, 66, 0);
+  }
 }
-@keyframes modalIn {
-  from { opacity: 0; transform: scale(0.97) translateY(8px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+.honey-like-burst {
+  animation: honeyBurst 0.5s ease-out;
+  border-radius: 50%;
 }
 
-/* Photo thumbnails - subtle scale on hover */
-[data-testid*="listing-photo-thumb-"] {
-  transition: transform 0.15s ease, border-color 0.2s ease;
+/* --- Feed Post Entrance --- */
+@keyframes feedSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-[data-testid*="listing-photo-thumb-"]:hover {
+.feed-post {
+  animation: feedSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.feed-post:nth-child(1) { animation-delay: 0s; }
+.feed-post:nth-child(2) { animation-delay: 0.06s; }
+.feed-post:nth-child(3) { animation-delay: 0.12s; }
+.feed-post:nth-child(4) { animation-delay: 0.18s; }
+.feed-post:nth-child(5) { animation-delay: 0.24s; }
+.feed-post:nth-child(n+6) { animation-delay: 0.3s; }
+
+/* --- Card Interactions --- */
+.feed-post:active {
+  transform: scale(0.992);
+}
+
+/* --- Desktop Nav Link Honey Underline --- */
+.nav-honey-link {
+  position: relative;
+  overflow: visible;
+}
+.nav-honey-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  width: 0;
+  height: 2.5px;
+  background: linear-gradient(90deg, #F4B942, #C8861A);
+  border-radius: 2px;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.nav-honey-link:hover::after,
+.nav-honey-link.nav-active::after {
+  width: 60%;
+  left: 20%;
+}
+.nav-honey-link.nav-active::after {
+  width: 70%;
+  left: 15%;
+  background: linear-gradient(90deg, #C8861A, #E8A820, #C8861A);
+}
+
+/* --- Mobile Bottom Nav Active Dot --- */
+.mobile-nav-item {
+  position: relative;
+  transition: transform 0.15s ease;
+}
+.mobile-nav-item:active {
+  transform: scale(0.9);
+}
+.mobile-nav-item .mobile-nav-dot {
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%) scale(0);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #C8861A;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.mobile-nav-item.nav-active .mobile-nav-dot {
+  transform: translateX(-50%) scale(1);
+}
+/* Active icon glow */
+.mobile-nav-item.nav-active svg {
+  filter: drop-shadow(0 0 4px rgba(200, 134, 26, 0.4));
+}
+
+/* --- Notification Badge Pulse --- */
+@keyframes badgePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(244, 185, 66, 0.5); }
+  50% { box-shadow: 0 0 0 6px rgba(244, 185, 66, 0); }
+}
+.badge-pulse {
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+/* --- Avatar Honey Ring on Hover --- */
+.avatar-honey-ring {
+  transition: box-shadow 0.25s ease, transform 0.2s ease;
+}
+.avatar-honey-ring:hover {
+  box-shadow: 0 0 0 3px rgba(244, 185, 66, 0.35), 0 2px 12px rgba(200, 134, 26, 0.15);
   transform: scale(1.05);
 }
 
-/* Album art rounded corners (cohesive 10px) */
+/* --- Album Art Tilt on Hover --- */
+.album-art-hover {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+}
+.album-art-hover:hover {
+  transform: scale(1.02) rotate(-1deg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* --- Smooth Dialog/Modal Entrance --- */
+[data-state="open"][role="dialog"] {
+  animation: modalHoneyIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes modalHoneyIn {
+  from { 
+    opacity: 0; 
+    transform: scale(0.95) translateY(12px); 
+    filter: blur(4px);
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1) translateY(0); 
+    filter: blur(0);
+  }
+}
+/* Modal overlay fade */
+[data-state="open"][data-overlay] {
+  animation: overlayFadeIn 0.25s ease;
+}
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* --- Photo Thumbnail Hover --- */
+[data-testid*="listing-photo-thumb-"] {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+}
+[data-testid*="listing-photo-thumb-"]:hover {
+  transform: scale(1.06);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* --- Follow Button Success --- */
+@keyframes followSuccess {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.08); }
+  60% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+.follow-success {
+  animation: followSuccess 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- Honey Glow Effect (for featured/special items) --- */
+.honey-glow {
+  box-shadow: 0 0 20px rgba(244, 185, 66, 0.15), 0 0 40px rgba(244, 185, 66, 0.05);
+}
+.honey-glow:hover {
+  box-shadow: 0 0 24px rgba(244, 185, 66, 0.25), 0 0 48px rgba(244, 185, 66, 0.08);
+}
+
+/* --- Dropdown Menu Entrance --- */
+[data-state="open"][role="menu"] {
+  animation: dropdownIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes dropdownIn {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* --- Ripple Effect for Interactive Elements --- */
+.honey-ripple {
+  position: relative;
+  overflow: hidden;
+}
+.honey-ripple::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%), rgba(244, 185, 66, 0.2) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.honey-ripple:active::after {
+  opacity: 1;
+}
+
+/* --- Skeleton Loading with Honey Shimmer --- */
+.honey-skeleton {
+  background: linear-gradient(
+    110deg,
+    rgba(244, 185, 66, 0.06) 8%,
+    rgba(244, 185, 66, 0.14) 18%,
+    rgba(244, 185, 66, 0.06) 33%
+  );
+  background-size: 200% 100%;
+  animation: honeyShimmer 1.5s linear infinite;
+  border-radius: 8px;
+}
+@keyframes honeyShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* --- Tab Active Transition --- */
+.honey-tab {
+  position: relative;
+  transition: color 0.2s ease;
+}
+.honey-tab::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #C8861A;
+  transform: scaleX(0);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+}
+.honey-tab.tab-active::after {
+  transform: scaleX(1);
+}
+
+/* --- Tooltip Fade --- */
+[role="tooltip"] {
+  animation: tooltipIn 0.15s ease;
+}
+@keyframes tooltipIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Album Art Corner Radius --- */
 .rounded-2xl img[alt*="Vinyl Record"],
 [data-testid="listing-modal-art"] {
   border-radius: 10px;
+}
+
+/* --- Checkbox Honey Theme --- */
+input[type="checkbox"]:checked {
+  background-color: #C8861A;
+  border-color: #C8861A;
+}
+
+/* --- Selection Color --- */
+::selection {
+  background: rgba(244, 185, 66, 0.3);
+  color: #2A1A06;
+}
+
+/* --- Focus Ring — Honey themed --- */
+*:focus-visible {
+  outline: 2px solid rgba(200, 134, 26, 0.5);
+  outline-offset: 2px;
+}
+
+/* --- Smooth Page Transitions --- */
+main {
+  animation: pageIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Number Counter Animation (for likes, followers etc) --- */
+@keyframes countBump {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+.count-bump {
+  animation: countBump 0.25s ease;
+}
+
+/* --- Honey Divider --- */
+.honey-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200, 134, 26, 0.2) 20%, rgba(200, 134, 26, 0.3) 50%, rgba(200, 134, 26, 0.2) 80%, transparent);
 }
