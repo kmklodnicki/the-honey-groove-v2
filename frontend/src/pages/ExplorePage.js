@@ -70,7 +70,7 @@ const ExplorePage = () => {
     });
   };
 
-  const addToWantlist = async (artist, album, discogs_id, cover_url, year) => {
+  const addToSeekingList = async (artist, album, discogs_id, cover_url, year) => {
     try {
       await axios.post(`${API}/composer/iso`, {
         artist, album, discogs_id, cover_url, year,
@@ -205,7 +205,7 @@ const ExplorePage = () => {
                   <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} className="w-full h-full object-cover" />
                   <span
                     role="button"
-                    onClick={(e) => { e.stopPropagation(); addToWantlist(r.artist, r.title, r.discogs_id, r.cover_url, r.year); }}
+                    onClick={(e) => { e.stopPropagation(); addToSeekingList(r.artist, r.title, r.discogs_id, r.cover_url, r.year); }}
                     className="absolute bottom-2 right-2 bg-white/90 hover:bg-white rounded-full p-1.5 shadow opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                     data-testid={`add-wantlist-tc-${r.discogs_id || idx}`}>
                     <Plus className="w-4 h-4 text-honey-amber" />
@@ -237,7 +237,7 @@ const ExplorePage = () => {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="text-xs text-red-500 font-medium">{r.want_count} {r.want_count === 1 ? 'want' : 'wants'}</span>
-                  <span onClick={(e) => { e.stopPropagation(); addToWantlist(r.artist, r.album, r.discogs_id, r.cover_url, r.year); }}
+                  <span onClick={(e) => { e.stopPropagation(); addToSeekingList(r.artist, r.album, r.discogs_id, r.cover_url, r.year); }}
                     className="text-honey-amber hover:bg-honey/10 rounded-full p-1 cursor-pointer" data-testid={`want-${idx}`}>
                     <Plus className="w-4 h-4" />
                   </span>

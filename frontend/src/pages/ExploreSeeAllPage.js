@@ -83,7 +83,7 @@ const ExploreSeeAllPage = () => {
     });
   };
 
-  const addToWantlist = async (artist, album, discogs_id, cover_url, year) => {
+  const addToSeekingList = async (artist, album, discogs_id, cover_url, year) => {
     try {
       await axios.post(`${API}/composer/iso`, { artist, album, discogs_id, cover_url, year }, { headers });
       toast.success('added to your Dream List.');
@@ -130,8 +130,8 @@ const ExploreSeeAllPage = () => {
         <>
           {section === 'trending' && <TrendingAll data={data} onOpen={openTrendingModal} />}
           {section === 'make-friends' && <TasteMatchAll data={data} navigate={navigate} />}
-          {section === 'trending-in-collections' && <TrendingCollectionsAll data={data} addToWantlist={addToWantlist} />}
-          {section === 'most-wanted' && <MostWantedAll data={data} addToWantlist={addToWantlist} />}
+          {section === 'trending-in-collections' && <TrendingCollectionsAll data={data} addToSeekingList={addToSeekingList} />}
+          {section === 'most-wanted' && <MostWantedAll data={data} addToSeekingList={addToSeekingList} />}
           {section === 'near-you' && (
             <NearYouAll
               data={data}
@@ -215,7 +215,7 @@ const TasteMatchAll = ({ data, navigate }) => {
   );
 };
 
-const TrendingCollectionsAll = ({ data, addToWantlist }) => {
+const TrendingCollectionsAll = ({ data, addToSeekingList }) => {
   if (!data || data.length === 0) return <EmptyState text="No trending collection data right now." />;
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4" data-testid="trending-collections-grid">
@@ -224,7 +224,7 @@ const TrendingCollectionsAll = ({ data, addToWantlist }) => {
           <div className="aspect-square rounded-xl overflow-hidden bg-honey/10 mb-2 shadow-sm relative group">
             <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} className="w-full h-full object-cover" />
             <button
-              onClick={() => addToWantlist(r.artist, r.title, r.discogs_id, r.cover_url, r.year)}
+              onClick={() => addToSeekingList(r.artist, r.title, r.discogs_id, r.cover_url, r.year)}
               className="absolute bottom-2 right-2 bg-white/90 hover:bg-white rounded-full p-1.5 shadow opacity-0 group-hover:opacity-100 transition-opacity"
               data-testid={`sa-add-wantlist-tc-${r.discogs_id || idx}`}>
               <Plus className="w-4 h-4 text-honey-amber" />
@@ -239,7 +239,7 @@ const TrendingCollectionsAll = ({ data, addToWantlist }) => {
   );
 };
 
-const MostWantedAll = ({ data, addToWantlist }) => {
+const MostWantedAll = ({ data, addToSeekingList }) => {
   if (!data || data.length === 0) return <EmptyState text="No Dream List data yet. Add records to your Dream List!" />;
   return (
     <div className="space-y-1" data-testid="most-wanted-list">
@@ -253,7 +253,7 @@ const MostWantedAll = ({ data, addToWantlist }) => {
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <span className="text-xs text-red-500 font-medium">{r.want_count} {r.want_count === 1 ? 'want' : 'wants'}</span>
-            <button onClick={() => addToWantlist(r.artist, r.album, r.discogs_id, r.cover_url, r.year)}
+            <button onClick={() => addToSeekingList(r.artist, r.album, r.discogs_id, r.cover_url, r.year)}
               className="text-purple-600 hover:bg-purple-50 rounded-full p-1" data-testid={`sa-want-${idx}`}>
               <Plus className="w-4 h-4" />
             </button>
