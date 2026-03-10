@@ -133,12 +133,6 @@ export default function VariantModal() {
                       <MapPin className="w-3 h-3" /> {ov.pressing_country}
                     </span>
                   )}
-                  {ov?.discogs_id && (
-                    <a href={`https://www.discogs.com/release/${ov.discogs_id}`} target="_blank" rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-100 text-xs text-stone-600 hover:bg-stone-200 transition-colors">
-                      <ExternalLink className="w-3 h-3" /> Discogs
-                    </a>
-                  )}
                 </div>
 
                 {/* Stats row */}

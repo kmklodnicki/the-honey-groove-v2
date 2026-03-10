@@ -484,14 +484,9 @@ const SkippedRecordsLog = ({ records }) => {
                       <span className="text-stone-300">-</span>
                       <span className="truncate">{item.title}</span>
                       {item.discogs_id && (
-                        <a
-                          href={`https://www.discogs.com/release/${item.discogs_id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="shrink-0 text-[10px] text-honey-amber hover:underline ml-auto"
-                        >
+                        <span className="shrink-0 text-[10px] text-stone-400 ml-auto">
                           #{item.discogs_id}
-                        </a>
+                        </span>
                       )}
                     </div>
                   ))}

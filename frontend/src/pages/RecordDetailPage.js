@@ -6,7 +6,7 @@ import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import {
   Disc, Users, BarChart3, Heart, Clock, ArrowLeft,
-  Loader2, Calendar, Music2, Play, User, TrendingUp, ShoppingBag, ArrowRightLeft
+  Loader2, Calendar, Play, User, TrendingUp, ShoppingBag, ArrowRightLeft
 } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { toast } from 'sonner';
@@ -151,12 +151,6 @@ const RecordDetailPage = () => {
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-honey/10 text-sm text-vinyl-black/70">
                 <Disc className="w-3.5 h-3.5" /> {record.format}
               </span>
-            )}
-            {record.discogs_id && (
-              <a href={`https://www.discogs.com/release/${record.discogs_id}`} target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-vinyl-black/5 text-sm text-vinyl-black/70 hover:bg-vinyl-black/10 transition-colors">
-                <Music2 className="w-3.5 h-3.5" /> Discogs
-              </a>
             )}
           </div>
 

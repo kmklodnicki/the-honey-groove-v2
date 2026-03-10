@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   Disc, Users, TrendingUp, TrendingDown, DollarSign, BarChart3,
-  Calendar, ExternalLink, ArrowLeft, Loader2, Heart
+  Calendar, ArrowLeft, Loader2, Heart
 } from 'lucide-react';
 import { Card } from '../components/ui/card';
 import AlbumArt from '../components/AlbumArt';
@@ -136,16 +136,6 @@ export default function VariantReleasePage() {
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-honey/10 text-xs text-vinyl-black/70">
                 Cat# {ov.catalog_number}
               </span>
-            )}
-            {ov.discogs_id && (
-              <a
-                href={`https://www.discogs.com/release/${ov.discogs_id}`}
-                target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-vinyl-black/5 text-xs text-vinyl-black/60 hover:bg-vinyl-black/10 transition-colors"
-                data-testid="discogs-link"
-              >
-                <ExternalLink className="w-3 h-3" /> Discogs
-              </a>
             )}
           </div>
 
