@@ -725,7 +725,8 @@ async def get_suggested_collectors(limit: int = 10, user: Dict = Depends(require
     users = await db.users.find({"id": {"$in": user_ids}, **user_exclude}, {"_id": 0, "password_hash": 0}).to_list(limit)
     for u in users:
         u["shared_artists"] = overlap_map.get(u["id"], 0)
-    users.sort(key=lambda x: x.get("shared_artists", 0), reverse=True)
+        u["shared_records"] = overlap_map.get(u["id"], 0)
+    users.sort(key=lambda x: x.get("shared_records", 0), reverse=True)
     return users
 
 
