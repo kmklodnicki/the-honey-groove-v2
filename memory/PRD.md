@@ -188,6 +188,12 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 
 - **Performance: Variant Tracker Optimization** - DONE (2026-03-10). Three optimizations: (1) **Parallelized Discogs API calls** — replaced sequential `await + sleep(0.3)` with `asyncio.gather` using a semaphore (5 concurrent). 20 uncached releases now fetch in ~1s instead of 6+s. (2) **Result-level caching** — completion data cached in `completion_cache` collection for 10 minutes. Subsequent page loads serve from cache (130ms vs 580ms cold). Cache auto-invalidated when user adds a record. (3) **Loading skeleton** — replaced `return null` with an animated pulse skeleton (progress bar, variant rows) so the tracker has a visual placeholder from the moment the page loads. Files: vinyl.py, collection.py, VariantCompletion.js.
 
+### Recent Fixes (March 10, 2026)
+- Added Dream List helper text on Collection page to clarify purpose vs Actively Seeking
+- Fixed "Records in Common" count mismatch in Make Friends cards — was using `shared_records` (nonexistent field) instead of `common_count` from the `my-kinda-people` API
+- Added proper singular/plural formatting for "record(s) in common" across Make Friends cards
+- Removed duplicate "in common" display from Make Friends carousel
+
 ### Future / Backlog
 - Refactor `ISOPage.js` and `ProfilePage.js` to reduce complexity (break into smaller components)
 - Rename `addToWantlist` function to `addToSeekingList` across frontend for code clarity
@@ -199,3 +205,4 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - Golden Hive badge on user displays throughout app
 - Break down GlobalSearch.js
 - Replace star imports in backend
+- Backend-powered search filters for scale
