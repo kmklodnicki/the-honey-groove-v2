@@ -2,10 +2,46 @@
 from fastapi import APIRouter, Query, Depends
 from typing import Dict, List, Optional
 from datetime import datetime, timezone
+import asyncio
+import os
+import requests as req
 
 from database import db, require_auth, get_current_user, search_discogs, get_hidden_user_ids, logger
 
 router = APIRouter()
+
+DISCOGS_TOKEN = os.environ.get("DISCOGS_TOKEN", "")
+DISCOGS_HEADERS = {"User-Agent": "WaxLog/1.0"}
+
+
+def _fetch_artist_image_from_discogs(name: str) -> Optional[str]:
+    """Search Discogs for an artist and return their image URL."""
+    try:
+        params = {"token": DISCOGS_TOKEN, "q": name, "type": "artist", "per_page": 1}
+        r = req.get("https://api.discogs.com/database/search", params=params, headers=DISCOGS_HEADERS, timeout=8)
+        if r.status_code == 200:
+            results = r.json().get("results", [])
+            if results:
+                return results[0].get("cover_image") or results[0].get("thumb") or None
+    except Exception as e:
+        logger.error(f"Discogs artist image fetch error for '{name}': {e}")
+    return None
+
+
+async def _get_artist_image(name: str) -> Optional[str]:
+    """Get artist image URL with MongoDB cache."""
+    cached = await db.artist_images.find_one({"name_lower": name.lower()}, {"_id": 0, "image_url": 1})
+    if cached:
+        return cached.get("image_url")
+
+    # Fetch from Discogs
+    url = await asyncio.to_thread(_fetch_artist_image_from_discogs, name)
+    await db.artist_images.update_one(
+        {"name_lower": name.lower()},
+        {"$set": {"name_lower": name.lower(), "name": name, "image_url": url, "fetched_at": datetime.now(timezone.utc).isoformat()}},
+        upsert=True,
+    )
+    return url
 
 
 def _score(text: str, words: list[str]) -> int:
@@ -202,13 +238,18 @@ async def search_variants(
     for a in albums:
         a["slug"] = f"/vinyl/{_slugify(a['artist'])}/{_slugify(a['title'])}/standard"
 
-    # Top artists
-    artists = sorted(artist_set.values(), key=lambda a: a["score"], reverse=True)[:6]
+    # Top artists — fetch images in parallel
+    artists_sorted = sorted(artist_set.values(), key=lambda a: a["score"], reverse=True)[:6]
+    artist_images = await asyncio.gather(*[_get_artist_image(a["name"]) for a in artists_sorted])
+    artists_out = [
+        {"name": a["name"], "image_url": img}
+        for a, img in zip(artists_sorted, artist_images)
+    ]
 
     return {
         "variants": page,
         "albums": albums,
-        "artists": [a["name"] for a in artists],
+        "artists": artists_out,
         "has_more": has_more,
         "total": len(variants_out),
     }

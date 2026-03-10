@@ -232,15 +232,26 @@ export default function SearchPage() {
             {results.artists?.length > 0 && (
               <section className="mb-8" data-testid="search-artists">
                 <h2 className="font-heading text-base font-bold text-vinyl-black mb-3">Artists</h2>
-                <div className="flex flex-wrap gap-2">
-                  {results.artists.map(name => (
+                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                  {results.artists.map(a => (
                     <button
-                      key={name}
-                      onClick={() => setQuery(name)}
-                      className="px-4 py-2 rounded-full text-sm bg-stone-50 text-vinyl-black hover:bg-honey/10 hover:text-honey-amber border border-stone-200 transition-colors"
-                      data-testid={`artist-chip-${name}`}
+                      key={a.name}
+                      onClick={() => setQuery(a.name)}
+                      className="shrink-0 w-24 flex flex-col items-center gap-1.5 group"
+                      data-testid={`artist-card-${a.name}`}
                     >
-                      {name}
+                      <div className="w-20 h-20 rounded-full overflow-hidden bg-stone-100 shadow-sm ring-2 ring-transparent group-hover:ring-honey/40 transition-all">
+                        {a.image_url ? (
+                          <img src={a.image_url} alt={a.name} className="w-full h-full object-cover" loading="lazy" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-honey/20 to-stone-200 text-2xl font-heading font-bold text-honey-amber/60">
+                            {a.name.charAt(0)}
+                          </div>
+                        )}
+                      </div>
+                      <p className="text-xs font-medium text-vinyl-black text-center truncate w-full group-hover:text-honey-amber transition-colors">
+                        {a.name}
+                      </p>
                     </button>
                   ))}
                 </div>
