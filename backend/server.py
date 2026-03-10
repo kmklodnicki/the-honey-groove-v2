@@ -50,6 +50,37 @@ app.add_middleware(
 )
 
 
+async def _backfill_color_variants():
+    """Background task: backfill color_variant for records missing it."""
+    from database import get_discogs_release
+    await asyncio.sleep(15)  # Wait for server to settle
+    try:
+        records = await db.records.find(
+            {"discogs_id": {"$ne": None}, "$or": [{"color_variant": None}, {"color_variant": {"$exists": False}}]},
+            {"_id": 0, "id": 1, "discogs_id": 1, "title": 1}
+        ).limit(500).to_list(500)
+        if not records:
+            logger.info("Variant backfill: no records need updating")
+            return
+        logger.info(f"Variant backfill: processing {len(records)} records")
+        updated = 0
+        for rec in records:
+            try:
+                release_data = await asyncio.to_thread(get_discogs_release, rec["discogs_id"])
+                if release_data and release_data.get("color_variant"):
+                    await db.records.update_one(
+                        {"id": rec["id"]},
+                        {"$set": {"color_variant": release_data["color_variant"]}}
+                    )
+                    updated += 1
+                await asyncio.sleep(1.1)  # Respect Discogs rate limit
+            except Exception as e:
+                logger.debug(f"Variant backfill skip {rec.get('title')}: {e}")
+        logger.info(f"Variant backfill complete: {updated}/{len(records)} updated")
+    except Exception as e:
+        logger.error(f"Variant backfill error: {e}")
+
+
 @app.on_event("startup")
 async def startup_event():
     await db.users.create_index("email", unique=True)
@@ -138,6 +169,8 @@ async def startup_event():
         logger.warning(f"Storage initialization skipped: {e}")
 
     logger.info("HoneyGroove API started")
+    # Start background variant backfill
+    asyncio.create_task(_backfill_color_variants())
 
 
 async def _schedule_hold_auto_reversal():

@@ -277,9 +277,9 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
     record_color_variant = None
     if post.get("record_id"):
         record = await db.records.find_one({"id": post["record_id"]}, {"_id": 0})
-        record_data = record
         if record:
             record_color_variant = record.get("color_variant") or record.get("pressing_notes")
+            record_data = record
     
     # Resolve color_variant: post-level > record-level
     resolved_color_variant = post.get("color_variant") or record_color_variant

@@ -1462,3 +1462,34 @@ async def mark_welcome_seen(user: Dict = Depends(require_auth)):
         {"$set": {"has_seen_welcome_hive_dashboard": True}}
     )
     return {"ok": True}
+
+
+@router.post("/backfill-variants")
+async def backfill_variants(user: Dict = Depends(require_auth)):
+    """Backfill color_variant for all records owned by the current user that have a discogs_id but no color_variant."""
+    import time
+    records = await db.records.find(
+        {"user_id": user["id"], "discogs_id": {"$ne": None}, "$or": [{"color_variant": None}, {"color_variant": {"$exists": False}}]},
+        {"_id": 0, "id": 1, "discogs_id": 1, "title": 1}
+    ).to_list(2000)
+    
+    updated = 0
+    skipped = 0
+    for rec in records:
+        try:
+            release_data = get_discogs_release(rec["discogs_id"])
+            if release_data and release_data.get("color_variant"):
+                await db.records.update_one(
+                    {"id": rec["id"]},
+                    {"$set": {"color_variant": release_data["color_variant"]}}
+                )
+                updated += 1
+            else:
+                skipped += 1
+            # Respect Discogs rate limit (60 req/min)
+            time.sleep(1.1)
+        except Exception as e:
+            logger.error(f"Backfill error for {rec.get('title')}: {e}")
+            skipped += 1
+    
+    return {"updated": updated, "skipped": skipped, "total": len(records)}
