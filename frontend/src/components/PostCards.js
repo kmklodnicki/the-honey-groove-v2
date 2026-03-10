@@ -169,7 +169,7 @@ const VariantTag = ({ variant, glass, ghost, gold, prefix }) => {
 const NowSpinningCard = ({ post, onAlbumClick }) => {
   const record = post.record;
   if (!record) return null;
-  const variantText = record.color_variant || post.color_variant || post.pressing_variant;
+  const variantText = post.color_variant || record.color_variant || post.pressing_variant || record.pressing_notes;
   return (
     <AlbumLink record={record} onAlbumClick={onAlbumClick}>
       <div className="flex gap-4 items-start" data-testid="now-spinning-card">
@@ -274,7 +274,7 @@ const ISOCard = ({ post, onAlbumClick }) => {
 const AddedToCollectionCard = ({ post, onAlbumClick }) => {
   const record = post.record;
   if (!record) return <p className="text-sm"><MentionText text={post.caption} /></p>;
-  const variantText = record.color_variant || post.color_variant;
+  const variantText = post.color_variant || record.color_variant || record.pressing_notes;
   return (
     <AlbumLink record={record} onAlbumClick={onAlbumClick}>
       <div className="flex gap-3 items-center" data-testid="added-card">

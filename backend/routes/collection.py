@@ -67,6 +67,7 @@ async def add_record(record_data: RecordCreate, user: Dict = Depends(require_aut
         "post_type": "ADDED_TO_COLLECTION",
         "caption": f"Added {record_data.title} by {record_data.artist} to their collection",
         "record_id": record_id,
+        "color_variant": record_data.color_variant,
         "created_at": now
     }
     await db.posts.insert_one(post_doc)

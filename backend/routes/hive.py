@@ -274,9 +274,15 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
     user_data = {"id": post_user["id"], "username": post_user["username"], "avatar_url": post_user.get("avatar_url"), "founding_member": post_user.get("founding_member", False), "title_label": post_user.get("title_label")} if post_user else None
     
     record_data = None
+    record_color_variant = None
     if post.get("record_id"):
         record = await db.records.find_one({"id": post["record_id"]}, {"_id": 0})
         record_data = record
+        if record:
+            record_color_variant = record.get("color_variant") or record.get("pressing_notes")
+    
+    # Resolve color_variant: post-level > record-level
+    resolved_color_variant = post.get("color_variant") or record_color_variant
     
     haul_data = None
     if post.get("haul_id"):
@@ -317,7 +323,7 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
         record_title=post.get("record_title"),
         record_artist=post.get("record_artist"),
         cover_url=post.get("cover_url"),
-        color_variant=post.get("color_variant"),
+        color_variant=resolved_color_variant,
         pressing_notes=post.get("pressing_notes"),
         created_at=post["created_at"],
         likes_count=likes_count,
@@ -411,6 +417,7 @@ async def composer_now_spinning(data: NowSpinningCreate, user: Dict = Depends(re
         "record_id": data.record_id,
         "track": data.track,
         "mood": data.mood,
+        "color_variant": record.get("color_variant") or record.get("pressing_notes"),
         "created_at": now
     }
     await db.posts.insert_one(post_doc)
