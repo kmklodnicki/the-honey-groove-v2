@@ -382,16 +382,18 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                   </div>
 
                   {/* Record details */}
-                  <div className="text-center px-6 pt-2 pb-3" data-testid="listing-modal-info">
+                  <div className="text-center px-6 pt-3 pb-1" data-testid="listing-modal-info">
                     <h2 className="text-[32px] leading-tight text-[#2A1A06]" style={{ fontFamily: '"Playfair Display", serif', fontWeight: 700 }}>
                       {listing.artist}
                     </h2>
                     <p className="text-[26px] text-[#C8861A] mt-0.5" style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic' }}>
                       {listing.album}
                     </p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {[listing.year, listing.pressing_notes].filter(Boolean).join(' · ')}
-                    </p>
+                    {(listing.pressing_notes || listing.year) && (
+                      <p className="text-[13px] text-[#8A6B4A]/80 mt-1.5 font-medium tracking-wide">
+                        {[listing.pressing_notes, listing.year && `${listing.year} pressing`].filter(Boolean).join(' \u00b7 ')}
+                      </p>
+                    )}
                   </div>
 
                   {/* Edit button for owner */}
@@ -446,17 +448,17 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                   )}
 
                   {/* Price */}
-                  <div className="px-6 pt-4 pb-1" data-testid="listing-price-section">
+                  <div className="px-6 pt-6 pb-3" data-testid="listing-price-section">
                     {listing.price && (
                       <p className="text-[52px] leading-none text-[#996012]" style={{ fontFamily: '"Playfair Display", serif', fontWeight: 700 }} data-testid="listing-price">
                         ${listing.price}
                       </p>
                     )}
                     {isMakeOffer && (
-                      <p className="text-xs text-muted-foreground mt-1">or make an offer</p>
+                      <p className="text-xs text-muted-foreground mt-2">or make an offer</p>
                     )}
                     {isTrade && (
-                      <p className="text-sm font-medium text-purple-600 mt-1">Open to trades</p>
+                      <p className="text-sm font-medium text-purple-600 mt-2">Open to trades</p>
                     )}
                   </div>
 
@@ -551,25 +553,25 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
 
                   {/* CTA buttons */}
                   {!isOwn && (
-                    <div className="px-6 pt-3 pb-2 space-y-2" data-testid="listing-cta-section">
+                    <div className="px-6 pt-4 pb-3 space-y-2.5" data-testid="listing-cta-section">
                       {isBuyNow && (
                         <Button onClick={handleBuyNowClick}
-                          className="w-full h-12 rounded-full bg-[#E8A820] hover:bg-[#d49a1a] text-[#2A1A06] text-base font-semibold"
+                          className="w-full h-12 rounded-full bg-[#E8A820] hover:bg-[#d49a1a] text-[#2A1A06] text-base font-semibold shadow-md shadow-amber-200/40 active:scale-[0.97] transition-all duration-150"
                           data-testid="listing-buy-now-btn">
                           buy now · ${listing.price}
                         </Button>
                       )}
                       {isMakeOffer && !showOfferInput && (
                         <>
-                          <Button onClick={() => setShowOfferInput(true)}
-                            className="w-full h-12 rounded-full bg-[#E8A820] hover:bg-[#d49a1a] text-[#2A1A06] text-base font-semibold"
+                          <Button onClick={handleBuyNowClick}
+                            className="w-full h-12 rounded-full bg-[#E8A820] hover:bg-[#d49a1a] text-[#2A1A06] text-base font-semibold shadow-md shadow-amber-200/40 active:scale-[0.97] transition-all duration-150"
+                            data-testid="listing-buy-asking-btn">
+                            buy now · ${listing.price}
+                          </Button>
+                          <Button onClick={() => setShowOfferInput(true)} variant="outline"
+                            className="w-full h-11 rounded-full border-[#E8A820]/60 text-[#996012] hover:bg-amber-50/60 text-sm font-medium active:scale-[0.97] transition-all duration-150"
                             data-testid="listing-make-offer-btn">
                             make an offer
-                          </Button>
-                          <Button onClick={handleBuyNowClick} variant="outline"
-                            className="w-full h-12 rounded-full border-[#E8A820] text-[#996012] hover:bg-amber-50 text-base"
-                            data-testid="listing-buy-asking-btn">
-                            buy at asking price · ${listing.price}
                           </Button>
                         </>
                       )}
@@ -594,14 +596,14 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                       )}
                       {isTrade && (
                         <Button onClick={handleTradeClick}
-                          className="w-full h-12 rounded-full bg-[#E8A820] hover:bg-[#d49a1a] text-[#2A1A06] text-base font-semibold"
+                          className="w-full h-12 rounded-full bg-[#E8A820] hover:bg-[#d49a1a] text-[#2A1A06] text-base font-semibold shadow-md shadow-amber-200/40 active:scale-[0.97] transition-all duration-150"
                           data-testid="listing-trade-btn">
                           propose a trade
                         </Button>
                       )}
                       {!isTrade && onProposeTrade && (
                         <Button onClick={handleTradeClick} variant="outline"
-                          className="w-full h-11 rounded-full border-amber-300 text-[#996012] hover:bg-amber-50 text-sm"
+                          className="w-full h-10 rounded-full border-amber-300/60 text-[#996012] hover:bg-amber-50/60 text-sm active:scale-[0.97] transition-all duration-150"
                           data-testid="listing-trade-instead-btn">
                           <ArrowRightLeft className="w-4 h-4 mr-2" />
                           propose a trade instead

@@ -1226,9 +1226,9 @@ const ListingCard = ({ listing, currentUserId, onProposeTrade, onBuyNow, onMakeO
   const mainImage = (listing.photo_urls?.length > 0) ? listing.photo_urls[0] : listing.cover_url;
 
   return (
-    <div className="flex items-center gap-3 py-3 px-2 cursor-pointer hover:bg-honey/5 transition-colors"
+    <div className="flex items-center gap-3 py-3 px-2 cursor-pointer hover:bg-honey/5 transition-all duration-200"
       onClick={onClick} data-testid={`listing-${listing.id}`}>
-      <div className="w-16 h-16 rounded-lg overflow-hidden bg-honey/10 shrink-0">
+      <div className="w-16 h-16 rounded-[10px] overflow-hidden bg-honey/10 shrink-0">
         {mainImage ? <AlbumArt src={mainImage} alt="" className="w-full h-full" />
           : <div className="w-full h-full flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>}
       </div>

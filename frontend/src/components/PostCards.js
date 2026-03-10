@@ -157,9 +157,9 @@ const VariantTag = ({ variant, glass, ghost, gold, prefix }) => {
     );
   }
   return (
-    <span className={`inline-flex items-center gap-1 mt-0.5 text-[10px] font-medium px-2 py-0.5 rounded-full border truncate max-w-full ${style}`}
+    <span className={`inline-flex items-center gap-1 mt-1 text-[11px] font-semibold tracking-wide px-2.5 py-1 rounded-full border truncate max-w-full ${style}`}
       data-testid="variant-pill">
-      <Disc className="w-2.5 h-2.5" />
+      <Disc className="w-3 h-3" />
       {label}
     </span>
   );
@@ -175,7 +175,7 @@ const NowSpinningCard = ({ post, onAlbumClick }) => {
       <div className="flex gap-4 items-start" data-testid="now-spinning-card">
         {record.cover_url ? (
           <div className="relative shrink-0">
-            <AlbumArt src={record.cover_url} alt={`${record.artist} - ${record.title} Vinyl Record`} className="w-24 h-24 rounded-lg object-cover shadow-md" />
+            <AlbumArt src={record.cover_url} alt={`${record.artist} - ${record.title} Vinyl Record`} className="w-24 h-24 rounded-[10px] object-cover shadow-md" />
             {post.honeypot_rating && (
               <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
                 style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
@@ -279,7 +279,7 @@ const AddedToCollectionCard = ({ post, onAlbumClick }) => {
     <AlbumLink record={record} onAlbumClick={onAlbumClick}>
       <div className="flex gap-3 items-center" data-testid="added-card">
         <div className="relative shrink-0">
-          <AlbumArt src={record.cover_url} alt={`${record.artist} - ${record.title} Vinyl Record`} className="w-16 h-16 rounded-lg object-cover shadow" />
+          <AlbumArt src={record.cover_url} alt={`${record.artist} - ${record.title} Vinyl Record`} className="w-16 h-16 rounded-[10px] object-cover shadow" />
         </div>
         <div className="min-w-0">
           <p className="font-medium">{record.title}</p>
@@ -335,7 +335,7 @@ const DailyPromptPostCard = ({ post }) => (
     <div className="flex gap-4 items-start bg-amber-50/60 rounded-lg p-3">
       {post.cover_url ? (
         <div className="relative shrink-0">
-          <AlbumArt src={post.cover_url} alt={`${post.record_artist} - ${post.record_title} Vinyl Record`} className="w-20 h-20 rounded-lg object-cover shadow-md" />
+          <AlbumArt src={post.cover_url} alt={`${post.record_artist} - ${post.record_title} Vinyl Record`} className="w-20 h-20 rounded-[10px] object-cover shadow-md" />
           {post.honeypot_rating && (
             <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
               style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
@@ -407,7 +407,7 @@ const ListingPostCard = ({ post }) => {
       <div className="flex gap-3 items-center bg-stone-50 rounded-xl p-3 hover:bg-stone-100 transition-colors">
         {post.cover_url ? (
           <div className="shrink-0">
-            <AlbumArt src={post.cover_url} alt={`${post.record_artist || 'Artist'} - ${post.record_title || 'Album'} Vinyl Record`} className="w-16 h-16 rounded-lg object-cover shadow-sm" />
+            <AlbumArt src={post.cover_url} alt={`${post.record_artist || 'Artist'} - ${post.record_title || 'Album'} Vinyl Record`} className="w-16 h-16 rounded-[10px] object-cover shadow-sm" />
           </div>
         ) : (
           <div className="w-16 h-16 rounded-lg bg-amber-100 flex items-center justify-center"><Disc className="w-6 h-6 text-amber-400" /></div>
