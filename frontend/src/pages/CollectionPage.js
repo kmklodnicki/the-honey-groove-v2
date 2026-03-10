@@ -705,7 +705,7 @@ const CollectionPage = () => {
             countKey={countKey}
             subtractMsg={dreamSubtractMsg}
           />
-          <p className="text-sm text-muted-foreground mt-1 mb-4" data-testid="dreamlist-helper-text">These are your dream records. If you want to actively search for a record on this list, move it to Actively Seeking.</p>
+          <p className="text-sm text-muted-foreground mt-3 mb-5 px-1 leading-relaxed" data-testid="dreamlist-helper-text">These are your dream records. If you want to actively search for a record on this list, move it to Actively Seeking.</p>
 
           {wishlistItems.length === 0 ? (
             <Card className="p-12 text-center border-stone-200/60">
@@ -1002,24 +1002,26 @@ const WishlistCard = ({ item, onPromote, onAddToCollection, onDelete }) => (
     <div className="p-3">
       <p className="font-medium text-sm truncate">{item.album}</p>
       <p className="text-xs text-muted-foreground truncate">{item.artist}</p>
-      <div className="flex gap-2 mt-2">
+      <div className="flex flex-col gap-2 mt-2">
         <Button size="sm" onClick={() => onAddToCollection(item.id)}
-          className="flex-1 h-8 text-[10px] rounded-full font-semibold border-0"
+          className="w-full h-8 text-[10px] rounded-full font-semibold border-0"
           style={{ background: '#FFD700', color: '#1A1A1A' }}
           data-testid={`add-to-collection-btn-${item.id}`}>
           Add to Collection
         </Button>
-        <Button size="sm" variant="outline" onClick={() => onPromote(item.id)}
-          className="flex-1 h-8 text-[10px] rounded-full font-semibold"
-          style={{ background: 'transparent', border: '1.5px solid #DAA520', color: '#8B6914' }}
-          data-testid={`actively-seeking-btn-${item.id}`}>
-          Actively Seeking
-        </Button>
-        <Button size="sm" variant="ghost" onClick={() => onDelete(item.id)}
-          className="h-8 w-8 p-0 shrink-0 text-stone-400 hover:text-red-500"
-          data-testid={`delete-wishlist-${item.id}`}>
-          <Trash2 className="w-3.5 h-3.5" />
-        </Button>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={() => onPromote(item.id)}
+            className="flex-1 h-8 text-[10px] rounded-full font-semibold"
+            style={{ background: 'transparent', border: '1.5px solid #DAA520', color: '#8B6914' }}
+            data-testid={`actively-seeking-btn-${item.id}`}>
+            Actively Seeking
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => onDelete(item.id)}
+            className="h-8 w-8 p-0 shrink-0 text-stone-400 hover:text-red-500"
+            data-testid={`delete-wishlist-${item.id}`}>
+            <Trash2 className="w-3.5 h-3.5" />
+          </Button>
+        </div>
       </div>
     </div>
   </Card>
