@@ -113,8 +113,8 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
                   <div className="relative shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-vinyl-black">
                     {currentResp.cover_url ? <AlbumArt src={currentResp.cover_url} alt={`${currentResp.record_artist || ''} ${currentResp.record_title || ''} vinyl record`} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>}
                     {currentResp.color_variant && (
-                      <div className="absolute bottom-0.5 right-0.5 max-w-[90%] truncate uppercase text-[8px] tracking-wider font-medium px-1 py-0.5 rounded-full"
-                        style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', border: '1px solid #FFD700', color: '#FFD700' }}>
+                      <div className="absolute bottom-0.5 right-0.5 max-w-[90%] truncate uppercase text-[8px] font-bold px-1 py-0.5 rounded-full"
+                        style={{ backgroundColor: 'rgba(0,0,0,0.80)', color: '#FFD700', letterSpacing: '0.5px', boxShadow: '0 2px 8px rgba(0,0,0,0.35)', border: '1px solid rgba(255,215,0,0.25)' }}>
                         {currentResp.color_variant}
                       </div>
                     )}

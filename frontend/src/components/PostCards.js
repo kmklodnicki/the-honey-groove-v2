@@ -133,8 +133,8 @@ const VariantTag = ({ variant, glass, ghost, gold, prefix }) => {
   const label = prefix ? `${prefix} ${variant}` : variant;
   if (glass) {
     return (
-      <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-full truncate max-w-full"
-        style={{ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', backgroundColor: 'rgba(255,255,255,0.15)', border: '1px solid #FFD700', color: '#FFD700' }}
+      <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full truncate max-w-full"
+        style={{ backgroundColor: 'rgba(0,0,0,0.80)', color: '#FFD700', letterSpacing: '0.5px', boxShadow: '0 2px 8px rgba(0,0,0,0.35)', border: '1px solid rgba(255,215,0,0.25)' }}
         data-testid="variant-pill-glass">
         {label}
       </span>
@@ -159,7 +159,8 @@ const VariantTag = ({ variant, glass, ghost, gold, prefix }) => {
     );
   }
   return (
-    <span className={`inline-flex items-center gap-1 mt-1 text-[11px] font-semibold tracking-wide px-2.5 py-1 rounded-full border truncate max-w-full ${style}`}
+    <span className={`inline-flex items-center gap-1 mt-1 text-[11px] font-bold tracking-wide px-2.5 py-1 rounded-full truncate max-w-full`}
+      style={{ backgroundColor: 'rgba(0,0,0,0.80)', color: '#FFD700', letterSpacing: '0.5px', boxShadow: '0 2px 8px rgba(0,0,0,0.35)', border: '1px solid rgba(255,215,0,0.25)' }}
       data-testid="variant-pill">
       <Disc className="w-3 h-3" />
       {label}

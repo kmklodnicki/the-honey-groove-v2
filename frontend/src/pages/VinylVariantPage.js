@@ -139,8 +139,8 @@ export default function VinylVariantPage() {
               )}
               {/* Variant pill */}
               <div
-                className="absolute bottom-3 left-3 right-3 truncate uppercase text-[11px] tracking-wider font-bold px-3 py-1 rounded-full text-center"
-                style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid #FFD700', color: '#FFD700' }}
+                className="absolute bottom-3 left-3 right-3 truncate uppercase text-[11px] font-bold px-3 py-1 rounded-full text-center"
+                style={{ backgroundColor: 'rgba(0,0,0,0.80)', color: '#FFD700', letterSpacing: '0.5px', boxShadow: '0 2px 8px rgba(0,0,0,0.35)', border: '1px solid rgba(255,215,0,0.25)' }}
                 data-testid="variant-pill"
               >
                 {ov.variant}

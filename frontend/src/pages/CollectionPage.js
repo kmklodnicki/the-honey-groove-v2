@@ -766,8 +766,8 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
           {/* Variant pill overlay */}
           {record.color_variant && (
             <div
-              className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] tracking-wider font-medium px-2 py-0.5 rounded-full z-[5]"
-              style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid #FFD700', color: '#FFD700' }}
+              className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] font-bold px-2 py-0.5 rounded-full z-[5]"
+              style={{ backgroundColor: 'rgba(0,0,0,0.80)', color: '#FFD700', letterSpacing: '0.5px', boxShadow: '0 2px 8px rgba(0,0,0,0.35)', border: '1px solid rgba(255,215,0,0.25)' }}
               data-testid={`variant-${record.id}`}
             >
               {record.color_variant}
@@ -867,8 +867,8 @@ const WishlistCard = ({ item, onPromote, onDelete }) => (
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
         {item.color_variant && (
           <div
-            className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] tracking-wider font-medium px-2 py-0.5 rounded-full z-[5]"
-            style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid #FFD700', color: '#FFD700' }}
+            className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] font-bold px-2 py-0.5 rounded-full z-[5]"
+            style={{ backgroundColor: 'rgba(0,0,0,0.80)', color: '#FFD700', letterSpacing: '0.5px', boxShadow: '0 2px 8px rgba(0,0,0,0.35)', border: '1px solid rgba(255,215,0,0.25)' }}
             data-testid={`variant-wishlist-${item.id}`}
           >
             {item.color_variant}
