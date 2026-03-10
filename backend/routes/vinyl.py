@@ -24,7 +24,7 @@ SITE_URL = "https://thehoneygroove.com"
 DEFAULT_IMAGE = f"{SITE_URL}/og-image.png"
 CACHE_TTL_HOURS = 24
 
-# ── Rarity Score System ──
+# ── Rarity Score System (Discogs-sourced) ──
 RARITY_TIERS = [
     (13, "Ultra Rare"),
     (10, "Very Rare"),
@@ -34,20 +34,22 @@ RARITY_TIERS = [
 ]
 
 
-def _owner_score(count: int) -> int:
-    if count <= 5:
+def _owner_score(have: int) -> int:
+    """Fewer Discogs owners = rarer."""
+    if have <= 50:
         return 5
-    if count <= 20:
+    if have <= 200:
         return 4
-    if count <= 100:
+    if have <= 1000:
         return 3
-    if count <= 500:
+    if have <= 5000:
         return 2
     return 1
 
 
-def _demand_score(iso_count: int, owners: int) -> int:
-    ratio = iso_count / max(owners, 1)
+def _demand_score(want: int, have: int) -> int:
+    """Higher want-to-have ratio on Discogs = rarer."""
+    ratio = want / max(have, 1)
     if ratio > 10:
         return 5
     if ratio > 5:
@@ -59,20 +61,21 @@ def _demand_score(iso_count: int, owners: int) -> int:
     return 1
 
 
-def _supply_score(listings: int) -> int:
-    if listings == 0:
+def _supply_score(num_for_sale: int) -> int:
+    """Fewer Discogs marketplace listings = rarer."""
+    if num_for_sale == 0:
         return 5
-    if listings <= 3:
+    if num_for_sale <= 5:
         return 4
-    if listings <= 10:
+    if num_for_sale <= 20:
         return 3
-    if listings <= 25:
+    if num_for_sale <= 50:
         return 2
     return 1
 
 
-def calculate_rarity(owners_count: int, iso_count: int, listing_count: int) -> dict:
-    total = _owner_score(owners_count) + _demand_score(iso_count, owners_count) + _supply_score(listing_count)
+def calculate_rarity(have: int, want: int, num_for_sale: int) -> dict:
+    total = _owner_score(have) + _demand_score(want, have) + _supply_score(num_for_sale)
     tier = "Common"
     for threshold, label in RARITY_TIERS:
         if total >= threshold:
@@ -81,9 +84,9 @@ def calculate_rarity(owners_count: int, iso_count: int, listing_count: int) -> d
     return {
         "score": total,
         "tier": tier,
-        "owners": owners_count,
-        "collectors_seeking": iso_count,
-        "active_listings": listing_count,
+        "discogs_owners": have,
+        "discogs_wantlist": want,
+        "listings_available": num_for_sale,
     }
 
 
@@ -320,7 +323,11 @@ async def get_variant_page(artist_slug: str, album_slug: str, variant_slug: str)
 
     seo_desc = _build_seo_description(artist, album, variant, year, owners_count, iso_count, internal_value, discogs_market)
 
-    rarity = calculate_rarity(owners_count, iso_count, len(variant_listings))
+    # Rarity from Discogs community stats
+    discogs_have = discogs_data.get("community_have", 0)
+    discogs_want = discogs_data.get("community_want", 0)
+    discogs_for_sale = discogs_data.get("num_for_sale", 0)
+    rarity = calculate_rarity(discogs_have, discogs_want, discogs_for_sale)
 
     return {
         "variant_overview": {
@@ -374,35 +381,19 @@ async def get_variant_page(artist_slug: str, album_slug: str, variant_slug: str)
 
 @router.get("/rarity/{discogs_id}")
 async def get_rarity_by_discogs_id(discogs_id: int):
-    """Return rarity score for a variant by its Discogs release ID."""
-    records = await db.records.find(
-        {"discogs_id": discogs_id},
-        {"_id": 0, "user_id": 1, "artist": 1, "title": 1, "color_variant": 1}
-    ).to_list(None)
+    """Return rarity score for a variant using Discogs community stats."""
+    discogs_data = await _get_cached_discogs_release(discogs_id)
 
-    owners_count = len(set(r.get("user_id") for r in records if r.get("user_id")))
+    have = discogs_data.get("community_have", 0) if discogs_data else 0
+    want = discogs_data.get("community_want", 0) if discogs_data else 0
+    num_for_sale = discogs_data.get("num_for_sale", 0) if discogs_data else 0
 
-    artist_term = records[0].get("artist", "") if records else ""
-    album_term = records[0].get("title", "") if records else ""
-
-    iso_count = 0
-    listing_count = 0
-    if artist_term and album_term:
-        a_re = re.compile(re.escape(artist_term), re.IGNORECASE)
-        t_re = re.compile(re.escape(album_term), re.IGNORECASE)
-        iso_count = await db.iso_items.count_documents(
-            {"artist": a_re, "album": t_re, "status": {"$in": ["OPEN", "WISHLIST"]}}
-        )
-        listing_count = await db.listings.count_documents(
-            {"artist": a_re, "album": t_re, "status": "ACTIVE"}
-        )
-
-    rarity = calculate_rarity(owners_count, iso_count, listing_count)
+    rarity = calculate_rarity(have, want, num_for_sale)
     rarity["discogs_id"] = discogs_id
-    if records:
-        rarity["artist"] = records[0].get("artist")
-        rarity["album"] = records[0].get("title")
-        rarity["variant"] = records[0].get("color_variant")
+    if discogs_data:
+        rarity["artist"] = discogs_data.get("artist")
+        rarity["album"] = discogs_data.get("title")
+        rarity["variant"] = discogs_data.get("color_variant")
     return rarity
 
 

@@ -49,16 +49,16 @@ export const RarityCard = ({ rarity }) => {
       </div>
       <div className="grid grid-cols-3 gap-3">
         <div className="text-center" data-testid="rarity-owners">
-          <p className="text-2xl font-heading font-bold text-vinyl-black">{(rarity.owners ?? 0).toLocaleString()}</p>
-          <p className="text-[11px] text-muted-foreground uppercase tracking-wider mt-0.5">Owners</p>
+          <p className="text-2xl font-heading font-bold text-vinyl-black">{(rarity.discogs_owners ?? 0).toLocaleString()}</p>
+          <p className="text-[11px] text-muted-foreground uppercase tracking-wider mt-0.5">Discogs Owners</p>
         </div>
-        <div className="text-center" data-testid="rarity-seeking">
-          <p className="text-2xl font-heading font-bold text-vinyl-black">{(rarity.collectors_seeking ?? 0).toLocaleString()}</p>
-          <p className="text-[11px] text-muted-foreground uppercase tracking-wider mt-0.5">Seeking</p>
+        <div className="text-center" data-testid="rarity-wantlist">
+          <p className="text-2xl font-heading font-bold text-vinyl-black">{(rarity.discogs_wantlist ?? 0).toLocaleString()}</p>
+          <p className="text-[11px] text-muted-foreground uppercase tracking-wider mt-0.5">Discogs Wantlist</p>
         </div>
         <div className="text-center" data-testid="rarity-listings">
-          <p className="text-2xl font-heading font-bold text-vinyl-black">{(rarity.active_listings ?? 0).toLocaleString()}</p>
-          <p className="text-[11px] text-muted-foreground uppercase tracking-wider mt-0.5">Listings</p>
+          <p className="text-2xl font-heading font-bold text-vinyl-black">{(rarity.listings_available ?? 0).toLocaleString()}</p>
+          <p className="text-[11px] text-muted-foreground uppercase tracking-wider mt-0.5">Listings Available</p>
         </div>
       </div>
     </div>

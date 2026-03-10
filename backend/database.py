@@ -252,6 +252,7 @@ def get_discogs_release(release_id: int) -> Optional[Dict]:
                 if ftext:
                     color_variant = ftext
                     break
+            community = data.get("community", {})
             return {
                 "discogs_id": data.get("id"),
                 "artist": artists or "Unknown",
@@ -267,6 +268,9 @@ def get_discogs_release(release_id: int) -> Optional[Dict]:
                 "country": data.get("country"),
                 "color_variant": color_variant,
                 "notes": data.get("notes"),
+                "community_have": community.get("have", 0),
+                "community_want": community.get("want", 0),
+                "num_for_sale": data.get("num_for_sale", 0),
             }
     except Exception as e:
         logger.error(f"Discogs release error: {e}")
