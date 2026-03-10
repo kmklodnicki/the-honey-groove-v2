@@ -65,15 +65,9 @@ const TreasuryHeader = ({ collectionValue, dreamValue, collectionTab, onTabChang
   const animDream = useCountUp(dreamValue, 1600, true);
 
   return (
-    <>
     <div
-      className="relative rounded-2xl overflow-hidden"
+      className="relative rounded-2xl overflow-hidden mb-5"
       style={{
-        position: 'fixed',
-        top: 52,
-        left: 0,
-        width: '100%',
-        zIndex: 99999,
         background: 'rgba(255, 255, 255, 0.01)',
         backdropFilter: 'blur(60px) saturate(210%)',
         WebkitBackdropFilter: 'blur(60px) saturate(210%)',
@@ -161,9 +155,6 @@ const TreasuryHeader = ({ collectionValue, dreamValue, collectionTab, onTabChang
         </div>
       </div>
     </div>
-    {/* Spacer: combined nav + vault height */}
-    <div className="h-[200px] md:h-[240px]" aria-hidden="true" />
-    </>
   );
 };
 
