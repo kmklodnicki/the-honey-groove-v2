@@ -77,6 +77,7 @@ class ISODirectCreate(BaseModel):
     year: Optional[int] = None
     color_variant: Optional[str] = None
     notes: Optional[str] = None
+    preferred_number: Optional[int] = None
     status: Optional[str] = "WISHLIST"
     priority: Optional[str] = "LOW"
 
@@ -96,6 +97,7 @@ async def create_iso_direct(data: ISODirectCreate, user: Dict = Depends(require_
         "year": data.year,
         "color_variant": data.color_variant,
         "pressing_notes": data.notes,
+        "preferred_number": data.preferred_number,
         "status": data.status or "WISHLIST",
         "priority": data.priority or "LOW",
         "created_at": now,

@@ -732,6 +732,15 @@ const ProfilePage = () => {
                           </div>
                         </>
                       )}
+                      {record.edition_number && (
+                        <div
+                          className={`absolute ${record.color_variant ? 'top-8' : 'top-2'} left-2 uppercase text-[9px] font-bold px-2 py-0.5 rounded-full z-[5]`}
+                          style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
+                          data-testid={`edition-pill-${record.id}`}
+                        >
+                          No. {record.edition_number}
+                        </div>
+                      )}
                     </div>
                     <div className="p-3">
                       <h4 className="font-medium text-sm truncate">{record.title}</h4>
@@ -780,6 +789,15 @@ const ProfilePage = () => {
                             {item.color_variant}
                           </div>
                         </>
+                      )}
+                      {item.preferred_number && (
+                        <div
+                          className={`absolute ${item.color_variant ? 'top-8' : 'top-2'} left-2 uppercase text-[9px] font-bold px-2 py-0.5 rounded-full z-[5]`}
+                          style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
+                          data-testid={`preferred-number-${item.id}`}
+                        >
+                          Seeking No. {item.preferred_number}
+                        </div>
                       )}
                       <div className="absolute bottom-2 right-2">
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-pink-500/90 text-white">DREAMING</span>
@@ -900,6 +918,15 @@ const ProfilePage = () => {
                           {iso.pressing_notes}
                         </div>
                       </>
+                    )}
+                    {iso.preferred_number && (
+                      <div
+                        className={`absolute ${iso.pressing_notes ? 'top-8' : 'top-2'} left-2 uppercase text-[9px] font-bold px-2 py-0.5 rounded-full z-[5]`}
+                        style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
+                        data-testid={`preferred-number-iso-${iso.id}`}
+                      >
+                        Seeking No. {iso.preferred_number}
+                      </div>
                     )}
                     <div className="absolute bottom-2 right-2">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${

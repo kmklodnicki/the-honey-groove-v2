@@ -777,6 +777,17 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
             </>
           )}
 
+          {/* Edition number pill */}
+          {record.edition_number && (
+            <div
+              className={`absolute ${record.color_variant ? 'top-8' : 'top-2'} left-2 uppercase text-[9px] font-bold px-2 py-0.5 rounded-full z-[5]`}
+              style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
+              data-testid={`edition-${record.id}`}
+            >
+              No. {record.edition_number}
+            </div>
+          )}
+
           {/* Never spun indicator */}
           {record.spin_count === 0 && (
             <div className="absolute bottom-2 left-2 bg-white/80 text-muted-foreground text-xs px-2 py-1 rounded-full">
@@ -881,6 +892,15 @@ const WishlistCard = ({ item, onPromote, onDelete }) => (
               {item.color_variant}
             </div>
           </>
+        )}
+        {item.preferred_number && (
+          <div
+            className={`absolute ${item.color_variant ? 'top-8' : 'top-2'} left-2 uppercase text-[9px] font-bold px-2 py-0.5 rounded-full z-[5]`}
+            style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
+            data-testid={`preferred-number-${item.id}`}
+          >
+            Seeking No. {item.preferred_number}
+          </div>
         )}
         {item.median_value > 0 && (
           <div className="absolute top-2 right-2 px-2.5 py-1 rounded-full font-black z-[5]"

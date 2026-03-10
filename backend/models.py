@@ -75,6 +75,7 @@ class RecordCreate(BaseModel):
     format: Optional[str] = "Vinyl"
     notes: Optional[str] = None
     color_variant: Optional[str] = None
+    edition_number: Optional[int] = None
 
 class RecordResponse(BaseModel):
     id: str
@@ -86,6 +87,7 @@ class RecordResponse(BaseModel):
     format: Optional[str] = None
     notes: Optional[str] = None
     color_variant: Optional[str] = None
+    edition_number: Optional[int] = None
     user_id: str
     created_at: str
     spin_count: int = 0
@@ -238,6 +240,7 @@ class ISOResponse(BaseModel):
     color_variant: Optional[str] = None
     priority: str = "MED"
     pressing_notes: Optional[str] = None
+    preferred_number: Optional[int] = None
     condition_pref: Optional[str] = None
     tags: Optional[List[str]] = None
     target_price_min: Optional[float] = None

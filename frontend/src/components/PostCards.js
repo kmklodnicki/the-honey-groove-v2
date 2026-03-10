@@ -168,6 +168,17 @@ const VariantTag = ({ variant, glass, ghost, gold, prefix }) => {
   );
 };
 
+const EditionTag = ({ number }) => {
+  if (!number) return null;
+  return (
+    <span className="inline-flex items-center gap-1 mt-0.5 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+      style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
+      data-testid="edition-pill">
+      No. {number}
+    </span>
+  );
+};
+
 // NOW_SPINNING card body
 const NowSpinningCard = ({ post, onAlbumClick }) => {
   const record = post.record;
@@ -196,6 +207,7 @@ const NowSpinningCard = ({ post, onAlbumClick }) => {
           <p className="font-heading text-lg leading-tight">{record.title}</p>
           <p className="text-sm text-muted-foreground">{record.artist}</p>
           {variantText && <VariantTag variant={variantText} />}
+          {(record.edition_number || post.edition_number) && <EditionTag number={record.edition_number || post.edition_number} />}
           {!variantText && record.format && record.format !== 'Vinyl' && (
             <span className="inline-flex items-center gap-1 mt-0.5 text-[10px] font-medium px-2 py-0.5 rounded-full border border-stone-200 text-stone-500 bg-stone-50" data-testid="format-pill">
               <Disc className="w-2.5 h-2.5" /> {record.format}
@@ -288,6 +300,7 @@ const AddedToCollectionCard = ({ post, onAlbumClick }) => {
           <p className="font-medium">{record.title}</p>
           <p className="text-sm text-muted-foreground">{record.artist}</p>
           {variantText && <VariantTag variant={variantText} />}
+          {(record.edition_number || post.edition_number) && <EditionTag number={record.edition_number || post.edition_number} />}
         </div>
       </div>
     </AlbumLink>

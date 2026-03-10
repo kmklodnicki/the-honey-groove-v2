@@ -29,6 +29,7 @@ const AddRecordPage = () => {
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [notes, setNotes] = useState('');
   const [colorVariant, setColorVariant] = useState('');
+  const [editionNumber, setEditionNumber] = useState('');
   const [adding, setAdding] = useState(false);
 
   // Manual entry state
@@ -99,6 +100,7 @@ const AddRecordPage = () => {
           year: manualYear ? parseInt(manualYear) : null,
           color_variant: colorVariant || null,
           notes: notes || null,
+          preferred_number: editionNumber ? parseInt(editionNumber) : null,
         } : {
           discogs_id: selectedRecord.discogs_id,
           artist: selectedRecord.artist,
@@ -107,6 +109,7 @@ const AddRecordPage = () => {
           year: selectedRecord.year,
           color_variant: colorVariant || selectedRecord.color_variant || null,
           notes: notes || null,
+          preferred_number: editionNumber ? parseInt(editionNumber) : null,
         };
         await axios.post(`${API}/iso`, { ...isoData, status: 'WISHLIST', priority: 'LOW' }, {
           headers: { Authorization: `Bearer ${token}` },
@@ -123,6 +126,7 @@ const AddRecordPage = () => {
           year: manualYear ? parseInt(manualYear) : null,
           notes: notes || null,
           color_variant: colorVariant || null,
+          edition_number: editionNumber ? parseInt(editionNumber) : null,
         } : {
           discogs_id: selectedRecord.discogs_id,
           title: selectedRecord.title,
@@ -132,6 +136,7 @@ const AddRecordPage = () => {
           format: selectedRecord.format,
           notes: notes || null,
           color_variant: colorVariant || selectedRecord.color_variant || null,
+          edition_number: editionNumber ? parseInt(editionNumber) : null,
         };
 
         await axios.post(`${API}/records`, recordData, {
@@ -224,6 +229,20 @@ const AddRecordPage = () => {
               <p className="text-[10px] text-muted-foreground mt-1">The specific pressing or color of your vinyl</p>
             </div>
             <div>
+              <Label htmlFor="edition">{isDreaming ? 'Preferred Edition Number (optional)' : 'Edition Number (optional)'}</Label>
+              <Input
+                id="edition"
+                type="number"
+                min="1"
+                placeholder={isDreaming ? "e.g. 1 (your lucky number)" : "e.g. 42 of 500"}
+                value={editionNumber}
+                onChange={(e) => setEditionNumber(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                className="mt-2 border-honey/50"
+                data-testid="record-edition-number"
+              />
+              <p className="text-[10px] text-muted-foreground mt-1">{isDreaming ? 'The specific number you\'re hunting for' : 'For numbered limited editions — displays as "No. 42" on your card'}</p>
+            </div>
+            <div>
               <Label htmlFor="notes">Notes (optional)</Label>
               <Textarea
                 id="notes"
@@ -298,6 +317,19 @@ const AddRecordPage = () => {
                 onChange={(e) => setColorVariant(e.target.value.slice(0, 80))}
                 className="mt-2 border-honey/50"
                 data-testid="manual-variant"
+              />
+            </div>
+            <div>
+              <Label htmlFor="edition-manual">{isDreaming ? 'Preferred Edition Number (optional)' : 'Edition Number (optional)'}</Label>
+              <Input
+                id="edition-manual"
+                type="number"
+                min="1"
+                placeholder={isDreaming ? "e.g. 1 (your lucky number)" : "e.g. 42 of 500"}
+                value={editionNumber}
+                onChange={(e) => setEditionNumber(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                className="mt-2 border-honey/50"
+                data-testid="manual-edition-number"
               />
             </div>
             <div>

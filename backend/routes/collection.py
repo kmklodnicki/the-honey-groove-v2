@@ -54,6 +54,7 @@ async def add_record(record_data: RecordCreate, user: Dict = Depends(require_aut
         "format": record_data.format,
         "notes": record_data.notes,
         "color_variant": record_data.color_variant,
+        "edition_number": record_data.edition_number,
         "created_at": now
     }
     
@@ -85,6 +86,7 @@ async def add_record(record_data: RecordCreate, user: Dict = Depends(require_aut
         format=record_data.format,
         notes=record_data.notes,
         color_variant=record_data.color_variant,
+        edition_number=record_data.edition_number,
         user_id=user["id"],
         created_at=now,
         spin_count=0
