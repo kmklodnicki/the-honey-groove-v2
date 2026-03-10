@@ -12,7 +12,7 @@ from database import DISCOGS_TOKEN, DISCOGS_USER_AGENT, DISCOGS_CONSUMER_KEY, DI
 from database import DISCOGS_REQUEST_TOKEN_URL, DISCOGS_AUTHORIZE_URL, DISCOGS_ACCESS_TOKEN_URL, DISCOGS_API_BASE
 from database import oauth_request_tokens, import_progress, EMERGENT_KEY
 from models import *
-from util.content_filter import detect_offplatform_payment, BLOCK_MESSAGE as OFFPLATFORM_BLOCK_MESSAGE
+from util.content_filter import detect_offplatform_payment, BLOCK_MESSAGE as OFFPLATFORM_BLOCK_MESSAGE, validate_username, validate_bio
 
 
 router = APIRouter()
@@ -75,6 +75,11 @@ async def register(user_data: UserCreate):
     existing_username = await db.users.find_one({"username": user_data.username.lower()})
     if existing_username:
         raise HTTPException(status_code=400, detail="Username already taken")
+    
+    # Validate username content (profanity + payment references)
+    is_valid, error_msg = validate_username(user_data.username)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_msg)
     
     user_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
@@ -157,15 +162,19 @@ async def update_me(update_data: UserUpdate, user: Dict = Depends(require_auth))
         existing = await db.users.find_one({"username": update_data.username.lower(), "id": {"$ne": user["id"]}})
         if existing:
             raise HTTPException(status_code=400, detail="Username already taken")
+        # Validate username content (profanity + payment references)
+        is_valid, error_msg = validate_username(update_data.username)
+        if not is_valid:
+            raise HTTPException(status_code=400, detail=error_msg)
         update_fields["username"] = update_data.username.lower()
     for field in ("bio", "avatar_url", "city", "region", "country", "setup", "location", "favorite_genre", "instagram_username", "tiktok_username"):
         val = getattr(update_data, field, None)
         if val is not None:
-            # Check bio for off-platform payment mentions
+            # Full bio validation: payment mentions + contact info leaks
             if field == "bio":
-                flagged, _ = detect_offplatform_payment(val)
-                if flagged:
-                    raise HTTPException(status_code=400, detail=OFFPLATFORM_BLOCK_MESSAGE)
+                is_valid, error_msg = validate_bio(val)
+                if not is_valid:
+                    raise HTTPException(status_code=400, detail=error_msg)
             update_fields[field] = val
     if update_data.onboarding_completed is not None:
         update_fields["onboarding_completed"] = update_data.onboarding_completed
