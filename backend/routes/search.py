@@ -44,6 +44,27 @@ async def _get_artist_image(name: str) -> Optional[str]:
     return url
 
 
+import re as _re_module
+
+
+def _normalize_artist_name(name: str) -> str:
+    """Normalize an artist name for deduplication."""
+    # lowercase, strip whitespace, remove trailing punctuation
+    n = name.lower().strip()
+    n = _re_module.sub(r'[,;.!?]+$', '', n).strip()
+    return n
+
+
+def _split_artists(artist_field: str) -> list[str]:
+    """Split a multi-artist field into individual canonical artist names."""
+    if not artist_field:
+        return []
+    # Split on comma, ampersand, " and ", " with ", " feat. ", " ft. ", " featuring "
+    parts = _re_module.split(r'\s*[,&]\s*|\s+(?:and|with|feat\.?|ft\.?|featuring)\s+', artist_field, flags=_re_module.IGNORECASE)
+    # Return non-empty trimmed names
+    return [p.strip() for p in parts if p.strip()]
+
+
 def _score(text: str, words: list[str]) -> int:
     """Score a text string against search words. Higher = better match."""
     if not text:
@@ -197,13 +218,26 @@ async def search_variants(
         artist = r.get("artist", "")
         title = r.get("title", "")
         variant = r.get("color_variant", "")
-        a_low = artist.lower().strip()
 
-        # Track unique artists
-        if a_low and a_low not in artist_set:
-            artist_set[a_low] = {"name": artist, "score": _score(artist, words)}
+        # Track unique artists — split multi-artist fields into individual names
+        individual_artists = _split_artists(artist)
+        for ind_name in individual_artists:
+            norm = _normalize_artist_name(ind_name)
+            if norm and norm not in artist_set:
+                artist_set[norm] = {
+                    "name": ind_name,  # preserve original casing from first occurrence
+                    "score": _score(ind_name, words),
+                    "record_count": 1,
+                }
+            elif norm and norm in artist_set:
+                artist_set[norm]["record_count"] = artist_set[norm].get("record_count", 1) + 1
+                # Update score if this occurrence scores higher
+                new_score = _score(ind_name, words)
+                if new_score > artist_set[norm]["score"]:
+                    artist_set[norm]["score"] = new_score
 
         # Track albums
+        a_low = artist.lower().strip()
         album_key = f"{a_low}|{title.lower().strip()}"
         if album_key not in album_groups:
             album_groups[album_key] = {
@@ -238,8 +272,12 @@ async def search_variants(
     for a in albums:
         a["slug"] = f"/vinyl/{_slugify(a['artist'])}/{_slugify(a['title'])}/standard"
 
-    # Top artists — fetch images in parallel
-    artists_sorted = sorted(artist_set.values(), key=lambda a: a["score"], reverse=True)[:6]
+    # Top artists — sort by record count on HoneyGroove, then search relevance, then alphabetical
+    artists_sorted = sorted(
+        artist_set.values(),
+        key=lambda a: (a.get("record_count", 1), a["score"], a["name"].lower()),
+        reverse=True,
+    )[:6]
     artist_images = await asyncio.gather(*[_get_artist_image(a["name"]) for a in artists_sorted])
     artists_out = [
         {"name": a["name"], "image_url": img}
