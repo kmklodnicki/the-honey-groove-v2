@@ -265,7 +265,10 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - **Crown Jewels Collision Fix:** ScrollRow arrows moved to Floating Glass Dock at bottom-center. No overlap with + buttons.
 - **Global Adaptive UI (BLOCK 125):** State dropdown conditional on Country=US. City/Postal marked "(Optional)" in italic. Non-US: 2-column grid. US: 3-column grid.
 - **Global Groove (BLOCK 127):** Near You algorithm: US users match by state, non-US match by country. Backend accepts state + postal_code fields.
-- **Visual Hierarchy Overhaul (BLOCK 129):** Composer buttons shifted to Light Honey Cream (#FDE68A) with dark text (#78350F) and 1px border rgba(0,0,0,0.05). Clear visual hierarchy: Buzz In and All toggle remain saturated. City and Postal Code fields removed from Settings — only Country + conditional State (US). Member Discovery shows "[State], USA" or full country name.
+- **Visual Hierarchy Overhaul (BLOCK 129):** Composer buttons shifted to Light Honey Cream (#FDE68A) with dark text (#78350F). City/Postal removed from Settings. Member Discovery shows country names.
+- **Dropdown Clipping Fix:** User profile dropdown z-50, bg-white/95, backdrop-blur, glassmorphism shadow. Floats over page content.
+- **Multi-Channel Notifications:** Approve triggers "Welcome to the Inner Circle" celebration notification + "You're Verified" email. Deny triggers "Verification Update" notification with reason + email with reason callout.
+- **Denial Reasons Modal:** Quick-select buttons (Blurry, Expired, Wrong Document, Name Does Not Match) + custom text input. Reason injected into both notification and email. Async email sending keeps admin dashboard fast.
 
 ### Future / Backlog
 - **P0:** User's secret search feature (details TBD — user has mentioned multiple times)
