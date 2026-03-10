@@ -41,6 +41,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import { DailyPromptCard } from '../components/DailyPrompt';
 import OnboardingModal from '../components/OnboardingModal';
 import AlbumArt from '../components/AlbumArt';
+import SEOHead from '../components/SEOHead';
 
 // Bee Avatar Component
 const BeeAvatar = ({ user, className = "h-10 w-10" }) => {
@@ -718,6 +719,18 @@ const HivePage = () => {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8">
+      <SEOHead
+        title="The Hive — Vinyl Social Feed"
+        description="See what collectors are spinning, buying, and trading. The Hive is the social feed for vinyl lovers on The Honey Groove."
+        url="/hive"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'CollectionPage',
+          name: 'The Hive — Vinyl Social Feed',
+          url: 'https://thehoneygroove.com/hive',
+          description: 'Social feed for vinyl collectors. See what records people are spinning, collecting, and trading.',
+        }}
+      />
       {/* Onboarding Modal */}
       <OnboardingModal open={showOnboarding} onComplete={handleOnboardingComplete} />
 

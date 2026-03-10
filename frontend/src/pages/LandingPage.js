@@ -7,6 +7,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 import axios from 'axios';
+import SEOHead from '../components/SEOHead';
 
 const LandingPage = () => {
   usePageTitle();
@@ -61,6 +62,22 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-honey-cream relative">
+      <SEOHead
+        title="The Vinyl Social Club, Finally."
+        description="Track your vinyl collection, discover rare pressings, buy, sell, and trade records with collectors worldwide. Join The Honey Groove."
+        url="/"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'WebApplication',
+          name: 'The Honey Groove',
+          url: 'https://thehoneygroove.com',
+          description: 'Social vinyl tracking platform for record collectors. Track your vinyl collection, log spins, discover new music, and connect with collectors worldwide.',
+          applicationCategory: 'SocialNetworkingApplication',
+          operatingSystem: 'Web',
+          offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+          keywords: 'vinyl, record collection, vinyl tracking, record collectors, vinyl social network, now spinning, vinyl marketplace, rare pressings, colored vinyl',
+        }}
+      />
       <HoneycombPattern />
 
       {/* Hero Section */}

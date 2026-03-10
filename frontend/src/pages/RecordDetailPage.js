@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import AlbumArt from '../components/AlbumArt';
 import { resolveImageUrl } from '../utils/imageUrl';
 import { PostTypeBadge } from '../components/PostCards';
+import SEOHead from '../components/SEOHead';
 
 const RecordDetailPage = () => {
   usePageTitle('Record Details');
@@ -65,8 +66,38 @@ const RecordDetailPage = () => {
   const { record, owner, community, market_value, related_posts } = data;
   const isOwner = owner?.id === user?.id;
 
+  const recordTitle = `${record.artist} - ${record.title}${record.color_variant ? ` (${record.color_variant})` : ''}${record.year ? ` [${record.year}]` : ''}`;
+  const recordDesc = `${record.artist} - ${record.title}${record.color_variant ? ` — ${record.color_variant} pressing` : ''}${record.year ? ` (${record.year})` : ''} in a collector's vinyl library on The Honey Groove. ${community?.total_owners || 0} collectors own this record.`;
+
   return (
     <div className="max-w-4xl mx-auto px-4 pt-20 pb-28" data-testid="record-detail-page">
+      <SEOHead
+        title={recordTitle}
+        description={recordDesc}
+        url={`/record/${recordId}`}
+        image={record.cover_url}
+        type="music.song"
+        vinylMeta={{
+          artist: record.artist,
+          album: record.title,
+          variant: record.color_variant,
+          year: record.year,
+          format: record.format || 'Vinyl',
+        }}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'MusicRecording',
+          name: record.title,
+          byArtist: { '@type': 'MusicGroup', name: record.artist },
+          image: record.cover_url,
+          url: `https://thehoneygroove.com/record/${recordId}`,
+          ...(record.year && { datePublished: String(record.year) }),
+          additionalProperty: [
+            ...(record.color_variant ? [{ '@type': 'PropertyValue', name: 'Variant', value: record.color_variant }] : []),
+            ...(record.format ? [{ '@type': 'PropertyValue', name: 'Format', value: record.format }] : []),
+          ],
+        }}
+      />
       {/* Back nav */}
       <button onClick={() => navigate(-1)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-vinyl-black mb-6 transition-colors" data-testid="back-btn">
         <ArrowLeft className="w-4 h-4" /> Back
@@ -78,7 +109,7 @@ const RecordDetailPage = () => {
         <div className="shrink-0">
           <div className="w-full md:w-80 aspect-square rounded-2xl overflow-hidden bg-honey/10 shadow-lg shadow-black/5">
             {record.cover_url ? (
-              <AlbumArt src={record.cover_url} alt={record.title} className="w-full h-full object-cover" data-testid="record-cover" />
+              <AlbumArt src={record.cover_url} alt={`${record.artist} - ${record.title} vinyl record cover`} className="w-full h-full object-cover" data-testid="record-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <Disc className="w-20 h-20 text-honey/30" />

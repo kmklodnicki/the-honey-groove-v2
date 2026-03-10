@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, DollarSign, Shield, Music2, TrendingUp } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
+import SEOHead from '../components/SEOHead';
 
 const FOUNDER_PHOTO = "https://customer-assets.emergentagent.com/job_7bde1943-8e16-4fbd-a255-24d1bbe2a425/artifacts/kbi8p181_KatieKlodnicki%20About%20Me.png";
 
@@ -9,6 +10,11 @@ const AboutPage = () => {
   usePageTitle('About');
   return (
     <div className="min-h-screen bg-honey-cream">
+      <SEOHead
+        title="About The Honey Groove — Built by a Collector, for Collectors"
+        description="The Honey Groove is a social vinyl tracking platform built by a collector, for collectors. Track your collection, discover pressings, and connect with collectors worldwide."
+        url="/about"
+      />
       <div className="max-w-2xl mx-auto px-4 py-12 pt-28 pb-12" data-testid="about-page">
         {/* Back link */}
         <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors mb-10" data-testid="about-back-link">

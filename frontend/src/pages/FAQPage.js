@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
+import SEOHead from '../components/SEOHead';
 
 const faqSections = [
   {
@@ -317,6 +318,11 @@ const FAQPage = () => {
   usePageTitle('FAQ');
   return (
   <div className="min-h-screen bg-honey-cream">
+    <SEOHead
+      title="FAQ — Frequently Asked Questions"
+      description="Everything you need to know about The Honey Groove. How to join, how the marketplace works, Discogs integration, and more."
+      url="/faq"
+    />
     <div className="max-w-2xl mx-auto px-4 py-12 pt-28 pb-24" data-testid="faq-page">
       <h1 className="font-heading text-4xl text-vinyl-black mb-2">FAQ</h1>
       <p className="text-muted-foreground mb-10">everything you need to know about the Honey Groove.</p>

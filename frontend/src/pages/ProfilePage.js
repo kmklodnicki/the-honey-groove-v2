@@ -28,6 +28,7 @@ import AlbumArt from '../components/AlbumArt';
 import { countryFlag } from '../utils/countryFlag';
 import { TitleBadge } from '../components/TitleBadge';
 import { TagPill } from '../components/PostCards';
+import SEOHead from '../components/SEOHead';
 
 const ProfilePage = () => {
   usePageTitle('Profile');
@@ -293,8 +294,42 @@ const ProfilePage = () => {
 
   const firstLetter = profile.username?.charAt(0).toUpperCase() || '?';
 
+  const profileTitle = `@${profile.username}${profile.title_label ? ` — ${profile.title_label}` : ''} — ${records.length} Records`;
+  const profileDesc = `@${profile.username}'s vinyl collection on The Honey Groove. ${records.length} records collected.${profile.bio ? ` ${profile.bio.slice(0, 160)}` : ''}${profile.city ? ` Based in ${profile.city}.` : ''}`;
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8" data-testid="profile-page">
+      <SEOHead
+        title={profileTitle}
+        description={profileDesc}
+        url={`/profile/${profile.username}`}
+        image={profile.avatar_url}
+        type="profile"
+        collectorMeta={{
+          username: profile.username,
+          collectionSize: records.length,
+          isoCount: isos.length,
+        }}
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'ProfilePage',
+          name: `@${profile.username}`,
+          url: `https://thehoneygroove.com/profile/${profile.username}`,
+          image: profile.avatar_url,
+          description: profileDesc,
+          mainEntity: {
+            '@type': 'Person',
+            name: profile.username,
+            url: `https://thehoneygroove.com/profile/${profile.username}`,
+            image: profile.avatar_url,
+            interactionStatistic: [{
+              '@type': 'InteractionCounter',
+              interactionType: 'https://schema.org/FollowAction',
+              userInteractionCount: profile.followers_count || 0,
+            }],
+          },
+        }}
+      />
       {/* Profile Header */}
       <Card className="p-6 border-honey/30 mb-6" style={{ backgroundColor: '#FAF6EE' }}>
         <div className="flex flex-col sm:flex-row items-start gap-6">

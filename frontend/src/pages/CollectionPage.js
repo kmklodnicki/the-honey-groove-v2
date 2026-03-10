@@ -30,6 +30,7 @@ import DiscogsImport from '../components/DiscogsImport';
 import { usePageTitle } from '../hooks/usePageTitle';
 import AlbumArt from '../components/AlbumArt';
 import { VariantTag } from '../components/PostCards';
+import SEOHead from '../components/SEOHead';
 
 // Counting animation hook
 const useCountUp = (target, duration = 1400, enabled = true) => {
@@ -360,6 +361,12 @@ const CollectionPage = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8">
+      <SEOHead
+        title={`My Collection — ${records.length} Records`}
+        description={`Your vinyl collection on The Honey Groove. ${records.length} records owned, ${wishlistItems.length} on the wishlist.`}
+        url="/collection"
+        noIndex
+      />
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="font-heading text-3xl text-vinyl-black">My Collection</h1>

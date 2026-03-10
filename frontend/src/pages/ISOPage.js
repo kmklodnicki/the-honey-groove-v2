@@ -42,6 +42,7 @@ const ISO_TAGS = ['OG Press', 'Factory Sealed', 'Any', 'Promo'];
 const FILTER_OPTIONS = ['All', 'OPEN', 'FOUND'];
 import { GRADE_OPTIONS } from '../utils/grading';
 import { GradeLabel } from '../components/GradeLabel';
+import SEOHead from '../components/SEOHead';
 
 const IsoMatchCover = ({ coverUrl }) => {
   return <AlbumArt src={coverUrl} className="w-8 h-8 rounded shrink-0" />;
@@ -531,7 +532,7 @@ const ISOPage = () => {
         </>
       ) : selectedRelease ? (
         <div className="flex items-center gap-3 bg-honey/10 rounded-lg p-3">
-          <AlbumArt src={selectedRelease.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow" />
+          <AlbumArt src={selectedRelease.cover_url} alt={`${selectedRelease.artist} - ${selectedRelease.title} vinyl record cover`} className="w-14 h-14 rounded-lg object-cover shadow" />
           <div className="flex-1 min-w-0"><p className="font-heading text-base">{selectedRelease.title}</p><p className="text-sm text-muted-foreground">{selectedRelease.artist} {selectedRelease.year ? `(${selectedRelease.year})` : ''}</p></div>
           <button onClick={() => { setSelectedRelease(null); setManualMode(false); }} className="text-xs text-muted-foreground hover:text-red-500">Change</button>
         </div>
@@ -550,6 +551,18 @@ const ISOPage = () => {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8" data-testid="honeypot-page">
+      <SEOHead
+        title="The Honeypot — Vinyl Marketplace"
+        description="Browse vinyl records for sale and trade on The Honey Groove. Find rare pressings, colored vinyl, limited editions, and connect directly with collectors."
+        url="/honeypot"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'CollectionPage',
+          name: 'The Honeypot — Vinyl Marketplace',
+          url: 'https://thehoneygroove.com/honeypot',
+          description: 'Vinyl records for sale and trade. Find rare pressings and colored vinyl from collectors worldwide.',
+        }}
+      />
       <StripeGateModal open={showStripeGate} onClose={() => setShowStripeGate(false)} />
       <CountryGateModal open={showCountryGate} onClose={() => setShowCountryGate(false)} />
       <EssentialsUpsellModal
@@ -899,7 +912,7 @@ const ISOPage = () => {
                   <div className="grid grid-cols-4 gap-2">
                     {listPhotos.map((photo, idx) => (
                       <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-honey/30 group">
-                        <img src={photo.preview} alt="" className="w-full h-full object-cover" />
+                        <img src={photo.preview} alt={`Listing photo ${idx + 1}`} className="w-full h-full object-cover" />
                         <button onClick={() => removePhoto(idx)} className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity" data-testid={`remove-photo-${idx}`}>
                           <X className="w-3 h-3 text-white" />
                         </button>
@@ -1093,7 +1106,7 @@ const ISOCard = ({ iso, isOwn, onMarkFound, onDelete, onSetPriceAlert }) => {
   return (
     <Card className={`p-4 border-honey/30 transition-all ${iso.status === 'FOUND' ? 'opacity-60 bg-amber-50/30' : 'hover:shadow-md'}`} data-testid={`iso-item-${iso.id}`}>
       <div className="flex items-start gap-3">
-        <AlbumArt src={iso.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow" />
+        <AlbumArt src={iso.cover_url} alt={`${iso.artist} - ${iso.album} vinyl record cover`} className="w-14 h-14 rounded-lg object-cover shadow" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h4 className="font-heading text-base">{iso.album}</h4>
@@ -1150,7 +1163,7 @@ const ISOCard = ({ iso, isOwn, onMarkFound, onDelete, onSetPriceAlert }) => {
 const CommunityISOCard = ({ iso, onHaveThis }) => (
   <Card className="p-4 border-honey/30 hover:shadow-md transition-all" data-testid={`community-iso-${iso.id}`}>
     <div className="flex items-start gap-3">
-      <AlbumArt src={iso.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow" />
+      <AlbumArt src={iso.cover_url} alt={`${iso.artist} - ${iso.album} vinyl record cover`} className="w-14 h-14 rounded-lg object-cover shadow" />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <h4 className="font-heading text-base">{iso.album}</h4>
@@ -1186,7 +1199,7 @@ const ActiveTradeCard = ({ trade, currentUserId }) => {
       <Card className="p-4 border-honey/30 hover:shadow-md transition-all cursor-pointer">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <AlbumArt src={trade.offered_record?.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
+            <AlbumArt src={trade.offered_record?.cover_url} alt={`${trade.offered_record?.title || 'Record'} vinyl record cover`} className="w-10 h-10 rounded object-cover" />
             <div className="min-w-0">
               <p className="text-sm font-medium truncate">{trade.offered_record?.title || 'Your record'}</p>
               <p className="text-xs text-muted-foreground">with @{otherUser?.username || '?'}</p>
@@ -1229,7 +1242,7 @@ const ListingCard = ({ listing, currentUserId, onProposeTrade, onBuyNow, onMakeO
     <div className="flex items-center gap-3 py-3 px-2 cursor-pointer hover:bg-honey/5 transition-all duration-200"
       onClick={onClick} data-testid={`listing-${listing.id}`}>
       <div className="w-16 h-16 rounded-[10px] overflow-hidden bg-honey/10 shrink-0">
-        {mainImage ? <AlbumArt src={mainImage} alt="" className="w-full h-full" />
+        {mainImage ? <AlbumArt src={mainImage} alt={`${listing.artist} - ${listing.album} vinyl record cover`} className="w-full h-full" />
           : <div className="w-full h-full flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>}
       </div>
       <div className="flex-1 min-w-0">

@@ -61,19 +61,52 @@ let webpackConfig = {
 };
 
 webpackConfig.devServer = (devServerConfig) => {
-  // Add health check endpoints if enabled
+  // Bot detection for SSR metadata - runs before historyApiFallback
+  const BOT_PATTERNS = /twitterbot|facebookexternalhit|linkedinbot|slackbot|discordbot|telegrambot|whatsapp|googlebot|bingbot|yandexbot|baiduspider|duckduckbot|applebot|pinterestbot|redditbot|embedly|outbrain|quora|ahrefsbot|semrushbot|rogerbot|imessagebot/i;
+
+  const existingBefore = devServerConfig.onBeforeSetupMiddleware;
+  devServerConfig.onBeforeSetupMiddleware = function (devServer) {
+    if (existingBefore) existingBefore(devServer);
+
+    devServer.app.use((req, res, next) => {
+      const ua = req.headers['user-agent'] || '';
+      if (!BOT_PATTERNS.test(ua)) return next();
+
+      const reqPath = req.path;
+      let ssrPath = null;
+
+      const listingMatch = reqPath.match(/^\/honeypot\/listing\/(.+)/);
+      if (listingMatch) ssrPath = `/api/ssr/listing/${listingMatch[1]}`;
+
+      const recordMatch = reqPath.match(/^\/record\/(.+)/);
+      if (recordMatch) ssrPath = `/api/ssr/record/${recordMatch[1]}`;
+
+      const profileMatch = reqPath.match(/^\/profile\/(.+)/);
+      if (profileMatch) ssrPath = `/api/ssr/profile/${profileMatch[1]}`;
+
+      if (reqPath === '/honeypot') ssrPath = '/api/ssr/honeypot';
+      if (reqPath === '/' || reqPath === '/hive') ssrPath = '/api/ssr';
+
+      if (ssrPath) {
+        const http = require('http');
+        http.get(`http://localhost:8001${ssrPath}`, (proxyRes) => {
+          res.writeHead(proxyRes.statusCode, { ...proxyRes.headers, 'content-type': 'text/html; charset=utf-8' });
+          proxyRes.pipe(res);
+        }).on('error', () => next());
+        return;
+      }
+      next();
+    });
+  };
+
+  // Keep existing setupMiddlewares for health check
   if (config.enableHealthCheck && setupHealthEndpoints && healthPluginInstance) {
     const originalSetupMiddlewares = devServerConfig.setupMiddlewares;
-
     devServerConfig.setupMiddlewares = (middlewares, devServer) => {
-      // Call original setup if exists
       if (originalSetupMiddlewares) {
         middlewares = originalSetupMiddlewares(middlewares, devServer);
       }
-
-      // Setup health endpoints
       setupHealthEndpoints(devServer, healthPluginInstance);
-
       return middlewares;
     };
   }
