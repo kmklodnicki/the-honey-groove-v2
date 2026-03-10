@@ -799,6 +799,22 @@ const ProfilePage = () => {
                           Seeking No. {item.preferred_number}
                         </div>
                       )}
+                      {/* Price badge — always visible */}
+                      {!ownerHasIt && (
+                        item.median_value > 0 ? (
+                          <div className="absolute top-2 right-2 px-2.5 py-1 rounded-full font-black z-[5]"
+                            style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', fontSize: '18px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
+                            data-testid={`dream-value-${item.id}`}>
+                            ${Math.round(item.median_value)}
+                          </div>
+                        ) : (
+                          <div className="absolute top-2 right-2 px-2.5 py-1 rounded-full font-black z-[5]"
+                            style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: 'rgba(0,0,0,0.5)', fontSize: '14px', letterSpacing: '1px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
+                            data-testid={`dream-value-placeholder-${item.id}`}>
+                            ---
+                          </div>
+                        )
+                      )}
                       <div className="absolute bottom-2 right-2">
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-pink-500/90 text-white">DREAMING</span>
                       </div>

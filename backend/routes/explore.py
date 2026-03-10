@@ -413,6 +413,18 @@ async def get_user_dreaming(username: str, current_user: Optional[Dict] = Depend
     await _check_profile_access(target, current_user)
     
     items = await db.iso_items.find({"user_id": target["id"], "status": "WISHLIST"}, {"_id": 0}).sort("created_at", -1).to_list(200)
+
+    # Enrich with median Discogs values
+    discogs_ids = [i["discogs_id"] for i in items if i.get("discogs_id")]
+    value_map = {}
+    if discogs_ids:
+        values = await db.collection_values.find(
+            {"release_id": {"$in": discogs_ids}}, {"_id": 0, "release_id": 1, "median_value": 1}
+        ).to_list(len(discogs_ids))
+        value_map = {v["release_id"]: v.get("median_value") for v in values if v.get("median_value")}
+    for item in items:
+        item["median_value"] = value_map.get(item.get("discogs_id"))
+
     return items
 
 @router.get("/users/{username}/posts")
