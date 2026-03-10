@@ -31,7 +31,7 @@ export const RarityPill = ({ tier, size = 'md' }) => {
       data-testid="rarity-pill"
     >
       <Disc className={size === 'sm' ? 'w-2.5 h-2.5 opacity-40' : 'w-3 h-3 opacity-40'} />
-      Global Variant Rarity: {cfg.label}
+      {cfg.label}
     </span>
   );
 };
