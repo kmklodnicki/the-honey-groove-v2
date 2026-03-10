@@ -1,0 +1,80 @@
+{
+  "summary": "Bug fix verification: ISO/Wishlist separation - GET /api/iso endpoint now correctly filters out WISHLIST items using {$ne: 'WISHLIST'}. All endpoints working correctly.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iso_wishlist_bugfix.py",
+    "/app/test_reports/pytest/iso_wishlist_bugfix_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "VERIFIED: GET /api/iso (line 108) includes status filter {$ne: 'WISHLIST'} - correctly excludes wishlist items",
+    "VERIFIED: GET /api/users/{username}/iso (line 403) also excludes WISHLIST items with same filter",
+    "VERIFIED: GET /api/users/{username}/dreaming (line 415) only returns WISHLIST items with filter {status: 'WISHLIST'}",
+    "VERIFIED: PUT /api/iso/{id}/promote endpoint (lines 127-134) changes status from WISHLIST to OPEN with HIGH priority",
+    "VERIFIED: POST /api/iso (lines 83-104) creates items with WISHLIST status by default (line 99)",
+    "VERIFIED: POST /api/composer/iso (lines 484-509) creates items with OPEN status (line 506)",
+    "VERIFIED: Frontend ProfilePage Dreaming tab (lines 724-740) has 'Actively Searching' button calling PUT /api/iso/{id}/promote",
+    "VERIFIED: Frontend compiles without errors (ESLint warnings only)"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iso_wishlist_bugfix.py"
+  ],
+  "success_rate": {
+    "backend": "100% (8/8 tests passed)",
+    "frontend": "100% (UI loads, tabs work, ISO separation verified)"
+  },
+  "test_credentials": {
+    "email": "demo@example.com",
+    "password": "password123"
+  },
+  "seed_data_creation": "None - used existing demo user data. Created and cleaned up test items during testing.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "ISO/Wishlist bug fix verified. GET /api/iso and GET /users/{username}/iso now correctly filter out WISHLIST items. POST /api/iso defaults to WISHLIST status, POST /api/composer/iso creates with OPEN status. Promote endpoint works to move items from Dreaming (WISHLIST) to ISO (OPEN). Demo user has 1 OPEN ISO (Pink Floyd - Dark Side of the Moon). Frontend 'Actively Searching' button exists but no WISHLIST items to test with currently.",
+  "features_tested": {
+    "get_api_iso_excludes_wishlist": {
+      "status": "PASS",
+      "details": "GET /api/iso returns only OPEN status items, correctly excludes WISHLIST"
+    },
+    "get_users_iso_excludes_wishlist": {
+      "status": "PASS",
+      "details": "GET /api/users/{username}/iso returns only OPEN items"
+    },
+    "get_users_dreaming_only_wishlist": {
+      "status": "PASS",
+      "details": "GET /api/users/{username}/dreaming returns only WISHLIST items"
+    },
+    "put_iso_promote_endpoint_exists": {
+      "status": "PASS",
+      "details": "PUT /api/iso/{id}/promote endpoint returns 404 for invalid ID (endpoint exists)"
+    },
+    "promote_changes_status_to_open": {
+      "status": "PASS",
+      "details": "Created WISHLIST item, promoted it, verified status changed to OPEN and moved from dreaming to ISO"
+    },
+    "post_api_iso_defaults_wishlist": {
+      "status": "PASS",
+      "details": "POST /api/iso creates with WISHLIST status by default"
+    },
+    "post_composer_iso_creates_open": {
+      "status": "PASS",
+      "details": "POST /api/composer/iso creates with OPEN status"
+    },
+    "frontend_compiles": {
+      "status": "PASS",
+      "details": "yarn build successful with only ESLint warnings"
+    },
+    "frontend_iso_tab_ui": {
+      "status": "PASS",
+      "details": "ISO tab displays items with OPEN status badge, Dreaming tab shows empty state"
+    }
+  }
+}

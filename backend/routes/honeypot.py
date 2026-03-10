@@ -105,7 +105,7 @@ async def create_iso_direct(data: ISODirectCreate, user: Dict = Depends(require_
 
 @router.get("/iso", response_model=List[ISOResponse])
 async def get_my_isos(user: Dict = Depends(require_auth)):
-    isos = await db.iso_items.find({"user_id": user["id"]}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    isos = await db.iso_items.find({"user_id": user["id"], "status": {"$ne": "WISHLIST"}}, {"_id": 0}).sort("created_at", -1).to_list(100)
     result = []
     for iso in isos:
         record_data = None

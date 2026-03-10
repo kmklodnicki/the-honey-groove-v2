@@ -703,7 +703,7 @@ const ProfilePage = () => {
                   <Card key={item.id} className="border-honey/30 overflow-hidden transition-all hover:-translate-y-1" style={ownerHasIt ? { boxShadow: '0 0 15px #FFD700' } : {}} data-testid={`dreaming-item-${item.id}`}>
                     <div className="relative aspect-square bg-vinyl-black">
                       {item.cover_url ? (
-                        <AlbumArt src={item.cover_url} alt={item.album} className="w-full h-full object-cover" />
+                        <AlbumArt src={item.cover_url} alt={`${item.artist} ${item.album}${item.color_variant ? ` ${item.color_variant}` : ''} vinyl record`} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <Disc className="w-12 h-12 text-honey" />
@@ -721,6 +721,23 @@ const ProfilePage = () => {
                     <div className="p-3">
                       <h4 className="font-medium text-sm truncate">{item.album}</h4>
                       <p className="text-xs text-muted-foreground truncate">{item.artist}</p>
+                      {isOwnProfile && (
+                        <Button
+                          size="sm" variant="outline"
+                          className="mt-2 w-full rounded-full text-[10px] border-purple-200 text-purple-700 hover:bg-purple-50 gap-1 h-7"
+                          onClick={async () => {
+                            try {
+                              await axios.put(`${API}/iso/${item.id}/promote`, {}, { headers: { Authorization: `Bearer ${token}` }});
+                              setDreamingItems(prev => prev.filter(d => d.id !== item.id));
+                              setIsos(prev => [...prev, { ...item, status: 'OPEN', priority: 'HIGH' }]);
+                              toast.success(`${item.album} moved to Actively Seeking`);
+                            } catch { toast.error('Could not promote item'); }
+                          }}
+                          data-testid={`promote-to-iso-${item.id}`}
+                        >
+                          <Search className="w-3 h-3" /> Actively Searching
+                        </Button>
+                      )}
                       {ownerHasIt && (
                         <>
                           <span className="inline-block mt-1 text-[10px] font-medium text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full" data-testid={`in-collection-dream-${item.id}`}>
