@@ -198,13 +198,17 @@ const CollectionPage = () => {
       if (type === 'dreaming') {
         const res = await axios.post(`${API}/records/${id}/move-to-wishlist`, {}, { headers: { Authorization: `Bearer ${token}` }});
         setRecords(prev => prev.filter(r => r.id !== id));
-        // Optimistically update Reality value
+        // Optimistically update Collection value
         const itemVal = valueMap[id] || 0;
         if (itemVal > 0 && collectionValue) {
           setCollectionValue(prev => prev ? { ...prev, total_value: Math.max(0, prev.total_value - itemVal) } : prev);
-          setDreamlistValue(prev => prev ? { ...prev, total_value: prev.total_value + itemVal } : prev);
         }
         toast.success(res.data.message || 'moved to Dream List.');
+        // Refetch dreamlist data from backend to stay in sync
+        Promise.all([
+          axios.get(`${API}/iso`, { headers: { Authorization: `Bearer ${token}` } }).then(r => setWishlistItems((r.data || []).filter(i => i.status === 'WISHLIST'))),
+          axios.get(`${API}/valuation/dreamlist`, { headers: { Authorization: `Bearer ${token}` } }).then(r => setDreamlistValue(r.data)),
+        ]).catch(() => {});
       } else {
         const res = await axios.post(`${API}/records/${id}/move-to-iso`, {}, { headers: { Authorization: `Bearer ${token}` }});
         setRecords(prev => prev.filter(r => r.id !== id));
@@ -245,11 +249,16 @@ const CollectionPage = () => {
     try {
       const item = wishlistItems.find(i => i.id === isoId);
       const res = await axios.put(`${API}/iso/${isoId}/promote`, {}, { headers: { Authorization: `Bearer ${token}` }});
-      setWishlistItems(prev => prev.filter(i => i.id !== isoId));
+      const updatedWishlist = wishlistItems.filter(i => i.id !== isoId);
+      setWishlistItems(updatedWishlist);
       toast.success(res.data.message || `${item?.album || 'Record'} is now on the hunt.`);
-      // Show subtraction message and update dream debt counter
-      if (item?.discogs_id && dreamlistValue) {
-        // Fetch this item's value from the valuation cache
+
+      // If this was the last dream list item, force value to 0 immediately
+      if (updatedWishlist.length === 0) {
+        setDreamlistValue({ total_value: 0, valued_count: 0, total_count: 0 });
+        setDreamSubtractMsg(null);
+      } else if (item?.discogs_id && dreamlistValue) {
+        // Show subtraction message and update dream value
         try {
           const valRes = await axios.get(`${API}/valuation/record-value/${item.discogs_id}`, { headers: { Authorization: `Bearer ${token}` } });
           const itemVal = valRes.data?.median_value || 0;
@@ -268,8 +277,17 @@ const CollectionPage = () => {
   const handleDeleteWishlistItem = async (isoId) => {
     try {
       await axios.delete(`${API}/iso/${isoId}`, { headers: { Authorization: `Bearer ${token}` }});
-      setWishlistItems(prev => prev.filter(i => i.id !== isoId));
+      const updatedWishlist = wishlistItems.filter(i => i.id !== isoId);
+      setWishlistItems(updatedWishlist);
       toast.success('removed from Dream List.');
+      // If this was the last item, force dream value to 0
+      if (updatedWishlist.length === 0) {
+        setDreamlistValue({ total_value: 0, valued_count: 0, total_count: 0 });
+      } else {
+        // Refetch dream value from backend to stay accurate
+        axios.get(`${API}/valuation/dreamlist`, { headers: { Authorization: `Bearer ${token}` } })
+          .then(r => setDreamlistValue(r.data)).catch(() => {});
+      }
     } catch { toast.error('could not remove.'); }
   };
 
@@ -381,8 +399,8 @@ const CollectionPage = () => {
       </div>
 
       <Tabs value={collectionTab} onValueChange={handleTabChange}>
-        {/* Collection Value Toggle */}
-        {collectionValue && collectionValue.total_value > 0 && dreamlistValue && dreamlistValue.total_value > 0 && (
+        {/* Collection Value Toggle — only show dream value when Dream List has items */}
+        {collectionValue && collectionValue.total_value > 0 && wishlistItems.length > 0 && dreamlistValue && dreamlistValue.total_value > 0 && (
           <div className="flex items-center justify-center gap-4 mb-4 p-3 rounded-xl border border-honey/20 bg-gradient-to-r from-honey/5 to-stone-50" data-testid="reality-check-toggle">
             <button
               onClick={() => handleTabChange('owned')}
@@ -600,7 +618,7 @@ const CollectionPage = () => {
         <TabsContent value="wishlist">
           {/* "If only I had..." Wishlist Value Header */}
           <DreamDebtHeader
-            totalValue={dreamlistValue?.total_value || 0}
+            totalValue={wishlistItems.length === 0 ? 0 : (dreamlistValue?.total_value || 0)}
             itemCount={wishlistItems.length}
             countKey={countKey}
             subtractMsg={dreamSubtractMsg}

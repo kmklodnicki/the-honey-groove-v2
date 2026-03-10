@@ -140,12 +140,16 @@ async def get_wishlist_value(user: Dict = Depends(require_auth)):
 @router.get("/valuation/dreamlist")
 async def get_dreamlist_value(user: Dict = Depends(require_auth)):
     """Total estimated value of Dream Wishlist items only."""
+    total_count = await db.iso_items.count_documents({"user_id": user["id"], "status": "WISHLIST"})
+    # Safeguard: if no Dream List items, value is always $0
+    if total_count == 0:
+        return {"total_value": 0, "valued_count": 0, "total_count": 0}
+
     items = await db.iso_items.find(
         {"user_id": user["id"], "status": "WISHLIST", "discogs_id": {"$ne": None}},
         {"_id": 0, "discogs_id": 1}
     ).to_list(5000)
     discogs_ids = list({i["discogs_id"] for i in items if i.get("discogs_id")})
-    total_count = await db.iso_items.count_documents({"user_id": user["id"], "status": "WISHLIST"})
     if not discogs_ids:
         return {"total_value": 0, "valued_count": 0, "total_count": total_count}
 
@@ -192,12 +196,15 @@ async def get_user_dreamlist_value(username: str):
     target = await db.users.find_one({"username": username.lower()}, {"_id": 0, "id": 1})
     if not target:
         raise HTTPException(status_code=404, detail="User not found")
+    total_count = await db.iso_items.count_documents({"user_id": target["id"], "status": "WISHLIST"})
+    # Safeguard: if no Dream List items, value is always $0
+    if total_count == 0:
+        return {"total_value": 0, "valued_count": 0, "total_count": 0}
     items = await db.iso_items.find(
         {"user_id": target["id"], "status": "WISHLIST", "discogs_id": {"$ne": None}},
         {"_id": 0, "discogs_id": 1}
     ).to_list(5000)
     discogs_ids = list({i["discogs_id"] for i in items if i.get("discogs_id")})
-    total_count = await db.iso_items.count_documents({"user_id": target["id"], "status": "WISHLIST"})
     if not discogs_ids:
         return {"total_value": 0, "valued_count": 0, "total_count": total_count}
     values = await db.collection_values.find(

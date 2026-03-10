@@ -534,7 +534,7 @@ const ProfilePage = () => {
             )}
 
             {/* Value of Dream Records sub-headline */}
-            {dreamValue && dreamValue.total_value > 0 && (
+            {dreamValue && dreamValue.total_value > 0 && dreamValue.total_count > 0 && (
               <p className="mt-2 font-serif italic text-sm" style={{ color: '#C8861A' }} data-testid="profile-dream-value">
                 Value of Dream Records: ${dreamValue.total_value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
               </p>
