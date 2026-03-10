@@ -1116,6 +1116,26 @@ async def _enrich_transactions(txns, perspective: str):
         item.setdefault("shipping_status", "NOT_SHIPPED")
         item.setdefault("tracking_number", None)
         item.setdefault("shipping_carrier", None)
+
+        # Rating & delivery fields
+        item["delivered_at"] = t.get("delivered_at")
+        item["rating_deadline"] = t.get("rating_deadline")
+        item["buyer_rating"] = t.get("buyer_rating")
+        item["seller_rating"] = t.get("seller_rating")
+        item["order_status"] = t.get("order_status")
+        item["payout_status"] = t.get("payout_status")
+
+        # Auto-complete if rating deadline has passed and not yet completed
+        if (t.get("shipping_status") == "DELIVERED"
+            and t.get("rating_deadline")
+            and not t.get("order_status")
+            and datetime.now(timezone.utc) > datetime.fromisoformat(t["rating_deadline"])):
+            await db.payment_transactions.update_one(
+                {"id": t["id"], "order_status": {"$exists": False}},
+                {"$set": {"order_status": "COMPLETED", "updated_at": datetime.now(timezone.utc).isoformat()}}
+            )
+            item["order_status"] = "COMPLETED"
+
         enriched.append(item)
     return enriched
 
@@ -1162,10 +1182,27 @@ async def update_order_shipping(order_id: str, body: Dict, user: Dict = Depends(
 
     # Record delivered_at timestamp for auto-payout cron
     if update.get("shipping_status") == "DELIVERED":
+        now_dt = datetime.now(timezone.utc)
+        rating_deadline = (now_dt + timedelta(hours=48)).isoformat()
         await db.payment_transactions.update_one(
             {"id": order_id, "delivered_at": {"$exists": False}},
-            {"$set": {"delivered_at": datetime.now(timezone.utc).isoformat(), "payout_status": "PENDING"}}
+            {"$set": {
+                "delivered_at": now_dt.isoformat(),
+                "payout_status": "PENDING",
+                "rating_deadline": rating_deadline,
+            }}
         )
+        # Notify both buyer and seller
+        listing = await db.listings.find_one({"id": txn.get("listing_id")}, {"_id": 0, "album": 1})
+        album_name = listing.get("album", "your order") if listing else "your order"
+        await create_notification(txn["buyer_id"], "ORDER_DELIVERED",
+            "Your order was delivered!",
+            f"{album_name} has been delivered. Please rate the seller within 48 hours.",
+            {"order_id": order_id})
+        await create_notification(txn["seller_id"], "ORDER_DELIVERED",
+            "Your sale was delivered!",
+            f"{album_name} has been delivered to the buyer. Please rate the buyer within 48 hours.",
+            {"order_id": order_id})
 
     # Notify buyer if shipped
     if update.get("shipping_status") == "SHIPPED":
@@ -1235,6 +1272,64 @@ async def cancel_order(order_id: str, user: Dict = Depends(require_auth)):
     )
 
     return {"message": "Order cancelled and refund initiated", "refund_id": refund_id}
+
+
+@router.post("/orders/{order_id}/rate")
+async def rate_order(order_id: str, body: Dict, user: Dict = Depends(require_auth)):
+    """Rate a completed order. Both buyer and seller can rate within 48 hours of delivery."""
+    txn = await db.payment_transactions.find_one({"id": order_id}, {"_id": 0})
+    if not txn:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    is_buyer = txn["buyer_id"] == user["id"]
+    is_seller = txn["seller_id"] == user["id"]
+    if not is_buyer and not is_seller:
+        raise HTTPException(status_code=403, detail="Not a party to this order")
+
+    if txn.get("shipping_status") != "DELIVERED" and txn.get("order_status") != "COMPLETED":
+        raise HTTPException(status_code=400, detail="Order must be delivered before rating")
+
+    role = "buyer" if is_buyer else "seller"
+    rating_key = f"{role}_rating"
+    if txn.get(rating_key):
+        raise HTTPException(status_code=400, detail="You have already rated this order")
+
+    # Check rating window
+    rating_deadline = txn.get("rating_deadline")
+    if rating_deadline:
+        deadline_dt = datetime.fromisoformat(rating_deadline)
+        if datetime.now(timezone.utc) > deadline_dt:
+            raise HTTPException(status_code=400, detail="The 48-hour rating window has expired")
+
+    # Validate rating
+    stars = body.get("stars")
+    if not stars or not (1 <= int(stars) <= 5):
+        raise HTTPException(status_code=400, detail="Rating must be between 1 and 5 stars")
+
+    now = datetime.now(timezone.utc).isoformat()
+    rating_data = {
+        "stars": int(stars),
+        "comment": (body.get("comment") or "").strip()[:500],
+        "rated_at": now,
+    }
+
+    update_fields = {rating_key: rating_data, "updated_at": now}
+
+    # Check if both parties have now rated → auto-complete
+    other_key = "seller_rating" if is_buyer else "buyer_rating"
+    if txn.get(other_key):
+        update_fields["order_status"] = "COMPLETED"
+
+    await db.payment_transactions.update_one({"id": order_id}, {"$set": update_fields})
+
+    # Notify the other party
+    other_id = txn["seller_id"] if is_buyer else txn["buyer_id"]
+    await create_notification(other_id, "ORDER_RATED",
+        "You received a rating",
+        f"{'The buyer' if is_buyer else 'The seller'} rated your transaction {stars} stars.",
+        {"order_id": order_id})
+
+    return {"message": "Rating submitted", "rating": rating_data}
 
 
 @router.get("/seller/stats")

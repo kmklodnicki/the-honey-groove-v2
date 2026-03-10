@@ -12,7 +12,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '../components/ui/alert-dialog';
-import { ShoppingBag, Package, Truck, CheckCircle2, Clock, XCircle, Loader2, MessageCircle, Ban, ChevronDown, ChevronUp, Disc, Flag } from 'lucide-react';
+import { ShoppingBag, Package, Truck, CheckCircle2, Clock, XCircle, Loader2, MessageCircle, Ban, ChevronDown, ChevronUp, Disc, Flag, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import AlbumArt from '../components/AlbumArt';
@@ -119,6 +119,99 @@ const ShippingEditor = ({ order, token, API, onUpdate }) => {
         </Button>
         <Button size="sm" variant="ghost" onClick={() => setEditing(false)} className="h-7 text-xs">Cancel</Button>
       </div>
+    </div>
+  );
+};
+
+// Countdown helper
+const formatRatingCountdown = (deadline) => {
+  if (!deadline) return null;
+  const diff = new Date(deadline) - new Date();
+  if (diff <= 0) return null;
+  const hrs = Math.floor(diff / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  return hrs > 0 ? `${hrs}h ${mins}m left to rate` : `${mins}m left to rate`;
+};
+
+// Rating section for delivered orders
+const RatingSection = ({ order, perspective, token, API, onUpdate }) => {
+  const [stars, setStars] = useState(0);
+  const [hover, setHover] = useState(0);
+  const [comment, setComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const myRating = perspective === 'buyer' ? order.buyer_rating : order.seller_rating;
+  const theirRating = perspective === 'buyer' ? order.seller_rating : order.buyer_rating;
+  const countdown = formatRatingCountdown(order.rating_deadline);
+  const isExpired = order.rating_deadline && new Date(order.rating_deadline) < new Date();
+
+  if (myRating) {
+    return (
+      <div className="bg-green-50 border border-green-200 rounded-xl p-3 space-y-1" data-testid="my-rating-display">
+        <p className="text-xs font-medium text-green-700">Your Rating</p>
+        <div className="flex items-center gap-1">
+          {[1,2,3,4,5].map(i => (
+            <Star key={i} className={`w-4 h-4 ${i <= myRating.stars ? 'text-amber-400 fill-amber-400' : 'text-stone-200'}`} />
+          ))}
+        </div>
+        {myRating.comment && <p className="text-xs text-green-600">{myRating.comment}</p>}
+      </div>
+    );
+  }
+
+  if (isExpired) {
+    return (
+      <div className="bg-stone-50 border border-stone-200 rounded-xl p-3" data-testid="rating-expired">
+        <p className="text-xs text-muted-foreground">Rating window expired. No rating was left.</p>
+      </div>
+    );
+  }
+
+  const submit = async () => {
+    if (!stars) { toast.error('Select a star rating'); return; }
+    setSubmitting(true);
+    try {
+      await axios.post(`${API}/orders/${order.id}/rate`, { stars, comment }, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success('Rating submitted!');
+      onUpdate({ ...order, [`${perspective}_rating`]: { stars, comment, rated_at: new Date().toISOString() } });
+    } catch (err) { toast.error(err.response?.data?.detail || 'Could not submit rating'); }
+    finally { setSubmitting(false); }
+  };
+
+  return (
+    <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2.5" data-testid="rating-form">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-medium text-amber-700">
+          Rate the {perspective === 'buyer' ? 'seller' : 'buyer'}
+        </p>
+        {countdown && (
+          <span className="text-[10px] text-amber-600 flex items-center gap-1">
+            <Clock className="w-3 h-3" /> {countdown}
+          </span>
+        )}
+      </div>
+      <div className="flex items-center gap-1" data-testid="star-rating-input">
+        {[1,2,3,4,5].map(i => (
+          <button key={i} onClick={() => setStars(i)} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(0)}
+            className="transition-transform hover:scale-110" data-testid={`star-${i}`}>
+            <Star className={`w-6 h-6 ${i <= (hover || stars) ? 'text-amber-400 fill-amber-400' : 'text-stone-200'}`} />
+          </button>
+        ))}
+      </div>
+      <Input placeholder="Optional comment..." value={comment} onChange={e => setComment(e.target.value)}
+        className="h-8 text-xs border-amber-200" data-testid="rating-comment-input" />
+      <Button size="sm" onClick={submit} disabled={submitting || !stars}
+        className="bg-honey text-vinyl-black hover:bg-honey-amber h-7 text-xs rounded-full w-full" data-testid="submit-rating-btn">
+        {submitting ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Star className="w-3 h-3 mr-1" />}
+        Submit Rating
+      </Button>
+      {theirRating && (
+        <div className="pt-1 border-t border-amber-200/50">
+          <p className="text-[10px] text-amber-600">
+            The {perspective === 'buyer' ? 'seller' : 'buyer'} rated you {theirRating.stars} stars
+          </p>
+        </div>
+      )}
     </div>
   );
 };
@@ -297,6 +390,19 @@ const OrderRow = ({ order, perspective, token, API, onUpdate, onCancel }) => {
               <div>
                 <span className="text-xs text-muted-foreground block mb-1">Shipping</span>
                 <ShippingEditor order={order} token={token} API={API} onUpdate={onUpdate} />
+              </div>
+            )}
+
+            {/* Rating section — show for delivered orders */}
+            {!isCancelled && order.shipping_status === 'DELIVERED' && (
+              <RatingSection order={order} perspective={isSale ? 'seller' : 'buyer'} token={token} API={API} onUpdate={onUpdate} />
+            )}
+
+            {/* Completed status */}
+            {order.order_status === 'COMPLETED' && (
+              <div className="flex items-center gap-2 text-xs text-green-600" data-testid="order-completed-badge">
+                <CheckCircle2 className="w-4 h-4" />
+                <span className="font-medium">Transaction Complete</span>
               </div>
             )}
 
