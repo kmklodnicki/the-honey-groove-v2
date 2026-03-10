@@ -269,6 +269,7 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - **Dropdown Clipping Fix:** User profile dropdown z-50, bg-white/95, backdrop-blur, glassmorphism shadow. Floats over page content.
 - **Multi-Channel Notifications:** Approve triggers "Welcome to the Inner Circle" celebration notification + "You're Verified" email. Deny triggers "Verification Update" notification with reason + email with reason callout.
 - **Denial Reasons Modal:** Quick-select buttons (Blurry, Expired, Wrong Document, Name Does Not Match) + custom text input. Reason injected into both notification and email. Async email sending keeps admin dashboard fast.
+- **Clutter-Free Feed (BLOCK 147):** Post buttons disabled until caption has >=1 char (Now Spinning, Haul, ISO, Randomizer, Daily Prompt). Subtext: "Only posts with comments will be shared on The Honey Groove feed." Backend excludes discogs_import posts and captionless Now Spinning/Collection Update/Randomizer posts from feed.
 
 ### Future / Backlog
 - **P0:** User's secret search feature (details TBD — user has mentioned multiple times)
