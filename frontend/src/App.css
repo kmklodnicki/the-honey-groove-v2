@@ -587,11 +587,11 @@ main {
 
 /* --- Sticky Glass Vault enforcement (iOS/Mobile) --- */
 [data-testid="treasury-header"] {
-  position: sticky !important;
+  position: fixed !important;
   top: 0 !important;
-  z-index: 9999 !important;
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
+  left: 0 !important;
+  width: 100% !important;
+  z-index: 99999 !important;
 }
 
 @keyframes eqBar1 {

@@ -65,19 +65,19 @@ const TreasuryHeader = ({ collectionValue, dreamValue, collectionTab, onTabChang
   const animDream = useCountUp(dreamValue, 1600, true);
 
   return (
+    <>
     <div
-      className="relative mb-5 rounded-2xl overflow-hidden"
+      className="relative rounded-2xl overflow-hidden"
       style={{
-        position: 'sticky',
+        position: 'fixed',
         top: 0,
-        zIndex: 9999,
+        left: 0,
+        width: '100%',
+        zIndex: 99999,
         background: 'rgba(255, 255, 255, 0.01)',
         backdropFilter: 'blur(60px) saturate(210%)',
         WebkitBackdropFilter: 'blur(60px) saturate(210%)',
         border: '1px solid rgba(255, 255, 255, 0.12)',
-        WebkitTransform: 'translateZ(0)',
-        transform: 'translateZ(0)',
-        willChange: 'transform',
       }}
       data-testid="treasury-header"
     >
@@ -161,6 +161,9 @@ const TreasuryHeader = ({ collectionValue, dreamValue, collectionTab, onTabChang
         </div>
       </div>
     </div>
+    {/* Spacer to preserve layout since header is position: fixed */}
+    <div style={{ height: 180 }} aria-hidden="true" />
+    </>
   );
 };
 
