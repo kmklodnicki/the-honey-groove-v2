@@ -423,6 +423,7 @@ const HivePage = () => {
   const [addingAlbum, setAddingAlbum] = useState(false);
 
   const [activeFilter, setActiveFilter] = useState('all');
+  const [feedMode, setFeedMode] = useState('all'); // 'all' or 'following'
   const promptFilter = searchParams.get('prompt_id');
   const [promptFilterText, setPromptFilterText] = useState(null);
 
@@ -442,7 +443,6 @@ const HivePage = () => {
     { key: 'listing', label: 'For Sale/Trade' },
     { key: 'NOTE', label: 'A Note' },
     { key: 'NEW_FEATURE', label: 'New Feature' },
-    { key: 'following', label: 'Following' },
   ];
 
   const headers = { Authorization: `Bearer ${token}` };
@@ -531,12 +531,16 @@ const HivePage = () => {
     if (promptFilter) {
       result = result.filter(p => p.prompt_id === promptFilter);
     }
+    // Apply feed mode (All vs Following)
+    if (feedMode === 'following') {
+      result = result.filter(p => followingIds.includes(p.user_id));
+    }
+    // Apply content type filter
     if (activeFilter === 'all') return result;
-    if (activeFilter === 'following') return result.filter(p => followingIds.includes(p.user_id));
     if (activeFilter === 'listing') return result.filter(p => p.post_type === 'listing_sale' || p.post_type === 'listing_trade');
     if (activeFilter === 'NEW_FEATURE') return result.filter(p => p.is_new_feature);
     return result.filter(p => p.post_type === activeFilter);
-  }, [posts, activeFilter, user?.id, promptFilter]);
+  }, [posts, feedMode, activeFilter, followingIds, user?.id, promptFilter]);
 
   const handleLike = async (postId, isLiked) => {
     // Optimistic update — instant visual feedback
@@ -740,7 +744,41 @@ const HivePage = () => {
       {/* Composer Bar */}
       <ComposerBar onPostCreated={handlePostCreated} records={records} />
 
-      {/* Filter Bar */}
+      {/* Feed Mode Toggle: All | Following */}
+      <div className="flex items-center mb-3" data-testid="feed-mode-toggle">
+        <div className="relative inline-flex bg-stone-100 rounded-full p-0.5">
+          {/* Sliding indicator */}
+          <div
+            className="absolute top-0.5 bottom-0.5 rounded-full transition-all duration-300 ease-out"
+            style={{
+              width: 'calc(50% - 2px)',
+              left: feedMode === 'all' ? '2px' : 'calc(50% + 0px)',
+              background: 'linear-gradient(135deg, #F4B942 0%, #C8861A 100%)',
+              boxShadow: '0 1px 4px rgba(200, 134, 26, 0.3)',
+            }}
+          />
+          <button
+            onClick={() => setFeedMode('all')}
+            className={`relative z-10 px-5 py-1.5 rounded-full text-sm font-medium transition-colors duration-200 ${
+              feedMode === 'all' ? 'text-white' : 'text-stone-500 hover:text-stone-700'
+            }`}
+            data-testid="feed-mode-all"
+          >
+            All
+          </button>
+          <button
+            onClick={() => setFeedMode('following')}
+            className={`relative z-10 px-5 py-1.5 rounded-full text-sm font-medium transition-colors duration-200 ${
+              feedMode === 'following' ? 'text-white' : 'text-stone-500 hover:text-stone-700'
+            }`}
+            data-testid="feed-mode-following"
+          >
+            Following
+          </button>
+        </div>
+      </div>
+
+      {/* Content Filter Bar */}
       <div className="flex flex-wrap gap-1.5 mb-4" data-testid="feed-filter-bar">
         {FEED_FILTERS.map(f => {
           const s = PILL_STYLES[f.key] || PILL_STYLES.all;
@@ -787,13 +825,15 @@ const HivePage = () => {
         <Card className="p-8 text-center border-honey/30" data-testid="hive-empty-state">
           <span className="text-4xl block mb-3">🐝</span>
           <p className="italic text-muted-foreground mb-4" style={{ fontFamily: '"DM Serif Display", serif', color: '#8A6B4A' }}>
-            {activeFilter === 'following'
+            {feedMode === 'following' && activeFilter === 'all'
               ? 'nothing here yet. follow some collectors to see their posts.'
-              : activeFilter === 'all'
-                ? 'the hive is just getting started. be the first to post.'
-                : `no ${FEED_FILTERS.find(f => f.key === activeFilter)?.label || ''} posts yet.`}
+              : feedMode === 'following'
+                ? `no ${FEED_FILTERS.find(f => f.key === activeFilter)?.label || ''} posts from people you follow yet.`
+                : activeFilter === 'all'
+                  ? 'the hive is just getting started. be the first to post.'
+                  : `no ${FEED_FILTERS.find(f => f.key === activeFilter)?.label || ''} posts yet.`}
           </p>
-          {activeFilter === 'following' ? (
+          {feedMode === 'following' ? (
             <Button onClick={() => navigate('/nectar')} className="bg-amber-500 text-white hover:bg-amber-600 rounded-full" data-testid="find-collectors-btn">
               browse collectors
             </Button>
@@ -827,7 +867,7 @@ const HivePage = () => {
       )}
 
       {/* View Older Posts */}
-      {filteredPosts.length > 0 && hasMore && activeFilter === 'all' && (
+      {filteredPosts.length > 0 && hasMore && activeFilter === 'all' && feedMode === 'all' && (
         <div className="flex justify-center pt-6 pb-2">
           <Button
             onClick={loadMore}
@@ -841,7 +881,7 @@ const HivePage = () => {
           </Button>
         </div>
       )}
-      {filteredPosts.length > 0 && !hasMore && activeFilter === 'all' && (
+      {filteredPosts.length > 0 && !hasMore && activeFilter === 'all' && feedMode === 'all' && (
         <p className="text-center text-sm text-muted-foreground pt-6 pb-2 italic">you've reached the beginning of the hive.</p>
       )}
 
