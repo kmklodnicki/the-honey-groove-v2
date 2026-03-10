@@ -67,6 +67,8 @@ const ProfilePage = () => {
   const [followRequestPending, setFollowRequestPending] = useState(false);
   const [followRequestCount, setFollowRequestCount] = useState(0);
   const [followRequestsOpen, setFollowRequestsOpen] = useState(false);
+  const [goldenHiveModalOpen, setGoldenHiveModalOpen] = useState(false);
+  const [goldenHiveCheckoutLoading, setGoldenHiveCheckoutLoading] = useState(false);
 
   const { openVariantModal } = useVariantModal();
 
@@ -580,14 +582,9 @@ const ProfilePage = () => {
             {/* Golden Hive ID — own profile only */}
             {isOwnProfile && !profile.golden_hive_verified && profile.golden_hive_status !== 'pending' && (
               <div className="mt-3" data-testid="golden-hive-cta">
-                <Button size="sm" onClick={async () => {
-                  try {
-                    const resp = await axios.post(`${API}/golden-hive/checkout`, {}, { headers: { Authorization: `Bearer ${token}` } });
-                    window.location.href = resp.data.url;
-                  } catch (err) { toast.error(err.response?.data?.detail || 'Could not start checkout'); }
-                }} className="rounded-full bg-gradient-to-r from-amber-400 to-yellow-400 text-vinyl-black hover:from-amber-500 hover:to-yellow-500 gap-1.5 font-medium">
+                <Button size="sm" onClick={() => setGoldenHiveModalOpen(true)} className="rounded-full bg-gradient-to-r from-amber-400 to-yellow-400 text-vinyl-black hover:from-amber-500 hover:to-yellow-500 gap-1.5 font-medium" data-testid="golden-hive-open-modal-btn">
                   <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                  Get Golden Hive ID · $9.99
+                  Get Golden Hive ID
                 </Button>
                 <p className="text-[10px] text-muted-foreground mt-1 max-w-[200px]">Verified identity badge for trusted trading and selling</p>
               </div>
@@ -1133,6 +1130,61 @@ const ProfilePage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Golden Hive ID Detail Modal */}
+      <Dialog open={goldenHiveModalOpen} onOpenChange={setGoldenHiveModalOpen}>
+        <DialogContent className="sm:max-w-md" data-testid="golden-hive-modal">
+          <DialogHeader>
+            <DialogTitle className="font-heading flex items-center gap-2 text-lg">
+              <svg className="w-5 h-5 text-amber-500" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Golden Hive ID
+            </DialogTitle>
+            <DialogDescription>Stand out as a trusted member of the community.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <ul className="space-y-2.5 text-sm">
+              <li className="flex items-start gap-2">
+                <ShieldCheck className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                <span><strong>Verified badge</strong> on your profile, posts, and listings</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Star className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                <span><strong>Priority visibility</strong> in search results and the marketplace</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <ArrowRightLeft className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                <span><strong>Increased trust</strong> for trades and sales with other collectors</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Lock className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                <span><strong>Admin-verified identity</strong> — manually reviewed for authenticity</span>
+              </li>
+            </ul>
+            <div className="border-t pt-3">
+              <p className="text-center text-xs text-muted-foreground mb-3">One-time verification — <span className="font-semibold text-amber-700">$9.99</span></p>
+              <Button
+                className="w-full rounded-full bg-gradient-to-r from-amber-400 to-yellow-400 text-vinyl-black hover:from-amber-500 hover:to-yellow-500 font-medium"
+                disabled={goldenHiveCheckoutLoading}
+                data-testid="golden-hive-checkout-btn"
+                onClick={async () => {
+                  setGoldenHiveCheckoutLoading(true);
+                  try {
+                    const resp = await axios.post(`${API}/golden-hive/checkout`, {}, { headers: { Authorization: `Bearer ${token}` } });
+                    window.location.href = resp.data.url;
+                  } catch (err) {
+                    toast.error(err.response?.data?.detail || 'Could not start checkout');
+                    setGoldenHiveCheckoutLoading(false);
+                  }
+                }}
+              >
+                {goldenHiveCheckoutLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                {goldenHiveCheckoutLoading ? 'Redirecting to Stripe...' : 'Get Verified Now'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 };

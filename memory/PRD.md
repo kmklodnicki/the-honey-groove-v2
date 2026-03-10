@@ -202,15 +202,17 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - **Dream List Bug Fix:** Root cause: `GET /api/iso` used `{$ne: 'WISHLIST'}` while frontend filtered for `status === 'WISHLIST'` — always empty. Fix: Created dedicated `GET /api/iso/dreamlist` endpoint. "Value of Dream Records" metric now always shows (even $0).
 - **Golden Hive ID Paid Verification:** $9.99 one-time payment via live Stripe. Flow: user pays → pending admin review → admin approves/rejects. Badge displays on profiles, Hive posts, and listings. Admin panel section for managing pending verifications. Endpoints: `POST /api/golden-hive/checkout`, `GET /api/golden-hive/status`, `GET /api/golden-hive/verify-payment`, `POST /api/admin/golden-hive/{id}/approve|reject`.
 
+### Recent Fixes (March 10, 2026 - continued)
+- **Golden Hive ID Modal UI Update:** Removed $9.99 price from the profile "Get Golden Hive ID" button. Clicking now opens a detailed modal explaining benefits (verified badge, priority visibility, increased trust, admin-verified identity) with the price revealed only at the bottom as "One-time verification — $9.99" and a "Get Verified Now" CTA. Files: ProfilePage.js.
+
 ### Future / Backlog
+- **P0:** User's secret search feature (details TBD — user has mentioned multiple times)
 - Refactor `ISOPage.js` and `ProfilePage.js` to reduce complexity (break into smaller components)
-- Rename `addToWantlist` function to `addToSeekingList` across frontend for code clarity
 - Safari-compatible loading animation
 - "Pro" memberships / "Verified Seller" badge
 - Buyer Protection features
 - Re-enable Instagram sharing
 - Make "New Music Friday" section of Weekly Wax dynamically editable by admin
-- Golden Hive badge on user displays throughout app
 - Break down GlobalSearch.js
 - Replace star imports in backend
 - Backend-powered search filters for scale
