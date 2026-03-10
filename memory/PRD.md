@@ -197,6 +197,7 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - Renamed `addToWantlist` → `addToSeekingList` globally across frontend
 - Updated shipping field labels: "Domestic Shipping" + "International Shipping" with proper form layout (intl fields directly below domestic)
 - **Hive Randomizer Feature:** Added Randomizer chip to ComposerBar. Picks a random record from user's owned collection (excludes dream list, ISOs, wantlist). Modal shows album art, title, artist, variant + caption field + 3 buttons: Post to Hive, Try Another, Cancel. Creates a distinct `RANDOMIZER` post type (separate from `NOW_SPINNING`). Backend endpoint `GET /api/collection/random` uses MongoDB $sample aggregation. New `POST /api/composer/randomizer` endpoint. Randomizer pill added to PostCards.js feed display. Shuffle animation on load.
+- **Trade Flow End-to-End Enforcement:** Added EXPIRED trade status for shipping deadline misses with auto-expiry (releases mutual holds, notifies both users). Tracking validation: min 6 chars, carrier required. Trade step timeline UI with 5 steps (Accepted → Awaiting Shipment → In Transit → Awaiting Confirmation → Completed). Live countdowns for shipping and confirmation deadlines. Expired trade notice with reason display.
 
 ### Future / Backlog
 - Refactor `ISOPage.js` and `ProfilePage.js` to reduce complexity (break into smaller components)
