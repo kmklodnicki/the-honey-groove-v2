@@ -871,6 +871,30 @@ const ISOPage = () => {
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">domestic</span>
                     </div>
 
+                    {/* International Shipping */}
+                    <label className="flex items-center gap-2.5 cursor-pointer group" data-testid="international-shipping-checkbox">
+                      <input
+                        type="checkbox"
+                        checked={internationalShipping}
+                        onChange={(e) => setInternationalShipping(e.target.checked)}
+                        className="w-4 h-4 rounded border-honey/50 text-honey accent-[#E8A820] cursor-pointer"
+                      />
+                      <span className="text-sm text-foreground group-hover:text-[#C8861A] transition-colors">Offer International Shipping</span>
+                    </label>
+                    <div className="relative">
+                      <DollarSign className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-opacity ${!internationalShipping ? 'opacity-50' : ''}`} />
+                      <Input
+                        placeholder="International Shipping"
+                        type="number"
+                        value={listIntlShippingCost}
+                        onChange={e => setListIntlShippingCost(e.target.value)}
+                        disabled={!internationalShipping}
+                        className={`pl-9 border-honey/50 transition-opacity ${!internationalShipping ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        data-testid="list-intl-shipping-cost-input"
+                      />
+                      <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground transition-opacity ${!internationalShipping ? 'opacity-50' : ''}`}>intl</span>
+                    </div>
+
                     {/* Payout Estimator */}
                     {payoutEstimate && (
                       <div className="bg-amber-50/70 border border-amber-200/60 rounded-xl p-3 space-y-1.5" data-testid="payout-estimator">
@@ -942,32 +966,6 @@ const ISOPage = () => {
                     </div>
                   </div>
                 )}
-
-                {/* International Shipping */}
-                <div className="space-y-2.5">
-                  <label className="flex items-center gap-2.5 cursor-pointer group" data-testid="international-shipping-checkbox">
-                    <input
-                      type="checkbox"
-                      checked={internationalShipping}
-                      onChange={(e) => setInternationalShipping(e.target.checked)}
-                      className="w-4 h-4 rounded border-honey/50 text-honey accent-[#E8A820] cursor-pointer"
-                    />
-                    <span className="text-sm text-foreground group-hover:text-[#C8861A] transition-colors">Offer International Shipping</span>
-                  </label>
-                  <div className="relative">
-                    <DollarSign className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-opacity ${!internationalShipping ? 'opacity-50' : ''}`} />
-                    <Input
-                      placeholder="International Shipping"
-                      type="number"
-                      value={listIntlShippingCost}
-                      onChange={e => setListIntlShippingCost(e.target.value)}
-                      disabled={!internationalShipping}
-                      className={`pl-9 border-honey/50 transition-opacity ${!internationalShipping ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      data-testid="list-intl-shipping-cost-input"
-                    />
-                    <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground transition-opacity ${!internationalShipping ? 'opacity-50' : ''}`}>intl</span>
-                  </div>
-                </div>
 
                 <Button onClick={submitListing} disabled={submitting || listPhotos.length === 0 || (manualMode && (!listArtist || !listAlbum)) || (!manualMode && !selectedRelease) || (sellerStats && sellerStats.completed_transactions < 3 && parseFloat(listPrice) > 150)}
                   className="w-full bg-honey text-vinyl-black hover:bg-honey-amber rounded-full" data-testid="list-form-submit">
