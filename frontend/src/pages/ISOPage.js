@@ -154,6 +154,7 @@ const ISOPage = () => {
   const [showInsurancePrompt, setShowInsurancePrompt] = useState(false);
   const [insuranceChoice, setInsuranceChoice] = useState(null);
   const [internationalShipping, setInternationalShipping] = useState(false);
+  const [listIntlShippingCost, setListIntlShippingCost] = useState('');
   const [listShippingCost, setListShippingCost] = useState('6.00');
   const [payoutEstimate, setPayoutEstimate] = useState(null);
   const [pulseData, setPulseData] = useState(null);
@@ -249,6 +250,7 @@ const ISOPage = () => {
     setListPhotos([]); setUploadingPhotos(false); setPricingAssist(null);
     setShowInsurancePrompt(false); setInsuranceChoice(null);
     setInternationalShipping(false);
+    setListIntlShippingCost('');
     setListShippingCost('6.00'); setPayoutEstimate(null); setPulseData(null);
   };
 
@@ -371,6 +373,7 @@ const ISOPage = () => {
         photo_urls: photoUrls,
         insured: insuranceChoice,
         international_shipping: internationalShipping,
+        international_shipping_cost: internationalShipping && listIntlShippingCost ? parseFloat(listIntlShippingCost) : null,
       }, { headers: { Authorization: `Bearer ${token}` }});
       toast.success('listing posted.');
       closeModal(); fetchData();
@@ -941,7 +944,7 @@ const ISOPage = () => {
                 )}
 
                 {/* International Shipping */}
-                <div className="space-y-1.5">
+                <div className="space-y-2.5">
                   <label className="flex items-center gap-2.5 cursor-pointer group" data-testid="international-shipping-checkbox">
                     <input
                       type="checkbox"
@@ -949,12 +952,19 @@ const ISOPage = () => {
                       onChange={(e) => setInternationalShipping(e.target.checked)}
                       className="w-4 h-4 rounded border-honey/50 text-honey accent-[#E8A820] cursor-pointer"
                     />
-                    <span className="text-sm text-foreground group-hover:text-[#C8861A] transition-colors">Open to international shipping</span>
+                    <span className="text-sm text-foreground group-hover:text-[#C8861A] transition-colors">Offer International Shipping</span>
                   </label>
                   {internationalShipping && (
-                    <p className="text-xs text-muted-foreground ml-6.5 pl-[26px]">
-                      Tip: if you offer international shipping, make sure to bake the shipping cost into your listing price.
-                    </p>
+                    <div className="pl-[26px] space-y-2.5">
+                      <div className="relative">
+                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input placeholder="International shipping cost" type="number" value={listIntlShippingCost} onChange={e => setListIntlShippingCost(e.target.value)} className="pl-9 border-honey/50" data-testid="list-intl-shipping-cost-input" />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">intl shipping</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Tip: enter the shipping cost for international orders. This will be shown separately to buyers outside your country.
+                      </p>
+                    </div>
                   )}
                 </div>
 

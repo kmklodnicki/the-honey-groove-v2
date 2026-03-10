@@ -311,6 +311,7 @@ async def create_listing(data: ListingCreate, user: Dict = Depends(require_auth)
         "photo_urls": data.photo_urls,
         "insured": data.insured,
         "international_shipping": data.international_shipping or False,
+        "international_shipping_cost": data.international_shipping_cost if (data.international_shipping) else None,
         "offplatform_flagged": offplatform_flagged,
         "status": "ACTIVE",
         "created_at": now
@@ -514,6 +515,11 @@ async def get_listing(listing_id: str, current_user: Optional[Dict] = Depends(ge
     resp["user"] = seller_data
     resp["similar_listings"] = similar_enriched
     resp["on_wantlist"] = on_wantlist
+    # Ensure international_shipping_cost is always present (legacy data may not have it)
+    if "international_shipping_cost" not in resp:
+        resp["international_shipping_cost"] = None
+    if "shipping_cost" not in resp:
+        resp["shipping_cost"] = None
     return resp
 
 @router.delete("/listings/{listing_id}")
@@ -580,6 +586,10 @@ async def update_listing(listing_id: str, data: ListingUpdate, user: Dict = Depe
         update_fields["insured"] = data.insured
     if data.international_shipping is not None:
         update_fields["international_shipping"] = data.international_shipping
+        if not data.international_shipping:
+            update_fields["international_shipping_cost"] = None
+    if data.international_shipping_cost is not None:
+        update_fields["international_shipping_cost"] = data.international_shipping_cost
     if data.color_variant is not None:
         update_fields["color_variant"] = data.color_variant
 

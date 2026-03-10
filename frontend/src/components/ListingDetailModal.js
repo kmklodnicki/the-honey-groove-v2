@@ -49,6 +49,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
   const [editPhotos, setEditPhotos] = useState([]); // [{url, preview, file?}]
   const [editInsured, setEditInsured] = useState(false);
   const [editIntlShipping, setEditIntlShipping] = useState(false);
+  const [editIntlShippingCost, setEditIntlShippingCost] = useState('');
   const [saving, setSaving] = useState(false);
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
 
@@ -118,6 +119,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
     setEditPhotos((listing.photo_urls || []).map(url => ({ url, preview: resolveImageUrl(url), file: null })));
     setEditInsured(listing.insured || false);
     setEditIntlShipping(listing.international_shipping || false);
+    setEditIntlShippingCost(listing.international_shipping_cost?.toString() || '');
     setEditing(true);
   };
 
@@ -174,6 +176,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
         photo_urls: photoUrls,
         insured: editInsured,
         international_shipping: editIntlShipping,
+        international_shipping_cost: editIntlShipping && editIntlShippingCost ? parseFloat(editIntlShippingCost) : null,
       };
 
       const resp = await axios.put(`${API}/listings/${listingId}`, updateData, { headers: { Authorization: `Bearer ${token}` } });
@@ -412,8 +415,17 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                     </label>
                     <label className="flex items-center gap-2.5 cursor-pointer" data-testid="edit-intl-shipping-checkbox">
                       <input type="checkbox" checked={editIntlShipping} onChange={e => setEditIntlShipping(e.target.checked)} className="w-4 h-4 rounded border-honey/50 accent-[#E8A820]" />
-                      <span className="text-sm">Open to international shipping</span>
+                      <span className="text-sm">Offer International Shipping</span>
                     </label>
+                    {editIntlShipping && (
+                      <div className="pl-[26px]">
+                        <div className="relative">
+                          <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                          <Input placeholder="International shipping cost" type="number" value={editIntlShippingCost} onChange={e => setEditIntlShippingCost(e.target.value)} className="pl-9 border-honey/50" data-testid="edit-intl-shipping-cost-input" />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">intl shipping</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Save / Cancel */}
@@ -594,11 +606,26 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                     </div>
                   )}
 
+                  {/* Shipping costs */}
+                  {listing.shipping_cost != null && (
+                    <div className="px-6 py-1" data-testid="listing-domestic-shipping">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-stone-600 bg-stone-50 border border-stone-200 px-3 py-1.5 rounded-full">
+                        <Package className="w-3.5 h-3.5" /> Shipping: ${listing.shipping_cost.toFixed(2)}{listing.international_shipping ? ' (Domestic)' : ''}
+                      </span>
+                    </div>
+                  )}
+
                   {/* International shipping indicator */}
-                  {listing.international_shipping && (
-                    <div className="px-6 py-1" data-testid="listing-intl-shipping">
+                  {listing.international_shipping ? (
+                    <div className="px-6 py-1 space-y-1" data-testid="listing-intl-shipping">
                       <span className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-full">
-                        <Package className="w-3.5 h-3.5" /> Open to international shipping
+                        <Package className="w-3.5 h-3.5" /> International Shipping: {listing.international_shipping_cost ? `$${listing.international_shipping_cost.toFixed(2)}` : 'Available'}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="px-6 py-1" data-testid="listing-no-intl-shipping">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-stone-500 bg-stone-50 border border-stone-200 px-3 py-1.5 rounded-full">
+                        <Package className="w-3.5 h-3.5" /> International Shipping: Not Available
                       </span>
                     </div>
                   )}
