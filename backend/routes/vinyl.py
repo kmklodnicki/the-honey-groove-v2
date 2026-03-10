@@ -399,6 +399,32 @@ async def get_rarity_by_discogs_id(discogs_id: int):
     return rarity
 
 
+# ========== Variant Ownership & Actions ==========
+
+@router.get("/ownership/{discogs_id}")
+async def check_ownership(discogs_id: int, user=Depends(get_current_user)):
+    """Check if the current user owns a variant, has it on ISO/wishlist."""
+    if not user:
+        return {"owned": False, "iso_status": None, "record_id": None, "iso_id": None}
+
+    record = await db.records.find_one(
+        {"user_id": user["id"], "discogs_id": discogs_id},
+        {"_id": 0, "id": 1}
+    )
+
+    iso_item = await db.iso_items.find_one(
+        {"user_id": user["id"], "discogs_id": discogs_id, "status": {"$in": ["OPEN", "WISHLIST"]}},
+        {"_id": 0, "id": 1, "status": 1}
+    )
+
+    return {
+        "owned": bool(record),
+        "record_id": record["id"] if record else None,
+        "iso_status": iso_item["status"] if iso_item else None,
+        "iso_id": iso_item["id"] if iso_item else None,
+    }
+
+
 # ========== Variant Completion Tracker ==========
 
 # Sleeve/packaging descriptors to strip when normalizing variant names

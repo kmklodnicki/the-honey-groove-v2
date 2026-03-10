@@ -7,6 +7,7 @@ import AlbumArt from '../components/AlbumArt';
 import SEOHead from '../components/SEOHead';
 import { RarityCard } from '../components/RarityBadge';
 import VariantCompletion from '../components/VariantCompletion';
+import VariantActions from '../components/VariantActions';
 import { useAuth } from '../context/AuthContext';
 import { resolveImageUrl } from '../utils/imageUrl';
 import axios from 'axios';
@@ -178,6 +179,9 @@ export default function VinylVariantPage() {
               <StatCard icon={Search} label="Searching" value={dm.iso_count} sub="have it on ISO" />
               <StatCard icon={Heart} label="Posts" value={dm.post_count} sub="in the Hive" />
             </div>
+
+            {/* Action buttons */}
+            <VariantActions variant={ov} />
           </div>
         </div>
       </section>
