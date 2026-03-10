@@ -67,9 +67,20 @@ const ApprovedSeal = () => (
   </div>
 );
 
+/* ─── Escape key handler hook ─── */
+const useEscapeKey = (open, onClose) => {
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [open, onClose]);
+};
+
 /* ─── BLOCK 115.1: The Groove Gateway (Amazon) ─── */
 const GrooveGatewayModal = ({ item, open, onClose }) => {
   const [phase, setPhase] = useState('loading');
+  useEscapeKey(open, onClose);
 
   useEffect(() => {
     if (!open) { setPhase('loading'); return; }
@@ -166,6 +177,7 @@ const GrooveGatewayModal = ({ item, open, onClose }) => {
 const GrooveTerminalModal = ({ item, open, onClose }) => {
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [showFallback, setShowFallback] = useState(false);
+  useEscapeKey(open, onClose);
 
   useEffect(() => {
     if (!open) { setIframeLoaded(false); setShowFallback(false); return; }
@@ -190,8 +202,9 @@ const GrooveTerminalModal = ({ item, open, onClose }) => {
           border: '1px solid rgba(218,165,32,0.3)',
           boxShadow: '0 8px 60px rgba(0,0,0,0.25), 0 0 0 1px rgba(255,255,255,0.1) inset',
           borderRadius: '24px 24px 0 0',
-          height: '90vh',
-          maxHeight: '90vh',
+          height: 'calc(90vh - 60px)',
+          maxHeight: 'calc(90vh - 60px)',
+          marginTop: '60px',
         }}
       >
         {/* Sticky Diamond Glass Header */}
