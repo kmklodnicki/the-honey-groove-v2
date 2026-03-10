@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { resolveImageUrl } from '../utils/imageUrl';
 
 const FALLBACK = '/vinyl-placeholder.svg';
@@ -6,6 +6,18 @@ const FALLBACK = '/vinyl-placeholder.svg';
 const AlbumArt = ({ src, alt = '', className = '', style, ...props }) => {
   const resolvedSrc = resolveImageUrl(src);
   const [status, setStatus] = useState(resolvedSrc ? 'loading' : 'error');
+
+  // Reset status when src changes
+  useEffect(() => {
+    setStatus(resolveImageUrl(src) ? 'loading' : 'error');
+  }, [src]);
+
+  // Timeout: if still loading after 8s, show fallback
+  useEffect(() => {
+    if (status !== 'loading') return;
+    const t = setTimeout(() => setStatus(s => s === 'loading' ? 'error' : s), 8000);
+    return () => clearTimeout(t);
+  }, [status]);
 
   return (
     <div className={`relative overflow-hidden ${className}`} style={style} {...props}>

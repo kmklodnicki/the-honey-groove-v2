@@ -386,6 +386,7 @@ const NoteCard = ({ post, onAlbumClick }) => {
             src={resolveImageUrl(post.image_url)} alt={`${post.record_artist || 'User'} ${post.record_title || 'post'} vinyl record`}
             className="w-full rounded-lg mt-3 object-cover max-h-80 cursor-pointer"
             onClick={() => setLightboxOpen(true)}
+            onError={(e) => { e.target.style.display = 'none'; }}
           />
           <PhotoLightbox
             photos={[post.image_url]}
@@ -439,6 +440,7 @@ const PostCardBody = ({ post, onAlbumClick }) => {
     case 'WEEKLY_WRAP': return <WeeklyWrapCard post={post} />;
     case 'VINYL_MOOD': return <VinylMoodCard post={post} onAlbumClick={onAlbumClick} />;
     case 'DAILY_PROMPT': return <DailyPromptPostCard post={post} />;
+    case 'RANDOMIZER': return <NowSpinningCard post={post} onAlbumClick={onAlbumClick} />;
     case 'listing_sale': return <ListingPostCard post={post} />;
     case 'listing_trade': return <ListingPostCard post={post} />;
     default:
