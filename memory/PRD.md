@@ -259,9 +259,12 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - **Honey-Orange Spectrum Reflux & Hive Layout (BLOCK 141):** Progressive 135deg gradients. Hive page reordered: Title → All/Following Toggle → Composer Bar → Filter Chips → Feed.
 - **Monochromatic Honey Spectrum (BLOCK 144):** Removed all red/burnt-orange. Pure honey/amber fade: Spin=#FFB300→#FFA000, Haul=#FFA000→#FF8F00, ISO=#FF8F00→#FF6F00, Note=#FF6F00→#F57C00, Shuffle=#F57C00→#E65100. All primary buttons (Buzz In, All/Following active) synced to Icon 1 gradient.
 - **Boutique Flow Restructuring (BLOCK 145):** Reordered Hive: Title → Toggle → Composer → Daily Prompt (my-4 margins) → Filter Chips → Feed. Purged all purple from mood chips: bg=#FFF8E1 (soft honey), text=#5D4037 (deep amber/brown), thin amber border. Selected mood state uses Honey Gradient bg with black text.
-- **Crown Jewel Expansion (BLOCK 143):** Added CrownJewelsAll renderer to See All page (/nectar/crown-jewels). Fixed Crown Jewel navigation to /variant/:discogs_id. Variant page stats show "—" for null values.
-- **Kill Dynamic Mood Colors:** Removed all mood-based color changes from Now Spinning modal. Header, Post button, and all elements locked to Primary Honey Gradient regardless of mood. Mood chips: inactive=#FFF8E1 bg with #3E2723 text, active=Honey Gradient with black text.
-- **Dream Catcher Fix (BLOCK 150):** Wired all + icons (Crown Jewels, Most Wanted, Trending Collections) to Dream Catcher Intent Modal with "Just Dreaming" vs "Actively Seeking" options. On success: toast notification + icon changes from Plus to Checkmark with Honey Gradient background. Implemented on both ExplorePage and ExploreSeeAllPage.
+- **Crown Jewel Expansion (BLOCK 143):** Added CrownJewelsAll renderer to See All page. Fixed navigation to /variant/:discogs_id. Variant page stats show "—" for null values.
+- **Kill Dynamic Mood Colors:** Modal header, Post button, mood chips all locked to Honey theme. No mood-based color changes.
+- **Dream Catcher Fix (BLOCK 150):** All + icons trigger Intent Modal (Dreaming/Seeking). Checkmark feedback on success.
+- **Crown Jewels Collision Fix:** ScrollRow arrows moved to Floating Glass Dock at bottom-center. No overlap with + buttons.
+- **Global Adaptive UI (BLOCK 125):** State dropdown conditional on Country=US. City/Postal marked "(Optional)" in italic. Non-US: 2-column grid. US: 3-column grid.
+- **Global Groove (BLOCK 127):** Near You algorithm: US users match by state, non-US match by country. State removed from DOM for non-US. Backend accepts state + postal_code fields.
 
 ### Future / Backlog
 - **P0:** User's secret search feature (details TBD — user has mentioned multiple times)
