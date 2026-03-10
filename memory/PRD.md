@@ -212,6 +212,7 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 
 ### Recent Fixes (March 10, 2026 - continued 2)
 - **Amber Glass & Brushed Gold Pill Refactor (BLOCK 69.1):** Standardized all variant and price badge overlays on album art to a consistent "Amber Glass & Brushed Gold" premium glassmorphism effect. Style: `rgba(255,215,0,0.2)` honey-tinted background, `blur(14px)` backdrop, `2px solid #DAA520` brushed gold border, soft outer glow with inner gold ring. Applied uniformly across: CollectionPage.js (collection + wishlist), ProfilePage.js (collection + dreaming + ISO tabs), PostCards.js (VariantTag component), VinylVariantPage.js, DailyPrompt.js.
+- **Numbered Edition Tracking (BLOCK 71.1):** Added optional `edition_number` field to collection records and `preferred_number` field to Dream List/ISO items. Backend: `RecordCreate`, `RecordResponse`, `ISODirectCreate`, `ISOResponse` models updated. Frontend: "Edition Number (optional)" input on Add to Collection form, "Preferred Edition Number (optional)" on Dream List form. Display: "No. X" pill on collection cards, "Seeking No. X" pill on Dream List cards. Both pills use the Amber Glass & Brushed Gold glassmorphism style. Tested: 100% backend + frontend pass rate.
 
 ### Future / Backlog
 - **P0:** User's secret search feature (details TBD — user has mentioned multiple times)
