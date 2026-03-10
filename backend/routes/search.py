@@ -49,7 +49,6 @@ import re as _re_module
 
 def _normalize_artist_name(name: str) -> str:
     """Normalize an artist name for deduplication."""
-    # lowercase, strip whitespace, remove trailing punctuation
     n = name.lower().strip()
     n = _re_module.sub(r'[,;.!?]+$', '', n).strip()
     return n
@@ -59,10 +58,74 @@ def _split_artists(artist_field: str) -> list[str]:
     """Split a multi-artist field into individual canonical artist names."""
     if not artist_field:
         return []
-    # Split on comma, ampersand, " and ", " with ", " feat. ", " ft. ", " featuring "
     parts = _re_module.split(r'\s*[,&]\s*|\s+(?:and|with|feat\.?|ft\.?|featuring)\s+', artist_field, flags=_re_module.IGNORECASE)
-    # Return non-empty trimmed names
     return [p.strip() for p in parts if p.strip()]
+
+
+# ─── Collector Synonym Expansion ───
+SYNONYMS = {
+    "rsd": ["record store day", "rsd"],
+    "record store day": ["record store day", "rsd"],
+    "color": ["colored vinyl", "colored", "colour"],
+    "colored": ["colored vinyl", "colored", "colour"],
+    "coloured": ["colored vinyl", "colored", "colour"],
+    "limited": ["limited edition", "limited"],
+    "ltd": ["limited edition", "limited"],
+    "exclusive": ["exclusive", "indie exclusive", "webstore exclusive", "tour exclusive"],
+    "anniversary": ["anniversary", "anniversary edition"],
+    "deluxe": ["deluxe", "deluxe edition"],
+    "signed": ["signed", "autographed"],
+    "picture disc": ["picture disc"],
+    "pic disc": ["picture disc"],
+    "clear": ["clear", "crystal clear", "transparent"],
+    "transparent": ["transparent", "translucent", "clear"],
+    "splatter": ["splatter", "splattered"],
+    "marbled": ["marbled", "marble"],
+    "swirl": ["swirl", "swirled"],
+    "glow": ["glow", "glow in the dark", "glow-in-the-dark"],
+    "obi": ["obi", "obi strip"],
+    "gatefold": ["gatefold"],
+    "180g": ["180 gram", "180g"],
+    "180": ["180 gram", "180g"],
+    "1st": ["first pressing", "first", "1st"],
+    "first pressing": ["first pressing", "first", "1st"],
+    "repress": ["repress", "reissue", "repressing"],
+    "reissue": ["reissue", "repress"],
+    "test pressing": ["test pressing", "test press"],
+    "promo": ["promo", "promotional"],
+}
+
+COLLECTOR_KEYWORDS = {
+    "rsd", "record store day", "limited", "exclusive", "indie exclusive",
+    "tour exclusive", "webstore exclusive", "signed", "autographed",
+    "picture disc", "colored", "coloured", "splatter", "marbled", "swirl",
+    "clear", "transparent", "translucent", "obi", "gatefold", "180g",
+    "180 gram", "first pressing", "test pressing", "promo", "anniversary",
+    "deluxe", "numbered", "glow", "repress", "reissue",
+}
+
+
+def _expand_synonyms(words: list[str]) -> list[str]:
+    """Expand search words with collector synonyms."""
+    expanded = list(words)
+    query_lower = " ".join(words)
+    # Check multi-word synonyms first
+    for trigger, synonyms in SYNONYMS.items():
+        if trigger in query_lower:
+            for syn in synonyms:
+                syn_words = syn.split()
+                for sw in syn_words:
+                    if sw not in expanded:
+                        expanded.append(sw)
+    # Check individual words
+    for w in words:
+        if w in SYNONYMS:
+            for syn in SYNONYMS[w]:
+                syn_words = syn.split()
+                for sw in syn_words:
+                    if sw not in expanded:
+                        expanded.append(sw)
+    return expanded
 
 
 def _score(text: str, words: list[str]) -> int:
@@ -89,35 +152,92 @@ def _score(text: str, words: list[str]) -> int:
     return score
 
 
-def _variant_score(rec: dict, words: list[str]) -> int:
-    """Variant-first scoring: variant > color > album > artist."""
-    query_full = " ".join(words)
+def _variant_score_v2(rec: dict, original_words: list[str], expanded_words: list[str]) -> int:
+    """Collector-intent scoring: variant keywords > exact variant > artist+variant > artist+album."""
+    query_full = " ".join(original_words)
     s = 0
     variant = (rec.get("color_variant") or "").lower()
     artist = (rec.get("artist") or "").lower()
     title = (rec.get("title") or "").lower()
+    notes = (rec.get("notes") or "").lower()
+    label = ""
+    raw_label = rec.get("label")
+    if isinstance(raw_label, list):
+        label = " ".join(raw_label).lower()
+    elif isinstance(raw_label, str):
+        label = raw_label.lower()
+    catno = (rec.get("catno") or "").lower()
+    year_str = str(rec.get("year") or "")
 
-    # Exact variant match — highest priority
+    # Detect collector-intent words in the query
+    collector_words = [w for w in original_words if w in COLLECTOR_KEYWORDS or w in SYNONYMS]
+    non_collector_words = [w for w in original_words if w not in collector_words]
+
+    # ── 1. Exact variant match (highest priority: 300) ──
     if variant and variant == query_full:
-        s += 200
+        s += 300
     elif variant:
-        s += _score(rec.get("color_variant", ""), words) * 2
+        v_score = _score(variant, original_words)
+        s += v_score * 3  # variant matches weighted 3x
 
-    # Album match
+    # ── 2. Collector keyword matches in variant / notes (250 bonus each) ──
+    for cw in collector_words:
+        syns = SYNONYMS.get(cw, [cw])
+        for syn in syns:
+            if syn in variant:
+                s += 200
+                break
+            if syn in notes:
+                s += 150
+                break
+            if syn in label:
+                s += 80
+                break
+
+    # ── 3. Artist match ──
+    if non_collector_words:
+        artist_query = " ".join(non_collector_words)
+        if artist == artist_query:
+            s += 120
+        elif artist_query in artist:
+            s += 80
+        else:
+            s += _score(artist, non_collector_words)
+    elif artist == query_full:
+        s += 60
+    else:
+        s += int(_score(artist, original_words) * 0.7)
+
+    # ── 4. Album title match ──
     if title == query_full:
         s += 80
     else:
-        s += _score(rec.get("title", ""), words)
+        s += _score(title, original_words)
 
-    # Artist match
-    if artist == query_full:
-        s += 60
-    else:
-        s += _score(rec.get("artist", ""), words) * 0.7
+    # ── 5. Year match ──
+    for w in original_words:
+        if w.isdigit() and len(w) == 4 and w == year_str:
+            s += 100
 
-    # Bonus for having a real variant
-    if variant and variant != "black" and any(w in variant for w in words):
-        s += 50
+    # ── 6. Notes match for expanded terms ──
+    for ew in expanded_words:
+        if ew in notes:
+            s += 30
+        if ew in variant:
+            s += 20
+
+    # ── 7. Bonus for non-standard variants ──
+    if variant and variant not in ("", "black", "standard", "none"):
+        s += 15
+
+    # ── 8. Community demand bonus (if available) ──
+    want = rec.get("community_want", 0)
+    if want > 100:
+        s += 25
+    elif want > 50:
+        s += 15
+    elif want > 10:
+        s += 5
 
     return int(s)
 
@@ -134,12 +254,12 @@ def _record_score(rec: dict, words: list[str]) -> int:
     if title == query_full:
         score += 80
     else:
-        score += _score(rec.get("title", ""), words) * 0.8
+        score += int(_score(rec.get("title", ""), words) * 0.8)
     return score
 
 
 def _user_score(u: dict, words: list[str]) -> int:
-    return _score(u.get("username", ""), words) + _score(u.get("bio", ""), words) * 0.5
+    return _score(u.get("username", ""), words) + int(_score(u.get("bio", ""), words) * 0.5)
 
 
 def _post_score(p: dict, words: list[str]) -> int:
@@ -158,21 +278,28 @@ def _listing_score(listing: dict, words: list[str]) -> int:
     if album == query_full:
         score += 80
     else:
-        score += _score(listing.get("album", ""), words) * 0.8
+        score += int(_score(listing.get("album", ""), words) * 0.8)
     return score
 
 
-def _build_regex_filter(q: str) -> dict:
+def _build_regex_filter(q: str) -> list:
     words = q.strip().split()
     patterns = []
     for w in words:
-        patterns.append({"$regex": w, "$options": "i"})
+        patterns.append({"$regex": _re_module.escape(w), "$options": "i"})
+    return patterns
+
+
+def _build_expanded_regex(expanded_words: list[str]) -> list:
+    """Build regex patterns from expanded synonym words."""
+    patterns = []
+    for w in expanded_words:
+        patterns.append({"$regex": _re_module.escape(w), "$options": "i"})
     return patterns
 
 
 def _slugify(text: str) -> str:
-    import re as _re
-    return _re.sub(r"[^a-z0-9]+", "-", (text or "").lower()).strip("-")
+    return _re_module.sub(r"[^a-z0-9]+", "-", (text or "").lower()).strip("-")
 
 
 # ========== Variant-first search ==========
@@ -184,32 +311,64 @@ async def search_variants(
     limit: int = Query(20, ge=1, le=50),
     user: Optional[Dict] = Depends(get_current_user),
 ):
-    """Variant-first search across all records. Returns deduplicated variants with slug URLs."""
-    words = [w.lower() for w in q.strip().split() if len(w) >= 1]
-    if not words:
-        return {"variants": [], "albums": [], "artists": [], "has_more": False}
+    """Collector-intent variant search across records + discogs_releases."""
+    original_words = [w.lower() for w in q.strip().split() if len(w) >= 1]
+    if not original_words:
+        return {"variants": [], "albums": [], "artists": [], "has_more": False, "total": 0}
 
-    regex_patterns = _build_regex_filter(q)
-    def field_or(field: str):
-        return [{field: p} for p in regex_patterns]
+    expanded_words = _expand_synonyms(original_words)
+    regex_orig = _build_regex_filter(q)
+    regex_expanded = _build_expanded_regex(expanded_words)
 
-    # Search across artist, title, color_variant, catno
-    rec_filter = {"$or": field_or("artist") + field_or("title") + field_or("color_variant") + field_or("catno")}
-    fetch_limit = skip + limit + 100
-    raw = await db.records.find(rec_filter, {"_id": 0}).limit(fetch_limit).to_list(fetch_limit)
+    def field_or(field: str, patterns: list):
+        return [{field: p} for p in patterns]
 
-    # Deduplicate by discogs_id → keep best per variant
-    seen = {}
-    for r in raw:
+    # ── Search records collection (user collections) ──
+    rec_filter = {"$or":
+        field_or("artist", regex_orig)
+        + field_or("title", regex_orig)
+        + field_or("color_variant", regex_expanded)
+        + field_or("catno", regex_orig)
+        + field_or("notes", regex_expanded)
+    }
+    fetch_limit = skip + limit + 200
+    raw_records = await db.records.find(rec_filter, {"_id": 0}).limit(fetch_limit).to_list(fetch_limit)
+
+    # ── Search discogs_releases collection (rich metadata) ──
+    discogs_filter = {"$or":
+        field_or("artist", regex_orig)
+        + field_or("title", regex_orig)
+        + field_or("color_variant", regex_expanded)
+        + field_or("catno", regex_orig)
+        + field_or("notes", regex_expanded)
+        + field_or("label", regex_orig)
+    }
+    raw_discogs = await db.discogs_releases.find(discogs_filter, {"_id": 0}).limit(fetch_limit).to_list(fetch_limit)
+
+    # ── Merge & deduplicate by discogs_id (prefer discogs_releases for richer data) ──
+    merged = {}
+    # First pass: records (user collections)
+    for r in raw_records:
         did = r.get("discogs_id")
         key = did or r.get("id")
-        if key not in seen:
-            seen[key] = r
+        if key and key not in merged:
+            merged[key] = r
+    # Second pass: discogs_releases (overwrite with richer data if available)
+    for r in raw_discogs:
+        did = r.get("discogs_id")
+        if not did:
+            continue
+        if did in merged:
+            # Merge: keep discogs_release fields as they're richer, but preserve user collection fields
+            existing = merged[did]
+            merged[did] = {**existing, **{k: v for k, v in r.items() if v and (not existing.get(k) or k in ("notes", "label", "catno", "community_have", "community_want", "genre", "style"))}}
+        else:
+            merged[did] = r
 
-    unique = list(seen.values())
-    scored = sorted(unique, key=lambda r: _variant_score(r, words), reverse=True)
+    unique = list(merged.values())
+    scored = sorted(unique, key=lambda r: _variant_score_v2(r, original_words, expanded_words), reverse=True)
 
-    # Split into: variants (have color_variant), albums (grouped by title)
+    # ── Build output: variants, albums, artists ──
     variants_out = []
     album_groups = {}
     artist_set = {}
@@ -219,20 +378,19 @@ async def search_variants(
         title = r.get("title", "")
         variant = r.get("color_variant", "")
 
-        # Track unique artists — split multi-artist fields into individual names
+        # Track unique artists
         individual_artists = _split_artists(artist)
         for ind_name in individual_artists:
             norm = _normalize_artist_name(ind_name)
             if norm and norm not in artist_set:
                 artist_set[norm] = {
-                    "name": ind_name,  # preserve original casing from first occurrence
-                    "score": _score(ind_name, words),
+                    "name": ind_name,
+                    "score": _score(ind_name, original_words),
                     "record_count": 1,
                 }
             elif norm and norm in artist_set:
                 artist_set[norm]["record_count"] = artist_set[norm].get("record_count", 1) + 1
-                # Update score if this occurrence scores higher
-                new_score = _score(ind_name, words)
+                new_score = _score(ind_name, original_words)
                 if new_score > artist_set[norm]["score"]:
                     artist_set[norm]["score"] = new_score
 
@@ -248,10 +406,33 @@ async def search_variants(
             }
         album_groups[album_key]["variant_count"] += 1
 
-        # Build variant entry
+        # Build variant entry with collector context
         slug_artist = _slugify(artist)
         slug_album = _slugify(title)
         slug_variant = _slugify(variant) if variant else "standard"
+
+        # Extract collector tags from notes
+        notes = (r.get("notes") or "").lower()
+        tags = []
+        if "record store day" in notes or "rsd" in notes:
+            tags.append("RSD")
+        if "limited" in notes:
+            tags.append("Limited")
+        if "exclusive" in notes:
+            tags.append("Exclusive")
+        if "numbered" in notes:
+            tags.append("Numbered")
+        if "signed" in notes or "autograph" in notes:
+            tags.append("Signed")
+        if "test pressing" in notes:
+            tags.append("Test Pressing")
+        if "tour" in notes:
+            tags.append("Tour")
+
+        # Extract label as string
+        raw_label = r.get("label")
+        label_str = ", ".join(raw_label) if isinstance(raw_label, list) else (raw_label or "")
+
         variants_out.append({
             "discogs_id": r.get("discogs_id"),
             "artist": artist,
@@ -259,9 +440,13 @@ async def search_variants(
             "variant": variant or "Standard Black Vinyl",
             "cover_url": r.get("cover_url"),
             "year": r.get("year"),
-            "label": r.get("label"),
+            "label": label_str,
+            "catno": r.get("catno"),
+            "collectors": r.get("community_have", 0),
+            "wantlist": r.get("community_want", 0),
+            "tags": tags,
             "slug": f"/vinyl/{slug_artist}/{slug_album}/{slug_variant}",
-            "score": _variant_score(r, words),
+            "score": _variant_score_v2(r, original_words, expanded_words),
         })
 
     page = variants_out[skip:skip + limit]
@@ -272,7 +457,7 @@ async def search_variants(
     for a in albums:
         a["slug"] = f"/vinyl/{_slugify(a['artist'])}/{_slugify(a['title'])}/standard"
 
-    # Top artists — sort by record count on HoneyGroove, then search relevance, then alphabetical
+    # Top artists
     artists_sorted = sorted(
         artist_set.values(),
         key=lambda a: (a.get("record_count", 1), a["score"], a["name"].lower()),

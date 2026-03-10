@@ -28,15 +28,20 @@ const VariantCard = ({ v, onOpen }) => (
     </div>
     <div className="flex-1 min-w-0">
       <p className="text-sm font-semibold text-vinyl-black truncate group-hover:text-honey-amber transition-colors">
-        {v.album}
+        {v.album} {v.year ? <span className="text-muted-foreground font-normal">({v.year})</span> : null}
       </p>
       <p className="text-xs text-muted-foreground truncate">{v.artist}</p>
-      <div className="flex items-center gap-2 mt-1">
+      <div className="flex items-center gap-1.5 mt-1 flex-wrap">
         <span className="text-[11px] font-medium text-honey-amber bg-honey/10 px-2 py-0.5 rounded-full truncate max-w-[160px]">
           {v.variant}
         </span>
+        {v.tags?.map(tag => (
+          <span key={tag} className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-vinyl-black/90 text-white">
+            {tag}
+          </span>
+        ))}
         {v.collectors > 0 && (
-          <span className="text-[10px] text-muted-foreground">{v.collectors} collectors</span>
+          <span className="text-[10px] text-muted-foreground">{v.collectors} have</span>
         )}
       </div>
     </div>
