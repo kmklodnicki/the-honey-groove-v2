@@ -14,8 +14,14 @@ import axios from 'axios';
 
 const API = process.env.REACT_APP_BACKEND_URL + '/api';
 
-const StatCard = ({ icon: Icon, label, value, sub }) => (
-  <Card className="p-4 border-honey/20 bg-honey/5" data-testid={`stat-${label.toLowerCase().replace(/\s/g, '-')}`}>
+const StatCard = ({ icon: Icon, label, value, sub, onClick }) => (
+  <Card
+    className={`p-4 border-honey/20 bg-honey/5 transition-all duration-200 ${onClick ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md hover:bg-honey/10 active:translate-y-0' : ''}`}
+    data-testid={`stat-${label.toLowerCase().replace(/\s/g, '-')}`}
+    onClick={onClick}
+    role={onClick ? 'button' : undefined}
+    tabIndex={onClick ? 0 : undefined}
+  >
     <div className="flex items-center gap-2 mb-1">
       <Icon className="w-4 h-4 text-honey-amber" />
       <span className="text-xs text-muted-foreground uppercase tracking-wider">{label}</span>
@@ -60,6 +66,10 @@ export default function VinylVariantPage() {
       </div>
     );
   }
+
+  const scrollTo = (testId) => {
+    document.querySelector(`[data-testid="${testId}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   const { variant_overview: ov, marketplace: mp, value: val, demand: dm, activity: act, seo, rarity } = data;
 
@@ -175,9 +185,9 @@ export default function VinylVariantPage() {
 
             {/* Quick stats row */}
             <div className="grid grid-cols-3 gap-3">
-              <StatCard icon={Users} label="Collectors" value={dm.owners_count} sub="own this pressing" />
-              <StatCard icon={Search} label="Searching" value={dm.iso_count} sub="have it on ISO" />
-              <StatCard icon={Heart} label="Posts" value={dm.post_count} sub="in the Hive" />
+              <StatCard icon={Users} label="Collectors" value={dm.owners_count} sub="own this pressing" onClick={() => scrollTo('collectors-section')} />
+              <StatCard icon={Search} label="Searching" value={dm.iso_count} sub="have it on ISO" onClick={() => scrollTo('marketplace-section')} />
+              <StatCard icon={Heart} label="Posts" value={dm.post_count} sub="in the Hive" onClick={() => scrollTo('activity-section')} />
             </div>
 
             {/* Action buttons */}
