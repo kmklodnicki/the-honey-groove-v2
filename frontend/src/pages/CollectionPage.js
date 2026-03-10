@@ -769,7 +769,7 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
               <div className="absolute top-0 left-0 w-1/2 h-1/2 z-[4] pointer-events-none rounded-tl-2xl" style={{ background: 'linear-gradient(135deg, rgba(0,0,0,0.25) 0%, transparent 60%)' }} />
               <div
                 className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] font-bold px-2 py-0.5 rounded-full z-[5]"
-                style={{ background: 'rgba(255,215,0,0.3)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', color: '#1A1A1A', letterSpacing: '0.5px', border: '1px solid rgba(255,215,0,0.5)', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
+                style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
                 data-testid={`variant-${record.id}`}
               >
                 {record.color_variant}
@@ -787,7 +787,7 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
           {/* Value badge — glassy prominent */}
           {value > 0 && (
             <div className="absolute top-2 right-2 px-2.5 py-1 rounded-full font-black z-[5]"
-              style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', color: '#1A1A1A', fontSize: '18px', border: '1px solid rgba(255,215,0,0.5)', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
+              style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', fontSize: '18px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
               data-testid={`record-value-${record.id}`}>
               ${value.toFixed(0)}
             </div>
@@ -875,7 +875,7 @@ const WishlistCard = ({ item, onPromote, onDelete }) => (
             <div className="absolute top-0 left-0 w-1/2 h-1/2 z-[4] pointer-events-none" style={{ background: 'linear-gradient(135deg, rgba(0,0,0,0.25) 0%, transparent 60%)' }} />
             <div
               className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] font-bold px-2 py-0.5 rounded-full z-[5]"
-              style={{ background: 'rgba(255,215,0,0.3)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', color: '#1A1A1A', letterSpacing: '0.5px', border: '1px solid rgba(255,215,0,0.5)', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
+              style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
               data-testid={`variant-wishlist-${item.id}`}
             >
               {item.color_variant}
@@ -884,7 +884,7 @@ const WishlistCard = ({ item, onPromote, onDelete }) => (
         )}
         {item.median_value > 0 && (
           <div className="absolute top-2 right-2 px-2.5 py-1 rounded-full font-black z-[5]"
-            style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', color: '#1A1A1A', fontSize: '18px', border: '1px solid rgba(255,215,0,0.5)', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
+            style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', fontSize: '18px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
             data-testid={`median-value-${item.id}`}>
             ${Math.round(item.median_value)}
           </div>

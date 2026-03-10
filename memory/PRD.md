@@ -210,9 +210,13 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - **Trade Dispute Enhancement:** Updated trade disputes to use same structured reason dropdown (5 options) and require photo evidence. UI uses Select component instead of free-text. Reason labels displayed human-readable in dispute display.
 - **Admin Sale Disputes Panel:** New "Sale Disputes" tab in admin panel. Shows open disputes with buyer evidence, seller response, listing details. Admin can approve (refund buyer) or reject (pay seller) with resolution notes.
 
+### Recent Fixes (March 10, 2026 - continued 2)
+- **Amber Glass & Brushed Gold Pill Refactor (BLOCK 69.1):** Standardized all variant and price badge overlays on album art to a consistent "Amber Glass & Brushed Gold" premium glassmorphism effect. Style: `rgba(255,215,0,0.2)` honey-tinted background, `blur(14px)` backdrop, `2px solid #DAA520` brushed gold border, soft outer glow with inner gold ring. Applied uniformly across: CollectionPage.js (collection + wishlist), ProfilePage.js (collection + dreaming + ISO tabs), PostCards.js (VariantTag component), VinylVariantPage.js, DailyPrompt.js.
+
 ### Future / Backlog
 - **P0:** User's secret search feature (details TBD — user has mentioned multiple times)
 - Refactor `ISOPage.js` and `ProfilePage.js` to reduce complexity (break into smaller components)
+- Extract repeated glassmorphism pill inline styles into a reusable component or CSS classes
 - Safari-compatible loading animation
 - "Pro" memberships / "Verified Seller" badge
 - Buyer Protection features
