@@ -27,9 +27,9 @@ export default function VariantActions({ variant }) {
   }, [discogs_id, token]);
 
   if (!user) return (
-    <div className="flex flex-col items-center gap-2 p-4 rounded-2xl border border-honey/20 bg-white/60" data-testid="variant-actions-login">
+    <div className="flex items-center gap-3 mt-5 p-4 rounded-2xl border border-honey/20 bg-white/60" data-testid="variant-actions-login">
       <p className="text-sm text-muted-foreground">Sign in to add this variant to your collection</p>
-      <Button onClick={() => navigate('/login')} className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full text-sm px-6">
+      <Button onClick={() => navigate('/login')} className="h-[42px] rounded-full bg-honey text-vinyl-black hover:bg-honey-amber text-sm px-6 font-semibold shadow-sm shrink-0">
         Sign In
       </Button>
     </div>
@@ -93,15 +93,19 @@ export default function VariantActions({ variant }) {
   const owned = ownership?.owned;
   const isoStatus = ownership?.iso_status;
 
+  const btnBase = 'h-[42px] rounded-full text-sm gap-1.5 px-[18px]';
+  const btnSecondary = `${btnBase} border-honey/30 hover:bg-honey/10`;
+  const btnPrimary = `${btnBase} bg-honey text-vinyl-black hover:bg-honey-amber px-6 font-semibold shadow-sm`;
+
   return (
-    <div className="flex flex-wrap gap-2" data-testid="variant-actions">
+    <div className="flex flex-wrap items-center gap-2.5 mt-5" data-testid="variant-actions">
       {!owned ? (
         <>
           <Button
             onClick={() => addToISO('WISHLIST')}
             disabled={!!actionLoading || isoStatus === 'WISHLIST'}
             variant="outline"
-            className="rounded-full border-honey/30 hover:bg-honey/10 text-sm gap-1.5"
+            className={btnSecondary}
             data-testid="action-wishlist"
           >
             {actionLoading === 'wishlist' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> :
@@ -113,7 +117,7 @@ export default function VariantActions({ variant }) {
             onClick={() => addToISO('OPEN')}
             disabled={!!actionLoading || isoStatus === 'OPEN'}
             variant="outline"
-            className="rounded-full border-honey/30 hover:bg-honey/10 text-sm gap-1.5"
+            className={btnSecondary}
             data-testid="action-iso"
           >
             {actionLoading === 'iso' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> :
@@ -124,7 +128,7 @@ export default function VariantActions({ variant }) {
           <Button
             onClick={addToCollection}
             disabled={!!actionLoading}
-            className="rounded-full bg-honey text-vinyl-black hover:bg-honey-amber text-sm gap-1.5"
+            className={btnPrimary}
             data-testid="action-add-collection"
           >
             {actionLoading === 'collection' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> :
@@ -137,14 +141,14 @@ export default function VariantActions({ variant }) {
           <Button
             onClick={goToTrade}
             variant="outline"
-            className="rounded-full border-honey/30 hover:bg-honey/10 text-sm gap-1.5"
+            className={btnSecondary}
             data-testid="action-trade"
           >
             <ArrowRightLeft className="w-3.5 h-3.5" /> Trade
           </Button>
           <Button
             onClick={goToSell}
-            className="rounded-full bg-honey text-vinyl-black hover:bg-honey-amber text-sm gap-1.5"
+            className={btnPrimary}
             data-testid="action-sell"
           >
             <DollarSign className="w-3.5 h-3.5" /> Sell
