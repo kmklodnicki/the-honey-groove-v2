@@ -28,6 +28,7 @@ from routes.search import router as search_router
 from routes.verification import router as verification_router
 from routes.reports import router as reports_router
 from routes.seo import router as seo_router
+from routes.vinyl import router as vinyl_router
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -38,7 +39,7 @@ for r in [auth_router, hive_router, collection_router, honeypot_router,
           trades_router, notifications_router, dms_router, explore_router,
           valuation_router, wax_reports_router, daily_prompts_router, newsletter_router,
           mood_boards_router, bingo_router, reports_router, admin_router, search_router,
-          verification_router, reports_router, seo_router]:
+          verification_router, reports_router, seo_router, vinyl_router]:
     app.include_router(r, prefix="/api")
 
 app.add_middleware(

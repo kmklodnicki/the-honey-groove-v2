@@ -63,6 +63,7 @@ import OrdersPage from "./pages/OrdersPage";
 import ConfirmEmailChangePage from "./pages/ConfirmEmailChangePage";
 import WelcomeHivePage from "./pages/WelcomeHivePage";
 import EssentialsPage from "./pages/EssentialsPage";
+import VinylVariantPage from "./pages/VinylVariantPage";
 
 // Auth guards — loading is ALWAYS false. No gates.
 // If user exists (from JWT decode or login), render children.
@@ -146,6 +147,9 @@ function AppContent() {
       <Route path="/confirm-email-change" element={<ConfirmEmailChangePage />} />
       <Route path="/stripe/connect/return" element={<StripeConnectReturnPage />} />
       <Route path="/stripe/connect/refresh" element={<StripeConnectRefreshPage />} />
+
+      {/* Public vinyl variant SEO pages */}
+      <Route path="/vinyl/:artist/:album/:variant" element={<AppLayout><VinylVariantPage /></AppLayout>} />
 
       {/* Protected routes */}
       <Route path="/onboarding/welcome-to-the-hive" element={<ProtectedRoute><WelcomeHivePage /></ProtectedRoute>} />

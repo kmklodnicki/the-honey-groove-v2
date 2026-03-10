@@ -87,6 +87,10 @@ webpackConfig.devServer = (devServerConfig) => {
       if (reqPath === '/honeypot') ssrPath = '/api/ssr/honeypot';
       if (reqPath === '/' || reqPath === '/hive') ssrPath = '/api/ssr';
 
+      // /vinyl/{artist}/{album}/{variant} -> /api/vinyl/ssr/{artist}/{album}/{variant}
+      const vinylMatch = reqPath.match(/^\/vinyl\/([^/]+)\/([^/]+)\/([^/]+)/);
+      if (vinylMatch) ssrPath = `/api/vinyl/ssr/${vinylMatch[1]}/${vinylMatch[2]}/${vinylMatch[3]}`;
+
       if (ssrPath) {
         const http = require('http');
         http.get(`http://localhost:8001${ssrPath}`, (proxyRes) => {
