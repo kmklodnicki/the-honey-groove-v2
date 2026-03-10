@@ -1,0 +1,94 @@
+{
+  "summary": "Block 127: Global Groove Adaptive UI - All tests PASS. State dropdown conditional rendering, optional field labels, and near-you API endpoint all working correctly.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_block127_adaptive_ui.py",
+    "/app/test_reports/pytest/block127_adaptive_ui_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_block127_adaptive_ui.py"
+  ],
+  "success_rate": {
+    "backend": "100% (8/8 tests passed)",
+    "frontend": "100% (6/6 tests passed)"
+  },
+  "seed_data_creation": "",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Block 127 adaptive UI testing complete. Verified: (1) State dropdown removed from DOM when Country is not US - PASS, (2) State dropdown present when Country is US - PASS, (3) City label shows '(Optional)' - PASS, (4) Postal/ZIP Code label shows '(Optional)' - PASS, (5) State label does NOT show '(Optional)' - PASS, (6) Switching from US to non-US removes State dropdown - PASS. Backend tests verified: GET /api/explore/near-you returns valid collectors/listings/needs_location structure, PUT /api/auth/me correctly saves state and postal_code fields.",
+  "verified_features": [
+    {
+      "feature": "State dropdown removed from DOM when Country is not US",
+      "status": "PASS",
+      "notes": "data-testid='settings-state' not found when country is empty, GB, or CA"
+    },
+    {
+      "feature": "State dropdown present when Country is US",
+      "status": "PASS",
+      "notes": "data-testid='settings-state' appears immediately after selecting US"
+    },
+    {
+      "feature": "City label shows '(Optional)' text",
+      "status": "PASS",
+      "notes": "Label text is 'City (Optional)' with subtle italic styling"
+    },
+    {
+      "feature": "Postal Code label shows '(Optional)' text",
+      "status": "PASS",
+      "notes": "Label text is 'ZIP Code (Optional)' for US, 'Postal Code (Optional)' for non-US"
+    },
+    {
+      "feature": "State label does NOT show '(Optional)'",
+      "status": "PASS",
+      "notes": "Label text is just 'State' - State is required for US matching logic"
+    },
+    {
+      "feature": "Switching country from US to non-US removes State",
+      "status": "PASS",
+      "notes": "State dropdown removed from DOM when switching from US to CA"
+    },
+    {
+      "feature": "GET /api/explore/near-you endpoint",
+      "status": "PASS",
+      "notes": "Returns valid response with collectors array, listings array, needs_location boolean"
+    },
+    {
+      "feature": "PUT /api/auth/me saves state field",
+      "status": "PASS",
+      "notes": "state field correctly persisted and returned in user response"
+    },
+    {
+      "feature": "PUT /api/auth/me saves postal_code field",
+      "status": "PASS",
+      "notes": "postal_code field correctly persisted and returned in user response"
+    },
+    {
+      "feature": "Near-you US user state matching",
+      "status": "PASS",
+      "notes": "Backend uses state/region matching for US users"
+    },
+    {
+      "feature": "Near-you non-US user country matching",
+      "status": "PASS",
+      "notes": "Backend uses country matching for non-US users"
+    }
+  ],
+  "mocked_api": {
+    "has_mocked_apis": true,
+    "mocked_apis_list": ["Resend email"]
+  },
+  "test_credentials": {
+    "email": "demo@test.com",
+    "password": "demouser"
+  }
+}

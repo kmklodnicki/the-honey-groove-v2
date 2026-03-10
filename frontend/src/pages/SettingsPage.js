@@ -425,7 +425,7 @@ const SettingsPage = () => {
           {/* City + State (US only) + Postal Code */}
           <div className={`grid gap-4 ${country === 'US' ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2'}`}>
             <div className="space-y-2">
-              <Label htmlFor="city" className="text-sm font-heading tracking-wide">City</Label>
+              <Label htmlFor="city" className="text-sm font-heading tracking-wide">City <span className="text-xs font-normal text-muted-foreground/70 italic">(Optional)</span></Label>
               <Input
                 id="city"
                 placeholder="Your city"
@@ -455,7 +455,7 @@ const SettingsPage = () => {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="postalCode" className="text-sm font-heading tracking-wide">Postal Code</Label>
+              <Label htmlFor="postalCode" className="text-sm font-heading tracking-wide">{country === 'US' ? 'ZIP Code' : 'Postal Code'} <span className="text-xs font-normal text-muted-foreground/70 italic">(Optional)</span></Label>
               <Input
                 id="postalCode"
                 placeholder={country === 'US' ? 'ZIP code' : 'Postal code'}
