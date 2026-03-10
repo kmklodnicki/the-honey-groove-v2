@@ -684,34 +684,42 @@ async def get_recent_hauls(limit: int = 10, user: Dict = Depends(require_auth)):
 
 @router.get("/explore/suggested-collectors")
 async def get_suggested_collectors(limit: int = 10, user: Dict = Depends(require_auth)):
-    """Suggest collectors based on collection overlap (shared artists)"""
+    """Suggest collectors to follow, sorted by number of shared records (discogs_id overlap)."""
     hidden_ids = await get_hidden_user_ids()
-    my_records = await db.records.find({"user_id": user["id"]}, {"_id": 0, "artist": 1}).to_list(500)
-    my_artists = list({r["artist"] for r in my_records})
+    blocked_ids = await get_all_blocked_ids(user["id"])
 
     # Hard filter: never show demo/test/hidden users
     user_exclude = {"username": {"$ne": "demo"}, "email": {"$not": {"$regex": "(example|test)\\.com$", "$options": "i"}}, "is_hidden": {"$ne": True}, "is_test": {"$ne": True}}
 
-    if not my_artists:
+    # Get current user's discogs IDs
+    my_records = await db.records.find({"user_id": user["id"], "discogs_id": {"$ne": None}}, {"_id": 0, "discogs_id": 1}).to_list(5000)
+    my_discogs = [r["discogs_id"] for r in my_records if r.get("discogs_id")]
+
+    if not my_discogs:
+        # Fallback: show newest users excluding followed
+        following = await db.followers.find({"follower_id": user["id"]}, {"_id": 0, "following_id": 1}).to_list(500)
+        following_ids = {f["following_id"] for f in following}
+        all_exclude = list(following_ids | set(hidden_ids) | set(blocked_ids) | {user["id"]})
         return await db.users.find(
-            {"id": {"$ne": user["id"], "$nin": hidden_ids}, **user_exclude}, {"_id": 0, "password_hash": 0}
+            {"id": {"$nin": all_exclude}, **user_exclude}, {"_id": 0, "password_hash": 0}
         ).sort("created_at", -1).limit(limit).to_list(limit)
 
     following = await db.followers.find({"follower_id": user["id"]}, {"_id": 0, "following_id": 1}).to_list(500)
     following_ids = {f["following_id"] for f in following}
-    following_ids.add(user["id"])
-    all_exclude_ids = list(following_ids | set(hidden_ids))
+    all_exclude_ids = list(following_ids | set(hidden_ids) | set(blocked_ids) | {user["id"]})
 
+    # Aggregate: find users with the most shared records by discogs_id
     pipeline = [
-        {"$match": {"artist": {"$in": my_artists[:20]}, "user_id": {"$nin": all_exclude_ids}}},
-        {"$group": {"_id": "$user_id", "overlap": {"$sum": 1}}},
-        {"$match": {"overlap": {"$gte": 3}}},
-        {"$sort": {"overlap": -1}},
+        {"$match": {"discogs_id": {"$in": my_discogs}, "user_id": {"$nin": all_exclude_ids}}},
+        {"$group": {"_id": "$user_id", "shared_count": {"$addToSet": "$discogs_id"}}},
+        {"$project": {"_id": 1, "shared_records": {"$size": "$shared_count"}}},
+        {"$match": {"shared_records": {"$gte": 1}}},
+        {"$sort": {"shared_records": -1}},
         {"$limit": limit},
     ]
     agg = await db.records.aggregate(pipeline).to_list(limit)
     user_ids = [a["_id"] for a in agg]
-    overlap_map = {a["_id"]: a["overlap"] for a in agg}
+    overlap_map = {a["_id"]: a["shared_records"] for a in agg}
     if not user_ids:
         return []
     users = await db.users.find({"id": {"$in": user_ids}, **user_exclude}, {"_id": 0, "password_hash": 0}).to_list(limit)

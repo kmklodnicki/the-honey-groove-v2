@@ -200,12 +200,12 @@ const ExplorePage = () => {
       <h1 className="font-heading text-3xl text-vinyl-black mb-1">Nectar</h1>
       <p className="text-sm text-muted-foreground mb-8">what the hive is into right now.</p>
 
-      {/* My Kinda People Discovery Carousel */}
+      {/* Make Friends Discovery Carousel */}
       {myKindaPeople.length > 0 && (
-        <section className="mb-8" data-testid="my-kinda-people-section">
+        <section className="mb-8" data-testid="make-friends-carousel">
           <div className="flex items-center gap-2 mb-3">
             <Users className="w-4 h-4 text-honey-amber" />
-            <h2 className="font-heading text-lg text-vinyl-black">My Kinda People</h2>
+            <h2 className="font-heading text-lg text-vinyl-black">Make Friends</h2>
           </div>
           <p className="text-xs text-muted-foreground mb-3">Collectors who share your vibe.</p>
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
@@ -216,7 +216,7 @@ const ExplorePage = () => {
                     {p.avatar_url ? <img src={p.avatar_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Users className="w-6 h-6 text-honey" /></div>}
                   </div>
                   <p className="text-sm font-medium truncate">@{p.username}</p>
-                  <p className="text-xs font-bold mt-0.5" style={{ color: '#C8861A' }}>{p.score}% Match {p.label ? `· ${p.label}` : ''}</p>
+                  <p className="text-xs font-bold mt-0.5" style={{ color: '#C8861A' }}>{p.shared_records || p.score || 0} records in common</p>
                   {/* Shared covers stack */}
                   {p.shared_covers?.length > 0 && (
                     <div className="flex justify-center gap-1 mt-2">
@@ -261,14 +261,14 @@ const ExplorePage = () => {
         )}
       </ExploreSection>
 
-      {/* 2. Taste Match */}
-      <ExploreSection icon={<Users className="w-4 h-4 text-honey-amber" />} title="Taste Match" testId="taste-match-section" seeAllTo="/nectar/taste-match">
+      {/* 2. Make Friends */}
+      <ExploreSection icon={<Users className="w-4 h-4 text-honey-amber" />} title="Make Friends" testId="make-friends-section" seeAllTo="/nectar/make-friends">
         {suggested.length === 0 ? (
-          <EmptyCard text="Add more records to your collection to find taste matches." />
+          <EmptyCard text="Add more records to your collection to discover new friends." />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {suggested.map(u => (
-              <Card key={u.id} className="p-4 border-honey/30 hover:shadow-sm transition-all" data-testid={`taste-match-${u.id}`}>
+              <Card key={u.id} className="p-4 border-honey/30 hover:shadow-sm transition-all" data-testid={`make-friends-${u.id}`}>
                 <div className="flex items-center gap-3">
                   <Link to={`/profile/${u.username}`}>
                     {u.avatar_url ? <img src={resolveImageUrl(u.avatar_url)} alt="" className="w-11 h-11 rounded-full object-cover" />

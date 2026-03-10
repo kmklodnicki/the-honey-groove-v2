@@ -257,7 +257,7 @@ const RecordDetailPage = () => {
       )}
 
       {/* Notes */}
-      {record.notes && (
+      {record.notes && record.notes !== 'Imported from Discogs' && (
         <div className="mt-8" data-testid="record-notes">
           <h3 className="font-heading text-lg mb-2">Notes</h3>
           <p className="text-sm text-vinyl-black/70 bg-honey/5 rounded-xl p-4 border border-honey/10">{record.notes}</p>

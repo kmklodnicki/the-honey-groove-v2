@@ -5,53 +5,68 @@ The user wants to build a web app called **The HoneyGroove**, a social platform 
 *   **Core App:** A full-stack application for vinyl collectors to track their collection, log spins, and interact socially.
 *   **Branding & UI/UX:** A warm, honey-inspired theme with a clean, modern UI, amber color palette, and specific fonts.
 *   **Key Features & Terminology:**
-    1.  **Core Concepts:** The app is built around three user-item categories with specific terminology:
-        *   **Collection:** Records the user owns (formerly Reality).
-        *   **Dream Items:** A passive wishlist of desired records (formerly Dreaming, Wishlist).
-        *   **Actively Seeking:** An active wantlist of records the user is ready to buy (formerly The Hunt, Wantlist).
-    2.  **Upgrade to Reality Workflow:** A modal appears when a user moves a record from Actively Seeking to their Collection, allowing them to set the final condition and price.
-    3.  **Reverse Flow & Bulk Actions:** Users can move items from their Collection back to Dream Items or Actively Seeking individually (with confirmation) or in bulk.
-    4.  **Taste Match Social Engine:** A comprehensive social feature that:
-        *   Calculates a Taste Match percentage score between users.
-        *   Displays a Record Soulmates 🍯 badge for high matches.
-        *   Features an In Common tab on profiles to view shared records and dream items.
-        *   Calculates and displays the monetary value of shared Dream Items.
-    5.  **My Kinda People Discovery:** A carousel on the homepage suggesting other users with a high Taste Match.
-    6.  **Gated Daily Prompt:** Users must Buzz In (answer the daily prompt) before they can view other users' answers in a new carousel interface.
-    7.  **Consistent UI Overlays:** Frosted-glass pills for Variant Name and Honeypot Rating are now consistently overlaid on album art across all feed and collection cards for immediate visibility.
-    8.  **UI/Terminology Refinement:** Multiple sessions of refining UI text, button colors, and layout for brand consistency, culminating in the Collection / Dream Items / Actively Seeking terminology.
+    *   **Core Concepts:** The app is built around Collection (owned), Dream Items (wishlist), and Actively Seeking (active wantlist).
+    *   **Social & Privacy:**
+        *   **User Blocking:** Users can block others, preventing any interaction or visibility between them.
+        *   **Private Profiles:** Users can set their profile to private, requiring others to send a follow request for approval before viewing their content.
+        *   **Message Requests:** Users can configure who can message them, with an option to allow message requests from everyone, which must be accepted before a conversation begins.
+        *   **User Mentions:** Users can tag each other in posts and comments using the  symbol, which creates a clickable link and sends a notification.
+    *   **Discovery & Social Proof:**
+        *   **Make Friends (formerly Taste Match):** A discovery feature on the homepage that suggests other users to follow, sorted by collection similarity.
+        *   **Clickable Follower/Following Lists:** These lists are now modals that also display the number of records in common with the viewer.
+    *   **UI/UX Enhancements:**
+        *   **Discogs Sync Log:** The Discogs import summary now includes a list of skipped records and the reason for the skip.
+        *   **Subtle Back Button:** A global back button was added to improve navigation on authenticated pages.
+        *   **Accurate Variant Display:** Fixed a bug where Hive cards showed Imported by Discogs instead of actual record variant details.
+        *   **Accurate Founder Badge:** Fixed a bug to ensure the Founder badge only shows for the correct user.
+    *   **Bug Fixes:**
+        *   **iOS Safari Scrolling Freeze:** Implemented a robust fix to prevent a common scrolling bug on iPhones.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A sophisticated full-stack application for vinyl collectors with a strong social graph. The app's core data model and UX are centered on the concepts of Collection (owned), Dream Items (wishlist), and Actively Seeking (active wantlist). The UI is highly interactive and context-aware, featuring dynamic workflows, animated value counters, and a consistent, polished honey-gold aesthetic. This session introduced major social features (Taste Match, My Kinda People), a gamified Daily Prompt with a participation gate, and numerous UI/UX enhancements and terminology standardizations requested by the user.
+A sophisticated full-stack social network for vinyl collectors, The HoneyGroove. It features rich collection management, a social feed, user profiles, and a Discogs import tool. This session added a comprehensive privacy and safety layer, including user blocking, private profiles with follow requests, and a granular direct message request system. Social interaction was enhanced with user mentions (). Several key UI/UX issues were also resolved, including an iOS scrolling bug, and discovery features were refined.
 
 **Last working item**:
-    - Last item agent was working: The user requested a final round of UI and terminology changes: replacing the add to reality button with add to collection, changing dream value to value of ISOs, and renaming the reality pill to collection value. The agent was exploring  and  to assess the scope of these changes.
+    - Last item agent was working: The agent was working on two user requests in parallel:
+        1.  **Bug Fix:** Replacing the unhelpful Imported by Discogs text on Hive cards with the record's actual variant information (e.g., color, pressing).
+        2.  **Feature Update:** Renaming the Taste Match feature to Make Friends and updating its backend logic to suggest all users (excluding those already followed), sorted by collection similarity.
     - Status: IN PROGRESS
     - Agent Testing Done: N
-    - Which testing method agent to use? frontend testing agent
+    - Which testing method agent to use? both
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  - Issue 1: Final UI and terminology cleanup (P0)
-
+  - Issue 1: Hive cards show “Imported by Discogs” instead of variant details (P0)
+  - Issue 2: Rename “Taste Match” to “Make Friends” and update its logic (P0)
+  
   Issues Detail:
   - Issue 1: 
-     - Attempted fixes: None. The agent was in the exploration phase.
+     - Attempted fixes: The agent correctly identified that  was being displayed and planned to replace it with  or , with a fallback. The agent implemented the fix in , , and .
      - Next debug checklist: 
-        1.  In , rename the Add to Reality button to Add to Collection.
-        2.  Clarify the dream value to value of ISOs request. The current term is Wishlist Value (for Dream Items). ISOs now refers to Actively Seeking. This may be a request to add a value counter for the Actively Seeking list. Implement based on clarification.
-        3.  Search for the Reality pill and rename its text to Collection Value.
-        4.  Run a global search for Reality, Dream Value to catch any other lingering instances in user-facing text.
-     - Why fix this issue and what will be achieved with the fix? This will bring the application's terminology into final alignment with the user's explicit requests, ensuring a clear and consistent user experience.
+        1. The implementation seems complete, but was not tested.
+        2.  Call the frontend testing agent to verify that Hive cards, collection cards, and record detail pages now display the correct variant information.
+        3.  Confirm the fallback logic works correctly when variant information is not available.
+     - Why fix this issue and what will be achieved with the fix? This is critical for the app's core value proposition, allowing collectors to quickly identify the specific version of a record at a glance.
      - Status:  IN PROGRESS
-     - Is recurring issue? Y
+     - Is recurring issue? N
      - Should Test frontend/backend/both after fix? frontend
-     - Blocked on other issue: None
+     - Blocked on other issue: none
+  - Issue 2: 
+     - Attempted fixes: The agent began implementing the changes. It updated the backend endpoint in  to exclude followed users and sort by taste match score. It also began renaming frontend components in  and .
+     - Next debug checklist: 
+        1.  Finalize the backend sorting logic in  to sort by the *number of shared records*, not just a score.
+        2.  Ensure all user-facing instances of Taste Match and My Kinda People are renamed to Make Friends across  and .
+        3.  Use the testing agent to verify the backend logic correctly excludes followed users and sorts by similarity.
+        4.  Verify the frontend UI reflects the new name.
+     - Why fix this issue and what will be achieved with the fix? This makes the discovery feature more intuitive and aligns it with the goal of fostering connections based on shared collections.
+     - Status:  IN PROGRESS
+     - Is recurring issue? N
+     - Should Test frontend/backend/both after fix? both
+     - Blocked on other issue: none
 
 **In progress Task List**:
-  - None.
+  - None
 
 **Upcoming and Future Tasks**
 - **Upcoming Tasks:**
@@ -65,93 +80,107 @@ A sophisticated full-stack application for vinyl collectors with a strong social
     - Re-enable Instagram sharing features.
 
 **Completed work in this session**
-- **Feature: Upgrade to Reality Modal:** Implemented the full workflow for moving a record from Actively Seeking to Collection via a confirmation modal to set condition/price.
-- **Feature: Reverse Flow & Bulk Actions:** Implemented workflows to move records from Collection back to Dream Items or Actively Seeking, both individually and in bulk.
-- **Feature: Taste Match Engine:** Created a full social comparison feature, including a score, Record Soulmates badge, and an In Common tab on profiles showing shared records and dream items.
-- **Feature: My Kinda People Discovery:** Added a discovery carousel on the home page suggesting users with similar tastes.
-- **Feature: Gated Daily Prompt Carousel:** Refactored the daily prompt to require users to answer (Buzz In) before being able to browse other users' responses in a new carousel UI.
-- **Feature: Feed Filtering:** Enabled filtering the main feed by daily prompt responses.
-- **UI: Consistent Card Overlays:** Refactored all album art cards (feed, collection, profile) to display variant and rating information in consistent frosted-glass overlay pills.
-- **UI/Terminology Overhaul:** Performed multiple, session-wide refactors of UI text, component names, and variable names to align with user feedback, evolving from Reality/Dreaming to Collection/Dream Items.
-- **UI: Profile Stats Refactor:** Iteratively refined the mobile and desktop layout of profile statistics to meet user specifications.
+- **Feature: Comprehensive Privacy Controls:** Implemented a full privacy suite, including public/private profiles, a follow request system for private accounts, and a message request system with multiple user-configurable levels.
+- **Feature: User Blocking:** Implemented a complete user blocking system, preventing blocked users from seeing or interacting with the blocker's content and profile.
+- **Feature: User Mentions (@):** Added the ability for users to tag each other in posts, featuring an autocomplete dropdown and creating clickable links in post text.
+- **Feature: Clickable Followers/Following List:** Made profile follower/following counts clickable, opening a modal that now displays the number of records in common between users.
+- **Feature: Discogs Sync Improvement:** The Discogs import summary modal now displays a list of skipped records and the reason for the skip (e.g., duplicate, error).
+- **Feature: Subtle Back Button:** Added a global, minimally styled back button to all authenticated pages (except home) for improved navigation.
+- **Bug Fix: iOS Safari Scrolling Freeze:** Diagnosed and implemented a robust, multi-layered fix for a critical bug that caused scrolling to freeze on iPhones.
+- **Bug Fix: Incorrect Founder Label:** Corrected a logic error that caused the Founder badge to appear on all user profiles in the Daily Prompt slides.
+- **UI: Final Terminology Cleanup:** Performed a global search-and-replace to standardize app terminology to Collection, Value of ISOs, etc., as per user request.
 
 **Earlier issues found/mentioned but not fixed**
    - None.
 
 **Known issue recurrence from previous fork**
-  - None observed in this session.
+  - None.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- **Iterative Refinement:** The session was characterized by rapid, iterative cycles of implementing features and then refining their UI, terminology, and styling based on precise user feedback.
-- **Feature Gating:** Implemented a participation gate for the Daily Prompt, a pattern where content is locked until the user contributes.
-- **API-Driven Social Graph:** Built out multiple backend endpoints (, ) to power social discovery and comparison features, making the app more of a network.
-- **Component-Level Styling Consistency:** Refactored and applied consistent styling for UI elements like the Variant Pill across many different components and pages to create a unified look and feel.
-- **URL-based State Management:** Used URL parameters (, ) to control page state, enabling deep-linking into filtered views and specific tabs.
-- **Optimistic UI:** Used for the Dream Value counter to provide immediate feedback to the user when an item is moved, enhancing the user experience.
+- **Comprehensive Privacy Controls:** A significant portion of the session was dedicated to building a robust privacy model. This involved extending the DB schema, creating new API endpoints for requests (follow, message), and systematically gating almost all data-fetching endpoints in the backend to enforce blocking and private profile rules.
+- **Frontend State Management for Privacy:** The  component was heavily modified to handle numerous new states: public, private (locked), private (request sent), private (approved), and blocked. This required careful conditional rendering and API calls.
+- **iOS Safari Bug Mitigation:** Identified and fixed a notorious  bug by implementing a multi-pronged solution: a cleanup function on route changes (), global CSS overrides (), and a periodic check for stale scroll-lock attributes.
+- **Reusable Mention System:** Created a self-contained mention feature by building two new components:  (for input with an autocomplete dropdown powered by a search API) and  (for rendering text with clickable  links). This was paired with backend logic to parse mentions and trigger notifications.
 
 **key DB schema**
-- No direct schema changes were made. The existing  collection is used for both Dream Items (status: 'WISHLIST') and Actively Seeking (status: 'OPEN'). The logic in the backend routes now cleanly separates these concepts.
+- **users**: Added  (default: ),  (default: ).
+- **blocks**: New collection .
+- **follow_requests**: New collection .
+- **conversations**: Added  ('active', 'pending') to handle message requests.
 
 **changes in tech stack**
 - None.
 
 **All files of reference**
-- **Core Logic:** , , , 
-- **Backend Endpoints:** , , , , 
-- **Key Components:** , , 
+- **Privacy & Blocking:** , , , , , 
+- **User Mentions:** , , , , 
+- **iOS Bug Fix:** , , 
+- **Discogs Sync Log:** , 
 
 **Areas that need refactoring**:
--  and  have become monolithic components managing a large amount of state and conditional logic. They are prime candidates to be broken down into smaller, more focused components and custom hooks to improve maintainability.
+- ****: This component's complexity has grown significantly. It now manages logic for displaying one's own profile, other public profiles, private profiles (in locked, requested, and approved states), and blocked profiles. It should be broken down into smaller components and custom hooks (e.g., , ).
+- ****: With the addition of a separate Requests tab and logic for accepting/declining messages, this component has also increased in complexity and could benefit from being split into smaller, more focused parts.
 
 **key api endpoints**
-- ****: Moves an Actively Seeking item to the user's Collection.
-- ****: Moves multiple Collection items to Dream Items or Actively Seeking.
-- ****: Calculates social compatibility score and shared items between two users.
-- ****: Gets a list of users with high taste match for the discovery feature.
-- ****: Gets responses for the daily prompt (gated by user participation).
-- ****: Gets the public Dream Items list for a user profile.
-- ****: Gets the total value of a user's public Dream Items.
+- **Blocking:**
+    - 
+    - 
+- **Follow Requests:**
+    -  (Logic updated to create a request for private profiles)
+    - 
+    - 
+    - 
+- **Message Requests:**
+    -  (Logic updated to create a request based on user settings)
+    - 
+    - 
+- **User Mentions:**
+    - 
 
 **Critical Info for New Agent**
-- **Terminology is King:** The user has very specific terms for core features. Do not deviate from the latest set: **Collection**, **Dream Items**, and **Actively Seeking**. A significant portion of this session was spent standardizing this terminology.
-- **UI/UX Precision:** The user is highly attentive to visual details like colors (e.g., Sunset Gold), gradients, shadows, and layout alignment. Adhere strictly to UI instructions.
-- **Social First:** The application's focus has heavily shifted towards social interaction. Taste Match, My Kinda People, and the In Common views are central to the product vision.
-- **Check for Existing Endpoints:** Before building new logic, check the  directory. Many utility endpoints for fetching public user data (collections, wishlists, values) have been added.
+- **The Privacy Model is Central:** A significant amount of work has gone into the blocking, private profile, and request systems. Nearly all social data endpoints are now gated by privacy checks in the backend. When implementing new features, you must account for these rules to avoid leaking private data.
+- ** is Extremely Complex:** This file handles many different states and user interactions. Before making changes, study its logic carefully to avoid introducing regressions related to profile visibility or follow/block states. Refactoring it should be a priority.
+- **iOS Scrolling Fix:** A robust fix for a common iOS Safari scrolling bug is in place. Be cautious when adding new modals or components with scroll-locking behavior, as they could re-introduce the issue. The primary fix is in .
 
 **documents and test reports created in this job**
--  (updated after each major feature block)
-- Multiple test reports in , with the latest being .
+-  (updated multiple times)
+- Multiple test reports in  created by the testing agent.
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Requested terminology change from Wishlist/Wantlist to Dream Items/Actively Seeking and new feed card overlays. (COMPLETED)
-2.  **Agent:** Began implementing the terminology and UI changes. (IN PROGRESS)
-3.  **Agent:** Successfully renamed Wantlist references found by the testing agent. (COMPLETED)
-4.  **User:** Requested final terminology cleanup: add to reality -> add to collection, dream value -> value of ISOs, reality pill -> collection value. (PENDING)
-5.  **Agent:** Started exploring the codebase to address the final cleanup request. (IN PROGRESS)
+1.  **User:** Requested user blocking feature. (COMPLETED)
+2.  **User:** Reported iPhone scrolling freeze bug. (COMPLETED)
+3.  **User:** Requested clickable follower/following lists with records in common data. (COMPLETED)
+4.  **User:** Requested a major privacy feature: private profiles, follow requests, and message requests. (COMPLETED)
+5.  **User:** Clarified how private profiles should look and behave when locked. (COMPLETED)
+6.  **User:** Approved the agent's multi-phase plan for the privacy features. (COMPLETED)
+7.  **User:** Reported a bug where the Founder label was shown for every user on Daily Prompt slides. (COMPLETED)
+8.  **User:** Requested user mentions (@-tagging) in Hive posts. (COMPLETED)
+9.  **User:** Reported a bug where Hive cards showed Imported by Discogs instead of variant details. (PENDING/IN PROGRESS)
+10. **User:** Requested renaming Taste Match to Make Friends and changing its recommendation logic. (PENDING/IN PROGRESS)
 
 **Project Health Check:**
 - **Broken:** None.
-- **Mocked:** The  integration for general platform emails (e.g., invites, password resets) is still mocked. It is live for feedback/bug report emails.
+- **Mocked:** The  integration for general platform emails (e.g., invites, password resets) is still mocked.
 
 **3rd Party Integrations**
-- **Stripe Connect:** **LIVE MODE**.
+- **Stripe Connect:** LIVE MODE.
 - **Discogs API:** For record data and pricing.
-- **Resend:** **Partially Live**. Used for admin notifications and feedback emails.
+- **Resend:** Partially Live (used for admin/feedback emails).
 - **Google Tag Manager / Google Analytics:** For analytics.
 - **Emergent Storage:** For all file uploads.
 - **canvas-confetti:** For UI celebrations.
 
 **Testing status**
-- **Testing agent used after significant changes:** YES. The agent ran comprehensive tests after every major feature implementation and terminology refactor, consistently achieving 100% pass rates and using the feedback to fix regressions.
+- **Testing agent used after significant changes:** YES. The testing agent was used successfully after every major feature implementation (blocking, privacy controls, mentions), identifying and fixing bugs in the process.
 - **Troubleshoot agent used after agent stuck in loop:** NO
 - **Test files created:** None.
-- **Known regressions:** The testing agent caught several lingering instances of old terminology (Wantlist), which the agent then successfully resolved.
+- **Known regressions:** The testing agent found and fixed a bug where new user privacy fields were not being returned in a user object, which was promptly fixed.
 
 **Credentials to test flow:**
 - Use the Admin Panel to send an invite to a test email address to register a new user for testing social features.
 
 **What agent forgot to execute**
-- The agent has not forgotten any tasks, but is in the middle of implementing the user's most recent request for terminology and UI text changes.</analysis>
+- The agent is in the middle of completing the user's latest request and has not forgotten any tasks.</analysis>

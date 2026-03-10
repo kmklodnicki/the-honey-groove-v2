@@ -20,7 +20,7 @@ import { ListingTypeBadge } from '../components/PostCards';
 
 const SECTIONS = {
   trending: { title: 'Trending in the Hive', icon: TrendingUp, iconColor: 'text-honey-amber' },
-  'taste-match': { title: 'Taste Match', icon: Users, iconColor: 'text-honey-amber' },
+  'make-friends': { title: 'Make Friends', icon: Users, iconColor: 'text-honey-amber' },
   'trending-in-collections': { title: 'Trending in Collections', icon: TrendingUp, iconColor: 'text-honey-amber' },
   'most-wanted': { title: 'Most Wanted', icon: Heart, iconColor: 'text-red-400' },
   'near-you': { title: 'Near You', icon: MapPin, iconColor: 'text-honey-amber' },
@@ -54,7 +54,7 @@ const ExploreSeeAllPage = () => {
         case 'trending':
           resp = await axios.get(`${API}/explore/trending?limit=50`, { headers });
           break;
-        case 'taste-match':
+        case 'make-friends':
           resp = await axios.get(`${API}/explore/suggested-collectors?limit=50`, { headers });
           break;
         case 'trending-in-collections':
@@ -132,7 +132,7 @@ const ExploreSeeAllPage = () => {
       {loading ? <LoadingSkeleton section={section} /> : (
         <>
           {section === 'trending' && <TrendingAll data={data} onOpen={openTrendingModal} />}
-          {section === 'taste-match' && <TasteMatchAll data={data} navigate={navigate} />}
+          {section === 'make-friends' && <TasteMatchAll data={data} navigate={navigate} />}
           {section === 'trending-in-collections' && <TrendingCollectionsAll data={data} addToWantlist={addToWantlist} />}
           {section === 'most-wanted' && <MostWantedAll data={data} addToWantlist={addToWantlist} />}
           {section === 'near-you' && (
@@ -244,9 +244,9 @@ const TrendingAll = ({ data, onOpen }) => {
 };
 
 const TasteMatchAll = ({ data, navigate }) => {
-  if (!data || data.length === 0) return <EmptyState text="Add more records to your collection to find taste matches." />;
+  if (!data || data.length === 0) return <EmptyState text="Add more records to your collection to discover new friends." />;
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" data-testid="taste-match-grid">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" data-testid="make-friends-grid">
       {data.map(u => (
         <Card key={u.id} className="p-4 border-honey/30 hover:shadow-sm transition-all" data-testid={`sa-taste-${u.id}`}>
           <div className="flex items-center gap-3">
@@ -402,7 +402,7 @@ const LoadingSkeleton = ({ section }) => {
   if (section === 'most-wanted') {
     return <div className="space-y-2">{Array.from({ length: 10 }, (_, i) => <Skeleton key={i} className="h-14 w-full rounded-lg" />)}</div>;
   }
-  if (section === 'taste-match' || section === 'near-you') {
+  if (section === 'make-friends' || section === 'near-you') {
     return <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">{Array.from({ length: 8 }, (_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}</div>;
   }
   return (

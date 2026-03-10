@@ -1126,6 +1126,13 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
                 cover_url = basic_info.get("cover_image") or basic_info.get("thumb")
                 formats = basic_info.get("formats", [])
                 format_name = formats[0].get("name", "Vinyl") if formats else "Vinyl"
+                # Extract color/variant info from format text field
+                color_variant = None
+                for fmt in formats:
+                    ftext = fmt.get("text", "")
+                    if ftext:
+                        color_variant = ftext
+                        break
                 
                 record_id = str(uuid.uuid4())
                 record_doc = {
@@ -1137,6 +1144,7 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
                     "cover_url": cover_url,
                     "year": basic_info.get("year"),
                     "format": format_name,
+                    "color_variant": color_variant,
                     "notes": "Imported from Discogs",
                     "source": "discogs_import",
                     "created_at": now

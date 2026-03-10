@@ -169,6 +169,7 @@ const VariantTag = ({ variant, glass, ghost, gold, prefix }) => {
 const NowSpinningCard = ({ post, onAlbumClick }) => {
   const record = post.record;
   if (!record) return null;
+  const variantText = record.color_variant || post.color_variant || post.pressing_variant;
   return (
     <AlbumLink record={record} onAlbumClick={onAlbumClick}>
       <div className="flex gap-4 items-start" data-testid="now-spinning-card">
@@ -182,13 +183,6 @@ const NowSpinningCard = ({ post, onAlbumClick }) => {
                 🍯 {post.honeypot_rating}
               </div>
             )}
-            {(record.color_variant || post.color_variant || post.pressing_variant) && (
-              <div className="absolute bottom-1 left-1 max-w-[90%] truncate px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
-                style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
-                data-testid="feed-variant-pill">
-                {record.color_variant || post.color_variant || post.pressing_variant}
-              </div>
-            )}
           </div>
         ) : (
           <div className="w-24 h-24 rounded-lg bg-vinyl-black flex items-center justify-center">
@@ -198,10 +192,14 @@ const NowSpinningCard = ({ post, onAlbumClick }) => {
         <div className="flex-1 min-w-0">
           <p className="font-heading text-lg leading-tight">{record.title}</p>
           <p className="text-sm text-muted-foreground">{record.artist}</p>
-          {!record.cover_url && <VariantTag variant={record.color_variant} />}
+          {variantText && <VariantTag variant={variantText} />}
+          {!variantText && record.format && record.format !== 'Vinyl' && (
+            <span className="inline-flex items-center gap-1 mt-0.5 text-[10px] font-medium px-2 py-0.5 rounded-full border border-stone-200 text-stone-500 bg-stone-50" data-testid="format-pill">
+              <Disc className="w-2.5 h-2.5" /> {record.format}
+            </span>
+          )}
           {post.track && <p className="text-xs text-honey-amber mt-1">Track: {post.track}</p>}
           {post.caption && <p className="text-sm mt-2"><MentionText text={post.caption} /></p>}
-          {record.notes && <p className="text-xs italic text-stone-500 font-serif mt-1.5 line-clamp-2">{record.notes.length > 60 ? record.notes.slice(0, 60) + '...' : record.notes}</p>}
         </div>
       </div>
     </AlbumLink>
@@ -276,22 +274,17 @@ const ISOCard = ({ post, onAlbumClick }) => {
 const AddedToCollectionCard = ({ post, onAlbumClick }) => {
   const record = post.record;
   if (!record) return <p className="text-sm"><MentionText text={post.caption} /></p>;
+  const variantText = record.color_variant || post.color_variant;
   return (
     <AlbumLink record={record} onAlbumClick={onAlbumClick}>
       <div className="flex gap-3 items-center" data-testid="added-card">
         <div className="relative shrink-0">
           <AlbumArt src={record.cover_url} alt={`${record.artist} - ${record.title} Vinyl Record`} className="w-16 h-16 rounded-lg object-cover shadow" />
-          {(record.color_variant || post.color_variant) && (
-            <div className="absolute bottom-0.5 left-0.5 max-w-[90%] truncate px-1 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-wide"
-              style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
-              data-testid="feed-variant-pill">
-              {record.color_variant || post.color_variant}
-            </div>
-          )}
         </div>
-        <div>
+        <div className="min-w-0">
           <p className="font-medium">{record.title}</p>
           <p className="text-sm text-muted-foreground">{record.artist}</p>
+          {variantText && <VariantTag variant={variantText} />}
         </div>
       </div>
     </AlbumLink>
@@ -350,13 +343,6 @@ const DailyPromptPostCard = ({ post }) => (
               🍯 {post.honeypot_rating}
             </div>
           )}
-          {(post.color_variant || post.pressing_variant) && (
-            <div className="absolute bottom-1 left-1 max-w-[90%] truncate px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
-              style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
-              data-testid="feed-variant-pill">
-              {post.color_variant || post.pressing_variant}
-            </div>
-          )}
         </div>
       ) : (
         <div className="w-20 h-20 rounded-lg bg-amber-100 flex items-center justify-center"><Disc className="w-8 h-8 text-amber-300" /></div>
@@ -364,6 +350,7 @@ const DailyPromptPostCard = ({ post }) => (
       <div className="flex-1 min-w-0">
         <p className="font-heading text-lg leading-tight">{post.record_title}</p>
         <p className="text-sm text-muted-foreground">{post.record_artist}</p>
+        {(post.color_variant || post.pressing_variant) && <VariantTag variant={post.color_variant || post.pressing_variant} />}
       </div>
     </div>
     {post.caption && <p className="text-sm mt-3">{post.caption}</p>}
@@ -414,17 +401,13 @@ const NoteCard = ({ post, onAlbumClick }) => {
 // Listing post card (auto-created when a listing is made)
 const ListingPostCard = ({ post }) => {
   const isSale = post.post_type === 'listing_sale';
+  const variantText = post.color_variant || post.pressing_variant;
   return (
     <Link to={post.listing_id ? `/honeypot/listing/${post.listing_id}` : '/honeypot'} className="block" data-testid={`listing-post-${post.id}`}>
       <div className="flex gap-3 items-center bg-stone-50 rounded-xl p-3 hover:bg-stone-100 transition-colors">
         {post.cover_url ? (
-          <div className="relative shrink-0">
+          <div className="shrink-0">
             <AlbumArt src={post.cover_url} alt={`${post.record_artist || 'Artist'} - ${post.record_title || 'Album'} Vinyl Record`} className="w-16 h-16 rounded-lg object-cover shadow-sm" />
-            {(post.color_variant || post.pressing_variant) && (
-              <div className="absolute bottom-0.5 left-0.5">
-                <VariantTag variant={post.color_variant || post.pressing_variant} glass />
-              </div>
-            )}
           </div>
         ) : (
           <div className="w-16 h-16 rounded-lg bg-amber-100 flex items-center justify-center"><Disc className="w-6 h-6 text-amber-400" /></div>
@@ -432,7 +415,7 @@ const ListingPostCard = ({ post }) => {
         <div className="flex-1 min-w-0">
           <p className="font-medium text-sm truncate">{post.record_title}</p>
           <p className="text-xs text-muted-foreground truncate">{post.record_artist}</p>
-          {!post.cover_url && <VariantTag variant={post.color_variant || post.pressing_variant} />}
+          {variantText && <VariantTag variant={variantText} />}
           <span className={`inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100/60 text-teal-700`}>
             {isSale ? <ShoppingBag className="w-3 h-3" /> : <ArrowRightLeft className="w-3 h-3" />}
             {isSale ? 'For Sale' : 'For Trade'}
