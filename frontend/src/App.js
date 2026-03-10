@@ -2,6 +2,8 @@ import React, { useEffect } from "react";
 import "@/App.css";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { VariantModalProvider } from "./context/VariantModalContext";
+import VariantModal from "./components/VariantModal";
 import { Toaster } from "./components/ui/sonner";
 import { HelmetProvider } from "react-helmet-async";
 import { ArrowLeft } from "lucide-react";
@@ -236,8 +238,11 @@ function App() {
       <BrowserRouter>
         <ScrollToTop />
         <AuthProvider>
-          <AppContent />
-          <Toaster />
+          <VariantModalProvider>
+            <AppContent />
+            <VariantModal />
+            <Toaster />
+          </VariantModalProvider>
         </AuthProvider>
       </BrowserRouter>
     </HelmetProvider>

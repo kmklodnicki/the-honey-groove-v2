@@ -9,15 +9,14 @@ import { Skeleton } from '../components/ui/skeleton';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '../components/ui/dialog';
-import { Disc, Users, Search, TrendingUp, Lock, ShoppingBag, Play, UserPlus, MessageCircle, MapPin, Heart, Plus, X, Loader2, ArrowRightLeft, Calendar, Music2 } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+import { Disc, Users, Search, TrendingUp, Lock, Play, UserPlus, MessageCircle, MapPin, Heart, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
-import CollectorBingo from '../components/CollectorBingo';
 import AlbumArt from '../components/AlbumArt';
 import { resolveImageUrl } from '../utils/imageUrl';
 import { ListingTypeBadge } from '../components/PostCards';
 import ScrollRow from '../components/ScrollRow';
+import { useVariantModal } from '../context/VariantModalContext';
 
 const ExplorePage = () => {
   usePageTitle('Nectar');
@@ -30,14 +29,7 @@ const ExplorePage = () => {
   const [nearYou, setNearYou] = useState({ collectors: [], listings: [], needs_location: true });
   const [loading, setLoading] = useState(true);
   const [myKindaPeople, setMyKindaPeople] = useState([]);
-
-  // Trending modal
-  const [trendingModal, setTrendingModal] = useState(null); // { record, posts }
-  const [modalLoading, setModalLoading] = useState(false);
-  const [modalInCollection, setModalInCollection] = useState(null); // null | { in_collection, record_id }
-  const [modalRelease, setModalRelease] = useState(null); // Discogs release details
-  const [spinningModal, setSpinningModal] = useState(false);
-  const [addingToCollection, setAddingToCollection] = useState(false);
+  const { openVariantModal } = useVariantModal();
 
   // Location prompt
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
@@ -69,73 +61,14 @@ const ExplorePage = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const openTrendingModal = async (record) => {
-    setModalLoading(true);
-    setModalInCollection(null);
-    setModalRelease(null);
-    setTrendingModal({ record, posts: [] });
-
-    const discogsId = record.discogs_id;
-
-    // Fire all requests in parallel
-    const postsPromise = record.id
-      ? axios.get(`${API}/explore/trending/${record.id}/posts`, { headers }).catch(() => null)
-      : Promise.resolve(null);
-    const ownershipPromise = discogsId
-      ? axios.get(`${API}/records/check-ownership?discogs_id=${discogsId}`, { headers }).catch(() => null)
-      : (record.artist && record.title)
-        ? axios.get(`${API}/records/check-ownership?artist=${encodeURIComponent(record.artist)}&title=${encodeURIComponent(record.title)}`, { headers }).catch(() => null)
-        : Promise.resolve(null);
-    const releasePromise = discogsId
-      ? axios.get(`${API}/discogs/release/${discogsId}`, { headers }).catch(() => null)
-      : Promise.resolve(null);
-
-    const [postsResp, ownershipResp, releaseResp] = await Promise.all([postsPromise, ownershipPromise, releasePromise]);
-
-    if (postsResp?.data) {
-      setTrendingModal({ record: postsResp.data.record || record, posts: postsResp.data.posts || [] });
-    }
-    if (ownershipResp?.data) {
-      setModalInCollection(ownershipResp.data);
-    } else {
-      setModalInCollection({ in_collection: false, record_id: null });
-    }
-    if (releaseResp?.data) {
-      setModalRelease(releaseResp.data);
-    }
-    setModalLoading(false);
-  };
-
-  const handleAddToCollection = async () => {
-    if (!trendingModal?.record) return;
-    setAddingToCollection(true);
-    const r = trendingModal.record;
-    try {
-      const res = await axios.post(`${API}/records`, {
-        discogs_id: r.discogs_id,
-        title: r.title || r.album,
-        artist: r.artist,
-        cover_url: r.cover_url,
-        year: r.year,
-        format: modalRelease?.format?.[0] || 'Vinyl',
-      }, { headers });
-      toast.success('added to your collection!');
-      setModalInCollection({ in_collection: true, record_id: res.data.id });
-    } catch (err) {
-      if (err.response?.status === 409) toast.info('already in your collection.');
-      else toast.error('could not add. try again.');
-    }
-    setAddingToCollection(false);
-  };
-
-  const handleLogSpin = async () => {
-    if (!modalInCollection?.record_id) return;
-    setSpinningModal(true);
-    try {
-      await axios.post(`${API}/spins`, { record_id: modalInCollection.record_id }, { headers });
-      toast.success('spin logged!');
-    } catch { toast.error('could not log spin. try again.'); }
-    setSpinningModal(false);
+  const openTrendingModal = (record) => {
+    openVariantModal({
+      artist: record.artist,
+      album: record.title || record.album,
+      variant: record.color_variant || record.variant || '',
+      discogs_id: record.discogs_id,
+      cover_url: record.cover_url,
+    });
   };
 
   const addToWantlist = async (artist, album, discogs_id, cover_url, year) => {
@@ -406,151 +339,6 @@ const ExplorePage = () => {
           </div>
         )}
       </ExploreSection>
-
-      {/* Trending Record Modal */}
-      <Dialog open={!!trendingModal} onOpenChange={(open) => { if (!open) { setTrendingModal(null); setModalInCollection(null); setModalRelease(null); } }}>
-        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto" aria-describedby="trending-modal-desc">
-          <DialogHeader>
-            <DialogTitle className="font-heading text-lg">Album Details</DialogTitle>
-            <p id="trending-modal-desc" className="sr-only">Details and actions for this record</p>
-          </DialogHeader>
-          {trendingModal && (
-            <div>
-              {/* Record card */}
-              <div className="flex items-center gap-4 mb-3 bg-honey/10 rounded-xl p-3">
-                {trendingModal.record?.cover_url ? (
-                  <AlbumArt src={trendingModal.record.cover_url} alt={`${trendingModal.record.artist} ${trendingModal.record.title} vinyl record`} className="w-20 h-20 rounded-lg object-cover shadow" />
-                ) : (
-                  <div className="w-20 h-20 rounded-lg bg-honey/20 flex items-center justify-center"><Disc className="w-8 h-8 text-honey" /></div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="font-heading text-base leading-tight" data-testid="modal-album-title">{trendingModal.record?.title || trendingModal.record?.album}</p>
-                  <p className="text-sm text-honey-amber italic" data-testid="modal-album-artist">{trendingModal.record?.artist}{trendingModal.record?.year ? ` (${trendingModal.record.year})` : ''}</p>
-                </div>
-              </div>
-
-              {/* Variant / Pressing Details */}
-              {(modalRelease || trendingModal.record?.format) && (
-                <div className="flex flex-wrap gap-1.5 mb-4" data-testid="modal-variant-details">
-                  {(modalRelease?.year || trendingModal.record?.year) && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-honey/10 text-xs text-vinyl-black/70">
-                      <Calendar className="w-3 h-3" /> {modalRelease?.year || trendingModal.record?.year}
-                    </span>
-                  )}
-                  {modalRelease?.label?.[0] && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-honey/10 text-xs text-vinyl-black/70" data-testid="modal-label">
-                      {modalRelease.label[0]}
-                    </span>
-                  )}
-                  {modalRelease?.catno && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-honey/10 text-xs text-vinyl-black/70" data-testid="modal-catno">
-                      {modalRelease.catno}
-                    </span>
-                  )}
-                  {modalRelease?.format?.[0] && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-honey/10 text-xs text-vinyl-black/70" data-testid="modal-format">
-                      <Disc className="w-3 h-3" /> {modalRelease.format.join(', ')}
-                    </span>
-                  )}
-                  {modalRelease?.country && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-honey/10 text-xs text-vinyl-black/70" data-testid="modal-country">
-                      {modalRelease.country}
-                    </span>
-                  )}
-                  {modalRelease?.color_variant && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-xs text-amber-800 font-medium" data-testid="modal-color-variant">
-                      {modalRelease.color_variant}
-                    </span>
-                  )}
-                  {!modalRelease && trendingModal.record?.format && (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-honey/10 text-xs text-vinyl-black/70">
-                      <Disc className="w-3 h-3" /> {Array.isArray(trendingModal.record.format) ? trendingModal.record.format.join(', ') : trendingModal.record.format}
-                    </span>
-                  )}
-                </div>
-              )}
-
-              {/* Contextual Action Buttons */}
-              {modalLoading ? (
-                <div className="flex justify-center py-3"><Loader2 className="w-5 h-5 animate-spin text-honey-amber" /></div>
-              ) : modalInCollection?.in_collection ? (
-                <div className="flex flex-wrap gap-2 mb-4" data-testid="modal-owner-actions">
-                  <Button size="sm" className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full text-xs"
-                    onClick={handleLogSpin} disabled={spinningModal} data-testid="modal-log-spin">
-                    {spinningModal ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Play className="w-3 h-3 mr-1" />} Log a Spin
-                  </Button>
-                  <Button size="sm" variant="outline" className="rounded-full text-xs border-honey/50 text-honey-amber hover:bg-honey/10"
-                    onClick={() => {
-                      const r = trendingModal.record;
-                      setTrendingModal(null);
-                      navigate(`/honeypot?create=sale&artist=${encodeURIComponent(r.artist)}&album=${encodeURIComponent(r.title || r.album)}&discogs_id=${r.discogs_id || ''}&cover_url=${encodeURIComponent(r.cover_url || '')}&year=${r.year || ''}`);
-                    }} data-testid="modal-list-for-sale">
-                    <ShoppingBag className="w-3 h-3 mr-1" /> List for Sale
-                  </Button>
-                  <Button size="sm" variant="outline" className="rounded-full text-xs border-honey/50 text-honey-amber hover:bg-honey/10"
-                    onClick={() => {
-                      const r = trendingModal.record;
-                      setTrendingModal(null);
-                      navigate(`/honeypot?create=trade&artist=${encodeURIComponent(r.artist)}&album=${encodeURIComponent(r.title || r.album)}&discogs_id=${r.discogs_id || ''}&cover_url=${encodeURIComponent(r.cover_url || '')}&year=${r.year || ''}`);
-                    }} data-testid="modal-offer-trade">
-                    <ArrowRightLeft className="w-3 h-3 mr-1" /> Offer to Trade
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex flex-wrap gap-2 mb-4" data-testid="modal-nonowner-actions">
-                  <Button size="sm" className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full text-xs"
-                    onClick={handleAddToCollection} disabled={addingToCollection} data-testid="modal-add-collection">
-                    {addingToCollection ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Plus className="w-3 h-3 mr-1" />} Add to Collection
-                  </Button>
-                  <Button size="sm" variant="outline" className="rounded-full text-xs border-honey/50 text-honey-amber hover:bg-honey/10"
-                    onClick={() => addToWantlist(trendingModal.record.artist, trendingModal.record.title || trendingModal.record.album, trendingModal.record.discogs_id, trendingModal.record.cover_url, trendingModal.record.year)}
-                    data-testid="modal-add-wantlist">
-                    <Heart className="w-3 h-3 mr-1" /> Add to Wantlist
-                  </Button>
-                </div>
-              )}
-
-              {/* Discogs link */}
-              {trendingModal.record?.discogs_id && (
-                <a href={`https://www.discogs.com/release/${trendingModal.record.discogs_id}`} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-vinyl-black/5 text-xs text-vinyl-black/60 hover:bg-vinyl-black/10 transition-colors mb-4" data-testid="modal-discogs-link">
-                  <Music2 className="w-3 h-3" /> View on Discogs
-                </a>
-              )}
-
-              {/* Divider */}
-              <div className="border-t border-honey/20 pt-3 mt-1" />
-
-              {/* Posts feed */}
-              <p className="text-xs font-medium text-muted-foreground mb-2">Recent Spins</p>
-              {modalLoading ? (
-                <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-16 w-full" />)}</div>
-              ) : trendingModal.posts.length === 0 ? (
-                <p className="text-center text-sm text-muted-foreground py-6">no recent spins for this record.</p>
-              ) : (
-                <div className="space-y-3">
-                  {trendingModal.posts.map(post => (
-                    <div key={post.id} className="flex items-start gap-3 py-2" data-testid={`trending-post-${post.id}`}>
-                      <Link to={`/profile/${post.user?.username}`}>
-                        {post.user?.avatar_url ? <img src={resolveImageUrl(post.user.avatar_url)} alt="" className="w-8 h-8 rounded-full object-cover" />
-                          : <div className="w-8 h-8 rounded-full bg-honey/30 flex items-center justify-center text-xs font-bold text-honey-amber">{(post.user?.username || '?')[0].toUpperCase()}</div>}
-                      </Link>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <Link to={`/profile/${post.user?.username}`} className="text-sm font-medium hover:underline">@{post.user?.username}</Link>
-                          <span className="text-[10px] text-muted-foreground">{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
-                        </div>
-                        {post.caption && <p className="text-sm text-vinyl-black/80 mt-0.5">{post.caption}</p>}
-                        {post.track && <p className="text-xs text-honey-amber mt-0.5">Track: {post.track}</p>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
 
       {/* Location Prompt Modal */}
       <Dialog open={showLocationPrompt} onOpenChange={setShowLocationPrompt}>

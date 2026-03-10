@@ -7,15 +7,16 @@ import AlbumArt from '../components/AlbumArt';
 import ScrollRow from '../components/ScrollRow';
 import SEOHead from '../components/SEOHead';
 import { useAuth } from '../context/AuthContext';
+import { useVariantModal } from '../context/VariantModalContext';
 import axios from 'axios';
 
 const API = process.env.REACT_APP_BACKEND_URL + '/api';
 
 /* ─── Variant Quick Card ─── */
-const VariantCard = ({ v }) => (
-  <Link
-    to={v.slug}
-    className="flex gap-3 p-3 rounded-xl hover:bg-honey/8 transition-all group"
+const VariantCard = ({ v, onOpen }) => (
+  <button
+    onClick={() => onOpen(v)}
+    className="flex gap-3 p-3 rounded-xl hover:bg-honey/8 transition-all group text-left w-full"
     data-testid={`variant-card-${v.discogs_id || 'local'}`}
   >
     <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-stone-100 shadow-sm">
@@ -40,11 +41,11 @@ const VariantCard = ({ v }) => (
       </div>
     </div>
     {v.rarity_tier && <RarityPill tier={v.rarity_tier} size="sm" />}
-  </Link>
+  </button>
 );
 
 /* ─── Discovery Section ─── */
-const DiscoverySection = ({ title, icon: Icon, items, emptyText }) => {
+const DiscoverySection = ({ title, icon: Icon, items, onOpen }) => {
   if (!items?.length) return null;
   return (
     <section className="mb-8" data-testid={`discover-${title.toLowerCase().replace(/\s+/g, '-')}`}>
@@ -54,7 +55,7 @@ const DiscoverySection = ({ title, icon: Icon, items, emptyText }) => {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
         {items.map((v, i) => (
-          <VariantCard key={`${v.discogs_id}-${i}`} v={v} />
+          <VariantCard key={`${v.discogs_id}-${i}`} v={v} onOpen={onOpen} />
         ))}
       </div>
     </section>
@@ -64,6 +65,7 @@ const DiscoverySection = ({ title, icon: Icon, items, emptyText }) => {
 /* ─── Main SearchPage ─── */
 export default function SearchPage() {
   const { token } = useAuth();
+  const { openVariantModal } = useVariantModal();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialQ = searchParams.get('q') || '';
   const [query, setQuery] = useState(initialQ);
@@ -75,6 +77,16 @@ export default function SearchPage() {
   const inputRef = useRef(null);
   const debounceRef = useRef(null);
   const PAGE_SIZE = 20;
+
+  const handleOpenVariant = (v) => {
+    openVariantModal({
+      artist: v.artist,
+      album: v.album || v.title,
+      variant: v.variant || '',
+      discogs_id: v.discogs_id,
+      cover_url: v.cover_url,
+    });
+  };
 
   // Focus input on mount
   useEffect(() => { inputRef.current?.focus(); }, []);
@@ -184,7 +196,7 @@ export default function SearchPage() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
                   {results.variants.map((v, i) => (
-                    <VariantCard key={`${v.discogs_id}-${i}`} v={v} />
+                    <VariantCard key={`${v.discogs_id}-${i}`} v={v} onOpen={handleOpenVariant} />
                   ))}
                 </div>
                 {results.has_more && (
@@ -207,10 +219,10 @@ export default function SearchPage() {
                 <h2 className="font-heading text-base font-bold text-vinyl-black mb-3">Albums</h2>
                 <ScrollRow>
                   {results.albums.map((a, i) => (
-                    <Link
+                    <button
                       key={`${a.discogs_id}-${i}`}
-                      to={a.slug}
-                      className="shrink-0 w-28 group"
+                      onClick={() => handleOpenVariant(a)}
+                      className="shrink-0 w-28 group text-left"
                       data-testid={`album-card-${a.discogs_id || i}`}
                     >
                       <div className="w-28 h-28 rounded-lg overflow-hidden bg-stone-100 shadow-sm mb-1.5">
@@ -223,7 +235,7 @@ export default function SearchPage() {
                       <p className="text-xs font-semibold text-vinyl-black truncate group-hover:text-honey-amber transition-colors">{a.title}</p>
                       <p className="text-[10px] text-muted-foreground truncate">{a.artist}</p>
                       <p className="text-[10px] text-honey-amber">{a.variant_count} variant{a.variant_count !== 1 ? 's' : ''}</p>
-                    </Link>
+                    </button>
                   ))}
                 </ScrollRow>
               </section>
@@ -273,10 +285,10 @@ export default function SearchPage() {
         {/* Discovery Sections (Empty State) */}
         {showDiscover && (
           <div data-testid="discover-sections">
-            <DiscoverySection title="Trending Variants" icon={TrendingUp} items={discover.trending} />
-            <DiscoverySection title="Rare Variants" icon={Gem} items={discover.rare} />
-            <DiscoverySection title="Most Wanted" icon={Heart} items={discover.most_wanted} />
-            <DiscoverySection title="Recently Added" icon={Clock} items={discover.recently_added} />
+            <DiscoverySection title="Trending Variants" icon={TrendingUp} items={discover.trending} onOpen={handleOpenVariant} />
+            <DiscoverySection title="Rare Variants" icon={Gem} items={discover.rare} onOpen={handleOpenVariant} />
+            <DiscoverySection title="Most Wanted" icon={Heart} items={discover.most_wanted} onOpen={handleOpenVariant} />
+            <DiscoverySection title="Recently Added" icon={Clock} items={discover.recently_added} onOpen={handleOpenVariant} />
           </div>
         )}
       </div>

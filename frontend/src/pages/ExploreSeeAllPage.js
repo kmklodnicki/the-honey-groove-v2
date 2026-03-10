@@ -10,13 +10,13 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '../components/ui/dialog';
 import { ArrowLeft, TrendingUp, Users, Disc, Heart, MapPin, Play, Plus, MessageCircle, UserPlus } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import { usePageTitle } from '../hooks/usePageTitle';
 import AlbumArt from '../components/AlbumArt';
 import { resolveImageUrl } from '../utils/imageUrl';
 import { ListingTypeBadge } from '../components/PostCards';
+import { useVariantModal } from '../context/VariantModalContext';
 
 const SECTIONS = {
   trending: { title: 'Trending in the Hive', icon: TrendingUp, iconColor: 'text-honey-amber' },
@@ -37,9 +37,7 @@ const ExploreSeeAllPage = () => {
   const meta = SECTIONS[section];
   const headers = { Authorization: `Bearer ${token}` };
 
-  // Trending modal state
-  const [trendingModal, setTrendingModal] = useState(null);
-  const [modalLoading, setModalLoading] = useState(false);
+  const { openVariantModal } = useVariantModal();
 
   // Location prompt
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
@@ -76,14 +74,14 @@ const ExploreSeeAllPage = () => {
 
   useEffect(() => { setLoading(true); setData(null); fetchData(); }, [fetchData]);
 
-  const openTrendingModal = async (record) => {
-    setModalLoading(true);
-    setTrendingModal({ record, posts: [] });
-    try {
-      const resp = await axios.get(`${API}/explore/trending/${record.id}/posts`, { headers });
-      setTrendingModal({ record: resp.data.record, posts: resp.data.posts });
-    } catch { toast.error('could not load posts.'); }
-    finally { setModalLoading(false); }
+  const openTrendingModal = (record) => {
+    openVariantModal({
+      artist: record.artist,
+      album: record.title || record.album,
+      variant: record.color_variant || record.variant || '',
+      discogs_id: record.discogs_id,
+      cover_url: record.cover_url,
+    });
   };
 
   const addToWantlist = async (artist, album, discogs_id, cover_url, year) => {
@@ -144,60 +142,6 @@ const ExploreSeeAllPage = () => {
           )}
         </>
       )}
-
-      {/* Trending Modal */}
-      <Dialog open={!!trendingModal} onOpenChange={(open) => { if (!open) setTrendingModal(null); }}>
-        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto" aria-describedby="sa-trending-desc">
-          <DialogHeader>
-            <DialogTitle className="font-heading text-lg">Now Spinning</DialogTitle>
-            <p id="sa-trending-desc" className="sr-only">Recent spins for this record</p>
-          </DialogHeader>
-          {trendingModal && (
-            <div>
-              <div className="flex items-center gap-4 mb-4 bg-honey/10 rounded-xl p-3">
-                {trendingModal.record?.cover_url ? (
-                  <AlbumArt src={trendingModal.record.cover_url} alt={`${trendingModal.record.artist} ${trendingModal.record.title} vinyl record`} className="w-16 h-16 rounded-lg object-cover shadow" />
-                ) : (
-                  <div className="w-16 h-16 rounded-lg bg-honey/20 flex items-center justify-center"><Disc className="w-8 h-8 text-honey" /></div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="font-heading text-base">{trendingModal.record?.title}</p>
-                  <p className="text-sm text-muted-foreground">{trendingModal.record?.artist}</p>
-                </div>
-                <Button size="sm" className="bg-purple-100 text-purple-700 hover:bg-purple-200 rounded-full text-xs shrink-0"
-                  onClick={() => addToWantlist(trendingModal.record.artist, trendingModal.record.title, trendingModal.record.discogs_id, trendingModal.record.cover_url, trendingModal.record.year)}
-                  data-testid="sa-modal-add-wantlist">
-                  <Plus className="w-3 h-3 mr-1" /> Wantlist
-                </Button>
-              </div>
-              {modalLoading ? (
-                <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-16 w-full" />)}</div>
-              ) : trendingModal.posts.length === 0 ? (
-                <p className="text-center text-sm text-muted-foreground py-6">No recent spins for this record.</p>
-              ) : (
-                <div className="space-y-3">
-                  {trendingModal.posts.map(post => (
-                    <div key={post.id} className="flex items-start gap-3 py-2">
-                      <Link to={`/profile/${post.user?.username}`}>
-                        {post.user?.avatar_url ? <img src={resolveImageUrl(post.user.avatar_url)} alt="" className="w-8 h-8 rounded-full object-cover" />
-                          : <div className="w-8 h-8 rounded-full bg-honey/30 flex items-center justify-center text-xs font-bold text-honey-amber">{(post.user?.username || '?')[0].toUpperCase()}</div>}
-                      </Link>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <Link to={`/profile/${post.user?.username}`} className="text-sm font-medium hover:underline">@{post.user?.username}</Link>
-                          <span className="text-[10px] text-muted-foreground">{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</span>
-                        </div>
-                        {post.caption && <p className="text-sm text-vinyl-black/80 mt-0.5">{post.caption}</p>}
-                        {post.track && <p className="text-xs text-honey-amber mt-0.5">Track: {post.track}</p>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
 
       {/* Location Prompt Modal */}
       <Dialog open={showLocationPrompt} onOpenChange={setShowLocationPrompt}>
