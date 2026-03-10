@@ -131,8 +131,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
           }
           return { ...r, _score: score };
         })
-        .sort((a, b) => b._score - a._score)
-        .slice(0, 10);
+        .sort((a, b) => b._score - a._score);
       setSpinSearchResults(scored);
     }, 300);
   }, [records]);
