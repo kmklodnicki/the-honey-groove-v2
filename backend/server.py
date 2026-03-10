@@ -29,6 +29,7 @@ from routes.verification import router as verification_router
 from routes.reports import router as reports_router
 from routes.seo import router as seo_router
 from routes.vinyl import router as vinyl_router
+from routes.weekly_wax import router as weekly_wax_router, schedule_weekly_wax
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -39,7 +40,8 @@ for r in [auth_router, hive_router, collection_router, honeypot_router,
           trades_router, notifications_router, dms_router, explore_router,
           valuation_router, wax_reports_router, daily_prompts_router, newsletter_router,
           mood_boards_router, bingo_router, reports_router, admin_router, search_router,
-          verification_router, reports_router, seo_router, vinyl_router]:
+          verification_router, reports_router, seo_router, vinyl_router,
+          weekly_wax_router]:
     app.include_router(r, prefix="/api")
 
 app.add_middleware(
@@ -130,6 +132,8 @@ async def startup_event():
     await db.image_cache.create_index("release_id", unique=True)
     # Start weekly report scheduler
     asyncio.create_task(schedule_weekly_reports())
+    # Start Weekly Wax email scheduler
+    asyncio.create_task(schedule_weekly_wax())
     # Start streak nudge scheduler
     from routes.daily_prompts import schedule_streak_nudges
     asyncio.create_task(schedule_streak_nudges())
