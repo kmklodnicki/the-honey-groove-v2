@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, TrendingUp, Gem, Heart, Clock, ChevronRight, Loader2, SlidersHorizontal, X, ChevronDown } from 'lucide-react';
+import { Search, TrendingUp, Gem, Heart, Clock, ChevronRight, Loader2, SlidersHorizontal, X, ChevronDown, Users } from 'lucide-react';
 import { Card } from '../components/ui/card';
 import { RarityPill } from '../components/RarityBadge';
 import AlbumArt from '../components/AlbumArt';
@@ -8,6 +8,7 @@ import ScrollRow from '../components/ScrollRow';
 import SEOHead from '../components/SEOHead';
 import { useAuth } from '../context/AuthContext';
 import { useVariantModal } from '../context/VariantModalContext';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 const API = process.env.REACT_APP_BACKEND_URL + '/api';
@@ -97,6 +98,7 @@ export default function SearchPage() {
   const [discover, setDiscover] = useState(null);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [userResults, setUserResults] = useState(null);
   const [page, setPage] = useState(0);
   const [activeFilters, setActiveFilters] = useState(new Set());
   const [yearFrom, setYearFrom] = useState(null);
@@ -185,12 +187,20 @@ export default function SearchPage() {
       })
       .catch(() => {})
       .finally(() => { setLoading(false); setLoadingMore(false); });
+
+    // Fetch matching users in parallel (only on first page)
+    if (!isMore) {
+      axios.get(`${API}/search/users`, { params: { q, limit: 6 }, headers })
+        .then(r => setUserResults(r.data.users || []))
+        .catch(() => setUserResults([]));
+    }
   }, [token]);
 
   useEffect(() => {
     clearTimeout(debounceRef.current);
     if (!query.trim()) {
       setResults(null);
+      setUserResults(null);
       clearAllFilters();
       setSearchParams({}, { replace: true });
       return;
@@ -208,7 +218,7 @@ export default function SearchPage() {
   };
 
   const showDiscover = !query.trim() && discover;
-  const hasResults = results && (results.variants?.length > 0 || results.albums?.length > 0);
+  const hasResults = (results && (results.variants?.length > 0 || results.albums?.length > 0)) || (userResults && userResults.length > 0);
 
   // Client-side filtering (tags + years)
   const allVariants = results?.variants || [];
@@ -525,6 +535,49 @@ export default function SearchPage() {
               </section>
             )}
           </>
+        )}
+
+        {/* Collectors Section */}
+        {!loading && userResults && userResults.length > 0 && (
+          <section className="mb-8" data-testid="collector-results">
+            <h3 className="text-xs uppercase tracking-wider text-stone-400 font-semibold mb-3 flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5" /> Collectors
+            </h3>
+            <div className="space-y-2">
+              {userResults.map(u => (
+                <Link
+                  key={u.id}
+                  to={`/profile/${u.username}`}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-white/60 border border-stone-200/60 hover:border-honey/30 hover:bg-honey/5 transition-all group"
+                  data-testid={`collector-${u.username}`}
+                >
+                  <div className="w-10 h-10 rounded-full bg-stone-200 overflow-hidden shrink-0">
+                    {u.avatar_url ? (
+                      <img src={u.avatar_url} alt={u.username} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-stone-400 text-sm font-medium">
+                        {(u.username || '?')[0].toUpperCase()}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-vinyl-black group-hover:text-honey-amber transition-colors truncate">
+                      @{u.username}
+                    </p>
+                    <p className="text-xs text-stone-400">
+                      {u.record_count.toLocaleString()} record{u.record_count !== 1 ? 's' : ''}
+                      {u.records_in_common > 0 && (
+                        <span className="ml-1.5 text-honey-amber font-medium">
+                          · {u.records_in_common} in common
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-stone-300 group-hover:text-honey-amber transition-colors shrink-0" />
+                </Link>
+              ))}
+            </div>
+          </section>
         )}
 
         {/* No Results */}

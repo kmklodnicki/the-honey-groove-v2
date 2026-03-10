@@ -929,3 +929,75 @@ async def search_records_paginated(
     } for r in page]
 
     return {"records": records_out, "has_more": has_more}
+
+
+# ── User / Collector Search ──────────────────────────────────────────────────
+
+@router.get("/search/users")
+async def search_users(
+    q: str = Query("", min_length=1),
+    limit: int = Query(10, ge=1, le=30),
+    user: Optional[Dict] = Depends(get_current_user),
+):
+    """Search for collectors by username or display name."""
+    q = q.strip()
+    if not q:
+        return {"users": []}
+
+    # Build exclusion list
+    exclude_ids = set(await get_hidden_user_ids())
+    if user:
+        from database import get_all_blocked_ids
+        blocked = await get_all_blocked_ids(user["id"])
+        exclude_ids.update(blocked)
+        exclude_ids.add(user["id"])  # Don't show yourself
+
+    # Text search on username and display_name
+    regex = {"$regex": q, "$options": "i"}
+    query_filter = {
+        "$and": [
+            {"$or": [{"username": regex}, {"display_name": regex}]},
+            {"id": {"$nin": list(exclude_ids)}},
+        ]
+    }
+
+    users_raw = await db.users.find(
+        query_filter,
+        {"_id": 0, "id": 1, "username": 1, "display_name": 1, "avatar_url": 1, "profile_locked": 1}
+    ).limit(limit).to_list(limit)
+
+    # Get record counts for matched users
+    user_ids = [u["id"] for u in users_raw]
+    results = []
+
+    # Viewer's discogs_ids for "records in common" (only if logged in)
+    viewer_dids = set()
+    if user:
+        viewer_recs = await db.records.find(
+            {"user_id": user["id"], "discogs_id": {"$ne": None}},
+            {"_id": 0, "discogs_id": 1}
+        ).to_list(5000)
+        viewer_dids = {r["discogs_id"] for r in viewer_recs}
+
+    for u in users_raw:
+        record_count = await db.records.count_documents({"user_id": u["id"]})
+
+        common_count = 0
+        if viewer_dids:
+            their_recs = await db.records.find(
+                {"user_id": u["id"], "discogs_id": {"$ne": None}},
+                {"_id": 0, "discogs_id": 1}
+            ).to_list(5000)
+            their_dids = {r["discogs_id"] for r in their_recs}
+            common_count = len(viewer_dids & their_dids)
+
+        results.append({
+            "id": u["id"],
+            "username": u["username"],
+            "display_name": u.get("display_name"),
+            "avatar_url": u.get("avatar_url"),
+            "record_count": record_count,
+            "records_in_common": common_count,
+        })
+
+    return {"users": results}
