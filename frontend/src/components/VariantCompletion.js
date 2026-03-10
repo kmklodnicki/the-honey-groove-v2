@@ -43,6 +43,23 @@ const VariantRow = ({ variant }) => (
   </div>
 );
 
+const VariantChip = ({ variant }) => (
+  <div
+    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+      variant.owned
+        ? 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-300/60'
+        : 'bg-stone-100 text-stone-400 ring-1 ring-stone-200/60'
+    }`}
+    title={variant.owned ? `Owned: ${variant.name}` : `Missing: ${variant.name}`}
+    data-testid={`variant-chip-${variant.name.toLowerCase().replace(/\s+/g, '-')}`}
+  >
+    {variant.owned
+      ? <Check className="w-3 h-3 text-emerald-500" strokeWidth={3} />
+      : <Circle className="w-3 h-3 text-stone-300" />}
+    {variant.name}
+  </div>
+);
+
 export default function VariantCompletion({ discogsId }) {
   const { token } = useAuth();
   const [data, setData] = useState(null);
@@ -74,6 +91,14 @@ export default function VariantCompletion({ discogsId }) {
         <span className="text-sm font-medium text-honey-amber" data-testid="completion-count">
           {owned_count} / {total_variants} variants
         </span>
+      </div>
+
+      {/* Variant Gallery */}
+      <div className="mb-4" data-testid="variant-gallery">
+        <p className="text-[11px] font-bold text-vinyl-black/50 uppercase tracking-wider mb-2">All Variants</p>
+        <div className="flex flex-wrap gap-1.5">
+          {variants.map(v => <VariantChip key={v.name} variant={v} />)}
+        </div>
       </div>
 
       <ProgressBar pct={completion_pct} />
