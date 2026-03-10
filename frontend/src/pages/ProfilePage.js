@@ -57,7 +57,6 @@ const ProfilePage = () => {
   const [showCommonOnly, setShowCommonOnly] = useState(false);
   const [myRecordDiscogs, setMyRecordDiscogs] = useState(new Set());
   const [dreamingItems, setDreamingItems] = useState([]);
-  const [isoValue, setIsoValue] = useState(null);
   const [dreamValue, setDreamValue] = useState(null);
   const [isBlocked, setIsBlocked] = useState(false);
   const [blockLoading, setBlockLoading] = useState(false);
@@ -118,7 +117,6 @@ const ProfilePage = () => {
         axios.get(`${API}/users/${username}/ratings`).then(r => setRatings(r.data)).catch(() => {});
         axios.get(`${API}/valuation/collection/${username}`).then(r => setCollectionValue(r.data)).catch(() => {});
         axios.get(`${API}/prompts/streak/${username}`).then(r => setPromptStreak(r.data)).catch(() => {});
-        axios.get(`${API}/valuation/wishlist/${username}`).then(r => setIsoValue(r.data)).catch(() => {});
         axios.get(`${API}/valuation/dreamlist/${username}`).then(r => setDreamValue(r.data)).catch(() => {});
 
         // Fetch taste match for other users
@@ -156,7 +154,6 @@ const ProfilePage = () => {
     setShowCommonOnly(false);
     setCommonGroundOpen(false);
     setDreamingItems([]);
-    setIsoValue(null);
     setDreamValue(null);
     fetchProfile();
   }, [fetchProfile]);
@@ -536,15 +533,10 @@ const ProfilePage = () => {
               </div>
             )}
 
-            {/* Value of ISOs sub-headline */}
-            {isoValue && isoValue.total_value > 0 && (
-              <p className="mt-2 font-serif italic text-sm" style={{ color: '#C8861A' }} data-testid="profile-iso-value">
-                Value of ISOs: ${isoValue.total_value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-              </p>
-            )}
+            {/* Value of Dream Records sub-headline */}
             {dreamValue && dreamValue.total_value > 0 && (
-              <p className="mt-1 font-serif italic text-sm" style={{ color: '#8A6B4A' }} data-testid="profile-dream-value">
-                Dream Wishlist: ${dreamValue.total_value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              <p className="mt-2 font-serif italic text-sm" style={{ color: '#C8861A' }} data-testid="profile-dream-value">
+                Value of Dream Records: ${dreamValue.total_value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
               </p>
             )}
 
@@ -713,7 +705,7 @@ const ProfilePage = () => {
         {/* Dreaming Tab */}
         <TabsContent value="dreaming">
           {dreamingItems.length === 0 ? (
-            <EmptyState icon={Cloud} title="No dreams yet" sub={isOwnProfile ? 'Add records to your Dreaming tab to start building your Value of ISOs.' : `@${username} isn't dreaming of anything right now`} />
+            <EmptyState icon={Cloud} title="No dreams yet" sub={isOwnProfile ? 'Add records to your Dreaming tab to start building your Value of Dream Records.' : `@${username} isn't dreaming of anything right now`} />
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {dreamingItems.map(item => {
@@ -998,7 +990,7 @@ const ProfilePage = () => {
               {tasteMatch?.score}% Taste Match {tasteMatch?.label && `· ${tasteMatch.label}`}
               {tasteMatch?.shared_dream_value > 0 && (
                 <span className="block mt-1 font-medium" style={{ color: '#C8861A' }} data-testid="shared-dream-value">
-                  You share ${tasteMatch.shared_dream_value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} in Value of ISOs.
+                  You share ${tasteMatch.shared_dream_value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} in Value of Dream Records.
                 </span>
               )}
             </DialogDescription>

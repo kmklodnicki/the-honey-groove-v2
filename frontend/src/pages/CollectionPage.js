@@ -87,7 +87,6 @@ const CollectionPage = () => {
   const searchParamsCollection = new URLSearchParams(window.location.search);
   const [collectionTab, setCollectionTab] = useState(searchParamsCollection.get('tab') === 'wishlist' ? 'wishlist' : 'owned');
   const [wishlistItems, setWishlistItems] = useState([]);
-  const [wishlistValue, setWishlistValue] = useState(null);
   const [dreamlistValue, setDreamlistValue] = useState(null);
   const [dreamSubtractMsg, setDreamSubtractMsg] = useState(null);
   const [countKey, setCountKey] = useState(0);
@@ -119,10 +118,9 @@ const CollectionPage = () => {
       setCollectionValue(valueRes.data);
       setHiddenGems(gemsRes.data || []);
       setValueMap(valMapRes.data || {});
-      // Fetch wishlist (WISHLIST ISO items) and separate values
+      // Fetch wishlist (WISHLIST ISO items) and dream value
       Promise.all([
         axios.get(`${API}/iso`, { headers }).then(r => setWishlistItems((r.data || []).filter(i => i.status === 'WISHLIST'))),
-        axios.get(`${API}/valuation/wishlist`, { headers }).then(r => setWishlistValue(r.data)),
         axios.get(`${API}/valuation/dreamlist`, { headers }).then(r => setDreamlistValue(r.data)),
       ]).catch(() => {});
     } catch (error) {
@@ -250,14 +248,14 @@ const CollectionPage = () => {
       setWishlistItems(prev => prev.filter(i => i.id !== isoId));
       toast.success(res.data.message || `${item?.album || 'Record'} is now on the hunt.`);
       // Show subtraction message and update dream debt counter
-      if (item?.discogs_id && wishlistValue) {
+      if (item?.discogs_id && dreamlistValue) {
         // Fetch this item's value from the valuation cache
         try {
           const valRes = await axios.get(`${API}/valuation/record-value/${item.discogs_id}`, { headers: { Authorization: `Bearer ${token}` } });
           const itemVal = valRes.data?.median_value || 0;
           if (itemVal > 0) {
-            setDreamSubtractMsg(`Subtracting $${itemVal.toLocaleString('en-US', { minimumFractionDigits: 2 })} from your Value of ISOs... and adding it to your Collection.`);
-            setWishlistValue(prev => prev ? { ...prev, total_value: Math.max(0, prev.total_value - itemVal) } : prev);
+            setDreamSubtractMsg(`Subtracting $${itemVal.toLocaleString('en-US', { minimumFractionDigits: 2 })} from your Value of Dream Records... and adding it to your Collection.`);
+            setDreamlistValue(prev => prev ? { ...prev, total_value: Math.max(0, prev.total_value - itemVal) } : prev);
             setTimeout(() => setDreamSubtractMsg(null), 4000);
           }
         } catch {
@@ -384,7 +382,7 @@ const CollectionPage = () => {
 
       <Tabs value={collectionTab} onValueChange={handleTabChange}>
         {/* Collection Value Toggle */}
-        {collectionValue && collectionValue.total_value > 0 && wishlistValue && wishlistValue.total_value > 0 && (
+        {collectionValue && collectionValue.total_value > 0 && dreamlistValue && dreamlistValue.total_value > 0 && (
           <div className="flex items-center justify-center gap-4 mb-4 p-3 rounded-xl border border-honey/20 bg-gradient-to-r from-honey/5 to-stone-50" data-testid="reality-check-toggle">
             <button
               onClick={() => handleTabChange('owned')}
@@ -398,8 +396,8 @@ const CollectionPage = () => {
               onClick={() => handleTabChange('wishlist')}
               className={`text-center transition-all px-4 py-1.5 rounded-full text-sm font-medium ${collectionTab === 'wishlist' ? 'bg-stone-100 text-vinyl-black' : 'text-stone-400 hover:text-stone-600'}`}
               data-testid="toggle-dreaming">
-              <span className="block font-heading text-lg">${wishlistValue.total_value.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-              <span className="text-[10px] uppercase tracking-wide">Value of ISOs</span>
+              <span className="block font-heading text-lg">${dreamlistValue.total_value.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+              <span className="text-[10px] uppercase tracking-wide">Value of Dream Records</span>
             </button>
           </div>
         )}
@@ -684,14 +682,14 @@ const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg }) => {
       )}
       {hasDreams ? (
         <>
-          <p className="text-xs font-medium uppercase tracking-widest text-stone-400 mb-1">Dream Wishlist Value</p>
+          <p className="text-xs font-medium uppercase tracking-widest text-stone-400 mb-1">Value of Dream Records</p>
           <p className="font-heading text-2xl sm:text-3xl text-vinyl-black leading-tight" data-testid="dream-debt-headline">
             If only I had{' '}
             <span className="font-serif italic" style={{ color: '#C8861A' }} data-testid="dream-debt-amount">
               ${displayValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
             ...{' '}
-            <span className="text-base font-light text-stone-400 font-serif italic">(Dream Wishlist)</span>
+            <span className="text-base font-light text-stone-400 font-serif italic">(Value of Dream Records)</span>
           </p>
           <p className="text-xs text-stone-400 mt-2">{itemCount} record{itemCount !== 1 ? 's' : ''} dreaming</p>
         </>
