@@ -192,6 +192,12 @@ export default function VinylVariantPage() {
             <StatCard icon={TrendingDown} label="Lowest Sale" value={val.lowest_sale ? `$${val.lowest_sale.toFixed(2)}` : '—'} />
             <StatCard icon={ShoppingCart} label="Sales" value={val.recent_sales_count} sub="recorded" />
           </div>
+        ) : val.discogs_median ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <StatCard icon={DollarSign} label="Median Value" value={`$${val.discogs_median.toFixed(2)}`} sub="via Discogs" />
+            <StatCard icon={TrendingUp} label="High" value={val.discogs_high ? `$${val.discogs_high.toFixed(2)}` : '—'} sub="via Discogs" />
+            <StatCard icon={TrendingDown} label="Low" value={val.discogs_low ? `$${val.discogs_low.toFixed(2)}` : '—'} sub="via Discogs" />
+          </div>
         ) : (
           <Card className="p-6 border-honey/20 text-center">
             <p className="text-muted-foreground text-sm">No recorded sales yet. Be the first to list this variant.</p>
