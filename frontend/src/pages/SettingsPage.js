@@ -16,6 +16,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '../components/ui/dialog';
 import ReportModal from '../components/ReportModal';
+import CropModal from '../components/CropModal';
 
 const SettingsPage = () => {
   usePageTitle('Settings');
@@ -32,6 +33,8 @@ const SettingsPage = () => {
   const [tiktokUsername, setTiktokUsername] = useState(user?.tiktok_username || '');
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [cropSrc, setCropSrc] = useState(null);
+  const [showCrop, setShowCrop] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState(user?.avatar_url);
   const [nlSubscribed, setNlSubscribed] = useState(false);
   const [nlLoading, setNlLoading] = useState(false);
@@ -119,33 +122,30 @@ const SettingsPage = () => {
   const handlePhotoChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Validate file type
     const { validateImageFile } = await import('../utils/imageUpload');
     const err = validateImageFile(file);
-    if (err) {
-      toast.error(err);
-      return;
-    }
+    if (err) { toast.error(err); return; }
+    // Open crop modal with the selected image
+    const reader = new FileReader();
+    reader.onload = () => { setCropSrc(reader.result); setShowCrop(true); };
+    reader.readAsDataURL(file);
+    // Reset input so the same file can be re-selected
+    e.target.value = '';
+  };
 
+  const handleCropComplete = async (croppedFile) => {
+    setShowCrop(false);
+    setCropSrc(null);
     setUploading(true);
-    
     try {
       const formData = new FormData();
-      formData.append('file', file);
-
+      formData.append('file', croppedFile);
       const response = await axios.post(`${API}/upload`, formData, {
-        headers: { 
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        }
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
       });
-
-      // Build the URL using the current API base so it works in any environment
       const publicUrl = `${API}/files/serve/${response.data.path}`;
-      
       setAvatarPreview(publicUrl);
-      toast.success('photo uploaded. click save to apply.');
+      toast.success('photo cropped & uploaded. click save to apply.');
     } catch (error) {
       console.error('Upload error:', error);
       toast.error('could not upload photo. try again.');
@@ -781,6 +781,13 @@ const SettingsPage = () => {
       </Dialog>
 
       <ReportModal open={bugReportOpen} onOpenChange={setBugReportOpen} targetType="bug" targetId={null} />
+
+      <CropModal
+        open={showCrop}
+        onClose={() => { setShowCrop(false); setCropSrc(null); }}
+        imageSrc={cropSrc}
+        onCropComplete={handleCropComplete}
+      />
     </div>
   );
 };
