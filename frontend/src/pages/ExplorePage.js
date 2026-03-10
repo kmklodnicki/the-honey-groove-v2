@@ -150,7 +150,7 @@ const ExplorePage = () => {
                     {p.avatar_url ? <img src={p.avatar_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Users className="w-6 h-6 text-honey" /></div>}
                   </div>
                   <p className="text-sm font-medium truncate">@{p.username}</p>
-                  <p className="text-xs font-bold mt-0.5" style={{ color: '#C8861A' }}>{p.shared_records || p.score || 0} records in common</p>
+                  <p className="text-xs font-bold mt-0.5" style={{ color: '#C8861A' }}>{p.shared_records || 0} records in common</p>
                   {/* Shared covers stack */}
                   {p.shared_covers?.length > 0 && (
                     <div className="flex justify-center gap-1 mt-2">

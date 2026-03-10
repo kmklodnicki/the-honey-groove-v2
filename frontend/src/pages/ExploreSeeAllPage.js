@@ -200,7 +200,7 @@ const TasteMatchAll = ({ data, navigate }) => {
             </Link>
             <div className="flex-1 min-w-0">
               <Link to={`/profile/${u.username}`} className="text-sm font-medium hover:underline">@{u.username}</Link>
-              <p className="text-xs text-honey-amber font-medium">{u.shared_records || u.shared_artists || 0} records in common</p>
+              <p className="text-xs text-honey-amber font-medium">{u.shared_records || 0} records in common</p>
             </div>
             <div className="flex gap-1.5 shrink-0">
               <Button size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-full" onClick={() => navigate(`/messages?to=${u.id}`)}>
