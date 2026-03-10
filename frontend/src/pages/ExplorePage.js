@@ -195,36 +195,6 @@ const ExplorePage = () => {
         )}
       </ExploreSection>
 
-      {/* 2. Make Friends */}
-      <ExploreSection icon={<Users className="w-4 h-4 text-honey-amber" />} title="Make Friends" testId="make-friends-section" seeAllTo="/nectar/make-friends">
-        {suggested.length === 0 ? (
-          <EmptyCard text="Add more records to your collection to discover new friends." />
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {suggested.map(u => (
-              <Card key={u.id} className="p-4 border-honey/30 hover:shadow-sm transition-all" data-testid={`make-friends-${u.id}`}>
-                <div className="flex items-center gap-3">
-                  <Link to={`/profile/${u.username}`}>
-                    {u.avatar_url ? <img src={resolveImageUrl(u.avatar_url)} alt="" className="w-11 h-11 rounded-full object-cover" />
-                      : <div className="w-11 h-11 rounded-full bg-honey/30 flex items-center justify-center text-base font-bold text-honey-amber">{(u.username || '?')[0].toUpperCase()}</div>}
-                  </Link>
-                  <div className="flex-1 min-w-0">
-                    <Link to={`/profile/${u.username}`} className="text-sm font-medium hover:underline">@{u.username}</Link>
-                    <p className="text-xs text-honey-amber font-medium">{u.shared_records || u.shared_artists || 0} records in common</p>
-                  </div>
-                  <div className="flex gap-1.5 shrink-0">
-                    <Button size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-full" onClick={() => navigate(`/messages?to=${u.id}`)}><MessageCircle className="w-4 h-4" /></Button>
-                    <Button size="sm" className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full text-xs h-8 px-3" onClick={() => navigate(`/profile/${u.username}`)}>
-                      <UserPlus className="w-3 h-3 mr-1" /> Follow
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-      </ExploreSection>
-
       {/* 3. Trending in Collections */}
       <ExploreSection icon={<TrendingUp className="w-4 h-4 text-honey-amber" />} title="Trending in Collections" testId="trending-collections-section" seeAllTo="/nectar/trending-in-collections">
         {trendingCollections.length === 0 ? (
