@@ -65,6 +65,7 @@ const ProfilePage = () => {
   const [followRequestPending, setFollowRequestPending] = useState(false);
   const [followRequestCount, setFollowRequestCount] = useState(0);
   const [followRequestsOpen, setFollowRequestsOpen] = useState(false);
+  const [isoModal, setIsoModal] = useState(null);
 
   const isOwnProfile = user?.username === username;
 
@@ -661,7 +662,7 @@ const ProfilePage = () => {
                   >
                     <div className="relative aspect-square bg-vinyl-black">
                       {record.cover_url ? (
-                        <AlbumArt src={record.cover_url} alt={record.title} className="w-full h-full object-cover" />
+                        <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${record.color_variant ? ` ${record.color_variant}` : ''} vinyl record`} className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <Disc className="w-12 h-12 text-honey" />
@@ -815,56 +816,46 @@ const ProfilePage = () => {
           {isos.length === 0 ? (
             <EmptyState icon={Search} title="No ISOs yet" sub={isOwnProfile ? 'Post an ISO from The Hive to start searching!' : `@${username} isn't searching for anything right now`} />
           ) : (
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {isos.map(iso => (
-                <Card key={iso.id} className={`p-4 border-honey/30 ${iso.status === 'FOUND' ? 'opacity-60' : ''}`} data-testid={`iso-item-${iso.id}`}>
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h4 className="font-heading text-lg">{iso.album}</h4>
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                          iso.status === 'FOUND' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'
-                        }`}>{iso.status}</span>
-                        {/* "In Your Collection" badge (BLOCK 39.2) */}
-                        {!isOwnProfile && iso.discogs_id && myRecordDiscogs.has(iso.discogs_id) && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-honey/20 text-amber-700" data-testid={`in-your-collection-${iso.id}`}>
-                            In Your Collection
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground">{iso.artist}</p>
-                      <div className="flex flex-wrap gap-1.5 mt-2">
-                        {(iso.tags || []).map(tag => (
-                          <TagPill key={tag} tag={tag} />
-                        ))}
-                        {iso.pressing_notes && <span className="text-xs text-muted-foreground">Press: {iso.pressing_notes}</span>}
-                        {iso.condition_pref && <span className="text-xs text-muted-foreground">Cond: {iso.condition_pref}</span>}
-                      </div>
-                      {(iso.target_price_min || iso.target_price_max) && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Budget: {iso.target_price_min ? `$${iso.target_price_min}` : '?'} – {iso.target_price_max ? `$${iso.target_price_max}` : '?'}
-                        </p>
-                      )}
-                      {/* Pre-filled chat CTA (BLOCK 39.2) */}
-                      {!isOwnProfile && iso.discogs_id && myRecordDiscogs.has(iso.discogs_id) && iso.status !== 'FOUND' && (
-                        <Button
-                          size="sm" variant="outline"
-                          className="mt-2 rounded-full text-xs border-honey/50 text-honey-amber hover:bg-honey/10 gap-1"
-                          onClick={() => navigate(`/messages?to=${profile.id}&text=${encodeURIComponent(`Hey! I saw you're dreaming of ${iso.album}. It's one of my favorites in my collection. Are you looking for a specific variant?`)}`)}
-                          data-testid={`chat-about-${iso.id}`}
-                        >
-                          <MessageCircle className="w-3 h-3" /> Start a Chat
-                        </Button>
-                      )}
-                    </div>
-                    {isOwnProfile && iso.status === 'OPEN' && (
-                      <div className="flex gap-1 shrink-0">
-                        <Button size="sm" variant="ghost" className="text-green-600 hover:bg-green-50 h-8 px-2" onClick={() => handleMarkFound(iso.id)} data-testid={`mark-found-${iso.id}`}>
-                          <CheckCircle2 className="w-4 h-4" />
-                        </Button>
-                        <Button size="sm" variant="ghost" className="text-red-400 hover:bg-red-50 h-8 px-2" onClick={() => handleDeleteIso(iso.id)}>✕</Button>
+                <Card
+                  key={iso.id}
+                  className={`border-honey/30 overflow-hidden hover:shadow-honey transition-all hover:-translate-y-1 cursor-pointer ${iso.status === 'FOUND' ? 'opacity-60' : ''}`}
+                  onClick={() => setIsoModal(iso)}
+                  data-testid={`iso-item-${iso.id}`}
+                >
+                  <div className="relative aspect-square bg-vinyl-black">
+                    {iso.cover_url ? (
+                      <AlbumArt src={iso.cover_url} alt={`${iso.artist} ${iso.album}${iso.pressing_notes ? ` ${iso.pressing_notes}` : ''} vinyl record`} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Disc className="w-12 h-12 text-honey" />
                       </div>
                     )}
+                    {iso.pressing_notes && (
+                      <div
+                        className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] tracking-wider font-medium px-2 py-0.5 rounded-full"
+                        style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid #FFD700', color: '#FFD700' }}
+                      >
+                        {iso.pressing_notes}
+                      </div>
+                    )}
+                    <div className="absolute bottom-2 right-2">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        iso.status === 'FOUND' ? 'bg-green-500/90 text-white' : 'bg-purple-500/90 text-white'
+                      }`}>{iso.status}</span>
+                    </div>
+                    {!isOwnProfile && iso.discogs_id && myRecordDiscogs.has(iso.discogs_id) && (
+                      <div className="absolute top-2 right-2">
+                        <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-honey/90 text-vinyl-black">
+                          In Yours
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-3">
+                    <h4 className="font-medium text-sm truncate">{iso.album}</h4>
+                    <p className="text-xs text-muted-foreground truncate">{iso.artist}</p>
                   </div>
                 </Card>
               ))}
@@ -1095,6 +1086,114 @@ const ProfilePage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* ISO Album Modal — mirrors the HivePage album modal layout */}
+      <Dialog open={!!isoModal} onOpenChange={(open) => { if (!open) setIsoModal(null); }}>
+        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto" aria-describedby="iso-modal-desc">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-lg">Album Details</DialogTitle>
+            <DialogDescription id="iso-modal-desc" className="sr-only">Details for this ISO album</DialogDescription>
+          </DialogHeader>
+          {isoModal && (
+            <div>
+              {/* Album card — same layout as HivePage */}
+              <div className="flex items-center gap-4 mb-3 bg-honey/10 rounded-xl p-3">
+                {isoModal.cover_url ? (
+                  <AlbumArt src={isoModal.cover_url} alt={`${isoModal.artist} ${isoModal.album}${isoModal.pressing_notes ? ` ${isoModal.pressing_notes}` : ''} vinyl record`} className="w-20 h-20 rounded-lg object-cover shadow" />
+                ) : (
+                  <div className="w-20 h-20 rounded-lg bg-honey/20 flex items-center justify-center"><Disc className="w-8 h-8 text-honey" /></div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-heading text-base leading-tight" data-testid="iso-modal-album-title">{isoModal.album}</p>
+                  <p className="text-sm text-honey-amber italic" data-testid="iso-modal-album-artist">{isoModal.artist}{isoModal.year ? ` (${isoModal.year})` : ''}</p>
+                  <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    isoModal.status === 'FOUND' ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700'
+                  }`}>{isoModal.status}</span>
+                </div>
+              </div>
+
+              {/* Variant / Pressing / Condition Details */}
+              <div className="flex flex-wrap gap-1.5 mb-4" data-testid="iso-modal-details">
+                {isoModal.year && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-honey/10 text-xs text-vinyl-black/70">
+                    {isoModal.year}
+                  </span>
+                )}
+                {isoModal.pressing_notes && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-xs text-amber-800 font-medium">
+                    {isoModal.pressing_notes}
+                  </span>
+                )}
+                {isoModal.condition_pref && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-honey/10 text-xs text-vinyl-black/70">
+                    Condition: {isoModal.condition_pref}
+                  </span>
+                )}
+                {isoModal.color_variant && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-xs text-amber-800 font-medium">
+                    {isoModal.color_variant}
+                  </span>
+                )}
+                {(isoModal.tags || []).map(tag => (
+                  <TagPill key={tag} tag={tag} />
+                ))}
+              </div>
+
+              {/* Budget */}
+              {(isoModal.target_price_min || isoModal.target_price_max) && (
+                <div className="mb-4 px-3 py-2 rounded-lg bg-honey/5 border border-honey/20">
+                  <p className="text-xs text-muted-foreground">
+                    Budget: {isoModal.target_price_min ? `$${isoModal.target_price_min}` : '?'} – {isoModal.target_price_max ? `$${isoModal.target_price_max}` : '?'}
+                  </p>
+                </div>
+              )}
+
+              {/* "In Your Collection" badge */}
+              {!isOwnProfile && isoModal.discogs_id && myRecordDiscogs.has(isoModal.discogs_id) && (
+                <div className="mb-4 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200">
+                  <p className="text-xs font-medium text-amber-700">This record is in your collection</p>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                {isOwnProfile && isoModal.status === 'OPEN' && (
+                  <>
+                    <Button size="sm" className="bg-green-600 text-white hover:bg-green-700 rounded-full text-xs gap-1"
+                      onClick={() => { handleMarkFound(isoModal.id); setIsoModal(prev => prev ? { ...prev, status: 'FOUND' } : null); }}
+                      data-testid="iso-modal-mark-found"
+                    >
+                      <CheckCircle2 className="w-3 h-3" /> Mark as Found
+                    </Button>
+                    <Button size="sm" variant="outline" className="rounded-full text-xs border-red-200 text-red-500 hover:bg-red-50 gap-1"
+                      onClick={() => { handleDeleteIso(isoModal.id); setIsoModal(null); }}
+                      data-testid="iso-modal-delete"
+                    >
+                      <X className="w-3 h-3" /> Remove
+                    </Button>
+                  </>
+                )}
+                {!isOwnProfile && isoModal.discogs_id && myRecordDiscogs.has(isoModal.discogs_id) && isoModal.status !== 'FOUND' && (
+                  <Button size="sm" className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full text-xs gap-1"
+                    onClick={() => { setIsoModal(null); navigate(`/messages?to=${profile.id}&text=${encodeURIComponent(`Hey! I saw you're searching for ${isoModal.album} by ${isoModal.artist}. I have it in my collection — interested in working something out?`)}`); }}
+                    data-testid="iso-modal-chat"
+                  >
+                    <MessageCircle className="w-3 h-3" /> Start a Chat
+                  </Button>
+                )}
+                {isoModal.discogs_id && (
+                  <a href={`https://www.discogs.com/release/${isoModal.discogs_id}`} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-vinyl-black/5 text-xs text-vinyl-black/60 hover:bg-vinyl-black/10 transition-colors"
+                    data-testid="iso-modal-discogs-link"
+                  >
+                    <Disc className="w-3 h-3" /> View on Discogs
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
