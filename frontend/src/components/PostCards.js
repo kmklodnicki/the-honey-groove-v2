@@ -134,7 +134,7 @@ const VariantTag = ({ variant, glass, ghost, gold, prefix }) => {
   if (glass) {
     return (
       <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full truncate max-w-full"
-        style={{ backgroundColor: '#FFD700', color: '#1A1A1A', letterSpacing: '0.5px', boxShadow: '0 2px 4px rgba(0,0,0,0.3)', border: '0.5px solid rgba(0,0,0,0.2)' }}
+        style={{ background: 'rgba(255,215,0,0.3)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', color: '#1A1A1A', letterSpacing: '0.5px', border: '1px solid rgba(255,215,0,0.5)', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
         data-testid="variant-pill-glass">
         {label}
       </span>
@@ -160,7 +160,7 @@ const VariantTag = ({ variant, glass, ghost, gold, prefix }) => {
   }
   return (
     <span className={`inline-flex items-center gap-1 mt-1 text-[11px] font-bold tracking-wide px-2.5 py-1 rounded-full truncate max-w-full`}
-      style={{ backgroundColor: '#FFD700', color: '#1A1A1A', letterSpacing: '0.5px', boxShadow: '0 2px 4px rgba(0,0,0,0.3)', border: '0.5px solid rgba(0,0,0,0.2)' }}
+      style={{ background: 'rgba(255,215,0,0.3)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', color: '#1A1A1A', letterSpacing: '0.5px', border: '1px solid rgba(255,215,0,0.5)', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
       data-testid="variant-pill">
       <Disc className="w-3 h-3" />
       {label}
