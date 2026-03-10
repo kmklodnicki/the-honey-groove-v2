@@ -117,10 +117,23 @@ async def get_my_isos(user: Dict = Depends(require_auth)):
 
 @router.get("/iso/dreamlist")
 async def get_my_dreamlist(user: Dict = Depends(require_auth)):
-    """Return all Dream List (WISHLIST) items for the current user."""
+    """Return all Dream List (WISHLIST) items for the current user, enriched with median Discogs values."""
     isos = await db.iso_items.find(
         {"user_id": user["id"], "status": "WISHLIST"}, {"_id": 0}
     ).sort("created_at", -1).to_list(500)
+
+    # Batch-fetch median values for all discogs_ids
+    discogs_ids = [i["discogs_id"] for i in isos if i.get("discogs_id")]
+    value_map = {}
+    if discogs_ids:
+        values = await db.collection_values.find(
+            {"release_id": {"$in": discogs_ids}}, {"_id": 0, "release_id": 1, "median_value": 1}
+        ).to_list(len(discogs_ids))
+        value_map = {v["release_id"]: v.get("median_value") for v in values if v.get("median_value")}
+
+    for item in isos:
+        item["median_value"] = value_map.get(item.get("discogs_id"))
+
     return isos
 
 @router.put("/iso/{iso_id}/found")

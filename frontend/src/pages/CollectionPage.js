@@ -874,6 +874,13 @@ const WishlistCard = ({ item, onPromote, onDelete }) => (
             {item.color_variant}
           </div>
         )}
+        {item.median_value > 0 && (
+          <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs font-semibold z-[5]"
+            style={{ background: 'rgba(250,237,199,0.92)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)', color: '#92600A', border: '1px solid rgba(200,134,26,0.3)' }}
+            data-testid={`median-value-${item.id}`}>
+            ${Math.round(item.median_value)}
+          </div>
+        )}
       </div>
     </Link>
     <div className="p-3">
