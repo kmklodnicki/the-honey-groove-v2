@@ -588,7 +588,7 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
               <p className="text-sm font-medium text-orange-700">Trade Expired</p>
               <p className="text-xs text-orange-600 mt-1">
                 {trade.expired_reason === 'shipping_deadline'
-                  ? 'This trade expired because one or both parties did not ship within the 5-day deadline. Mutual holds have been released.'
+                  ? 'This trade expired because one or both parties did not ship within the 3-day deadline. Mutual holds have been released.'
                   : 'This trade has expired.'}
               </p>
             </div>
@@ -745,10 +745,24 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
             </div>
           )}
 
-          {/* Cancel shipping (if overdue) */}
+          {/* Late Shipping Alert Banner */}
+          {trade.status === 'SHIPPING' && trade.shipping_overdue && (
+            <div className="bg-red-50 rounded-xl p-3 border border-red-200">
+              <p className="text-xs font-semibold text-red-700 flex items-center gap-1.5">
+                <AlertTriangle className="w-3.5 h-3.5" /> Late Shipping Alert
+              </p>
+              <p className="text-xs text-red-600 mt-1">
+                The 3-day shipping window has passed. {hasShipped(trade, currentUserId)
+                  ? 'Your trade partner has not shipped yet. You may request cancellation.'
+                  : 'Please ship immediately to avoid cancellation.'}
+              </p>
+            </div>
+          )}
+
+          {/* Cancel shipping (if overdue and user has shipped) */}
           {trade.status === 'SHIPPING' && trade.shipping_overdue && hasShipped(trade, currentUserId) && (
             <Button onClick={handleCancelShipping} disabled={loading} variant="outline" className="w-full rounded-full text-red-600 border-red-200 hover:bg-red-50" data-testid="cancel-shipping-btn">
-              <XCircle className="w-4 h-4 mr-1" /> Cancel · Partner hasn't shipped
+              <XCircle className="w-4 h-4 mr-1" /> Request Cancellation
             </Button>
           )}
 

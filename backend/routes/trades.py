@@ -75,7 +75,7 @@ async def _auto_expire_shipping(trade: Dict):
         await create_notification(
             uid, "TRADE_EXPIRED",
             "Trade expired",
-            "Your trade expired because one or both parties did not ship within the 5-day deadline. Mutual holds have been released.",
+            "Your trade expired because one or both parties did not ship within the 3-day deadline. Mutual holds have been released.",
             {"trade_id": trade["id"]},
         )
 
@@ -89,17 +89,36 @@ async def check_trade_deadlines(trade: Dict) -> Dict:
 
     if trade.get("status") == "SHIPPING" and trade.get("shipping_deadline"):
         deadline = datetime.fromisoformat(trade["shipping_deadline"])
+        grace_expiry = deadline + timedelta(hours=24)  # 96h total
         if now > deadline:
             shipping = trade.get("shipping") or {}
             init_shipped = shipping.get("initiator") is not None
             resp_shipped = shipping.get("responder") is not None
             if not init_shipped or not resp_shipped:
-                # Auto-expire: at least one party failed to ship
                 trade["shipping_overdue"] = True
-                from contextlib import suppress
-                with suppress(Exception):
-                    await _auto_expire_shipping(trade)
-                    trade["status"] = "EXPIRED"
+                # At deadline (72h): send Late Shipping alert (once)
+                if not trade.get("late_shipping_alerted"):
+                    late_users = []
+                    if not init_shipped:
+                        late_users.append(trade["initiator_id"])
+                    if not resp_shipped:
+                        late_users.append(trade["responder_id"])
+                    for uid in late_users:
+                        await create_notification(
+                            uid, "LATE_SHIPPING",
+                            "Late Shipping Alert",
+                            "Your trade shipment is overdue. Please ship immediately to avoid cancellation.",
+                            {"trade_id": trade["id"]}
+                        )
+                    await db.trades.update_one({"id": trade["id"]}, {"$set": {"late_shipping_alerted": True}})
+                    trade["late_shipping_alerted"] = True
+
+                # At 96h (deadline + 24h grace): auto-expire
+                if now > grace_expiry:
+                    from contextlib import suppress
+                    with suppress(Exception):
+                        await _auto_expire_shipping(trade)
+                        trade["status"] = "EXPIRED"
 
     if trade.get("status") == "CONFIRMING" and trade.get("delivery_marked_at"):
         delivery_time = datetime.fromisoformat(trade["delivery_marked_at"])
@@ -802,7 +821,7 @@ async def check_hold_status(trade_id: str, user: Dict = Depends(require_auth)):
 
     if init_paid and resp_paid:
         # Both paid — transition to SHIPPING
-        shipping_deadline = (datetime.now(timezone.utc) + timedelta(days=5)).isoformat()
+        shipping_deadline = (datetime.now(timezone.utc) + timedelta(days=3)).isoformat()
         await db.trades.update_one({"id": trade_id}, {"$set": {
             "status": "SHIPPING",
             "hold_status": "active",

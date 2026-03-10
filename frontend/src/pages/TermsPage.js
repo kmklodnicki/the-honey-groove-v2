@@ -29,7 +29,7 @@ const TermsPage = () => {
         </Section>
 
         <Section title="Marketplace Rules">
-          <P>All records listed for sale or trade must be accurately described including condition, pressing details, and any defects. You must include at least one photo of the actual record you are selling. Prices must be listed in USD. All payments must be processed through the Honey Groove via Stripe. Sellers must ship within 5 days of a completed sale or accepted trade. Tracking numbers are required for all shipments.</P>
+          <P>All records listed for sale or trade must be accurately described including condition, pressing details, and any defects. You must include at least one photo of the actual record you are selling. Prices must be listed in USD. All payments must be processed through the Honey Groove via Stripe. Sellers must ship within 3 days of a completed sale or accepted trade. Tracking numbers are required for all shipments.</P>
           <P>Sellers must connect a Stripe account before listing items for sale. New sellers with fewer than 3 completed transactions cannot list items priced above $150. This restriction lifts automatically once you reach 3 completed transactions.</P>
         </Section>
 
@@ -38,7 +38,7 @@ const TermsPage = () => {
         </Section>
 
         <Section title="Mutual Hold System">
-          <P>All trades on the Honey Groove require a Mutual Hold. Both parties are charged a hold amount equal to the estimated value of the records being traded. This hold is fully reversed within 48 hours of both parties confirming receipt of their records. If either party fails to ship within 5 days the other party can cancel the trade and both holds are reversed.</P>
+          <P>All trades on the Honey Groove require a Mutual Hold. Both parties are charged a hold amount equal to the estimated value of the records being traded. This hold is fully reversed within 48 hours of both parties confirming receipt of their records. If either party fails to ship within 3 days the other party can cancel the trade and both holds are reversed.</P>
         </Section>
 
         <Section title="Prohibited Conduct">

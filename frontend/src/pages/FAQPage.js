@@ -256,7 +256,7 @@ const faqSections = [
     items: [
       {
         q: 'How long do I have to ship a record after a sale or trade?',
-        a: 'After a sale or accepted trade, the seller must ship the record within 5 days and enter a valid tracking number.',
+        a: 'After a sale or accepted trade, the seller must ship the record within 3 days and enter a valid tracking number.',
       },
       {
         q: 'What happens after delivery?',
@@ -291,7 +291,7 @@ const faqSections = [
       },
       {
         q: "What if someone doesn't ship their record?",
-        a: 'If tracking is not entered within 5 days, the transaction can be cancelled and any held funds are released.',
+        a: 'If tracking is not entered within 3 days, the transaction can be cancelled and any held funds are released.',
       },
       {
         q: "What if I receive a record that isn't as described?",
@@ -315,7 +315,7 @@ const faqSections = [
             <p className="mt-2">Once both parties accept:</p>
             <ul className="mt-2 space-y-1 pl-4">
               <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>a Mutual Hold is placed</li>
-              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>both collectors ship within 5 days</li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>both collectors ship within 3 days</li>
               <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>delivery triggers a 48-hour confirmation window</li>
             </ul>
           </>
