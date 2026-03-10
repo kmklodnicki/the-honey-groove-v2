@@ -596,15 +596,24 @@ const SettingsPage = () => {
                   <p className="text-xs text-muted-foreground">you can list items for sale and receive payouts.</p>
                 </div>
               </div>
-              <a
-                href="https://dashboard.stripe.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-[#635bff] hover:underline flex items-center gap-1"
-                data-testid="stripe-dashboard-link"
+              <Button
+                onClick={async () => {
+                  if (!window.confirm('Disconnect Stripe? You will not be able to sell until you reconnect.')) return;
+                  try {
+                    await axios.post(`${API}/stripe/disconnect`, {}, { headers: { Authorization: `Bearer ${token}` } });
+                    setStripeStatus({ stripe_connected: false, stripe_account_id: null });
+                    toast.success('Stripe disconnected.');
+                  } catch (err) {
+                    toast.error(err.response?.data?.detail || 'Could not disconnect.');
+                  }
+                }}
+                variant="outline"
+                className="rounded-full border-red-200 text-red-600 hover:bg-red-50 text-xs gap-1.5"
+                data-testid="stripe-disconnect-btn"
               >
-                Dashboard <ExternalLink className="w-3 h-3" />
-              </a>
+                <CreditCard className="w-3.5 h-3.5" />
+                Disconnect
+              </Button>
             </div>
           ) : (
             <div className="flex items-center justify-between">

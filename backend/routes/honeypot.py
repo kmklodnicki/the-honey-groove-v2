@@ -728,6 +728,25 @@ async def stripe_connect_status(user: Dict = Depends(require_auth)):
     }
 
 
+@router.post("/stripe/disconnect")
+async def stripe_disconnect(user: Dict = Depends(require_auth)):
+    """Disconnect the user's Stripe account from HoneyGroove."""
+    u = await db.users.find_one({"id": user["id"]}, {"_id": 0})
+    if not u or not u.get("stripe_account_id"):
+        raise HTTPException(status_code=400, detail="No Stripe account connected")
+    # Check for active listings or pending payouts
+    active_listings = await db.listings.count_documents({"user_id": user["id"], "status": "ACTIVE"})
+    if active_listings > 0:
+        raise HTTPException(status_code=400, detail=f"Please remove your {active_listings} active listing(s) before disconnecting Stripe.")
+    await db.users.update_one({"id": user["id"]}, {"$set": {
+        "stripe_connected": False,
+        "stripe_charges_enabled": False,
+        "stripe_account_id": None,
+    }})
+    return {"message": "Stripe disconnected"}
+
+
+
 @router.post("/payments/checkout")
 async def create_payment_checkout(request: Request, body: Dict, user: Dict = Depends(require_auth)):
     listing_id = body.get("listing_id")
