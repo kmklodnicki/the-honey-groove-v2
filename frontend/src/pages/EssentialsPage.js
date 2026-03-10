@@ -59,6 +59,15 @@ const HONEY_SHOP_ITEMS = [
     image: 'https://customer-assets.emergentagent.com/job_088a9581-bbfd-42c2-ad31-f5535df4814c/artifacts/tvavxlin_3.webp',
   },
   {
+    id: 'essential-protection',
+    honeyLabel: 'The Armor',
+    name: 'Premium Vinyl Outer Sleeves',
+    descriptor: 'Crystal clear, archival-grade protection for your rarest variants.',
+    url: 'https://amzn.to/4uruqOc',
+    partner: 'amazon',
+    image: 'https://m.media-amazon.com/images/I/712YTwiIBdL._AC_SL1500_.jpg',
+  },
+  {
     id: 'led-turntable',
     honeyLabel: 'The Stage',
     name: 'LED Turntable Kit',
