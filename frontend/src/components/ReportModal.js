@@ -107,7 +107,7 @@ const ReportModal = ({ open, onOpenChange, targetType, targetId }) => {
     }
   };
 
-  const titles = { listing: 'Report Listing', seller: 'Report Seller', order: 'Report Issue', bug: 'Report a Bug' };
+  const titles = { listing: 'Report Listing', seller: 'Report User', order: 'Report Issue', bug: 'Report a Bug' };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
