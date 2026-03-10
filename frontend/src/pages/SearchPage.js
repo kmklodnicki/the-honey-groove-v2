@@ -16,10 +16,10 @@ const API = process.env.REACT_APP_BACKEND_URL + '/api';
 const VariantCard = ({ v, onOpen }) => (
   <button
     onClick={() => onOpen(v)}
-    className="flex gap-3 p-3 rounded-xl hover:bg-honey/8 transition-all group text-left w-full"
+    className="flex gap-3 p-2.5 rounded-xl hover:bg-honey/8 transition-all group text-left w-full"
     data-testid={`variant-card-${v.discogs_id || 'local'}`}
   >
-    <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-stone-100 shadow-sm">
+    <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-stone-100 shadow-sm">
       <AlbumArt
         src={v.cover_url}
         alt={`${v.artist} ${v.album} ${v.variant} vinyl record`}
@@ -48,12 +48,12 @@ const VariantCard = ({ v, onOpen }) => (
 const DiscoverySection = ({ title, icon: Icon, items, onOpen }) => {
   if (!items?.length) return null;
   return (
-    <section className="mb-8" data-testid={`discover-${title.toLowerCase().replace(/\s+/g, '-')}`}>
-      <div className="flex items-center gap-2 mb-3">
-        <Icon className="w-4.5 h-4.5 text-honey-amber" />
-        <h2 className="font-heading text-base font-bold text-vinyl-black">{title}</h2>
+    <section className="mb-5" data-testid={`discover-${title.toLowerCase().replace(/\s+/g, '-')}`}>
+      <div className="flex items-center gap-2 mb-2">
+        <Icon className="w-4 h-4 text-honey-amber" />
+        <h2 className="font-heading text-sm font-bold text-vinyl-black">{title}</h2>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-0.5">
         {items.map((v, i) => (
           <VariantCard key={`${v.discogs_id}-${i}`} v={v} onOpen={onOpen} />
         ))}
@@ -144,20 +144,20 @@ export default function SearchPage() {
   const hasResults = results && (results.variants?.length > 0 || results.albums?.length > 0);
 
   return (
-    <div className="min-h-screen bg-white" data-testid="search-page">
+    <div className="min-h-screen bg-white pt-[52px] md:pt-[88px]" data-testid="search-page">
       <SEOHead title="Search Vinyl Variants | The Honey Groove" description="Discover rare vinyl variants, albums, and artists." />
 
-      {/* Search Bar — offset below fixed navbar */}
-      <div className="sticky top-[52px] md:top-[88px] z-30 bg-white/95 backdrop-blur-md border-b border-honey/10 px-4 py-3">
+      {/* Search Bar — compact sticky bar pinned below navbar */}
+      <div className="sticky top-[52px] md:top-[88px] z-30 bg-white/95 backdrop-blur-md border-b border-honey/10 px-4 py-2">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-honey-amber" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-honey-amber" />
             <input
               ref={inputRef}
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="Search artists, albums, or vinyl variants"
-              className="w-full h-12 pl-11 pr-4 rounded-full border-2 border-honey/30 bg-honey/5 text-sm text-vinyl-black placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-honey/40 focus:border-honey/50 transition-all shadow-sm"
+              className="w-full h-11 pl-10 pr-4 rounded-full border border-honey/25 bg-honey/5 text-sm text-vinyl-black placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-honey/40 focus:border-honey/50 transition-all"
               data-testid="search-input"
             />
             {query && (
@@ -173,11 +173,11 @@ export default function SearchPage() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-6">
+      <div className="max-w-2xl mx-auto px-4 pt-3 pb-6">
         {/* Loading */}
         {loading && (
-          <div className="flex justify-center py-12">
-            <Loader2 className="w-6 h-6 animate-spin text-honey-amber" />
+          <div className="flex justify-center py-6">
+            <Loader2 className="w-5 h-5 animate-spin text-honey-amber" />
           </div>
         )}
 
@@ -186,12 +186,12 @@ export default function SearchPage() {
           <>
             {/* Variant Results (Priority) */}
             {results.variants?.length > 0 && (
-              <section className="mb-8" data-testid="search-variants">
-                <div className="flex items-center justify-between mb-3">
-                  <h2 className="font-heading text-base font-bold text-vinyl-black">Variants</h2>
+              <section className="mb-5" data-testid="search-variants">
+                <div className="flex items-center justify-between mb-2">
+                  <h2 className="font-heading text-sm font-bold text-vinyl-black">Variants</h2>
                   <span className="text-xs text-muted-foreground">{results.total} results</span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-0.5">
                   {results.variants.map((v, i) => (
                     <VariantCard key={`${v.discogs_id}-${i}`} v={v} onOpen={handleOpenVariant} />
                   ))}
@@ -212,8 +212,8 @@ export default function SearchPage() {
 
             {/* Album Results */}
             {results.albums?.length > 0 && (
-              <section className="mb-8" data-testid="search-albums">
-                <h2 className="font-heading text-base font-bold text-vinyl-black mb-3">Albums</h2>
+              <section className="mb-5" data-testid="search-albums">
+                <h2 className="font-heading text-sm font-bold text-vinyl-black mb-2">Albums</h2>
                 <ScrollRow>
                   {results.albums.map((a, i) => (
                     <button
@@ -240,8 +240,8 @@ export default function SearchPage() {
 
             {/* Artist Results */}
             {results.artists?.length > 0 && (
-              <section className="mb-8" data-testid="search-artists">
-                <h2 className="font-heading text-base font-bold text-vinyl-black mb-3">Artists</h2>
+              <section className="mb-5" data-testid="search-artists">
+                <h2 className="font-heading text-sm font-bold text-vinyl-black mb-2">Artists</h2>
                 <ScrollRow>
                   {results.artists.map(a => (
                     <button
@@ -272,7 +272,7 @@ export default function SearchPage() {
 
         {/* No Results */}
         {!loading && query.length >= 2 && !hasResults && results !== null && (
-          <div className="text-center py-16" data-testid="no-results">
+          <div className="text-center py-10" data-testid="no-results">
             <Search className="w-10 h-10 text-stone-300 mx-auto mb-3" />
             <p className="text-sm text-muted-foreground">No variants found for "{query}"</p>
             <p className="text-xs text-stone-400 mt-1">Try a different artist, album, or color</p>
