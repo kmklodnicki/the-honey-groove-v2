@@ -98,7 +98,7 @@ export default function VariantActions({ variant }) {
   const btnPrimary = `${btnBase} bg-honey text-vinyl-black hover:bg-honey-amber px-6 font-semibold shadow-sm`;
 
   return (
-    <div className="flex flex-wrap items-center gap-2.5 mt-5" data-testid="variant-actions">
+    <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2.5 mt-5" data-testid="variant-actions">
       {!owned ? (
         <>
           <Button

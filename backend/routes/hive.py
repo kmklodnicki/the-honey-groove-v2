@@ -376,7 +376,8 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
         is_liked=is_liked,
         is_pinned=post.get("is_pinned", False),
         is_new_feature=post.get("is_new_feature", False),
-        content=post.get("content")
+        content=post.get("content"),
+        intent=post.get("intent")
     )
 
 @router.get("/feed", response_model=List[PostResponse])
@@ -403,9 +404,12 @@ async def get_feed(user: Dict = Depends(require_auth), limit: int = 50, skip: in
     if pinned_resp and skip == 0:
         result.append(pinned_resp)
     for post in posts:
-        resp = await build_post_response(post, user["id"])
-        if resp:
-            result.append(resp)
+        try:
+            resp = await build_post_response(post, user["id"])
+            if resp:
+                result.append(resp)
+        except Exception as e:
+            logger.error(f"build_post_response failed for post {post.get('id', '?')}: {e}")
     
     return result
 
@@ -570,7 +574,8 @@ async def composer_iso(data: ISOPostCreate, user: Dict = Depends(require_auth)):
         raise HTTPException(status_code=400, detail="Artist and album are required for ISO posts")
     now = datetime.now(timezone.utc).isoformat()
     
-    # Create ISO item
+    # Create ISO item — route status based on intent
+    is_dreaming = data.intent == "dreaming"
     iso_id = str(uuid.uuid4())
     iso_doc = {
         "id": iso_id,
@@ -585,7 +590,8 @@ async def composer_iso(data: ISOPostCreate, user: Dict = Depends(require_auth)):
         "tags": data.tags or [],
         "target_price_min": data.target_price_min,
         "target_price_max": data.target_price_max,
-        "status": "OPEN",
+        "status": "WISHLIST" if is_dreaming else "OPEN",
+        "priority": "LOW" if is_dreaming else "MED",
         "created_at": now
     }
     await db.iso_items.insert_one(iso_doc)
@@ -598,6 +604,7 @@ async def composer_iso(data: ISOPostCreate, user: Dict = Depends(require_auth)):
         "post_type": "ISO",
         "caption": data.caption,
         "iso_id": iso_id,
+        "intent": data.intent or "seeking",
         "created_at": now
     }
     await db.posts.insert_one(post_doc)

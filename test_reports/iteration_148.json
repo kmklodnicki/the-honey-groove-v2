@@ -1,0 +1,71 @@
+{
+  "summary": "Tested Block 125 ISO Logic & Intent Split features. All features working correctly: ISO modal intent selection, intent-based badges, backend intent routing, WishlistCard button stacking, VariantActions mobile stacking, and Dream List helper text spacing.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_results": {
+    "backend_iso_intent": {
+      "dreaming_intent_creates_wishlist_status": "PASS - intent='dreaming' creates ISO with status='WISHLIST', priority='LOW'",
+      "seeking_intent_creates_open_status": "PASS - intent='seeking' creates ISO with status='OPEN', priority='MED'",
+      "default_intent_is_seeking": "PASS - No intent specified defaults to 'seeking' behavior",
+      "feed_returns_intent_field": "PASS - explore/feed API returns intent field on ISO posts",
+      "iso_validation": "PASS - ISO requires artist and album fields",
+      "iso_with_discogs_data": "PASS - ISO with Discogs data creates correctly"
+    },
+    "frontend_iso_modal": {
+      "intent_selection_step": "PASS - Modal shows 'Just Dreaming' and 'Actively Seeking' buttons before search/entry form",
+      "dreaming_badge": "PASS - Clicking 'Just Dreaming' shows '☁️ Just Dreaming' badge",
+      "seeking_badge": "PASS - Clicking 'Actively Seeking' shows '🔍 Actively Seeking' badge",
+      "change_link": "PASS - 'Change' link resets intent and returns to selection",
+      "dreaming_submit_button": "PASS - Submit button says 'Add to Dream List' (grey)",
+      "seeking_submit_button": "PASS - Submit button says 'Post to the Hive' (gold gradient)"
+    },
+    "feed_iso_badges": {
+      "badge_data_testids": "PRESENT - data-testid='iso-intent-dreaming' and 'iso-intent-seeking' in ISOCard",
+      "dreaming_badge_style": "VERIFIED - Frosted grey style with blur",
+      "seeking_badge_style": "VERIFIED - Gold style with glow"
+    },
+    "wishlist_card_buttons": {
+      "button_stacking": "PASS - Buttons stacked vertically (flex-col)",
+      "add_to_collection_full_width": "PASS - 'Add to Collection' is w-full on top row",
+      "second_row": "PASS - 'Actively Seeking' + delete button on second row"
+    },
+    "variant_actions_mobile": {
+      "button_stacking": "PASS - flex-col on mobile, flex-row sm:flex-wrap on larger screens"
+    },
+    "dreamlist_helper_text": {
+      "margin_top": "PASS - mt-9 (36px) from header content",
+      "horizontal_padding": "PASS - px-4 (16px left/right padding)"
+    }
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iso_intent.py",
+    "/app/test_reports/pytest/iso_intent_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "All Block 125 features correctly implemented",
+    "Intent-based routing in backend hive.py composer_iso endpoint working correctly",
+    "Intent field properly returned in PostResponse model",
+    "ISOCard in PostCards.js correctly shows intent badges in feed",
+    "WishlistCard buttons properly stacked with flex-col layout",
+    "VariantActions has responsive flex-col sm:flex-row layout",
+    "Dream List helper text has correct mt-9 and px-4 classes"
+  ],
+  "updated_files": ["/app/backend/tests/test_iso_intent.py"],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "100%"
+  },
+  "test_credentials": "demo@test.com / demouser",
+  "seed_data_creation": "TEST_ prefixed ISO posts created during backend tests",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Block 125 ISO Intent Split features fully tested and working. ISO modal shows two intent buttons before search form, backend correctly routes intent to status/priority, feed badges work on ISOCard. Note: demo user's posts are hidden from feed by design (get_hidden_user_ids), so feed badges visible for non-demo users only."
+}

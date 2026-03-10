@@ -277,12 +277,25 @@ const NewHaulCard = ({ post, onAlbumClick }) => {
 // ISO card body
 const ISOCard = ({ post, onAlbumClick }) => {
   const iso = post.iso;
+  const intent = post.intent;
   if (!iso) return <p className="text-sm"><MentionText text={post.caption} /></p>;
-  // Construct a record-like object from ISO data for AlbumLink
   const isoRecord = { title: iso.album, artist: iso.artist, discogs_id: iso.discogs_id, cover_url: iso.cover_url, year: iso.year };
   return (
     <AlbumLink record={isoRecord} onAlbumClick={onAlbumClick}>
-      <div className="bg-[#FAF6EE] border border-[#C8861A]/15 rounded-xl p-4 hover:border-[#C8861A]/40 transition-colors" data-testid="iso-card">
+      <div className="relative bg-[#FAF6EE] border border-[#C8861A]/15 rounded-xl p-4 hover:border-[#C8861A]/40 transition-colors" data-testid="iso-card">
+        {/* Intent Badge */}
+        {intent && (
+          <span
+            className="absolute top-3 right-3 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold z-10"
+            style={intent === 'dreaming'
+              ? { background: 'rgba(240,240,248,0.8)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '1px solid rgba(200,200,220,0.35)', color: '#6B7280' }
+              : { background: 'rgba(255,215,0,0.15)', border: '1px solid rgba(218,165,32,0.3)', color: '#92702A', boxShadow: '0 0 8px rgba(218,165,32,0.15)' }
+            }
+            data-testid={`iso-intent-${intent}`}
+          >
+            {intent === 'dreaming' ? '☁️ Just Dreaming' : '🔍 Actively Seeking'}
+          </span>
+        )}
         <div className="flex items-start gap-3">
           {iso.cover_url ? (
             <AlbumArt src={iso.cover_url} alt={`${iso.artist} ${iso.album}${iso.pressing_notes ? ` ${iso.pressing_notes}` : ''} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow-sm shrink-0" />
@@ -290,12 +303,9 @@ const ISOCard = ({ post, onAlbumClick }) => {
             <div className="w-14 h-14 rounded-lg bg-[#C8861A]/10 flex items-center justify-center shrink-0"><Search className="w-5 h-5 text-[#C8861A]/50" /></div>
           )}
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <p className="font-heading text-lg truncate">{iso.album}</p>
-                <p className="text-sm text-muted-foreground truncate">{iso.artist}</p>
-              </div>
-              <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border shrink-0 ${iso.status === 'FOUND' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-transparent text-[#C8861A] border-[#C8861A]'}`}>{iso.status}</span>
+            <div className="min-w-0 pr-24">
+              <p className="font-heading text-lg truncate">{iso.album}</p>
+              <p className="text-sm text-muted-foreground truncate">{iso.artist}</p>
             </div>
             {iso.pressing_notes && <p className="text-xs mt-1 text-[#8A6B4A]">Pressing: {iso.pressing_notes}</p>}
             {iso.condition_pref && <p className="text-xs text-[#8A6B4A]">Condition: {iso.condition_pref}</p>}

@@ -70,6 +70,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const [isoSearchLoading, setIsoSearchLoading] = useState(false);
   const [isoSelectedRelease, setIsoSelectedRelease] = useState(null);
   const [isoManualMode, setIsoManualMode] = useState(false);
+  const [isoIntent, setIsoIntent] = useState(null);
 
   // A Note
   const [noteText, setNoteText] = useState('');
@@ -91,7 +92,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     setHaulStoreName(''); setHaulCaption(''); setHaulItems([]); setHaulSearch(''); setHaulResults([]);
     setIsoArtist(''); setIsoAlbum(''); setIsoPressing(''); setIsoCondition('');
     setIsoPriceMin(''); setIsoPriceMax(''); setIsoCaption('');
-    setIsoDiscogsQuery(''); setIsoDiscogsResults([]); setIsoSelectedRelease(null); setIsoManualMode(false);
+    setIsoDiscogsQuery(''); setIsoDiscogsResults([]); setIsoSelectedRelease(null); setIsoManualMode(false); setIsoIntent(null);
     setNoteText(''); setNoteRecordId(''); setNoteShowRecordPicker(false); setNoteImageUrl(''); setNoteUploading(false);
     setRandRecord(null); setRandCaption(''); setRandLoading(false); setRandAnimating(false);
   };
@@ -268,8 +269,9 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
         target_price_min: isoPriceMin ? parseFloat(isoPriceMin) : null,
         target_price_max: isoPriceMax ? parseFloat(isoPriceMax) : null,
         caption: isoCaption || null,
+        intent: isoIntent || 'seeking',
       }, { headers: { Authorization: `Bearer ${token}` }});
-      toast.success('iso posted.');
+      toast.success(isoIntent === 'dreaming' ? 'added to dream list.' : 'iso posted.');
       trackEvent('iso_posted');
       closeModal(); onPostCreated?.();
     } catch (err) { toast.error(err.response?.data?.detail || 'Failed to post'); }
@@ -523,51 +525,120 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
             <DialogDescription>Let the community know what you're looking for</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-2">
-            {!isoSelectedRelease && !isoManualMode ? (
-              <>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input placeholder="Search Discogs for an album..." value={isoDiscogsQuery}
-                    onChange={e => { setIsoDiscogsQuery(e.target.value); searchDiscogsForISO(e.target.value); }}
-                    className="pl-9 border-honey/50" data-testid="iso-discogs-search" autoFocus />
-                  {isoSearchLoading && <Loader2 className="w-4 h-4 animate-spin absolute right-3 top-3 text-muted-foreground" />}
-                </div>
-                {isoDiscogsResults.length > 0 && (
-                  <div className="border border-honey/30 rounded-lg max-h-48 overflow-y-auto bg-white">
-                    {isoDiscogsResults.map(r => (
-                      <RecordSearchResult key={r.discogs_id} record={r} onClick={() => selectIsoRelease(r)} size="sm" testId={`iso-discogs-result-${r.discogs_id}`} />
-                    ))}
+            {/* Step 1: Intent Selection */}
+            {!isoIntent ? (
+              <div className="space-y-3" data-testid="iso-intent-selection">
+                <p className="text-sm text-muted-foreground text-center">What's your vibe?</p>
+                <button
+                  onClick={() => setIsoIntent('dreaming')}
+                  className="w-full rounded-2xl p-4 text-left transition-all hover:scale-[1.01] active:scale-[0.99]"
+                  style={{
+                    background: 'rgba(255,255,255,0.7)',
+                    backdropFilter: 'blur(16px)',
+                    WebkitBackdropFilter: 'blur(16px)',
+                    border: '1.5px solid rgba(218,165,32,0.2)',
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.04)',
+                  }}
+                  data-testid="iso-intent-dreaming"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">☁️</span>
+                    <div>
+                      <p className="font-heading text-base text-vinyl-black">Just Dreaming</p>
+                      <p className="text-xs text-muted-foreground">Add to your wish list. No rush.</p>
+                    </div>
                   </div>
-                )}
-                <button onClick={() => setIsoManualMode(true)} className="text-sm text-honey-amber hover:underline" data-testid="iso-manual-entry-btn">Or enter manually</button>
-              </>
-            ) : isoSelectedRelease ? (
-              <div className="flex items-center gap-3 bg-blue-50 rounded-lg p-3">
-                {isoSelectedRelease.cover_url ? <AlbumArt src={isoSelectedRelease.cover_url} alt={`${isoSelectedRelease.artist} ${isoSelectedRelease.title} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow" /> : <Disc className="w-14 h-14 text-blue-300" />}
-                <div className="flex-1 min-w-0"><p className="font-heading text-base">{isoSelectedRelease.title}</p><p className="text-sm text-muted-foreground">{isoSelectedRelease.artist} {isoSelectedRelease.year ? `(${isoSelectedRelease.year})` : ''}</p></div>
-                <button onClick={() => { setIsoSelectedRelease(null); setIsoArtist(''); setIsoAlbum(''); }} className="text-xs text-muted-foreground hover:text-red-500">Change</button>
+                </button>
+                <button
+                  onClick={() => setIsoIntent('seeking')}
+                  className="w-full rounded-2xl p-4 text-left transition-all hover:scale-[1.01] active:scale-[0.99]"
+                  style={{
+                    background: 'linear-gradient(135deg, rgba(255,215,0,0.08), rgba(218,165,32,0.12))',
+                    backdropFilter: 'blur(16px)',
+                    WebkitBackdropFilter: 'blur(16px)',
+                    border: '1.5px solid rgba(218,165,32,0.35)',
+                    boxShadow: '0 2px 16px rgba(218,165,32,0.1)',
+                  }}
+                  data-testid="iso-intent-seeking"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🔍</span>
+                    <div>
+                      <p className="font-heading text-base text-vinyl-black">Actively Seeking</p>
+                      <p className="text-xs text-muted-foreground">Alert the hive. You're on the hunt.</p>
+                    </div>
+                  </div>
+                </button>
               </div>
-            ) : null}
-
-            {(isoManualMode || isoSelectedRelease) && (
+            ) : (
               <>
-                {isoManualMode && (
+                {/* Intent indicator + change */}
+                <div className="flex items-center justify-between">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium"
+                    style={isoIntent === 'dreaming'
+                      ? { background: 'rgba(200,200,220,0.15)', backdropFilter: 'blur(8px)', border: '1px solid rgba(200,200,220,0.3)', color: '#6B7280' }
+                      : { background: 'rgba(255,215,0,0.12)', border: '1px solid rgba(218,165,32,0.3)', color: '#92702A' }
+                    }
+                    data-testid="iso-intent-badge"
+                  >
+                    {isoIntent === 'dreaming' ? '☁️ Just Dreaming' : '🔍 Actively Seeking'}
+                  </span>
+                  <button onClick={() => { setIsoIntent(null); setIsoSelectedRelease(null); setIsoManualMode(false); setIsoDiscogsQuery(''); setIsoDiscogsResults([]); }} className="text-xs text-muted-foreground hover:text-vinyl-black" data-testid="iso-change-intent">Change</button>
+                </div>
+
+                {/* Step 2: Search / Manual Entry */}
+                {!isoSelectedRelease && !isoManualMode ? (
                   <>
-                    <Input placeholder="Artist *" value={isoArtist} onChange={e => setIsoArtist(e.target.value)} className="border-honey/50" data-testid="iso-artist-input" />
-                    <Input placeholder="Album *" value={isoAlbum} onChange={e => setIsoAlbum(e.target.value)} className="border-honey/50" data-testid="iso-album-input" />
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input placeholder="Search Discogs for an album..." value={isoDiscogsQuery}
+                        onChange={e => { setIsoDiscogsQuery(e.target.value); searchDiscogsForISO(e.target.value); }}
+                        className="pl-9 border-honey/50" data-testid="iso-discogs-search" autoFocus />
+                      {isoSearchLoading && <Loader2 className="w-4 h-4 animate-spin absolute right-3 top-3 text-muted-foreground" />}
+                    </div>
+                    {isoDiscogsResults.length > 0 && (
+                      <div className="border border-honey/30 rounded-lg max-h-48 overflow-y-auto bg-white">
+                        {isoDiscogsResults.map(r => (
+                          <RecordSearchResult key={r.discogs_id} record={r} onClick={() => selectIsoRelease(r)} size="sm" testId={`iso-discogs-result-${r.discogs_id}`} />
+                        ))}
+                      </div>
+                    )}
+                    <button onClick={() => setIsoManualMode(true)} className="text-sm text-honey-amber hover:underline" data-testid="iso-manual-entry-btn">Or enter manually</button>
+                  </>
+                ) : isoSelectedRelease ? (
+                  <div className="flex items-center gap-3 bg-blue-50 rounded-lg p-3">
+                    {isoSelectedRelease.cover_url ? <AlbumArt src={isoSelectedRelease.cover_url} alt={`${isoSelectedRelease.artist} ${isoSelectedRelease.title} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow" /> : <Disc className="w-14 h-14 text-blue-300" />}
+                    <div className="flex-1 min-w-0"><p className="font-heading text-base">{isoSelectedRelease.title}</p><p className="text-sm text-muted-foreground">{isoSelectedRelease.artist} {isoSelectedRelease.year ? `(${isoSelectedRelease.year})` : ''}</p></div>
+                    <button onClick={() => { setIsoSelectedRelease(null); setIsoArtist(''); setIsoAlbum(''); }} className="text-xs text-muted-foreground hover:text-red-500">Change</button>
+                  </div>
+                ) : null}
+
+                {(isoManualMode || isoSelectedRelease) && (
+                  <>
+                    {isoManualMode && (
+                      <>
+                        <Input placeholder="Artist *" value={isoArtist} onChange={e => setIsoArtist(e.target.value)} className="border-honey/50" data-testid="iso-artist-input" />
+                        <Input placeholder="Album *" value={isoAlbum} onChange={e => setIsoAlbum(e.target.value)} className="border-honey/50" data-testid="iso-album-input" />
+                      </>
+                    )}
+                    <Input placeholder="Press / condition preference" value={isoPressing} onChange={e => setIsoPressing(e.target.value)} className="border-honey/50" />
+                    <div className="grid grid-cols-2 gap-3">
+                      <Input placeholder="Min budget ($)" type="number" value={isoPriceMin} onChange={e => setIsoPriceMin(e.target.value)} className="border-honey/50" />
+                      <Input placeholder="Max budget ($)" type="number" value={isoPriceMax} onChange={e => setIsoPriceMax(e.target.value)} className="border-honey/50" />
+                    </div>
+                    <MentionTextarea placeholder="Caption (optional)" value={isoCaption} onChange={setIsoCaption} className="border-honey/50 resize-none" rows={2} data-testid="iso-caption-input" />
+                    <Button onClick={submitISO} disabled={submitting || (isoManualMode && (!isoArtist || !isoAlbum)) || (!isoManualMode && !isoSelectedRelease)}
+                      className="w-full rounded-full"
+                      style={isoIntent === 'dreaming'
+                        ? { background: '#f3f4f6', color: '#374151' }
+                        : { background: 'linear-gradient(135deg, #FFD700, #DAA520)', color: '#2A1A06' }
+                      }
+                      data-testid="iso-submit-btn">
+                      {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Search className="w-4 h-4 mr-2" />}
+                      {isoIntent === 'dreaming' ? 'Add to Dream List' : 'Post to the Hive'}
+                    </Button>
                   </>
                 )}
-                <Input placeholder="Press / condition preference" value={isoPressing} onChange={e => setIsoPressing(e.target.value)} className="border-honey/50" />
-                <div className="grid grid-cols-2 gap-3">
-                  <Input placeholder="Min budget ($)" type="number" value={isoPriceMin} onChange={e => setIsoPriceMin(e.target.value)} className="border-honey/50" />
-                  <Input placeholder="Max budget ($)" type="number" value={isoPriceMax} onChange={e => setIsoPriceMax(e.target.value)} className="border-honey/50" />
-                </div>
-                <MentionTextarea placeholder="Caption (optional)" value={isoCaption} onChange={setIsoCaption} className="border-honey/50 resize-none" rows={2} data-testid="iso-caption-input" />
-                <Button onClick={submitISO} disabled={submitting || (isoManualMode && (!isoArtist || !isoAlbum)) || (!isoManualMode && !isoSelectedRelease)}
-                  className="w-full bg-blue-100 text-blue-800 hover:bg-blue-200 rounded-full" data-testid="iso-submit-btn">
-                  {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Search className="w-4 h-4 mr-2" />}
-                  Post ISO
-                </Button>
               </>
             )}
           </div>

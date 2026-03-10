@@ -705,7 +705,7 @@ const CollectionPage = () => {
             countKey={countKey}
             subtractMsg={dreamSubtractMsg}
           />
-          <p className="text-sm text-muted-foreground mt-3 mb-5 px-1 leading-relaxed" data-testid="dreamlist-helper-text">These are your dream records. If you want to actively search for a record on this list, move it to Actively Seeking.</p>
+          <p className="text-sm text-muted-foreground mt-9 mb-5 px-4 leading-relaxed" data-testid="dreamlist-helper-text">These are your dream records. If you want to actively search for a record on this list, move it to Actively Seeking.</p>
 
           {wishlistItems.length === 0 ? (
             <Card className="p-12 text-center border-stone-200/60">

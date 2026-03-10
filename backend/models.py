@@ -197,6 +197,7 @@ class PostResponse(BaseModel):
     is_pinned: bool = False
     is_new_feature: bool = False
     content: Optional[str] = None
+    intent: Optional[str] = None
 
 # Comment Models
 class CommentCreate(BaseModel):
@@ -274,6 +275,7 @@ class ISOPostCreate(BaseModel):
     discogs_id: Optional[int] = None
     cover_url: Optional[str] = None
     year: Optional[int] = None
+    intent: Optional[str] = "seeking"
 
 class VinylMoodCreate(BaseModel):
     mood: str
