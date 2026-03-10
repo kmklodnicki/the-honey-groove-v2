@@ -633,7 +633,7 @@ const ISOPage = () => {
               <div className="divide-y divide-[#C8861A]/10 border border-honey/20 rounded-xl overflow-hidden bg-white">
                 {myListings.filter(l => l.listing_type !== 'TRADE').map(listing => (
                   <div key={listing.id} className="relative">
-                    <ListingCard listing={listing} />
+                    <ListingCard listing={listing} onClick={() => setSelectedListingId(listing.id)} />
                     <Button size="sm" variant="ghost" onClick={() => { setDeleteConfirmId(listing.id); setDeleteConfirmType('listing'); }}
                       className="absolute top-3 right-3 text-[#8A6B4A]/60 hover:bg-[#8A6B4A]/10 h-8 w-8 p-0" data-testid={`delete-listing-${listing.id}`}>
                       <Trash2 className="w-4 h-4" />
@@ -736,7 +736,7 @@ const ISOPage = () => {
               <div className="divide-y divide-[#C8861A]/10 border border-honey/20 rounded-xl overflow-hidden bg-white">
                 {myListings.filter(l => l.listing_type === 'TRADE').map(listing => (
                   <div key={listing.id} className="relative">
-                    <ListingCard listing={listing} />
+                    <ListingCard listing={listing} onClick={() => setSelectedListingId(listing.id)} />
                     <Button size="sm" variant="ghost" onClick={() => { setDeleteConfirmId(listing.id); setDeleteConfirmType('listing'); }}
                       className="absolute top-3 right-3 text-[#8A6B4A]/60 hover:bg-[#8A6B4A]/10 h-8 w-8 p-0" data-testid={`delete-listing-${listing.id}`}>
                       <Trash2 className="w-4 h-4" />
