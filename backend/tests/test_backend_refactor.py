@@ -20,7 +20,7 @@ import os
 import uuid
 from datetime import datetime, timezone
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://vinyl-variant-update.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://vinyl-collector-hub.preview.emergentagent.com')
 
 # Test credentials
 DEMO_USER = {"email": "demo@example.com", "password": "password123"}
