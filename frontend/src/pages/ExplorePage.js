@@ -183,7 +183,7 @@ const ExplorePage = () => {
               <button key={r.id} onClick={() => openTrendingModal(r)}
                 className="flex-shrink-0 w-36 text-left group" data-testid={`trending-${r.id}`}>
                 <div className="aspect-square rounded-xl overflow-hidden bg-honey/10 mb-2 shadow-sm group-hover:shadow-md transition-shadow">
-                  <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} className="w-full h-full object-cover" />
+                  <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} artist={r.artist} title={r.title} className="w-full h-full object-cover" />
                 </div>
                 <p className="text-sm font-medium truncate">{r.title}</p>
                 <p className="text-xs text-muted-foreground truncate">{r.artist}</p>
@@ -207,7 +207,7 @@ const ExplorePage = () => {
             {crownJewels.map((r, idx) => (
               <button key={r.discogs_id || idx} onClick={() => openTrendingModal(r)} className="flex-shrink-0 w-40 text-left group" data-testid={`crown-jewel-${r.discogs_id || idx}`}>
                 <div className="aspect-square rounded-xl overflow-hidden bg-honey/10 mb-2 shadow-sm relative group-hover:shadow-md transition-shadow">
-                  <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} className="w-full h-full object-cover" />
+                  <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} artist={r.artist} title={r.title} className="w-full h-full object-cover" />
                   {r.estimated_value > 0 && (
                     <span
                       className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full"
