@@ -14,7 +14,7 @@ import AlbumArt from '../components/AlbumArt';
 import { resolveImageUrl } from '../utils/imageUrl';
 import { PostTypeBadge } from '../components/PostCards';
 import SEOHead from '../components/SEOHead';
-import { RarityPill, RarityCard } from '../components/RarityBadge';
+import { RarityCard } from '../components/RarityBadge';
 import VariantCompletion from '../components/VariantCompletion';
 
 const RecordDetailPage = () => {
@@ -158,7 +158,6 @@ const RecordDetailPage = () => {
                 <Music2 className="w-3.5 h-3.5" /> Discogs
               </a>
             )}
-            {rarity?.tier && <RarityPill tier={rarity.tier} size="sm" />}
           </div>
 
           {/* Spin button */}

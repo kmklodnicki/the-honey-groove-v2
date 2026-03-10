@@ -547,7 +547,7 @@ const ISOPage = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 pt-20 md:pt-24 pb-24 md:pb-8" data-testid="honeypot-page">
+    <div className="max-w-4xl mx-auto px-4 py-8 pt-[64px] md:pt-24 pb-24 md:pb-8" data-testid="honeypot-page">
       <SEOHead
         title="The Honeypot — Vinyl Marketplace"
         description="Browse vinyl records for sale and trade on The Honey Groove. Find rare pressings, colored vinyl, limited editions, and connect directly with collectors."

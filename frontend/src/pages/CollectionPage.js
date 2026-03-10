@@ -66,12 +66,12 @@ const TreasuryHeader = ({ collectionValue, dreamValue, collectionTab, onTabChang
 
   return (
     <div
-      className="relative mb-5 rounded-2xl overflow-hidden"
+      className="relative mb-5 rounded-2xl overflow-hidden sticky top-14 md:top-[88px] z-10"
       style={{
-        background: 'rgba(255, 255, 255, 0.05)',
-        backdropFilter: 'blur(40px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-        border: '1px solid rgba(255, 255, 255, 0.2)',
+        background: 'rgba(255, 255, 255, 0.01)',
+        backdropFilter: 'blur(50px) saturate(200%)',
+        WebkitBackdropFilter: 'blur(50px) saturate(200%)',
+        border: '1px solid rgba(255, 255, 255, 0.15)',
         boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
       }}
       data-testid="treasury-header"
@@ -473,7 +473,7 @@ const CollectionPage = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 pt-20 md:pt-24 pb-24 md:pb-8">
+    <div className="max-w-6xl mx-auto px-4 py-8 pt-[64px] md:pt-24 pb-24 md:pb-8">
       <SEOHead
         title={`My Collection — ${records.length} Records`}
         description={`Your vinyl collection on The Honey Groove. ${records.length} records owned, ${wishlistItems.length} on the Dream List.`}
