@@ -66,26 +66,22 @@ const TreasuryHeader = ({ collectionValue, dreamValue, collectionTab, onTabChang
 
   return (
     <div
-      className="relative mb-5 rounded-2xl overflow-hidden p-[2px]"
-      style={{ background: 'linear-gradient(135deg, #DAA520, #C8861A, #E8A820, #DAA520)' }}
+      className="relative mb-5 rounded-2xl overflow-hidden"
+      style={{
+        background: 'rgba(255, 255, 255, 0.08)',
+        backdropFilter: 'blur(30px) saturate(140%)',
+        WebkitBackdropFilter: 'blur(30px) saturate(140%)',
+        border: '1px solid rgba(255, 255, 255, 0.25)',
+        boxShadow: 'inset 0 0 20px rgba(255, 255, 255, 0.05)',
+      }}
       data-testid="treasury-header"
     >
-      <div
-        className="relative rounded-[14px] p-5 sm:p-6"
-        style={{
-          background: 'rgba(255, 248, 230, 0.65)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-        }}
-      >
-        {/* Subtle grain overlay */}
-        <div className="absolute inset-0 rounded-[14px] opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }} />
-
+      <div className="relative p-5 sm:p-6">
         <div className="relative flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-0">
           {/* Collection Value */}
           <button
             onClick={() => onTabChange('owned')}
-            className={`flex-1 flex items-center gap-3 sm:gap-4 rounded-xl px-4 py-3 transition-all duration-300 ${collectionTab === 'owned' ? 'bg-white/40 shadow-sm' : 'hover:bg-white/20'}`}
+            className={`flex-1 flex items-center gap-3 sm:gap-4 rounded-xl px-4 py-3 transition-all duration-300 ${collectionTab === 'owned' ? 'ring-1 ring-[#DAA520]/40' : 'hover:bg-white/10'}`}
             data-testid="treasury-collection-btn"
           >
             <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #DAA520, #E8A820)', boxShadow: '0 2px 8px rgba(218,165,32,0.4)' }}>
@@ -104,16 +100,16 @@ const TreasuryHeader = ({ collectionValue, dreamValue, collectionTab, onTabChang
 
           {/* Divider */}
           <div className="hidden sm:flex flex-col items-center justify-center px-3">
-            <div className="w-px h-10 bg-gradient-to-b from-transparent via-[#DAA520]/40 to-transparent" />
-            <span className="text-[9px] font-bold uppercase tracking-wider text-[#DAA520]/60 my-1">vs</span>
-            <div className="w-px h-10 bg-gradient-to-b from-transparent via-[#DAA520]/40 to-transparent" />
+            <div className="w-px h-10 bg-gradient-to-b from-transparent via-[#DAA520]/30 to-transparent" />
+            <span className="text-[9px] font-bold uppercase tracking-wider text-[#DAA520]/50 my-1">vs</span>
+            <div className="w-px h-10 bg-gradient-to-b from-transparent via-[#DAA520]/30 to-transparent" />
           </div>
-          <div className="sm:hidden h-px mx-4 bg-gradient-to-r from-transparent via-[#DAA520]/30 to-transparent" />
+          <div className="sm:hidden h-px mx-4 bg-gradient-to-r from-transparent via-[#DAA520]/20 to-transparent" />
 
           {/* Dream Value */}
           <button
             onClick={() => onTabChange('wishlist')}
-            className={`flex-1 flex items-center gap-3 sm:gap-4 rounded-xl px-4 py-3 transition-all duration-300 ${collectionTab === 'wishlist' ? 'bg-white/40 shadow-sm' : 'hover:bg-white/20'}`}
+            className={`flex-1 flex items-center gap-3 sm:gap-4 rounded-xl px-4 py-3 transition-all duration-300 ${collectionTab === 'wishlist' ? 'ring-1 ring-[#DAA520]/40' : 'hover:bg-white/10'}`}
             data-testid="treasury-dream-btn"
           >
             <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #C8861A, #D4A017)', boxShadow: '0 2px 8px rgba(200,134,26,0.3)' }}>
