@@ -471,7 +471,7 @@ async def get_iso_matches(user: Dict = Depends(require_auth)):
     result = []
     for listing in matches:
         seller = await db.users.find_one({"id": listing["user_id"]}, {"_id": 0, "password_hash": 0})
-        user_data = {"id": seller["id"], "username": seller["username"], "avatar_url": seller.get("avatar_url"), "country": seller.get("country"), "title_label": seller.get("title_label")} if seller else None
+        user_data = {"id": seller["id"], "username": seller["username"], "avatar_url": seller.get("avatar_url"), "country": seller.get("country"), "title_label": seller.get("title_label"), "golden_hive_verified": seller.get("golden_hive_verified", False)} if seller else None
         result.append(ListingResponse(**listing, user=user_data))
     
     return result
@@ -507,7 +507,7 @@ async def get_listing(listing_id: str, current_user: Optional[Dict] = Depends(ge
     similar_enriched = []
     for s in similar:
         s_seller = await db.users.find_one({"id": s["user_id"]}, {"_id": 0, "password_hash": 0})
-        s_user = {"id": s_seller["id"], "username": s_seller["username"], "avatar_url": s_seller.get("avatar_url"), "country": s_seller.get("country"), "title_label": s_seller.get("title_label")} if s_seller else None
+        s_user = {"id": s_seller["id"], "username": s_seller["username"], "avatar_url": s_seller.get("avatar_url"), "country": s_seller.get("country"), "title_label": s_seller.get("title_label"), "golden_hive_verified": s_seller.get("golden_hive_verified", False)} if s_seller else None
         similar_enriched.append({**{k: v for k, v in s.items()}, "user": s_user})
 
     # Check wantlist status for current user
@@ -979,6 +979,97 @@ async def stripe_webhook(request: Request):
     except Exception as e:
         logging.error(f"Webhook error: {e}")
     return {"received": True}
+
+
+# ============== GOLDEN HIVE ID ==============
+
+GOLDEN_HIVE_PRICE_CENTS = 999  # $9.99
+
+
+@router.get("/golden-hive/status")
+async def golden_hive_status(user: Dict = Depends(require_auth)):
+    """Return the current user's Golden Hive ID verification status."""
+    u = await db.users.find_one({"id": user["id"]}, {"_id": 0, "golden_hive_status": 1, "golden_hive_verified": 1, "golden_hive_verified_at": 1})
+    return {
+        "golden_hive_verified": u.get("golden_hive_verified", False),
+        "golden_hive_status": u.get("golden_hive_status"),  # pending / approved / rejected / None
+        "golden_hive_verified_at": u.get("golden_hive_verified_at"),
+    }
+
+
+@router.post("/golden-hive/checkout")
+async def golden_hive_checkout(request: Request, user: Dict = Depends(require_auth)):
+    """Create a Stripe Checkout Session for Golden Hive ID verification ($9.99)."""
+    u = await db.users.find_one({"id": user["id"]}, {"_id": 0})
+    if u.get("golden_hive_verified"):
+        raise HTTPException(status_code=400, detail="You are already a verified Golden Hive member")
+    if u.get("golden_hive_status") == "pending":
+        raise HTTPException(status_code=400, detail="Your verification is already pending review")
+
+    stripe_sdk.api_key = STRIPE_API_KEY
+    frontend_url = FRONTEND_URL
+    try:
+        session = stripe_sdk.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{
+                "price_data": {
+                    "currency": "usd",
+                    "product_data": {
+                        "name": "Golden Hive ID Verification",
+                        "description": "One-time identity verification for The Honey Groove",
+                    },
+                    "unit_amount": GOLDEN_HIVE_PRICE_CENTS,
+                },
+                "quantity": 1,
+            }],
+            mode="payment",
+            success_url=f"{frontend_url}/profile/{u.get('username', '')}?golden_hive=success&session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{frontend_url}/profile/{u.get('username', '')}?golden_hive=cancelled",
+            metadata={"type": "golden_hive_verification", "user_id": user["id"]},
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Stripe error: {str(e)}")
+
+    now = datetime.now(timezone.utc).isoformat()
+    await db.golden_hive_payments.insert_one({
+        "id": str(uuid.uuid4()),
+        "user_id": user["id"],
+        "session_id": session.id,
+        "amount_cents": GOLDEN_HIVE_PRICE_CENTS,
+        "payment_status": "PENDING",
+        "created_at": now,
+    })
+
+    return {"url": session.url, "session_id": session.id}
+
+
+@router.get("/golden-hive/verify-payment")
+async def golden_hive_verify_payment(session_id: str, user: Dict = Depends(require_auth)):
+    """Verify a Golden Hive checkout session after redirect."""
+    stripe_sdk.api_key = STRIPE_API_KEY
+    try:
+        session = stripe_sdk.checkout.Session.retrieve(session_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid session")
+
+    if session.payment_status != "paid":
+        return {"status": "unpaid"}
+
+    now = datetime.now(timezone.utc).isoformat()
+    # Update payment record
+    await db.golden_hive_payments.update_one(
+        {"session_id": session_id},
+        {"$set": {"payment_status": "PAID", "stripe_payment_id": session.payment_intent, "paid_at": now}}
+    )
+    # Set user to pending verification
+    await db.users.update_one({"id": user["id"]}, {"$set": {
+        "golden_hive_status": "pending",
+        "golden_hive_payment_id": session.payment_intent,
+        "golden_hive_payment_at": now,
+    }})
+
+    return {"status": "pending", "message": "Payment confirmed. Your Golden Hive ID is pending admin review."}
+
 
 
 @router.post("/trades/{trade_id}/pay-sweetener")

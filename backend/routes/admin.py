@@ -530,3 +530,65 @@ async def remove_user(user_id: str, user: Dict = Depends(require_admin)):
     logger.info(f"Admin @{user.get('username')} removed user @{username} ({user_id})")
     return {"detail": f"User @{username} and all associated data have been removed."}
 
+
+# ============== GOLDEN HIVE ID ADMIN ==============
+
+
+@router.get("/admin/golden-hive/pending")
+async def admin_golden_hive_pending(user: Dict = Depends(require_admin)):
+    """List all users with pending Golden Hive verification."""
+    pending = await db.users.find(
+        {"golden_hive_status": "pending"},
+        {"_id": 0, "id": 1, "username": 1, "display_name": 1, "profile_photo": 1, "email": 1,
+         "golden_hive_status": 1, "golden_hive_payment_at": 1, "golden_hive_payment_id": 1}
+    ).to_list(100)
+    return pending
+
+
+@router.post("/admin/golden-hive/{user_id}/approve")
+async def admin_golden_hive_approve(user_id: str, user: Dict = Depends(require_admin)):
+    """Approve a Golden Hive ID verification."""
+    target = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+    if target.get("golden_hive_status") != "pending":
+        raise HTTPException(status_code=400, detail="User is not pending verification")
+
+    now = datetime.now(timezone.utc).isoformat()
+    await db.users.update_one({"id": user_id}, {"$set": {
+        "golden_hive_verified": True,
+        "golden_hive_status": "approved",
+        "golden_hive_verified_at": now,
+    }})
+
+    from database import create_notification
+    await create_notification(user_id, "GOLDEN_HIVE_APPROVED",
+        "Golden Hive ID Approved!",
+        "Congratulations! Your Golden Hive ID has been verified. You now have a trusted collector badge.",
+        {})
+
+    logger.info(f"Admin @{user.get('username')} approved Golden Hive for user {user_id}")
+    return {"message": f"Golden Hive ID approved for @{target.get('username')}"}
+
+
+@router.post("/admin/golden-hive/{user_id}/reject")
+async def admin_golden_hive_reject(user_id: str, user: Dict = Depends(require_admin)):
+    """Reject a Golden Hive ID verification (refund should be handled separately)."""
+    target = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    await db.users.update_one({"id": user_id}, {"$set": {
+        "golden_hive_status": "rejected",
+        "golden_hive_verified": False,
+    }})
+
+    from database import create_notification
+    await create_notification(user_id, "GOLDEN_HIVE_REJECTED",
+        "Golden Hive ID Review",
+        "Your Golden Hive ID verification was not approved at this time. Please contact support for details.",
+        {})
+
+    logger.info(f"Admin @{user.get('username')} rejected Golden Hive for user {user_id}")
+    return {"message": f"Golden Hive ID rejected for @{target.get('username')}"}
+

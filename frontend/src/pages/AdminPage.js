@@ -36,6 +36,7 @@ const AdminPage = () => {
     { key: 'feedback', label: 'Feedback & Bug Reports', icon: Heart },
     { key: 'watchtower', label: 'Watchtower', icon: AlertTriangle },
     { key: 'gate', label: 'The Gate', icon: Shield },
+    { key: 'golden_hive', label: 'Golden Hive ID', icon: Shield },
     { key: 'settings', label: 'Platform Settings', icon: Settings },
   ];
 
@@ -71,6 +72,7 @@ const AdminPage = () => {
       {section === 'feedback' && <FeedbackSection API={API} headers={headers} />}
       {section === 'watchtower' && <WatchtowerSection API={API} headers={headers} />}
       {section === 'gate' && <GateSection API={API} headers={headers} />}
+      {section === 'golden_hive' && <GoldenHiveAdminSection API={API} headers={headers} />}
       {section === 'settings' && <SettingsSection API={API} headers={headers} />}
     </div>
   );
@@ -1625,6 +1627,69 @@ const GateSection = ({ API, headers }) => {
                   >
                     <X className="w-3 h-3 mr-1" />
                     Deny
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+
+const GoldenHiveAdminSection = ({ API, headers }) => {
+  const [pending, setPending] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(null);
+
+  useEffect(() => {
+    axios.get(`${API}/admin/golden-hive/pending`, { headers }).then(r => setPending(r.data || [])).catch(() => {}).finally(() => setLoading(false));
+  }, [API, headers]);
+
+  const handleAction = async (userId, action) => {
+    setProcessing(userId);
+    try {
+      await axios.post(`${API}/admin/golden-hive/${userId}/${action}`, {}, { headers });
+      toast.success(`Golden Hive ID ${action}d`);
+      setPending(prev => prev.filter(u => u.id !== userId));
+    } catch (err) { toast.error(err.response?.data?.detail || `Failed to ${action}`); }
+    finally { setProcessing(null); }
+  };
+
+  return (
+    <div className="space-y-4" data-testid="admin-golden-hive-section">
+      <div className="flex items-center justify-between">
+        <h2 className="font-heading text-xl text-vinyl-black">Golden Hive ID — Pending Verifications</h2>
+        <span className="text-xs bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full font-medium">{pending.length} pending</span>
+      </div>
+      {loading ? (
+        <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-honey" /></div>
+      ) : pending.length === 0 ? (
+        <Card className="p-6 text-center"><p className="text-sm text-muted-foreground">No pending verifications</p></Card>
+      ) : (
+        <div className="space-y-3">
+          {pending.map(u => (
+            <Card key={u.id} className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-honey/20 flex items-center justify-center text-sm font-bold text-honey">
+                    {(u.username || '?')[0].toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">@{u.username}</p>
+                    <p className="text-xs text-muted-foreground">{u.email} · Paid {u.golden_hive_payment_at ? new Date(u.golden_hive_payment_at).toLocaleDateString() : 'N/A'}</p>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={() => handleAction(u.id, 'approve')} disabled={processing === u.id}
+                    className="bg-green-600 hover:bg-green-700 text-white rounded-full text-xs px-4" data-testid={`approve-gh-${u.id}`}>
+                    <Check className="w-3 h-3 mr-1" /> Approve
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => handleAction(u.id, 'reject')} disabled={processing === u.id}
+                    className="border-red-300 text-red-600 hover:bg-red-50 rounded-full text-xs px-4" data-testid={`reject-gh-${u.id}`}>
+                    <X className="w-3 h-3 mr-1" /> Reject
                   </Button>
                 </div>
               </div>

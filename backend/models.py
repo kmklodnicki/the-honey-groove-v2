@@ -39,6 +39,8 @@ class UserResponse(BaseModel):
     instagram_username: Optional[str] = None
     tiktok_username: Optional[str] = None
     golden_hive: bool = False
+    golden_hive_verified: bool = False
+    golden_hive_status: Optional[str] = None
     is_private: bool = False
     dm_setting: str = "everyone"  # "everyone" | "following" | "requests"
 

@@ -55,6 +55,8 @@ async def _build_user_response(user: dict) -> UserResponse:
         instagram_username=user.get("instagram_username"),
         tiktok_username=user.get("tiktok_username"),
         golden_hive=user.get("golden_hive", False),
+        golden_hive_verified=user.get("golden_hive_verified", False),
+        golden_hive_status=user.get("golden_hive_status"),
         is_private=user.get("is_private", False),
         dm_setting=user.get("dm_setting", "everyone"),
     )

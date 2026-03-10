@@ -246,6 +246,11 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
               {post.user?.founding_member && (
                 <span title="founding member of the Honey Groove" className="inline-block ml-1 cursor-help" style={{ color: '#C8861A', fontSize: '12px' }}>🍯</span>
               )}
+              {post.user?.golden_hive_verified && (
+                <span title="Golden Hive ID — Verified Collector" className="inline-flex items-center gap-0.5 ml-0.5 text-amber-600 cursor-help" data-testid="hive-golden-badge">
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </span>
+              )}
               {post.user?.title_label && <TitleBadge label={post.user.title_label} />}
               <PostTypeBadge type={post.post_type} mood={post.mood} />
               {post.is_new_feature && <NewFeatureBadge />}

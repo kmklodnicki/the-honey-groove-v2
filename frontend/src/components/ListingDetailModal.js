@@ -499,7 +499,11 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                           <AvatarFallback className="bg-amber-50 text-xs">{seller.username?.[0]?.toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <div className="text-left">
-                          <p className="text-sm font-medium">@{seller.username}</p>
+                          <p className="text-sm font-medium flex items-center gap-1">@{seller.username}
+                            {seller.golden_hive_verified && (
+                              <svg className="w-3.5 h-3.5 text-amber-600" viewBox="0 0 24 24" fill="currentColor" data-testid="listing-golden-badge"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            )}
+                          </p>
                           <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                             <div className="flex">
                               {[1, 2, 3, 4, 5].map(s => (

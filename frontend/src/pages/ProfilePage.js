@@ -10,7 +10,7 @@ import { Skeleton } from '../components/ui/skeleton';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '../components/ui/dialog';
-import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin, ShoppingBag, Flag, Sparkles, Eye, X, Cloud, ShieldOff, ShieldCheck, Lock } from 'lucide-react';
+import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin, ShoppingBag, Flag, Sparkles, Eye, X, Cloud, ShieldOff, ShieldCheck, Lock, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { FollowListModal } from '../components/FollowList';
@@ -158,6 +158,16 @@ const ProfilePage = () => {
     setDreamingItems([]);
     setDreamValue(null);
     fetchProfile();
+
+    // Handle Golden Hive redirect
+    const params = new URLSearchParams(window.location.search);
+    const ghSessionId = params.get('session_id');
+    const ghStatus = params.get('golden_hive');
+    if (ghStatus === 'success' && ghSessionId && token) {
+      axios.get(`${API}/golden-hive/verify-payment?session_id=${ghSessionId}`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(() => { toast.success('Payment confirmed! Your Golden Hive ID is pending admin review.'); window.history.replaceState({}, '', window.location.pathname); fetchProfile(); })
+        .catch(() => {});
+    }
   }, [fetchProfile]);
 
   // Lazy-load tab data
@@ -459,6 +469,20 @@ const ProfilePage = () => {
               </div>
             )}
 
+            {/* Golden Hive ID Badge */}
+            {profile.golden_hive_verified && (
+              <div className="mt-1.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-100 to-yellow-50 border border-amber-300/50" data-testid="golden-hive-badge">
+                <svg className="w-3.5 h-3.5 text-amber-600" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span className="text-xs font-medium text-amber-700">Golden Hive ID</span>
+              </div>
+            )}
+            {profile.golden_hive_status === 'pending' && isOwnProfile && (
+              <div className="mt-1.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-100 border border-stone-200" data-testid="golden-hive-pending">
+                <Clock className="w-3 h-3 text-stone-500" />
+                <span className="text-xs text-stone-500">Golden Hive ID — Pending Verification</span>
+              </div>
+            )}
+
             {/* Social links */}
             {(profile.instagram_username || profile.tiktok_username) && (
               <div className="flex items-center gap-3 mt-2" data-testid="profile-social-links">
@@ -551,6 +575,21 @@ const ProfilePage = () => {
                     Connect with Stripe
                   </Button>
                 )}
+              </div>
+            )}
+            {/* Golden Hive ID — own profile only */}
+            {isOwnProfile && !profile.golden_hive_verified && profile.golden_hive_status !== 'pending' && (
+              <div className="mt-3" data-testid="golden-hive-cta">
+                <Button size="sm" onClick={async () => {
+                  try {
+                    const resp = await axios.post(`${API}/golden-hive/checkout`, {}, { headers: { Authorization: `Bearer ${token}` } });
+                    window.location.href = resp.data.url;
+                  } catch (err) { toast.error(err.response?.data?.detail || 'Could not start checkout'); }
+                }} className="rounded-full bg-gradient-to-r from-amber-400 to-yellow-400 text-vinyl-black hover:from-amber-500 hover:to-yellow-500 gap-1.5 font-medium">
+                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  Get Golden Hive ID · $9.99
+                </Button>
+                <p className="text-[10px] text-muted-foreground mt-1 max-w-[200px]">Verified identity badge for trusted trading and selling</p>
               </div>
             )}
           </div>
