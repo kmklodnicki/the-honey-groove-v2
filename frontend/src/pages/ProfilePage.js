@@ -57,6 +57,7 @@ const ProfilePage = () => {
   const [showCommonOnly, setShowCommonOnly] = useState(false);
   const [myRecordDiscogs, setMyRecordDiscogs] = useState(new Set());
   const [dreamingItems, setDreamingItems] = useState([]);
+  const [isoValue, setIsoValue] = useState(null);
   const [dreamValue, setDreamValue] = useState(null);
   const [isBlocked, setIsBlocked] = useState(false);
   const [blockLoading, setBlockLoading] = useState(false);
@@ -117,7 +118,8 @@ const ProfilePage = () => {
         axios.get(`${API}/users/${username}/ratings`).then(r => setRatings(r.data)).catch(() => {});
         axios.get(`${API}/valuation/collection/${username}`).then(r => setCollectionValue(r.data)).catch(() => {});
         axios.get(`${API}/prompts/streak/${username}`).then(r => setPromptStreak(r.data)).catch(() => {});
-        axios.get(`${API}/valuation/wishlist/${username}`).then(r => setDreamValue(r.data)).catch(() => {});
+        axios.get(`${API}/valuation/wishlist/${username}`).then(r => setIsoValue(r.data)).catch(() => {});
+        axios.get(`${API}/valuation/dreamlist/${username}`).then(r => setDreamValue(r.data)).catch(() => {});
 
         // Fetch taste match for other users
         if (token && !isOwnProfile) {
@@ -154,6 +156,7 @@ const ProfilePage = () => {
     setShowCommonOnly(false);
     setCommonGroundOpen(false);
     setDreamingItems([]);
+    setIsoValue(null);
     setDreamValue(null);
     fetchProfile();
   }, [fetchProfile]);
@@ -534,9 +537,14 @@ const ProfilePage = () => {
             )}
 
             {/* Value of ISOs sub-headline */}
+            {isoValue && isoValue.total_value > 0 && (
+              <p className="mt-2 font-serif italic text-sm" style={{ color: '#C8861A' }} data-testid="profile-iso-value">
+                Value of ISOs: ${isoValue.total_value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              </p>
+            )}
             {dreamValue && dreamValue.total_value > 0 && (
-              <p className="mt-2 font-serif italic text-sm" style={{ color: '#C8861A' }} data-testid="profile-dream-value">
-                Value of ISOs: ${dreamValue.total_value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              <p className="mt-1 font-serif italic text-sm" style={{ color: '#8A6B4A' }} data-testid="profile-dream-value">
+                Dream Wishlist: ${dreamValue.total_value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
               </p>
             )}
 

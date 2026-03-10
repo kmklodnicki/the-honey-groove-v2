@@ -88,6 +88,7 @@ const CollectionPage = () => {
   const [collectionTab, setCollectionTab] = useState(searchParamsCollection.get('tab') === 'wishlist' ? 'wishlist' : 'owned');
   const [wishlistItems, setWishlistItems] = useState([]);
   const [wishlistValue, setWishlistValue] = useState(null);
+  const [dreamlistValue, setDreamlistValue] = useState(null);
   const [dreamSubtractMsg, setDreamSubtractMsg] = useState(null);
   const [countKey, setCountKey] = useState(0);
   // Confirmation dialog for "Collection Cleanse" moves
@@ -118,10 +119,11 @@ const CollectionPage = () => {
       setCollectionValue(valueRes.data);
       setHiddenGems(gemsRes.data || []);
       setValueMap(valMapRes.data || {});
-      // Fetch wishlist (WISHLIST ISO items)
+      // Fetch wishlist (WISHLIST ISO items) and separate values
       Promise.all([
         axios.get(`${API}/iso`, { headers }).then(r => setWishlistItems((r.data || []).filter(i => i.status === 'WISHLIST'))),
         axios.get(`${API}/valuation/wishlist`, { headers }).then(r => setWishlistValue(r.data)),
+        axios.get(`${API}/valuation/dreamlist`, { headers }).then(r => setDreamlistValue(r.data)),
       ]).catch(() => {});
     } catch (error) {
       console.error('Failed to fetch records:', error);
@@ -600,7 +602,7 @@ const CollectionPage = () => {
         <TabsContent value="wishlist">
           {/* "If only I had..." Wishlist Value Header */}
           <DreamDebtHeader
-            totalValue={wishlistValue?.total_value || 0}
+            totalValue={dreamlistValue?.total_value || 0}
             itemCount={wishlistItems.length}
             countKey={countKey}
             subtractMsg={dreamSubtractMsg}
@@ -682,14 +684,14 @@ const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg }) => {
       )}
       {hasDreams ? (
         <>
-          <p className="text-xs font-medium uppercase tracking-widest text-stone-400 mb-1">Value of ISOs</p>
+          <p className="text-xs font-medium uppercase tracking-widest text-stone-400 mb-1">Dream Wishlist Value</p>
           <p className="font-heading text-2xl sm:text-3xl text-vinyl-black leading-tight" data-testid="dream-debt-headline">
             If only I had{' '}
             <span className="font-serif italic" style={{ color: '#C8861A' }} data-testid="dream-debt-amount">
               ${displayValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
             ...{' '}
-            <span className="text-base font-light text-stone-400 font-serif italic">(Value of ISOs)</span>
+            <span className="text-base font-light text-stone-400 font-serif italic">(Dream Wishlist)</span>
           </p>
           <p className="text-xs text-stone-400 mt-2">{itemCount} record{itemCount !== 1 ? 's' : ''} dreaming</p>
         </>
