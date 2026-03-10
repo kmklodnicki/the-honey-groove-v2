@@ -114,6 +114,15 @@ async def get_my_isos(user: Dict = Depends(require_auth)):
         result.append(ISOResponse(**iso, record=record_data))
     return result
 
+
+@router.get("/iso/dreamlist")
+async def get_my_dreamlist(user: Dict = Depends(require_auth)):
+    """Return all Dream List (WISHLIST) items for the current user."""
+    isos = await db.iso_items.find(
+        {"user_id": user["id"], "status": "WISHLIST"}, {"_id": 0}
+    ).sort("created_at", -1).to_list(500)
+    return isos
+
 @router.put("/iso/{iso_id}/found")
 async def mark_iso_found(iso_id: str, user: Dict = Depends(require_auth)):
     iso = await db.iso_items.find_one({"id": iso_id, "user_id": user["id"]})

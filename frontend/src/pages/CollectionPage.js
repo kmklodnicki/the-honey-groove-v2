@@ -120,7 +120,7 @@ const CollectionPage = () => {
       setValueMap(valMapRes.data || {});
       // Fetch wishlist (WISHLIST ISO items) and dream value
       Promise.all([
-        axios.get(`${API}/iso`, { headers }).then(r => setWishlistItems((r.data || []).filter(i => i.status === 'WISHLIST'))),
+        axios.get(`${API}/iso/dreamlist`, { headers }).then(r => setWishlistItems(r.data || [])),
         axios.get(`${API}/valuation/dreamlist`, { headers }).then(r => setDreamlistValue(r.data)),
       ]).catch(() => {});
     } catch (error) {
@@ -206,7 +206,7 @@ const CollectionPage = () => {
         toast.success(res.data.message || 'moved to Dream List.');
         // Refetch dreamlist data from backend to stay in sync
         Promise.all([
-          axios.get(`${API}/iso`, { headers: { Authorization: `Bearer ${token}` } }).then(r => setWishlistItems((r.data || []).filter(i => i.status === 'WISHLIST'))),
+          axios.get(`${API}/iso/dreamlist`, { headers: { Authorization: `Bearer ${token}` } }).then(r => setWishlistItems(r.data || [])),
           axios.get(`${API}/valuation/dreamlist`, { headers: { Authorization: `Bearer ${token}` } }).then(r => setDreamlistValue(r.data)),
         ]).catch(() => {});
       } else {
@@ -399,8 +399,8 @@ const CollectionPage = () => {
       </div>
 
       <Tabs value={collectionTab} onValueChange={handleTabChange}>
-        {/* Collection Value Toggle — only show dream value when Dream List has items */}
-        {collectionValue && collectionValue.total_value > 0 && wishlistItems.length > 0 && dreamlistValue && dreamlistValue.total_value > 0 && (
+        {/* Collection Value Toggle — always show when collection has value */}
+        {collectionValue && collectionValue.total_value > 0 && (
           <div className="flex items-center justify-center gap-4 mb-4 p-3 rounded-xl border border-honey/20 bg-gradient-to-r from-honey/5 to-stone-50" data-testid="reality-check-toggle">
             <button
               onClick={() => handleTabChange('owned')}
@@ -414,7 +414,7 @@ const CollectionPage = () => {
               onClick={() => handleTabChange('wishlist')}
               className={`text-center transition-all px-4 py-1.5 rounded-full text-sm font-medium ${collectionTab === 'wishlist' ? 'bg-stone-100 text-vinyl-black' : 'text-stone-400 hover:text-stone-600'}`}
               data-testid="toggle-dreaming">
-              <span className="block font-heading text-lg">${dreamlistValue.total_value.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+              <span className="block font-heading text-lg">${(dreamlistValue?.total_value || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
               <span className="text-[10px] uppercase tracking-wide">Value of Dream Records</span>
             </button>
           </div>
