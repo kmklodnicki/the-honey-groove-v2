@@ -314,43 +314,39 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const moodCfg = spinMood ? MOOD_CONFIG[spinMood] : null;
   const noteRecord = records.find(r => r.id === noteRecordId);
 
-  const chips = [
-    { key: 'NOW_SPINNING', label: 'Now Spinning', icon: Disc },
-    { key: 'NEW_HAUL', label: 'New Haul', icon: Package },
-    { key: 'ISO', label: 'ISO', icon: Search },
+  const spectrum = [
+    { key: 'NOW_SPINNING', label: 'Now Spinning', icon: Disc, bg: '#FFD700', showLabel: true },
+    { key: 'NEW_HAUL', label: 'New Haul', icon: Package, bg: '#FFC800', showLabel: true },
+    { key: 'ISO', label: 'ISO', icon: Search, bg: '#FFB900', showLabel: false },
+    { key: 'NOTE', label: 'A Note', icon: Feather, bg: '#FFAA00', showLabel: false },
+    { key: 'RANDOMIZER', label: 'Randomizer', icon: Shuffle, bg: '#FF9B00', showLabel: false },
   ];
-
-  const chipStyle = {
-    background: 'linear-gradient(135deg, #FFD700, #DAA520)',
-    color: '#1A1A1A',
-  };
 
   return (
     <>
-      {/* Composer Bar */}
+      {/* Composer Bar — Command Center */}
       <div className="bg-white rounded-xl border border-honey/30 p-4 mb-6 shadow-sm" data-testid="composer-bar">
         <p className="text-sm text-muted-foreground mb-3">What's on the turntable?</p>
-        <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1 -mb-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}>
-          {chips.map(chip => (
-            <button key={chip.key} onClick={() => openModal(chip.key)}
-              className="shrink-0 px-4 py-2 h-9 rounded-full text-sm font-semibold flex items-center gap-2 transition-all hover:scale-105 hover:shadow-md"
-              style={chipStyle}
-              data-testid={`composer-chip-${chip.key.toLowerCase()}`}>
-              <chip.icon className="w-4 h-4" /> {chip.label}
-            </button>
-          ))}
-          <button onClick={() => openModal('NOTE')}
-            className="shrink-0 px-4 py-2 h-9 rounded-full text-sm font-semibold flex items-center gap-2 transition-all hover:scale-105 hover:shadow-md"
-            style={chipStyle}
-            data-testid="composer-chip-note">
-            <Feather className="w-4 h-4" /> A Note
-          </button>
-          <button onClick={openRandomizer}
-            className="shrink-0 px-4 py-2 h-9 rounded-full text-sm font-semibold flex items-center gap-2 transition-all hover:scale-105 hover:shadow-md"
-            style={chipStyle}
-            data-testid="composer-chip-randomizer">
-            <Shuffle className="w-4 h-4" /> Randomizer
-          </button>
+        <div className="flex flex-nowrap gap-2 overflow-hidden">
+          {spectrum.map(chip => {
+            const Icon = chip.icon;
+            const isIconOnly = !chip.showLabel;
+            return (
+              <button
+                key={chip.key}
+                onClick={() => chip.key === 'RANDOMIZER' ? openRandomizer() : openModal(chip.key)}
+                className={`shrink-0 h-9 rounded-full text-sm font-semibold flex items-center justify-center gap-1.5 transition-all hover:scale-105 hover:shadow-md ${isIconOnly ? 'w-9 aspect-square p-0 md:w-auto md:aspect-auto md:px-4 md:py-2' : 'px-4 py-2'}`}
+                style={{ background: chip.bg, color: '#000' }}
+                data-testid={`composer-chip-${chip.key.toLowerCase()}`}
+              >
+                <Icon className="w-4 h-4" />
+                {isIconOnly
+                  ? <span className="hidden md:inline">{chip.label}</span>
+                  : <span>{chip.label}</span>
+                }
+              </button>
+            );
+          })}
         </div>
       </div>
 
