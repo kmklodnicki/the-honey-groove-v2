@@ -348,7 +348,7 @@ async def create_listing(data: ListingCreate, user: Dict = Depends(require_auth)
                                       {"listing_id": listing_id})
             if iso_user.get("email"):
                 from templates.emails import wantlist_match
-                tpl = wantlist_match(iso_user.get("username", ""), data.album or "", data.artist or "", user.get("username", ""), str(data.price or ""), f"https://thehoneygroove.com/honeypot/listing/{listing_id}")
+                tpl = wantlist_match(iso_user.get("username", ""), data.album or "", data.artist or "", user.get("username", ""), str(data.price or ""), f"{FRONTEND_URL}/honeypot/listing/{listing_id}")
                 await send_email_fire_and_forget(iso_user["email"], tpl["subject"], tpl["html"])
     
     # Send listing confirmed email to seller
@@ -361,7 +361,7 @@ async def create_listing(data: ListingCreate, user: Dict = Depends(require_auth)
             condition=data.condition or "",
             price=str(data.price or ""),
             listing_type=data.listing_type or "",
-            listing_url=f"https://thehoneygroove.com/honeypot/listing/{listing_id}",
+            listing_url=f"{FRONTEND_URL}/honeypot/listing/{listing_id}",
         )
         await send_email_fire_and_forget(user["email"], tpl["subject"], tpl["html"])
 
@@ -629,7 +629,7 @@ async def stripe_connect_onboarding(user: Dict = Depends(require_auth)):
         }})
 
     # Create an account link for onboarding — always use production URL
-    frontend_url = FRONTEND_URL or "https://thehoneygroove.com"
+    frontend_url = FRONTEND_URL
     account_link = stripe_sdk.AccountLink.create(
         account=account_id,
         refresh_url=f"{frontend_url}/stripe/connect/refresh?user_id={user['id']}",
@@ -674,7 +674,7 @@ async def stripe_connect_verify(user_id: str):
 @router.get("/stripe/connect/return")
 async def stripe_connect_return(user_id: str):
     """Legacy return endpoint — redirects to frontend return page."""
-    frontend_url = FRONTEND_URL or "https://thehoneygroove.com"
+    frontend_url = FRONTEND_URL
     from starlette.responses import RedirectResponse
     return RedirectResponse(url=f"{frontend_url}/stripe/connect/return?user_id={user_id}")
 
@@ -682,7 +682,7 @@ async def stripe_connect_return(user_id: str):
 @router.get("/stripe/connect/refresh")
 async def stripe_connect_refresh(user_id: str, request: Request):
     """Legacy refresh endpoint — redirects to frontend refresh page."""
-    frontend_url = FRONTEND_URL or "https://thehoneygroove.com"
+    frontend_url = FRONTEND_URL
     from starlette.responses import RedirectResponse
     return RedirectResponse(url=f"{frontend_url}/stripe/connect/refresh?user_id={user_id}")
 
@@ -695,7 +695,7 @@ async def stripe_connect_refresh_link(user_id: str):
         raise HTTPException(status_code=404, detail="User not found or no Stripe account")
 
     stripe_sdk.api_key = STRIPE_API_KEY
-    frontend_url = FRONTEND_URL or "https://thehoneygroove.com"
+    frontend_url = FRONTEND_URL
     account_link = stripe_sdk.AccountLink.create(
         account=u["stripe_account_id"],
         refresh_url=f"{frontend_url}/stripe/connect/refresh?user_id={user_id}",
@@ -891,7 +891,7 @@ async def get_payment_status(session_id: str, request: Request, user: Dict = Dep
                 amount = float(txn.get("amount", 0))
                 fee_amount = round(amount * fee_pct / 100, 2)
                 payout_amount = round(amount - fee_amount, 2)
-                listing_url = f"https://thehoneygroove.com/honeypot/listing/{txn['listing_id']}"
+                listing_url = f"{FRONTEND_URL}/honeypot/listing/{txn['listing_id']}"
                 from templates.emails import sale_confirmed_seller, sale_confirmed_buyer
                 if seller.get("email"):
                     tpl_s = sale_confirmed_seller(seller.get("username",""), listing.get("album",""), listing.get("artist",""), f"{amount:.2f}", f"{fee_amount:.2f}", f"{payout_amount:.2f}", f"{fee_pct:g}", listing_url)
@@ -934,7 +934,7 @@ async def stripe_webhook(request: Request):
                         payout_amount = round(amount - fee_amount, 2)
                         album = listing.get("album", "")
                         artist = listing.get("artist", "")
-                        listing_url = f"https://thehoneygroove.com/honeypot/listing/{listing_id}"
+                        listing_url = f"{FRONTEND_URL}/honeypot/listing/{listing_id}"
 
                         from templates.emails import sale_confirmed_seller, sale_confirmed_buyer
                         if seller.get("email"):

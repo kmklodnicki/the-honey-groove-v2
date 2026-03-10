@@ -388,7 +388,7 @@ async def register_with_invite(data: InviteRegister, request: Request):
             "token": verify_token,
             "created_at": now,
         })
-        verify_url = f"https://thehoneygroove.com/verify-email?token={verify_token}"
+        verify_url = f"{FRONTEND_URL}/verify-email?token={verify_token}"
         verify_html = f"""
         <div style="font-family: Georgia, serif; max-width: 480px; margin: 0 auto; padding: 40px 20px; background: #FAF6EE;">
           <div style="text-align: center; margin-bottom: 30px;">

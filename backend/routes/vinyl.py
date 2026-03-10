@@ -22,7 +22,7 @@ import html as html_mod
 router = APIRouter(prefix="/vinyl")
 
 SITE_NAME = "The Honey Groove"
-SITE_URL = "https://thehoneygroove.com"
+SITE_URL = os.environ.get("FRONTEND_URL", "")
 DEFAULT_IMAGE = f"{SITE_URL}/og-image.png"
 CACHE_TTL_HOURS = 24
 

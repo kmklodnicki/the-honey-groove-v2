@@ -215,7 +215,7 @@ async def send_message(conversation_id: str, data: DMSend, user: Dict = Depends(
             other_user = await db.users.find_one({"id": other_id[0]}, {"_id": 0})
             if other_user and other_user.get("email"):
                 context = conv.get("context_record", "")
-                tpl = email_tpl.new_dm(other_user.get("username", ""), user.get("username", ""), context, "https://thehoneygroove.com/messages")
+                tpl = email_tpl.new_dm(other_user.get("username", ""), user.get("username", ""), context, f"{FRONTEND_URL}/messages")
                 await send_email_fire_and_forget(other_user["email"], tpl["subject"], tpl["html"])
 
     return {"id": msg["id"], "text": msg["text"], "sender_id": msg["sender_id"], "created_at": msg["created_at"]}

@@ -661,7 +661,7 @@ async def like_post(post_id: str, user: Dict = Depends(require_auth)):
             if post_owner and post_owner.get("email"):
                 post_type = post.get("post_type", "post").replace("_", " ").title()
                 preview = post.get("content", post.get("caption", ""))[:80] or post_type
-                tpl = email_tpl.new_like(u.get("username", "?"), post_type, preview, f"https://thehoneygroove.com/hive")
+                tpl = email_tpl.new_like(u.get("username", "?"), post_type, preview, f"{FRONTEND_URL}/hive")
                 await send_email_fire_and_forget(post_owner["email"], tpl["subject"], tpl["html"])
         await create_notification(post["user_id"], "POST_LIKED", "Someone liked your post",
                                   f"@{u.get('username','?')} liked your post",
@@ -708,7 +708,7 @@ async def add_comment(post_id: str, comment_data: CommentCreate, user: Dict = De
         post_owner = await db.users.find_one({"id": post["user_id"]}, {"_id": 0})
         if post_owner and post_owner.get("email"):
             post_type = post.get("post_type", "post").replace("_", " ").title()
-            tpl = email_tpl.new_comment(user.get("username", "?"), post_type, comment_data.content[:200], "https://thehoneygroove.com/hive")
+            tpl = email_tpl.new_comment(user.get("username", "?"), post_type, comment_data.content[:200], f"{FRONTEND_URL}/hive")
             await send_email_fire_and_forget(post_owner["email"], tpl["subject"], tpl["html"])
 
     # If replying, notify the parent comment author (if not self)
