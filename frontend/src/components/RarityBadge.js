@@ -36,9 +36,14 @@ export const RarityPill = ({ tier, size = 'md' }) => {
   );
 };
 
-export const RarityCard = ({ rarity, label }) => {
+export const RarityCard = ({ rarity, label, honeypotListings, onForSaleClick }) => {
   if (!rarity?.tier) return null;
   const cardLabel = label || 'Global Variant Rarity';
+  const useHoneypot = honeypotListings != null;
+  const forSaleCount = useHoneypot ? honeypotListings : (rarity.listings_available ?? 0);
+  const forSaleLabel = useHoneypot
+    ? (forSaleCount === 0 ? '0 available in Honeypot' : `${forSaleCount} in Honeypot`)
+    : 'For Sale';
 
   return (
     <div
@@ -68,9 +73,24 @@ export const RarityCard = ({ rarity, label }) => {
           <p className="text-2xl font-heading font-bold text-vinyl-black">{(rarity.discogs_wantlist ?? 0).toLocaleString()}</p>
           <p className="text-[11px] text-muted-foreground uppercase tracking-wider mt-0.5">Wantlist</p>
         </div>
-        <div className="text-center" data-testid="rarity-listings">
-          <p className="text-2xl font-heading font-bold text-vinyl-black">{(rarity.listings_available ?? 0).toLocaleString()}</p>
-          <p className="text-[11px] text-muted-foreground uppercase tracking-wider mt-0.5">For Sale</p>
+        <div
+          className={`text-center ${onForSaleClick ? 'cursor-pointer hover:bg-honey/10 rounded-lg -m-1 p-1 transition-colors' : ''}`}
+          onClick={onForSaleClick}
+          role={onForSaleClick ? 'link' : undefined}
+          data-testid="rarity-listings"
+        >
+          <p
+            className="text-2xl font-heading font-bold"
+            style={{ color: useHoneypot ? '#FFD700' : undefined }}
+          >
+            {forSaleCount.toLocaleString()}
+          </p>
+          <p
+            className="text-[11px] uppercase tracking-wider mt-0.5"
+            style={{ color: useHoneypot ? '#DAA520' : undefined }}
+          >
+            {forSaleLabel}
+          </p>
         </div>
       </div>
     </div>

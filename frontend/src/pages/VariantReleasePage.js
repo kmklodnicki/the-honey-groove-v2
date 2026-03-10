@@ -62,7 +62,7 @@ export default function VariantReleasePage() {
     );
   }
 
-  const { variant_overview: ov, scarcity, value: val, community } = data;
+  const { variant_overview: ov, scarcity, value: val, community, honeypot } = data;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-28" data-testid="variant-release-page">
@@ -161,7 +161,12 @@ export default function VariantReleasePage() {
       {/* Global Variant Scarcity */}
       {scarcity?.tier && (
         <section className="mb-10" data-testid="scarcity-section">
-          <RarityCard rarity={scarcity} label="Global Variant Scarcity" />
+          <RarityCard
+            rarity={scarcity}
+            label="Global Variant Scarcity"
+            honeypotListings={honeypot?.active_listings ?? 0}
+            onForSaleClick={() => navigate(`/honeypot?q=${encodeURIComponent(ov.artist + ' ' + ov.album)}`)}
+          />
         </section>
       )}
 

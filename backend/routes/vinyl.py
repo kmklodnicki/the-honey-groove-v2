@@ -416,6 +416,12 @@ async def get_variant_by_release_id(release_id: int):
             {"_id": 0, "id": 1, "username": 1, "avatar_url": 1}
         ).to_list(20)
 
+    # Internal Honeypot marketplace listings for this variant
+    artist_re = re.compile(re.escape(artist), re.IGNORECASE)
+    album_re = re.compile(re.escape(album), re.IGNORECASE)
+    honeypot_query = {"artist": artist_re, "album": album_re, "status": "ACTIVE"}
+    honeypot_count = await db.listings.count_documents(honeypot_query)
+
     return {
         "release_id": release_id,
         "variant_overview": {
@@ -436,6 +442,9 @@ async def get_variant_by_release_id(release_id: int):
             "discogs_have": discogs_have,
             "discogs_want": discogs_want,
             "lowest_price": lowest_price,
+        },
+        "honeypot": {
+            "active_listings": honeypot_count,
         },
         "value": {
             "discogs_median": discogs_market.get("median_value"),
