@@ -90,6 +90,27 @@ async def check_trade_deadlines(trade: Dict) -> Dict:
     if trade.get("status") == "SHIPPING" and trade.get("shipping_deadline"):
         deadline = datetime.fromisoformat(trade["shipping_deadline"])
         grace_expiry = deadline + timedelta(hours=24)  # 96h total
+        nudge_time = deadline - timedelta(hours=48)  # 24h after trade accepted
+
+        # At 24h: send "Preparing to ship?" nudge (once)
+        if now > nudge_time and not trade.get("ship_nudge_sent"):
+            shipping = trade.get("shipping") or {}
+            nudge_users = []
+            if not shipping.get("initiator"):
+                nudge_users.append(trade["initiator_id"])
+            if not shipping.get("responder"):
+                nudge_users.append(trade["responder_id"])
+            if nudge_users:
+                for uid in nudge_users:
+                    await create_notification(
+                        uid, "SHIP_NUDGE",
+                        "Preparing to ship?",
+                        "Friendly reminder — you have 48 hours left to ship your trade. Don't forget to add a tracking number!",
+                        {"trade_id": trade["id"]}
+                    )
+                await db.trades.update_one({"id": trade["id"]}, {"$set": {"ship_nudge_sent": True}})
+                trade["ship_nudge_sent"] = True
+
         if now > deadline:
             shipping = trade.get("shipping") or {}
             init_shipped = shipping.get("initiator") is not None

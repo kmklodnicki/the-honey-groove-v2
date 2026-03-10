@@ -256,7 +256,16 @@ const faqSections = [
     items: [
       {
         q: 'How long do I have to ship a record after a sale or trade?',
-        a: 'After a sale or accepted trade, the seller must ship the record within 3 days and enter a valid tracking number.',
+        a: (
+          <>
+            <p>Sellers and traders have <strong>3 days (72 hours)</strong> to provide a valid tracking number once a transaction is confirmed.</p>
+            <ul className="mt-2 space-y-1 pl-4">
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span><strong>24 hours</strong> — a friendly "Preparing to ship?" reminder is sent</li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span><strong>72 hours</strong> — the transaction is marked Late and the buyer is notified</li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span><strong>96 hours</strong> — the buyer or trade partner can cancel the transaction</li>
+            </ul>
+          </>
+        ),
       },
       {
         q: 'What happens after delivery?',
@@ -291,7 +300,12 @@ const faqSections = [
       },
       {
         q: "What if someone doesn't ship their record?",
-        a: 'If tracking is not entered within 3 days, the transaction can be cancelled and any held funds are released.',
+        a: (
+          <>
+            <p>If a valid tracking number is not entered within 3 days (72 hours), the transaction is marked Late.</p>
+            <p className="mt-2">After 96 hours, the buyer or trade partner can cancel the transaction and any held funds are released.</p>
+          </>
+        ),
       },
       {
         q: "What if I receive a record that isn't as described?",
@@ -315,7 +329,7 @@ const faqSections = [
             <p className="mt-2">Once both parties accept:</p>
             <ul className="mt-2 space-y-1 pl-4">
               <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>a Mutual Hold is placed</li>
-              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>both collectors ship within 3 days</li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>both collectors ship within 3 days (72 hours)</li>
               <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>delivery triggers a 48-hour confirmation window</li>
             </ul>
           </>
