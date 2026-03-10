@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, DollarSign, TrendingUp, RefreshCw, Heart, ArrowRight, ShoppingBag, Cloud, Sparkles, CheckSquare, Square, ListChecks } from 'lucide-react';
+import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, TrendingUp, RefreshCw, Heart, ArrowRight, ShoppingBag, Cloud, Sparkles, CheckSquare, Square, ListChecks } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,26 +35,113 @@ import SEOHead from '../components/SEOHead';
 // Counting animation hook
 const useCountUp = (target, duration = 1400, enabled = true) => {
   const [value, setValue] = useState(0);
-  const prevTarget = useRef(0);
   useEffect(() => {
-    if (!enabled || target <= 0) { setValue(target); prevTarget.current = target; return; }
-    const start = prevTarget.current;
-    prevTarget.current = target;
-    const diff = target - start;
-    if (diff === 0) return;
-    const startTime = performance.now();
-    let raf;
-    const step = (now) => {
-      const elapsed = now - startTime;
+    if (!enabled || target <= 0) { setValue(target); return; }
+    const startVal = 0;
+    const startTime = Date.now();
+    const timer = setInterval(() => {
+      const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
-      setValue(start + diff * eased);
-      if (progress < 1) raf = requestAnimationFrame(step);
-    };
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setValue(startVal + (target - startVal) * eased);
+      if (progress >= 1) clearInterval(timer);
+    }, 16);
+    return () => clearInterval(timer);
   }, [target, duration, enabled]);
   return value;
+};
+
+// Honeycomb SVG icon
+const HoneycombIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 2L17.5 5.5V12.5L12 16L6.5 12.5V5.5L12 2Z" />
+    <path d="M12 16L17.5 19.5V22L12 24L6.5 22V19.5L12 16Z" opacity="0.4" />
+  </svg>
+);
+
+// Treasury Header — Premium Collection & Dream Value Dashboard
+const TreasuryHeader = ({ collectionValue, dreamValue, collectionTab, onTabChange, valuedCount, totalCount, onRefresh, refreshing }) => {
+  const animCollection = useCountUp(collectionValue, 1600, true);
+  const animDream = useCountUp(dreamValue, 1600, true);
+
+  return (
+    <div
+      className="relative mb-5 rounded-2xl overflow-hidden p-[2px]"
+      style={{ background: 'linear-gradient(135deg, #DAA520, #C8861A, #E8A820, #DAA520)' }}
+      data-testid="treasury-header"
+    >
+      <div
+        className="relative rounded-[14px] p-5 sm:p-6"
+        style={{
+          background: 'rgba(255, 248, 230, 0.65)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+        }}
+      >
+        {/* Subtle grain overlay */}
+        <div className="absolute inset-0 rounded-[14px] opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")' }} />
+
+        <div className="relative flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-0">
+          {/* Collection Value */}
+          <button
+            onClick={() => onTabChange('owned')}
+            className={`flex-1 flex items-center gap-3 sm:gap-4 rounded-xl px-4 py-3 transition-all duration-300 ${collectionTab === 'owned' ? 'bg-white/40 shadow-sm' : 'hover:bg-white/20'}`}
+            data-testid="treasury-collection-btn"
+          >
+            <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #DAA520, #E8A820)', boxShadow: '0 2px 8px rgba(218,165,32,0.4)' }}>
+              <HoneycombIcon className="w-5 h-5 text-white" />
+            </div>
+            <div className="text-left">
+              <p className="text-[10px] font-medium uppercase tracking-widest text-stone-500">Collection Value</p>
+              <p className="font-serif text-2xl font-bold leading-tight" style={{ color: '#1A1A1A' }} data-testid="treasury-collection-value">
+                ${Math.round(animCollection).toLocaleString()}
+              </p>
+              {valuedCount != null && (
+                <p className="text-[10px] text-stone-400 mt-0.5">{valuedCount} of {totalCount} valued</p>
+              )}
+            </div>
+          </button>
+
+          {/* Divider */}
+          <div className="hidden sm:flex flex-col items-center justify-center px-3">
+            <div className="w-px h-10 bg-gradient-to-b from-transparent via-[#DAA520]/40 to-transparent" />
+            <span className="text-[9px] font-bold uppercase tracking-wider text-[#DAA520]/60 my-1">vs</span>
+            <div className="w-px h-10 bg-gradient-to-b from-transparent via-[#DAA520]/40 to-transparent" />
+          </div>
+          <div className="sm:hidden h-px mx-4 bg-gradient-to-r from-transparent via-[#DAA520]/30 to-transparent" />
+
+          {/* Dream Value */}
+          <button
+            onClick={() => onTabChange('wishlist')}
+            className={`flex-1 flex items-center gap-3 sm:gap-4 rounded-xl px-4 py-3 transition-all duration-300 ${collectionTab === 'wishlist' ? 'bg-white/40 shadow-sm' : 'hover:bg-white/20'}`}
+            data-testid="treasury-dream-btn"
+          >
+            <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #C8861A, #D4A017)', boxShadow: '0 2px 8px rgba(200,134,26,0.3)' }}>
+              <Cloud className="w-5 h-5 text-white" />
+            </div>
+            <div className="text-left">
+              <p className="text-[10px] font-medium uppercase tracking-widest text-stone-500">Dream Records</p>
+              <p className="font-serif text-2xl font-bold leading-tight" style={{ color: '#1A1A1A' }} data-testid="treasury-dream-value">
+                ${Math.round(animDream).toLocaleString()}
+              </p>
+              <p className="text-[10px] text-stone-400 mt-0.5">if only...</p>
+            </div>
+          </button>
+        </div>
+
+        {/* Refresh button */}
+        <button
+          onClick={onRefresh}
+          disabled={refreshing}
+          className="absolute top-3 right-3 flex items-center gap-1 text-[10px] font-medium text-[#C8861A] hover:text-[#DAA520] transition-colors disabled:opacity-50"
+          data-testid="treasury-refresh-btn"
+        >
+          <RefreshCw className={`w-3 h-3 ${refreshing ? 'animate-spin' : ''}`} />
+          {refreshing ? 'Refreshing' : 'Refresh'}
+        </button>
+      </div>
+    </div>
+  );
 };
 
 const SORT_OPTIONS = [
@@ -399,25 +486,18 @@ const CollectionPage = () => {
       </div>
 
       <Tabs value={collectionTab} onValueChange={handleTabChange}>
-        {/* Collection Value Toggle — always show when collection has value */}
+        {/* Treasury Dashboard — Premium Value Display */}
         {collectionValue && collectionValue.total_value > 0 && (
-          <div className="flex items-center justify-center gap-4 mb-4 p-3 rounded-xl border border-honey/20 bg-gradient-to-r from-honey/5 to-stone-50" data-testid="reality-check-toggle">
-            <button
-              onClick={() => handleTabChange('owned')}
-              className={`text-center transition-all px-4 py-1.5 rounded-full text-sm font-medium ${collectionTab === 'owned' ? 'bg-honey/20 text-vinyl-black' : 'text-stone-400 hover:text-stone-600'}`}
-              data-testid="toggle-reality">
-              <span className="block font-heading text-lg">${collectionValue.total_value.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-              <span className="text-[10px] uppercase tracking-wide">Collection Value</span>
-            </button>
-            <span className="text-stone-300 text-xs">vs</span>
-            <button
-              onClick={() => handleTabChange('wishlist')}
-              className={`text-center transition-all px-4 py-1.5 rounded-full text-sm font-medium ${collectionTab === 'wishlist' ? 'bg-stone-100 text-vinyl-black' : 'text-stone-400 hover:text-stone-600'}`}
-              data-testid="toggle-dreaming">
-              <span className="block font-heading text-lg">${(dreamlistValue?.total_value || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-              <span className="text-[10px] uppercase tracking-wide">Value of Dream Records</span>
-            </button>
-          </div>
+          <TreasuryHeader
+            collectionValue={collectionValue?.total_value || 0}
+            dreamValue={dreamlistValue?.total_value || 0}
+            collectionTab={collectionTab}
+            onTabChange={handleTabChange}
+            valuedCount={collectionValue?.valued_count}
+            totalCount={collectionValue?.total_count}
+            onRefresh={handleRefreshValues}
+            refreshing={refreshing}
+          />
         )}
 
         <TabsList className="bg-honey/10 mb-6 w-full grid grid-cols-2">
@@ -438,30 +518,6 @@ const CollectionPage = () => {
             </p>
             <p className="text-sm text-stone-500 font-serif italic">Your collection, curated and captured in the light.</p>
           </div>
-
-          {/* Collection Value Banner */}
-          {collectionValue && collectionValue.valued_count > 0 && (
-            <Card className="p-4 mb-5 border-honey/30 bg-gradient-to-r from-honey/5 to-honey/15" data-testid="collection-value-banner">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-honey/20 flex items-center justify-center">
-                    <DollarSign className="w-5 h-5 text-honey-amber" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">estimated value</p>
-                    <p className="font-heading text-2xl text-vinyl-black" data-testid="collection-total-value">
-                      ${collectionValue.total_value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground">based on Discogs market data · {collectionValue.valued_count} of {collectionValue.total_count} records valued</p>
-                  </div>
-                </div>
-                <Button variant="ghost" size="sm" onClick={handleRefreshValues} disabled={refreshing}
-                  className="text-xs text-honey-amber hover:bg-honey/10 rounded-full" data-testid="refresh-values-btn">
-                  <RefreshCw className={`w-3.5 h-3.5 mr-1 ${refreshing ? 'animate-spin' : ''}`} /> {refreshing ? 'Refreshing...' : 'Refresh'}
-                </Button>
-              </div>
-            </Card>
-          )}
 
           {/* Hidden Gems */}
           {hiddenGems.length > 0 && (
