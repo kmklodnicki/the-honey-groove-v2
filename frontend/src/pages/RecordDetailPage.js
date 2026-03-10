@@ -15,6 +15,7 @@ import { resolveImageUrl } from '../utils/imageUrl';
 import { PostTypeBadge } from '../components/PostCards';
 import SEOHead from '../components/SEOHead';
 import { RarityPill } from '../components/RarityBadge';
+import VariantCompletion from '../components/VariantCompletion';
 
 const RecordDetailPage = () => {
   usePageTitle('Record Details');
@@ -184,6 +185,13 @@ const RecordDetailPage = () => {
         <StatCard icon={Users} label="Collectors" value={community.total_owners || 0} />
         <StatCard icon={Heart} label="Wanted" value={community.wantlist_count || 0} />
       </div>
+
+      {/* Variant Completion */}
+      {record.discogs_id && (
+        <div className="mb-8">
+          <VariantCompletion discogsId={record.discogs_id} />
+        </div>
+      )}
 
       {/* Market value */}
       {market_value && (

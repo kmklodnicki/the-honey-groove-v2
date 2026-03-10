@@ -231,6 +231,24 @@ def search_discogs(query: str, search_type: str = "release") -> List[Dict]:
     return []
 
 
+def get_discogs_master_versions(master_id: int, page: int = 1, per_page: int = 100) -> Optional[Dict]:
+    """Fetch all versions of a master release from Discogs."""
+    headers = {"User-Agent": DISCOGS_USER_AGENT}
+    params = {"per_page": per_page, "page": page}
+    if DISCOGS_TOKEN:
+        params["token"] = DISCOGS_TOKEN
+    try:
+        resp = requests.get(
+            f"{DISCOGS_API_BASE}/masters/{master_id}/versions",
+            params=params, headers=headers, timeout=15
+        )
+        if resp.status_code == 200:
+            return resp.json()
+    except Exception as e:
+        logger.error(f"Discogs master versions error for {master_id}: {e}")
+    return None
+
+
 def get_discogs_release(release_id: int) -> Optional[Dict]:
     headers = {"User-Agent": DISCOGS_USER_AGENT}
     params = {}
@@ -255,6 +273,7 @@ def get_discogs_release(release_id: int) -> Optional[Dict]:
             community = data.get("community", {})
             return {
                 "discogs_id": data.get("id"),
+                "master_id": data.get("master_id"),
                 "artist": artists or "Unknown",
                 "title": data.get("title", "Unknown"),
                 "year": data.get("year"),

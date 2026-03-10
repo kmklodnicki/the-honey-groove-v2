@@ -9,10 +9,12 @@ Data flow:
   2. Fetch authoritative metadata from Discogs API (cached in discogs_releases collection)
   3. Layer on Honeygroove data: listings, sales, ownership, ISO demand, Hive posts
 """
-from fastapi import APIRouter
+from fastapi import APIRouter, Query, Depends
 from fastapi.responses import HTMLResponse
-from database import db, get_discogs_release, get_discogs_market_data, logger
+from database import db, get_discogs_release, get_discogs_market_data, get_discogs_master_versions, logger, get_current_user
 from datetime import datetime, timezone
+import asyncio
+import os
 import re
 import json
 import html as html_mod
@@ -395,6 +397,243 @@ async def get_rarity_by_discogs_id(discogs_id: int):
         rarity["album"] = discogs_data.get("title")
         rarity["variant"] = discogs_data.get("color_variant")
     return rarity
+
+
+# ========== Variant Completion Tracker ==========
+
+# Sleeve/packaging descriptors to strip when normalizing variant names
+_STRIP_SUFFIXES = re.compile(
+    r",?\s*(?:gatefold|tri-fold|die-cut|poster|insert|sticker|"
+    r"pvc sleeve|inner sleeve|obi|hype sticker|download|booklet|"
+    r"with (?:poster|booklet|insert|sticker)|stereo|mono|remaster(?:ed)?|"
+    r"limited edition|special edition|deluxe edition|club edition|"
+    r"reissue|repress|numbered)\s*$",
+    re.IGNORECASE
+)
+
+
+def _normalize_variant_name(text: str) -> str:
+    """Normalize a format text string into a clean variant group name."""
+    if not text:
+        return "Standard Black Vinyl"
+    # Strip sleeve/packaging suffixes iteratively
+    cleaned = text.strip()
+    for _ in range(3):
+        cleaned = _STRIP_SUFFIXES.sub("", cleaned).strip().rstrip(",").strip()
+    if not cleaned:
+        return "Standard Black Vinyl"
+    # Title-case
+    return cleaned.title()
+
+
+def _is_vinyl_version(version: dict) -> bool:
+    major = version.get("major_formats", [])
+    fmt = version.get("format", "")
+    return "Vinyl" in major or "LP" in fmt or "12\"" in fmt
+
+
+async def _fetch_release_color(release_id: int) -> str:
+    """Get the color/variant text from a release, using cache."""
+    cached = await db.discogs_releases.find_one(
+        {"discogs_id": release_id}, {"_id": 0, "color_variant": 1}
+    )
+    if cached and cached.get("color_variant") is not None:
+        return cached.get("color_variant") or ""
+
+    # Fetch from API
+    data = await asyncio.to_thread(get_discogs_release, release_id)
+    if data:
+        # Cache it
+        cache_doc = {
+            **data,
+            "discogs_id": release_id,
+            "fetched_at": datetime.now(timezone.utc).isoformat(),
+        }
+        await db.discogs_releases.update_one(
+            {"discogs_id": release_id},
+            {"$set": cache_doc},
+            upsert=True,
+        )
+        return data.get("color_variant") or ""
+    return ""
+
+
+@router.get("/completion/{discogs_id}")
+async def get_variant_completion(
+    discogs_id: int,
+    user=Depends(get_current_user),
+):
+    """Return variant completion data for an album, grouped by meaningful variant."""
+    # Step 1: Get the release to find its master_id
+    release = await _get_cached_discogs_release(discogs_id)
+    if not release:
+        return {"error": "Release not found", "variants": [], "completion": 0}
+
+    master_id = release.get("master_id")
+    if not master_id:
+        # Fetch master_id directly from Discogs release API
+        import requests as req
+        try:
+            headers = {"User-Agent": "WaxLog/1.0"}
+            params = {"token": os.environ.get("DISCOGS_TOKEN", "")}
+            r = req.get(f"https://api.discogs.com/releases/{discogs_id}", params=params, headers=headers, timeout=10)
+            if r.status_code == 200:
+                master_id = r.json().get("master_id")
+                # Store master_id in cache for next time
+                if master_id:
+                    await db.discogs_releases.update_one(
+                        {"discogs_id": discogs_id},
+                        {"$set": {"master_id": master_id}},
+                    )
+        except Exception:
+            pass
+
+    if not master_id:
+        # No master release — single release, 1 variant
+        variant_name = _normalize_variant_name(release.get("color_variant"))
+        owned = False
+        if user:
+            owned = bool(await db.records.find_one(
+                {"user_id": user["id"], "discogs_id": discogs_id}, {"_id": 1}
+            ))
+        return {
+            "album": release.get("title"),
+            "artist": release.get("artist"),
+            "master_id": None,
+            "total_variants": 1,
+            "owned_count": 1 if owned else 0,
+            "completion_pct": 100 if owned else 0,
+            "variants": [{
+                "name": variant_name,
+                "owned": owned,
+                "release_ids": [discogs_id],
+            }],
+        }
+
+    # Step 2: Fetch master versions (cached)
+    cached_master = await db.master_versions.find_one(
+        {"master_id": master_id}, {"_id": 0}
+    )
+    versions_data = None
+    if cached_master:
+        age = 0
+        fetched_at = cached_master.get("fetched_at", "")
+        if fetched_at:
+            try:
+                age = (datetime.now(timezone.utc) - datetime.fromisoformat(fetched_at)).total_seconds()
+            except (ValueError, TypeError):
+                age = 999999
+        if age < CACHE_TTL_HOURS * 3600:
+            versions_data = cached_master.get("versions", [])
+
+    if versions_data is None:
+        raw_versions = await asyncio.to_thread(get_discogs_master_versions, master_id)
+        if raw_versions:
+            versions_data = raw_versions.get("versions", [])
+            total_items = raw_versions.get("pagination", {}).get("items", 0)
+            # Fetch additional pages if needed (up to 200 versions)
+            if total_items > 100:
+                page2 = await asyncio.to_thread(get_discogs_master_versions, master_id, 2, 100)
+                if page2:
+                    versions_data.extend(page2.get("versions", []))
+            await db.master_versions.update_one(
+                {"master_id": master_id},
+                {"$set": {
+                    "master_id": master_id,
+                    "versions": versions_data,
+                    "fetched_at": datetime.now(timezone.utc).isoformat(),
+                }},
+                upsert=True,
+            )
+        else:
+            versions_data = []
+
+    # Step 3: Filter to vinyl versions only
+    vinyl_versions = [v for v in versions_data if _is_vinyl_version(v)]
+    if not vinyl_versions:
+        return {
+            "album": release.get("title"),
+            "artist": release.get("artist"),
+            "master_id": master_id,
+            "total_variants": 0,
+            "owned_count": 0,
+            "completion_pct": 0,
+            "variants": [],
+        }
+
+    # Step 4: Fetch color data for each vinyl version (from cache or API, limited)
+    release_ids = [v["id"] for v in vinyl_versions]
+
+    # Check cache for all release IDs
+    cached_releases = await db.discogs_releases.find(
+        {"discogs_id": {"$in": release_ids}},
+        {"_id": 0, "discogs_id": 1, "color_variant": 1}
+    ).to_list(None)
+    cached_map = {r["discogs_id"]: r.get("color_variant", "") for r in cached_releases}
+
+    # Fetch uncached (limit to 20 to avoid timeout)
+    uncached_ids = [rid for rid in release_ids if rid not in cached_map]
+    fetch_limit = min(len(uncached_ids), 20)
+    for rid in uncached_ids[:fetch_limit]:
+        color = await _fetch_release_color(rid)
+        cached_map[rid] = color
+        await asyncio.sleep(0.3)  # Rate limit
+
+    # Step 5: Group by normalized variant name
+    variant_groups = {}  # name -> list of release_ids
+    for v in vinyl_versions:
+        rid = v["id"]
+        raw_color = cached_map.get(rid)
+        fmt_str = v.get("format", "")
+        # Use color from release data, or infer from format string
+        if raw_color is None:
+            # Infer from format descriptions
+            if "Picture Disc" in fmt_str:
+                raw_color = "Picture Disc"
+            else:
+                raw_color = ""
+        name = _normalize_variant_name(raw_color)
+        if name not in variant_groups:
+            variant_groups[name] = []
+        variant_groups[name].append(rid)
+
+    # Step 6: Check user ownership
+    user_discogs_ids = set()
+    if user:
+        user_records = await db.records.find(
+            {"user_id": user["id"], "discogs_id": {"$in": release_ids}},
+            {"_id": 0, "discogs_id": 1}
+        ).to_list(None)
+        user_discogs_ids = set(r["discogs_id"] for r in user_records)
+
+    # Build result
+    variants = []
+    owned_count = 0
+    for name, rids in sorted(variant_groups.items()):
+        owned = bool(user_discogs_ids & set(rids))
+        if owned:
+            owned_count += 1
+        variants.append({
+            "name": name,
+            "owned": owned,
+            "release_ids": rids,
+        })
+
+    # Sort: owned first, then alphabetical
+    variants.sort(key=lambda v: (not v["owned"], v["name"]))
+
+    total = len(variants)
+    pct = round((owned_count / total) * 100) if total else 0
+
+    return {
+        "album": release.get("title"),
+        "artist": release.get("artist"),
+        "master_id": master_id,
+        "total_variants": total,
+        "owned_count": owned_count,
+        "completion_pct": pct,
+        "variants": variants,
+    }
 
 
 # ========== SSR for bots ==========

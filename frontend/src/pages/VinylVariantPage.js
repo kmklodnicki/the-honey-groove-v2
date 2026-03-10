@@ -6,6 +6,7 @@ import { Button } from '../components/ui/button';
 import AlbumArt from '../components/AlbumArt';
 import SEOHead from '../components/SEOHead';
 import { RarityCard } from '../components/RarityBadge';
+import VariantCompletion from '../components/VariantCompletion';
 import { useAuth } from '../context/AuthContext';
 import { resolveImageUrl } from '../utils/imageUrl';
 import axios from 'axios';
@@ -185,6 +186,13 @@ export default function VinylVariantPage() {
       {rarity && (
         <section className="mb-10" data-testid="rarity-section">
           <RarityCard rarity={rarity} />
+        </section>
+      )}
+
+      {/* ===== VARIANT COMPLETION ===== */}
+      {ov.discogs_id && (
+        <section className="mb-10" data-testid="completion-section">
+          <VariantCompletion discogsId={ov.discogs_id} />
         </section>
       )}
 
