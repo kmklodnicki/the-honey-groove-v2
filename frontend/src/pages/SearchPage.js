@@ -99,6 +99,8 @@ export default function SearchPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(0);
   const [activeFilters, setActiveFilters] = useState(new Set());
+  const [activeColors, setActiveColors] = useState(new Set());
+  const [activeYears, setActiveYears] = useState(new Set());
   const inputRef = useRef(null);
   const debounceRef = useRef(null);
   const PAGE_SIZE = 20;
@@ -112,6 +114,13 @@ export default function SearchPage() {
     { key: 'Tour',      label: 'Tour',       bg: '#FFF8E6', color: '#9A7B2D' },
   ];
 
+  /* Known vinyl color keywords for extraction from variant names */
+  const COLOR_KEYWORDS = [
+    'Pink', 'Red', 'Blue', 'Green', 'Yellow', 'Orange', 'Purple', 'Gold',
+    'White', 'Clear', 'Black', 'Silver', 'Marbled', 'Splatter', 'Transparent',
+    'Translucent', 'Mint', 'Teal', 'Cream', 'Brown', 'Grey', 'Gray',
+  ];
+
   const toggleFilter = (key) => {
     setActiveFilters(prev => {
       const next = new Set(prev);
@@ -119,6 +128,30 @@ export default function SearchPage() {
       return next;
     });
   };
+
+  const toggleColor = (c) => {
+    setActiveColors(prev => {
+      const next = new Set(prev);
+      if (next.has(c)) next.delete(c); else next.add(c);
+      return next;
+    });
+  };
+
+  const toggleYear = (y) => {
+    setActiveYears(prev => {
+      const next = new Set(prev);
+      if (next.has(y)) next.delete(y); else next.add(y);
+      return next;
+    });
+  };
+
+  const clearAllFilters = () => {
+    setActiveFilters(new Set());
+    setActiveColors(new Set());
+    setActiveYears(new Set());
+  };
+
+  const hasAnyFilter = activeFilters.size > 0 || activeColors.size > 0 || activeYears.size > 0;
 
   const handleOpenVariant = (v) => {
     openVariantModal({
@@ -168,12 +201,12 @@ export default function SearchPage() {
     clearTimeout(debounceRef.current);
     if (!query.trim()) {
       setResults(null);
-      setActiveFilters(new Set());
+      clearAllFilters();
       setSearchParams({}, { replace: true });
       return;
     }
     setSearchParams({ q: query }, { replace: true });
-    setActiveFilters(new Set());
+    clearAllFilters();
     debounceRef.current = setTimeout(() => doSearch(query, 0), 180);
     return () => clearTimeout(debounceRef.current);
   }, [query, doSearch, setSearchParams]);
@@ -187,17 +220,56 @@ export default function SearchPage() {
   const showDiscover = !query.trim() && discover;
   const hasResults = results && (results.variants?.length > 0 || results.albums?.length > 0);
 
-  // Client-side tag filtering
-  const filteredVariants = activeFilters.size > 0
-    ? (results?.variants || []).filter(v => {
-        const tags = v.tags || [];
-        return [...activeFilters].every(f => tags.includes(f));
-      })
-    : (results?.variants || []);
+  // Client-side filtering (tags + colors + years)
+  const allVariants = results?.variants || [];
 
-  // Collect available tags from current results for smart chip visibility
+  // Extract available colors from variant names
+  const availableColors = {};
+  allVariants.forEach(v => {
+    const vname = (v.variant || '').toLowerCase();
+    for (const c of COLOR_KEYWORDS) {
+      if (vname.includes(c.toLowerCase())) {
+        availableColors[c] = (availableColors[c] || 0) + 1;
+      }
+    }
+  });
+  const colorList = Object.entries(availableColors)
+    .sort((a, b) => b[1] - a[1])
+    .map(([name]) => name)
+    .slice(0, 10);
+
+  // Extract available years
+  const availableYears = {};
+  allVariants.forEach(v => {
+    if (v.year) availableYears[v.year] = (availableYears[v.year] || 0) + 1;
+  });
+  const yearList = Object.entries(availableYears)
+    .sort((a, b) => b[0] - a[0])
+    .map(([yr]) => Number(yr))
+    .slice(0, 8);
+
+  // Collect available tags from current results
   const availableTags = new Set();
-  (results?.variants || []).forEach(v => (v.tags || []).forEach(t => availableTags.add(t)));
+  allVariants.forEach(v => (v.tags || []).forEach(t => availableTags.add(t)));
+
+  // Apply all filters
+  const filteredVariants = allVariants.filter(v => {
+    // Tag filter
+    if (activeFilters.size > 0) {
+      const tags = v.tags || [];
+      if (![...activeFilters].every(f => tags.includes(f))) return false;
+    }
+    // Color filter
+    if (activeColors.size > 0) {
+      const vname = (v.variant || '').toLowerCase();
+      if (![...activeColors].some(c => vname.includes(c.toLowerCase()))) return false;
+    }
+    // Year filter
+    if (activeYears.size > 0) {
+      if (!activeYears.has(v.year)) return false;
+    }
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-white pt-[52px] md:pt-[88px]" data-testid="search-page">
@@ -227,36 +299,92 @@ export default function SearchPage() {
             )}
           </div>
         </div>
-        {/* Filter chips — shown only when results have tags */}
-        {hasResults && availableTags.size > 0 && (
-          <div className="max-w-2xl mx-auto flex items-center gap-2 mt-2 overflow-x-auto no-scrollbar" data-testid="filter-chips">
-            <Filter className="w-3.5 h-3.5 text-stone-400 shrink-0" />
-            {FILTER_CHIPS.filter(c => availableTags.has(c.key)).map(chip => {
-              const active = activeFilters.has(chip.key);
-              return (
-                <button
-                  key={chip.key}
-                  onClick={() => toggleFilter(chip.key)}
-                  className="shrink-0 text-[11px] font-medium rounded-full transition-all border"
-                  style={{
-                    background: active ? chip.color : chip.bg,
-                    color: active ? '#fff' : chip.color,
-                    borderColor: active ? chip.color : 'transparent',
-                    padding: '4px 12px',
-                  }}
-                  data-testid={`filter-${chip.key.toLowerCase()}`}
-                >
-                  {chip.label}
-                </button>
-              );
-            })}
-            {activeFilters.size > 0 && (
+        {/* Filter chips — tags, colors, years */}
+        {hasResults && (availableTags.size > 0 || colorList.length > 0 || yearList.length > 0) && (
+          <div className="max-w-2xl mx-auto mt-2 space-y-1.5" data-testid="filter-chips">
+            {/* Tag filters */}
+            {availableTags.size > 0 && (
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                <Filter className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+                {FILTER_CHIPS.filter(c => availableTags.has(c.key)).map(chip => {
+                  const active = activeFilters.has(chip.key);
+                  return (
+                    <button
+                      key={chip.key}
+                      onClick={() => toggleFilter(chip.key)}
+                      className="shrink-0 text-[11px] font-medium rounded-full transition-all border"
+                      style={{
+                        background: active ? chip.color : chip.bg,
+                        color: active ? '#fff' : chip.color,
+                        borderColor: active ? chip.color : 'transparent',
+                        padding: '4px 12px',
+                      }}
+                      data-testid={`filter-${chip.key.toLowerCase()}`}
+                    >
+                      {chip.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {/* Color filters */}
+            {colorList.length > 1 && (
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                <span className="text-[10px] text-stone-400 shrink-0 uppercase tracking-wide font-medium w-10">Color</span>
+                {colorList.map(c => {
+                  const active = activeColors.has(c);
+                  return (
+                    <button
+                      key={c}
+                      onClick={() => toggleColor(c)}
+                      className="shrink-0 text-[11px] font-medium rounded-full transition-all border"
+                      style={{
+                        background: active ? '#C8861A' : '#FFF8EE',
+                        color: active ? '#fff' : '#8A6B4A',
+                        borderColor: active ? '#C8861A' : '#F5E6CC',
+                        padding: '3px 10px',
+                      }}
+                      data-testid={`filter-color-${c.toLowerCase()}`}
+                    >
+                      {c}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {/* Year filters */}
+            {yearList.length > 1 && (
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                <span className="text-[10px] text-stone-400 shrink-0 uppercase tracking-wide font-medium w-10">Year</span>
+                {yearList.map(y => {
+                  const active = activeYears.has(y);
+                  return (
+                    <button
+                      key={y}
+                      onClick={() => toggleYear(y)}
+                      className="shrink-0 text-[11px] font-medium rounded-full transition-all border"
+                      style={{
+                        background: active ? '#4A6FA5' : '#F0F4FF',
+                        color: active ? '#fff' : '#4A6FA5',
+                        borderColor: active ? '#4A6FA5' : '#D6E4F0',
+                        padding: '3px 10px',
+                      }}
+                      data-testid={`filter-year-${y}`}
+                    >
+                      {y}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {/* Clear all */}
+            {hasAnyFilter && (
               <button
-                onClick={() => setActiveFilters(new Set())}
-                className="shrink-0 text-[11px] font-medium text-stone-400 hover:text-stone-600 px-2 py-1 transition-colors"
+                onClick={clearAllFilters}
+                className="text-[11px] font-medium text-stone-400 hover:text-stone-600 px-1 py-0.5 transition-colors"
                 data-testid="filter-clear-all"
               >
-                Clear
+                Clear all filters
               </button>
             )}
           </div>
@@ -280,7 +408,7 @@ export default function SearchPage() {
                 <div className="flex items-center justify-between mb-2">
                   <h2 className="font-heading text-sm font-bold text-vinyl-black">Variants</h2>
                   <span className="text-xs text-muted-foreground">
-                    {activeFilters.size > 0 ? `${filteredVariants.length} of ${results.total}` : `${results.total} results`}
+                    {hasAnyFilter ? `${filteredVariants.length} of ${results.total}` : `${results.total} results`}
                   </span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-0.5">
@@ -288,7 +416,7 @@ export default function SearchPage() {
                     <VariantCard key={`${v.discogs_id}-${i}`} v={v} onOpen={handleOpenVariant} />
                   ))}
                 </div>
-                {results.has_more && activeFilters.size === 0 && (
+                {results.has_more && !hasAnyFilter && (
                   <button
                     onClick={loadMore}
                     disabled={loadingMore}
@@ -303,11 +431,11 @@ export default function SearchPage() {
             )}
 
             {/* No matches after filter */}
-            {filteredVariants.length === 0 && activeFilters.size > 0 && (
+            {filteredVariants.length === 0 && hasAnyFilter && (
               <div className="text-center py-8" data-testid="no-filter-results">
                 <Filter className="w-8 h-8 text-stone-300 mx-auto mb-2" />
                 <p className="text-sm text-muted-foreground">No variants match these filters</p>
-                <button onClick={() => setActiveFilters(new Set())} className="text-xs text-honey-amber hover:underline mt-1" data-testid="filter-clear-inline">Clear filters</button>
+                <button onClick={clearAllFilters} className="text-xs text-honey-amber hover:underline mt-1" data-testid="filter-clear-inline">Clear filters</button>
               </div>
             )}
 
