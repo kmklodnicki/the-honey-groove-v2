@@ -31,7 +31,7 @@ export const RarityPill = ({ tier, size = 'md' }) => {
       data-testid="rarity-pill"
     >
       <Disc className={size === 'sm' ? 'w-2.5 h-2.5 opacity-40' : 'w-3 h-3 opacity-40'} />
-      Global Rarity: {cfg.label}
+      Global Variant Rarity: {cfg.label}
     </span>
   );
 };
@@ -54,7 +54,7 @@ export const RarityCard = ({ rarity }) => {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Disc className="w-4 h-4 text-[#DAA520] opacity-50" />
-          <span className="font-heading text-base font-bold text-vinyl-black">Global Rarity</span>
+          <span className="font-heading text-base font-bold text-vinyl-black">Global Variant Rarity</span>
         </div>
         <RarityPill tier={rarity.tier} size="md" />
       </div>

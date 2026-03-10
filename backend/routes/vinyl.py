@@ -29,20 +29,20 @@ CACHE_TTL_HOURS = 24
 # ── Rarity Score System (Discogs-sourced) ──
 RARITY_TIERS = [
     (0, "Ultra Rare"),     # < 500 owners worldwide
-    (500, "Rare"),         # 500 – 2,500
-    (2500, "Uncommon"),    # 2,500 – 5,000
+    (500, "Rare"),         # 500 – 2,000
+    (2001, "Uncommon"),    # 2,001 – 5,000
     (5001, "Common"),      # 5,001+
 ]
 
 
 def calculate_rarity(have: int, want: int, num_for_sale: int) -> dict:
-    """Global Rarity based on Discogs community.have count."""
+    """Global Variant Rarity based on Discogs community.have count for a specific release."""
     tier = "Common"
     if have < 500:
         tier = "Ultra Rare"
-    elif have < 2500:
+    elif have <= 2000:
         tier = "Rare"
-    elif have < 5000:
+    elif have <= 5000:
         tier = "Uncommon"
     return {
         "score": max(0, 5000 - have),
