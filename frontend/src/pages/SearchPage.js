@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, TrendingUp, Gem, Heart, Clock, ChevronRight, Loader2 } from 'lucide-react';
+import { Search, TrendingUp, Gem, Heart, Clock, ChevronRight, Loader2, Filter } from 'lucide-react';
 import { Card } from '../components/ui/card';
 import { RarityPill } from '../components/RarityBadge';
 import AlbumArt from '../components/AlbumArt';
@@ -98,9 +98,27 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [page, setPage] = useState(0);
+  const [activeFilters, setActiveFilters] = useState(new Set());
   const inputRef = useRef(null);
   const debounceRef = useRef(null);
   const PAGE_SIZE = 20;
+
+  const FILTER_CHIPS = [
+    { key: 'RSD',       label: 'RSD',       bg: '#FCEED6', color: '#B97A00' },
+    { key: 'Limited',   label: 'Limited',    bg: '#F4EFFF', color: '#6C54E8' },
+    { key: 'Exclusive', label: 'Exclusive',  bg: '#EAF7F2', color: '#2F8F6B' },
+    { key: 'Numbered',  label: 'Numbered',   bg: '#FFF3F0', color: '#C15A3A' },
+    { key: 'Signed',    label: 'Signed',     bg: '#F7EAF3', color: '#A14578' },
+    { key: 'Tour',      label: 'Tour',       bg: '#FFF8E6', color: '#9A7B2D' },
+  ];
+
+  const toggleFilter = (key) => {
+    setActiveFilters(prev => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key); else next.add(key);
+      return next;
+    });
+  };
 
   const handleOpenVariant = (v) => {
     openVariantModal({
@@ -150,10 +168,12 @@ export default function SearchPage() {
     clearTimeout(debounceRef.current);
     if (!query.trim()) {
       setResults(null);
+      setActiveFilters(new Set());
       setSearchParams({}, { replace: true });
       return;
     }
     setSearchParams({ q: query }, { replace: true });
+    setActiveFilters(new Set());
     debounceRef.current = setTimeout(() => doSearch(query, 0), 180);
     return () => clearTimeout(debounceRef.current);
   }, [query, doSearch, setSearchParams]);
@@ -166,6 +186,18 @@ export default function SearchPage() {
 
   const showDiscover = !query.trim() && discover;
   const hasResults = results && (results.variants?.length > 0 || results.albums?.length > 0);
+
+  // Client-side tag filtering
+  const filteredVariants = activeFilters.size > 0
+    ? (results?.variants || []).filter(v => {
+        const tags = v.tags || [];
+        return [...activeFilters].every(f => tags.includes(f));
+      })
+    : (results?.variants || []);
+
+  // Collect available tags from current results for smart chip visibility
+  const availableTags = new Set();
+  (results?.variants || []).forEach(v => (v.tags || []).forEach(t => availableTags.add(t)));
 
   return (
     <div className="min-h-screen bg-white pt-[52px] md:pt-[88px]" data-testid="search-page">
@@ -195,6 +227,40 @@ export default function SearchPage() {
             )}
           </div>
         </div>
+        {/* Filter chips — shown only when results have tags */}
+        {hasResults && availableTags.size > 0 && (
+          <div className="max-w-2xl mx-auto flex items-center gap-2 mt-2 overflow-x-auto no-scrollbar" data-testid="filter-chips">
+            <Filter className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+            {FILTER_CHIPS.filter(c => availableTags.has(c.key)).map(chip => {
+              const active = activeFilters.has(chip.key);
+              return (
+                <button
+                  key={chip.key}
+                  onClick={() => toggleFilter(chip.key)}
+                  className="shrink-0 text-[11px] font-medium rounded-full transition-all border"
+                  style={{
+                    background: active ? chip.color : chip.bg,
+                    color: active ? '#fff' : chip.color,
+                    borderColor: active ? chip.color : 'transparent',
+                    padding: '4px 12px',
+                  }}
+                  data-testid={`filter-${chip.key.toLowerCase()}`}
+                >
+                  {chip.label}
+                </button>
+              );
+            })}
+            {activeFilters.size > 0 && (
+              <button
+                onClick={() => setActiveFilters(new Set())}
+                className="shrink-0 text-[11px] font-medium text-stone-400 hover:text-stone-600 px-2 py-1 transition-colors"
+                data-testid="filter-clear-all"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="max-w-2xl mx-auto px-4 pt-3 pb-6">
@@ -209,18 +275,20 @@ export default function SearchPage() {
         {!loading && hasResults && (
           <>
             {/* Variant Results (Priority) */}
-            {results.variants?.length > 0 && (
+            {filteredVariants.length > 0 && (
               <section className="mb-5" data-testid="search-variants">
                 <div className="flex items-center justify-between mb-2">
                   <h2 className="font-heading text-sm font-bold text-vinyl-black">Variants</h2>
-                  <span className="text-xs text-muted-foreground">{results.total} results</span>
+                  <span className="text-xs text-muted-foreground">
+                    {activeFilters.size > 0 ? `${filteredVariants.length} of ${results.total}` : `${results.total} results`}
+                  </span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-0.5">
-                  {results.variants.map((v, i) => (
+                  {filteredVariants.map((v, i) => (
                     <VariantCard key={`${v.discogs_id}-${i}`} v={v} onOpen={handleOpenVariant} />
                   ))}
                 </div>
-                {results.has_more && (
+                {results.has_more && activeFilters.size === 0 && (
                   <button
                     onClick={loadMore}
                     disabled={loadingMore}
@@ -232,6 +300,15 @@ export default function SearchPage() {
                   </button>
                 )}
               </section>
+            )}
+
+            {/* No matches after filter */}
+            {filteredVariants.length === 0 && activeFilters.size > 0 && (
+              <div className="text-center py-8" data-testid="no-filter-results">
+                <Filter className="w-8 h-8 text-stone-300 mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">No variants match these filters</p>
+                <button onClick={() => setActiveFilters(new Set())} className="text-xs text-honey-amber hover:underline mt-1" data-testid="filter-clear-inline">Clear filters</button>
+              </div>
             )}
 
             {/* Album Results */}
