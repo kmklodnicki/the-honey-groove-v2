@@ -273,7 +273,7 @@ def _build_weekly_wax_html(data: dict) -> str:
     last_spin = data.get("last_now_spinning_record") or "nothing logged yet — drop your first spin."
     most_spun = data.get("most_spun_record") or "the Hive is just getting warmed up"
     rising = data.get("rising_variant") or "new favorites are bubbling up"
-    most_wanted = data.get("most_wanted_variant") or "collectors are building their wantlists now"
+    most_wanted = data.get("most_wanted_variant") or "collectors are building their Dream Lists now"
     collectors = data.get("collectors", [])
 
     # Collector recommendations section
@@ -352,7 +352,7 @@ def _build_weekly_wax_html(data: dict) -> str:
     <p style="{STAT}"><strong style="{STRONG}">Drop a Now Spinning</strong><br>
     Tap the composer in the Hive and log what's on your turntable. It's the heartbeat of this place.</p>
 
-    <p style="{STAT}"><strong style="{STRONG}">Build your Wantlist</strong><br>
+    <p style="{STAT}"><strong style="{STRONG}">Build your Dream List</strong><br>
     Add your ISO list. We'll notify you the moment a match surfaces.</p>
 
     <p style="{STAT}"><strong style="{STRONG}">Buzz in on the daily prompt</strong><br>

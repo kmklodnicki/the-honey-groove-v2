@@ -202,7 +202,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
           await axios.delete(`${API}/iso/${match.id}`, { headers: { Authorization: `Bearer ${token}` } });
         }
         setOnWantlist(false);
-        toast.success('removed from wantlist.');
+        toast.success('removed from Dream List.');
       } else {
         await axios.post(`${API}/composer/iso`, {
           artist: listing.artist, album: listing.album,
@@ -211,10 +211,10 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
         }, { headers: { Authorization: `Bearer ${token}` } });
         setOnWantlist(true);
         trackEvent('wantlist_added');
-        toast.success('added to wantlist.');
+        toast.success('added to Dream List.');
       }
     } catch (err) {
-      if (err.response?.status === 409) { setOnWantlist(true); toast.info('already on your wantlist.'); }
+      if (err.response?.status === 409) { setOnWantlist(true); toast.info('already on your Dream List.'); }
       else toast.error('something went wrong.');
     } finally {
       setWantlistLoading(false);
@@ -697,8 +697,8 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                         data-testid="listing-wantlist-toggle">
                         {wantlistLoading ? <Loader2 className="w-3 h-3 animate-spin inline mr-1" /> : null}
                         {onWantlist ? (
-                          <span className="flex items-center justify-center gap-1"><Check className="w-3 h-3" /> on your wantlist</span>
-                        ) : 'add to wantlist'}
+                          <span className="flex items-center justify-center gap-1"><Check className="w-3 h-3" /> on your Dream List</span>
+                        ) : 'add to Dream List'}
                       </button>
                     </div>
                   )}

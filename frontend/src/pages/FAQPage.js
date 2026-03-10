@@ -10,7 +10,7 @@ const faqSections = [
     items: [
       {
         q: 'What is the Honey Groove?',
-        a: 'The Honey Groove is a social app built specifically for vinyl collectors. Track your collection, share what you\'re spinning, post your hauls, hunt down records on your wantlist, and buy, sell, and trade directly with other collectors who get it.',
+        a: 'The Honey Groove is a social app built specifically for vinyl collectors. Track your collection, share what you\'re spinning, post your hauls, hunt down records on your Dream List, and buy, sell, and trade directly with other collectors who get it.',
       },
       {
         q: 'Is it free?',
@@ -34,7 +34,7 @@ const faqSections = [
       },
       {
         q: 'Is my data private?',
-        a: 'Yes. We never sell your data, share it with third parties for advertising, or use it for anything beyond making your experience better. Your collection, your wantlist, and your listening history are yours.',
+        a: 'Yes. We never sell your data, share it with third parties for advertising, or use it for anything beyond making your experience better. Your collection, your Dream List, and your listening history are yours.',
       },
     ],
   },
@@ -109,30 +109,30 @@ const faqSections = [
     ],
   },
   {
-    title: 'The Wantlist',
+    title: 'The Dream List',
     items: [
       {
-        q: 'What is the Wantlist?',
-        a: 'Your Wantlist is your hunt list. Add any record you\'ve been looking for and we\'ll notify you the moment another collector lists it in The Honeypot. You can specify pressing preferences and condition requirements for each entry.',
+        q: 'What is the Dream List?',
+        a: 'Your Dream List is your hunt list. Add any record you\'ve been looking for and we\'ll notify you the moment another collector lists it in The Honeypot. You can specify pressing preferences and condition requirements for each entry.',
       },
       {
-        q: 'What happens when someone lists a record on my Wantlist?',
-        a: 'You get an instant notification \u2014 in-app and by email \u2014 with a direct link to the listing. Wantlist matches move fast so we flag them the moment they appear.',
+        q: 'What happens when someone lists a record on my Dream List?',
+        a: 'You get an instant notification \u2014 in-app and by email \u2014 with a direct link to the listing. Dream List matches move fast so we flag them the moment they appear.',
       },
       {
-        q: 'Can other collectors see my Wantlist?',
-        a: 'Yes. Your Wantlist is visible on your profile. Other collectors browsing your ISO posts can see what you\'re hunting and reach out directly if they have something you need.',
+        q: 'Can other collectors see my Dream List?',
+        a: 'Yes. Your Dream List is visible on your profile. Other collectors browsing your ISO posts can see what you\'re hunting and reach out directly if they have something you need.',
       },
       {
-        q: 'Can I set a price limit on a Wantlist entry?',
-        a: 'Yes. You can set a maximum price for each Wantlist entry. We\'ll only notify you when a matching listing appears at or below your target price so you\'re not pinged for listings out of your budget.',
+        q: 'Can I set a price limit on a Dream List entry?',
+        a: 'Yes. You can set a maximum price for each Dream List entry. We\'ll only notify you when a matching listing appears at or below your target price so you\'re not pinged for listings out of your budget.',
       },
       {
-        q: 'How long do Wantlist entries stay active?',
-        a: 'Indefinitely. Your Wantlist entries stay active until you remove them manually. We\'ll keep hunting until you find what you\'re looking for.',
+        q: 'How long do Dream List entries stay active?',
+        a: 'Indefinitely. Your Dream List entries stay active until you remove them manually. We\'ll keep hunting until you find what you\'re looking for.',
       },
       {
-        q: 'Can I add pressing-specific requirements to my Wantlist?',
+        q: 'Can I add pressing-specific requirements to my Dream List?',
         a: 'Yes. For each entry you can specify the pressing country, label, variant, or color you\'re looking for. We\'ll match based on your requirements and only notify you when the right copy appears.',
       },
     ],
@@ -142,7 +142,7 @@ const faqSections = [
     items: [
       {
         q: 'What is The Honeypot?',
-        a: 'The Honeypot is our peer-to-peer marketplace. Three tabs: Shop for buying and selling, ISO for browsing the community wantlist, and Trade for swapping records directly with other collectors.',
+        a: 'The Honeypot is our peer-to-peer marketplace. Three tabs: Shop for buying and selling, ISO for browsing the community Dream List, and Trade for swapping records directly with other collectors.',
       },
       {
         q: 'Who can sell?',

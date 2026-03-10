@@ -76,9 +76,9 @@ const ExplorePage = () => {
       await axios.post(`${API}/composer/iso`, {
         artist, album, discogs_id, cover_url, year,
       }, { headers });
-      toast.success(`Added to your Wantlist!`);
+      toast.success(`Added to your Dream List!`);
     } catch (err) {
-      if (err.response?.status === 409) toast.info('already on your wantlist.');
+      if (err.response?.status === 409) toast.info('already on your Dream List.');
       else toast.error('could not add. try again.');
     }
   };
@@ -255,7 +255,7 @@ const ExplorePage = () => {
       {/* 4. Most Wanted */}
       <ExploreSection icon={<Heart className="w-4 h-4 text-red-400" />} title="Most Wanted" testId="most-wanted-section" seeAllTo="/nectar/most-wanted">
         {mostWanted.length === 0 ? (
-          <EmptyCard text="No wantlist data yet. Add records to your Wantlist!" />
+          <EmptyCard text="No Dream List data yet. Add records to your Dream List!" />
         ) : (
           <div className="space-y-2">
             {mostWanted.map((r, idx) => (

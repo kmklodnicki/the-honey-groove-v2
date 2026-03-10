@@ -764,7 +764,7 @@ const SettingsPage = () => {
           <DialogHeader>
             <DialogTitle className="font-heading text-2xl text-vinyl-black">Are you sure?</DialogTitle>
             <DialogDescription className="font-serif italic text-base text-vinyl-black/70 leading-relaxed mt-3">
-              Deleting your account is permanent and cannot be undone. Your collection, posts, wantlist, and trade history will be removed immediately. This action cannot be reversed and your account cannot be reactivated.
+              Deleting your account is permanent and cannot be undone. Your collection, posts, Dream List, and trade history will be removed immediately. This action cannot be reversed and your account cannot be reactivated.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3 mt-4">

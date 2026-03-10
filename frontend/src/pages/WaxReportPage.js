@@ -294,16 +294,16 @@ const WaxReportPage = () => {
         </WaxCard>
 
         {/* ═══ Wantlist Pulse ═══ */}
-        <SectionTitle icon={<Heart className="w-4 h-4" style={{ color: C.purple }} />} title="wantlist pulse" />
+        <SectionTitle icon={<Heart className="w-4 h-4" style={{ color: C.purple }} />} title="dream list pulse" />
         <WaxCard testId="wax-wantlist" borderColor="rgba(107,71,173,0.20)">
           <div className="grid grid-cols-3 gap-4">
-            <StatBlock value={wp.total} label="on wantlist" color={C.purple} />
+            <StatBlock value={wp.total} label="on Dream List" color={C.purple} />
             <StatBlock value={wp.matches_found} label="matches found" color={C.purple} />
             <StatBlock value={wp.longest_hunt_days ? `${wp.longest_hunt_days}d` : '·'} label="longest hunt" color={C.purple} />
           </div>
           {wp.trending && (
             <div className="mt-3 px-3 py-2 rounded-lg" style={{ background: 'rgba(107,71,173,0.06)' }}>
-              <p className="text-[11px]" style={{ color: C.textMuted }}>trending on wantlists</p>
+              <p className="text-[11px]" style={{ color: C.textMuted }}>trending on Dream Lists</p>
               <p className="text-sm" style={{ color: C.textDark }}>{wp.trending.artist} · {wp.trending.album} <span style={{ color: C.purple }}>({wp.trending.want_count} wants)</span></p>
             </div>
           )}

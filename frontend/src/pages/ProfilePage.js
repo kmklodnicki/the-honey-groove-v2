@@ -614,7 +614,7 @@ const ProfilePage = () => {
             Collection
           </TabsTrigger>
           <TabsTrigger value="dreaming" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-dreaming">
-            Dreaming
+            Dream List
           </TabsTrigger>
           {!isOwnProfile && tasteMatch && (
             <TabsTrigger value="in-common" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-in-common">
@@ -705,7 +705,7 @@ const ProfilePage = () => {
         {/* Dreaming Tab */}
         <TabsContent value="dreaming">
           {dreamingItems.length === 0 ? (
-            <EmptyState icon={Cloud} title="No dreams yet" sub={isOwnProfile ? 'Add records to your Dreaming tab to start building your Value of Dream Records.' : `@${username} isn't dreaming of anything right now`} />
+            <EmptyState icon={Cloud} title="No dreams yet" sub={isOwnProfile ? 'Add records to your Dream List to start building your Value of Dream Records.' : `@${username} isn't dreaming of anything right now`} />
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {dreamingItems.map(item => {
@@ -781,7 +781,7 @@ const ProfilePage = () => {
               {/* Shared Visions */}
               <div>
                 <h3 className="font-heading text-lg mb-1">Shared Visions</h3>
-                <p className="text-xs text-muted-foreground mb-3">You are both dreaming of these.</p>
+                <p className="text-xs text-muted-foreground mb-3">You both have these on your Dream List.</p>
                 {tasteMatch.shared_dreams.length === 0 ? (
                   <p className="text-sm text-stone-400 italic py-4" data-testid="no-shared-dreams">No shared dreams yet.</p>
                 ) : (
@@ -1020,7 +1020,7 @@ const ProfilePage = () => {
               {/* Shared Dreams */}
               <div>
                 <h4 className="text-sm font-semibold text-vinyl-black mb-2">Shared Dreams</h4>
-                <p className="text-xs text-muted-foreground mb-2">You're both dreaming of these.</p>
+                <p className="text-xs text-muted-foreground mb-2">You both have these on your Dream List.</p>
                 {tasteMatch.shared_dreams.length === 0 ? (
                   <p className="text-xs text-stone-400 italic">No shared dreams yet.</p>
                 ) : (

@@ -202,9 +202,9 @@ const CollectionPage = () => {
         const itemVal = valueMap[id] || 0;
         if (itemVal > 0 && collectionValue) {
           setCollectionValue(prev => prev ? { ...prev, total_value: Math.max(0, prev.total_value - itemVal) } : prev);
-          setWishlistValue(prev => prev ? { ...prev, total_value: prev.total_value + itemVal } : prev);
+          setDreamlistValue(prev => prev ? { ...prev, total_value: prev.total_value + itemVal } : prev);
         }
-        toast.success(res.data.message || 'moved to dreaming.');
+        toast.success(res.data.message || 'moved to Dream List.');
       } else {
         const res = await axios.post(`${API}/records/${id}/move-to-iso`, {}, { headers: { Authorization: `Bearer ${token}` }});
         setRecords(prev => prev.filter(r => r.id !== id));
@@ -262,14 +262,14 @@ const CollectionPage = () => {
           // Silently proceed; value subtraction is cosmetic
         }
       }
-    } catch { toast.error('could not promote to wantlist.'); }
+    } catch { toast.error('could not promote to Actively Seeking.'); }
   };
 
   const handleDeleteWishlistItem = async (isoId) => {
     try {
       await axios.delete(`${API}/iso/${isoId}`, { headers: { Authorization: `Bearer ${token}` }});
       setWishlistItems(prev => prev.filter(i => i.id !== isoId));
-      toast.success('removed from wishlist.');
+      toast.success('removed from Dream List.');
     } catch { toast.error('could not remove.'); }
   };
 
@@ -363,19 +363,19 @@ const CollectionPage = () => {
     <div className="max-w-6xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8">
       <SEOHead
         title={`My Collection — ${records.length} Records`}
-        description={`Your vinyl collection on The Honey Groove. ${records.length} records owned, ${wishlistItems.length} on the wishlist.`}
+        description={`Your vinyl collection on The Honey Groove. ${records.length} records owned, ${wishlistItems.length} on the Dream List.`}
         url="/collection"
         noIndex
       />
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="font-heading text-3xl text-vinyl-black">My Collection</h1>
-          <p className="text-muted-foreground">{records.length} owned · {wishlistItems.length} dreaming</p>
+          <p className="text-muted-foreground">{records.length} owned · {wishlistItems.length} on Dream List</p>
         </div>
         <Link to={`/add-record?mode=${collectionTab === 'wishlist' ? 'dreaming' : 'reality'}`}>
           <Button className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2" data-testid="add-record-btn">
             <Plus className="w-4 h-4" />
-            {collectionTab === 'wishlist' ? 'Add to Dreaming' : 'Add to Collection'}
+            {collectionTab === 'wishlist' ? 'Add to Dream List' : 'Add to Collection'}
           </Button>
         </Link>
       </div>
@@ -407,7 +407,7 @@ const CollectionPage = () => {
             <Sparkles className="w-3.5 h-3.5" /> Collection ({records.length})
           </TabsTrigger>
           <TabsTrigger value="wishlist" className="data-[state=active]:bg-honey text-sm gap-1.5" data-testid="tab-wishlist">
-            <Cloud className="w-3.5 h-3.5" /> Dreaming ({wishlistItems.length})
+            <Cloud className="w-3.5 h-3.5" /> Dream List ({wishlistItems.length})
           </TabsTrigger>
         </TabsList>
 
@@ -691,7 +691,7 @@ const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg }) => {
             ...{' '}
             <span className="text-base font-light text-stone-400 font-serif italic">(Value of Dream Records)</span>
           </p>
-          <p className="text-xs text-stone-400 mt-2">{itemCount} record{itemCount !== 1 ? 's' : ''} dreaming</p>
+          <p className="text-xs text-stone-400 mt-2">{itemCount} record{itemCount !== 1 ? 's' : ''} on Dream List</p>
         </>
       ) : (
         <>

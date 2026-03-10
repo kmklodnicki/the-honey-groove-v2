@@ -280,7 +280,7 @@ const MessagesPage = () => {
         <Card className="p-8 text-center border-honey/30">
           <Search className="w-12 h-12 text-honey/40 mx-auto mb-4" />
           <h3 className="font-heading text-xl mb-2">No messages yet</h3>
-          <p className="text-muted-foreground text-sm">Start a conversation from someone's profile or a Wantlist card.</p>
+          <p className="text-muted-foreground text-sm">Start a conversation from someone's profile or a Dream List card.</p>
         </Card>
       ) : (
         <div className="space-y-2">

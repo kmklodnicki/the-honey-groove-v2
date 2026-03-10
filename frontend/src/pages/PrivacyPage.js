@@ -21,7 +21,7 @@ const PrivacyPage = () => {
         </Section>
 
         <Section title="How We Use Your Data">
-          <P>We use your data to provide and improve the Honey Groove experience. This includes displaying your collection and activity to other users, matching you with records on your wantlist, generating your weekly Wax Report, calculating your collection value, and processing marketplace transactions. We use analytics data to understand how the platform is used and to improve features.</P>
+          <P>We use your data to provide and improve the Honey Groove experience. This includes displaying your collection and activity to other users, matching you with records on your Dream List, generating your weekly Wax Report, calculating your collection value, and processing marketplace transactions. We use analytics data to understand how the platform is used and to improve features.</P>
         </Section>
 
         <Section title="What We Share">
@@ -47,7 +47,7 @@ const PrivacyPage = () => {
         </Section>
 
         <Section title="We Never Sell Your Data">
-          <P>This deserves its own section because it matters. The Honey Groove will never sell your personal data, your collection data, your listening history, or any other information to advertisers, data brokers, or anyone else. Our business model is transaction fees on marketplace sales, not your data. Your collection, your wantlist, and your listening history are yours.</P>
+          <P>This deserves its own section because it matters. The Honey Groove will never sell your personal data, your collection data, your listening history, or any other information to advertisers, data brokers, or anyone else. Our business model is transaction fees on marketplace sales, not your data. Your collection, your Dream List, and your listening history are yours.</P>
         </Section>
 
         <Section title="Changes to This Policy">

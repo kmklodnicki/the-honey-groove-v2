@@ -112,7 +112,7 @@ const AddRecordPage = () => {
           headers: { Authorization: `Bearer ${token}` },
           timeout: 15000,
         });
-        toast.success('Added to Dreaming. Keep building that millionaire mood board.');
+        toast.success('Added to your Dream List. Keep building that millionaire mood board.');
         trackEvent('dreaming_record_added');
         navigate('/collection?tab=wishlist');
       } else {
@@ -170,7 +170,7 @@ const AddRecordPage = () => {
       <div className="flex items-center gap-3 mb-6">
         {isDreaming ? <Cloud className="w-6 h-6 text-stone-400" /> : <Sparkles className="w-6 h-6 text-honey-amber" />}
         <div>
-          <h1 className="font-heading text-3xl text-vinyl-black">{isDreaming ? 'Add to Dreaming' : 'Add to Collection'}</h1>
+          <h1 className="font-heading text-3xl text-vinyl-black">{isDreaming ? 'Add to Dream List' : 'Add to Collection'}</h1>
           <p className="text-sm text-muted-foreground font-serif italic">{isDreaming ? 'The millionaire mood board grows.' : 'Your Gold Standard just got richer.'}</p>
         </div>
       </div>

@@ -87,10 +87,10 @@ const ExploreSeeAllPage = () => {
   const addToWantlist = async (artist, album, discogs_id, cover_url, year) => {
     try {
       await axios.post(`${API}/composer/iso`, { artist, album, discogs_id, cover_url, year }, { headers });
-      toast.success('added to your wantlist.');
+      toast.success('added to your Dream List.');
       trackEvent('wantlist_added');
     } catch (err) {
-      if (err.response?.status === 409) toast.info('already on your wantlist.');
+      if (err.response?.status === 409) toast.info('already on your Dream List.');
       else toast.error('could not add. try again.');
     }
   };
@@ -242,7 +242,7 @@ const TrendingCollectionsAll = ({ data, addToWantlist }) => {
 };
 
 const MostWantedAll = ({ data, addToWantlist }) => {
-  if (!data || data.length === 0) return <EmptyState text="No wantlist data yet. Add records to your Wantlist!" />;
+  if (!data || data.length === 0) return <EmptyState text="No Dream List data yet. Add records to your Dream List!" />;
   return (
     <div className="space-y-1" data-testid="most-wanted-list">
       {data.map((r, idx) => (

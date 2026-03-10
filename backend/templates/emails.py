@@ -82,7 +82,7 @@ def invite_code(first_name: str, invite_code: str) -> dict:
     <p style="margin:20px 0 6px 0;"><strong>Here's all you need to get started:</strong></p>
     <p><strong style="{AMBER}">1. Add at least 3 records to your collection</strong> &mdash; search by artist or album and Discogs pulls everything in automatically.</p>
     <p><strong style="{AMBER}">2. Drop your first Now Spinning</strong> from the composer bar at the top of the Hive. Takes 10 seconds.</p>
-    <p><strong style="{AMBER}">3. Add anything you've been hunting to your Wantlist</strong> so we can match you with other collectors.</p>
+    <p><strong style="{AMBER}">3. Add anything you've been hunting to your Dream List</strong> so we can match you with other collectors.</p>
     <p style="margin:20px 0 6px 0;"><strong>Got feedback? We want it all.</strong> Join the Discord and drop anything and everything in the #thehoneygroove channel &mdash; bugs, suggestions, first impressions, things you love, things that confused you. Nothing is too small. <a href="https://discord.gg/PKSkMhqGPv" target="_blank" style="{AMBER}text-decoration:underline;">discord.gg/PKSkMhqGPv</a> \U0001F41D</p>
     <p>You're a founding member. Your badge is permanent and will never go away no matter how big this gets.</p>
     <p>DM us on Instagram <a href="https://www.instagram.com/thehoneygroove" target="_blank" style="{AMBER}text-decoration:underline;">@thehoneygroove</a> or reply to this email if anything feels urgent.</p>
@@ -103,7 +103,7 @@ def welcome(username: str) -> dict:
     <p style="margin:16px 0 4px 0;"><strong>A few things to get you started:</strong></p>
     <p><strong style="{AMBER}">Add your collection.</strong> Search by artist or album, or import directly from Discogs if you already have one there.</p>
     <p><strong style="{AMBER}">Drop the needle.</strong> Post your first Now Spinning and let the hive know what's on the turntable.</p>
-    <p><strong style="{AMBER}">Hunt something down.</strong> Add your most wanted record to your wantlist and we'll match you the moment it appears.</p>
+    <p><strong style="{AMBER}">Hunt something down.</strong> Add your most wanted record to your Dream List and we'll match you the moment it appears.</p>
     <p>The hive is just getting started. Glad you're here.</p>
     {SIG}
     """
@@ -160,7 +160,7 @@ def new_follow(username: str, profile_url: str) -> dict:
 def wantlist_match(username: str, album: str, artist: str, seller: str, price: str, listing_url: str) -> dict:
     body = f"""
     <p style="{GREETING}">Hey {username},</p>
-    <p>A record on your wantlist just appeared in the Honeypot.</p>
+    <p>A record on your Dream List just appeared in the Honeypot.</p>
     <div style="text-align:center;padding:20px;margin:16px 0;background:#FFF8EE;border-radius:12px;border:1px solid #F5E6CC;">
         <p style="{H}font-size:22px;margin:0 0 4px 0;">{album}</p>
         <p style="{AMBER}font-size:16px;font-style:italic;margin:0;">by {artist}</p>

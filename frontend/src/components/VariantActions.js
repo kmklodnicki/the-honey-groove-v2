@@ -66,7 +66,7 @@ export default function VariantActions({ variant }) {
         artist, album, discogs_id, cover_url, year, color_variant: variantName,
         status, priority: status === 'OPEN' ? 'HIGH' : 'LOW',
       }, { headers });
-      const label_ = status === 'WISHLIST' ? 'wishlist' : 'ISO list';
+      const label_ = status === 'WISHLIST' ? 'Dream List' : 'ISO list';
       toast.success(`${album} added to your ${label_}!`);
       setOwnership(prev => ({ ...prev, iso_status: status }));
     } catch (e) {
@@ -111,7 +111,7 @@ export default function VariantActions({ variant }) {
             {actionLoading === 'wishlist' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> :
               isoStatus === 'WISHLIST' ? <Check className="w-3.5 h-3.5 text-emerald-500" /> :
               <Heart className="w-3.5 h-3.5" />}
-            {isoStatus === 'WISHLIST' ? 'On Wishlist' : 'Add to Wishlist'}
+            {isoStatus === 'WISHLIST' ? 'On Dream List' : 'Add to Dream List'}
           </Button>
           <Button
             onClick={() => addToISO('OPEN')}
