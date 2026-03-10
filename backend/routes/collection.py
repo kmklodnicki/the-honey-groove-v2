@@ -59,6 +59,9 @@ async def add_record(record_data: RecordCreate, user: Dict = Depends(require_aut
     
     await db.records.insert_one(record_doc)
     
+    # Invalidate completion cache for this user (ownership changed)
+    await db.completion_cache.delete_many({"user_id": user["id"]})
+    
     # Create activity post
     post_id = str(uuid.uuid4())
     post_doc = {

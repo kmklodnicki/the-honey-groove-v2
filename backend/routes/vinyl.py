@@ -575,6 +575,22 @@ async def get_variant_completion(
     user=Depends(get_current_user),
 ):
     """Return variant completion data for an album, grouped by meaningful variant."""
+    user_id = user["id"] if user else None
+
+    # Check completion cache (valid for 10 minutes)
+    cache_key = {"discogs_id": discogs_id, "user_id": user_id}
+    cached = await db.completion_cache.find_one(cache_key, {"_id": 0})
+    if cached:
+        age = 0
+        fetched_at = cached.get("fetched_at", "")
+        if fetched_at:
+            try:
+                age = (datetime.now(timezone.utc) - datetime.fromisoformat(fetched_at)).total_seconds()
+            except (ValueError, TypeError):
+                age = 999999
+        if age < 600:  # 10 minute cache
+            return cached.get("result", {})
+
     # Step 1: Get the release to find its master_id
     release = await _get_cached_discogs_release(discogs_id)
     if not release:
@@ -682,13 +698,24 @@ async def get_variant_completion(
     ).to_list(None)
     cached_map = {r["discogs_id"]: r.get("color_variant", "") for r in cached_releases}
 
-    # Fetch uncached (limit to 20 to avoid timeout)
+    # Fetch uncached (limit to 20 to avoid timeout) — parallelized with rate-limiting semaphore
     uncached_ids = [rid for rid in release_ids if rid not in cached_map]
     fetch_limit = min(len(uncached_ids), 20)
-    for rid in uncached_ids[:fetch_limit]:
-        color = await _fetch_release_color(rid)
-        cached_map[rid] = color
-        await asyncio.sleep(0.3)  # Rate limit
+
+    if uncached_ids[:fetch_limit]:
+        sem = asyncio.Semaphore(5)  # Max 5 concurrent Discogs calls
+
+        async def _fetch_one(rid):
+            async with sem:
+                color = await _fetch_release_color(rid)
+                return rid, color
+
+        tasks = [_fetch_one(rid) for rid in uncached_ids[:fetch_limit]]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        for r in results:
+            if isinstance(r, tuple):
+                rid, color = r
+                cached_map[rid] = color
 
     # Step 5: Group by normalized variant name
     variant_groups = {}  # name -> list of release_ids
@@ -739,7 +766,7 @@ async def get_variant_completion(
     total = len(variants)
     pct = round((owned_count / total) * 100) if total else 0
 
-    return {
+    result = {
         "album": release.get("title"),
         "artist": release.get("artist"),
         "master_id": master_id,
@@ -748,6 +775,20 @@ async def get_variant_completion(
         "completion_pct": pct,
         "variants": variants,
     }
+
+    # Cache result
+    await db.completion_cache.update_one(
+        {"discogs_id": discogs_id, "user_id": user_id},
+        {"$set": {
+            "discogs_id": discogs_id,
+            "user_id": user_id,
+            "result": result,
+            "fetched_at": datetime.now(timezone.utc).isoformat(),
+        }},
+        upsert=True,
+    )
+
+    return result
 
 
 # ========== SSR for bots ==========

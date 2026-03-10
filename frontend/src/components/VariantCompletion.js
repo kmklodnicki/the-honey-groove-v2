@@ -61,6 +61,25 @@ const VariantRow = ({ variant, onAdd, adding }) => (
   </div>
 );
 
+const TrackerSkeleton = () => (
+  <Card className="p-5 border-honey/20 animate-pulse" data-testid="variant-tracker-skeleton">
+    <div className="flex items-center justify-between mb-3">
+      <div className="h-5 w-32 bg-stone-200 rounded" />
+      <div className="h-4 w-20 bg-stone-200 rounded" />
+    </div>
+    <div className="w-full h-3 bg-stone-200 rounded-full mb-1.5" />
+    <div className="h-3 w-16 bg-stone-100 rounded ml-auto mb-4" />
+    <div className="space-y-2">
+      {[1, 2, 3, 4].map(i => (
+        <div key={i} className="flex items-center gap-3 px-3 py-2.5">
+          <div className="w-5 h-5 rounded-full bg-stone-200 shrink-0" />
+          <div className="h-4 bg-stone-200 rounded" style={{ width: `${50 + i * 12}%` }} />
+        </div>
+      ))}
+    </div>
+  </Card>
+);
+
 export default function VariantCompletion({ discogsId }) {
   const { token } = useAuth();
   const [data, setData] = useState(null);
@@ -175,7 +194,8 @@ export default function VariantCompletion({ discogsId }) {
     }
   }, [confirmVariant, data, token]);
 
-  if (loading || !data || data.error || data.total_variants <= 1) return null;
+  if (loading) return <TrackerSkeleton />;
+  if (!data || data.error || data.total_variants <= 1) return null;
 
   const { total_variants, owned_count, completion_pct, variants } = data;
   const owned = variants.filter(v => v.owned);
