@@ -376,9 +376,8 @@ async def get_user_profile(username: str, current_user: Optional[Dict] = Depends
     result["follow_request_status"] = follow_request_status
     result["profile_locked"] = is_private and not is_approved_follower and not is_own
     
-    # For locked profiles, include mutual signals
-    if result["profile_locked"] and current_user:
-        # Records in common count
+    # Records in common — always calculate for non-own profiles
+    if current_user and not is_own:
         viewer_records = await db.records.find({"user_id": current_user["id"], "discogs_id": {"$ne": None}}, {"_id": 0, "discogs_id": 1}).to_list(5000)
         viewer_discogs = {r["discogs_id"] for r in viewer_records if r.get("discogs_id")}
         if viewer_discogs:
@@ -387,7 +386,9 @@ async def get_user_profile(username: str, current_user: Optional[Dict] = Depends
             result["records_in_common"] = len(viewer_discogs & their_discogs)
         else:
             result["records_in_common"] = 0
-        
+
+    # For locked profiles, include additional mutual signals
+    if result["profile_locked"] and current_user:
         # Mutual followers (people the viewer follows who also follow this user)
         viewer_following = await db.followers.find({"follower_id": current_user["id"]}, {"_id": 0, "following_id": 1}).to_list(500)
         viewer_following_ids = {f["following_id"] for f in viewer_following}
