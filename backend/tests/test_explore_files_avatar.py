@@ -25,7 +25,7 @@ import jwt
 from datetime import datetime, timezone, timedelta
 import re
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://vinyl-collectors-hub.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://wax-community.preview.emergentagent.com').rstrip('/')
 JWT_SECRET = "waxlog_jwt_secret_key_2024_vinyl_collectors"
 JWT_ALGORITHM = "HS256"
 

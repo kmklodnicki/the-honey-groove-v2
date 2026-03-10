@@ -315,11 +315,11 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const noteRecord = records.find(r => r.id === noteRecordId);
 
   const spectrum = [
-    { key: 'NOW_SPINNING', label: 'Now Spinning', icon: Disc, bg: '#FFD700', showLabel: true },
-    { key: 'NEW_HAUL', label: 'New Haul', icon: Package, bg: '#FFC800', showLabel: true },
-    { key: 'ISO', label: 'ISO', icon: Search, bg: '#FFB900', showLabel: false },
-    { key: 'NOTE', label: 'A Note', icon: Feather, bg: '#FFAA00', showLabel: false },
-    { key: 'RANDOMIZER', label: 'Randomizer', icon: Shuffle, bg: '#FF9B00', showLabel: false },
+    { key: 'NOW_SPINNING', label: 'Now Spinning', icon: Disc, bg: '#D4AF37', showLabel: true },
+    { key: 'NEW_HAUL', label: 'Haul', icon: Package, bg: '#C5A028', showLabel: true },
+    { key: 'ISO', label: 'ISO', icon: Search, bg: '#B69119', showLabel: false },
+    { key: 'NOTE', label: 'Note', icon: Feather, bg: '#A7820A', showLabel: false },
+    { key: 'RANDOMIZER', label: 'Randomizer', icon: Shuffle, bg: '#987300', showLabel: false },
   ];
 
   return (
@@ -327,7 +327,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
       {/* Composer Bar — Command Center */}
       <div className="bg-white rounded-xl border border-honey/30 p-4 mb-6 shadow-sm" data-testid="composer-bar">
         <p className="text-sm text-muted-foreground mb-3">What's on the turntable?</p>
-        <div className="flex flex-nowrap gap-2 overflow-hidden">
+        <div className="flex flex-nowrap gap-1.5 justify-between">
           {spectrum.map(chip => {
             const Icon = chip.icon;
             const isIconOnly = !chip.showLabel;
@@ -335,13 +335,13 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               <button
                 key={chip.key}
                 onClick={() => chip.key === 'RANDOMIZER' ? openRandomizer() : openModal(chip.key)}
-                className={`shrink-0 h-9 rounded-full text-sm font-semibold flex items-center justify-center gap-1.5 transition-all hover:scale-105 hover:shadow-md ${isIconOnly ? 'w-9 aspect-square p-0 md:w-auto md:aspect-auto md:px-4 md:py-2' : 'px-4 py-2'}`}
+                className={`h-9 rounded-full font-semibold flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap transition-all hover:scale-105 hover:shadow-md ${isIconOnly ? 'w-9 shrink-0 p-0 sm:w-auto sm:px-4 sm:py-2 sm:text-sm' : 'flex-1 sm:flex-none px-2.5 sm:px-4 py-2 text-xs sm:text-sm'}`}
                 style={{ background: chip.bg, color: '#000' }}
                 data-testid={`composer-chip-${chip.key.toLowerCase()}`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-4 h-4 shrink-0" />
                 {isIconOnly
-                  ? <span className="hidden md:inline">{chip.label}</span>
+                  ? <span className="hidden sm:inline">{chip.label}</span>
                   : <span>{chip.label}</span>
                 }
               </button>
