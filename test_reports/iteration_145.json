@@ -1,0 +1,75 @@
+{
+  "summary": "BLOCK 75.2 Dual-Action Hunter Buttons - All features tested and working. Backend APIs (9 tests) pass 100%. Frontend UI verified via Playwright: dual buttons present with correct styling, click functionality working for both 'Add to Collection' and 'Actively Seeking' actions.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_dual_hunter_buttons.py",
+    "/app/test_reports/pytest/dual_hunter_buttons_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "WishlistCard correctly implements dual buttons side-by-side in flex container with gap-2 (8px)",
+    "'Add to Collection' button has solid honey gold gradient background (linear-gradient(135deg, #E8A820, #DAA520)) with dark text (#1A1A1A)",
+    "'Actively Seeking' button has glass style with transparent background (rgba(255,215,0,0.1)) and brushed gold border (2px solid #DAA520)",
+    "Both buttons have h-7 height (28px) and flex-1 for equal width",
+    "Delete trash button retained with correct styling",
+    "POST /api/iso/{id}/convert-to-collection endpoint correctly creates record and deletes ISO item",
+    "PUT /api/iso/{id}/promote endpoint correctly changes status from WISHLIST to OPEN with HIGH priority"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_dual_hunter_buttons.py"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "100%"
+  },
+  "seed_data_creation": "Used demouser with 2 dream items: 'Blonde' by Frank Ocean and 'good kid, m.A.A.d city' by Kendrick Lamar. Test data restored after functional testing.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "BLOCK 75.2 Dual-Action Hunter Buttons fully tested. Dream List cards now have two buttons: 'Add to Collection' (solid honey gold) calls POST /api/iso/{id}/convert-to-collection, 'Actively Seeking' (glass with gold border) calls PUT /api/iso/{id}/promote. Both remove the card from Dream List. Delete trash button still works. Backend tests in /app/backend/tests/test_dual_hunter_buttons.py. Test credentials: demo@test.com / demouser.",
+  "tested_features": {
+    "backend": [
+      "GET /api/iso/dreamlist - returns user's dream items with WISHLIST status (200 OK)",
+      "POST /api/iso/{id}/convert-to-collection - converts dream item to collection record (200 OK)",
+      "PUT /api/iso/{id}/promote - promotes dream item to OPEN status with HIGH priority (200 OK)",
+      "DELETE /api/iso/{id} - deletes dream item (200 OK)",
+      "POST /api/iso/{id}/convert-to-collection with non-existent ID - returns 404",
+      "PUT /api/iso/{id}/promote with non-existent ID - returns 404",
+      "DELETE /api/iso/{id} with non-existent ID - returns 404",
+      "POST /api/iso/{id}/convert-to-collection without auth - returns 401/403",
+      "PUT /api/iso/{id}/promote without auth - returns 401/403"
+    ],
+    "frontend": [
+      "Dream List cards display two side-by-side action buttons",
+      "'Add to Collection' button has solid honey gold background with dark text",
+      "'Actively Seeking' button has transparent glass style with brushed gold border",
+      "Both buttons have equal height (28px / h-7) and 8px gap between them",
+      "Clicking 'Add to Collection' removes card from Dream List and adds to Collection",
+      "Clicking 'Actively Seeking' removes card from Dream List and promotes to ISO",
+      "Delete trash button still functions correctly",
+      "Toast notifications show on successful actions ('is now on the hunt', 'is now in your Hive')",
+      "Treasury header still works - Collection Value and Dream Records tabs",
+      "Price badges (---) still show on Dream List cards"
+    ]
+  },
+  "button_styling_verification": {
+    "add_to_collection": {
+      "background": "linear-gradient(135deg, rgb(232, 168, 32), rgb(218, 165, 32))",
+      "color": "#1A1A1A",
+      "height": "28px"
+    },
+    "actively_seeking": {
+      "background": "rgba(255,215,0,0.1)",
+      "border": "2px solid rgb(218, 165, 32)",
+      "color": "#8B6914",
+      "height": "28px"
+    }
+  }
+}

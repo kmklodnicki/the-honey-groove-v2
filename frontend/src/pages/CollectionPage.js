@@ -361,6 +361,18 @@ const CollectionPage = () => {
     } catch { toast.error('could not promote to Actively Seeking.'); }
   };
 
+  const handleWishlistToCollection = async (isoId) => {
+    try {
+      const item = wishlistItems.find(i => i.id === isoId);
+      const res = await axios.post(`${API}/iso/${isoId}/convert-to-collection`, {}, { headers: { Authorization: `Bearer ${token}` }});
+      const updatedWishlist = wishlistItems.filter(i => i.id !== isoId);
+      setWishlistItems(updatedWishlist);
+      toast.success(res.data.message || `${item?.album || 'Record'} added to your collection!`);
+      // Refresh collection data
+      fetchData();
+    } catch { toast.error('could not add to collection.'); }
+  };
+
   const handleDeleteWishlistItem = async (isoId) => {
     try {
       await axios.delete(`${API}/iso/${isoId}`, { headers: { Authorization: `Bearer ${token}` }});
@@ -690,7 +702,7 @@ const CollectionPage = () => {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {wishlistItems.map(item => (
-                <WishlistCard key={item.id} item={item} onPromote={handleWishlistToISO} onDelete={handleDeleteWishlistItem} />
+                <WishlistCard key={item.id} item={item} onPromote={handleWishlistToISO} onAddToCollection={handleWishlistToCollection} onDelete={handleDeleteWishlistItem} />
               ))}
             </div>
           )}
@@ -927,7 +939,7 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
 };
 
 
-const WishlistCard = ({ item, onPromote, onDelete }) => (
+const WishlistCard = ({ item, onPromote, onAddToCollection, onDelete }) => (
   <Card className="group overflow-hidden border-stone-200/60 hover:shadow-md transition-all" data-testid={`wishlist-card-${item.id}`}>
     <Link to={item.discogs_id ? `/record/discogs-${item.discogs_id}` : '#'} className="block">
       <div className="relative aspect-square bg-stone-100">
@@ -976,14 +988,21 @@ const WishlistCard = ({ item, onPromote, onDelete }) => (
     <div className="p-3">
       <p className="font-medium text-sm truncate">{item.album}</p>
       <p className="text-xs text-muted-foreground truncate">{item.artist}</p>
-      <div className="flex gap-1.5 mt-2">
-        <Button size="sm" onClick={() => onPromote(item.id)}
-          className="flex-1 h-7 text-[11px] rounded-full bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-amber-950 hover:from-yellow-500 hover:to-amber-500 font-medium"
-          data-testid={`promote-btn-${item.id}`}>
-          <Sparkles className="w-3 h-3 mr-1" /> Bring to Collection
+      <div className="flex gap-2 mt-2">
+        <Button size="sm" onClick={() => onAddToCollection(item.id)}
+          className="flex-1 h-7 text-[10px] rounded-full font-semibold border-0"
+          style={{ background: 'linear-gradient(135deg, #E8A820, #DAA520)', color: '#1A1A1A' }}
+          data-testid={`add-to-collection-btn-${item.id}`}>
+          Add to Collection
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => onPromote(item.id)}
+          className="flex-1 h-7 text-[10px] rounded-full font-semibold"
+          style={{ background: 'rgba(255,215,0,0.1)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '2px solid #DAA520', color: '#8B6914' }}
+          data-testid={`actively-seeking-btn-${item.id}`}>
+          Actively Seeking
         </Button>
         <Button size="sm" variant="ghost" onClick={() => onDelete(item.id)}
-          className="h-7 w-7 p-0 text-stone-400 hover:text-red-500"
+          className="h-7 w-7 p-0 shrink-0 text-stone-400 hover:text-red-500"
           data-testid={`delete-wishlist-${item.id}`}>
           <Trash2 className="w-3.5 h-3.5" />
         </Button>
