@@ -315,11 +315,11 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const noteRecord = records.find(r => r.id === noteRecordId);
 
   const spectrum = [
-    { key: 'NOW_SPINNING', label: 'Now Spinning', icon: Disc, bg: 'linear-gradient(135deg, #FFB300, #FFA000)' },
-    { key: 'NEW_HAUL', label: 'Haul', icon: Package, bg: 'linear-gradient(135deg, #FFA000, #FF8F00)' },
-    { key: 'ISO', label: 'ISO', icon: Search, bg: 'linear-gradient(135deg, #FF8F00, #FF6F00)' },
-    { key: 'NOTE', label: 'Note', icon: Feather, bg: 'linear-gradient(135deg, #FF6F00, #F57C00)' },
-    { key: 'RANDOMIZER', label: 'Randomizer', icon: Shuffle, bg: 'linear-gradient(135deg, #F57C00, #E65100)' },
+    { key: 'NOW_SPINNING', label: 'Now Spinning', icon: Disc },
+    { key: 'NEW_HAUL', label: 'Haul', icon: Package },
+    { key: 'ISO', label: 'ISO', icon: Search },
+    { key: 'NOTE', label: 'Note', icon: Feather },
+    { key: 'RANDOMIZER', label: 'Randomizer', icon: Shuffle },
   ];
 
   return (
@@ -335,7 +335,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                 key={chip.key}
                 onClick={() => chip.key === 'RANDOMIZER' ? openRandomizer() : openModal(chip.key)}
                 className="h-9 w-9 aspect-square md:w-auto md:aspect-auto md:px-4 md:py-2 rounded-full text-sm font-semibold flex items-center justify-center gap-1.5 whitespace-nowrap transition-all hover:scale-105 hover:shadow-md"
-                style={{ background: chip.bg, color: '#fff' }}
+                style={{ background: '#FDE68A', color: '#78350F', border: '1px solid rgba(0,0,0,0.05)' }}
                 data-testid={`composer-chip-${chip.key.toLowerCase()}`}
               >
                 <Icon className="w-4 h-4 shrink-0" />

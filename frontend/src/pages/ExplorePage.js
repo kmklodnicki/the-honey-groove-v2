@@ -18,6 +18,8 @@ import { ListingTypeBadge } from '../components/PostCards';
 import ScrollRow from '../components/ScrollRow';
 import { useVariantModal } from '../context/VariantModalContext';
 
+const COUNTRY_NAMES = {US:'United States',GB:'United Kingdom',CA:'Canada',AU:'Australia',DE:'Germany',FR:'France',JP:'Japan',NL:'Netherlands',SE:'Sweden',IT:'Italy',ES:'Spain',BR:'Brazil',MX:'Mexico',NZ:'New Zealand',IE:'Ireland',NO:'Norway',DK:'Denmark',FI:'Finland',BE:'Belgium',AT:'Austria',CH:'Switzerland',PT:'Portugal',PL:'Poland',CZ:'Czech Republic',KR:'South Korea',TW:'Taiwan',SG:'Singapore',ZA:'South Africa',AR:'Argentina',CL:'Chile',CO:'Colombia',PH:'Philippines',IN:'India',IL:'Israel',GR:'Greece',HU:'Hungary',RO:'Romania',HR:'Croatia',SK:'Slovakia',BG:'Bulgaria',RS:'Serbia',UA:'Ukraine',TH:'Thailand',MY:'Malaysia',ID:'Indonesia',VN:'Vietnam',HK:'Hong Kong',AE:'UAE',SA:'Saudi Arabia'};
+
 const ExplorePage = () => {
   usePageTitle('Nectar');
   const { user, token, API } = useAuth();
@@ -323,7 +325,7 @@ const ExplorePage = () => {
                     </Link>
                     <div className="flex-1 min-w-0">
                       <Link to={`/profile/${u.username}`} className="text-sm font-medium hover:underline">@{u.username}</Link>
-                      <p className="text-[10px] text-muted-foreground">{u.region}</p>
+                      <p className="text-[10px] text-muted-foreground">{u.country === 'US' ? `${u.region || ''}, USA` : (COUNTRY_NAMES[u.country] || u.country || u.region || '')}</p>
                       <p className="text-[10px] text-muted-foreground">{u.collection_count} records{u.active_listings > 0 ? ` · ${u.active_listings} listings` : ''}</p>
                     </div>
                     <Button size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-full shrink-0" onClick={() => navigate(`/messages?to=${u.id}`)}>
