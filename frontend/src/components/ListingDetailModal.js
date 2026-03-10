@@ -375,8 +375,8 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                       </div>
                       <div className="relative">
                         <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input placeholder="Shipping cost" type="number" value={editShippingCost} onChange={e => setEditShippingCost(e.target.value)} className="pl-9 border-honey/50" data-testid="edit-shipping-input" />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">shipping</span>
+                        <Input placeholder="Domestic Shipping" type="number" value={editShippingCost} onChange={e => setEditShippingCost(e.target.value)} className="pl-9 border-honey/50" data-testid="edit-shipping-input" />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">domestic</span>
                       </div>
                     </div>
                   )}
@@ -408,7 +408,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                   </div>
 
                   {/* Insurance & International Shipping */}
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     <label className="flex items-center gap-2.5 cursor-pointer" data-testid="edit-insured-checkbox">
                       <input type="checkbox" checked={editInsured} onChange={e => setEditInsured(e.target.checked)} className="w-4 h-4 rounded border-honey/50 accent-[#E8A820]" />
                       <span className="text-sm">Shipping insurance</span>
@@ -417,15 +417,19 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                       <input type="checkbox" checked={editIntlShipping} onChange={e => setEditIntlShipping(e.target.checked)} className="w-4 h-4 rounded border-honey/50 accent-[#E8A820]" />
                       <span className="text-sm">Offer International Shipping</span>
                     </label>
-                    {editIntlShipping && (
-                      <div className="pl-[26px]">
-                        <div className="relative">
-                          <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                          <Input placeholder="International shipping cost" type="number" value={editIntlShippingCost} onChange={e => setEditIntlShippingCost(e.target.value)} className="pl-9 border-honey/50" data-testid="edit-intl-shipping-cost-input" />
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">intl shipping</span>
-                        </div>
-                      </div>
-                    )}
+                    <div className="relative">
+                      <DollarSign className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-opacity ${!editIntlShipping ? 'opacity-50' : ''}`} />
+                      <Input
+                        placeholder="International Shipping"
+                        type="number"
+                        value={editIntlShippingCost}
+                        onChange={e => setEditIntlShippingCost(e.target.value)}
+                        disabled={!editIntlShipping}
+                        className={`pl-9 border-honey/50 transition-opacity ${!editIntlShipping ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        data-testid="edit-intl-shipping-cost-input"
+                      />
+                      <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground transition-opacity ${!editIntlShipping ? 'opacity-50' : ''}`}>intl</span>
+                    </div>
                   </div>
 
                   {/* Save / Cancel */}

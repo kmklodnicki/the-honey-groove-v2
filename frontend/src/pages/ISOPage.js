@@ -864,11 +864,11 @@ const ISOPage = () => {
                       </p>
                     )}
 
-                    {/* Shipping Cost */}
+                    {/* Domestic Shipping */}
                     <div className="relative">
                       <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input placeholder="Shipping cost" type="number" value={listShippingCost} onChange={e => setListShippingCost(e.target.value)} className="pl-9 border-honey/50" data-testid="list-shipping-cost-input" />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">shipping</span>
+                      <Input placeholder="Domestic Shipping" type="number" value={listShippingCost} onChange={e => setListShippingCost(e.target.value)} className="pl-9 border-honey/50" data-testid="list-shipping-cost-input" />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">domestic</span>
                     </div>
 
                     {/* Payout Estimator */}
@@ -954,18 +954,19 @@ const ISOPage = () => {
                     />
                     <span className="text-sm text-foreground group-hover:text-[#C8861A] transition-colors">Offer International Shipping</span>
                   </label>
-                  {internationalShipping && (
-                    <div className="pl-[26px] space-y-2.5">
-                      <div className="relative">
-                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input placeholder="International shipping cost" type="number" value={listIntlShippingCost} onChange={e => setListIntlShippingCost(e.target.value)} className="pl-9 border-honey/50" data-testid="list-intl-shipping-cost-input" />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">intl shipping</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Tip: enter the shipping cost for international orders. This will be shown separately to buyers outside your country.
-                      </p>
-                    </div>
-                  )}
+                  <div className="relative">
+                    <DollarSign className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-opacity ${!internationalShipping ? 'opacity-50' : ''}`} />
+                    <Input
+                      placeholder="International Shipping"
+                      type="number"
+                      value={listIntlShippingCost}
+                      onChange={e => setListIntlShippingCost(e.target.value)}
+                      disabled={!internationalShipping}
+                      className={`pl-9 border-honey/50 transition-opacity ${!internationalShipping ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      data-testid="list-intl-shipping-cost-input"
+                    />
+                    <span className={`absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground transition-opacity ${!internationalShipping ? 'opacity-50' : ''}`}>intl</span>
+                  </div>
                 </div>
 
                 <Button onClick={submitListing} disabled={submitting || listPhotos.length === 0 || (manualMode && (!listArtist || !listAlbum)) || (!manualMode && !selectedRelease) || (sellerStats && sellerStats.completed_transactions < 3 && parseFloat(listPrice) > 150)}
