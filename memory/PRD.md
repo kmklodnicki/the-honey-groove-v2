@@ -194,6 +194,9 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - Added proper singular/plural formatting for "record(s) in common" across Make Friends cards
 - Removed duplicate "in common" display from Make Friends carousel
 - **International Shipping Cost Feature:** Added `international_shipping_cost` field to listings. Sellers can now toggle "Offer International Shipping" which reveals a separate international shipping cost input. Listing detail displays "Shipping: $X (Domestic)" + "International Shipping: $Y" or "International Shipping: Not Available". Backend stores/returns the field with proper validation (disabling intl shipping clears the cost). Legacy data compatibility handled.
+- Renamed `addToWantlist` → `addToSeekingList` globally across frontend
+- Updated shipping field labels: "Domestic Shipping" + "International Shipping" with proper form layout (intl fields directly below domestic)
+- **Hive Randomizer Feature:** Added Randomizer chip to ComposerBar. Picks a random record from user's owned collection (excludes dream list, ISOs, wantlist). Modal shows album art, title, artist, variant + caption field + 4 buttons: Post to Hive, Spin This Now, Try Another, Cancel. Backend endpoint `GET /api/collection/random` uses MongoDB $sample aggregation. Shuffle animation on load.
 
 ### Future / Backlog
 - Refactor `ISOPage.js` and `ProfilePage.js` to reduce complexity (break into smaller components)
