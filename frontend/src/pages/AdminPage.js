@@ -950,12 +950,11 @@ const SaleDisputesSection = ({ API, headers }) => {
 // ═══════════════════════════════════════════════
 // REPORTS REVIEW SECTION
 // ═══════════════════════════════════════════════
-const REPORT_STATUSES = ['Pending', 'Reviewed', 'Actioned', 'Dismissed'];
+const REPORT_STATUSES = ['Pending', 'Reviewing', 'Resolved'];
 const STATUS_COLORS = {
   Pending: 'bg-yellow-100 text-yellow-700',
-  Reviewed: 'bg-blue-100 text-blue-700',
-  Actioned: 'bg-red-100 text-red-700',
-  Dismissed: 'bg-zinc-100 text-zinc-600',
+  Reviewing: 'bg-blue-100 text-blue-700',
+  Resolved: 'bg-green-100 text-green-700',
 };
 
 const ReportsSection = ({ API, headers }) => {

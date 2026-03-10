@@ -34,7 +34,8 @@ const MOOD_CONFIG = {
 const MOOD_KEYS = Object.keys(MOOD_CONFIG);
 
 const ComposerBar = ({ onPostCreated, records = [] }) => {
-  const { token, API } = useAuth();
+  const { token, API, user } = useAuth();
+  const isAdmin = user?.is_admin === true;
   const [activeModal, setActiveModal] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -583,16 +584,16 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
             <MentionTextarea
               placeholder="what's on your mind?"
               value={noteText}
-              onChange={v => setNoteText(v.slice(0, 1500))}
+              onChange={v => setNoteText(isAdmin ? v : v.slice(0, 1500))}
               className="border-stone-200 resize-none text-base min-h-[120px] focus-visible:ring-amber-300"
               rows={4}
-              maxLength={1500}
+              maxLength={isAdmin ? undefined : 1500}
               autoFocus
               data-testid="note-text-input"
             />
             <div className="flex items-center justify-between">
               <span className={`text-xs ${noteText.length > 260 ? 'text-amber-600 font-medium' : 'text-muted-foreground'}`}>
-                {noteText.length}/1500
+                {isAdmin ? `${noteText.length} chars` : `${noteText.length}/1500`}
               </span>
               <div className="flex items-center gap-3">
                 {/* Tag a record */}
