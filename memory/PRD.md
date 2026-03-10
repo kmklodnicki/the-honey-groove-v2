@@ -256,7 +256,8 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - **Command Center Styling:** Unified all Hive Action buttons into a single horizontal row with `flex-nowrap` and `overflow-x-auto`. All buttons use identical Honey-to-Amber gradient (`#FFD700→#DAA520`), dark text (`#1A1A1A`), `h-9` height, `rounded-full`, and `font-semibold`. Scrollable on mobile.
 - **Heritage Spectrum & Ultra-Fit (BLOCK 137):** Renamed 'New Haul'→'Haul', 'A Note'→'Note'. Discord CTA added to Report Modal top.
 - **Honey-Orange Gradient & Control Dial (BLOCK 137 v2):** Replaced gold palette with warm Honey-to-Deep-Orange spectrum. White text/icons. Mobile (<768px): ALL buttons become icon-only uniform 36px circles (aspect-square "Control Dial" look). `justify-between`, `w-full`, zero scroll.
-- **Honey-Orange Spectrum Reflux & Hive Layout (BLOCK 141):** Progressive 135deg gradients starting from Buzz In orange: Now Spinning=gradient(#FF9800→#F57C00), Haul=gradient(#F57C00→#EF6C00), ISO=gradient(#EF6C00→#E65100), Note=gradient(#E65100→#D84315), Randomizer=gradient(#D84315→#BF360C). Hive page reordered: Title → All/Following Toggle → Composer Bar → Filter Chips → Feed. Buzz In synced to match Now Spinning gradient.
+- **Honey-Orange Spectrum Reflux & Hive Layout (BLOCK 141):** Progressive 135deg gradients. Hive page reordered: Title → All/Following Toggle → Composer Bar → Filter Chips → Feed.
+- **Monochromatic Honey Spectrum (BLOCK 144):** Removed all red/burnt-orange. Pure honey/amber fade: Spin=#FFB300→#FFA000, Haul=#FFA000→#FF8F00, ISO=#FF8F00→#FF6F00, Note=#FF6F00→#F57C00, Shuffle=#F57C00→#E65100. All primary buttons (Buzz In, All/Following active) synced to Icon 1 gradient.
 
 ### Future / Backlog
 - **P0:** User's secret search feature (details TBD — user has mentioned multiple times)
