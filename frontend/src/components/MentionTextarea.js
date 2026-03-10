@@ -37,8 +37,8 @@ const MentionTextarea = ({ value, onChange, placeholder, rows = 2, maxLength, cl
   }, []);
 
   const handleChange = (e) => {
-    const text = e.target.value;
-    if (maxLength && text.length > maxLength) return;
+    let text = e.target.value;
+    if (maxLength && text.length > maxLength) text = text.slice(0, maxLength);
     onChange(text);
 
     const cursorPos = e.target.selectionStart;
