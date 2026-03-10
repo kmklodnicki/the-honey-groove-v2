@@ -193,6 +193,7 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - Fixed "Records in Common" count mismatch in Make Friends cards — was using `shared_records` (nonexistent field) instead of `common_count` from the `my-kinda-people` API
 - Added proper singular/plural formatting for "record(s) in common" across Make Friends cards
 - Removed duplicate "in common" display from Make Friends carousel
+- **International Shipping Cost Feature:** Added `international_shipping_cost` field to listings. Sellers can now toggle "Offer International Shipping" which reveals a separate international shipping cost input. Listing detail displays "Shipping: $X (Domestic)" + "International Shipping: $Y" or "International Shipping: Not Available". Backend stores/returns the field with proper validation (disabling intl shipping clears the cost). Legacy data compatibility handled.
 
 ### Future / Backlog
 - Refactor `ISOPage.js` and `ProfilePage.js` to reduce complexity (break into smaller components)
