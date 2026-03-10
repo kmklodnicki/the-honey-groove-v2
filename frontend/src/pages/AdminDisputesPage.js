@@ -142,7 +142,7 @@ const DisputeCard = ({ trade, onSelect, resolved }) => {
       {/* The exchange */}
       <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-3 mb-3">
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <AlbumArt src={trade.offered_record.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
+          <AlbumArt src={trade.offered_record.cover_url} alt={`${trade.offered_record.artist} ${trade.offered_record.title} vinyl record`} className="w-10 h-10 rounded object-cover" />
           <div className="min-w-0">
             <p className="text-sm font-medium truncate">{trade.offered_record?.title || 'Unknown'}</p>
             <p className="text-xs text-muted-foreground">@{trade.initiator?.username}</p>

@@ -346,7 +346,7 @@ const OnboardingModal = ({ open, onComplete }) => {
                     {addedRecords.map((r, i) => (
                       <div key={i} className="shrink-0 relative group">
                         {r.cover_url ? (
-                          <AlbumArt src={r.cover_url} alt="" className="w-16 h-16 rounded-lg object-cover shadow-sm" />
+                          <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} className="w-16 h-16 rounded-lg object-cover shadow-sm" />
                         ) : (
                           <div className="w-16 h-16 rounded-lg bg-stone-100 flex items-center justify-center"><Disc className="w-6 h-6 text-stone-400" /></div>
                         )}
@@ -385,7 +385,7 @@ const OnboardingModal = ({ open, onComplete }) => {
             {spinRecord && (
               <div className="flex items-center gap-3 bg-amber-50 rounded-xl p-3" data-testid="onboarding-spin-selected">
                 {spinRecord.cover_url ? (
-                  <AlbumArt src={spinRecord.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow-sm" />
+                  <AlbumArt src={spinRecord.cover_url} alt={`${spinRecord.artist} ${spinRecord.title} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow-sm" />
                 ) : (
                   <div className="w-14 h-14 rounded-lg bg-amber-100 flex items-center justify-center"><Disc className="w-6 h-6 text-amber-400" /></div>
                 )}
@@ -430,7 +430,7 @@ const OnboardingModal = ({ open, onComplete }) => {
                       {addedRecords.slice(0, 8).map((r, i) => (
                         <button key={i} onClick={() => pickSpinRecord(r)} className="shrink-0 group" data-testid={`onboarding-quick-pick-${i}`}>
                           {r.cover_url ? (
-                            <AlbumArt src={r.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow-sm group-hover:ring-2 ring-amber-400 transition-all" />
+                            <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow-sm group-hover:ring-2 ring-amber-400 transition-all" />
                           ) : (
                             <div className="w-14 h-14 rounded-lg bg-stone-100 flex items-center justify-center group-hover:ring-2 ring-amber-400 transition-all"><Disc className="w-5 h-5 text-stone-400" /></div>
                           )}

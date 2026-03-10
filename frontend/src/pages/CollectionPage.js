@@ -458,7 +458,7 @@ const CollectionPage = () => {
                   <Link key={gem.id} to={`/record/${gem.id}`}>
                     <Card className="p-3 border-honey/30 flex items-center gap-3 hover:shadow-md transition-all cursor-pointer" data-testid={`hidden-gem-${idx}`}>
                     <div className="relative shrink-0">
-                      <AlbumArt src={gem.cover_url} alt={`${gem.artist} - ${gem.title} Vinyl Record`} className="w-14 h-14 rounded-lg object-cover shadow-sm" />
+                      <AlbumArt src={gem.cover_url} alt={`${gem.artist} ${gem.title}${gem.color_variant ? ` ${gem.color_variant}` : ''} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow-sm" />
                       <span className="absolute -top-1.5 -left-1.5 w-5 h-5 bg-honey rounded-full flex items-center justify-center text-[10px] font-bold text-vinyl-black shadow">
                         {idx + 1}
                       </span>
@@ -728,7 +728,7 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
           {record.cover_url ? (
             <AlbumArt 
               src={record.cover_url} 
-              alt={`${record.artist} - ${record.title} Vinyl Record`}
+              alt={`${record.artist} ${record.title}${record.color_variant ? ` ${record.color_variant}` : ''} vinyl record`}
               className={`w-full h-full object-cover ${isSpinning ? 'animate-spin-slow' : ''}`}
             />
           ) : (
@@ -836,7 +836,7 @@ const WishlistCard = ({ item, onPromote, onDelete }) => (
     <Link to={item.discogs_id ? `/record/discogs-${item.discogs_id}` : '#'} className="block">
       <div className="relative aspect-square bg-stone-100">
         {item.cover_url ? (
-          <AlbumArt src={item.cover_url} alt={`${item.artist} - ${item.album}`} className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity" />
+          <AlbumArt src={item.cover_url} alt={`${item.artist} ${item.album}${item.color_variant ? ` ${item.color_variant}` : ''} vinyl record`} className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity" />
         ) : (
           <div className="w-full h-full flex items-center justify-center"><Disc className="w-10 h-10 text-stone-300" /></div>
         )}

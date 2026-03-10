@@ -359,7 +359,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                 <div className="flex items-center gap-3 rounded-lg p-2.5"
                   style={moodCfg ? { background: 'rgba(255,255,255,0.08)', borderColor: moodCfg.btnColor + '40' } : { background: 'rgba(244,185,66,0.1)' }}>
                   {spinSelectedRecord.cover_url ? (
-                    <AlbumArt src={spinSelectedRecord.cover_url} alt="" className="w-11 h-11 rounded-md object-cover shadow-sm" />
+                    <AlbumArt src={spinSelectedRecord.cover_url} alt={`${spinSelectedRecord.artist} ${spinSelectedRecord.title} vinyl record`} className="w-11 h-11 rounded-md object-cover shadow-sm" />
                   ) : (
                     <div className="w-11 h-11 rounded-md bg-stone-100 flex items-center justify-center"><Disc className="w-5 h-5 text-stone-400" /></div>
                   )}
@@ -455,7 +455,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               <div className="space-y-2">
                 {haulItems.map((item, idx) => (
                   <div key={idx} className="flex items-center gap-2 bg-honey/10 rounded-lg px-3 py-2">
-                    <AlbumArt src={item.cover_url} alt="" className="w-8 h-8 rounded object-cover" />
+                    <AlbumArt src={item.cover_url} alt={`${item.artist} ${item.title} vinyl record`} className="w-8 h-8 rounded object-cover" />
                     <span className="flex-1 text-sm truncate">{item.artist} · {item.title}</span>
                     <button onClick={() => setHaulItems(prev => prev.filter((_, i) => i !== idx))} className="text-muted-foreground hover:text-red-500"><X className="w-4 h-4" /></button>
                   </div>
@@ -500,7 +500,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               </>
             ) : isoSelectedRelease ? (
               <div className="flex items-center gap-3 bg-blue-50 rounded-lg p-3">
-                {isoSelectedRelease.cover_url ? <AlbumArt src={isoSelectedRelease.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow" /> : <Disc className="w-14 h-14 text-blue-300" />}
+                {isoSelectedRelease.cover_url ? <AlbumArt src={isoSelectedRelease.cover_url} alt={`${isoSelectedRelease.artist} ${isoSelectedRelease.title} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow" /> : <Disc className="w-14 h-14 text-blue-300" />}
                 <div className="flex-1 min-w-0"><p className="font-heading text-base">{isoSelectedRelease.title}</p><p className="text-sm text-muted-foreground">{isoSelectedRelease.artist} {isoSelectedRelease.year ? `(${isoSelectedRelease.year})` : ''}</p></div>
                 <button onClick={() => { setIsoSelectedRelease(null); setIsoArtist(''); setIsoAlbum(''); }} className="text-xs text-muted-foreground hover:text-red-500">Change</button>
               </div>
@@ -591,7 +591,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
             {noteRecord && (
               <div className="flex items-center gap-2 bg-stone-50 rounded-lg px-3 py-2" data-testid="note-tagged-record">
                 {noteRecord.cover_url ? (
-                  <AlbumArt src={noteRecord.cover_url} alt="" className="w-8 h-8 rounded object-cover" />
+                  <AlbumArt src={noteRecord.cover_url} alt={`${noteRecord.artist} ${noteRecord.title} vinyl record`} className="w-8 h-8 rounded object-cover" />
                 ) : (
                   <div className="w-8 h-8 rounded bg-stone-200 flex items-center justify-center"><Disc className="w-4 h-4 text-stone-400" /></div>
                 )}

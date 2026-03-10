@@ -247,7 +247,7 @@ const ExplorePage = () => {
               <button key={r.id} onClick={() => openTrendingModal(r)}
                 className="flex-shrink-0 w-36 text-left group" data-testid={`trending-${r.id}`}>
                 <div className="aspect-square rounded-xl overflow-hidden bg-honey/10 mb-2 shadow-sm group-hover:shadow-md transition-shadow">
-                  <AlbumArt src={r.cover_url} alt="" className="w-full h-full object-cover" />
+                  <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} className="w-full h-full object-cover" />
                 </div>
                 <p className="text-sm font-medium truncate">{r.title}</p>
                 <p className="text-xs text-muted-foreground truncate">{r.artist}</p>
@@ -300,7 +300,7 @@ const ExplorePage = () => {
             {trendingCollections.map((r, idx) => (
               <button key={r.discogs_id || idx} onClick={() => openTrendingModal(r)} className="flex-shrink-0 w-40 text-left group" data-testid={`trending-collection-${r.discogs_id || idx}`}>
                 <div className="aspect-square rounded-xl overflow-hidden bg-honey/10 mb-2 shadow-sm relative group-hover:shadow-md transition-shadow">
-                  <AlbumArt src={r.cover_url} alt="" className="w-full h-full object-cover" />
+                  <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} className="w-full h-full object-cover" />
                   <span
                     role="button"
                     onClick={(e) => { e.stopPropagation(); addToWantlist(r.artist, r.title, r.discogs_id, r.cover_url, r.year); }}
@@ -328,7 +328,7 @@ const ExplorePage = () => {
               <button key={`${r.artist}-${r.album}`} onClick={() => openTrendingModal({ ...r, title: r.album })}
                 className="flex items-center gap-3 py-2 px-1 rounded-lg hover:bg-honey/5 transition-colors w-full text-left" data-testid={`most-wanted-${idx}`}>
                 <span className="text-sm font-heading text-honey-amber w-6 text-right shrink-0">{idx + 1}</span>
-                <AlbumArt src={r.cover_url} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} className="w-10 h-10 rounded-lg object-cover" />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{r.album}</p>
                   <p className="text-xs text-muted-foreground truncate">{r.artist}{r.year ? ` (${r.year})` : ''}</p>
@@ -388,7 +388,7 @@ const ExplorePage = () => {
                   {nearYou.listings.map(l => (
                     <Card key={l.id} className="flex-shrink-0 w-40 p-2 border-honey/30" data-testid={`nearby-listing-${l.id}`}>
                       <div className="aspect-square rounded-lg overflow-hidden bg-honey/10 mb-1.5">
-                        {(l.photo_urls?.[0] || l.cover_url) ? <AlbumArt src={l.photo_urls?.[0] || l.cover_url} alt="" className="w-full h-full object-cover" />
+                        {(l.photo_urls?.[0] || l.cover_url) ? <AlbumArt src={l.photo_urls?.[0] || l.cover_url} alt={`${l.artist} ${l.album} vinyl record`} className="w-full h-full object-cover" />
                           : <div className="w-full h-full flex items-center justify-center"><Disc className="w-8 h-8 text-honey" /></div>}
                       </div>
                       <p className="text-xs font-medium truncate">{l.album}</p>
@@ -418,7 +418,7 @@ const ExplorePage = () => {
               {/* Record card */}
               <div className="flex items-center gap-4 mb-3 bg-honey/10 rounded-xl p-3">
                 {trendingModal.record?.cover_url ? (
-                  <AlbumArt src={trendingModal.record.cover_url} alt="" className="w-20 h-20 rounded-lg object-cover shadow" />
+                  <AlbumArt src={trendingModal.record.cover_url} alt={`${trendingModal.record.artist} ${trendingModal.record.title} vinyl record`} className="w-20 h-20 rounded-lg object-cover shadow" />
                 ) : (
                   <div className="w-20 h-20 rounded-lg bg-honey/20 flex items-center justify-center"><Disc className="w-8 h-8 text-honey" /></div>
                 )}

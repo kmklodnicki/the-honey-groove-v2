@@ -918,7 +918,7 @@ const HivePage = () => {
               {/* Album card */}
               <div className="flex items-center gap-4 mb-3 bg-honey/10 rounded-xl p-3">
                 {albumModal.record?.cover_url ? (
-                  <AlbumArt src={albumModal.record.cover_url} alt={`${albumModal.record.title} by ${albumModal.record.artist}`} className="w-20 h-20 rounded-lg object-cover shadow" />
+                  <AlbumArt src={albumModal.record.cover_url} alt={`${albumModal.record.artist} ${albumModal.record.title}${albumModal.record.color_variant ? ` ${albumModal.record.color_variant}` : ''} vinyl record`} className="w-20 h-20 rounded-lg object-cover shadow" />
                 ) : (
                   <div className="w-20 h-20 rounded-lg bg-honey/20 flex items-center justify-center"><Disc className="w-8 h-8 text-honey" /></div>
                 )}

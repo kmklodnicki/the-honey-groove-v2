@@ -109,7 +109,7 @@ const RecordDetailPage = () => {
         <div className="shrink-0">
           <div className="w-full md:w-80 aspect-square rounded-2xl overflow-hidden bg-honey/10 shadow-lg shadow-black/5">
             {record.cover_url ? (
-              <AlbumArt src={record.cover_url} alt={`${record.artist} - ${record.title} vinyl record cover`} className="w-full h-full object-cover" data-testid="record-cover" />
+              <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${record.color_variant ? ` ${record.color_variant}` : ''} vinyl record`} className="w-full h-full object-cover" data-testid="record-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <Disc className="w-20 h-20 text-honey/30" />
@@ -161,7 +161,7 @@ const RecordDetailPage = () => {
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span>Added by</span>
               <Link to={`/profile/${owner.username}`} className="flex items-center gap-1.5 text-vinyl-black hover:text-honey-amber transition-colors" data-testid="record-owner-link">
-                <img src={resolveImageUrl(owner.avatar_url)} alt="" className="w-5 h-5 rounded-full" />
+                <img src={resolveImageUrl(owner.avatar_url)} alt={`${owner.username} avatar`} className="w-5 h-5 rounded-full" />
                 <span className="font-medium">@{owner.username}</span>
               </Link>
             </div>
@@ -238,7 +238,7 @@ const RecordDetailPage = () => {
               <Link key={o.id} to={`/profile/${o.username}`}
                 className="flex items-center gap-2 px-3 py-2 rounded-full bg-honey/8 hover:bg-honey/15 transition-colors"
                 data-testid={`owner-${o.username}`}>
-                <img src={resolveImageUrl(o.avatar_url)} alt="" className="w-6 h-6 rounded-full" />
+                <img src={resolveImageUrl(o.avatar_url)} alt={`${o.username} avatar`} className="w-6 h-6 rounded-full" />
                 <span className="text-sm font-medium">@{o.username}</span>
               </Link>
             ))}
@@ -263,7 +263,7 @@ const RecordDetailPage = () => {
                 <div className="flex items-start gap-3">
                   {post.user && (
                     <Link to={`/profile/${post.user.username}`}>
-                      <img src={resolveImageUrl(post.user.avatar_url)} alt="" className="w-8 h-8 rounded-full" />
+                      <img src={resolveImageUrl(post.user.avatar_url)} alt={`${post.user.username} avatar`} className="w-8 h-8 rounded-full" />
                     </Link>
                   )}
                   <div className="flex-1 min-w-0">

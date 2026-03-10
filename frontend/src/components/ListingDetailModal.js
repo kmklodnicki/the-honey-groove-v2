@@ -382,7 +382,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                     <div className="grid grid-cols-4 gap-2">
                       {editPhotos.map((photo, idx) => (
                         <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-honey/30 group">
-                          <img src={photo.preview || resolveImageUrl(photo.url)} alt={`${listing.artist} - ${listing.album} listing photo ${idx + 1}`} className="w-full h-full object-cover" />
+                          <img src={photo.preview || resolveImageUrl(photo.url)} alt={`${listing.artist} ${listing.album} vinyl record photo ${idx + 1}`} className="w-full h-full object-cover" />
                           <button onClick={() => removeEditPhoto(idx)} className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity" data-testid={`edit-remove-photo-${idx}`}>
                             <X className="w-3 h-3 text-white" />
                           </button>
@@ -431,7 +431,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                     <div className="relative max-w-[480px] w-full">
                       <AlbumArt
                         src={photos[0] || listing.cover_url}
-                        alt={`${listing.artist} - ${listing.album} vinyl record cover`}
+                        alt={`${listing.artist} ${listing.album}${listing.pressing_notes || listing.color_variant ? ` ${listing.pressing_notes || listing.color_variant}` : ''} vinyl record`}
                         className="w-full aspect-square object-cover rounded-2xl shadow-lg"
                         data-testid="listing-modal-art"
                       />
@@ -497,7 +497,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                           <button key={i} onClick={() => setExpandedPhoto(i)}
                             className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border border-stone-200 hover:border-amber-300 transition-colors"
                             data-testid={`listing-photo-thumb-${i}`}>
-                            <img src={resolveImageUrl(url)} alt={`${listing.artist} - ${listing.album} vinyl record photo ${i + 1}`} className="w-full h-full object-cover" />
+                            <img src={resolveImageUrl(url)} alt={`${listing.artist} ${listing.album} vinyl record photo ${i + 1}`} className="w-full h-full object-cover" />
                           </button>
                         ))}
                       </div>
@@ -714,7 +714,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                           <button key={s.id} onClick={() => { setListing(null); setLoading(true); }}
                             className="flex-shrink-0 w-28 text-left" data-testid={`similar-listing-${s.id}`}>
                             <div className="w-28 h-28 rounded-lg overflow-hidden bg-stone-100 mb-1">
-                              <AlbumArt src={s.cover_url} alt={`${s.artist} - ${s.album} vinyl record cover`} className="w-full h-full object-cover" />
+                              <AlbumArt src={s.cover_url} alt={`${s.artist} ${s.album} vinyl record`} className="w-full h-full object-cover" />
                             </div>
                             <p className="text-xs font-medium truncate">{s.album}</p>
                             <p className="text-[10px] text-muted-foreground truncate">{s.price ? `$${s.price}` : 'Trade'}</p>

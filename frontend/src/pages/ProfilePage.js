@@ -881,7 +881,7 @@ const ProfilePage = () => {
               {spins.map(spin => (
                 <Card key={spin.id} className="p-4 border-honey/30 flex items-center gap-4" data-testid={`spin-${spin.id}`}>
                   {spin.record?.cover_url ? (
-                    <AlbumArt src={spin.record.cover_url} alt="" className="w-14 h-14 rounded-lg object-cover shadow" />
+                    <AlbumArt src={spin.record.cover_url} alt={`${spin.record.artist} ${spin.record.title} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow" />
                   ) : (
                     <div className="w-14 h-14 rounded-lg bg-vinyl-black flex items-center justify-center">
                       <Disc className="w-6 h-6 text-honey" />
@@ -929,7 +929,7 @@ const ProfilePage = () => {
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         {trade.offered_record?.cover_url ? (
-                          <AlbumArt src={trade.offered_record.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
+                          <AlbumArt src={trade.offered_record.cover_url} alt={`${trade.offered_record.artist} ${trade.offered_record.title} vinyl record`} className="w-10 h-10 rounded object-cover" />
                         ) : (
                           <div className="w-10 h-10 rounded bg-honey/20 flex items-center justify-center"><Disc className="w-4 h-4 text-honey" /></div>
                         )}
@@ -941,7 +941,7 @@ const ProfilePage = () => {
                       <ArrowRightLeft className="w-4 h-4 text-honey shrink-0" />
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         {trade.listing_record?.cover_url ? (
-                          <AlbumArt src={trade.listing_record.cover_url} alt="" className="w-10 h-10 rounded object-cover" />
+                          <AlbumArt src={trade.listing_record.cover_url} alt={`${trade.listing_record.artist} ${trade.listing_record.title} vinyl record`} className="w-10 h-10 rounded object-cover" />
                         ) : (
                           <div className="w-10 h-10 rounded bg-honey/20 flex items-center justify-center"><Disc className="w-4 h-4 text-honey" /></div>
                         )}
