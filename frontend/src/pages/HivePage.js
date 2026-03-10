@@ -704,7 +704,7 @@ const HivePage = () => {
                 ? 'text-white shadow-sm'
                 : 'text-stone-500 hover:text-stone-700'
             }`}
-            style={feedMode === 'all' ? { background: 'linear-gradient(135deg, #F4B942 0%, #C8861A 100%)' } : {}}
+            style={feedMode === 'all' ? { background: 'linear-gradient(135deg, #FFB300 0%, #FFA000 100%)' } : {}}
             data-testid="feed-mode-all"
           >
             All
@@ -716,7 +716,7 @@ const HivePage = () => {
                 ? 'text-white shadow-sm'
                 : 'text-stone-500 hover:text-stone-700'
             }`}
-            style={feedMode === 'following' ? { background: 'linear-gradient(135deg, #F4B942 0%, #C8861A 100%)' } : {}}
+            style={feedMode === 'following' ? { background: 'linear-gradient(135deg, #FFB300 0%, #FFA000 100%)' } : {}}
             data-testid="feed-mode-following"
           >
             Following
