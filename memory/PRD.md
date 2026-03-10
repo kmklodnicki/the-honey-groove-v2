@@ -171,11 +171,16 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - HONEY Order ID Branding (BLOCK 4.3) - DONE
 - Navbar Report Button - DONE
 
+- **Interactive Variant Tracker Checkboxes** - DONE (2026-03-10). Missing variants in the Variant Tracker now have clickable checkboxes. Clicking opens an AlertDialog confirmation ("Add to Collection?"). Confirming calls POST /api/records to add the variant, updates the progress bar and owned count in real-time, shows a toast notification, and triggers confetti on 100% completion. Unauthenticated users see "sign in to add" text. Handles 409 (already in collection) gracefully. File: VariantCompletion.js.
+
 ### Future / Backlog
+- Refactor `ISOPage.js` and `ProfilePage.js` to reduce complexity (break into smaller components)
+- Rename `addToWantlist` function to `addToSeekingList` across frontend for code clarity
 - Safari-compatible loading animation
 - "Pro" memberships / "Verified Seller" badge
 - Buyer Protection features
 - Re-enable Instagram sharing
+- Make "New Music Friday" section of Weekly Wax dynamically editable by admin
 - Golden Hive badge on user displays throughout app
 - Break down GlobalSearch.js
 - Replace star imports in backend
