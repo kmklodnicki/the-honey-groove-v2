@@ -828,17 +828,14 @@ async def get_taste_match(username: str, user: Dict = Depends(require_auth)):
         async for val in db.collection_values.find({"release_id": {"$in": list(shared_dream_discogs)}}, {"_id": 0}):
             shared_dream_value += val.get("median_value", 0)
 
-    # Calculate score
+    # Calculate score — based only on owned collection overlap
     shared_artist_count = len(my_artists & their_artists)
-    shared_wish_artist_count = len(my_wish_artists & their_wish_artists)
     total_artists = len(my_artists | their_artists) or 1
-    total_wish_artists = len(my_wish_artists | their_wish_artists) or 1
 
     artist_score = shared_artist_count / total_artists
     record_score = len(shared_discogs) / max(len(my_discogs | their_discogs), 1)
-    wish_score = shared_wish_artist_count / total_wish_artists
 
-    score = round((artist_score * 50 + record_score * 30 + wish_score * 20) * 100)
+    score = round((artist_score * 60 + record_score * 40) * 100)
     score = min(score, 100)
 
     label = None

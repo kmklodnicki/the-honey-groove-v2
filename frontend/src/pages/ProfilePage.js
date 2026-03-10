@@ -423,11 +423,6 @@ const ProfilePage = () => {
                     <Sparkles className="w-3.5 h-3.5" style={{ color: '#C8861A' }} />
                     {tasteMatch.score}% Taste Match
                     {tasteMatch.label && <span className="ml-1">· {tasteMatch.label}</span>}
-                    {profile.founding_member && (
-                      <span className="absolute -bottom-8 left-0 right-0 text-center text-[10px] font-normal italic text-amber-600 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none" data-testid="founder-taste-tooltip">
-                        Founder Taste: Compare your collection to the creator of the Groove.
-                      </span>
-                    )}
                   </button>
                 )}
                 </>
