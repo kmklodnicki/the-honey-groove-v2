@@ -591,6 +591,91 @@ async def get_trending_in_collections(limit: int = 20, user: Dict = Depends(requ
     return data[:limit]
 
 
+@router.get("/explore/crown-jewels")
+async def get_crown_jewels(limit: int = 12, user: Dict = Depends(require_auth)):
+    """The rarest records owned by Hive members — lowest Discogs 'have' counts."""
+    import datetime as dt
+
+    cache_key = "crown_jewels_cache"
+    cache = await db.cache.find_one({"key": cache_key}, {"_id": 0})
+
+    now = dt.datetime.now(dt.timezone.utc)
+    if cache and cache.get("expires_at"):
+        try:
+            expires = dt.datetime.fromisoformat(cache["expires_at"])
+            if now < expires:
+                return cache.get("data", [])[:limit]
+        except Exception:
+            pass
+
+    # Aggregate: find records with discogs_id, group by discogs_id, then fetch rarity
+    pipeline = [
+        {"$match": {"discogs_id": {"$exists": True, "$ne": None}}},
+        {"$group": {
+            "_id": "$discogs_id",
+            "artist": {"$first": "$artist"},
+            "title": {"$first": "$title"},
+            "cover_url": {"$first": "$cover_url"},
+            "pressing_notes": {"$first": "$pressing_notes"},
+            "year": {"$first": "$year"},
+            "owner_count": {"$sum": 1},
+        }},
+        {"$limit": 100},
+    ]
+    records = await db.records.aggregate(pipeline).to_list(100)
+
+    headers_discogs = {"User-Agent": DISCOGS_USER_AGENT}
+    jewels = []
+    for rec in records:
+        discogs_id = rec["_id"]
+        try:
+            params = {}
+            if DISCOGS_TOKEN:
+                params["token"] = DISCOGS_TOKEN
+            resp = requests.get(
+                f"{DISCOGS_API_BASE}/releases/{discogs_id}",
+                params=params, headers=headers_discogs, timeout=10,
+            )
+            if resp.status_code == 200:
+                d = resp.json()
+                community = d.get("community", {})
+                have = community.get("have", 999999)
+                want = community.get("want", 0)
+                formats = d.get("formats", [])
+                variant = ""
+                for fmt in formats:
+                    descs = fmt.get("descriptions", [])
+                    variant = ", ".join(descs) if descs else ""
+                jewels.append({
+                    "discogs_id": discogs_id,
+                    "artist": rec.get("artist", "Unknown"),
+                    "title": rec.get("title", "Unknown"),
+                    "cover_url": rec.get("cover_url") or d.get("images", [{}])[0].get("uri", ""),
+                    "variant": variant or rec.get("pressing_notes", ""),
+                    "year": rec.get("year") or d.get("year"),
+                    "have": have,
+                    "want": want,
+                    "owner_count": rec.get("owner_count", 0),
+                })
+        except Exception as e:
+            logger.warning(f"Crown jewels Discogs fetch error for {discogs_id}: {e}")
+            continue
+
+    # Sort by lowest have count (rarest first)
+    jewels.sort(key=lambda x: x.get("have", 999999))
+    jewels = jewels[:limit]
+
+    # Cache for 24 hours
+    expires_at = (now + dt.timedelta(hours=24)).isoformat()
+    await db.cache.update_one(
+        {"key": cache_key},
+        {"$set": {"key": cache_key, "data": jewels, "expires_at": expires_at, "updated_at": now.isoformat()}},
+        upsert=True,
+    )
+
+    return jewels
+
+
 @router.get("/explore/most-wanted")
 async def get_most_wanted(limit: int = 20, user: Dict = Depends(require_auth)):
     """Top 20 most wanted records across all wantlists"""

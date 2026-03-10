@@ -9,7 +9,7 @@ import { Skeleton } from '../components/ui/skeleton';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '../components/ui/dialog';
-import { ArrowLeft, TrendingUp, Users, Disc, Heart, MapPin, Play, Plus, MessageCircle, UserPlus } from 'lucide-react';
+import { ArrowLeft, TrendingUp, Users, Disc, Heart, MapPin, Play, Plus, MessageCircle, UserPlus, Crown } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -22,6 +22,7 @@ const SECTIONS = {
   trending: { title: 'Trending in the Hive', icon: TrendingUp, iconColor: 'text-honey-amber' },
   'make-friends': { title: 'Your Kinda People', icon: Users, iconColor: 'text-honey-amber' },
   'trending-in-collections': { title: 'Trending in Collections', icon: TrendingUp, iconColor: 'text-honey-amber' },
+  'crown-jewels': { title: 'Crown Jewels', icon: Crown, iconColor: 'text-[#FFD700]' },
   'most-wanted': { title: 'Most Wanted', icon: Heart, iconColor: 'text-red-400' },
   'near-you': { title: 'Near You', icon: MapPin, iconColor: 'text-honey-amber' },
 };
@@ -56,6 +57,9 @@ const ExploreSeeAllPage = () => {
           break;
         case 'trending-in-collections':
           resp = await axios.get(`${API}/explore/trending-in-collections?limit=50`, { headers });
+          break;
+        case 'crown-jewels':
+          resp = await axios.get(`${API}/explore/crown-jewels?limit=50`, { headers });
           break;
         case 'most-wanted':
           resp = await axios.get(`${API}/explore/most-wanted?limit=100`, { headers });

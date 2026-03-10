@@ -9,7 +9,7 @@ import { Skeleton } from '../components/ui/skeleton';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '../components/ui/dialog';
-import { Disc, Users, Search, TrendingUp, Lock, Play, UserPlus, MessageCircle, MapPin, Heart, Plus } from 'lucide-react';
+import { Disc, Users, Search, TrendingUp, Lock, Play, UserPlus, MessageCircle, MapPin, Heart, Plus, Crown } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
 import AlbumArt from '../components/AlbumArt';
@@ -25,6 +25,7 @@ const ExplorePage = () => {
   const [trending, setTrending] = useState([]);
   const [suggested, setSuggested] = useState([]);
   const [trendingCollections, setTrendingCollections] = useState([]);
+  const [crownJewels, setCrownJewels] = useState([]);
   const [mostWanted, setMostWanted] = useState([]);
   const [nearYou, setNearYou] = useState({ collectors: [], listings: [], needs_location: true });
   const [loading, setLoading] = useState(true);
@@ -40,18 +41,20 @@ const ExplorePage = () => {
   const fetchData = useCallback(async () => {
     if (!token) { setLoading(false); return; }
     try {
-      const [trendRes, sugRes, tcRes, mwRes, nyRes] = await Promise.all([
+      const [trendRes, sugRes, tcRes, mwRes, nyRes, cjRes] = await Promise.all([
         axios.get(`${API}/explore/trending?limit=10`, { headers }),
         axios.get(`${API}/explore/suggested-collectors?limit=8`, { headers }),
         axios.get(`${API}/explore/trending-in-collections?limit=12`, { headers }),
         axios.get(`${API}/explore/most-wanted?limit=20`, { headers }),
         axios.get(`${API}/explore/near-you`, { headers }),
+        axios.get(`${API}/explore/crown-jewels?limit=12`, { headers }),
       ]);
       setTrending(trendRes.data);
       setSuggested(sugRes.data);
       setTrendingCollections(tcRes.data);
       setMostWanted(mwRes.data);
       setNearYou(nyRes.data);
+      setCrownJewels(cjRes.data);
       // Fetch discovery carousel
       axios.get(`${API}/discover/my-kinda-people`, { headers }).then(r => setMyKindaPeople(r.data)).catch(() => {});
     } catch { /* ignore */ }
@@ -193,27 +196,33 @@ const ExplorePage = () => {
         )}
       </ExploreSection>
 
-      {/* 3. Trending in Collections */}
-      <ExploreSection icon={<TrendingUp className="w-4 h-4 text-honey-amber" />} title="Trending in Collections" testId="trending-collections-section" seeAllTo="/nectar/trending-in-collections">
-        {trendingCollections.length === 0 ? (
-          <EmptyCard text="No trending collection data right now." />
+      {/* 3. Crown Jewels — rarest records owned by Hive members */}
+      <ExploreSection icon={<Crown className="w-4 h-4 text-[#FFD700]" />} title="Crown Jewels" testId="crown-jewels-section" seeAllTo="/nectar/crown-jewels">
+        <p className="text-xs text-muted-foreground italic -mt-2 mb-3 pl-1">The rarest records owned by Hive members.</p>
+        {crownJewels.length === 0 ? (
+          <EmptyCard text="Scanning the vaults for grails..." />
         ) : (
           <ScrollRow>
-            {trendingCollections.map((r, idx) => (
-              <button key={r.discogs_id || idx} onClick={() => openTrendingModal(r)} className="flex-shrink-0 w-40 text-left group" data-testid={`trending-collection-${r.discogs_id || idx}`}>
+            {crownJewels.map((r, idx) => (
+              <button key={r.discogs_id || idx} onClick={() => openTrendingModal(r)} className="flex-shrink-0 w-40 text-left group" data-testid={`crown-jewel-${r.discogs_id || idx}`}>
                 <div className="aspect-square rounded-xl overflow-hidden bg-honey/10 mb-2 shadow-sm relative group-hover:shadow-md transition-shadow">
                   <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} className="w-full h-full object-cover" />
                   <span
                     role="button"
                     onClick={(e) => { e.stopPropagation(); addToSeekingList(r.artist, r.title, r.discogs_id, r.cover_url, r.year); }}
                     className="absolute bottom-2 right-2 bg-white/90 hover:bg-white rounded-full p-1.5 shadow opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                    data-testid={`add-wantlist-tc-${r.discogs_id || idx}`}>
+                    data-testid={`add-wantlist-cj-${r.discogs_id || idx}`}>
                     <Plus className="w-4 h-4 text-honey-amber" />
                   </span>
                 </div>
                 <p className="text-sm font-medium truncate">{r.title}</p>
                 <p className="text-xs text-muted-foreground truncate">{r.artist}</p>
-                {r.have > 0 && <p className="text-[10px] text-muted-foreground">owned by {r.have.toLocaleString()} collectors</p>}
+                {r.variant && (
+                  <p className="text-[10px] text-muted-foreground flex items-center gap-1 truncate">
+                    <Crown className="w-2.5 h-2.5 text-[#FFD700] shrink-0" /> {r.variant}
+                  </p>
+                )}
+                {r.have > 0 && <p className="text-[10px] text-muted-foreground">{r.have.toLocaleString()} global owners</p>}
               </button>
             ))}
           </ScrollRow>
