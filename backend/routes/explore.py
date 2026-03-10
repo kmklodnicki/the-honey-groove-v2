@@ -981,10 +981,16 @@ async def my_kinda_people(user: Dict = Depends(require_auth)):
 
     blocked_ids = set(await get_all_blocked_ids(my_id))
 
-    # Get all other users who have records
+    # Get users the current user already follows
+    following_ids = set()
+    async for f in db.follows.find({"follower_id": my_id}, {"_id": 0, "following_id": 1}):
+        following_ids.add(f["following_id"])
+
+    # Get all other users who have records (exclude self, blocked, and followed)
+    exclude_ids = blocked_ids | following_ids
     other_user_ids = set()
     async for rec in db.records.find({"user_id": {"$ne": my_id}, "discogs_id": {"$ne": None}}, {"_id": 0, "user_id": 1}):
-        if rec["user_id"] not in blocked_ids:
+        if rec["user_id"] not in exclude_ids:
             other_user_ids.add(rec["user_id"])
 
     results = []

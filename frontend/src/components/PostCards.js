@@ -181,8 +181,8 @@ const EditionTag = ({ number }) => {
 
 // Spinning vinyl disc overlay for Now Spinning cards
 const SpinningVinyl = () => (
-  <div className="absolute top-1.5 left-1.5 z-[6] pointer-events-none" data-testid="spinning-vinyl-icon">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="drop-shadow-md" style={{ animation: 'spin 4s linear infinite' }}>
+  <div className="absolute top-1.5 left-1.5 z-[6] pointer-events-none block" style={{ display: 'block' }} data-testid="spinning-vinyl-icon">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="drop-shadow-md" style={{ animation: 'spin 4s linear infinite', display: 'block' }}>
       <circle cx="12" cy="12" r="11" fill="#1A1A1A" />
       <circle cx="12" cy="12" r="9" fill="none" stroke="#333" strokeWidth="0.5" />
       <circle cx="12" cy="12" r="7" fill="none" stroke="#333" strokeWidth="0.3" />
@@ -195,7 +195,7 @@ const SpinningVinyl = () => (
 
 // Animated 3-bar equalizer for Now Spinning cards
 const LiveEqualizer = () => (
-  <div className="absolute bottom-1.5 right-1.5 z-[6] flex items-end gap-[2px] h-4 pointer-events-none" data-testid="live-equalizer">
+  <div className="absolute bottom-1.5 right-1.5 z-[6] flex items-end gap-[2px] pointer-events-none" style={{ display: 'flex', visibility: 'visible', minHeight: '16px', height: '16px' }} data-testid="live-equalizer">
     <span className="w-[3px] rounded-full" style={{ background: '#DAA520', animation: 'eqBar1 0.8s ease-in-out infinite alternate', height: '40%' }} />
     <span className="w-[3px] rounded-full" style={{ background: '#DAA520', animation: 'eqBar2 0.6s ease-in-out infinite alternate', height: '70%' }} />
     <span className="w-[3px] rounded-full" style={{ background: '#DAA520', animation: 'eqBar3 0.9s ease-in-out infinite alternate', height: '50%' }} />
@@ -293,7 +293,7 @@ const ISOCard = ({ post, onAlbumClick }) => {
             }
             data-testid={`iso-intent-${intent}`}
           >
-            {intent === 'dreaming' ? '☁️ Just Dreaming' : '🔍 Actively Seeking'}
+            {intent === 'dreaming' ? '☁️ Just Dreaming' : '🔥 Actively Seeking'}
           </span>
         )}
         <div className="flex items-start gap-3">

@@ -581,7 +581,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                     }
                     data-testid="iso-intent-badge"
                   >
-                    {isoIntent === 'dreaming' ? '☁️ Just Dreaming' : '🔍 Actively Seeking'}
+                    {isoIntent === 'dreaming' ? '☁️ Just Dreaming' : '🔥 Actively Seeking'}
                   </span>
                   <button onClick={() => { setIsoIntent(null); setIsoSelectedRelease(null); setIsoManualMode(false); setIsoDiscogsQuery(''); setIsoDiscogsResults([]); }} className="text-xs text-muted-foreground hover:text-vinyl-black" data-testid="iso-change-intent">Change</button>
                 </div>

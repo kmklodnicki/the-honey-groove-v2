@@ -1004,14 +1004,14 @@ const WishlistCard = ({ item, onPromote, onAddToCollection, onDelete }) => (
       <p className="text-xs text-muted-foreground truncate">{item.artist}</p>
       <div className="flex flex-col gap-2 mt-2">
         <Button size="sm" onClick={() => onAddToCollection(item.id)}
-          className="w-full h-8 text-[10px] rounded-full font-semibold border-0"
+          className="w-full h-8 text-[0.8rem] rounded-full font-semibold border-0"
           style={{ background: '#FFD700', color: '#1A1A1A' }}
           data-testid={`add-to-collection-btn-${item.id}`}>
           Add to Collection
         </Button>
         <div className="flex gap-2">
           <Button size="sm" variant="outline" onClick={() => onPromote(item.id)}
-            className="flex-1 h-8 text-[10px] rounded-full font-semibold"
+            className="flex-1 h-8 text-[0.8rem] rounded-full font-semibold"
             style={{ background: 'transparent', border: '1.5px solid #DAA520', color: '#8B6914' }}
             data-testid={`actively-seeking-btn-${item.id}`}>
             Actively Seeking

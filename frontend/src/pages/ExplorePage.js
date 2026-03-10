@@ -77,6 +77,7 @@ const ExplorePage = () => {
     try {
       await axios.post(`${API}/composer/iso`, {
         artist, album, discogs_id, cover_url, year,
+        intent: 'seeking',
       }, { headers });
       toast.success(`Added to your Dream List!`);
     } catch (err) {
@@ -137,13 +138,28 @@ const ExplorePage = () => {
       <p className="text-sm text-muted-foreground mb-8">what the hive is into right now.</p>
 
       {/* Your Kinda People Discovery Carousel */}
-      {myKindaPeople.length > 0 && (
-        <section className="mb-8" data-testid="make-friends-carousel">
-          <div className="flex items-center gap-2 mb-3">
-            <Users className="w-4 h-4 text-honey-amber" />
-            <h2 className="font-heading text-lg text-vinyl-black font-bold">Your Kinda People</h2>
+      <section className="mb-8" data-testid="make-friends-carousel">
+        <div className="flex items-center gap-2 mb-3">
+          <Users className="w-4 h-4 text-honey-amber" />
+          <h2 className="font-heading text-lg text-vinyl-black font-bold">Your Kinda People</h2>
+        </div>
+        <p className="text-xs text-muted-foreground mb-3">Collectors who share your vibe.</p>
+        {myKindaPeople.length === 0 ? (
+          <div
+            className="rounded-2xl p-8 text-center"
+            style={{
+              background: 'rgba(255,255,255,0.6)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              border: '1px solid rgba(218,165,32,0.2)',
+            }}
+            data-testid="kinda-people-empty"
+          >
+            <Search className="w-8 h-8 mx-auto mb-3" style={{ color: '#DAA520', animation: 'nectarPulse 2s ease-in-out infinite' }} />
+            <p className="font-heading text-lg text-vinyl-black mb-1">You've Found Your Tribe.</p>
+            <p className="text-sm text-muted-foreground max-w-xs mx-auto">You are already following all the top collectors in this groove. Check back soon for new arrivals.</p>
           </div>
-          <p className="text-xs text-muted-foreground mb-3">Collectors who share your vibe.</p>
+        ) : (
           <ScrollRow>
             {myKindaPeople.map(p => (
               <Link key={p.username} to={`/profile/${p.username}?tab=in-common`} className="flex-shrink-0 w-40 group" data-testid={`kinda-${p.username}`}>
@@ -153,7 +169,6 @@ const ExplorePage = () => {
                   </div>
                   <p className="text-sm font-medium truncate">@{p.username}</p>
                   <p className="text-xs font-bold mt-0.5" style={{ color: '#C8861A' }}>{p.common_count || 0} {(p.common_count || 0) === 1 ? 'record' : 'records'} in common</p>
-                  {/* Shared covers stack */}
                   {p.shared_covers?.length > 0 && (
                     <div className="flex justify-center gap-1 mt-2">
                       {p.shared_covers.slice(0, 3).map((c, i) => (
@@ -167,8 +182,8 @@ const ExplorePage = () => {
               </Link>
             ))}
           </ScrollRow>
-        </section>
-      )}
+        )}
+      </section>
 
       {/* Collector Bingo — hidden until feature is ready */}
 
