@@ -171,6 +171,7 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - HONEY Order ID Branding (BLOCK 4.3) - DONE
 - Navbar Report Button - DONE
 
+- **Bug Fix: Dream List Value / Count Sync** - DONE (2026-03-10). Fixed inconsistency where "Value of Dream Records" showed $65 while Dream List count was 0. Root cause: frontend optimistic state updates leaked stale values without syncing the count, and no zero-count guard existed. Fixed at 3 layers: (1) Backend: forced $0 when `total_count == 0` in both `/api/valuation/dreamlist` and `/api/valuation/dreamlist/{username}`, (2) Frontend comparison toggle: hidden when `wishlistItems.length === 0`, (3) Frontend mutations (`handleConfirmCleanse`, `handleWishlistToISO`, `handleDeleteWishlistItem`): refetch from backend or force $0 when last item removed.
 - **Interactive Variant Tracker Checkboxes** - DONE (2026-03-10). Missing variants in the Variant Tracker now have clickable checkboxes. Clicking opens an AlertDialog confirmation ("Add to Collection?"). Confirming calls POST /api/records to add the variant, updates the progress bar and owned count in real-time, shows a toast notification, and triggers confetti on 100% completion. Unauthenticated users see "sign in to add" text. Handles 409 (already in collection) gracefully. File: VariantCompletion.js.
 
 ### Future / Backlog
