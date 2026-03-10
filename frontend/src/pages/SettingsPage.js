@@ -29,6 +29,9 @@ const SettingsPage = () => {
   const [location, setLocation] = useState(user?.location || '');
   const [favoriteGenre, setFavoriteGenre] = useState(user?.favorite_genre || '');
   const [country, setCountry] = useState(user?.country || '');
+  const [city, setCity] = useState(user?.city || '');
+  const [stateUS, setStateUS] = useState(user?.state || '');
+  const [postalCode, setPostalCode] = useState(user?.postal_code || '');
   const [instagramUsername, setInstagramUsername] = useState(user?.instagram_username || '');
   const [tiktokUsername, setTiktokUsername] = useState(user?.tiktok_username || '');
   const [saving, setSaving] = useState(false);
@@ -93,8 +96,11 @@ const SettingsPage = () => {
         username: username !== user.username ? username : undefined,
         bio: bio || '',
         setup: setup || '',
-        location: location || '',
+        location: country === 'US' ? [city, stateUS].filter(Boolean).join(', ') : (city || location || ''),
         country: country || undefined,
+        city: city || undefined,
+        state: country === 'US' ? (stateUS || undefined) : undefined,
+        postal_code: postalCode || undefined,
         favorite_genre: favoriteGenre || undefined,
         avatar_url: avatarPreview !== user.avatar_url ? avatarPreview : undefined,
         instagram_username: instagramUsername.replace(/^@/, '').trim() || '',
@@ -398,26 +404,13 @@ const SettingsPage = () => {
             <p className="text-xs text-muted-foreground text-right">{setup.length}/100</p>
           </div>
 
-          {/* Location */}
-          <div className="space-y-2">
-            <Label htmlFor="location">Location</Label>
-            <Input
-              id="location"
-              placeholder="City, State"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              className="border-honey/50"
-              data-testid="settings-location"
-            />
-          </div>
-
           {/* Country */}
           <div className="space-y-2">
-            <Label htmlFor="country">Country</Label>
+            <Label htmlFor="country" className="text-sm font-heading tracking-wide">Country</Label>
             <select
               id="country"
               value={country}
-              onChange={(e) => setCountry(e.target.value)}
+              onChange={(e) => { setCountry(e.target.value); if (e.target.value !== 'US') setStateUS(''); }}
               className="flex h-10 w-full rounded-md border border-honey/50 bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               data-testid="settings-country"
             >
@@ -427,6 +420,51 @@ const SettingsPage = () => {
               ))}
             </select>
             <p className="text-xs text-muted-foreground">Used for shipping eligibility on marketplace listings.</p>
+          </div>
+
+          {/* City + State (US only) + Postal Code */}
+          <div className={`grid gap-4 ${country === 'US' ? 'grid-cols-1 sm:grid-cols-3' : 'grid-cols-1 sm:grid-cols-2'}`}>
+            <div className="space-y-2">
+              <Label htmlFor="city" className="text-sm font-heading tracking-wide">City</Label>
+              <Input
+                id="city"
+                placeholder="Your city"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                className="border-honey/50"
+                data-testid="settings-city"
+              />
+            </div>
+
+            {country === 'US' && (
+              <div className="space-y-2">
+                <Label htmlFor="stateUS" className="text-sm font-heading tracking-wide">State</Label>
+                <select
+                  id="stateUS"
+                  value={stateUS}
+                  onChange={(e) => setStateUS(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-honey/50 bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  data-testid="settings-state"
+                >
+                  <option value="">Select state</option>
+                  {['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY','DC'].map(s => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="postalCode" className="text-sm font-heading tracking-wide">Postal Code</Label>
+              <Input
+                id="postalCode"
+                placeholder={country === 'US' ? 'ZIP code' : 'Postal code'}
+                value={postalCode}
+                onChange={(e) => setPostalCode(e.target.value)}
+                className="border-honey/50"
+                data-testid="settings-postal"
+              />
+            </div>
           </div>
 
           {/* Favorite Genre */}

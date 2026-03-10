@@ -42,6 +42,8 @@ async def _build_user_response(user: dict) -> UserResponse:
         city=user.get("city"),
         region=user.get("region"),
         country=user.get("country"),
+        state=user.get("state"),
+        postal_code=user.get("postal_code"),
         created_at=user.get("created_at", ""),
         collection_count=collection_count,
         spin_count=spin_count,
@@ -167,7 +169,7 @@ async def update_me(update_data: UserUpdate, user: Dict = Depends(require_auth))
         if not is_valid:
             raise HTTPException(status_code=400, detail=error_msg)
         update_fields["username"] = update_data.username.lower()
-    for field in ("bio", "avatar_url", "city", "region", "country", "setup", "location", "favorite_genre", "instagram_username", "tiktok_username"):
+    for field in ("bio", "avatar_url", "city", "region", "country", "state", "postal_code", "setup", "location", "favorite_genre", "instagram_username", "tiktok_username"):
         val = getattr(update_data, field, None)
         if val is not None:
             # Full bio validation: payment mentions + contact info leaks

@@ -25,6 +25,8 @@ class UserResponse(BaseModel):
     city: Optional[str] = None
     region: Optional[str] = None
     country: Optional[str] = None
+    state: Optional[str] = None
+    postal_code: Optional[str] = None
     created_at: str
     collection_count: int = 0
     spin_count: int = 0
@@ -54,6 +56,8 @@ class UserUpdate(BaseModel):
     city: Optional[str] = None
     region: Optional[str] = None
     country: Optional[str] = None
+    state: Optional[str] = None
+    postal_code: Optional[str] = None
     onboarding_completed: Optional[bool] = None
     instagram_username: Optional[str] = None
     tiktok_username: Optional[str] = None

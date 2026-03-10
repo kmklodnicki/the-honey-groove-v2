@@ -32,36 +32,37 @@ export default function ScrollRow({ children, className = '' }) {
 
   return (
     <div className="relative group/scroll" data-testid="scroll-row">
-      {/* Left Arrow */}
-      {canLeft && (
-        <button
-          onClick={() => scroll(-1)}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/90 shadow-md border border-honey/20 flex items-center justify-center text-vinyl-black/60 hover:text-vinyl-black hover:shadow-lg transition-all opacity-0 group-hover/scroll:opacity-100 md:opacity-100"
-          aria-label="Scroll left"
-          data-testid="scroll-left"
-        >
-          <ChevronLeft className="w-4.5 h-4.5" />
-        </button>
-      )}
-
       {/* Scrollable content */}
       <div
         ref={ref}
-        className={`flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide scroll-smooth ${className}`}
+        className={`flex gap-3 overflow-x-auto pb-10 -mx-1 px-1 scrollbar-hide scroll-smooth ${className}`}
       >
         {children}
       </div>
 
-      {/* Right Arrow */}
-      {canRight && (
-        <button
-          onClick={() => scroll(1)}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/90 shadow-md border border-honey/20 flex items-center justify-center text-vinyl-black/60 hover:text-vinyl-black hover:shadow-lg transition-all opacity-0 group-hover/scroll:opacity-100 md:opacity-100"
-          aria-label="Scroll right"
-          data-testid="scroll-right"
-        >
-          <ChevronRight className="w-4.5 h-4.5" />
-        </button>
+      {/* Floating Glass Dock — bottom-center navigation */}
+      {(canLeft || canRight) && (
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 backdrop-blur-md shadow-md border border-honey/20" data-testid="scroll-dock">
+          <button
+            onClick={() => scroll(-1)}
+            disabled={!canLeft}
+            className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${canLeft ? 'text-vinyl-black/70 hover:text-vinyl-black hover:bg-honey/10' : 'text-vinyl-black/20 cursor-default'}`}
+            aria-label="Scroll left"
+            data-testid="scroll-left"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <div className="w-px h-4 bg-honey/30" />
+          <button
+            onClick={() => scroll(1)}
+            disabled={!canRight}
+            className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${canRight ? 'text-vinyl-black/70 hover:text-vinyl-black hover:bg-honey/10' : 'text-vinyl-black/20 cursor-default'}`}
+            aria-label="Scroll right"
+            data-testid="scroll-right"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
       )}
     </div>
   );
