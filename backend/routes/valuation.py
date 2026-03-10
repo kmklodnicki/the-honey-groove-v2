@@ -115,13 +115,13 @@ async def get_user_collection_value(username: str):
 
 @router.get("/valuation/wishlist")
 async def get_wishlist_value(user: Dict = Depends(require_auth)):
-    """Total estimated value of items on the user's wishlist (ISO items with WISHLIST status)."""
+    """Total estimated value of all ISO items (Actively Seeking + Dream Wishlist)."""
     items = await db.iso_items.find(
-        {"user_id": user["id"], "status": "WISHLIST", "discogs_id": {"$ne": None}},
+        {"user_id": user["id"], "status": {"$in": ["OPEN", "WISHLIST"]}, "discogs_id": {"$ne": None}},
         {"_id": 0, "discogs_id": 1}
     ).to_list(5000)
     discogs_ids = list({i["discogs_id"] for i in items if i.get("discogs_id")})
-    total_count = await db.iso_items.count_documents({"user_id": user["id"], "status": "WISHLIST"})
+    total_count = await db.iso_items.count_documents({"user_id": user["id"], "status": {"$in": ["OPEN", "WISHLIST"]}})
     if not discogs_ids:
         return {"total_value": 0, "valued_count": 0, "total_count": total_count}
 
@@ -139,16 +139,16 @@ async def get_wishlist_value(user: Dict = Depends(require_auth)):
 
 @router.get("/valuation/wishlist/{username}")
 async def get_user_wishlist_value(username: str):
-    """Total Dream Value for any user's wishlist (public)."""
+    """Total ISO Value for any user (Actively Seeking + Dream Wishlist, public)."""
     target = await db.users.find_one({"username": username.lower()}, {"_id": 0, "id": 1})
     if not target:
         raise HTTPException(status_code=404, detail="User not found")
     items = await db.iso_items.find(
-        {"user_id": target["id"], "status": "WISHLIST", "discogs_id": {"$ne": None}},
+        {"user_id": target["id"], "status": {"$in": ["OPEN", "WISHLIST"]}, "discogs_id": {"$ne": None}},
         {"_id": 0, "discogs_id": 1}
     ).to_list(5000)
     discogs_ids = list({i["discogs_id"] for i in items if i.get("discogs_id")})
-    total_count = await db.iso_items.count_documents({"user_id": target["id"], "status": "WISHLIST"})
+    total_count = await db.iso_items.count_documents({"user_id": target["id"], "status": {"$in": ["OPEN", "WISHLIST"]}})
     if not discogs_ids:
         return {"total_value": 0, "valued_count": 0, "total_count": total_count}
     values = await db.collection_values.find(
