@@ -614,23 +614,16 @@ async def get_most_wanted(limit: int = 20, user: Dict = Depends(require_auth)):
 
 @router.get("/explore/near-you")
 async def get_near_you(user: Dict = Depends(require_auth), collector_limit: int = 20, listing_limit: int = 10):
-    """Get collectors and listings in the same city/region"""
+    """Get collectors and listings in the same state"""
     hidden_ids = await get_hidden_user_ids()
-    my_city = user.get("city", "").strip().lower()
     my_region = user.get("region", "").strip().lower()
-    if not my_city and not my_region:
+    if not my_region:
         return {"collectors": [], "listings": [], "needs_location": True}
 
     query = {"id": {"$ne": user["id"]}, "username": {"$ne": "demo"}, "email": {"$not": {"$regex": "(example|test)\\.com$", "$options": "i"}}}
     if hidden_ids:
         query["id"] = {"$ne": user["id"], "$nin": hidden_ids}
-    conditions = []
-    if my_city:
-        conditions.append({"city": {"$regex": f"^{my_city}$", "$options": "i"}})
-    if my_region:
-        conditions.append({"region": {"$regex": f"^{my_region}$", "$options": "i"}})
-    if conditions:
-        query["$or"] = conditions
+    query["region"] = {"$regex": f"^{my_region}$", "$options": "i"}
 
     nearby_users = await db.users.find(query, {"_id": 0, "password_hash": 0}).limit(collector_limit).to_list(collector_limit)
     collectors = []
@@ -639,7 +632,7 @@ async def get_near_you(user: Dict = Depends(require_auth), collector_limit: int 
         listing_count = await db.listings.count_documents({"user_id": u["id"], "status": "ACTIVE"})
         collectors.append({
             "id": u["id"], "username": u.get("username"), "avatar_url": u.get("avatar_url"),
-            "city": u.get("city"), "region": u.get("region"),
+            "region": u.get("region"),
             "collection_count": rec_count, "active_listings": listing_count,
         })
 
@@ -651,7 +644,7 @@ async def get_near_you(user: Dict = Depends(require_auth), collector_limit: int 
         ).sort("created_at", -1).limit(listing_limit).to_list(listing_limit)
         for l in listings:
             seller = next((u for u in collectors if u["id"] == l["user_id"]), None)
-            l["user"] = {"username": seller["username"], "city": seller.get("city")} if seller else None
+            l["user"] = {"username": seller["username"], "region": seller.get("region")} if seller else None
 
     return {"collectors": collectors, "listings": listings, "needs_location": False}
 

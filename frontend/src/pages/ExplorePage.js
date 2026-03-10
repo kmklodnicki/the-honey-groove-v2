@@ -33,7 +33,6 @@ const ExplorePage = () => {
 
   // Location prompt
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
-  const [cityInput, setCityInput] = useState('');
   const [regionInput, setRegionInput] = useState('');
 
   const headers = { Authorization: `Bearer ${token}` };
@@ -84,13 +83,13 @@ const ExplorePage = () => {
   };
 
   const saveLocation = async () => {
-    if (!cityInput.trim()) { toast.error('city is required.'); return; }
+    if (!regionInput.trim()) { toast.error('state is required.'); return; }
     try {
-      await axios.put(`${API}/auth/me`, { city: cityInput.trim(), region: regionInput.trim() }, { headers });
-      toast.success('location saved.');
+      await axios.put(`${API}/auth/me`, { region: regionInput.trim() }, { headers });
+      toast.success('state saved.');
       setShowLocationPrompt(false);
       fetchData();
-    } catch { toast.error('could not save location. try again.'); }
+    } catch { toast.error('could not save state. try again.'); }
   };
 
   if (!user) {
@@ -255,10 +254,10 @@ const ExplorePage = () => {
         {nearYou.needs_location ? (
           <Card className="p-6 text-center border-honey/30">
             <MapPin className="w-10 h-10 text-honey/40 mx-auto mb-3" />
-            <h3 className="font-heading text-lg mb-1">Set your location</h3>
-            <p className="text-muted-foreground text-sm mb-4">Add your city to discover collectors and listings near you.</p>
+            <h3 className="font-heading text-lg mb-1">Set your state</h3>
+            <p className="text-muted-foreground text-sm mb-4">Add your state to discover collectors near you.</p>
             <Button onClick={() => setShowLocationPrompt(true)} className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full" data-testid="set-location-btn">
-              <MapPin className="w-4 h-4 mr-1" /> Set Location
+              <MapPin className="w-4 h-4 mr-1" /> Set State
             </Button>
           </Card>
         ) : nearYou.collectors.length === 0 ? (
@@ -275,7 +274,7 @@ const ExplorePage = () => {
                     </Link>
                     <div className="flex-1 min-w-0">
                       <Link to={`/profile/${u.username}`} className="text-sm font-medium hover:underline">@{u.username}</Link>
-                      <p className="text-[10px] text-muted-foreground">{u.city}{u.region ? `, ${u.region}` : ''}</p>
+                      <p className="text-[10px] text-muted-foreground">{u.region}</p>
                       <p className="text-[10px] text-muted-foreground">{u.collection_count} records{u.active_listings > 0 ? ` · ${u.active_listings} listings` : ''}</p>
                     </div>
                     <Button size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-full shrink-0" onClick={() => navigate(`/messages?to=${u.id}`)}>
@@ -314,15 +313,14 @@ const ExplorePage = () => {
       <Dialog open={showLocationPrompt} onOpenChange={setShowLocationPrompt}>
         <DialogContent className="sm:max-w-sm" aria-describedby="location-modal-desc">
           <DialogHeader>
-            <DialogTitle className="font-heading">Set Your Location</DialogTitle>
-            <p id="location-modal-desc" className="sr-only">Add your city to find nearby collectors</p>
+            <DialogTitle className="font-heading">Set Your State</DialogTitle>
+            <p id="location-modal-desc" className="sr-only">Add your state to find nearby collectors</p>
           </DialogHeader>
           <div className="space-y-4 pt-2">
-            <Input placeholder="City *" value={cityInput} onChange={e => setCityInput(e.target.value)} className="border-honey/50" data-testid="location-city" autoFocus />
-            <Input placeholder="State / Region (optional)" value={regionInput} onChange={e => setRegionInput(e.target.value)} className="border-honey/50" data-testid="location-region" />
-            <p className="text-xs text-muted-foreground">This helps us show collectors and listings near you.</p>
-            <Button onClick={saveLocation} disabled={!cityInput.trim()} className="w-full bg-honey text-vinyl-black hover:bg-honey-amber rounded-full" data-testid="save-location-btn">
-              <MapPin className="w-4 h-4 mr-1" /> Save Location
+            <Input placeholder="State *" value={regionInput} onChange={e => setRegionInput(e.target.value)} className="border-honey/50" data-testid="location-region" autoFocus />
+            <p className="text-xs text-muted-foreground">This helps us show collectors in your state.</p>
+            <Button onClick={saveLocation} disabled={!regionInput.trim()} className="w-full bg-honey text-vinyl-black hover:bg-honey-amber rounded-full" data-testid="save-location-btn">
+              <MapPin className="w-4 h-4 mr-1" /> Save State
             </Button>
           </div>
         </DialogContent>
