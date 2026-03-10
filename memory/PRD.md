@@ -80,6 +80,9 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 
 ## Pending / Upcoming Tasks
 
+### Completed Recently (March 2026)
+- **Discogs Import 1,000 Record Limit Fix** - DONE (2026-03-10). Removed `$limit: 1000` from `get_my_records` aggregation pipeline, changed `.to_list(1000)` to `.to_list(None)` in both `get_my_records` and `get_user_records` endpoints. Discogs import pagination was already uncapped. Collections of any size now fully supported. File: `backend/routes/collection.py`.
+
 ### P1
 - Weekly Wax Email - configure scheduled email every Sunday 12:00 PM ET
 
