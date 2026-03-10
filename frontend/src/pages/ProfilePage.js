@@ -713,13 +713,16 @@ const ProfilePage = () => {
                         </div>
                       )}
                       {record.color_variant && (
-                        <div
-                          className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] font-bold px-2 py-0.5 rounded-full"
-                          style={{ backgroundColor: 'rgba(0,0,0,0.80)', color: '#FFD700', letterSpacing: '0.5px', boxShadow: '0 2px 8px rgba(0,0,0,0.35)', border: '1px solid rgba(255,215,0,0.25)' }}
-                          data-testid={`variant-pill-${record.id}`}
-                        >
-                          {record.color_variant}
-                        </div>
+                        <>
+                          <div className="absolute top-0 left-0 w-1/2 h-1/2 z-[4] pointer-events-none rounded-tl-2xl" style={{ background: 'linear-gradient(135deg, rgba(0,0,0,0.25) 0%, transparent 60%)' }} />
+                          <div
+                            className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] font-bold px-2 py-0.5 rounded-full"
+                            style={{ backgroundColor: '#FFD700', color: '#1A1A1A', letterSpacing: '0.5px', boxShadow: '0 2px 4px rgba(0,0,0,0.3)', border: '0.5px solid rgba(0,0,0,0.2)' }}
+                            data-testid={`variant-pill-${record.id}`}
+                          >
+                            {record.color_variant}
+                          </div>
+                        </>
                       )}
                     </div>
                     <div className="p-3">
@@ -760,12 +763,15 @@ const ProfilePage = () => {
                         </div>
                       )}
                       {item.color_variant && (
-                        <div
-                          className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] font-bold px-2 py-0.5 rounded-full"
-                          style={{ backgroundColor: 'rgba(0,0,0,0.80)', color: '#FFD700', letterSpacing: '0.5px', boxShadow: '0 2px 8px rgba(0,0,0,0.35)', border: '1px solid rgba(255,215,0,0.25)' }}
-                        >
-                          {item.color_variant}
-                        </div>
+                        <>
+                          <div className="absolute top-0 left-0 w-1/2 h-1/2 z-[4] pointer-events-none rounded-tl-2xl" style={{ background: 'linear-gradient(135deg, rgba(0,0,0,0.25) 0%, transparent 60%)' }} />
+                          <div
+                            className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] font-bold px-2 py-0.5 rounded-full"
+                            style={{ backgroundColor: '#FFD700', color: '#1A1A1A', letterSpacing: '0.5px', boxShadow: '0 2px 4px rgba(0,0,0,0.3)', border: '0.5px solid rgba(0,0,0,0.2)' }}
+                          >
+                            {item.color_variant}
+                          </div>
+                        </>
                       )}
                       <div className="absolute bottom-2 right-2">
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-pink-500/90 text-white">DREAMING</span>
@@ -877,12 +883,15 @@ const ProfilePage = () => {
                       </div>
                     )}
                     {iso.pressing_notes && (
-                      <div
-                        className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] font-bold px-2 py-0.5 rounded-full"
-                        style={{ backgroundColor: 'rgba(0,0,0,0.80)', color: '#FFD700', letterSpacing: '0.5px', boxShadow: '0 2px 8px rgba(0,0,0,0.35)', border: '1px solid rgba(255,215,0,0.25)' }}
-                      >
-                        {iso.pressing_notes}
-                      </div>
+                      <>
+                        <div className="absolute top-0 left-0 w-1/2 h-1/2 z-[4] pointer-events-none rounded-tl-2xl" style={{ background: 'linear-gradient(135deg, rgba(0,0,0,0.25) 0%, transparent 60%)' }} />
+                        <div
+                          className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] font-bold px-2 py-0.5 rounded-full"
+                          style={{ backgroundColor: '#FFD700', color: '#1A1A1A', letterSpacing: '0.5px', boxShadow: '0 2px 4px rgba(0,0,0,0.3)', border: '0.5px solid rgba(0,0,0,0.2)' }}
+                        >
+                          {iso.pressing_notes}
+                        </div>
+                      </>
                     )}
                     <div className="absolute bottom-2 right-2">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${

@@ -140,7 +140,7 @@ export default function VinylVariantPage() {
               {/* Variant pill */}
               <div
                 className="absolute bottom-3 left-3 right-3 truncate uppercase text-[11px] font-bold px-3 py-1 rounded-full text-center"
-                style={{ backgroundColor: 'rgba(0,0,0,0.80)', color: '#FFD700', letterSpacing: '0.5px', boxShadow: '0 2px 8px rgba(0,0,0,0.35)', border: '1px solid rgba(255,215,0,0.25)' }}
+                style={{ backgroundColor: '#FFD700', color: '#1A1A1A', letterSpacing: '0.5px', boxShadow: '0 2px 4px rgba(0,0,0,0.3)', border: '0.5px solid rgba(0,0,0,0.2)' }}
                 data-testid="variant-pill"
               >
                 {ov.variant}

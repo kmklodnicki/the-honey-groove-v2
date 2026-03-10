@@ -763,15 +763,18 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
             </div>
           )}
 
-          {/* Variant pill overlay */}
+          {/* Variant pill overlay with scrim */}
           {record.color_variant && (
-            <div
-              className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] font-bold px-2 py-0.5 rounded-full z-[5]"
-              style={{ backgroundColor: 'rgba(0,0,0,0.80)', color: '#FFD700', letterSpacing: '0.5px', boxShadow: '0 2px 8px rgba(0,0,0,0.35)', border: '1px solid rgba(255,215,0,0.25)' }}
-              data-testid={`variant-${record.id}`}
-            >
-              {record.color_variant}
-            </div>
+            <>
+              <div className="absolute top-0 left-0 w-1/2 h-1/2 z-[4] pointer-events-none rounded-tl-2xl" style={{ background: 'linear-gradient(135deg, rgba(0,0,0,0.25) 0%, transparent 60%)' }} />
+              <div
+                className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] font-bold px-2 py-0.5 rounded-full z-[5]"
+                style={{ backgroundColor: '#FFD700', color: '#1A1A1A', letterSpacing: '0.5px', boxShadow: '0 2px 4px rgba(0,0,0,0.3)', border: '0.5px solid rgba(0,0,0,0.2)' }}
+                data-testid={`variant-${record.id}`}
+              >
+                {record.color_variant}
+              </div>
+            </>
           )}
 
           {/* Never spun indicator */}
@@ -866,13 +869,16 @@ const WishlistCard = ({ item, onPromote, onDelete }) => (
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
         {item.color_variant && (
-          <div
-            className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] font-bold px-2 py-0.5 rounded-full z-[5]"
-            style={{ backgroundColor: 'rgba(0,0,0,0.80)', color: '#FFD700', letterSpacing: '0.5px', boxShadow: '0 2px 8px rgba(0,0,0,0.35)', border: '1px solid rgba(255,215,0,0.25)' }}
-            data-testid={`variant-wishlist-${item.id}`}
-          >
-            {item.color_variant}
-          </div>
+          <>
+            <div className="absolute top-0 left-0 w-1/2 h-1/2 z-[4] pointer-events-none" style={{ background: 'linear-gradient(135deg, rgba(0,0,0,0.25) 0%, transparent 60%)' }} />
+            <div
+              className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] font-bold px-2 py-0.5 rounded-full z-[5]"
+              style={{ backgroundColor: '#FFD700', color: '#1A1A1A', letterSpacing: '0.5px', boxShadow: '0 2px 4px rgba(0,0,0,0.3)', border: '0.5px solid rgba(0,0,0,0.2)' }}
+              data-testid={`variant-wishlist-${item.id}`}
+            >
+              {item.color_variant}
+            </div>
+          </>
         )}
         {item.median_value > 0 && (
           <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs font-semibold z-[5]"
