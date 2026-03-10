@@ -174,6 +174,7 @@ const ExplorePage = () => {
 
       {/* 1. Trending in the Hive */}
       <ExploreSection icon={<TrendingUp className="w-4 h-4 text-honey-amber" />} title="Trending in the Hive" testId="trending-section" seeAllTo="/nectar/trending">
+        <p className="text-xs text-muted-foreground italic -mt-2 mb-3 pl-1">What Hive members have been spinning.</p>
         {trending.length === 0 ? (
           <EmptyCard text="No trending records yet. Start spinning!" />
         ) : (
@@ -196,9 +197,9 @@ const ExplorePage = () => {
         )}
       </ExploreSection>
 
-      {/* 3. Crown Jewels — rarest records owned by Hive members */}
+      {/* 3. Crown Jewels — rarest & most valuable records */}
       <ExploreSection icon={<Crown className="w-4 h-4 text-[#FFD700]" />} title="Crown Jewels" testId="crown-jewels-section" seeAllTo="/nectar/crown-jewels">
-        <p className="text-xs text-muted-foreground italic -mt-2 mb-3 pl-1">The rarest records owned by Hive members.</p>
+        <p className="text-xs text-muted-foreground italic -mt-2 mb-3 pl-1">The rarest and most valuable records owned by Hive members.</p>
         {crownJewels.length === 0 ? (
           <EmptyCard text="Scanning the vaults for grails..." />
         ) : (
@@ -207,6 +208,15 @@ const ExplorePage = () => {
               <button key={r.discogs_id || idx} onClick={() => openTrendingModal(r)} className="flex-shrink-0 w-40 text-left group" data-testid={`crown-jewel-${r.discogs_id || idx}`}>
                 <div className="aspect-square rounded-xl overflow-hidden bg-honey/10 mb-2 shadow-sm relative group-hover:shadow-md transition-shadow">
                   <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} className="w-full h-full object-cover" />
+                  {r.estimated_value > 0 && (
+                    <span
+                      className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                      style={{ background: 'rgba(255,215,0,0.85)', color: '#2A1A06', backdropFilter: 'blur(6px)', border: '1px solid rgba(218,165,32,0.6)' }}
+                      data-testid={`cj-value-${r.discogs_id || idx}`}
+                    >
+                      ${r.estimated_value >= 1000 ? (r.estimated_value / 1000).toFixed(1) + 'k' : r.estimated_value.toFixed(0)}
+                    </span>
+                  )}
                   <span
                     role="button"
                     onClick={(e) => { e.stopPropagation(); addToSeekingList(r.artist, r.title, r.discogs_id, r.cover_url, r.year); }}

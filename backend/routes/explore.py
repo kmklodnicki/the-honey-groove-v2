@@ -6,6 +6,7 @@ import uuid
 
 from database import db, require_auth, get_current_user, security, logger, create_notification, get_hidden_user_ids, get_all_blocked_ids
 from database import DISCOGS_TOKEN, DISCOGS_USER_AGENT
+from database import get_discogs_market_data
 DISCOGS_API_BASE = "https://api.discogs.com"
 import requests
 from services.email_service import send_email_fire_and_forget
@@ -593,7 +594,9 @@ async def get_trending_in_collections(limit: int = 20, user: Dict = Depends(requ
 
 @router.get("/explore/crown-jewels")
 async def get_crown_jewels(limit: int = 12, user: Dict = Depends(require_auth)):
-    """The rarest records owned by Hive members — lowest Discogs 'have' counts."""
+    """The rarest and most valuable records owned by Hive members.
+    Dual-criteria: High Value (median price) + High Scarcity (low global have).
+    """
     import datetime as dt
 
     cache_key = "crown_jewels_cache"
@@ -608,7 +611,7 @@ async def get_crown_jewels(limit: int = 12, user: Dict = Depends(require_auth)):
         except Exception:
             pass
 
-    # Aggregate: find records with discogs_id, group by discogs_id, then fetch rarity
+    # Aggregate: find records with discogs_id, group by discogs_id
     pipeline = [
         {"$match": {"discogs_id": {"$exists": True, "$ne": None}}},
         {"$group": {
@@ -636,33 +639,53 @@ async def get_crown_jewels(limit: int = 12, user: Dict = Depends(require_auth)):
                 f"{DISCOGS_API_BASE}/releases/{discogs_id}",
                 params=params, headers=headers_discogs, timeout=10,
             )
-            if resp.status_code == 200:
-                d = resp.json()
-                community = d.get("community", {})
-                have = community.get("have", 999999)
-                want = community.get("want", 0)
-                formats = d.get("formats", [])
-                variant = ""
-                for fmt in formats:
-                    descs = fmt.get("descriptions", [])
-                    variant = ", ".join(descs) if descs else ""
-                jewels.append({
-                    "discogs_id": discogs_id,
-                    "artist": rec.get("artist", "Unknown"),
-                    "title": rec.get("title", "Unknown"),
-                    "cover_url": rec.get("cover_url") or d.get("images", [{}])[0].get("uri", ""),
-                    "variant": variant or rec.get("pressing_notes", ""),
-                    "year": rec.get("year") or d.get("year"),
-                    "have": have,
-                    "want": want,
-                    "owner_count": rec.get("owner_count", 0),
-                })
+            if resp.status_code != 200:
+                continue
+            d = resp.json()
+            community = d.get("community", {})
+            have = community.get("have", 999999)
+            want = community.get("want", 0)
+            formats = d.get("formats", [])
+            variant = ""
+            for fmt in formats:
+                descs = fmt.get("descriptions", [])
+                variant = ", ".join(descs) if descs else ""
+
+            # Fetch market value for dual-criteria scoring
+            market = get_discogs_market_data(discogs_id)
+            median_value = market.get("median_value", 0) if market else 0
+            low_value = market.get("low_value") if market else None
+            high_value = market.get("high_value") if market else None
+
+            jewels.append({
+                "discogs_id": discogs_id,
+                "artist": rec.get("artist", "Unknown"),
+                "title": rec.get("title", "Unknown"),
+                "cover_url": rec.get("cover_url") or d.get("images", [{}])[0].get("uri", ""),
+                "variant": variant or rec.get("pressing_notes", ""),
+                "year": rec.get("year") or d.get("year"),
+                "have": have,
+                "want": want,
+                "owner_count": rec.get("owner_count", 0),
+                "estimated_value": median_value,
+                "low_value": low_value,
+                "high_value": high_value,
+            })
         except Exception as e:
             logger.warning(f"Crown jewels Discogs fetch error for {discogs_id}: {e}")
             continue
 
-    # Sort by lowest have count (rarest first)
-    jewels.sort(key=lambda x: x.get("have", 999999))
+    # Dual-criteria sort: combine scarcity score + value score
+    # Scarcity score: lower have = higher score (invert)
+    # Value score: higher median = higher score
+    max_have = max((j["have"] for j in jewels), default=1) or 1
+    max_val = max((j["estimated_value"] for j in jewels), default=1) or 1
+    for j in jewels:
+        scarcity_score = 1 - (j["have"] / max_have)  # 0..1
+        value_score = j["estimated_value"] / max_val   # 0..1
+        j["elite_score"] = (scarcity_score * 0.5) + (value_score * 0.5)
+
+    jewels.sort(key=lambda x: x.get("elite_score", 0), reverse=True)
     jewels = jewels[:limit]
 
     # Cache for 24 hours
