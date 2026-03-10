@@ -9,32 +9,67 @@ const faqSections = [
     title: 'Getting Started',
     items: [
       {
-        q: 'What is the Honey Groove?',
-        a: 'The Honey Groove is a social app built specifically for vinyl collectors. Track your collection, share what you\'re spinning, post your hauls, hunt down records on your Dream List, and buy, sell, and trade directly with other collectors who get it.',
+        q: 'What is The Honey Groove?',
+        a: (
+          <>
+            <p>The Honey Groove is a social platform built specifically for vinyl collectors. Track your collection, share what you're spinning, post your hauls, build a Dream List of records you want, and buy, sell, or trade vinyl directly with other collectors.</p>
+            <p className="mt-2">Unlike traditional record marketplaces, The Honey Groove combines collection tracking, community, and a vinyl marketplace in one place.</p>
+          </>
+        ),
       },
       {
-        q: 'Is it free?',
-        a: 'Yes. The Honey Groove is free to join and use. We take a small 6% transaction fee on completed sales through The Honeypot marketplace. Trades with no sweetener are free.',
+        q: 'Is The Honey Groove free?',
+        a: (
+          <>
+            <p>Yes. The Honey Groove is free to join and use.</p>
+            <p className="mt-2">We take a 6% transaction fee on completed sales through The Honeypot marketplace. Trades with no sweetener are free.</p>
+            <p className="mt-2">Optional features like Golden Hive ID verification may require a one-time fee.</p>
+          </>
+        ),
       },
       {
-        q: 'Who is it for?',
-        a: 'Anyone who collects vinyl. Casual listeners, obsessive diggers, new collectors, lifers. If you care about records, you belong here.',
+        q: 'Who is The Honey Groove for?',
+        a: (
+          <>
+            <p>Anyone who collects vinyl.</p>
+            <p className="mt-2">Casual listeners, obsessive diggers, new collectors, crate diggers, audiophiles, and lifelong collectors. If you care about records, you belong here.</p>
+          </>
+        ),
       },
       {
-        q: 'How do I get access right now?',
-        a: 'The Honey Groove is currently in closed beta. Join the waitlist at thehoneygroove.com/beta and we\'ll send you an invite when your spot is ready. Founding members get a permanent badge on their profile that never goes away.',
+        q: 'Is The Honey Groove a Discogs alternative?',
+        a: (
+          <>
+            <p>Yes — but it's more than that.</p>
+            <p className="mt-2">Discogs focuses primarily on a database and marketplace. The Honey Groove adds:</p>
+            <ul className="mt-2 space-y-1 pl-4">
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>a social feed for vinyl collectors</li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>collection discovery</li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>Dream Lists and ISO hunting</li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>protected record trading</li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>variant tracking and collector insights</li>
+            </ul>
+            <p className="mt-2">Think of it as Discogs + a vinyl social network + a trading marketplace.</p>
+          </>
+        ),
       },
       {
         q: 'Is there a mobile app?',
-        a: 'Right now the Honey Groove is a fully mobile-optimized web app \u2014 it works beautifully in your phone browser and can be saved to your home screen. A native iOS and Android app is on the roadmap.',
+        a: (
+          <>
+            <p>Right now The Honey Groove is a mobile-optimized web app that works beautifully in your phone browser and can be saved to your home screen.</p>
+            <p className="mt-2">Native iOS and Android apps are on the roadmap.</p>
+          </>
+        ),
       },
       {
-        q: 'Who built the Honey Groove?',
-        a: 'The Honey Groove was built by Katie Klodnicki, a vinyl collector and product manager who got tired of managing her collection across five different apps and none of them feeling like home. It was built for collectors, by a collector.',
-      },
-      {
-        q: 'Is my data private?',
-        a: 'Yes. We never sell your data, share it with third parties for advertising, or use it for anything beyond making your experience better. Your collection, your Dream List, and your listening history are yours.',
+        q: 'Who built The Honey Groove?',
+        a: (
+          <>
+            <p>The Honey Groove was built by Katie Klodnicki, a vinyl collector and product manager who wanted a better way to manage her collection and connect with other collectors.</p>
+            <p className="mt-2">It was built for collectors, by a collector.</p>
+          </>
+        ),
       },
     ],
   },
@@ -43,35 +78,69 @@ const faqSections = [
     items: [
       {
         q: 'What is The Hive?',
-        a: 'The Hive is your social feed. It\'s where the community lives. You\'ll see what people are spinning, what they just found, what they\'re searching for, and anything else collectors want to share.',
+        a: (
+          <>
+            <p>The Hive is the social feed of The Honey Groove.</p>
+            <p className="mt-2">Collectors share:</p>
+            <ul className="mt-2 space-y-1 pl-4">
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>what they're spinning</li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>new vinyl hauls</li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>records they're hunting</li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>daily prompt responses</li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>collector conversations</li>
+            </ul>
+            <p className="mt-2">It's where the vinyl community comes alive.</p>
+          </>
+        ),
       },
       {
-        q: 'What can I post?',
-        a: 'Four things. Now Spinning when you drop the needle \u2014 optionally attach a Vinyl Mood if a record is a whole feeling. New Haul when you score something good. ISO when you\'re searching for something specific. A Note for anything else on your mind.',
+        q: 'What can I post in The Hive?',
+        a: (
+          <>
+            <p>Collectors typically post:</p>
+            <ul className="mt-2 space-y-1 pl-4">
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span><span><strong>Now Spinning</strong> — what you're playing right now</span></li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span><span><strong>New Haul</strong> — a record you just picked up</span></li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span><span><strong>ISO</strong> — a record you're actively searching for</span></li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span><span><strong>Notes</strong> — anything vinyl related</span></li>
+            </ul>
+          </>
+        ),
       },
       {
-        q: 'What is a Vinyl Mood?',
-        a: 'A Vinyl Mood is a feeling you attach to a Now Spinning post. Twelve moods to choose from \u2014 Late Night, Nostalgic, Euphoric, Melancholic, and more. It tells the community not just what you\'re playing but how it\'s making you feel.',
+        q: 'What is the Randomizer?',
+        a: (
+          <>
+            <p>The Randomizer selects a random record from your collection and allows you to instantly share it to The Hive.</p>
+            <p className="mt-2">It's a fun way to rediscover records you already own and spark conversation.</p>
+            <p className="mt-2">Randomizer posts include a Randomizer tag so others know it was randomly selected.</p>
+          </>
+        ),
       },
       {
         q: 'What is the Daily Prompt?',
-        a: 'Every day the Honey Groove drops a question for the community \u2014 things like "the record you\'d save in a fire" or "what\'s on right now, no context." Tap buzz in to answer with a record from your collection. Answers show up in The Hive feed and can be shared to Instagram Stories.',
+        a: (
+          <>
+            <p>Every day The Honey Groove asks the community a vinyl question.</p>
+            <p className="mt-2">Examples include:</p>
+            <ul className="mt-2 space-y-1 pl-4">
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>"What record would you save in a fire?"</li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>"What's spinning right now?"</li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>"Your favorite album closer?"</li>
+            </ul>
+            <p className="mt-2">Tap Buzz In and answer using a record from your collection.</p>
+          </>
+        ),
       },
       {
-        q: 'What is a buzz in streak?',
-        a: 'Answer the daily prompt every day and build a streak. Your streak count shows on your profile with a 🐝 bee icon. Miss a day and it resets. The longer your streak the more the community notices.',
-      },
-      {
-        q: 'Can I see posts from everyone or just people I follow?',
-        a: 'The Hive shows posts from the entire community so it feels alive from day one. As the community grows we\'ll be adding a Friends view to filter by people you follow.',
-      },
-      {
-        q: 'Can I comment on posts?',
-        a: 'Yes. Every post in The Hive is commentable, likeable, and shareable. Tap the comment icon on any post to join the conversation.',
-      },
-      {
-        q: 'Can I share posts to Instagram?',
-        a: 'Yes. Now Spinning, New Haul, and Daily Prompt posts can all be exported as Instagram Story cards directly from the app. One tap generates a beautifully designed card with your album art, stats, and handle ready to share.',
+        q: 'What is a Buzz In streak?',
+        a: (
+          <>
+            <p>Answer the Daily Prompt consistently and build a streak.</p>
+            <p className="mt-2">Your streak appears on your profile with a bee icon.</p>
+            <p className="mt-2">Miss a day and the streak resets.</p>
+          </>
+        ),
       },
     ],
   },
@@ -80,113 +149,158 @@ const faqSections = [
     items: [
       {
         q: 'How do I add records to my collection?',
-        a: 'Search by artist or album and we pull in album art and details automatically from Discogs. You can add press information, condition notes, and personal ratings for each record.',
+        a: (
+          <>
+            <p>Search by artist or album and we pull artwork and metadata automatically from Discogs.</p>
+            <p className="mt-2">Records are saved using the exact Discogs release ID, so variants and pressings are accurate.</p>
+          </>
+        ),
       },
       {
         q: 'Can I import my Discogs collection?',
-        a: 'Yes. Enter your Discogs username and we\'ll import your entire collection in one go. Duplicate records are handled automatically. Your collection value is calculated immediately after import using current Discogs market data.',
+        a: 'Yes. Enter your Discogs username and we\'ll import your entire collection automatically.',
       },
       {
-        q: 'Is my collection public?',
-        a: 'Yes by default. Other collectors can browse your collection from your profile. You can make individual records private from your collection settings if you prefer.',
+        q: 'Does The Honey Groove sync with Discogs?',
+        a: 'Yes. You can import your Discogs collection, and records added to your Honey Groove collection can also sync back to Discogs.',
       },
       {
         q: 'How is my collection value calculated?',
-        a: 'We pull current market data from Discogs and calculate the estimated value of your collection based on recent median sale prices. Your total collection value is visible on your profile and updated regularly. Individual record values are shown on each record in your collection.',
+        a: (
+          <>
+            <p>Your collection value is calculated using Discogs median sale prices for each variant.</p>
+            <p className="mt-2">Values update regularly as market data changes.</p>
+          </>
+        ),
       },
       {
-        q: 'Can I add condition notes to my records?',
-        a: 'Yes. Each record in your collection has a condition field where you can note the grade of both the vinyl and the sleeve. This is especially useful when listing records for sale or trade.',
-      },
-      {
-        q: 'Can I rate records in my collection?',
-        a: 'Yes. You can add a personal rating to any record in your collection. Your ratings are visible on your profile and help other collectors understand your taste.',
-      },
-      {
-        q: 'What pressing information can I track?',
-        a: 'You can note the pressing country, label, catalog number, color or variant, and any other details specific to your copy. The more detail you add the more useful your collection becomes for trading.',
+        q: 'Can I track specific variants or pressings?',
+        a: (
+          <>
+            <p>Yes.</p>
+            <p className="mt-2">Each record can include:</p>
+            <ul className="mt-2 space-y-1 pl-4">
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>vinyl color or variant</li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>label</li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>catalog number</li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>pressing country</li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>release year</li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>condition notes</li>
+            </ul>
+          </>
+        ),
       },
     ],
   },
   {
-    title: 'The Dream List',
+    title: 'Dream List',
     items: [
       {
         q: 'What is the Dream List?',
-        a: 'Your Dream List is your hunt list. Add any record you\'ve been looking for and we\'ll notify you the moment another collector lists it in The Honeypot. You can specify pressing preferences and condition requirements for each entry.',
+        a: (
+          <>
+            <p>Your Dream List is a list of records you'd love to own someday.</p>
+            <p className="mt-2">Each Dream record shows the Discogs median market value, and the top of the page displays the total value of your dream records.</p>
+          </>
+        ),
       },
       {
-        q: 'What happens when someone lists a record on my Dream List?',
-        a: 'You get an instant notification \u2014 in-app and by email \u2014 with a direct link to the listing. Dream List matches move fast so we flag them the moment they appear.',
+        q: 'What is Actively Seeking?',
+        a: (
+          <>
+            <p>Actively Seeking is your ISO list.</p>
+            <p className="mt-2">Records moved here appear in the marketplace so other collectors know you're actively looking for them.</p>
+          </>
+        ),
       },
       {
-        q: 'Can other collectors see my Dream List?',
-        a: 'Yes. Your Dream List is visible on your profile. Other collectors browsing your ISO posts can see what you\'re hunting and reach out directly if they have something you need.',
-      },
-      {
-        q: 'Can I set a price limit on a Dream List entry?',
-        a: 'Yes. You can set a maximum price for each Dream List entry. We\'ll only notify you when a matching listing appears at or below your target price so you\'re not pinged for listings out of your budget.',
-      },
-      {
-        q: 'How long do Dream List entries stay active?',
-        a: 'Indefinitely. Your Dream List entries stay active until you remove them manually. We\'ll keep hunting until you find what you\'re looking for.',
-      },
-      {
-        q: 'Can I add pressing-specific requirements to my Dream List?',
-        a: 'Yes. For each entry you can specify the pressing country, label, variant, or color you\'re looking for. We\'ll match based on your requirements and only notify you when the right copy appears.',
+        q: 'Can I move a Dream record into my collection?',
+        a: 'Yes. If you obtain a Dream record, simply tap Add to Collection and it will move from your Dream List to your collection.',
       },
     ],
   },
   {
-    title: 'The Honeypot',
+    title: 'The Honeypot Marketplace',
     items: [
       {
         q: 'What is The Honeypot?',
-        a: 'The Honeypot is our peer-to-peer marketplace. Three tabs: Shop for buying and selling, ISO for browsing the community Dream List, and Trade for swapping records directly with other collectors.',
+        a: (
+          <>
+            <p>The Honeypot is the marketplace inside The Honey Groove.</p>
+            <p className="mt-2">It includes three sections:</p>
+            <ul className="mt-2 space-y-1 pl-4">
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span><span><strong>Shop</strong> — buy and sell records</span></li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span><span><strong>Seeking</strong> — browse what collectors are actively seeking</span></li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span><span><strong>Trade</strong> — swap records with other collectors</span></li>
+            </ul>
+          </>
+        ),
       },
       {
-        q: 'Who can sell?',
-        a: 'Any collector with a connected Stripe account. You\'ll need to verify through Stripe before your first listing goes live. It takes about two minutes and your earnings are paid directly to your bank account.',
+        q: 'Can I buy and sell vinyl records?',
+        a: 'Yes. Collectors can list records for sale and receive payouts directly through Stripe.',
       },
       {
-        q: 'What are the fees?',
-        a: 'The Honey Groove charges a 6% fee on completed sales \u2014 lower than any major vinyl marketplace. If your trade includes a sweetener we take 6% of the sweetener amount only. The Mutual Hold amount is fully reversed on completion and is not subject to any fee.',
+        q: 'What are the marketplace fees?',
+        a: (
+          <>
+            <p>The Honey Groove charges 6% on completed sales.</p>
+            <p className="mt-2">Trades with a sweetener are charged 6% on the sweetener amount only.</p>
+          </>
+        ),
+      },
+    ],
+  },
+  {
+    title: 'Shipping, Ratings, and Disputes',
+    items: [
+      {
+        q: 'How long do I have to ship a record after a sale or trade?',
+        a: 'After a sale or accepted trade, the seller must ship the record within 5 days and enter a valid tracking number.',
       },
       {
-        q: 'What is a sweetener?',
-        a: 'A sweetener is cash added to a trade to balance an unequal swap. If you want to trade your copy of Blue for someone\'s copy of Rumours you might add a sweetener to make it fair. Both parties agree on the amount before the trade locks in.',
+        q: 'What happens after delivery?',
+        a: (
+          <>
+            <p>Once a shipment is marked Delivered, a confirmation window begins.</p>
+            <p className="mt-2">Both parties can confirm the transaction and leave ratings.</p>
+          </>
+        ),
       },
       {
-        q: 'What condition are records listed in?',
-        a: 'Every listing requires a condition rating \u2014 Mint, Near Mint, Very Good Plus, Very Good, or Good \u2014 and at least one photo of the actual record including the sleeve, labels, and any wear. What you see is what you get.',
+        q: 'How long do I have to rate a buyer or seller?',
+        a: (
+          <>
+            <p>After delivery:</p>
+            <ul className="mt-2 space-y-1 pl-4">
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>Buyers have 48 hours to rate the seller</li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>Sellers have 48 hours to rate the buyer</li>
+            </ul>
+            <p className="mt-2">If neither party leaves a rating within 48 hours, the transaction automatically closes.</p>
+          </>
+        ),
       },
       {
-        q: 'How does shipping work?',
-        a: 'Both parties ship within 5 days of a completed sale or accepted trade. Tracking numbers are required and entered inside the app. We show live tracking status to both parties so everyone knows where things stand.',
+        q: 'How long do I have to confirm a trade?',
+        a: (
+          <>
+            <p>For trades, both collectors have 24 hours after delivery to confirm receipt.</p>
+            <p className="mt-2">If neither user confirms within 24 hours, the trade automatically completes and holds are released.</p>
+          </>
+        ),
       },
       {
-        q: 'When do sellers get paid?',
-        a: 'Seller payouts are held for 5 days after delivery confirmation. This gives buyers a window to flag any issues before funds are released. Once the hold period passes with no dispute the payout is transferred to the seller\'s connected Stripe account within 2 to 5 business days.',
+        q: "What if someone doesn't ship their record?",
+        a: 'If tracking is not entered within 5 days, the transaction can be cancelled and any held funds are released.',
       },
       {
-        q: 'What if something goes wrong with my order?',
-        a: 'You have 48 hours after delivery confirmation to flag a dispute. Upload photos and describe the issue. We review every dispute and will always make it right. For high value items where fraud is clear we will remove the seller from the platform, provide documentation to support a payment dispute with your card issuer, and work with you directly to find a resolution.',
-      },
-      {
-        q: 'What if I get scammed during a trade?',
-        a: 'We take fraud seriously and have protections in place on both sides. If you receive a record that is significantly not as described file a dispute within 48 hours of delivery with photos of what you received. If the other party never ships you can cancel the trade after 5 days and any sweetener payments will be refunded. Never send money outside the Honey Groove \u2014 any seller asking you to pay via Venmo, PayPal, Zelle, or any other outside method is not legitimate. All transactions happen inside the app through Stripe only. Report any suspicious behavior immediately using the report button on their profile.',
-      },
-      {
-        q: 'Does shipping insurance matter?',
-        a: 'For items over $75 we strongly recommend sellers add shipping insurance. Listings show whether the seller has added insurance so you know before you buy. If a record is lost or damaged in transit with no insurance resolution options are more limited \u2014 insurance protects both parties.',
-      },
-      {
-        q: 'Can I make an offer below the asking price?',
-        a: 'Yes on listings marked Make an Offer. The seller can accept, counter, or decline. On Buy It Now listings the price is fixed.',
-      },
-      {
-        q: 'Can I see a seller\'s history before buying?',
-        a: 'Yes. Every seller profile shows their completed transaction count, star rating, and member since date. New sellers with fewer than 3 completed transactions cannot list items over $150 until they\'ve built a track record.',
+        q: "What if I receive a record that isn't as described?",
+        a: (
+          <>
+            <p>You can open a dispute within 48 hours of delivery.</p>
+            <p className="mt-2">Upload photos and describe the issue so our team can review it.</p>
+          </>
+        ),
       },
     ],
   },
@@ -194,102 +308,64 @@ const faqSections = [
     title: 'Trades',
     items: [
       {
-        q: 'How does a trade work?',
-        a: 'Find a listing marked for trade, propose an offer from your own collection, and optionally add a sweetener. Both parties agree on a Mutual Hold amount. Once both sides accept the hold is charged, records are locked, and both parties ship within 5 days. After both deliveries are confirmed and both parties confirm receipt the holds are fully reversed.',
+        q: 'How does trading work?',
+        a: (
+          <>
+            <p>Collectors propose trades using records from their collection.</p>
+            <p className="mt-2">Once both parties accept:</p>
+            <ul className="mt-2 space-y-1 pl-4">
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>a Mutual Hold is placed</li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>both collectors ship within 5 days</li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>delivery triggers a 24-hour confirmation window</li>
+            </ul>
+          </>
+        ),
       },
       {
         q: 'What is a Mutual Hold?',
-        a: 'Every trade on the Honey Groove requires a Mutual Hold. Both parties are charged a hold amount equal to the estimated value of the records being traded. The hold sits with the platform and is fully reversed within 24 hours of both parties confirming receipt. It protects both sides \u2014 nobody walks away ahead by scamming because their hold covers the value of what they took.',
-      },
-      {
-        q: 'How is the hold amount calculated?',
-        a: 'We suggest a hold amount based on the Discogs median sale price of both records being traded, averaged together. You can adjust the amount but the minimum is $10. Both parties must agree on the hold amount before the trade locks in.',
-      },
-      {
-        q: 'What if I don\'t confirm receipt within 24 hours?',
-        a: 'If you don\'t confirm or dispute within 24 hours of delivery confirmation your hold is automatically reversed. This protects you from being held hostage by an unresponsive counterparty.',
-      },
-      {
-        q: 'What if the other person doesn\'t ship?',
-        a: 'If either party hasn\'t entered a tracking number within 5 days the other can trigger a cancellation. Both holds are reversed and the trade is voided.',
-      },
-      {
-        q: 'Can I cancel a trade after accepting?',
-        a: 'Once both parties have accepted and holds have been charged cancellation requires a dispute. We take this seriously because it protects both sides equally.',
-      },
-      {
-        q: 'What if I receive a record that isn\'t as described?',
-        a: 'File a dispute within 48 hours of delivery confirmation. Both holds are frozen immediately. Upload photos showing the condition you received versus what was listed. We review every dispute and resolve within 48 hours.',
+        a: (
+          <>
+            <p>A Mutual Hold is a temporary hold placed on both collectors' payment methods equal to the estimated Discogs value of the records.</p>
+            <p className="mt-2">This protects both sides and prevents scams.</p>
+          </>
+        ),
       },
     ],
   },
   {
-    title: 'The Weekly Wax',
+    title: 'Safety and Trust',
     items: [
       {
-        q: 'What is the Week in Wax?',
-        a: 'Every Sunday your Week in Wax report is generated \u2014 a full breakdown of your listening week. Top artists, total spins, moods, era breakdown, and a personally generated closing line that captures the vibe of your week in one sentence. Shareable to Instagram Stories as a beautifully designed card.',
-      },
-      {
-        q: 'What is the personality label?',
-        a: 'Each Week in Wax includes a personality label generated from your listening data \u2014 things like "a late night listener with a weakness for heartbreak pop" or "a 2020s maximalist who only trusts music that makes her chest hurt a little." You can regenerate it once per week if you want a different one.',
-      },
-      {
-        q: 'What is Collector Bingo?',
-        a: 'A new bingo card drops every Friday with 24 collector scenarios based on your week \u2014 things like "spun the same record twice in one day" or "stayed up past midnight listening." Check off the ones that apply, get a bingo, share your card. The card locks Sunday at midnight and a new one drops the following Friday.',
-      },
-      {
-        q: 'What is the Mood Board?',
-        a: 'Every Sunday the app automatically generates a 3x3 grid of your most spun album covers from the week. One tap shares it to Instagram Stories or The Hive feed. Zero effort, always beautiful.',
-      },
-      {
-        q: 'Can I look back at old Weekly Wax reports?',
-        a: 'Yes. Every report is saved permanently to your profile. Browse all past weekly reports from your profile page \u2014 your listening history going back as far as you\'ve been on the Honey Groove.',
-      },
-    ],
-  },
-  {
-    title: 'Account and Safety',
-    items: [
-      {
-        q: 'How do I verify my account?',
-        a: 'Seller verification happens through Stripe when you connect your payout account. Buyers don\'t need to verify beyond a standard email signup.',
-      },
-      {
-        q: 'What is the rating system?',
-        a: 'After every completed trade or sale both parties rate each other out of 5 stars. Ratings are mandatory before your next transaction. Seller ratings and completed transaction counts are visible on every profile and listing so you always know who you\'re dealing with.',
+        q: 'What is Golden Hive ID?',
+        a: (
+          <>
+            <p>Golden Hive ID is a verified collector badge.</p>
+            <p className="mt-2">Collectors who complete identity verification receive a badge that appears on their profile, listings, and trades.</p>
+            <p className="mt-2">Verification helps other collectors know they are dealing with a trusted member of the community.</p>
+          </>
+        ),
       },
       {
         q: 'Can I block someone?',
-        a: 'Yes. Block any user from their profile. Blocked users cannot view your profile, message you, or interact with your posts or listings.',
-      },
-      {
-        q: 'How do I report someone?',
-        a: 'Tap the three dot menu on any post, listing, or profile and select Report. Choose a reason and submit. Every report is reviewed by our team. For urgent safety concerns use the report button and we will prioritize your case.',
-      },
-      {
-        q: 'What is a Founding Member?',
-        a: 'The first 50 users to join the Honey Groove receive a permanent Founding Member badge on their profile. It shows up next to your handle everywhere in the app and never goes away. You were here first and that means something.',
-      },
-      {
-        q: 'Can I change my username?',
-        a: 'Yes. You can update your handle from your profile settings. Your old handle is released and available for others to claim so choose carefully.',
-      },
-      {
-        q: 'What happens if I forget my password?',
-        a: 'Use the Forgot Password link on the login screen. We\'ll send a reset link to your email address. If you don\'t receive it check your spam folder.',
-      },
-      {
-        q: 'Can I delete my account?',
-        a: 'Yes. You can request account deletion from your profile settings. Deleting your account removes your profile, posts, and collection from the app. Completed transaction history is retained for dispute resolution purposes. Active trades or sales must be completed or cancelled before deletion.',
+        a: 'Yes. Blocked users cannot view your profile, message you, or interact with your posts.',
       },
       {
         q: 'Is my payment information safe?',
-        a: 'All payments are processed through Stripe. We never store your card or bank details. Stripe is PCI-DSS compliant and used by millions of businesses worldwide.',
+        a: (
+          <>
+            <p>All payments are processed through Stripe, which is PCI-DSS compliant.</p>
+            <p className="mt-2">The Honey Groove never stores your payment information.</p>
+          </>
+        ),
       },
       {
-        q: 'Does the Honey Groove run ads?',
-        a: 'No. The Honey Groove is ad-free. We make money through transaction fees only, not by selling your attention or your data.',
+        q: 'Does The Honey Groove run ads?',
+        a: (
+          <>
+            <p>No.</p>
+            <p className="mt-2">The Honey Groove is ad-free. The platform earns revenue through transaction fees, not advertising.</p>
+          </>
+        ),
       },
     ],
   },
@@ -308,7 +384,9 @@ const FAQItem = ({ q, a }) => {
         <ChevronDown className={`w-4 h-4 text-honey-amber shrink-0 mt-1 transition-transform ${open ? 'rotate-180' : ''}`} />
       </div>
       {open && (
-        <p className="text-sm text-vinyl-black/70 mt-3 leading-relaxed pr-8">{a}</p>
+        <div className="text-sm text-vinyl-black/70 mt-3 leading-relaxed pr-8">
+          {typeof a === 'string' ? <p>{a}</p> : a}
+        </div>
       )}
     </button>
   );
@@ -320,12 +398,12 @@ const FAQPage = () => {
   <div className="min-h-screen bg-honey-cream">
     <SEOHead
       title="FAQ — Frequently Asked Questions"
-      description="Everything you need to know about The Honey Groove. How to join, how the marketplace works, Discogs integration, and more."
+      description="Everything you need to know about The Honey Groove — the social marketplace for vinyl collectors."
       url="/faq"
     />
     <div className="max-w-2xl mx-auto px-4 py-12 pt-28 pb-24" data-testid="faq-page">
       <h1 className="font-heading text-4xl text-vinyl-black mb-2">FAQ</h1>
-      <p className="text-muted-foreground mb-10">everything you need to know about the Honey Groove.</p>
+      <p className="text-muted-foreground mb-10">Everything you need to know about The Honey Groove — the social marketplace for vinyl collectors.</p>
 
       {faqSections.map(section => (
         <div key={section.title} className="mb-8" data-testid={`faq-section-${section.title.toLowerCase().replace(/\s+/g, '-')}`}>
