@@ -82,7 +82,7 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
               </p>
             )}
             <div className="flex items-center justify-between">
-              <Button onClick={() => setModalOpen(true)} className="text-white rounded-full px-6 text-sm font-semibold shadow-sm hover:opacity-90" style={{ background: 'linear-gradient(to bottom right, #F9A825, #EF6C00)' }} data-testid="buzz-in-btn">
+              <Button onClick={() => setModalOpen(true)} className="text-white rounded-full px-6 text-sm font-semibold shadow-sm hover:opacity-90" style={{ background: 'linear-gradient(135deg, #FF9800, #F57C00)' }} data-testid="buzz-in-btn">
                 buzz in 🐝
               </Button>
               {streak > 0 && (

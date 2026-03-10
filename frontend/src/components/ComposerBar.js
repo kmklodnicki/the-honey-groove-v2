@@ -315,11 +315,11 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const noteRecord = records.find(r => r.id === noteRecordId);
 
   const spectrum = [
-    { key: 'NOW_SPINNING', label: 'Now Spinning', icon: Disc, bg: 'linear-gradient(to bottom right, #F9A825, #EF6C00)' },
-    { key: 'NEW_HAUL', label: 'Haul', icon: Package, bg: '#F57C00' },
-    { key: 'ISO', label: 'ISO', icon: Search, bg: '#E65100' },
-    { key: 'NOTE', label: 'Note', icon: Feather, bg: '#D84315' },
-    { key: 'RANDOMIZER', label: 'Randomizer', icon: Shuffle, bg: '#BF360C' },
+    { key: 'NOW_SPINNING', label: 'Now Spinning', icon: Disc, bg: 'linear-gradient(135deg, #FF9800, #F57C00)' },
+    { key: 'NEW_HAUL', label: 'Haul', icon: Package, bg: 'linear-gradient(135deg, #F57C00, #EF6C00)' },
+    { key: 'ISO', label: 'ISO', icon: Search, bg: 'linear-gradient(135deg, #EF6C00, #E65100)' },
+    { key: 'NOTE', label: 'Note', icon: Feather, bg: 'linear-gradient(135deg, #E65100, #D84315)' },
+    { key: 'RANDOMIZER', label: 'Randomizer', icon: Shuffle, bg: 'linear-gradient(135deg, #D84315, #BF360C)' },
   ];
 
   return (

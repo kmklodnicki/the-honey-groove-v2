@@ -694,9 +694,6 @@ const HivePage = () => {
         </div>
       </div>
 
-      {/* Composer Bar */}
-      <ComposerBar onPostCreated={handlePostCreated} records={records} />
-
       {/* Feed Mode Toggle: All | Following */}
       <div className="flex items-center mb-3" data-testid="feed-mode-toggle">
         <div className="flex w-52 bg-stone-100 rounded-full p-1">
@@ -726,6 +723,9 @@ const HivePage = () => {
           </button>
         </div>
       </div>
+
+      {/* Composer Bar */}
+      <ComposerBar onPostCreated={handlePostCreated} records={records} />
 
       {/* Content Filter Bar */}
       <div className="flex flex-wrap gap-1.5 mb-4" data-testid="feed-filter-bar">
