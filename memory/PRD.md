@@ -264,7 +264,8 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - **Dream Catcher Fix (BLOCK 150):** All + icons trigger Intent Modal (Dreaming/Seeking). Checkmark feedback on success.
 - **Crown Jewels Collision Fix:** ScrollRow arrows moved to Floating Glass Dock at bottom-center. No overlap with + buttons.
 - **Global Adaptive UI (BLOCK 125):** State dropdown conditional on Country=US. City/Postal marked "(Optional)" in italic. Non-US: 2-column grid. US: 3-column grid.
-- **Global Groove (BLOCK 127):** Near You algorithm: US users match by state, non-US match by country. State removed from DOM for non-US. Backend accepts state + postal_code fields.
+- **Global Groove (BLOCK 127):** Near You algorithm: US users match by state, non-US match by country. Backend accepts state + postal_code fields.
+- **Visual Hierarchy Overhaul (BLOCK 129):** Composer buttons shifted to Light Honey Cream (#FDE68A) with dark text (#78350F) and 1px border rgba(0,0,0,0.05). Clear visual hierarchy: Buzz In and All toggle remain saturated. City and Postal Code fields removed from Settings — only Country + conditional State (US). Member Discovery shows "[State], USA" or full country name.
 
 ### Future / Backlog
 - **P0:** User's secret search feature (details TBD — user has mentioned multiple times)
