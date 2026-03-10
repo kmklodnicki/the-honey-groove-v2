@@ -126,7 +126,10 @@ export default function VinylVariantPage() {
         <div className="flex flex-col md:flex-row gap-6 items-start">
           {/* Album Art */}
           <div className="w-full md:w-64 shrink-0">
-            <div className="relative aspect-square rounded-2xl overflow-hidden shadow-xl bg-vinyl-black">
+            <div
+              className="relative aspect-square overflow-hidden bg-vinyl-black transition-transform duration-150 ease-out hover:-translate-y-[3px]"
+              style={{ borderRadius: '14px', boxShadow: '0 12px 28px rgba(0,0,0,0.12)' }}
+            >
               {ov.cover_url ? (
                 <AlbumArt src={ov.cover_url} alt={`${ov.artist} ${ov.album} ${ov.variant} vinyl record`} className="w-full h-full object-cover" />
               ) : (
