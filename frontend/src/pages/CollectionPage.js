@@ -742,7 +742,7 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
         </div>
       )}
       <Link to={selectMode ? '#' : `/record/${record.id}`} onClick={selectMode ? (e) => e.preventDefault() : undefined}>
-        <div className="relative aspect-square bg-vinyl-black">
+        <div className="relative aspect-square bg-stone-200">
           {record.cover_url ? (
             <AlbumArt 
               src={record.cover_url} 
@@ -796,6 +796,11 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
               {record.title}
             </h4>
             <p className="text-xs text-muted-foreground truncate">{record.artist}</p>
+            {record.color_variant && (
+              <p className="text-[11px] text-honey-amber font-medium truncate mt-0.5" data-testid={`variant-label-${record.id}`}>
+                {record.color_variant}
+              </p>
+            )}
           </Link>
           
           <DropdownMenu>
