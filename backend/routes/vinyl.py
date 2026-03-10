@@ -440,6 +440,19 @@ _STRIP_SUFFIXES = re.compile(
 _BRACKET_RE = re.compile(r"[\[\]()/]")
 _MULTI_SPACE = re.compile(r"\s+")
 
+# Filler words stripped during dedup key generation — not meaningful for variant identity
+_FILLER_WORDS = {
+    "vinyl", "colored", "coloured", "colour", "color", "pressed", "pressing",
+    "edition", "version", "lp", "ep", "single", "record", "records",
+    "gram", "heavyweight", "audiophile", "import", "standard",
+    "w/", "with", "and", "the", "a", "an", "in", "on", "of",
+}
+
+# Weight descriptors (180g, 200g, etc.) — noise for variant identity
+_WEIGHT_RE = re.compile(r"\b\d{2,3}\s*(?:g|gram|grams)\b", re.IGNORECASE)
+# Format size descriptors (12", 7", 2xLP, etc.)
+_FORMAT_SIZE_RE = re.compile(r'\b(?:\d+x?\s*(?:lp|ep)|\d+["″\']\s*)\b', re.IGNORECASE)
+
 
 def _normalize_variant_name(text: str) -> str:
     """Normalize a format text string into a clean variant group name."""
@@ -454,16 +467,24 @@ def _normalize_variant_name(text: str) -> str:
 
 
 def _dedup_key(name: str) -> str:
-    """Create a lowercase dedup key: strip brackets, punctuation, extra spaces."""
+    """Create a lowercase dedup key: strip brackets, punctuation, filler words, weights."""
     s = _BRACKET_RE.sub(" ", name.lower())
+    # Strip weight descriptors (180g, 200 gram, etc.)
+    s = _WEIGHT_RE.sub(" ", s)
+    # Strip format sizes (12", 7", 2xLP, etc.)
+    s = _FORMAT_SIZE_RE.sub(" ", s)
+    # Strip commas and other punctuation
+    s = re.sub(r"[,;:.'\"]+", " ", s)
     s = _MULTI_SPACE.sub(" ", s).strip()
-    # Sort words so "baby pink" and "pink baby" match
-    words = sorted(set(s.split()))
+    # Remove filler words
+    words = [w for w in s.split() if w not in _FILLER_WORDS and len(w) > 1]
+    # Sort so "baby pink" == "pink baby"
+    words = sorted(set(words))
     return " ".join(words)
 
 
 def _merge_variant_groups(groups: dict) -> dict:
-    """Merge groups whose dedup keys overlap or where one is a subset of another."""
+    """Merge groups whose dedup keys overlap, are subsets, or have high word similarity."""
     items = [(name, rids) for name, rids in groups.items()]
     keyed = [(_dedup_key(name), name, rids) for name, rids in items]
 
@@ -484,8 +505,27 @@ def _merge_variant_groups(groups: dict) -> dict:
             if j <= i or j in used:
                 continue
             kj_words = set(kj.split())
-            # Merge if: exact same key, or one is a subset of the other
-            if ki == kj or kj_words <= ki_words or ki_words <= kj_words:
+
+            should_merge = False
+            if ki == kj:
+                # Exact match — always merge
+                should_merge = True
+            elif kj_words and ki_words:
+                smaller = kj_words if len(kj_words) <= len(ki_words) else ki_words
+                larger = ki_words if len(kj_words) <= len(ki_words) else kj_words
+                # Only merge via subset if the smaller has >= 50% of the larger's words
+                # This prevents "black" from absorbing "gold splatter on black"
+                if smaller <= larger and len(smaller) / len(larger) >= 0.5:
+                    should_merge = True
+                else:
+                    # Jaccard similarity for fuzzy matching
+                    intersection = ki_words & kj_words
+                    union = ki_words | kj_words
+                    jaccard = len(intersection) / len(union) if union else 0
+                    if jaccard >= 0.6:
+                        should_merge = True
+
+            if should_merge:
                 combined_rids.extend(rj)
                 used.add(j)
 

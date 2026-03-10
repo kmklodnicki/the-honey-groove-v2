@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { Search, ArrowLeft, TrendingUp, Gem, Heart, Clock, ChevronRight, Loader2 } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { Search, TrendingUp, Gem, Heart, Clock, ChevronRight, Loader2 } from 'lucide-react';
 import { Card } from '../components/ui/card';
 import { RarityPill } from '../components/RarityBadge';
 import AlbumArt from '../components/AlbumArt';
@@ -147,26 +147,23 @@ export default function SearchPage() {
     <div className="min-h-screen bg-white" data-testid="search-page">
       <SEOHead title="Search Vinyl Variants | The Honey Groove" description="Discover rare vinyl variants, albums, and artists." />
 
-      {/* Search Bar */}
-      <div className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-honey/10 px-4 py-3">
+      {/* Search Bar — offset below fixed navbar */}
+      <div className="sticky top-[52px] md:top-[88px] z-30 bg-white/95 backdrop-blur-md border-b border-honey/10 px-4 py-3">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <Link to={-1} className="shrink-0 text-muted-foreground hover:text-vinyl-black transition-colors" data-testid="search-back">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-honey-amber" />
             <input
               ref={inputRef}
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="Search artists, albums, or vinyl variants"
-              className="w-full h-11 pl-10 pr-4 rounded-full border border-honey/20 bg-honey/5 text-sm text-vinyl-black placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-honey/40 transition-shadow"
+              className="w-full h-12 pl-11 pr-4 rounded-full border-2 border-honey/30 bg-honey/5 text-sm text-vinyl-black placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-honey/40 focus:border-honey/50 transition-all shadow-sm"
               data-testid="search-input"
             />
             {query && (
               <button
                 onClick={() => setQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-vinyl-black"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-medium text-stone-400 hover:text-vinyl-black px-2 py-1 rounded-full hover:bg-stone-100 transition-colors"
                 data-testid="search-clear"
               >
                 Clear
