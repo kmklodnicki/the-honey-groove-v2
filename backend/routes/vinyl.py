@@ -437,19 +437,62 @@ _STRIP_SUFFIXES = re.compile(
     re.IGNORECASE
 )
 
+_BRACKET_RE = re.compile(r"[\[\]()/]")
+_MULTI_SPACE = re.compile(r"\s+")
+
 
 def _normalize_variant_name(text: str) -> str:
     """Normalize a format text string into a clean variant group name."""
     if not text:
         return "Standard Black Vinyl"
-    # Strip sleeve/packaging suffixes iteratively
     cleaned = text.strip()
     for _ in range(3):
         cleaned = _STRIP_SUFFIXES.sub("", cleaned).strip().rstrip(",").strip()
     if not cleaned:
         return "Standard Black Vinyl"
-    # Title-case
     return cleaned.title()
+
+
+def _dedup_key(name: str) -> str:
+    """Create a lowercase dedup key: strip brackets, punctuation, extra spaces."""
+    s = _BRACKET_RE.sub(" ", name.lower())
+    s = _MULTI_SPACE.sub(" ", s).strip()
+    # Sort words so "baby pink" and "pink baby" match
+    words = sorted(set(s.split()))
+    return " ".join(words)
+
+
+def _merge_variant_groups(groups: dict) -> dict:
+    """Merge groups whose dedup keys overlap or where one is a subset of another."""
+    items = [(name, rids) for name, rids in groups.items()]
+    keyed = [(_dedup_key(name), name, rids) for name, rids in items]
+
+    merged = {}  # canonical_name -> set of release_ids
+    used = set()
+
+    # Sort by specificity: longer dedup key = more specific = better canonical name
+    keyed.sort(key=lambda x: -len(x[0]))
+
+    for i, (ki, ni, ri) in enumerate(keyed):
+        if i in used:
+            continue
+        canon = ni
+        combined_rids = list(ri)
+        ki_words = set(ki.split())
+
+        for j, (kj, nj, rj) in enumerate(keyed):
+            if j <= i or j in used:
+                continue
+            kj_words = set(kj.split())
+            # Merge if: exact same key, or one is a subset of the other
+            if ki == kj or kj_words <= ki_words or ki_words <= kj_words:
+                combined_rids.extend(rj)
+                used.add(j)
+
+        used.add(i)
+        merged[canon] = combined_rids
+
+    return merged
 
 
 def _is_vinyl_version(version: dict) -> bool:
@@ -622,6 +665,9 @@ async def get_variant_completion(
         if name not in variant_groups:
             variant_groups[name] = []
         variant_groups[name].append(rid)
+
+    # Step 5b: Deduplicate — merge groups like "Baby Pink", "Pink", "Pink [Baby Pink]"
+    variant_groups = _merge_variant_groups(variant_groups)
 
     # Step 6: Check user ownership
     user_discogs_ids = set()
