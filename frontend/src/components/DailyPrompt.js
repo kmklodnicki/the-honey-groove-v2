@@ -376,14 +376,15 @@ const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
               )}
 
               <Textarea
-                placeholder="Add a caption (optional)"
+                placeholder="Share your thoughts on this prompt..."
                 value={caption} onChange={e => setCaption(e.target.value)}
                 className="border-amber-200 resize-none" rows={2}
                 data-testid="buzz-caption"
               />
+              <p className="text-[10px] text-muted-foreground/70 italic">A comment is required to share on the feed.</p>
 
               <div className="flex justify-center">
-                <Button onClick={() => handleSubmit(true)} disabled={submitting || !selectedRecordId}
+                <Button onClick={() => handleSubmit(true)} disabled={submitting || !selectedRecordId || !caption.trim()}
                   className="rounded-full bg-amber-500 hover:bg-amber-600 text-white w-full" data-testid="buzz-post-hive-btn">
                   {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Send className="w-4 h-4 mr-1" />}
                   post to the hive

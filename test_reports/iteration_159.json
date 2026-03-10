@@ -1,0 +1,89 @@
+{
+  "summary": "Block 147: Clutter-Free Feed Logic - ALL TESTS PASS. Tested backend feed filtering (discogs_import exclusion, captionless NOW_SPINNING/COLLECTION_UPDATE/RANDOMIZER exclusion) and frontend composer button disabled states. All 10 backend tests pass. All frontend UI tests pass.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_block147_clutter_free_feed.py",
+    "/app/test_reports/pytest/block147_clutter_free_feed_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_block147_clutter_free_feed.py"
+  ],
+  "success_rate": {
+    "backend": "100% (10/10 tests passed)",
+    "frontend": "100% (all UI tests passed)"
+  },
+  "seed_data_creation": "",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Block 147 clutter-free feed logic is fully implemented and tested. Backend GET /api/feed excludes discogs_import posts and captionless NOW_SPINNING/COLLECTION_UPDATE/RANDOMIZER posts. Frontend composer buttons are disabled until caption has >=1 char. Daily Prompt requires caption and has correct placeholder text.",
+  "verified_features": [
+    {
+      "feature": "Composer subtext visible",
+      "status": "PASS",
+      "notes": "Text: 'Only posts with comments will be shared on The Honey Groove feed.' is displayed in ComposerBar"
+    },
+    {
+      "feature": "Now Spinning: Post button disabled when caption empty",
+      "status": "PASS",
+      "notes": "spin-submit-btn disabled={submitting || !spinRecordId || !spinCaption.trim()}"
+    },
+    {
+      "feature": "Haul: Submit button disabled when caption empty",
+      "status": "PASS",
+      "notes": "haul-submit-btn disabled={submitting || haulItems.length === 0 || !haulCaption.trim()}"
+    },
+    {
+      "feature": "ISO: Submit button disabled when caption empty",
+      "status": "PASS",
+      "notes": "iso-submit-btn disabled until isoCaption.trim() is non-empty"
+    },
+    {
+      "feature": "Randomizer: Post button disabled when caption empty",
+      "status": "PASS",
+      "notes": "randomizer-post-btn disabled={submitting || !randCaption.trim()}"
+    },
+    {
+      "feature": "Daily Prompt: 'post to hive' button disabled when caption empty",
+      "status": "PASS",
+      "notes": "buzz-post-hive-btn disabled={submitting || !selectedRecordId || !caption.trim()}"
+    },
+    {
+      "feature": "Daily Prompt placeholder text",
+      "status": "PASS",
+      "notes": "Placeholder is 'Share your thoughts on this prompt...'"
+    },
+    {
+      "feature": "Backend GET /api/feed excludes discogs_import posts",
+      "status": "PASS",
+      "notes": "Query includes {source: {$ne: 'discogs_import'}}"
+    },
+    {
+      "feature": "Backend GET /api/feed excludes captionless NOW_SPINNING posts",
+      "status": "PASS",
+      "notes": "Backend filters out posts where post_type in (NOW_SPINNING, COLLECTION_UPDATE, RANDOMIZER) and caption is empty"
+    },
+    {
+      "feature": "Backend GET /api/explore also filters correctly",
+      "status": "PASS",
+      "notes": "Explore feed applies same filtering rules"
+    }
+  ],
+  "mocked_api": {
+    "has_mocked_apis": true,
+    "mocked_apis_list": ["Resend email"]
+  },
+  "test_credentials": {
+    "email": "demo@test.com",
+    "password": "demouser"
+  }
+}

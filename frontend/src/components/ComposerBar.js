@@ -326,7 +326,8 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     <>
       {/* Composer Bar — Command Center */}
       <div className="bg-white rounded-xl border border-honey/30 p-4 mb-6 shadow-sm" data-testid="composer-bar">
-        <p className="text-sm text-muted-foreground mb-3">What's on the turntable?</p>
+        <p className="text-sm text-muted-foreground mb-1">What's on the turntable?</p>
+        <p className="text-[10px] text-muted-foreground/70 mb-3 italic">Only posts with comments will be shared on The Honey Groove feed.</p>
         <div className="flex flex-row gap-1.5 justify-between w-full">
           {spectrum.map(chip => {
             const Icon = chip.icon;
@@ -450,7 +451,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               style={{ borderColor: 'rgba(200,134,26,0.5)' }}
               rows={2} data-testid="spin-caption-input" />
 
-            <Button onClick={submitNowSpinning} disabled={submitting || !spinRecordId}
+            <Button onClick={submitNowSpinning} disabled={submitting || !spinRecordId || !spinCaption.trim()}
               className="w-full rounded-full transition-all duration-200 text-white"
               style={{ background: 'linear-gradient(135deg, #FFB300, #FFA000)' }}
               data-testid="spin-submit-btn">
@@ -499,7 +500,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               </div>
             )}
             <MentionTextarea placeholder="Caption (optional)" value={haulCaption} onChange={setHaulCaption} className="border-honey/50 resize-none" rows={2} data-testid="haul-caption-input" />
-            <Button onClick={submitNewHaul} disabled={submitting || haulItems.length === 0} className="w-full bg-amber-100 text-amber-800 hover:bg-amber-200 rounded-full" data-testid="haul-submit-btn">
+            <Button onClick={submitNewHaul} disabled={submitting || haulItems.length === 0 || !haulCaption.trim()} className="w-full bg-amber-100 text-amber-800 hover:bg-amber-200 rounded-full" data-testid="haul-submit-btn">
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Package className="w-4 h-4 mr-2" />}
               Post Haul ({haulItems.length} record{haulItems.length !== 1 ? 's' : ''})
             </Button>
@@ -617,7 +618,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                       <Input placeholder="Max budget ($)" type="number" value={isoPriceMax} onChange={e => setIsoPriceMax(e.target.value)} className="border-honey/50" />
                     </div>
                     <MentionTextarea placeholder="Caption (optional)" value={isoCaption} onChange={setIsoCaption} className="border-honey/50 resize-none" rows={2} data-testid="iso-caption-input" />
-                    <Button onClick={submitISO} disabled={submitting || (isoManualMode && (!isoArtist || !isoAlbum)) || (!isoManualMode && !isoSelectedRelease)}
+                    <Button onClick={submitISO} disabled={submitting || !isoCaption.trim() || (isoManualMode && (!isoArtist || !isoAlbum)) || (!isoManualMode && !isoSelectedRelease)}
                       className="w-full rounded-full"
                       style={isoIntent === 'dreaming'
                         ? { background: '#f3f4f6', color: '#374151' }
@@ -792,7 +793,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
 
                 {/* Buttons */}
                 <div className="space-y-2">
-                  <Button onClick={submitRandomPost} disabled={submitting}
+                  <Button onClick={submitRandomPost} disabled={submitting || !randCaption.trim()}
                     className="w-full rounded-full bg-honey text-vinyl-black hover:bg-honey-amber"
                     data-testid="randomizer-post-btn">
                     {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Feather className="w-4 h-4 mr-2" />}

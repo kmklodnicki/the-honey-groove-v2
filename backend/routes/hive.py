@@ -392,7 +392,7 @@ async def get_feed(user: Dict = Depends(require_auth), limit: int = 50, skip: in
     if pinned_post and pinned_post.get("user_id") not in exclude_ids:
         pinned_resp = await build_post_response(pinned_post, user["id"])
 
-    query = {"is_pinned": {"$ne": True}}
+    query = {"is_pinned": {"$ne": True}, "source": {"$ne": "discogs_import"}}
     if exclude_ids:
         query["user_id"] = {"$nin": exclude_ids}
 
@@ -405,6 +405,11 @@ async def get_feed(user: Dict = Depends(require_auth), limit: int = 50, skip: in
         result.append(pinned_resp)
     for post in posts:
         try:
+            # Exclude Now Spinning / Collection Update posts with no caption
+            pt = (post.get("post_type") or "").upper()
+            caption = (post.get("caption") or post.get("content") or "").strip()
+            if pt in ("NOW_SPINNING", "COLLECTION_UPDATE", "RANDOMIZER") and not caption:
+                continue
             resp = await build_post_response(post, user["id"])
             if resp:
                 result.append(resp)
@@ -418,12 +423,16 @@ async def get_explore_feed(current_user: Optional[Dict] = Depends(get_current_us
     hidden_ids = await get_hidden_user_ids()
     blocked_ids = await get_all_blocked_ids(current_user["id"]) if current_user else []
     exclude_ids = list(set(hidden_ids + blocked_ids))
-    query = {"user_id": {"$nin": exclude_ids}} if exclude_ids else {}
+    query = {"user_id": {"$nin": exclude_ids}, "source": {"$ne": "discogs_import"}} if exclude_ids else {"source": {"$ne": "discogs_import"}}
     posts = await db.posts.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
     
     result = []
     for post in posts:
         uid = current_user["id"] if current_user else None
+        pt = (post.get("post_type") or "").upper()
+        caption = (post.get("caption") or post.get("content") or "").strip()
+        if pt in ("NOW_SPINNING", "COLLECTION_UPDATE", "RANDOMIZER") and not caption:
+            continue
         resp = await build_post_response(post, uid)
         if resp:
             result.append(resp)
