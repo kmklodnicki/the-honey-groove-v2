@@ -348,50 +348,44 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
 
       {/* ═══ Now Spinning Modal (merged with Mood) ═══ */}
       <Dialog open={activeModal === 'NOW_SPINNING'} onOpenChange={(open) => !open && closeModal()}>
-        <DialogContent
-          className="sm:max-w-md transition-colors duration-300"
-          style={moodCfg ? { backgroundColor: moodCfg.bg, borderColor: moodCfg.btnColor + '40' } : {}}
-        >
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-heading flex items-center gap-2"
-              style={moodCfg ? { color: moodCfg.btnColor } : { color: '#D98C2F' }}>
+            <DialogTitle className="font-heading flex items-center gap-2" style={{ color: '#D98C2F' }}>
               <Disc className="w-5 h-5" /> Now Spinning
+              {spinMood && <span className="text-sm font-normal ml-1">· {MOOD_CONFIG[spinMood].emoji} {spinMood}</span>}
             </DialogTitle>
-            <DialogDescription style={moodCfg ? { color: '#aaa' } : {}}>
+            <DialogDescription>
               Share what you're listening to right now
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <div>
-              <label className="text-sm font-medium mb-1 block" style={moodCfg ? { color: moodCfg.btnColor } : {}}>Record</label>
+              <label className="text-sm font-medium mb-1 block">Record</label>
               {!spinSelectedRecord ? (
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" style={moodCfg ? { color: '#888' } : {}} />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <Input
                     placeholder="search your collection..."
                     value={spinSearch}
                     onChange={e => { setSpinSearch(e.target.value); searchCollection(e.target.value); }}
                     className="pl-9 border-honey/50"
-                    style={moodCfg ? { background: 'rgba(255,255,255,0.08)', color: '#ddd', borderColor: moodCfg.btnColor + '60' } : {}}
                     data-testid="spin-record-search"
                     autoFocus
                   />
                   {spinSearchResults.length > 0 && (
-                    <div className="absolute z-50 left-0 right-0 mt-1 border rounded-lg max-h-52 overflow-y-auto shadow-lg"
-                      style={moodCfg ? { background: moodCfg.bg, borderColor: moodCfg.btnColor + '40' } : { background: '#fff', borderColor: 'rgba(200,134,26,0.3)' }}>
+                    <div className="absolute z-50 left-0 right-0 mt-1 border rounded-lg max-h-52 overflow-y-auto shadow-lg bg-white" style={{ borderColor: 'rgba(200,134,26,0.3)' }}>
                       {spinSearchResults.map(r => (
                         <RecordSearchResult key={r.id} record={r} onClick={() => selectSpinRecord(r)} size="sm" testId={`spin-result-${r.id}`} />
                       ))}
                     </div>
                   )}
                   {spinSearch.length >= 2 && spinSearchResults.length === 0 && (
-                    <div className="absolute z-50 left-0 right-0 mt-1 border rounded-lg p-4 text-center shadow-lg"
-                      style={moodCfg ? { background: moodCfg.bg, borderColor: moodCfg.btnColor + '40' } : { background: '#fff', borderColor: 'rgba(200,134,26,0.3)' }}>
-                      <p className="text-sm" style={{ color: moodCfg ? '#999' : '#8A6B4A' }}>
+                    <div className="absolute z-50 left-0 right-0 mt-1 border rounded-lg p-4 text-center shadow-lg bg-white" style={{ borderColor: 'rgba(200,134,26,0.3)' }}>
+                      <p className="text-sm" style={{ color: '#8A6B4A' }}>
                         no results in your collection 🐝
                       </p>
                       <a href="/add-record" className="text-xs mt-1 inline-block hover:underline"
-                        style={{ color: moodCfg ? moodCfg.btnColor : '#C8861A' }}
+                        style={{ color: '#C8861A' }}
                         data-testid="spin-add-record-link">
                         add it first →
                       </a>
@@ -399,19 +393,18 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                   )}
                 </div>
               ) : (
-                <div className="flex items-center gap-3 rounded-lg p-2.5"
-                  style={moodCfg ? { background: 'rgba(255,255,255,0.08)', borderColor: moodCfg.btnColor + '40' } : { background: 'rgba(244,185,66,0.1)' }}>
+                <div className="flex items-center gap-3 rounded-lg p-2.5" style={{ background: 'rgba(244,185,66,0.1)' }}>
                   {spinSelectedRecord.cover_url ? (
                     <AlbumArt src={spinSelectedRecord.cover_url} alt={`${spinSelectedRecord.artist} ${spinSelectedRecord.title} vinyl record`} className="w-11 h-11 rounded-md object-cover shadow-sm" />
                   ) : (
                     <div className="w-11 h-11 rounded-md bg-stone-100 flex items-center justify-center"><Disc className="w-5 h-5 text-stone-400" /></div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate" style={moodCfg ? { color: '#eee' } : {}}>{spinSelectedRecord.title}</p>
-                    <p className="text-xs truncate" style={{ color: moodCfg ? '#aaa' : '#8A6B4A' }}>{spinSelectedRecord.artist}</p>
+                    <p className="text-sm font-medium truncate">{spinSelectedRecord.title}</p>
+                    <p className="text-xs truncate" style={{ color: '#8A6B4A' }}>{spinSelectedRecord.artist}</p>
                   </div>
                   <button onClick={deselectSpinRecord} className="p-1 rounded-full hover:bg-black/10"
-                    style={moodCfg ? { color: '#999' } : { color: '#8A6B4A' }}
+                    style={{ color: '#8A6B4A' }}
                     data-testid="spin-deselect-record">
                     <X className="w-4 h-4" />
                   </button>
@@ -421,11 +414,10 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
 
             <Input placeholder="Track (optional)" value={spinTrack} onChange={e => setSpinTrack(e.target.value)}
               className="border-honey/50"
-              style={moodCfg ? { background: 'rgba(255,255,255,0.08)', color: '#eee', borderColor: moodCfg.btnColor + '60' } : {}}
               data-testid="spin-track-input" />
 
             <div>
-              <label className="text-sm font-medium mb-2 block" style={moodCfg ? { color: moodCfg.btnColor } : { color: '#8A6B4A' }}>
+              <label className="text-sm font-medium mb-2 block" style={{ color: '#8A6B4A' }}>
                 how does it feel?
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -437,9 +429,9 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                       onClick={() => setSpinMood(isSelected ? '' : m)}
                       className="px-3 py-2 rounded-lg text-xs font-medium transition-all"
                       style={{
-                        background: isSelected ? 'linear-gradient(135deg, #FFB300, #FFA000)' : (moodCfg ? 'rgba(255,255,255,0.08)' : '#FFF8E1'),
-                        color: isSelected ? '#000' : (moodCfg ? '#ccc' : '#5D4037'),
-                        border: isSelected ? '2px solid #FFA000' : (moodCfg ? '2px solid transparent' : '2px solid rgba(255,179,0,0.2)'),
+                        background: isSelected ? 'linear-gradient(135deg, #FFB300, #FFA000)' : '#FFF8E1',
+                        color: isSelected ? '#000' : '#3E2723',
+                        border: isSelected ? '2px solid #FFA000' : '2px solid rgba(255,179,0,0.2)',
                         transform: isSelected ? 'scale(1.06)' : 'scale(1)',
                         transition: 'transform 180ms ease-in-out, background 200ms, border 200ms, color 200ms',
                       }}
@@ -455,15 +447,15 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               placeholder={moodCfg ? moodCfg.placeholder : 'add a note...'}
               value={spinCaption} onChange={setSpinCaption}
               className="resize-none"
-              style={moodCfg ? { background: 'rgba(255,255,255,0.08)', color: '#eee', borderColor: moodCfg.btnColor + '60' } : { borderColor: 'rgba(200,134,26,0.5)' }}
+              style={{ borderColor: 'rgba(200,134,26,0.5)' }}
               rows={2} data-testid="spin-caption-input" />
 
             <Button onClick={submitNowSpinning} disabled={submitting || !spinRecordId}
-              className="w-full rounded-full transition-all duration-200"
-              style={moodCfg ? { backgroundColor: moodCfg.btnColor, color: '#fff' } : { backgroundColor: '#F4B942', color: '#1F1F1F' }}
+              className="w-full rounded-full transition-all duration-200 text-white"
+              style={{ background: 'linear-gradient(135deg, #FFB300, #FFA000)' }}
               data-testid="spin-submit-btn">
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Disc className="w-4 h-4 mr-2" />}
-              {moodCfg ? `Post Now Spinning · ${MOOD_CONFIG[spinMood].emoji} ${spinMood}` : 'Post Now Spinning'}
+              {spinMood ? `Post Now Spinning · ${MOOD_CONFIG[spinMood].emoji} ${spinMood}` : 'Post Now Spinning'}
             </Button>
           </div>
         </DialogContent>

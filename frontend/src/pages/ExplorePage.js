@@ -9,7 +9,7 @@ import { Skeleton } from '../components/ui/skeleton';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '../components/ui/dialog';
-import { Disc, Users, Search, TrendingUp, Lock, Play, UserPlus, MessageCircle, MapPin, Heart, Plus, Crown } from 'lucide-react';
+import { Disc, Users, Search, TrendingUp, Lock, Play, UserPlus, MessageCircle, MapPin, Heart, Plus, Crown, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
 import AlbumArt from '../components/AlbumArt';
@@ -73,16 +73,29 @@ const ExplorePage = () => {
     });
   };
 
-  const addToSeekingList = async (artist, album, discogs_id, cover_url, year) => {
+  // Dream Catcher — intent modal state
+  const [dreamTarget, setDreamTarget] = useState(null); // { artist, album, discogs_id, cover_url, year }
+  const [addedIds, setAddedIds] = useState(new Set());
+
+  const openDreamCatcher = (artist, album, discogs_id, cover_url, year) => {
+    setDreamTarget({ artist, album, discogs_id, cover_url, year });
+  };
+
+  const addToSeekingList = async (intent) => {
+    if (!dreamTarget) return;
+    const { artist, album, discogs_id, cover_url, year } = dreamTarget;
     try {
       await axios.post(`${API}/composer/iso`, {
         artist, album, discogs_id, cover_url, year,
-        intent: 'seeking',
+        intent: intent || 'seeking',
       }, { headers });
-      toast.success(`Added to your Dream List!`);
+      toast.success(intent === 'dreaming' ? 'Added to your Dream List.' : 'ISO posted to the Hive!');
+      setAddedIds(prev => new Set(prev).add(discogs_id));
+      setDreamTarget(null);
     } catch (err) {
-      if (err.response?.status === 409) toast.info('already on your Dream List.');
-      else toast.error('could not add. try again.');
+      if (err.response?.status === 409) { toast.info('Already on your Dream List.'); setAddedIds(prev => new Set(prev).add(discogs_id)); }
+      else toast.error('Could not add. Try again.');
+      setDreamTarget(null);
     }
   };
 
@@ -234,10 +247,11 @@ const ExplorePage = () => {
                   )}
                   <span
                     role="button"
-                    onClick={(e) => { e.stopPropagation(); addToSeekingList(r.artist, r.title, r.discogs_id, r.cover_url, r.year); }}
-                    className="absolute bottom-2 right-2 bg-white/90 hover:bg-white rounded-full p-1.5 shadow opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                    onClick={(e) => { e.stopPropagation(); openDreamCatcher(r.artist, r.title, r.discogs_id, r.cover_url, r.year); }}
+                    className={`absolute bottom-2 right-2 rounded-full p-1.5 shadow transition-opacity cursor-pointer ${addedIds.has(r.discogs_id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+                    style={addedIds.has(r.discogs_id) ? { background: 'linear-gradient(135deg, #FFB300, #FFA000)' } : { background: 'rgba(255,255,255,0.9)' }}
                     data-testid={`add-wantlist-cj-${r.discogs_id || idx}`}>
-                    <Plus className="w-4 h-4 text-honey-amber" />
+                    {addedIds.has(r.discogs_id) ? <Check className="w-4 h-4 text-white" /> : <Plus className="w-4 h-4 text-honey-amber" />}
                   </span>
                 </div>
                 <p className="text-sm font-medium truncate">{r.title}</p>
@@ -272,9 +286,10 @@ const ExplorePage = () => {
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="text-xs text-red-500 font-medium">{r.want_count} {r.want_count === 1 ? 'want' : 'wants'}</span>
-                  <span onClick={(e) => { e.stopPropagation(); addToSeekingList(r.artist, r.album, r.discogs_id, r.cover_url, r.year); }}
-                    className="text-honey-amber hover:bg-honey/10 rounded-full p-1 cursor-pointer" data-testid={`want-${idx}`}>
-                    <Plus className="w-4 h-4" />
+                  <span onClick={(e) => { e.stopPropagation(); openDreamCatcher(r.artist, r.album, r.discogs_id, r.cover_url, r.year); }}
+                    className="hover:bg-honey/10 rounded-full p-1 cursor-pointer" data-testid={`want-${idx}`}
+                    style={addedIds.has(r.discogs_id) ? { background: 'linear-gradient(135deg, #FFB300, #FFA000)', borderRadius: '9999px' } : {}}>
+                    {addedIds.has(r.discogs_id) ? <Check className="w-4 h-4 text-white" /> : <Plus className="w-4 h-4 text-honey-amber" />}
                   </span>
                 </div>
               </button>
@@ -342,6 +357,38 @@ const ExplorePage = () => {
           </div>
         )}
       </ExploreSection>
+
+      {/* Dream Catcher — Intent Selection Modal */}
+      <Dialog open={!!dreamTarget} onOpenChange={(open) => !open && setDreamTarget(null)}>
+        <DialogContent className="sm:max-w-xs" aria-describedby="dream-catcher-desc">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-center" style={{ color: '#D98C2F' }}>
+              Add to your list
+            </DialogTitle>
+            <p id="dream-catcher-desc" className="text-sm text-center text-muted-foreground mt-1">
+              {dreamTarget?.title || dreamTarget?.album} by {dreamTarget?.artist}
+            </p>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 pt-3" data-testid="dream-catcher-modal">
+            <Button
+              onClick={() => addToSeekingList('dreaming')}
+              className="w-full rounded-full py-3 text-sm font-semibold"
+              style={{ background: '#FFF8E1', color: '#3E2723', border: '2px solid rgba(255,179,0,0.3)' }}
+              data-testid="intent-dreaming"
+            >
+              Just Dreaming
+            </Button>
+            <Button
+              onClick={() => addToSeekingList('seeking')}
+              className="w-full rounded-full py-3 text-sm font-semibold text-white"
+              style={{ background: 'linear-gradient(135deg, #FFB300, #FFA000)' }}
+              data-testid="intent-seeking"
+            >
+              Actively Seeking
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Location Prompt Modal */}
       <Dialog open={showLocationPrompt} onOpenChange={setShowLocationPrompt}>

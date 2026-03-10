@@ -9,7 +9,7 @@ import { Skeleton } from '../components/ui/skeleton';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '../components/ui/dialog';
-import { ArrowLeft, TrendingUp, Users, Disc, Heart, MapPin, Play, Plus, MessageCircle, UserPlus, Crown } from 'lucide-react';
+import { ArrowLeft, TrendingUp, Users, Disc, Heart, MapPin, Play, Plus, MessageCircle, UserPlus, Crown, Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -87,14 +87,27 @@ const ExploreSeeAllPage = () => {
     });
   };
 
-  const addToSeekingList = async (artist, album, discogs_id, cover_url, year) => {
+  // Dream Catcher — intent modal state
+  const [dreamTarget, setDreamTarget] = useState(null);
+  const [addedIds, setAddedIds] = useState(new Set());
+
+  const openDreamCatcher = (artist, album, discogs_id, cover_url, year) => {
+    setDreamTarget({ artist, album, discogs_id, cover_url, year });
+  };
+
+  const addToSeekingList = async (intent) => {
+    if (!dreamTarget) return;
+    const { artist, album, discogs_id, cover_url, year } = dreamTarget;
     try {
-      await axios.post(`${API}/composer/iso`, { artist, album, discogs_id, cover_url, year }, { headers });
-      toast.success('added to your Dream List.');
+      await axios.post(`${API}/composer/iso`, { artist, album, discogs_id, cover_url, year, intent: intent || 'seeking' }, { headers });
+      toast.success(intent === 'dreaming' ? 'Added to your Dream List.' : 'ISO posted to the Hive!');
+      setAddedIds(prev => new Set(prev).add(discogs_id));
       trackEvent('wantlist_added');
+      setDreamTarget(null);
     } catch (err) {
-      if (err.response?.status === 409) toast.info('already on your Dream List.');
-      else toast.error('could not add. try again.');
+      if (err.response?.status === 409) { toast.info('Already on your Dream List.'); setAddedIds(prev => new Set(prev).add(discogs_id)); }
+      else toast.error('Could not add. Try again.');
+      setDreamTarget(null);
     }
   };
 
@@ -134,9 +147,9 @@ const ExploreSeeAllPage = () => {
         <>
           {section === 'trending' && <TrendingAll data={data} onOpen={openTrendingModal} />}
           {section === 'make-friends' && <TasteMatchAll data={data} navigate={navigate} />}
-          {section === 'trending-in-collections' && <TrendingCollectionsAll data={data} addToSeekingList={addToSeekingList} />}
-          {section === 'crown-jewels' && <CrownJewelsAll data={data} navigate={navigate} addToSeekingList={addToSeekingList} />}
-          {section === 'most-wanted' && <MostWantedAll data={data} addToSeekingList={addToSeekingList} />}
+          {section === 'trending-in-collections' && <TrendingCollectionsAll data={data} openDreamCatcher={openDreamCatcher} addedIds={addedIds} />}
+          {section === 'crown-jewels' && <CrownJewelsAll data={data} navigate={navigate} openDreamCatcher={openDreamCatcher} addedIds={addedIds} />}
+          {section === 'most-wanted' && <MostWantedAll data={data} openDreamCatcher={openDreamCatcher} addedIds={addedIds} />}
           {section === 'near-you' && (
             <NearYouAll
               data={data}
@@ -146,6 +159,38 @@ const ExploreSeeAllPage = () => {
           )}
         </>
       )}
+
+      {/* Dream Catcher — Intent Selection Modal */}
+      <Dialog open={!!dreamTarget} onOpenChange={(open) => !open && setDreamTarget(null)}>
+        <DialogContent className="sm:max-w-xs" aria-describedby="sa-dream-catcher-desc">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-center" style={{ color: '#D98C2F' }}>
+              Add to your list
+            </DialogTitle>
+            <p id="sa-dream-catcher-desc" className="text-sm text-center text-muted-foreground mt-1">
+              {dreamTarget?.title || dreamTarget?.album} by {dreamTarget?.artist}
+            </p>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 pt-3" data-testid="sa-dream-catcher-modal">
+            <Button
+              onClick={() => addToSeekingList('dreaming')}
+              className="w-full rounded-full py-3 text-sm font-semibold"
+              style={{ background: '#FFF8E1', color: '#3E2723', border: '2px solid rgba(255,179,0,0.3)' }}
+              data-testid="sa-intent-dreaming"
+            >
+              Just Dreaming
+            </Button>
+            <Button
+              onClick={() => addToSeekingList('seeking')}
+              className="w-full rounded-full py-3 text-sm font-semibold text-white"
+              style={{ background: 'linear-gradient(135deg, #FFB300, #FFA000)' }}
+              data-testid="sa-intent-seeking"
+            >
+              Actively Seeking
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Location Prompt Modal */}
       <Dialog open={showLocationPrompt} onOpenChange={setShowLocationPrompt}>
@@ -220,7 +265,7 @@ const TasteMatchAll = ({ data, navigate }) => {
   );
 };
 
-const TrendingCollectionsAll = ({ data, addToSeekingList }) => {
+const TrendingCollectionsAll = ({ data, openDreamCatcher, addedIds }) => {
   if (!data || data.length === 0) return <EmptyState text="No trending collection data right now." />;
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4" data-testid="trending-collections-grid">
@@ -229,10 +274,11 @@ const TrendingCollectionsAll = ({ data, addToSeekingList }) => {
           <div className="aspect-square rounded-xl overflow-hidden bg-honey/10 mb-2 shadow-sm relative group">
             <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} className="w-full h-full object-cover" />
             <button
-              onClick={() => addToSeekingList(r.artist, r.title, r.discogs_id, r.cover_url, r.year)}
-              className="absolute bottom-2 right-2 bg-white/90 hover:bg-white rounded-full p-1.5 shadow opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={() => openDreamCatcher(r.artist, r.title, r.discogs_id, r.cover_url, r.year)}
+              className={`absolute bottom-2 right-2 rounded-full p-1.5 shadow transition-opacity ${addedIds?.has(r.discogs_id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+              style={addedIds?.has(r.discogs_id) ? { background: 'linear-gradient(135deg, #FFB300, #FFA000)' } : { background: 'rgba(255,255,255,0.9)' }}
               data-testid={`sa-add-wantlist-tc-${r.discogs_id || idx}`}>
-              <Plus className="w-4 h-4 text-honey-amber" />
+              {addedIds?.has(r.discogs_id) ? <Check className="w-4 h-4 text-white" /> : <Plus className="w-4 h-4 text-honey-amber" />}
             </button>
           </div>
           <p className="text-sm font-medium truncate">{r.title}</p>
@@ -244,7 +290,7 @@ const TrendingCollectionsAll = ({ data, addToSeekingList }) => {
   );
 };
 
-const MostWantedAll = ({ data, addToSeekingList }) => {
+const MostWantedAll = ({ data, openDreamCatcher, addedIds }) => {
   if (!data || data.length === 0) return <EmptyState text="No Dream List data yet. Add records to your Dream List!" />;
   return (
     <div className="space-y-1" data-testid="most-wanted-list">
@@ -258,9 +304,10 @@ const MostWantedAll = ({ data, addToSeekingList }) => {
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <span className="text-xs text-red-500 font-medium">{r.want_count} {r.want_count === 1 ? 'want' : 'wants'}</span>
-            <button onClick={() => addToSeekingList(r.artist, r.album, r.discogs_id, r.cover_url, r.year)}
-              className="text-purple-600 hover:bg-purple-50 rounded-full p-1" data-testid={`sa-want-${idx}`}>
-              <Plus className="w-4 h-4" />
+            <button onClick={() => openDreamCatcher(r.artist, r.album, r.discogs_id, r.cover_url, r.year)}
+              className="hover:bg-honey/10 rounded-full p-1" data-testid={`sa-want-${idx}`}
+              style={addedIds?.has(r.discogs_id) ? { background: 'linear-gradient(135deg, #FFB300, #FFA000)', borderRadius: '9999px' } : {}}>
+              {addedIds?.has(r.discogs_id) ? <Check className="w-4 h-4 text-white" /> : <Plus className="w-4 h-4 text-honey-amber" />}
             </button>
           </div>
         </div>
@@ -339,7 +386,7 @@ const NearYouAll = ({ data, navigate, onSetLocation }) => {
 
 /* ========================== Shared Components ========================== */
 
-const CrownJewelsAll = ({ data, navigate, addToSeekingList }) => {
+const CrownJewelsAll = ({ data, navigate, openDreamCatcher, addedIds }) => {
   if (!data || data.length === 0) return <EmptyState text="No Crown Jewels found yet. Add rare records to your collection!" />;
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4" data-testid="crown-jewels-grid">
@@ -357,10 +404,11 @@ const CrownJewelsAll = ({ data, navigate, addToSeekingList }) => {
             )}
             <span
               role="button"
-              onClick={(e) => { e.stopPropagation(); addToSeekingList(r.artist, r.title, r.discogs_id, r.cover_url, r.year); }}
-              className="absolute bottom-2 right-2 bg-white/90 hover:bg-white rounded-full p-1.5 shadow opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              onClick={(e) => { e.stopPropagation(); openDreamCatcher(r.artist, r.title, r.discogs_id, r.cover_url, r.year); }}
+              className={`absolute bottom-2 right-2 rounded-full p-1.5 shadow transition-opacity cursor-pointer ${addedIds?.has(r.discogs_id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+              style={addedIds?.has(r.discogs_id) ? { background: 'linear-gradient(135deg, #FFB300, #FFA000)' } : { background: 'rgba(255,255,255,0.9)' }}
             >
-              <Plus className="w-4 h-4 text-honey-amber" />
+              {addedIds?.has(r.discogs_id) ? <Check className="w-4 h-4 text-white" /> : <Plus className="w-4 h-4 text-honey-amber" />}
             </span>
           </div>
           <p className="text-sm font-medium truncate">{r.title}</p>
