@@ -284,8 +284,8 @@ const faqSections = [
         q: 'How long do I have to confirm a trade?',
         a: (
           <>
-            <p>For trades, both collectors have 24 hours after delivery to confirm receipt.</p>
-            <p className="mt-2">If neither user confirms within 24 hours, the trade automatically completes and holds are released.</p>
+            <p>For trades, both collectors have 48 hours after delivery to confirm that everything arrived safely, leave a rating, or open a dispute.</p>
+            <p className="mt-2">If neither party responds within 48 hours, the trade automatically completes and any Mutual Hold funds are released.</p>
           </>
         ),
       },
@@ -316,7 +316,7 @@ const faqSections = [
             <ul className="mt-2 space-y-1 pl-4">
               <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>a Mutual Hold is placed</li>
               <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>both collectors ship within 5 days</li>
-              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>delivery triggers a 24-hour confirmation window</li>
+              <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>delivery triggers a 48-hour confirmation window</li>
             </ul>
           </>
         ),

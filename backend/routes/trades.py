@@ -108,15 +108,15 @@ async def check_trade_deadlines(trade: Dict) -> Dict:
         init_confirmed = confirmations.get(trade.get("initiator_id"))
         resp_confirmed = confirmations.get(trade.get("responder_id"))
 
-        # Scenario 3: Neither confirmed within 24h, no dispute
-        if elapsed > timedelta(hours=24) and not init_confirmed and not resp_confirmed and trade.get("status") != "DISPUTED":
+        # Scenario 3: Neither confirmed within 48h, no dispute
+        if elapsed > timedelta(hours=48) and not init_confirmed and not resp_confirmed and trade.get("status") != "DISPUTED":
             from contextlib import suppress
             with suppress(Exception):
                 await _auto_complete_no_confirmation(trade)
                 trade["status"] = "COMPLETED"
 
         # Scenario 2: At least one confirmed, deadline passed
-        elif elapsed > timedelta(hours=24) and (init_confirmed or resp_confirmed):
+        elif elapsed > timedelta(hours=48) and (init_confirmed or resp_confirmed):
             from contextlib import suppress
             with suppress(Exception):
                 await complete_trade(trade)
@@ -533,9 +533,9 @@ async def ship_trade(trade_id: str, data: TradeShipInput, user: Dict = Depends(r
         update_fields["status"] = "CONFIRMING"
         update_fields["confirmation_deadline"] = confirmation_deadline
         update_fields["delivery_marked_at"] = now  # Timer start for auto-completion
-        # For hold trades, set a 24h hold confirmation deadline
+        # For hold trades, set a 48h hold confirmation deadline
         if trade.get("hold_enabled") and trade.get("hold_status") == "active":
-            hold_deadline = (datetime.now(timezone.utc) + timedelta(hours=24)).isoformat()
+            hold_deadline = (datetime.now(timezone.utc) + timedelta(hours=48)).isoformat()
             update_fields["hold_confirmation_deadline"] = hold_deadline
 
     await db.trades.update_one({"id": trade_id}, {"$set": update_fields})
@@ -845,15 +845,31 @@ async def open_dispute(trade_id: str, data: TradeDisputeInput, user: Dict = Depe
     if trade.get("dispute"):
         raise HTTPException(status_code=400, detail="A dispute is already open on this trade")
 
+    # Validate dispute is within 48h of delivery
+    if trade.get("delivery_marked_at"):
+        delivery_time = datetime.fromisoformat(trade["delivery_marked_at"])
+        if datetime.now(timezone.utc) > delivery_time + timedelta(hours=48):
+            raise HTTPException(status_code=400, detail="The 48-hour dispute window has expired")
+
+    # Validate reason
+    valid_reasons = ["record_not_as_described", "damaged_during_shipping", "wrong_record_sent", "missing_item", "counterfeit_fake_pressing"]
+    if data.reason not in valid_reasons:
+        raise HTTPException(status_code=400, detail=f"Invalid reason. Must be one of: {valid_reasons}")
+
+    # Require photo evidence
+    if not data.photo_urls or len(data.photo_urls) == 0:
+        raise HTTPException(status_code=400, detail="Photo evidence is required to open a dispute")
+
     now = datetime.now(timezone.utc).isoformat()
-    response_deadline = (datetime.now(timezone.utc) + timedelta(hours=24)).isoformat()
+    evidence_deadline = (datetime.now(timezone.utc) + timedelta(hours=24)).isoformat()
 
     dispute = {
         "opened_by": user["id"],
         "reason": data.reason,
         "photo_urls": data.photo_urls,
         "opened_at": now,
-        "response_deadline": response_deadline,
+        "evidence_deadline": evidence_deadline,
+        "response_deadline": (datetime.now(timezone.utc) + timedelta(hours=48)).isoformat(),
         "response": None,
         "resolution": None,
     }
@@ -1171,13 +1187,13 @@ async def resolve_hold_dispute(trade_id: str, data: AdminHoldResolve, user: Dict
 # ============== HOLD AUTO-REVERSAL & SCENARIO 3 AUTO-COMPLETION ==============
 
 async def _auto_complete_no_confirmation(trade: Dict):
-    """Scenario 3: Auto-complete trade when NEITHER user confirms within 24h.
+    """Scenario 3: Auto-complete trade when NEITHER user confirms within 48h.
 
     Preconditions (must be validated by caller):
     - Both packages marked delivered (trade is CONFIRMING)
     - Neither user has confirmed
     - No dispute is open
-    - 24h have passed since delivery_marked_at
+    - 48h have passed since delivery_marked_at
 
     Actions:
     - Mark trade as COMPLETED (transfer records)
@@ -1217,7 +1233,7 @@ async def _auto_complete_no_confirmation(trade: Dict):
         await create_notification(
             uid, "TRADE_AUTO_COMPLETED",
             "Trade completed automatically",
-            "Your trade was completed automatically after 24 hours. Your mutual holds have been released.",
+            "Your trade was completed automatically after 48 hours. Your mutual holds have been released.",
             {"trade_id": trade["id"]},
         )
         user_obj = await db.users.find_one({"id": uid}, {"_id": 0})
@@ -1230,11 +1246,11 @@ async def _auto_complete_no_confirmation(trade: Dict):
 
 
 async def auto_reverse_expired_holds():
-    """Background task: auto-complete trades where neither user confirmed within 24h,
+    """Background task: auto-complete trades where neither user confirmed within 48h,
     and auto-reverse holds for partially confirmed trades past deadline."""
     now = datetime.now(timezone.utc)
 
-    # Find CONFIRMING trades past 24h delivery window
+    # Find CONFIRMING trades past 48h delivery window
     trades = await db.trades.find({
         "status": "CONFIRMING",
         "delivery_marked_at": {"$exists": True},
@@ -1243,8 +1259,8 @@ async def auto_reverse_expired_holds():
     for trade in trades:
         try:
             delivery_time = datetime.fromisoformat(trade["delivery_marked_at"])
-            if now <= delivery_time + timedelta(hours=24):
-                continue  # Not yet past 24h
+            if now <= delivery_time + timedelta(hours=48):
+                continue  # Not yet past 48h
 
             confirmations = trade.get("confirmations") or {}
             init_confirmed = confirmations.get(trade["initiator_id"])

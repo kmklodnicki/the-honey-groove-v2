@@ -31,6 +31,7 @@ const AdminPage = () => {
     { key: 'prompts', label: 'Daily Prompts', icon: MessageSquare },
     { key: 'bingo', label: 'Bingo Squares', icon: Grid3X3 },
     { key: 'holds', label: 'Hold Disputes', icon: Shield },
+    { key: 'sale_disputes', label: 'Sale Disputes', icon: AlertTriangle },
     { key: 'offplatform', label: 'Off-Platform Alerts', icon: Flag },
     { key: 'reports', label: 'Reports', icon: Flag },
     { key: 'feedback', label: 'Feedback & Bug Reports', icon: Heart },
@@ -67,6 +68,7 @@ const AdminPage = () => {
       {section === 'prompts' && <PromptsSection API={API} headers={headers} />}
       {section === 'bingo' && <BingoSection API={API} headers={headers} />}
       {section === 'holds' && <HoldDisputesSection API={API} headers={headers} />}
+      {section === 'sale_disputes' && <SaleDisputesSection API={API} headers={headers} />}
       {section === 'offplatform' && <OffPlatformAlertsSection API={API} headers={headers} />}
       {section === 'reports' && <ReportsSection API={API} headers={headers} />}
       {section === 'feedback' && <FeedbackSection API={API} headers={headers} />}
@@ -783,6 +785,166 @@ const HoldDisputesSection = ({ API, headers }) => {
     </div>
   );
 };
+
+
+// ═══════════════════════════════════════════════
+// SALE DISPUTES SECTION
+// ═══════════════════════════════════════════════
+const SALE_DISPUTE_REASON_LABELS = {
+  record_not_as_described: 'Record not as described',
+  damaged_during_shipping: 'Damaged during shipping',
+  wrong_record_sent: 'Wrong record sent',
+  missing_item: 'Missing item',
+  counterfeit_fake_pressing: 'Counterfeit / fake pressing',
+};
+
+const SaleDisputesSection = ({ API, headers }) => {
+  const [disputes, setDisputes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [resolving, setResolving] = useState(null);
+  const [resolveNotes, setResolveNotes] = useState({});
+
+  useEffect(() => {
+    axios.get(`${API}/admin/sale-disputes`, { headers })
+      .then(r => setDisputes(r.data || []))
+      .catch(() => toast.error('Failed to load sale disputes'))
+      .finally(() => setLoading(false));
+  }, [API]);
+
+  const handleResolve = async (orderId, outcome) => {
+    const action = outcome === 'approved' ? 'approve the buyer (refund)' : 'reject the dispute (seller keeps payout)';
+    if (!window.confirm(`Are you sure you want to ${action}? This action is final.`)) return;
+    setResolving(orderId);
+    try {
+      await axios.post(`${API}/admin/sale-disputes/${orderId}/resolve`, {
+        outcome,
+        notes: resolveNotes[orderId] || '',
+      }, { headers });
+      toast.success(`Dispute ${outcome === 'approved' ? 'approved — refund issued' : 'rejected — payout proceeding'}`);
+      setDisputes(prev => prev.filter(d => d.id !== orderId));
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to resolve dispute');
+    } finally {
+      setResolving(null);
+    }
+  };
+
+  if (loading) return <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-[#C8861A]" /></div>;
+
+  return (
+    <div className="space-y-4" data-testid="admin-sale-disputes-section">
+      <div className="flex items-center gap-3 mb-4">
+        <h2 className="font-heading text-xl text-vinyl-black">Sale Disputes</h2>
+        <span className="px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-700 font-medium">{disputes.length} open</span>
+      </div>
+
+      {disputes.length === 0 ? (
+        <div className="text-center py-8 bg-honey/5 rounded-2xl border border-honey/10">
+          <p className="text-muted-foreground text-sm">No open sale disputes. All clear.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {disputes.map(order => (
+            <div key={order.id} className="bg-white border border-red-200 rounded-2xl overflow-hidden" data-testid={`sale-dispute-${order.id}`}>
+              {/* Header */}
+              <div className="p-4 border-b border-red-100">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-sm">{order.album} — {order.artist}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Order #{order.order_number || order.id?.substring(0, 8)} · ${order.total?.toFixed(2)}
+                    </p>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] bg-red-100 text-red-700 font-medium">Payout on Hold</span>
+                </div>
+                <div className="flex gap-4 mt-2 text-xs text-muted-foreground">
+                  <span>Buyer: @{order.buyer_username || order.buyer_id}</span>
+                  <span>Seller: @{order.seller_username || order.seller_id}</span>
+                  <span>Opened: {order.dispute?.opened_at ? new Date(order.dispute.opened_at).toLocaleDateString() : 'N/A'}</span>
+                </div>
+              </div>
+
+              {/* Dispute details */}
+              <div className="p-4 space-y-3">
+                <div>
+                  <p className="text-xs font-medium text-red-700 mb-1">Reason</p>
+                  <p className="text-sm">{SALE_DISPUTE_REASON_LABELS[order.dispute?.reason] || order.dispute?.reason}</p>
+                  {order.dispute?.description && <p className="text-sm text-muted-foreground mt-1">{order.dispute.description}</p>}
+                </div>
+
+                {/* Buyer evidence */}
+                {order.dispute?.photo_urls?.length > 0 && (
+                  <div>
+                    <p className="text-xs font-medium text-red-700 mb-1">Buyer Evidence</p>
+                    <div className="flex gap-2 overflow-x-auto">
+                      {order.dispute.photo_urls.map((url, i) => (
+                        <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                          <img src={url} alt={`evidence-${i}`} className="w-20 h-20 rounded-lg object-cover border border-red-200 hover:opacity-80 transition-opacity" />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Seller response */}
+                {order.dispute?.response && (
+                  <div className="pl-3 border-l-2 border-amber-300">
+                    <p className="text-xs font-medium text-amber-700 mb-1">Seller Response</p>
+                    <p className="text-sm">{order.dispute.response.text}</p>
+                    {order.dispute.response.photo_urls?.length > 0 && (
+                      <div className="flex gap-2 mt-1 overflow-x-auto">
+                        {order.dispute.response.photo_urls.map((url, i) => (
+                          <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                            <img src={url} alt={`resp-${i}`} className="w-20 h-20 rounded-lg object-cover border" />
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Admin resolution notes */}
+                <Textarea
+                  placeholder="Add resolution notes..."
+                  value={resolveNotes[order.id] || ''}
+                  onChange={e => setResolveNotes(prev => ({ ...prev, [order.id]: e.target.value }))}
+                  className="text-sm resize-none"
+                  rows={2}
+                  data-testid={`dispute-notes-${order.id}`}
+                />
+
+                {/* Resolution buttons */}
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    size="sm"
+                    className="h-10 rounded-xl bg-green-600 text-white font-medium hover:bg-green-700"
+                    disabled={resolving === order.id}
+                    onClick={() => handleResolve(order.id, 'approved')}
+                    data-testid={`approve-dispute-${order.id}`}
+                  >
+                    {resolving === order.id ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : null}
+                    Approve (Refund Buyer)
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-10 rounded-xl bg-white text-red-600 border-red-200 hover:bg-red-50 font-medium"
+                    disabled={resolving === order.id}
+                    onClick={() => handleResolve(order.id, 'rejected')}
+                    data-testid={`reject-dispute-${order.id}`}
+                  >
+                    Reject (Pay Seller)
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 
 
 // ═══════════════════════════════════════════════

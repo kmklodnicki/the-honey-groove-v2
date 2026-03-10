@@ -38,7 +38,7 @@ const TermsPage = () => {
         </Section>
 
         <Section title="Mutual Hold System">
-          <P>All trades on the Honey Groove require a Mutual Hold. Both parties are charged a hold amount equal to the estimated value of the records being traded. This hold is fully reversed within 24 hours of both parties confirming receipt of their records. If either party fails to ship within 5 days the other party can cancel the trade and both holds are reversed.</P>
+          <P>All trades on the Honey Groove require a Mutual Hold. Both parties are charged a hold amount equal to the estimated value of the records being traded. This hold is fully reversed within 48 hours of both parties confirming receipt of their records. If either party fails to ship within 5 days the other party can cancel the trade and both holds are reversed.</P>
         </Section>
 
         <Section title="Prohibited Conduct">

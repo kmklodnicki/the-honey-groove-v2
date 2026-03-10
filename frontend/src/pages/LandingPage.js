@@ -174,7 +174,7 @@ const LandingPage = () => {
                 <span className="italic text-honey-amber">Every single trade.</span>
               </h2>
               <p className="text-base md:text-xl leading-relaxed mb-8" style={{ fontFamily: "'Cormorant Garamond', serif", color: '#8A6B4A' }}>
-                Every trade on the Honey Groove requires a Mutual Hold. Both collectors put up a hold equal to the estimated value of the records being traded. The hold is fully reversed within 24 hours of confirmed delivery on both sides. Nobody walks away ahead by scamming. The math makes it impossible.
+                Every trade on the Honey Groove requires a Mutual Hold. Both collectors put up a hold equal to the estimated value of the records being traded. The hold is fully reversed within 48 hours of confirmed delivery on both sides. Nobody walks away ahead by scamming. The math makes it impossible.
               </p>
               <Link to="/faq#trades" className="inline-flex items-center gap-2 text-sm font-medium text-[#C8861A] hover:text-[#996012] transition-colors" data-testid="learn-hold-link">
                 Learn how it works <ArrowRight className="w-4 h-4" />

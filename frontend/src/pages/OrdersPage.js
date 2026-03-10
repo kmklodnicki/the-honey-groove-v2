@@ -12,7 +12,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '../components/ui/alert-dialog';
-import { ShoppingBag, Package, Truck, CheckCircle2, Clock, XCircle, Loader2, MessageCircle, Ban, ChevronDown, ChevronUp, Disc, Flag, Star } from 'lucide-react';
+import { ShoppingBag, Package, Truck, CheckCircle2, Clock, XCircle, Loader2, MessageCircle, Ban, ChevronDown, ChevronUp, Disc, Flag, Star, AlertTriangle, Camera, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import AlbumArt from '../components/AlbumArt';
@@ -21,6 +21,15 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import { GradeLabel } from '../components/GradeLabel';
 import { formatGradeDisplay } from '../utils/grading';
 import ReportModal from '../components/ReportModal';
+import { Textarea } from '../components/ui/textarea';
+
+const DISPUTE_REASON_LABELS = {
+  record_not_as_described: 'Record not as described',
+  damaged_during_shipping: 'Damaged during shipping',
+  wrong_record_sent: 'Wrong record sent',
+  missing_item: 'Missing item',
+  counterfeit_fake_pressing: 'Counterfeit / fake pressing',
+};
 
 const STATUS_BADGE = {
   PAID: { label: 'Paid', color: 'bg-green-100 text-green-700', icon: CheckCircle2 },
@@ -221,11 +230,85 @@ const OrderRow = ({ order, perspective, token, API, onUpdate, onCancel }) => {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
   const [orderReportOpen, setOrderReportOpen] = useState(false);
+  const [showDisputeForm, setShowDisputeForm] = useState(false);
+  const [disputeReason, setDisputeReason] = useState('');
+  const [disputeDescription, setDisputeDescription] = useState('');
+  const [disputePhotos, setDisputePhotos] = useState([]);
+  const [disputeLoading, setDisputeLoading] = useState(false);
+  const [disputeResponseText, setDisputeResponseText] = useState('');
+  const [disputeResponsePhotos, setDisputeResponsePhotos] = useState([]);
   const counterparty = order.counterparty || {};
   const timeAgo = order.created_at ? formatDistanceToNow(new Date(order.created_at), { addSuffix: true }) : '';
   const isCancelled = order.payment_status === 'CANCELLED';
   const isSale = perspective === 'seller';
   const photos = order.photo_urls || [];
+
+  const canOpenDispute = !isSale
+    && order.shipping_status === 'DELIVERED'
+    && !order.dispute
+    && order.order_status !== 'COMPLETED'
+    && order.order_status !== 'DISPUTE_OPEN'
+    && order.order_status !== 'DISPUTE_RESOLVED'
+    && order.delivered_at
+    && (new Date() - new Date(order.delivered_at)) < 48 * 60 * 60 * 1000;
+
+  const canRespondDispute = isSale
+    && order.dispute
+    && !order.dispute.response
+    && order.order_status === 'DISPUTE_OPEN';
+
+  const handleOpenDispute = async () => {
+    if (!disputeReason || disputePhotos.length === 0) {
+      toast.error('Please select a reason and upload photo evidence');
+      return;
+    }
+    setDisputeLoading(true);
+    try {
+      // Upload photos
+      const photoUrls = [];
+      for (const photo of disputePhotos) {
+        const formData = new FormData();
+        formData.append('file', photo);
+        const res = await axios.post(`${API}/upload/image`, formData, {
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+        });
+        photoUrls.push(res.data.url);
+      }
+      await axios.post(`${API}/orders/${order.id}/dispute`, {
+        reason: disputeReason,
+        photo_urls: photoUrls,
+        description: disputeDescription,
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success('Dispute opened. Funds are on hold pending review.');
+      onUpdate({ ...order, order_status: 'DISPUTE_OPEN', dispute: { reason: disputeReason, photo_urls: photoUrls, opened_at: new Date().toISOString() } });
+      setShowDisputeForm(false);
+    } catch (err) { toast.error(err.response?.data?.detail || 'Could not open dispute'); }
+    finally { setDisputeLoading(false); }
+  };
+
+  const handleDisputeRespond = async () => {
+    if (!disputeResponseText.trim()) { toast.error('Please describe your side'); return; }
+    setDisputeLoading(true);
+    try {
+      const photoUrls = [];
+      for (const photo of disputeResponsePhotos) {
+        const formData = new FormData();
+        formData.append('file', photo);
+        const res = await axios.post(`${API}/upload/image`, formData, {
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+        });
+        photoUrls.push(res.data.url);
+      }
+      await axios.post(`${API}/orders/${order.id}/dispute/respond`, {
+        response_text: disputeResponseText,
+        photo_urls: photoUrls,
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success('Response submitted');
+      const updatedDispute = { ...order.dispute, response: { text: disputeResponseText, photo_urls: photoUrls } };
+      onUpdate({ ...order, dispute: updatedDispute });
+    } catch (err) { toast.error(err.response?.data?.detail || 'Could not submit response'); }
+    finally { setDisputeLoading(false); }
+  };
 
   return (
     <Card className={`border-honey/20 overflow-hidden ${isCancelled ? 'opacity-60' : ''}`} data-testid={`order-row-${order.id}`}>
@@ -356,9 +439,15 @@ const OrderRow = ({ order, perspective, token, API, onUpdate, onCancel }) => {
                 <span className={`px-2 py-0.5 rounded-full font-medium ${
                   order.payout_status === 'RELEASED' ? 'bg-emerald-100 text-emerald-700' :
                   order.payout_status === 'PENDING' ? 'bg-amber-100 text-amber-700' :
+                  order.payout_status === 'PAYOUT_ON_HOLD' ? 'bg-red-100 text-red-700' :
+                  order.payout_status === 'CANCELLED' ? 'bg-red-100 text-red-600' :
                   'bg-stone-100 text-stone-600'
                 }`} data-testid="payout-status-badge">
-                  {order.payout_status === 'RELEASED' ? 'Released' : order.payout_status === 'PENDING' ? 'Pending (auto-release after delivery)' : order.payout_status}
+                  {order.payout_status === 'RELEASED' ? 'Released' :
+                   order.payout_status === 'PENDING' ? 'Pending (auto-release after delivery)' :
+                   order.payout_status === 'PAYOUT_ON_HOLD' ? 'On Hold (dispute in progress)' :
+                   order.payout_status === 'CANCELLED' ? 'Cancelled' :
+                   order.payout_status}
                 </span>
               </div>
             )}
@@ -393,9 +482,141 @@ const OrderRow = ({ order, perspective, token, API, onUpdate, onCancel }) => {
               </div>
             )}
 
-            {/* Rating section — show for delivered orders */}
-            {!isCancelled && order.shipping_status === 'DELIVERED' && (
+            {/* Rating section — show for delivered orders (not during open dispute) */}
+            {!isCancelled && order.shipping_status === 'DELIVERED' && order.order_status !== 'DISPUTE_OPEN' && (
               <RatingSection order={order} perspective={isSale ? 'seller' : 'buyer'} token={token} API={API} onUpdate={onUpdate} />
+            )}
+
+            {/* === DISPUTE SECTION === */}
+            {order.dispute && (
+              <div className="bg-red-50 rounded-xl p-4 border border-red-200 space-y-3" data-testid="order-dispute-section">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-red-600" />
+                  <p className="text-sm font-medium text-red-700">
+                    {order.order_status === 'DISPUTE_OPEN' ? 'Dispute Open' :
+                     order.order_status === 'DISPUTE_RESOLVED' ? 'Dispute Resolved' : 'Dispute'}
+                  </p>
+                  {order.order_status === 'DISPUTE_OPEN' && (
+                    <span className="ml-auto text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full">Payout on Hold</span>
+                  )}
+                </div>
+                <p className="text-xs text-red-600">
+                  <strong>Reason:</strong> {DISPUTE_REASON_LABELS[order.dispute.reason] || order.dispute.reason}
+                </p>
+                {order.dispute.description && <p className="text-xs text-red-600">{order.dispute.description}</p>}
+                {order.dispute.photo_urls?.length > 0 && (
+                  <div className="flex gap-2 overflow-x-auto">
+                    {order.dispute.photo_urls.map((url, i) => <img key={i} src={url} alt="" className="w-16 h-16 rounded object-cover border border-red-200" />)}
+                  </div>
+                )}
+                {order.dispute.response && (
+                  <div className="mt-2 pl-3 border-l-2 border-red-300">
+                    <p className="text-xs font-medium text-red-600">Seller's Response:</p>
+                    <p className="text-xs text-red-500">{order.dispute.response.text}</p>
+                    {order.dispute.response.photo_urls?.length > 0 && (
+                      <div className="flex gap-2 mt-1 overflow-x-auto">
+                        {order.dispute.response.photo_urls.map((url, i) => <img key={i} src={url} alt="" className="w-16 h-16 rounded object-cover border" />)}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {order.dispute.resolution && (
+                  <div className="mt-2 bg-white rounded-lg p-2 border border-red-200">
+                    <p className="text-xs font-medium text-green-700">
+                      Resolution: {order.dispute.resolution.outcome === 'approved' ? 'Buyer wins — Refund issued' : 'Seller wins — Payout proceeds'}
+                    </p>
+                    {order.dispute.resolution.notes && <p className="text-xs text-muted-foreground mt-1">{order.dispute.resolution.notes}</p>}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Dispute response form (seller) */}
+            {canRespondDispute && (
+              <div className="border border-red-200 rounded-lg p-3 space-y-3 bg-red-50/50" data-testid="dispute-respond-section">
+                <p className="text-sm font-medium text-red-700">Respond to Dispute</p>
+                <Textarea
+                  placeholder="Describe your side of the issue..."
+                  value={disputeResponseText}
+                  onChange={e => setDisputeResponseText(e.target.value)}
+                  className="text-sm border-red-200 resize-none"
+                  rows={3}
+                  data-testid="dispute-response-input"
+                />
+                <div>
+                  <label className="text-xs text-red-600 block mb-1">Evidence photos (optional)</label>
+                  <input type="file" accept="image/*" multiple onChange={e => setDisputeResponsePhotos([...e.target.files])}
+                    className="text-xs" data-testid="dispute-response-photos" />
+                </div>
+                <Button
+                  onClick={handleDisputeRespond}
+                  disabled={disputeLoading || !disputeResponseText.trim()}
+                  className="w-full bg-red-600 text-white hover:bg-red-700 rounded-full text-sm"
+                  data-testid="submit-dispute-response-btn"
+                >
+                  {disputeLoading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
+                  Submit Response
+                </Button>
+              </div>
+            )}
+
+            {/* Open dispute button + form (buyer) */}
+            {canOpenDispute && !showDisputeForm && (
+              <Button
+                onClick={() => setShowDisputeForm(true)}
+                variant="outline"
+                className="w-full rounded-full text-red-600 border-red-200 hover:bg-red-50 text-sm"
+                data-testid="open-dispute-btn"
+              >
+                <AlertTriangle className="w-4 h-4 mr-1" /> Open a Dispute
+              </Button>
+            )}
+
+            {showDisputeForm && !order.dispute && (
+              <div className="border border-red-200 rounded-lg p-3 space-y-3 bg-red-50/50" data-testid="dispute-form-section">
+                <p className="text-sm font-medium text-red-700">Open a Dispute</p>
+                <Select value={disputeReason} onValueChange={setDisputeReason}>
+                  <SelectTrigger className="text-sm border-red-200" data-testid="dispute-reason-select">
+                    <SelectValue placeholder="Select a reason..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="record_not_as_described">Record not as described</SelectItem>
+                    <SelectItem value="damaged_during_shipping">Damaged during shipping</SelectItem>
+                    <SelectItem value="wrong_record_sent">Wrong record sent</SelectItem>
+                    <SelectItem value="missing_item">Missing item</SelectItem>
+                    <SelectItem value="counterfeit_fake_pressing">Counterfeit / fake pressing</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Textarea
+                  placeholder="Describe the issue..."
+                  value={disputeDescription}
+                  onChange={e => setDisputeDescription(e.target.value)}
+                  className="text-sm border-red-200 resize-none"
+                  rows={3}
+                  data-testid="dispute-description-input"
+                />
+                <div>
+                  <label className="text-xs text-red-600 block mb-1">Upload photo evidence (required)</label>
+                  <input type="file" accept="image/*" multiple onChange={e => setDisputePhotos([...e.target.files])}
+                    className="text-xs" data-testid="dispute-photo-input" />
+                  {disputePhotos.length > 0 && (
+                    <p className="text-[10px] text-red-400 mt-1">{disputePhotos.length} photo(s) selected</p>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleOpenDispute}
+                    disabled={disputeLoading || !disputeReason || disputePhotos.length === 0}
+                    className="flex-1 bg-red-600 text-white hover:bg-red-700 rounded-full text-sm"
+                    data-testid="submit-dispute-btn"
+                  >
+                    {disputeLoading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <AlertTriangle className="w-4 h-4 mr-1" />}
+                    Open Dispute
+                  </Button>
+                  <Button variant="outline" onClick={() => setShowDisputeForm(false)} className="rounded-full text-sm">Cancel</Button>
+                </div>
+                <p className="text-[10px] text-red-400">Payout will be frozen immediately while we review your case.</p>
+              </div>
             )}
 
             {/* Completed status */}

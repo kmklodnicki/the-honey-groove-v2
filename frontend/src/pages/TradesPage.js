@@ -63,6 +63,14 @@ const formatCountdown = (deadline) => {
   return hours > 0 ? `${hours}h ${mins}m remaining` : `${mins}m remaining`;
 };
 
+const DISPUTE_REASON_LABELS = {
+  record_not_as_described: 'Record not as described',
+  damaged_during_shipping: 'Damaged during shipping',
+  wrong_record_sent: 'Wrong record sent',
+  missing_item: 'Missing item',
+  counterfeit_fake_pressing: 'Counterfeit / fake pressing',
+};
+
 // Trade Timeline
 const TIMELINE_STEPS = [
   { key: 'ACCEPTED', label: 'Accepted' },
@@ -664,7 +672,7 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
                 <p className="text-sm text-amber-700">${trade.hold_amount} mutual hold · charged when both parties accept.</p>
               )}
               <p className="text-[10px] text-muted-foreground mt-2 italic">
-                Fully reversed within 24 hours of confirmed delivery. The hold is not subject to platform fees.
+                Fully reversed within 48 hours of confirmed delivery. The hold is not subject to platform fees.
               </p>
             </div>
           )}
@@ -780,7 +788,7 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
             <div className="bg-red-50 rounded-xl p-4 border border-red-200">
               <p className="text-xs font-medium text-red-700 mb-2 flex items-center gap-1"><AlertTriangle className="w-3 h-3" /> DISPUTE</p>
               <p className="text-sm mb-1"><strong>Opened by:</strong> @{trade.dispute.opened_by === trade.initiator_id ? trade.initiator?.username : trade.responder?.username}</p>
-              <p className="text-sm mb-2">{trade.dispute.reason}</p>
+              <p className="text-sm mb-2">{DISPUTE_REASON_LABELS[trade.dispute.reason] || trade.dispute.reason}</p>
               {trade.dispute.photo_urls?.length > 0 && (
                 <div className="flex gap-2 mb-2 overflow-x-auto">{trade.dispute.photo_urls.map((url, i) => <img key={i} src={url} alt="" className="w-16 h-16 rounded object-cover border" />)}</div>
               )}
@@ -824,15 +832,27 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
           {showDispute && !trade.dispute && (
             <div className="border border-red-200 rounded-lg p-3 space-y-3 bg-red-50/50">
               <p className="text-sm font-medium text-red-700">Open a Dispute</p>
-              <Textarea placeholder="Describe the issue..." value={disputeReason} onChange={e => setDisputeReason(e.target.value)} className="text-sm border-red-200 resize-none" rows={3} data-testid="dispute-reason-input" />
-              <PhotoUploadMini photos={disputePhotos} setPhotos={setDisputePhotos} label="Upload photos of the issue" />
+              <Select value={disputeReason} onValueChange={setDisputeReason}>
+                <SelectTrigger className="text-sm border-red-200" data-testid="dispute-reason-select">
+                  <SelectValue placeholder="Select a reason..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="record_not_as_described">Record not as described</SelectItem>
+                  <SelectItem value="damaged_during_shipping">Damaged during shipping</SelectItem>
+                  <SelectItem value="wrong_record_sent">Wrong record sent</SelectItem>
+                  <SelectItem value="missing_item">Missing item</SelectItem>
+                  <SelectItem value="counterfeit_fake_pressing">Counterfeit / fake pressing</SelectItem>
+                </SelectContent>
+              </Select>
+              <PhotoUploadMini photos={disputePhotos} setPhotos={setDisputePhotos} label="Upload photo evidence (required)" />
               <div className="flex gap-2">
-                <Button onClick={handleOpenDispute} disabled={loading || !disputeReason.trim()} className="flex-1 bg-red-600 text-white hover:bg-red-700 rounded-full text-sm" data-testid="submit-dispute-btn">
+                <Button onClick={handleOpenDispute} disabled={loading || !disputeReason || disputePhotos.length === 0} className="flex-1 bg-red-600 text-white hover:bg-red-700 rounded-full text-sm" data-testid="submit-dispute-btn">
                   {loading ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <AlertTriangle className="w-4 h-4 mr-1" />}
                   Open Dispute
                 </Button>
                 <Button variant="outline" onClick={() => setShowDispute(false)} className="rounded-full text-sm">Cancel</Button>
               </div>
+              <p className="text-[10px] text-red-400">Funds will be frozen immediately while we review your case.</p>
             </div>
           )}
 

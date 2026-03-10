@@ -1217,11 +1217,18 @@ async def _enrich_transactions(txns, perspective: str):
                 item["year"] = listing.get("year")
 
         # Fetch counterparty user
-        if perspective == "buyer":
+        if perspective == "admin":
+            # Admin needs both buyer and seller usernames
+            buyer_user = await db.users.find_one({"id": t.get("buyer_id")}, {"_id": 0, "username": 1, "avatar_url": 1})
+            seller_user = await db.users.find_one({"id": t.get("seller_id")}, {"_id": 0, "username": 1, "avatar_url": 1})
+            item["buyer_username"] = buyer_user["username"] if buyer_user else t.get("buyer_id")
+            item["seller_username"] = seller_user["username"] if seller_user else t.get("seller_id")
+            item["counterparty"] = {}
+        elif perspective == "buyer":
             other_id = t.get("seller_id")
         else:
             other_id = t.get("buyer_id")
-        if other_id:
+        if perspective != "admin" and other_id:
             other_user = await db.users.find_one({"id": other_id}, {"_id": 0, "username": 1, "avatar_url": 1})
             item["counterparty"] = other_user or {}
 
@@ -1237,11 +1244,14 @@ async def _enrich_transactions(txns, perspective: str):
         item["seller_rating"] = t.get("seller_rating")
         item["order_status"] = t.get("order_status")
         item["payout_status"] = t.get("payout_status")
+        item["dispute"] = t.get("dispute")
+        item["total"] = t.get("amount")
 
-        # Auto-complete if rating deadline has passed and not yet completed
+        # Auto-complete if rating deadline has passed and not yet completed (skip disputed orders)
         if (t.get("shipping_status") == "DELIVERED"
             and t.get("rating_deadline")
             and not t.get("order_status")
+            and not t.get("dispute")
             and datetime.now(timezone.utc) > datetime.fromisoformat(t["rating_deadline"])):
             await db.payment_transactions.update_one(
                 {"id": t["id"], "order_status": {"$exists": False}},
@@ -1443,6 +1453,241 @@ async def rate_order(order_id: str, body: Dict, user: Dict = Depends(require_aut
         {"order_id": order_id})
 
     return {"message": "Rating submitted", "rating": rating_data}
+
+
+# ============== SALE DISPUTE SYSTEM ==============
+
+SALE_DISPUTE_REASONS = [
+    "record_not_as_described",
+    "damaged_during_shipping",
+    "wrong_record_sent",
+    "missing_item",
+    "counterfeit_fake_pressing",
+]
+
+@router.post("/orders/{order_id}/dispute")
+async def open_sale_dispute(order_id: str, body: Dict, user: Dict = Depends(require_auth)):
+    """Buyer opens a dispute on a sale within 48 hours of delivery."""
+    txn = await db.payment_transactions.find_one({"id": order_id}, {"_id": 0})
+    if not txn:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    # Only buyer can dispute a sale
+    if txn["buyer_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Only the buyer can open a dispute")
+
+    # Must be delivered
+    if txn.get("shipping_status") != "DELIVERED":
+        raise HTTPException(status_code=400, detail="Order must be delivered before opening a dispute")
+
+    # Check if already disputed
+    if txn.get("dispute"):
+        raise HTTPException(status_code=400, detail="A dispute is already open on this order")
+
+    # Check 48-hour window
+    delivered_at = txn.get("delivered_at")
+    if delivered_at:
+        delivery_time = datetime.fromisoformat(delivered_at)
+        if datetime.now(timezone.utc) > delivery_time + timedelta(hours=48):
+            raise HTTPException(status_code=400, detail="The 48-hour dispute window has expired")
+
+    # Validate reason
+    reason = body.get("reason", "")
+    if reason not in SALE_DISPUTE_REASONS:
+        raise HTTPException(status_code=400, detail=f"Invalid reason. Must be one of: {SALE_DISPUTE_REASONS}")
+
+    # Require photo evidence
+    photo_urls = body.get("photo_urls", [])
+    if not photo_urls or len(photo_urls) == 0:
+        raise HTTPException(status_code=400, detail="Photo evidence is required to open a dispute")
+
+    now = datetime.now(timezone.utc).isoformat()
+    evidence_deadline = (datetime.now(timezone.utc) + timedelta(hours=24)).isoformat()
+
+    dispute = {
+        "opened_by": user["id"],
+        "reason": reason,
+        "photo_urls": photo_urls,
+        "description": (body.get("description") or "").strip()[:1000],
+        "opened_at": now,
+        "evidence_deadline": evidence_deadline,
+        "response": None,
+        "resolution": None,
+    }
+
+    # Freeze payout and set dispute status
+    await db.payment_transactions.update_one({"id": order_id}, {"$set": {
+        "dispute": dispute,
+        "order_status": "DISPUTE_OPEN",
+        "payout_status": "PAYOUT_ON_HOLD",
+        "updated_at": now,
+    }})
+
+    # Notify both parties
+    listing = await db.listings.find_one({"id": txn.get("listing_id")}, {"_id": 0, "album": 1})
+    album_name = listing.get("album", "your order") if listing else "your order"
+
+    await create_notification(txn["buyer_id"], "SALE_DISPUTE_OPENED",
+        "Dispute opened",
+        f"Your dispute for {album_name} has been filed. Funds are on hold while we review.",
+        {"order_id": order_id})
+    await create_notification(txn["seller_id"], "SALE_DISPUTE_OPENED",
+        "A dispute has been opened",
+        f"The buyer has opened a dispute for {album_name}. Payout is temporarily on hold.",
+        {"order_id": order_id})
+
+    # Notify admin
+    await create_notification("admin", "SALE_DISPUTE",
+        "Sale dispute filed",
+        f"Order {txn.get('order_number', order_id[:8])} — payout frozen, admin review needed",
+        {"order_id": order_id})
+
+    return {"message": "Dispute opened. Payout is on hold pending review.", "dispute": dispute}
+
+
+@router.post("/orders/{order_id}/dispute/respond")
+async def respond_sale_dispute(order_id: str, body: Dict, user: Dict = Depends(require_auth)):
+    """Seller responds to a sale dispute with their side."""
+    txn = await db.payment_transactions.find_one({"id": order_id}, {"_id": 0})
+    if not txn:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    if txn["seller_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Only the seller can respond to a dispute")
+
+    dispute = txn.get("dispute")
+    if not dispute:
+        raise HTTPException(status_code=400, detail="No dispute found")
+    if dispute.get("response"):
+        raise HTTPException(status_code=400, detail="Already responded to this dispute")
+
+    now = datetime.now(timezone.utc).isoformat()
+    dispute["response"] = {
+        "by_user_id": user["id"],
+        "text": (body.get("response_text") or "").strip()[:1000],
+        "photo_urls": body.get("photo_urls", []),
+        "responded_at": now,
+    }
+
+    await db.payment_transactions.update_one({"id": order_id}, {"$set": {
+        "dispute": dispute, "updated_at": now,
+    }})
+
+    return {"message": "Response submitted"}
+
+
+@router.get("/admin/sale-disputes")
+async def get_admin_sale_disputes(user: Dict = Depends(require_auth)):
+    """List all open sale disputes for admin review."""
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin only")
+    txns = await db.payment_transactions.find(
+        {"order_status": "DISPUTE_OPEN"}, {"_id": 0}
+    ).sort("updated_at", -1).to_list(100)
+    return await _enrich_transactions(txns, "admin")
+
+
+@router.get("/admin/sale-disputes/all")
+async def get_all_sale_disputes(user: Dict = Depends(require_auth)):
+    """List all sales that have had disputes (including resolved)."""
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin only")
+    txns = await db.payment_transactions.find(
+        {"dispute": {"$ne": None}}, {"_id": 0}
+    ).sort("updated_at", -1).to_list(200)
+    return await _enrich_transactions(txns, "admin")
+
+
+@router.post("/admin/sale-disputes/{order_id}/resolve")
+async def resolve_sale_dispute(order_id: str, body: Dict, user: Dict = Depends(require_auth)):
+    """Admin resolves a sale dispute. Outcome: approved (buyer wins) or rejected (seller wins)."""
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin only")
+
+    txn = await db.payment_transactions.find_one({"id": order_id}, {"_id": 0})
+    if not txn:
+        raise HTTPException(status_code=404, detail="Order not found")
+    if txn.get("order_status") != "DISPUTE_OPEN":
+        raise HTTPException(status_code=400, detail="Order does not have an open dispute")
+
+    outcome = body.get("outcome")  # "approved" or "rejected"
+    if outcome not in ("approved", "rejected"):
+        raise HTTPException(status_code=400, detail="Outcome must be 'approved' or 'rejected'")
+
+    now = datetime.now(timezone.utc).isoformat()
+    notes = (body.get("notes") or "").strip()
+
+    dispute = txn.get("dispute", {})
+    dispute["resolution"] = {
+        "outcome": outcome,
+        "notes": notes,
+        "resolved_by": user["id"],
+        "resolved_at": now,
+    }
+
+    listing = await db.listings.find_one({"id": txn.get("listing_id")}, {"_id": 0, "album": 1})
+    album_name = listing.get("album", "the order") if listing else "the order"
+
+    if outcome == "approved":
+        # Buyer wins — issue refund, seller does not get payout
+        refund_id = None
+        if txn.get("session_id"):
+            stripe_sdk.api_key = STRIPE_API_KEY
+            try:
+                session = stripe_sdk.checkout.Session.retrieve(txn["session_id"])
+                if session.payment_intent:
+                    refund = stripe_sdk.Refund.create(
+                        payment_intent=session.payment_intent,
+                        reverse_transfer=True,
+                    )
+                    refund_id = refund.id
+            except Exception as e:
+                logger.error(f"Dispute refund failed for order {order_id}: {e}")
+
+        await db.payment_transactions.update_one({"id": order_id}, {"$set": {
+            "dispute": dispute,
+            "order_status": "DISPUTE_RESOLVED",
+            "payout_status": "CANCELLED",
+            "refund_id": refund_id,
+            "updated_at": now,
+        }})
+
+        # Notify buyer: refund
+        await create_notification(txn["buyer_id"], "SALE_DISPUTE_RESOLVED",
+            "Dispute resolved in your favor",
+            f"Your dispute for {album_name} was approved. A refund has been initiated.",
+            {"order_id": order_id})
+        # Notify seller: no payout
+        await create_notification(txn["seller_id"], "SALE_DISPUTE_RESOLVED",
+            "Dispute resolved",
+            f"The dispute for {album_name} was resolved in favor of the buyer. No payout will be issued.",
+            {"order_id": order_id})
+
+        # Flag seller for abuse tracking
+        await db.users.update_one({"id": txn["seller_id"]}, {"$inc": {"dispute_losses": 1}})
+
+    else:
+        # Seller wins — payout proceeds
+        await db.payment_transactions.update_one({"id": order_id}, {"$set": {
+            "dispute": dispute,
+            "order_status": "COMPLETED",
+            "payout_status": "PENDING",
+            "updated_at": now,
+        }})
+
+        await create_notification(txn["buyer_id"], "SALE_DISPUTE_RESOLVED",
+            "Dispute resolved",
+            f"Your dispute for {album_name} was reviewed. The seller's listing was found to be accurate.",
+            {"order_id": order_id})
+        await create_notification(txn["seller_id"], "SALE_DISPUTE_RESOLVED",
+            "Dispute resolved in your favor",
+            f"The dispute for {album_name} was resolved in your favor. Payout will proceed.",
+            {"order_id": order_id})
+
+        # Flag buyer for abuse tracking
+        await db.users.update_one({"id": txn["buyer_id"]}, {"$inc": {"dispute_losses": 1}})
+
+    return {"message": f"Dispute resolved: {outcome}", "dispute": dispute}
 
 
 @router.get("/seller/stats")
