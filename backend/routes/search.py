@@ -93,6 +93,8 @@ SYNONYMS = {
     "reissue": ["reissue", "repress"],
     "test pressing": ["test pressing", "test press"],
     "promo": ["promo", "promotional"],
+    "debut": ["debut", "self-titled", "self titled", "first album"],
+    "self-titled": ["self-titled", "self titled", "debut"],
 }
 
 COLLECTOR_KEYWORDS = {
@@ -170,8 +172,25 @@ def _variant_score_v2(rec: dict, original_words: list[str], expanded_words: list
     year_str = str(rec.get("year") or "")
 
     # Detect collector-intent words in the query
-    collector_words = [w for w in original_words if w in COLLECTOR_KEYWORDS or w in SYNONYMS]
+    # First, detect multi-word collector phrases
+    query_joined = " ".join(original_words)
+    MULTI_WORD_COLLECTOR_PHRASES = [
+        "record store day", "test pressing", "first pressing",
+        "picture disc", "glow in the dark", "indie exclusive",
+        "tour exclusive", "webstore exclusive",
+    ]
+    matched_phrase_words = set()
+    for phrase in MULTI_WORD_COLLECTOR_PHRASES:
+        if phrase in query_joined:
+            for pw in phrase.split():
+                matched_phrase_words.add(pw)
+
+    collector_words = [w for w in original_words if w in COLLECTOR_KEYWORDS or w in SYNONYMS or w in matched_phrase_words]
     non_collector_words = [w for w in original_words if w not in collector_words]
+
+    # Build combined text for keyword searching
+    raw_format = rec.get("format")
+    format_text = " ".join(raw_format).lower() if isinstance(raw_format, list) else (raw_format or "").lower()
 
     # ── 1. Exact variant match (highest priority: 300) ──
     if variant and variant == query_full:
@@ -180,7 +199,7 @@ def _variant_score_v2(rec: dict, original_words: list[str], expanded_words: list
         v_score = _score(variant, original_words)
         s += v_score * 3  # variant matches weighted 3x
 
-    # ── 2. Collector keyword matches in variant / notes (250 bonus each) ──
+    # ── 2. Collector keyword matches in variant / notes / format (250 bonus each) ──
     for cw in collector_words:
         syns = SYNONYMS.get(cw, [cw])
         for syn in syns:
@@ -188,6 +207,9 @@ def _variant_score_v2(rec: dict, original_words: list[str], expanded_words: list
                 s += 200
                 break
             if syn in notes:
+                s += 150
+                break
+            if syn in format_text:
                 s += 150
                 break
             if syn in label:
@@ -214,16 +236,32 @@ def _variant_score_v2(rec: dict, original_words: list[str], expanded_words: list
     else:
         s += _score(title, original_words)
 
+    # ── 4b. Self-titled album boost ──
+    # Only boost when album title IS the artist name (exact self-titled match)
+    is_self_titled = title and artist and title == artist
+    if is_self_titled:
+        # If query matches the artist, the self-titled album is a strong hit
+        if non_collector_words:
+            artist_query = " ".join(non_collector_words)
+            if artist_query == artist or artist_query in artist:
+                s += 60  # Self-titled album for queried artist
+        # Extra boost for "debut" / "self-titled" queries
+        query_lower = " ".join(original_words)
+        if "debut" in query_lower or "self-titled" in query_lower or "self titled" in query_lower:
+            s += 120
+
     # ── 5. Year match ──
     for w in original_words:
         if w.isdigit() and len(w) == 4 and w == year_str:
             s += 100
 
-    # ── 6. Notes match for expanded terms ──
+    # ── 6. Notes + format match for expanded terms ──
     for ew in expanded_words:
         if ew in notes:
             s += 30
         if ew in variant:
+            s += 20
+        if ew in format_text:
             s += 20
 
     # ── 7. Bonus for non-standard variants ──
@@ -312,7 +350,15 @@ async def search_variants(
     user: Optional[Dict] = Depends(get_current_user),
 ):
     """Collector-intent variant search across records + discogs_releases."""
-    original_words = [w.lower() for w in q.strip().split() if len(w) >= 1]
+    # Filter stop words and deduplicate
+    STOP_WORDS = {"the", "a", "an", "by", "of", "and", "or", "in", "on", "at", "to", "for", "is", "it", "from"}
+    seen_words = set()
+    original_words = []
+    for w in q.strip().split():
+        wl = w.lower()
+        if len(wl) >= 1 and wl not in STOP_WORDS and wl not in seen_words:
+            seen_words.add(wl)
+            original_words.append(wl)
     if not original_words:
         return {"variants": [], "albums": [], "artists": [], "has_more": False, "total": 0}
 
@@ -368,6 +414,62 @@ async def search_variants(
     unique = list(merged.values())
     scored = sorted(unique, key=lambda r: _variant_score_v2(r, original_words, expanded_words), reverse=True)
 
+    # ── Discogs API fallback: enrich results when local data is sparse ──
+    # Triggers when: few local results, collector-intent keywords, year in query, or possible self-titled
+    collector_words = [w for w in original_words if w in COLLECTOR_KEYWORDS or w in SYNONYMS]
+    year_words = [w for w in original_words if w.isdigit() and len(w) == 4]
+    # Check if query might be a self-titled album (all non-year words = artist name)
+    non_year_words = [w for w in original_words if not (w.isdigit() and len(w) == 4)]
+    need_discogs = len(unique) < 15 or len(collector_words) > 0 or len(year_words) > 0 or len(non_year_words) <= 3
+
+    if need_discogs:
+        try:
+            # Multi-query strategy for broader Discogs coverage
+            queries_to_try = [q]
+
+            # If query looks like "Artist + keywords", also search for self-titled album
+            non_collector_non_year = [w for w in original_words
+                                      if w not in COLLECTOR_KEYWORDS
+                                      and w not in SYNONYMS
+                                      and not (w.isdigit() and len(w) == 4)]
+            if non_collector_non_year and (collector_words or year_words):
+                artist_part = " ".join(non_collector_non_year)
+                # Search for self-titled: "Artist Artist vinyl"
+                queries_to_try.append(f"{artist_part} {artist_part} vinyl")
+                # Search for artist + format keywords
+                if year_words:
+                    queries_to_try.append(f"{artist_part} {' '.join(year_words)} vinyl")
+
+            seen_dids = {r.get("discogs_id") for r in unique if r.get("discogs_id")}
+            all_new_discogs = []
+
+            for dq in queries_to_try:
+                discogs_raw = await asyncio.to_thread(search_discogs, dq)
+                for dr in (discogs_raw or [])[:20]:
+                    did = dr.get("discogs_id")
+                    if did and did not in seen_dids:
+                        seen_dids.add(did)
+                        all_new_discogs.append(dr)
+
+            if all_new_discogs:
+                # Cache new Discogs releases for future searches
+                for dr in all_new_discogs:
+                    did = dr.get("discogs_id")
+                    if did:
+                        await db.discogs_releases.update_one(
+                            {"discogs_id": did},
+                            {"$setOnInsert": {
+                                **dr,
+                                "cached_at": datetime.now(timezone.utc).isoformat(),
+                            }},
+                            upsert=True,
+                        )
+
+                scored.extend(all_new_discogs)
+                scored = sorted(scored, key=lambda r: _variant_score_v2(r, original_words, expanded_words), reverse=True)
+        except Exception as e:
+            logger.error(f"Discogs fallback search error: {e}")
+
     # ── Build output: variants, albums, artists ──
     variants_out = []
     album_groups = {}
@@ -411,22 +513,26 @@ async def search_variants(
         slug_album = _slugify(title)
         slug_variant = _slugify(variant) if variant else "standard"
 
-        # Extract collector tags from notes
+        # Extract collector tags from notes + variant + format descriptions
         notes = (r.get("notes") or "").lower()
+        variant_lower = (r.get("color_variant") or "").lower()
+        raw_format = r.get("format")
+        format_str = " ".join(raw_format).lower() if isinstance(raw_format, list) else (raw_format or "").lower()
+        tag_source = f"{notes} {variant_lower} {format_str}"
         tags = []
-        if "record store day" in notes or "rsd" in notes:
+        if "record store day" in tag_source or "rsd" in tag_source:
             tags.append("RSD")
-        if "limited" in notes:
+        if "limited" in tag_source:
             tags.append("Limited")
-        if "exclusive" in notes:
+        if "exclusive" in tag_source:
             tags.append("Exclusive")
-        if "numbered" in notes:
+        if "numbered" in tag_source:
             tags.append("Numbered")
-        if "signed" in notes or "autograph" in notes:
+        if "signed" in tag_source or "autograph" in tag_source:
             tags.append("Signed")
-        if "test pressing" in notes:
+        if "test pressing" in tag_source:
             tags.append("Test Pressing")
-        if "tour" in notes:
+        if "tour" in tag_source:
             tags.append("Tour")
 
         # Extract label as string
