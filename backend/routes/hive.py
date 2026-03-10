@@ -16,8 +16,49 @@ from database import DISCOGS_REQUEST_TOKEN_URL, DISCOGS_AUTHORIZE_URL, DISCOGS_A
 from database import oauth_request_tokens, import_progress, EMERGENT_KEY
 from models import *
 from io import BytesIO
+from util.content_filter import detect_offplatform_payment, detect_profanity
 
 router = APIRouter()
+
+
+async def _shadow_flag_post(post_doc: dict, user: dict):
+    """Check a post for off-platform payment or profanity content.
+    If detected, auto-create an admin report with 'Reviewing' status."""
+    text = (post_doc.get("caption") or post_doc.get("text") or "").strip()
+    if not text:
+        return
+
+    payment_flagged, payment_kws = detect_offplatform_payment(text)
+    profanity_flagged, profanity_kws = detect_profanity(text)
+
+    if not payment_flagged and not profanity_flagged:
+        return
+
+    reasons = []
+    if payment_flagged:
+        reasons.append(f"Off-platform payment detected: {', '.join(payment_kws)}")
+    if profanity_flagged:
+        reasons.append(f"Profanity detected: {', '.join(profanity_kws)}")
+
+    now = datetime.now(timezone.utc).isoformat()
+    report_doc = {
+        "id": str(uuid.uuid4()),
+        "type": "auto_moderation",
+        "reporter_id": "system",
+        "reported_user_id": user.get("id"),
+        "post_id": post_doc.get("id"),
+        "reason": "; ".join(reasons),
+        "details": f"Auto-flagged by content filter. Post text: {text[:300]}",
+        "status": "Reviewing",
+        "created_at": now,
+    }
+    await db.reports.insert_one(report_doc)
+
+    # Also flag the post itself
+    await db.posts.update_one(
+        {"id": post_doc["id"]},
+        {"$set": {"shadow_flagged": True, "flag_reasons": reasons}}
+    )
 
 def generate_share_graphic(graphic_type: str, data: Dict, format_type: str = "square") -> bytes:
     try:
@@ -437,6 +478,7 @@ async def composer_now_spinning(data: NowSpinningCreate, user: Dict = Depends(re
     }
     await db.posts.insert_one(post_doc)
     await parse_and_notify_mentions(post_doc.get("caption", ""), post_doc["id"], user["id"])
+    await _shadow_flag_post(post_doc, user)
     
     return await build_post_response(post_doc, user["id"])
 
@@ -459,6 +501,7 @@ async def composer_randomizer(data: NowSpinningCreate, user: Dict = Depends(requ
     }
     await db.posts.insert_one(post_doc)
     await parse_and_notify_mentions(post_doc.get("caption", ""), post_doc["id"], user["id"])
+    await _shadow_flag_post(post_doc, user)
     return await build_post_response(post_doc, user["id"])
 
 
@@ -516,6 +559,7 @@ async def composer_new_haul(data: NewHaulCreate, user: Dict = Depends(require_au
     }
     await db.posts.insert_one(post_doc)
     await parse_and_notify_mentions(post_doc.get("caption", ""), post_doc["id"], user["id"])
+    await _shadow_flag_post(post_doc, user)
     
     return await build_post_response(post_doc, user["id"])
 
@@ -558,6 +602,7 @@ async def composer_iso(data: ISOPostCreate, user: Dict = Depends(require_auth)):
     }
     await db.posts.insert_one(post_doc)
     await parse_and_notify_mentions(post_doc.get("caption", ""), post_doc["id"], user["id"])
+    await _shadow_flag_post(post_doc, user)
     
     return await build_post_response(post_doc, user["id"])
 
@@ -578,6 +623,7 @@ async def composer_vinyl_mood(data: VinylMoodCreate, user: Dict = Depends(requir
     }
     await db.posts.insert_one(post_doc)
     await parse_and_notify_mentions(post_doc.get("caption", ""), post_doc["id"], user["id"])
+    await _shadow_flag_post(post_doc, user)
     
     return await build_post_response(post_doc, user["id"])
 
@@ -611,6 +657,7 @@ async def composer_note(data: NoteCreate, user: Dict = Depends(require_auth)):
     }
     await db.posts.insert_one(post_doc)
     await parse_and_notify_mentions(post_doc.get("caption", "") or post_doc.get("text", ""), post_doc["id"], user["id"])
+    await _shadow_flag_post(post_doc, user)
     return await build_post_response(post_doc, user["id"])
 
 
