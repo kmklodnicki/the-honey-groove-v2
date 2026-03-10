@@ -100,7 +100,8 @@ export default function SearchPage() {
   const [page, setPage] = useState(0);
   const [activeFilters, setActiveFilters] = useState(new Set());
   const [activeColors, setActiveColors] = useState(new Set());
-  const [activeYears, setActiveYears] = useState(new Set());
+  const [yearFrom, setYearFrom] = useState(null);
+  const [yearTo, setYearTo] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const filterRef = useRef(null);
   const inputRef = useRef(null);
@@ -138,22 +139,16 @@ export default function SearchPage() {
     });
   };
 
-  const toggleYear = (y) => {
-    setActiveYears(prev => {
-      const next = new Set(prev);
-      if (next.has(y)) next.delete(y); else next.add(y);
-      return next;
-    });
-  };
-
   const clearAllFilters = () => {
     setActiveFilters(new Set());
     setActiveColors(new Set());
-    setActiveYears(new Set());
+    setYearFrom(null);
+    setYearTo(null);
   };
 
-  const hasAnyFilter = activeFilters.size > 0 || activeColors.size > 0 || activeYears.size > 0;
-  const totalFilterCount = activeFilters.size + activeColors.size + activeYears.size;
+  const hasYearFilter = yearFrom !== null || yearTo !== null;
+  const hasAnyFilter = activeFilters.size > 0 || activeColors.size > 0 || hasYearFilter;
+  const totalFilterCount = activeFilters.size + activeColors.size + (hasYearFilter ? 1 : 0);
 
   // Close filter drawer on outside click
   useEffect(() => {
@@ -249,15 +244,15 @@ export default function SearchPage() {
     .map(([name]) => name)
     .slice(0, 10);
 
-  // Extract available years
+  // Extract available years (full sorted list for dropdown)
   const availableYears = {};
   allVariants.forEach(v => {
     if (v.year) availableYears[v.year] = (availableYears[v.year] || 0) + 1;
   });
-  const yearList = Object.entries(availableYears)
-    .sort((a, b) => b[0] - a[0])
-    .map(([yr]) => Number(yr))
-    .slice(0, 8);
+  const yearList = Object.keys(availableYears)
+    .map(Number)
+    .filter(y => y > 1900)
+    .sort((a, b) => b - a);
 
   // Collect available tags from current results
   const availableTags = new Set();
@@ -275,9 +270,12 @@ export default function SearchPage() {
       const vname = (v.variant || '').toLowerCase();
       if (![...activeColors].some(c => vname.includes(c.toLowerCase()))) return false;
     }
-    // Year filter
-    if (activeYears.size > 0) {
-      if (!activeYears.has(v.year)) return false;
+    // Year range filter
+    if (hasYearFilter) {
+      const yr = v.year;
+      if (!yr) return false;
+      if (yearFrom !== null && yr < yearFrom) return false;
+      if (yearTo !== null && yr > yearTo) return false;
     }
     return true;
   });
@@ -391,27 +389,34 @@ export default function SearchPage() {
                       </div>
                     )}
 
+                    {/* Year range */}
                     {yearList.length > 0 && (
                       <div className="mb-3">
                         <p className="text-[10px] uppercase tracking-wider text-stone-400 font-semibold mb-2">Year</p>
-                        <div className="flex flex-wrap gap-1.5">
-                          {yearList.map(y => {
-                            const active = activeYears.has(y);
-                            return (
-                              <button
-                                key={y}
-                                onClick={() => toggleYear(y)}
-                                className={`text-[11px] font-medium px-2.5 py-1 rounded-full border transition-all ${
-                                  active
-                                    ? 'bg-vinyl-black text-white border-vinyl-black'
-                                    : 'bg-stone-50 text-stone-600 border-stone-200 hover:border-stone-300'
-                                }`}
-                                data-testid={`filter-year-${y}`}
-                              >
-                                {y}
-                              </button>
-                            );
-                          })}
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={yearFrom ?? ''}
+                            onChange={e => setYearFrom(e.target.value ? Number(e.target.value) : null)}
+                            className="flex-1 text-[11px] font-medium px-2.5 py-1.5 rounded-lg border border-stone-200 bg-stone-50 text-stone-600 focus:outline-none focus:ring-1 focus:ring-honey/40 focus:border-honey/50 appearance-none cursor-pointer"
+                            data-testid="filter-year-from"
+                          >
+                            <option value="">From</option>
+                            {yearList.map(y => (
+                              <option key={y} value={y} disabled={yearTo !== null && y > yearTo}>{y}</option>
+                            ))}
+                          </select>
+                          <span className="text-[10px] text-stone-400">to</span>
+                          <select
+                            value={yearTo ?? ''}
+                            onChange={e => setYearTo(e.target.value ? Number(e.target.value) : null)}
+                            className="flex-1 text-[11px] font-medium px-2.5 py-1.5 rounded-lg border border-stone-200 bg-stone-50 text-stone-600 focus:outline-none focus:ring-1 focus:ring-honey/40 focus:border-honey/50 appearance-none cursor-pointer"
+                            data-testid="filter-year-to"
+                          >
+                            <option value="">To</option>
+                            {yearList.map(y => (
+                              <option key={y} value={y} disabled={yearFrom !== null && y < yearFrom}>{y}</option>
+                            ))}
+                          </select>
                         </div>
                       </div>
                     )}
@@ -460,16 +465,16 @@ export default function SearchPage() {
                     {c}<X className="w-3 h-3 text-stone-400" />
                   </button>
                 ))}
-                {[...activeYears].map(y => (
+                {hasYearFilter && (
                   <button
-                    key={`ay-${y}`}
-                    onClick={() => toggleYear(y)}
+                    onClick={() => { setYearFrom(null); setYearTo(null); }}
                     className="shrink-0 flex items-center gap-1 text-[11px] font-medium pl-2.5 pr-1.5 py-1 rounded-full bg-stone-100 text-stone-600 border border-stone-200 hover:bg-stone-200 transition-all"
-                    data-testid={`active-year-${y}`}
+                    data-testid="active-year-range"
                   >
-                    {y}<X className="w-3 h-3 text-stone-400" />
+                    {yearFrom && yearTo ? `${yearFrom}–${yearTo}` : yearFrom ? `${yearFrom}+` : `≤${yearTo}`}
+                    <X className="w-3 h-3 text-stone-400" />
                   </button>
-                ))}
+                )}
                 {hasAnyFilter && (
                   <button
                     onClick={clearAllFilters}
