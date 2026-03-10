@@ -207,7 +207,7 @@ async def resend_verification(user: Dict = Depends(require_auth)):
         "created_at": now,
     })
 
-    verify_url = f"https://thehoneygroove.com/verify-email?token={token}"
+    verify_url = f"{FRONTEND_URL}/verify-email?token={token}"
     from templates.base import wrap_email
     body = f"""
     <p style="font-size:16px;color:#2A1A06;line-height:1.6;">
