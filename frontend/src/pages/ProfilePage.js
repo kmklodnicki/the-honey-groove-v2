@@ -18,6 +18,7 @@ import { FollowRequestsBadge, FollowRequestsModal } from '../components/FollowRe
 import { usePageTitle } from '../hooks/usePageTitle';
 import { MoodBoardTab } from '../components/MoodBoardTab';
 import ReportModal from '../components/ReportModal';
+import MentionText from '../components/MentionText';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -390,7 +391,7 @@ const ProfilePage = () => {
                 </Link>
               )}
             </div>
-            {profile.bio && <p className="text-sm text-muted-foreground mt-1">{profile.bio}</p>}
+            {profile.bio && <p className="text-sm text-muted-foreground mt-1"><MentionText text={profile.bio} /></p>}
             {profile.setup && (
               <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1" data-testid="profile-setup">
                 <Disc className="w-3 h-3" /> {profile.setup}
