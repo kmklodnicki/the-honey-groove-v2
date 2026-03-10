@@ -571,14 +571,14 @@ const ISOPage = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-honey/10 mb-6 w-full grid grid-cols-3">
-          <TabsTrigger value="shop" className="data-[state=active]:bg-honey text-sm" data-testid="tab-shop">
+        <TabsList className="bg-honey/10 mb-6 w-full grid grid-cols-3" data-testid="iso-tabs">
+          <TabsTrigger value="shop" className="data-[state=active]:bg-honey data-[state=active]:shadow-none text-xs sm:text-sm px-1.5 sm:px-3" data-testid="tab-shop">
             Shop ({shopListings.length})
           </TabsTrigger>
-          <TabsTrigger value="iso" className="data-[state=active]:bg-honey text-sm" data-testid="tab-iso">
-            Actively Seeking ({openCount})
+          <TabsTrigger value="iso" className="data-[state=active]:bg-honey data-[state=active]:shadow-none text-xs sm:text-sm px-1.5 sm:px-3" data-testid="tab-iso">
+            Seeking ({openCount})
           </TabsTrigger>
-          <TabsTrigger value="trade" className="data-[state=active]:bg-honey text-sm" data-testid="tab-trade">
+          <TabsTrigger value="trade" className="data-[state=active]:bg-honey data-[state=active]:shadow-none text-xs sm:text-sm px-1.5 sm:px-3" data-testid="tab-trade">
             Trade ({tradeListings.length})
           </TabsTrigger>
         </TabsList>
