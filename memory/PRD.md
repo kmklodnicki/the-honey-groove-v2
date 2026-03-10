@@ -81,7 +81,19 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 ## Pending / Upcoming Tasks
 
 ### Completed Recently (March 2026)
-- **Discogs Import 1,000 Record Limit Fix** - DONE (2026-03-10). Removed `$limit: 1000` from `get_my_records` aggregation pipeline, changed `.to_list(1000)` to `.to_list(None)` in both `get_my_records` and `get_user_records` endpoints. Discogs import pagination was already uncapped. Collections of any size now fully supported. File: `backend/routes/collection.py`.
+- **Full SEO & Metadata System** - DONE (2026-03-10). Comprehensive metadata implementation across all page types:
+  - **Backend SSR endpoints** (`/api/ssr/*`): Pre-rendered HTML with full OG tags, Twitter Cards, JSON-LD, and vinyl-specific metadata for social preview bots. Covers: listings, records, profiles, collections, ISO lists, marketplace, Hive posts, and landing page.
+  - **Bot detection middleware** (CRACO `onBeforeSetupMiddleware`): Intercepts requests from known bots (Twitterbot, facebookexternalhit, Discordbot, Slackbot, Googlebot, etc.) and proxies to backend SSR endpoints. Normal users get the React SPA.
+  - **Client-side SEOHead component** (`react-helmet-async`): Dynamic meta tags on all page components — RecordDetailPage, ProfilePage, HivePage, ISOPage, CollectionPage, LandingPage, ListingDetailModal, AboutPage, FAQPage, TermsPage, PrivacyPage.
+  - **Vinyl metadata**: vinyl:artist, vinyl:album, vinyl:variant, vinyl:color, vinyl:release_year, vinyl:label, vinyl:catalog_number, vinyl:format, vinyl:speed, vinyl:disc_count, vinyl:pressing_country, vinyl:media_condition, vinyl:sleeve_condition, vinyl:graded.
+  - **Product metadata**: product:price:amount, product:price:currency, product:availability, product:condition.
+  - **Trade metadata**: trade:available, trade:iso, trade:trade_type, trade:negotiable.
+  - **Collector metadata**: collector:username, collector:collection_size, collector:iso_count.
+  - **Post metadata**: post:type, post:artist, post:album, post:variant.
+  - **Schema.org JSON-LD**: Product (listings), MusicRecording (records), ProfilePage (profiles), SocialMediaPosting (posts), CollectionPage (collections/marketplace), ItemList (ISOs), WebApplication (landing).
+  - **Canonical URLs** on all pages. **Image alt attributes** fixed across all components.
+  - Files: `backend/routes/seo.py`, `frontend/src/components/SEOHead.js`, `frontend/craco.config.js`, plus all page components.
+- **Discogs Import 1,000 Record Limit Fix** - DONE (2026-03-10). Removed `$limit: 1000` from `get_my_records` aggregation pipeline, changed `.to_list(1000)` to `.to_list(None)` in both `get_my_records` and `get_user_records` endpoints. Collections of any size now fully supported. File: `backend/routes/collection.py`.
 
 ### P1
 - Weekly Wax Email - configure scheduled email every Sunday 12:00 PM ET
