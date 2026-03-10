@@ -268,12 +268,20 @@ const ProfilePage = () => {
   };
 
   const handleStripeConnect = async () => {
+    if (stripeLoading) return;
     setStripeLoading(true);
     try {
       const resp = await axios.post(`${API}/stripe/connect`, {}, { headers: { Authorization: `Bearer ${token}` }});
-      if (resp.data.url) window.location.href = resp.data.url;
-    } catch (err) { toast.error(err.response?.data?.detail || 'Failed'); }
-    finally { setStripeLoading(false); }
+      if (resp.status !== 200 || !resp.data?.url) {
+        toast.error('Could not create Stripe session. Please try again.');
+        setStripeLoading(false);
+        return;
+      }
+      window.location.href = resp.data.url;
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to connect Stripe');
+      setStripeLoading(false);
+    }
   };
 
   if (loading) {
@@ -1176,17 +1184,23 @@ const ProfilePage = () => {
                 disabled={goldenHiveCheckoutLoading}
                 data-testid="golden-hive-checkout-btn"
                 onClick={async () => {
+                  if (goldenHiveCheckoutLoading) return;
                   setGoldenHiveCheckoutLoading(true);
                   try {
                     const resp = await axios.post(`${API}/golden-hive/checkout`, {}, { headers: { Authorization: `Bearer ${token}` } });
-                    if (!resp.data?.url) {
-                      toast.error('Could not get checkout URL. Please try again.');
+                    if (resp.status !== 200 || !resp.data?.url || !resp.data?.session_id) {
+                      toast.error('Checkout session could not be created. Please try again.');
                       setGoldenHiveCheckoutLoading(false);
                       return;
                     }
-                    // Small delay so the user sees the loading state
+                    const checkoutUrl = resp.data.url;
+                    if (!checkoutUrl.startsWith('https://')) {
+                      toast.error('Invalid checkout URL received. Please contact support.');
+                      setGoldenHiveCheckoutLoading(false);
+                      return;
+                    }
                     await new Promise(r => setTimeout(r, 300));
-                    window.location.href = resp.data.url;
+                    window.location.href = checkoutUrl;
                   } catch (err) {
                     toast.error(err.response?.data?.detail || 'Could not start checkout. Please try again.');
                     setGoldenHiveCheckoutLoading(false);
