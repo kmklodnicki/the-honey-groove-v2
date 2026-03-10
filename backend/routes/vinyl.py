@@ -28,63 +28,24 @@ CACHE_TTL_HOURS = 24
 
 # ── Rarity Score System (Discogs-sourced) ──
 RARITY_TIERS = [
-    (13, "Ultra Rare"),
-    (10, "Very Rare"),
-    (7, "Rare"),
-    (4, "Uncommon"),
-    (0, "Common"),
+    (0, "Ultra Rare"),     # < 500 owners worldwide
+    (500, "Rare"),         # 500 – 2,500
+    (2500, "Uncommon"),    # 2,500 – 5,000
+    (5001, "Common"),      # 5,001+
 ]
 
 
-def _owner_score(have: int) -> int:
-    """Fewer Discogs owners = rarer."""
-    if have <= 50:
-        return 5
-    if have <= 200:
-        return 4
-    if have <= 1000:
-        return 3
-    if have <= 5000:
-        return 2
-    return 1
-
-
-def _demand_score(want: int, have: int) -> int:
-    """Higher want-to-have ratio on Discogs = rarer."""
-    ratio = want / max(have, 1)
-    if ratio > 10:
-        return 5
-    if ratio > 5:
-        return 4
-    if ratio > 2:
-        return 3
-    if ratio > 0.5:
-        return 2
-    return 1
-
-
-def _supply_score(num_for_sale: int) -> int:
-    """Fewer Discogs marketplace listings = rarer."""
-    if num_for_sale == 0:
-        return 5
-    if num_for_sale <= 5:
-        return 4
-    if num_for_sale <= 20:
-        return 3
-    if num_for_sale <= 50:
-        return 2
-    return 1
-
-
 def calculate_rarity(have: int, want: int, num_for_sale: int) -> dict:
-    total = _owner_score(have) + _demand_score(want, have) + _supply_score(num_for_sale)
+    """Global Rarity based on Discogs community.have count."""
     tier = "Common"
-    for threshold, label in RARITY_TIERS:
-        if total >= threshold:
-            tier = label
-            break
+    if have < 500:
+        tier = "Ultra Rare"
+    elif have < 2500:
+        tier = "Rare"
+    elif have < 5000:
+        tier = "Uncommon"
     return {
-        "score": total,
+        "score": max(0, 5000 - have),
         "tier": tier,
         "discogs_owners": have,
         "discogs_wantlist": want,

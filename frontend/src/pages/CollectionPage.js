@@ -985,19 +985,19 @@ const WishlistCard = ({ item, onPromote, onAddToCollection, onDelete }) => (
       <p className="text-xs text-muted-foreground truncate">{item.artist}</p>
       <div className="flex gap-2 mt-2">
         <Button size="sm" onClick={() => onAddToCollection(item.id)}
-          className="flex-1 h-7 text-[10px] rounded-full font-semibold border-0"
-          style={{ background: 'linear-gradient(135deg, #E8A820, #DAA520)', color: '#1A1A1A' }}
+          className="flex-1 h-8 text-[10px] rounded-full font-semibold border-0"
+          style={{ background: '#FFD700', color: '#1A1A1A' }}
           data-testid={`add-to-collection-btn-${item.id}`}>
           Add to Collection
         </Button>
         <Button size="sm" variant="outline" onClick={() => onPromote(item.id)}
-          className="flex-1 h-7 text-[10px] rounded-full font-semibold"
-          style={{ background: 'rgba(255,215,0,0.1)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', border: '2px solid #DAA520', color: '#8B6914' }}
+          className="flex-1 h-8 text-[10px] rounded-full font-semibold"
+          style={{ background: 'transparent', border: '1.5px solid #DAA520', color: '#8B6914' }}
           data-testid={`actively-seeking-btn-${item.id}`}>
           Actively Seeking
         </Button>
         <Button size="sm" variant="ghost" onClick={() => onDelete(item.id)}
-          className="h-7 w-7 p-0 shrink-0 text-stone-400 hover:text-red-500"
+          className="h-8 w-8 p-0 shrink-0 text-stone-400 hover:text-red-500"
           data-testid={`delete-wishlist-${item.id}`}>
           <Trash2 className="w-3.5 h-3.5" />
         </Button>

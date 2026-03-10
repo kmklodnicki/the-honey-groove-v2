@@ -1,0 +1,61 @@
+{
+  "summary": "BLOCK 85.1/85.2/85.3 testing complete. Backend API tests all pass (11/11). Frontend UI tests mostly pass. Global Rarity Engine, demote endpoint, and UI styling verified working.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "RarityCard on RecordDetailPage",
+        "issue": "RarityCard component exists but is NOT rendered on RecordDetailPage. Only RarityPill is shown. The test feature 'BLOCK 85.1: Rarity card shows Owners, Wantlist, and For Sale counts' is not implemented on the detail page - component exists at /app/frontend/src/components/RarityBadge.js but RecordDetailPage only imports RarityPill",
+        "affected_selectors": ["[data-testid='rarity-card']", "[data-testid='rarity-owners']", "[data-testid='rarity-wantlist']", "[data-testid='rarity-listings']"],
+        "priority": "MEDIUM"
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_block85_rarity_demote_ui.py",
+    "/app/test_reports/pytest/block85_rarity_demote_results.xml"
+  ],
+  "action_items": [
+    "Add RarityCard component to RecordDetailPage to show Owners, Wantlist, and For Sale counts (component already exists, just needs to be imported and rendered)"
+  ],
+  "critical_code_review_comments": [
+    "RarityCard component is defined in /app/frontend/src/components/RarityBadge.js but not used in RecordDetailPage - intentional or missing?"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_block85_rarity_demote_ui.py"
+  ],
+  "success_rate": {
+    "backend": "100% (11/11 tests passed)",
+    "frontend": "92% (all features working except RarityCard not shown on detail page)"
+  },
+  "test_credentials": "demo@test.com / demouser",
+  "seed_data_creation": "Created test ISO items during demote workflow testing (cleaned up after tests)",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "BLOCK 85 features all working: (1) Rarity API returns tier based on discogs community.have count, (2) Demote endpoint reverts OPEN ISO to WISHLIST, (3) ISOCard shows gold Zap bolt and Back to Dreams link on OPEN items, (4) Dream List buttons are 32px with correct styling, (5) Variant pills have 70% max-width. Only potential issue: RarityCard with Owners/Wantlist/For Sale counts not rendered on RecordDetailPage (component exists but not used).",
+  "verified_features": {
+    "BLOCK_85_1_rarity_engine": {
+      "GET_rarity_endpoint": "PASS - /api/vinyl/rarity/14215683 returns tier=Common for 67,110 owners",
+      "rarity_tier_calculation": "PASS - Ultra Rare(<500), Rare(500-2500), Uncommon(2500-5000), Common(5001+)",
+      "rarity_pill_on_detail_page": "PASS - Shows 'GLOBAL RARITY: COMMON' with Brushed Gold Glass style",
+      "rarity_card_with_counts": "PARTIAL - Component exists but NOT rendered on RecordDetailPage"
+    },
+    "BLOCK_85_2_demote_pipeline": {
+      "demote_endpoint": "PASS - PUT /api/iso/{id}/demote reverts OPEN to WISHLIST",
+      "gold_lightning_bolt": "PASS - Zap icon shows on OPEN/Seeking items",
+      "back_to_dreams_link": "PASS - Link shows 'Back to Dreams' on own OPEN items",
+      "demote_removes_from_seeking": "PASS - Item removed from active seeking list after demote"
+    },
+    "BLOCK_85_3_boutique_ui": {
+      "button_height_32px": "PASS - Dream List buttons have h-8 (32px height)",
+      "add_to_collection_gold_bg": "PASS - rgb(255, 215, 0) solid #FFD700 background",
+      "actively_seeking_border": "PASS - 1px solid rgb(218, 165, 32) DAA520 border with transparent bg",
+      "variant_pill_truncation": "PASS - max-width: 70%"
+    }
+  }
+}

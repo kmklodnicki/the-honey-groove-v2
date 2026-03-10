@@ -416,6 +416,13 @@ const ISOPage = () => {
   const handleDeleteIso = async (id) => {
     try { await axios.delete(`${API}/iso/${id}`, { headers: { Authorization: `Bearer ${token}` }}); setIsos(prev => prev.filter(i => i.id !== id)); toast.success('iso removed.'); } catch { toast.error('something went wrong.'); }
   };
+  const handleDemoteISO = async (id) => {
+    try {
+      const res = await axios.put(`${API}/iso/${id}/demote`, {}, { headers: { Authorization: `Bearer ${token}` }});
+      setIsos(prev => prev.filter(i => i.id !== id));
+      toast.success(res.data.message || 'Moved back to Dreams.');
+    } catch { toast.error('could not move back to dreams.'); }
+  };
   const handleDeleteListing = async (id) => {
     try { await axios.delete(`${API}/listings/${id}`, { headers: { Authorization: `Bearer ${token}` }}); setMyListings(prev => prev.filter(l => l.id !== id)); setListings(prev => prev.filter(l => l.id !== id)); toast.success('listing removed.'); } catch { toast.error('something went wrong.'); }
   };
@@ -678,7 +685,7 @@ const ISOPage = () => {
             </Card>
           ) : (
             <div className="space-y-3 mb-8">
-              {filteredIsos.map(iso => <ISOCard key={iso.id} iso={iso} isOwn={true} onMarkFound={handleMarkFound} onDelete={(id) => { setDeleteConfirmId(id); setDeleteConfirmType('iso'); }} onSetPriceAlert={handleSetPriceAlert} />)}
+              {filteredIsos.map(iso => <ISOCard key={iso.id} iso={iso} isOwn={true} onMarkFound={handleMarkFound} onDelete={(id) => { setDeleteConfirmId(id); setDeleteConfirmType('iso'); }} onSetPriceAlert={handleSetPriceAlert} onDemote={handleDemoteISO} />)}
             </div>
           )}
 

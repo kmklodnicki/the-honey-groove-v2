@@ -10,7 +10,7 @@ import { Input } from '../ui/input';
 import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from '../ui/tooltip';
-import { CheckCircle2, Trash2, DollarSign, Disc, ArrowRightLeft, MessageSquare, Shield, X } from 'lucide-react';
+import { CheckCircle2, Trash2, DollarSign, Disc, ArrowRightLeft, MessageSquare, Shield, X, Zap } from 'lucide-react';
 import AlbumArt from '../AlbumArt';
 import { GradeLabel } from '../GradeLabel';
 import { TitleBadge } from '../TitleBadge';
@@ -30,18 +30,27 @@ export const STATUS_CONFIG = {
   DISPUTED: { label: 'Disputed', color: 'bg-red-100 text-red-700' },
 };
 
-export const ISOCard = ({ iso, isOwn, onMarkFound, onDelete, onSetPriceAlert }) => {
+export const ISOCard = ({ iso, isOwn, onMarkFound, onDelete, onSetPriceAlert, onDemote }) => {
   const [alertInput, setAlertInput] = useState('');
   const [showAlertInput, setShowAlertInput] = useState(false);
 
   return (
     <Card className={`p-4 border-honey/30 transition-all ${iso.status === 'FOUND' ? 'opacity-60 bg-amber-50/30' : 'hover:shadow-md'}`} data-testid={`iso-item-${iso.id}`}>
       <div className="flex items-start gap-3">
-        <AlbumArt src={iso.cover_url} alt={`${iso.artist} ${iso.album}${iso.pressing_notes ? ` ${iso.pressing_notes}` : ''} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow" />
+        <div className="relative shrink-0">
+          <AlbumArt src={iso.cover_url} alt={`${iso.artist} ${iso.album}${iso.pressing_notes ? ` ${iso.pressing_notes}` : ''} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow" />
+          {iso.status === 'OPEN' && (
+            <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #DAA520, #E8A820)', boxShadow: '0 2px 6px rgba(218,165,32,0.5)' }} data-testid={`seeking-bolt-${iso.id}`}>
+              <Zap className="w-3 h-3 text-white fill-white" />
+            </div>
+          )}
+        </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h4 className="font-heading text-base">{iso.album}</h4>
-            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${iso.status === 'FOUND' ? 'bg-amber-100 text-[#C8861A]' : 'bg-[#E8A820]/15 text-[#C8861A] border border-[#C8861A]/30'}`}>{iso.status}</span>
+            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${iso.status === 'FOUND' ? 'bg-amber-100 text-[#C8861A]' : ''}`}
+              style={iso.status === 'OPEN' ? { background: 'rgba(255,215,0,0.15)', color: '#C8861A', border: '1.5px solid #DAA520' } : {}}
+            >{iso.status === 'OPEN' ? 'SEEKING' : iso.status}</span>
           </div>
           <p className="text-sm text-muted-foreground">{iso.artist}{iso.year ? ` (${iso.year})` : ''}</p>
           <div className="flex flex-wrap gap-1.5 mt-1">
@@ -79,9 +88,16 @@ export const ISOCard = ({ iso, isOwn, onMarkFound, onDelete, onSetPriceAlert }) 
           )}
         </div>
         {isOwn && iso.status === 'OPEN' && (
-          <div className="flex gap-1 shrink-0">
-            <Button size="sm" variant="ghost" className="text-[#C8861A] hover:bg-amber-50 h-8 px-2" onClick={() => onMarkFound(iso.id)} data-testid={`mark-found-${iso.id}`}><CheckCircle2 className="w-4 h-4" /></Button>
-            <Button size="sm" variant="ghost" className="text-[#8A6B4A]/60 hover:bg-[#8A6B4A]/10 h-8 px-2" onClick={() => onDelete(iso.id)}><Trash2 className="w-4 h-4" /></Button>
+          <div className="flex flex-col gap-1 shrink-0 items-end">
+            <div className="flex gap-1">
+              <Button size="sm" variant="ghost" className="text-[#C8861A] hover:bg-amber-50 h-8 px-2" onClick={() => onMarkFound(iso.id)} data-testid={`mark-found-${iso.id}`}><CheckCircle2 className="w-4 h-4" /></Button>
+              <Button size="sm" variant="ghost" className="text-[#8A6B4A]/60 hover:bg-[#8A6B4A]/10 h-8 px-2" onClick={() => onDelete(iso.id)}><Trash2 className="w-4 h-4" /></Button>
+            </div>
+            {onDemote && (
+              <button onClick={() => onDemote(iso.id)} className="text-[10px] text-[#C8861A]/70 hover:text-[#C8861A] transition-colors" data-testid={`demote-btn-${iso.id}`}>
+                Back to Dreams
+              </button>
+            )}
           </div>
         )}
       </div>

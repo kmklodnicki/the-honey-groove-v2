@@ -159,6 +159,17 @@ async def promote_to_active(iso_id: str, user: Dict = Depends(require_auth)):
 
 
 
+@router.put("/iso/{iso_id}/demote")
+async def demote_to_dreaming(iso_id: str, user: Dict = Depends(require_auth)):
+    """Revert an active OPEN ISO back to WISHLIST (Dreaming)."""
+    iso = await db.iso_items.find_one({"id": iso_id, "user_id": user["id"]})
+    if not iso:
+        raise HTTPException(status_code=404, detail="ISO not found")
+    await db.iso_items.update_one({"id": iso_id}, {"$set": {"status": "WISHLIST", "priority": "LOW"}})
+    return {"message": f"{iso.get('album', 'Record')} moved back to Dreams."}
+
+
+
 @router.post("/iso/{iso_id}/convert-to-collection")
 async def convert_iso_to_collection(iso_id: str, user: Dict = Depends(require_auth)):
     """Convert an ISO item to a collection record ('I Found It!' flow)."""
