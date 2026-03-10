@@ -60,15 +60,26 @@ async def check_trade_deadlines(trade: Dict) -> Dict:
             if not init_shipped or not resp_shipped:
                 trade["shipping_overdue"] = True
 
-    if trade.get("status") == "CONFIRMING" and trade.get("confirmation_deadline"):
-        deadline = datetime.fromisoformat(trade["confirmation_deadline"])
-        if now > deadline:
-            confirmations = trade.get("confirmations") or {}
-            if any(confirmations.values()):
-                from contextlib import suppress
-                with suppress(Exception):
-                    await complete_trade(trade)
-                    trade["status"] = "COMPLETED"
+    if trade.get("status") == "CONFIRMING" and trade.get("delivery_marked_at"):
+        delivery_time = datetime.fromisoformat(trade["delivery_marked_at"])
+        elapsed = now - delivery_time
+        confirmations = trade.get("confirmations") or {}
+        init_confirmed = confirmations.get(trade.get("initiator_id"))
+        resp_confirmed = confirmations.get(trade.get("responder_id"))
+
+        # Scenario 3: Neither confirmed within 24h, no dispute
+        if elapsed > timedelta(hours=24) and not init_confirmed and not resp_confirmed and trade.get("status") != "DISPUTED":
+            from contextlib import suppress
+            with suppress(Exception):
+                await _auto_complete_no_confirmation(trade)
+                trade["status"] = "COMPLETED"
+
+        # Scenario 2: At least one confirmed, deadline passed
+        elif elapsed > timedelta(hours=24) and (init_confirmed or resp_confirmed):
+            from contextlib import suppress
+            with suppress(Exception):
+                await complete_trade(trade)
+                trade["status"] = "COMPLETED"
 
     return trade
 
@@ -468,6 +479,7 @@ async def ship_trade(trade_id: str, data: TradeShipInput, user: Dict = Depends(r
         confirmation_deadline = (datetime.now(timezone.utc) + timedelta(hours=48)).isoformat()
         update_fields["status"] = "CONFIRMING"
         update_fields["confirmation_deadline"] = confirmation_deadline
+        update_fields["delivery_marked_at"] = now  # Timer start for auto-completion
         # For hold trades, set a 24h hold confirmation deadline
         if trade.get("hold_enabled") and trade.get("hold_status") == "active":
             hold_deadline = (datetime.now(timezone.utc) + timedelta(hours=24)).isoformat()
@@ -1103,48 +1115,122 @@ async def resolve_hold_dispute(trade_id: str, data: AdminHoldResolve, user: Dict
     return await build_trade_response(updated)
 
 
-# ============== HOLD AUTO-REVERSAL (24h timeout) ==============
+# ============== HOLD AUTO-REVERSAL & SCENARIO 3 AUTO-COMPLETION ==============
+
+async def _auto_complete_no_confirmation(trade: Dict):
+    """Scenario 3: Auto-complete trade when NEITHER user confirms within 24h.
+
+    Preconditions (must be validated by caller):
+    - Both packages marked delivered (trade is CONFIRMING)
+    - Neither user has confirmed
+    - No dispute is open
+    - 24h have passed since delivery_marked_at
+
+    Actions:
+    - Mark trade as COMPLETED (transfer records)
+    - Release both mutual hold payments
+    - Leave ratings as null
+    - Notify both users
+    """
+    now_str = datetime.now(timezone.utc).isoformat()
+
+    # Release both mutual hold payments first (before completing)
+    if trade.get("hold_enabled") and trade.get("hold_status") == "active":
+        charges = trade.get("hold_charges") or {}
+        for role in ["initiator", "responder"]:
+            pi_id = (charges.get(role) or {}).get("payment_intent_id")
+            if pi_id:
+                await _refund_hold(pi_id)
+        await db.trades.update_one({"id": trade["id"]}, {"$set": {
+            "hold_status": "refunded",
+            "updated_at": now_str,
+        }})
+
+    # Complete the trade (transfer records, mark COMPLETED)
+    await complete_trade(trade)
+
+    # Set auto-completion metadata
+    await db.trades.update_one({"id": trade["id"]}, {"$set": {
+        "confirmations": {
+            trade["initiator_id"]: "auto",
+            trade["responder_id"]: "auto",
+        },
+        "auto_completed": True,
+        "auto_completed_at": now_str,
+    }})
+
+    # Notify both users
+    for uid in [trade["initiator_id"], trade["responder_id"]]:
+        await create_notification(
+            uid, "TRADE_AUTO_COMPLETED",
+            "Trade completed automatically",
+            "Your trade was completed automatically after 24 hours. Your mutual holds have been released.",
+            {"trade_id": trade["id"]},
+        )
+        user_obj = await db.users.find_one({"id": uid}, {"_id": 0})
+        if user_obj and user_obj.get("email"):
+            hold_amt = f"{trade.get('hold_amount', 0):.2f}"
+            tpl = email_tpl.trade_auto_completed(user_obj.get("username", ""), hold_amt, TRADE_URL)
+            await send_email_fire_and_forget(user_obj["email"], tpl["subject"], tpl["html"])
+
+    logger.info(f"Scenario 3 auto-complete: trade {trade['id']} — neither party confirmed, holds released")
+
 
 async def auto_reverse_expired_holds():
-    """Background task: auto-reverse holds for parties that didn't confirm within 24h."""
+    """Background task: auto-complete trades where neither user confirmed within 24h,
+    and auto-reverse holds for partially confirmed trades past deadline."""
     now = datetime.now(timezone.utc)
-    # Find CONFIRMING trades with active holds past the confirmation deadline
+
+    # Find CONFIRMING trades past 24h delivery window
     trades = await db.trades.find({
         "status": "CONFIRMING",
-        "hold_enabled": True,
-        "hold_status": "active",
-        "confirmation_deadline": {"$exists": True},
-    }, {"_id": 0}).to_list(100)
+        "delivery_marked_at": {"$exists": True},
+    }, {"_id": 0}).to_list(200)
 
     for trade in trades:
         try:
-            deadline = datetime.fromisoformat(trade["confirmation_deadline"])
-            if now <= deadline:
-                continue
+            delivery_time = datetime.fromisoformat(trade["delivery_marked_at"])
+            if now <= delivery_time + timedelta(hours=24):
+                continue  # Not yet past 24h
 
             confirmations = trade.get("confirmations") or {}
-            charges = trade.get("hold_charges") or {}
-            hold_amt = f"{trade.get('hold_amount', 0):.2f}"
+            init_confirmed = confirmations.get(trade["initiator_id"])
+            resp_confirmed = confirmations.get(trade["responder_id"])
 
-            # Auto-reverse for any party that hasn't confirmed or disputed
-            for uid, role in [(trade["initiator_id"], "initiator"), (trade["responder_id"], "responder")]:
-                if not confirmations.get(uid):
-                    # Auto-confirm (release hold for unresponsive party)
-                    pi_id = (charges.get(role) or {}).get("payment_intent_id")
-                    if pi_id:
-                        await _refund_hold(pi_id)
-                    confirmations[uid] = "auto"
-                    user_obj = await db.users.find_one({"id": uid}, {"_id": 0})
-                    if user_obj and user_obj.get("email"):
-                        tpl = email_tpl.hold_reversed(user_obj.get("username", ""), hold_amt)
-                        await send_email_fire_and_forget(user_obj["email"], tpl["subject"], tpl["html"])
+            # Safeguard: skip disputed trades
+            if trade.get("status") == "DISPUTED":
+                continue
 
-            # Complete the trade
-            await db.trades.update_one({"id": trade["id"]}, {"$set": {
-                "confirmations": confirmations, "hold_status": "refunded",
-                "updated_at": now.isoformat(),
-            }})
-            await complete_trade(trade)
-            logger.info(f"Auto-reversed holds for trade {trade['id']}")
+            # Scenario 3: NEITHER confirmed → auto-complete with hold release
+            if not init_confirmed and not resp_confirmed:
+                await _auto_complete_no_confirmation(trade)
+                continue
+
+            # Scenario 2: At least ONE confirmed → complete trade, handle holds
+            if init_confirmed or resp_confirmed:
+                charges = trade.get("hold_charges") or {}
+                hold_amt = f"{trade.get('hold_amount', 0):.2f}"
+
+                if trade.get("hold_enabled") and trade.get("hold_status") == "active":
+                    # Refund holds for unconfirmed parties
+                    for uid, role in [(trade["initiator_id"], "initiator"), (trade["responder_id"], "responder")]:
+                        if not confirmations.get(uid):
+                            pi_id = (charges.get(role) or {}).get("payment_intent_id")
+                            if pi_id:
+                                await _refund_hold(pi_id)
+                            confirmations[uid] = "auto"
+                            user_obj = await db.users.find_one({"id": uid}, {"_id": 0})
+                            if user_obj and user_obj.get("email"):
+                                tpl = email_tpl.hold_reversed(user_obj.get("username", ""), hold_amt)
+                                await send_email_fire_and_forget(user_obj["email"], tpl["subject"], tpl["html"])
+
+                    await db.trades.update_one({"id": trade["id"]}, {"$set": {
+                        "confirmations": confirmations, "hold_status": "refunded",
+                        "updated_at": now.isoformat(),
+                    }})
+
+                await complete_trade(trade)
+                logger.info(f"Scenario 2 auto-complete: trade {trade['id']} — partial confirmation, holds released")
+
         except Exception as e:
-            logger.error(f"Auto-reversal failed for trade {trade['id']}: {e}")
+            logger.error(f"Trade auto-completion failed for {trade['id']}: {e}")

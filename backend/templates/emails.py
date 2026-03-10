@@ -411,6 +411,26 @@ def hold_dispute_filed(username: str, other_username: str, hold_amount: str, tra
     }
 
 
+def trade_auto_completed(username: str, hold_amount: str, trade_url: str) -> dict:
+    body = f"""
+    <p style="{GREETING}">Hey {username},</p>
+    <p>Your trade has been <strong>completed automatically</strong> after 24 hours with no disputes filed.</p>
+    <div style="text-align:center;padding:16px;margin:16px 0;background:#F0FFF4;border-radius:12px;border:1px solid #C6F6D5;">
+        <p style="margin:0;font-weight:600;color:#2F8F6B;">Trade completed</p>
+        <p style="{MUTED}margin:4px 0 0 0;">Your mutual hold of ${hold_amount} has been released back to you.</p>
+    </div>
+    <p>Your records have been exchanged. If you'd like to leave a rating, you still can from the trade page.</p>
+    <div style="text-align:center;margin:24px 0;">
+        <a href="{trade_url}" style="{BTN}">view trade</a>
+    </div>
+    {SIG_SHORT}
+    """
+    return {
+        "subject": "Trade completed automatically — holds released.",
+        "html": wrap_email(body),
+    }
+
+
 def verified_seller_renewal(username: str, expiry_date: str, days_left: int) -> dict:
     body = f"""
     <p style="{GREETING}">Hey {username},</p>
