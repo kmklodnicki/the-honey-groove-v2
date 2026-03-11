@@ -264,26 +264,29 @@ const EditionTag = ({ number }) => {
   );
 };
 
-// Spinning vinyl disc overlay for Now Spinning cards
+// Spinning vinyl disc — slides out from behind right side of album art sleeve
 const SpinningVinyl = () => (
-  <div className="absolute top-1.5 left-1.5 z-[6] pointer-events-none block" style={{ display: 'block' }} data-testid="spinning-vinyl-icon">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="drop-shadow-md" style={{ animation: 'spin 4s linear infinite', display: 'block' }}>
-      <circle cx="12" cy="12" r="11" fill="#1A1A1A" />
-      <circle cx="12" cy="12" r="9" fill="none" stroke="#333" strokeWidth="0.5" />
-      <circle cx="12" cy="12" r="7" fill="none" stroke="#333" strokeWidth="0.3" />
-      <circle cx="12" cy="12" r="5" fill="none" stroke="#333" strokeWidth="0.3" />
-      <circle cx="12" cy="12" r="3.5" fill="#DAA520" />
-      <circle cx="12" cy="12" r="1.5" fill="#1A1A1A" />
+  <div className="absolute top-1/2 -right-3 -translate-y-1/2 z-[5] pointer-events-none" data-testid="spinning-vinyl-icon">
+    <svg width="44" height="44" viewBox="0 0 48 48" fill="none" className="drop-shadow-lg" style={{ animation: 'vinylSpin 1.8s linear infinite' }}>
+      <circle cx="24" cy="24" r="22" fill="#1A1A1A" />
+      <circle cx="24" cy="24" r="19" fill="none" stroke="#2A2A2A" strokeWidth="0.6" />
+      <circle cx="24" cy="24" r="16" fill="none" stroke="#2A2A2A" strokeWidth="0.4" />
+      <circle cx="24" cy="24" r="13" fill="none" stroke="#2A2A2A" strokeWidth="0.4" />
+      <circle cx="24" cy="24" r="10" fill="none" stroke="#2A2A2A" strokeWidth="0.3" />
+      <circle cx="24" cy="24" r="7" fill="#DAA520" />
+      <circle cx="24" cy="24" r="3" fill="#1A1A1A" />
+      <circle cx="24" cy="24" r="1.2" fill="#444" />
     </svg>
   </div>
 );
 
-// Animated 3-bar equalizer for Now Spinning cards
+// Live 4-bar equalizer with staggered bounce + white glow
 const LiveEqualizer = () => (
   <div className="absolute bottom-1.5 right-1.5 z-[6] flex items-end gap-[2px] pointer-events-none" style={{ display: 'flex', visibility: 'visible', minHeight: '16px', height: '16px' }} data-testid="live-equalizer">
-    <span className="w-[3px] rounded-full" style={{ background: '#DAA520', animation: 'eqBar1 0.8s ease-in-out infinite alternate', height: '40%' }} />
-    <span className="w-[3px] rounded-full" style={{ background: '#DAA520', animation: 'eqBar2 0.6s ease-in-out infinite alternate', height: '70%' }} />
-    <span className="w-[3px] rounded-full" style={{ background: '#DAA520', animation: 'eqBar3 0.9s ease-in-out infinite alternate', height: '50%' }} />
+    <span className="w-[3px] rounded-full" style={{ background: '#fff', boxShadow: '0 0 4px rgba(255,255,255,0.5)', animation: 'eqBar1 0.8s ease-in-out infinite alternate', height: '40%' }} />
+    <span className="w-[3px] rounded-full" style={{ background: '#fff', boxShadow: '0 0 4px rgba(255,255,255,0.5)', animation: 'eqBar2 0.6s ease-in-out infinite alternate', height: '70%' }} />
+    <span className="w-[3px] rounded-full" style={{ background: '#fff', boxShadow: '0 0 4px rgba(255,255,255,0.5)', animation: 'eqBar3 0.9s ease-in-out infinite alternate', height: '50%' }} />
+    <span className="w-[3px] rounded-full" style={{ background: '#fff', boxShadow: '0 0 4px rgba(255,255,255,0.5)', animation: 'eqBar4 0.7s ease-in-out infinite alternate', height: '60%' }} />
   </div>
 );
 
@@ -296,15 +299,15 @@ const NowSpinningCard = ({ post, onAlbumClick }) => {
     <AlbumLink record={record} onAlbumClick={onAlbumClick}>
       <div className="flex gap-4 items-start" data-testid="now-spinning-card">
         {record.cover_url ? (
-          <div className="relative shrink-0">
-            <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-24 h-24 rounded-[10px] object-cover shadow-md album-art-hover" />
+          <div className="relative shrink-0 pr-3">
+            <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-24 h-24 rounded-[10px] object-cover shadow-md album-art-hover relative z-[6]" />
             <SpinningVinyl />
-            <StreamingOverlay artist={record.artist} album={record.title} />
+            <LiveEqualizer />
             {post.honeypot_rating && (
-              <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
+              <div className="absolute top-1 right-4 z-[7] px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
                 style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
                 data-testid="feed-rating-pill">
-                🍯 {post.honeypot_rating}
+                {post.honeypot_rating}
               </div>
             )}
           </div>

@@ -134,6 +134,7 @@ const ValuationWizard = ({ open, onClose, onComplete, onSave }) => {
           </div>
         ) : finished ? (
           /* ===== CELEBRATION STATE ===== */
+          isFullyValued ? (
           <div className="flex flex-col items-center justify-center py-16 px-6 text-center" data-testid="wizard-celebration">
             <div
               className="w-20 h-20 rounded-full flex items-center justify-center mb-5"
@@ -160,6 +161,13 @@ const ValuationWizard = ({ open, onClose, onComplete, onSave }) => {
               Done
             </Button>
           </div>
+          ) : (
+          /* ===== LOADING NEXT BATCH ===== */
+          <div className="flex flex-col items-center justify-center py-16 px-6 text-center" data-testid="wizard-loading-batch">
+            <Loader2 className="w-8 h-8 animate-spin mb-4" style={{ color: '#C8861A' }} />
+            <p className="text-sm text-muted-foreground">Loading next batch...</p>
+          </div>
+          )
         ) : current ? (
           /* ===== CARD UI ===== */
           <div className={`wizard-card ${slideDirection}`}>

@@ -382,100 +382,28 @@ const ProfilePage = () => {
           },
         }}
       />
-      {/* Profile Header — Desktop: 2-column grid */}
-      <div className="lg:grid lg:grid-cols-5 gap-6 mb-6">
-        {/* LEFT: Identity Card */}
-        <Card className="p-6 border-honey/30 lg:col-span-3" style={{ backgroundColor: '#FAF6EE' }}>
-          <div className="flex flex-col sm:flex-row items-start gap-6">
-            <Avatar className="h-24 w-24 border-4 border-honey/30">
+      {/* Profile Header — Unified Golden Vault Dashboard */}
+      <Card className="p-0 overflow-hidden mb-6" style={{ backgroundColor: '#FAF6EE', border: '1px solid rgba(200,134,26,0.2)', boxShadow: '0 4px 24px rgba(200,134,26,0.08)' }} data-testid="dashboard-hero">
+        {/* Branding watermark */}
+        <div className="px-6 pt-4 pb-0">
+          <span className="text-[10px] font-medium tracking-[0.25em] uppercase" style={{ color: 'rgba(200,134,26,0.25)', fontFamily: '"DM Serif Display", Georgia, serif' }}>
+            THE HONEY GROOVE
+          </span>
+        </div>
+
+        <div className="p-6 pt-3 lg:grid lg:grid-cols-[1fr_1.5fr_1fr] lg:gap-0">
+          {/* LEFT: Identity */}
+          <div className="flex flex-col sm:flex-row lg:flex-col items-start gap-4 lg:pr-6 lg:border-r" style={{ borderColor: 'rgba(200,134,26,0.15)' }}>
+            <Avatar className="h-20 w-20 lg:h-24 lg:w-24 border-4 border-honey/30">
               {profile.avatar_url && <AvatarImage src={resolveImageUrl(profile.avatar_url)} />}
               <AvatarFallback className="bg-honey-soft text-vinyl-black text-3xl font-heading">
                 {firstLetter}
               </AvatarFallback>
             </Avatar>
-
-            <div className="flex-1" style={{ minWidth: 0 }}>
-              <div className="flex items-center gap-3 flex-wrap">
-                <h1 className="font-heading text-2xl break-words" style={{ flexShrink: 1, minWidth: 0 }} data-testid="profile-username">@{profile.username}{profile.country && <span className="ml-1.5" data-testid="profile-country-flag">{countryFlag(profile.country)}</span>}</h1>
+            <div style={{ minWidth: 0 }}>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="font-heading text-xl lg:text-2xl break-words" style={{ flexShrink: 1, minWidth: 0 }} data-testid="profile-username">@{profile.username}{profile.country && <span className="ml-1.5" data-testid="profile-country-flag">{countryFlag(profile.country)}</span>}</h1>
                 {profile.title_label && <TitleBadge label={profile.title_label} />}
-                {promptStreak && promptStreak.streak > 0 && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-bold" data-testid="profile-streak-pill">
-                    {promptStreak.streak} day streak
-                  </span>
-                )}
-                {!isOwnProfile && token && (
-                  <>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={handleFollow}
-                      disabled={followLoading}
-                      className={`rounded-full ${
-                        isFollowing ? 'bg-white border border-vinyl-black/30 text-vinyl-black hover:bg-red-50 hover:text-red-600' :
-                        followRequestPending ? 'bg-white border border-amber-400 text-amber-700 hover:bg-red-50 hover:text-red-600' :
-                        followsMe && !isFollowing ? 'bg-honey text-vinyl-black hover:bg-honey-amber shadow-[0_0_12px_rgba(244,185,66,0.4)] animate-[honeyPulse_2s_ease-in-out_infinite]' :
-                        'bg-honey text-vinyl-black hover:bg-honey-amber'
-                      }`}
-                      data-testid="follow-btn"
-                    >
-                      {followLoading ? <Loader2 className="w-4 h-4 animate-spin" /> :
-                        isFollowing ? <><UserMinus className="w-4 h-4 mr-1" />Following</> :
-                        followRequestPending ? <><Loader2 className="w-4 h-4 mr-1" />Requested</> :
-                        profile?.is_private ? <><Lock className="w-4 h-4 mr-1" />Request to Follow</> :
-                        followsMe ? <><UserPlus className="w-4 h-4 mr-1" />Follow Back</> :
-                        <><UserPlus className="w-4 h-4 mr-1" />Follow</>
-                      }
-                    </Button>
-                    <Button
-                      size="sm" variant="outline"
-                      onClick={() => navigate(`/messages?to=${profile.id}`)}
-                      className="rounded-full border-vinyl-black/30"
-                      data-testid="profile-message-btn"
-                    >
-                      <MessageCircle className="w-4 h-4 mr-1" /> Message
-                    </Button>
-                    <Button
-                      size="sm" variant="ghost"
-                      onClick={() => setReportSellerOpen(true)}
-                      className="rounded-full text-muted-foreground/60 hover:text-red-500"
-                      data-testid="report-seller-btn"
-                    >
-                      <Flag className="w-3 h-3" />
-                    </Button>
-                    <Button
-                      size="sm" variant="ghost"
-                      onClick={() => isBlocked ? handleUnblock() : setShowBlockConfirm(true)}
-                      disabled={blockLoading}
-                      className={`rounded-full ${isBlocked ? 'text-red-500 hover:text-stone-600' : 'text-muted-foreground/60 hover:text-red-500'}`}
-                      data-testid="block-btn"
-                    >
-                      {blockLoading ? <Loader2 className="w-3 h-3 animate-spin" /> :
-                        isBlocked ? <ShieldCheck className="w-3 h-3" /> : <ShieldOff className="w-3 h-3" />
-                      }
-                    </Button>
-                  </div>
-                  {/* Taste Match Pill (BLOCK 40.2) */}
-                  {tasteMatch && !tasteLoading && (
-                    <button
-                      onClick={() => setCommonGroundOpen(true)}
-                      className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-all hover:scale-105 group relative"
-                      style={{ background: 'linear-gradient(135deg, #FFD700 0%, #FDB931 100%)', color: '#3E2723', border: '1px solid rgba(253,185,49,0.3)', boxShadow: '0 2px 10px rgba(253,185,49,0.25)' }}
-                      data-testid="taste-match-pill"
-                    >
-                      <Sparkles className="w-3.5 h-3.5" style={{ color: '#C8861A' }} />
-                      {tasteMatch.score}% Taste Match
-                      {tasteMatch.label && <span className="ml-1">· {tasteMatch.label}</span>}
-                    </button>
-                  )}
-                  </>
-                )}
-                {isOwnProfile && (
-                  <Link to="/settings">
-                    <Button variant="outline" size="sm" className="rounded-full gap-1">
-                      <Edit className="w-3 h-3" /> Edit
-                    </Button>
-                  </Link>
-                )}
               </div>
               {profile.bio && <p className="text-sm text-muted-foreground mt-1"><MentionText text={profile.bio} /></p>}
               {profile.setup && (
@@ -494,13 +422,15 @@ const ProfilePage = () => {
                 </span>
               )}
               {profile.founding_member && (
-                <div className="mt-1.5 inline-block" data-testid="founding-badge">
-                  <span className="italic text-xs" style={{ color: '#C8861A', fontFamily: '"DM Serif Display", serif' }}>
-                    founding member
-                  </span>
+                <div className="mt-1 inline-block" data-testid="founding-badge">
+                  <span className="italic text-xs" style={{ color: '#C8861A', fontFamily: '"DM Serif Display", serif' }}>founding member</span>
                 </div>
               )}
-
+              {promptStreak && promptStreak.streak > 0 && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-bold mt-1" data-testid="profile-streak-pill">
+                  {promptStreak.streak} day streak
+                </span>
+              )}
               {/* Golden Hive ID Badge */}
               {profile.golden_hive_verified && (
                 <div className="mt-1.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-100 to-yellow-50 border border-amber-300/50" data-testid="golden-hive-badge">
@@ -514,7 +444,6 @@ const ProfilePage = () => {
                   <span className="text-xs text-stone-500">Golden Hive ID — Pending Verification</span>
                 </div>
               )}
-
               {/* Social links */}
               {(profile.instagram_username || profile.tiktok_username) && (
                 <div className="flex items-center gap-3 mt-2" data-testid="profile-social-links">
@@ -538,110 +467,167 @@ const ProfilePage = () => {
               )}
             </div>
           </div>
-        </Card>
 
-        {/* RIGHT: Collection Value & Stats Card */}
-        <Card className="p-6 border-honey/30 lg:col-span-2 mt-4 lg:mt-0" style={{ backgroundColor: '#FAF6EE' }} data-testid="profile-stats-card">
-          {/* Stats - Social first, then collection */}
-          <div className="space-y-3" data-testid="profile-stats">
-            {/* Row 1: Following / Followers — same horizontal line */}
-            <div className="flex flex-row items-center justify-around sm:justify-start sm:gap-8">
-              <button onClick={() => setFollowListType('following')} className="hover:opacity-70 transition text-center" data-testid="following-stat">
+          {/* CENTER: Hero Stats */}
+          <div className="mt-6 lg:mt-0 lg:px-8 flex flex-col items-center justify-center text-center" data-testid="profile-stats-card">
+            {/* Following / Followers */}
+            <div className="flex items-center gap-6 mb-4">
+              <button onClick={() => setFollowListType('following')} className="hover:opacity-70 transition" data-testid="following-stat">
                 <span className="font-heading text-2xl text-vinyl-black">{profile.following_count}</span>
-                <span className="text-[11px] text-muted-foreground ml-1.5">Following</span>
+                <span className="text-[11px] text-muted-foreground ml-1">Following</span>
               </button>
-              <span className="text-stone-300 hidden sm:inline">|</span>
-              <button onClick={() => setFollowListType('followers')} className="hover:opacity-70 transition text-center" data-testid="followers-stat">
+              <span className="text-stone-300">|</span>
+              <button onClick={() => setFollowListType('followers')} className="hover:opacity-70 transition" data-testid="followers-stat">
                 <span className="font-heading text-2xl text-vinyl-black">{profile.followers_count}</span>
-                <span className="text-[11px] text-muted-foreground ml-1.5">Followers</span>
+                <span className="text-[11px] text-muted-foreground ml-1">Followers</span>
               </button>
             </div>
-            {/* Row 2: Records / Est. Value / Sales */}
-            <div className="flex flex-row items-center justify-around sm:justify-start sm:gap-8">
-              <div className="text-center sm:text-left">
-                <div className="font-heading text-2xl text-vinyl-black">{profile.collection_count}</div>
-                <div className="text-[11px] text-muted-foreground">Records</div>
+            {/* Hero numbers */}
+            <div className="flex items-baseline gap-8">
+              <div>
+                <div className="font-heading text-4xl lg:text-5xl text-vinyl-black" data-testid="profile-records-count">{profile.collection_count}</div>
+                <div className="text-[11px] text-muted-foreground tracking-[0.1em] uppercase mt-1">Records</div>
               </div>
               {collectionValue && collectionValue.total_value > 0 && (
                 <Link to={isOwnProfile ? '/collection' : '#'} className={isOwnProfile ? 'hover:opacity-70 transition' : ''} data-testid="profile-collection-value">
-                  <div className="text-center sm:text-left">
-                    <div className="font-heading text-2xl text-honey-amber">
-                      ${collectionValue.total_value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                    </div>
-                    <div className="text-[11px] text-muted-foreground">Est. Value</div>
+                  <div className="font-heading text-4xl lg:text-5xl" style={{ color: '#C8861A', letterSpacing: '0.02em' }}>
+                    ${collectionValue.total_value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                   </div>
+                  <div className="text-[11px] text-muted-foreground tracking-[0.1em] uppercase mt-1">Est. Value</div>
                 </Link>
               )}
-              {profile.completed_transactions > 0 && (
-                <div className="text-center sm:text-left" data-testid="profile-transactions">
-                  <div className="font-heading text-2xl text-vinyl-black flex items-center justify-center sm:justify-start gap-1">
-                    <ShoppingBag className="w-4 h-4 text-honey-amber" /> {profile.completed_transactions}
-                  </div>
-                  <div className="text-[11px] text-muted-foreground">Sales</div>
-                </div>
-              )}
             </div>
+            {/* Inline valuation progress */}
+            {isOwnProfile && collectionValue && collectionValue.pending_count > 0 && (
+              <div className="mt-3 w-full max-w-xs" data-testid="valuation-inline-progress">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] text-amber-600 font-medium">{collectionValue.pending_count} unvalued</span>
+                  <span className="text-[10px] text-stone-400">{Math.round(((profile.collection_count - collectionValue.pending_count) / Math.max(profile.collection_count, 1)) * 100)}%</span>
+                </div>
+                <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(200,134,26,0.1)' }}>
+                  <div className="h-full rounded-full transition-all duration-500" style={{
+                    width: `${Math.round(((profile.collection_count - collectionValue.pending_count) / Math.max(profile.collection_count, 1)) * 100)}%`,
+                    background: 'linear-gradient(90deg, #C8861A, #FFD700)'
+                  }} />
+                </div>
+              </div>
+            )}
+            {/* Trade rating */}
+            {ratings && ratings.count > 0 && (
+              <div className="flex items-center gap-1 mt-3" data-testid="profile-trade-rating">
+                <div className="flex gap-0.5">{[1,2,3,4,5].map(v => <Star key={v} className={`w-3.5 h-3.5 ${v <= Math.round(ratings.average) ? 'fill-honey text-honey' : 'text-gray-300'}`} />)}</div>
+                <span className="text-xs text-muted-foreground ml-1">{ratings.average} ({ratings.count} trade{ratings.count !== 1 ? 's' : ''})</span>
+              </div>
+            )}
+            {profile.completed_transactions > 0 && (
+              <div className="flex items-center gap-1 mt-2 text-sm" data-testid="profile-transactions">
+                <ShoppingBag className="w-3.5 h-3.5 text-honey-amber" />
+                <span className="font-heading text-lg text-vinyl-black">{profile.completed_transactions}</span>
+                <span className="text-[11px] text-muted-foreground">Sales</span>
+              </div>
+            )}
+            {/* Dream Value */}
+            {dreamValue && dreamValue.total_count > 0 && (
+              <div className="mt-2" data-testid="profile-dream-value">
+                <p className="font-serif italic text-sm" style={{ color: '#C8861A', letterSpacing: '0.02em' }}>
+                  Dream Records: ${dreamValue.total_value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                </p>
+                {dreamValue.pending_count > 0 && isOwnProfile && (
+                  <Link to="/collection?tab=wishlist&filter=pending_value" className="inline-flex items-center gap-1 mt-0.5 text-xs text-amber-600 hover:text-amber-700 transition-colors group/pending" data-testid="profile-pending-link">
+                    <AlertTriangle className="w-3 h-3 shrink-0" />
+                    <span className="underline decoration-dotted group-hover/pending:decoration-solid">{dreamValue.pending_count} pending</span>
+                  </Link>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Trade rating */}
-          {ratings && ratings.count > 0 && (
-            <div className="flex items-center gap-1 mt-3" data-testid="profile-trade-rating">
-              <div className="flex gap-0.5">{[1,2,3,4,5].map(v => <Star key={v} className={`w-3.5 h-3.5 ${v <= Math.round(ratings.average) ? 'fill-honey text-honey' : 'text-gray-300'}`} />)}</div>
-              <span className="text-xs text-muted-foreground ml-1">{ratings.average} ({ratings.count} trade{ratings.count !== 1 ? 's' : ''})</span>
-            </div>
-          )}
-
-          {/* Value of Dream Records sub-headline */}
-          {dreamValue && dreamValue.total_count > 0 && (
-            <div className="mt-3" data-testid="profile-dream-value">
-              <p className="font-serif italic text-sm" style={{ color: '#C8861A' }}>
-                Value of Dream Records: ${dreamValue.total_value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-              </p>
-              {dreamValue.pending_count > 0 && isOwnProfile && (
-                <Link
-                  to="/collection?tab=wishlist&filter=pending_value"
-                  className="inline-flex items-center gap-1 mt-1 text-xs text-amber-600 hover:text-amber-700 transition-colors group/pending"
-                  title="The Hive doesn't have a price for these grails yet. Click to help set the benchmark!"
-                  data-testid="profile-pending-link"
+          {/* RIGHT: Actions */}
+          <div className="mt-6 lg:mt-0 lg:pl-6 lg:border-l flex flex-col gap-2.5 justify-center" style={{ borderColor: 'rgba(200,134,26,0.15)' }}>
+            {!isOwnProfile && token && (
+              <>
+                <Button
+                  size="sm"
+                  onClick={handleFollow}
+                  disabled={followLoading}
+                  className={`rounded-full w-full ${
+                    isFollowing ? 'bg-white border border-vinyl-black/30 text-vinyl-black hover:bg-red-50 hover:text-red-600' :
+                    followRequestPending ? 'bg-white border border-amber-400 text-amber-700 hover:bg-red-50 hover:text-red-600' :
+                    followsMe && !isFollowing ? 'bg-honey text-vinyl-black hover:bg-honey-amber shadow-[0_0_12px_rgba(244,185,66,0.4)] animate-[honeyPulse_2s_ease-in-out_infinite]' :
+                    'bg-honey text-vinyl-black hover:bg-honey-amber'
+                  }`}
+                  data-testid="follow-btn"
                 >
-                  <AlertTriangle className="w-3 h-3 shrink-0" />
-                  <span className="underline decoration-dotted group-hover/pending:decoration-solid">{dreamValue.pending_count} record{dreamValue.pending_count !== 1 ? 's' : ''} pending valuation</span>
-                </Link>
-              )}
-              {dreamValue.pending_count > 0 && !isOwnProfile && (
-                <span className="text-stone-400 text-xs ml-1 not-italic">(+{dreamValue.pending_count} pending)</span>
-              )}
-            </div>
-          )}
-
-          {/* Stripe Connect - owner only */}
-          {isOwnProfile && stripeStatus && (
-            <div className="mt-3">
-              {stripeStatus.stripe_connected ? (
-                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700" data-testid="stripe-connected-badge">
-                  <CreditCard className="w-3 h-3" /> Stripe Connected
-                </span>
-              ) : (
-                <Button size="sm" onClick={handleStripeConnect} disabled={stripeLoading}
-                  className="rounded-full bg-[#635bff] text-white hover:bg-[#5146e0] gap-1" data-testid="stripe-connect-btn">
-                  {stripeLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <CreditCard className="w-3 h-3" />}
-                  Connect with Stripe
+                  {followLoading ? <Loader2 className="w-4 h-4 animate-spin" /> :
+                    isFollowing ? <><UserMinus className="w-4 h-4 mr-1" />Following</> :
+                    followRequestPending ? <><Loader2 className="w-4 h-4 mr-1" />Requested</> :
+                    profile?.is_private ? <><Lock className="w-4 h-4 mr-1" />Request to Follow</> :
+                    followsMe ? <><UserPlus className="w-4 h-4 mr-1" />Follow Back</> :
+                    <><UserPlus className="w-4 h-4 mr-1" />Follow</>
+                  }
                 </Button>
-              )}
-            </div>
-          )}
-          {/* Golden Hive ID — own profile only */}
-          {isOwnProfile && !profile.golden_hive_verified && profile.golden_hive_status !== 'pending' && (
-            <div className="mt-3" data-testid="golden-hive-cta">
-              <Button size="sm" onClick={() => setGoldenHiveModalOpen(true)} className="rounded-full bg-gradient-to-r from-amber-400 to-yellow-400 text-vinyl-black hover:from-amber-500 hover:to-yellow-500 gap-1.5 font-medium" data-testid="golden-hive-open-modal-btn">
-                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                Get Golden Hive ID
-              </Button>
-              <p className="text-[10px] text-muted-foreground mt-1 max-w-[200px]">Verified identity badge for trusted trading and selling</p>
-            </div>
-          )}
-        </Card>
-      </div>
+                <Button size="sm" variant="outline" onClick={() => navigate(`/messages?to=${profile.id}`)} className="rounded-full w-full border-vinyl-black/30" data-testid="profile-message-btn">
+                  <MessageCircle className="w-4 h-4 mr-1" /> Message
+                </Button>
+                <div className="flex gap-2 justify-center">
+                  <Button size="sm" variant="ghost" onClick={() => setReportSellerOpen(true)} className="rounded-full text-muted-foreground/60 hover:text-red-500" data-testid="report-seller-btn">
+                    <Flag className="w-3 h-3" />
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => isBlocked ? handleUnblock() : setShowBlockConfirm(true)} disabled={blockLoading}
+                    className={`rounded-full ${isBlocked ? 'text-red-500 hover:text-stone-600' : 'text-muted-foreground/60 hover:text-red-500'}`} data-testid="block-btn">
+                    {blockLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : isBlocked ? <ShieldCheck className="w-3 h-3" /> : <ShieldOff className="w-3 h-3" />}
+                  </Button>
+                </div>
+                {/* Taste Match Pill */}
+                {tasteMatch && !tasteLoading && (
+                  <button onClick={() => setCommonGroundOpen(true)}
+                    className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all hover:scale-105"
+                    style={{ background: 'linear-gradient(135deg, #FFD700 0%, #FDB931 100%)', color: '#3E2723', border: '1px solid rgba(253,185,49,0.3)', boxShadow: '0 2px 10px rgba(253,185,49,0.25)' }}
+                    data-testid="taste-match-pill">
+                    <Sparkles className="w-3.5 h-3.5" style={{ color: '#C8861A' }} />
+                    {tasteMatch.score}% Taste Match
+                  </button>
+                )}
+              </>
+            )}
+            {isOwnProfile && (
+              <>
+                <Link to="/settings">
+                  <Button variant="outline" size="sm" className="rounded-full gap-1 w-full">
+                    <Edit className="w-3 h-3" /> Edit Profile
+                  </Button>
+                </Link>
+                {/* Stripe — secondary style */}
+                {stripeStatus && (
+                  stripeStatus.stripe_connected ? (
+                    <span className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium border border-green-200 text-green-600 bg-green-50" data-testid="stripe-connected-badge">
+                      <CreditCard className="w-3 h-3" /> Stripe Connected
+                    </span>
+                  ) : (
+                    <Button size="sm" variant="outline" onClick={handleStripeConnect} disabled={stripeLoading}
+                      className="rounded-full gap-1 w-full border-[#635bff]/30 text-[#635bff] hover:bg-[#635bff]/5" data-testid="stripe-connect-btn">
+                      {stripeLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <CreditCard className="w-3 h-3" />}
+                      Connect Stripe
+                    </Button>
+                  )
+                )}
+                {/* Golden Hive ID — primary with glow */}
+                {!profile.golden_hive_verified && profile.golden_hive_status !== 'pending' && (
+                  <div data-testid="golden-hive-cta">
+                    <Button size="sm" onClick={() => setGoldenHiveModalOpen(true)}
+                      className="rounded-full w-full gap-1.5 font-semibold border-0"
+                      style={{ background: 'linear-gradient(135deg, #FFD700, #F4B521)', color: '#1A1A1A', boxShadow: '0 0 20px rgba(255,215,0,0.3)' }}
+                      data-testid="golden-hive-open-modal-btn">
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                      Get Golden Hive ID
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </Card>
 
       {/* Follow Requests Badge — own profile only */}
       {isOwnProfile && followRequestCount > 0 && (
