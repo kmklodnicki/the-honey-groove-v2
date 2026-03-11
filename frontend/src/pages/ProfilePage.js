@@ -32,6 +32,7 @@ import { useVariantModal } from '../context/VariantModalContext';
 import { EmptyState } from '../components/EmptyState';
 import WaxReportPin from '../components/WaxReportPin';
 import BackToTop from '../components/BackToTop';
+import { useAPI } from '../hooks/useAPI';
 
 const ProfilePage = () => {
   usePageTitle('Profile');
@@ -45,6 +46,15 @@ const ProfilePage = () => {
   const [trades, setTrades] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  // SWR: Cache profile and records for instant back-navigation (BLOCK 450)
+  const { data: swrProfile, isLoading: swrProfileLoading, mutate: mutateProfile } = useAPI(`/users/${username}`);
+  const profileLocked = swrProfile?.profile_locked;
+  const { data: swrRecords } = useAPI(!profileLocked ? `/users/${username}/records` : null);
+  const { data: swrRatings } = useAPI(!profileLocked ? `/users/${username}/ratings` : null);
+  const { data: swrCollectionValue } = useAPI(!profileLocked ? `/valuation/collection/${username}` : null);
+  const { data: swrPromptStreak } = useAPI(!profileLocked ? `/prompts/streak/${username}` : null);
+  const { data: swrDreamValue } = useAPI(!profileLocked ? `/valuation/dreamlist/${username}` : null);
   const [followLoading, setFollowLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('collection');
   const [followListType, setFollowListType] = useState(null);
@@ -91,6 +101,26 @@ const ProfilePage = () => {
 
   const isOwnProfile = user?.username === username;
 
+  // BLOCK 450: Sync SWR cached data into local state for the rest of the component
+  useEffect(() => {
+    if (swrProfile) setProfile(swrProfile);
+  }, [swrProfile]);
+  useEffect(() => {
+    if (swrRecords) setRecords(swrRecords);
+  }, [swrRecords]);
+  useEffect(() => {
+    if (swrRatings !== undefined) setRatings(swrRatings);
+  }, [swrRatings]);
+  useEffect(() => {
+    if (swrCollectionValue !== undefined) setCollectionValue(swrCollectionValue);
+  }, [swrCollectionValue]);
+  useEffect(() => {
+    if (swrPromptStreak !== undefined) setPromptStreak(swrPromptStreak);
+  }, [swrPromptStreak]);
+  useEffect(() => {
+    if (swrDreamValue !== undefined) setDreamValue(swrDreamValue);
+  }, [swrDreamValue]);
+
   const openRecordVariant = (record) => {
     openVariantModal({
       artist: record.artist,
@@ -105,20 +135,9 @@ const ProfilePage = () => {
     try {
       setProfileUnavailable(false);
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      
-      // Fetch profile first
-      const profileRes = await axios.get(`${API}/users/${username}`, { headers });
-      setProfile(profileRes.data);
-      
-      const profileLocked = profileRes.data.profile_locked;
-      
-      // Only fetch records/content if profile is not locked
-      if (!profileLocked) {
-        const recordsRes = await axios.get(`${API}/users/${username}/records`, { headers });
-        setRecords(recordsRes.data);
-      } else {
-        setRecords([]);
-      }
+
+      // SWR handles: profile, records, ratings, collectionValue, promptStreak, dreamValue
+      // We still need: follow/block status, stripe, taste match, follow requests
 
       if (token && !isOwnProfile) {
         const [followRes, blockRes] = await Promise.all([
@@ -128,19 +147,14 @@ const ProfilePage = () => {
         setIsFollowing(followRes.data.is_following);
         setFollowsMe(followRes.data.follows_me || false);
         setIsBlocked(blockRes.data.is_blocked);
-        setFollowRequestPending(followRes.data.follow_request_pending || profileRes.data.follow_request_status === 'pending');
+        setFollowRequestPending(followRes.data.follow_request_pending || swrProfile?.follow_request_status === 'pending');
       }
       if (token && isOwnProfile) {
         axios.get(`${API}/stripe/status`, { headers: { Authorization: `Bearer ${token}` }}).then(r => setStripeStatus(r.data)).catch(() => {});
         axios.get(`${API}/follow-requests`, { headers: { Authorization: `Bearer ${token}` }}).then(r => setFollowRequestCount(r.data.length)).catch(() => {});
       }
-      
-      if (!profileLocked) {
-        axios.get(`${API}/users/${username}/ratings`).then(r => setRatings(r.data)).catch(() => {});
-        axios.get(`${API}/valuation/collection/${username}`).then(r => setCollectionValue(r.data)).catch(() => {});
-        axios.get(`${API}/prompts/streak/${username}`).then(r => setPromptStreak(r.data)).catch(() => {});
-        axios.get(`${API}/valuation/dreamlist/${username}`).then(r => setDreamValue(r.data)).catch(() => {});
 
+      if (!swrProfile?.profile_locked) {
         // Fetch taste match for other users
         if (token && !isOwnProfile) {
           setTasteLoading(true);
@@ -161,22 +175,18 @@ const ProfilePage = () => {
     } catch (err) {
       if (err.response?.status === 403) {
         setProfileUnavailable(true);
-      } else {
-        toast.error('Failed to load profile');
       }
     } finally {
       setLoading(false);
     }
-  }, [API, token, username, isOwnProfile]);
+  }, [API, token, username, isOwnProfile, swrProfile]);
 
   useEffect(() => {
-    setLoading(true);
     setActiveTab(new URLSearchParams(window.location.search).get('tab') || 'collection');
     setTasteMatch(null);
     setShowCommonOnly(false);
     setCommonGroundOpen(false);
     setDreamingItems([]);
-    setDreamValue(null);
     fetchProfile();
 
     // Handle Golden Hive redirect
@@ -302,7 +312,11 @@ const ProfilePage = () => {
     }
   };
 
-  if (loading) {
+  // BLOCK 450: Show loading skeleton only when there's no cached data.
+  // On re-visit, SWR serves cached data instantly (no loading state).
+  const isFirstLoad = swrProfileLoading && !swrProfile && !profile;
+
+  if (isFirstLoad) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-8 pt-16 md:pt-24">
         <Skeleton className="h-48 w-full rounded-xl mb-6" />
@@ -395,7 +409,7 @@ const ProfilePage = () => {
           {/* LEFT: Identity */}
           <div className="flex flex-col sm:flex-row lg:flex-col items-start gap-4 lg:pr-6 lg:border-r" style={{ borderColor: 'rgba(200,134,26,0.15)' }}>
             <Avatar className="h-20 w-20 lg:h-24 lg:w-24 border-4 border-honey/30">
-              {profile.avatar_url && <AvatarImage src={resolveImageUrl(profile.avatar_url)} />}
+              {profile.avatar_url && <AvatarImage src={resolveImageUrl(profile.avatar_url)} fetchPriority="high" />}
               <AvatarFallback className="bg-honey-soft text-vinyl-black text-3xl font-heading">
                 {firstLetter}
               </AvatarFallback>

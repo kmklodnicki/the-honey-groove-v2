@@ -7,6 +7,7 @@ import { SocketProvider } from "./context/SocketContext";
 import VariantModal from "./components/VariantModal";
 import { Toaster } from "./components/ui/sonner";
 import { HelmetProvider } from "react-helmet-async";
+import { SWRConfig } from "swr";
 import { ArrowLeft } from "lucide-react";
 import Navbar from "./components/Navbar";
 
@@ -251,6 +252,7 @@ function App() {
       <BrowserRouter>
         <ScrollToTop />
         <AuthProvider>
+          <SWRConfig value={{ revalidateOnFocus: false, dedupingInterval: 10000, errorRetryCount: 2 }}>
           <SocketProvider>
           <VariantModalProvider>
             <AppContent />
@@ -258,6 +260,7 @@ function App() {
             <Toaster />
           </VariantModalProvider>
           </SocketProvider>
+          </SWRConfig>
         </AuthProvider>
       </BrowserRouter>
     </HelmetProvider>

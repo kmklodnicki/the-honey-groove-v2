@@ -17,6 +17,7 @@ import { Home, Search, User, LogOut, Settings, Library, ShoppingBag, ArrowRightL
 import { formatDistanceToNow } from 'date-fns';
 import ReportModal from './ReportModal';
 import { resolveImageUrl } from '../utils/imageUrl';
+import { prefetchAPI } from '../hooks/useAPI';
 
 // Bee icon SVG component
 const BeeIcon = ({ className = "w-4 h-4" }) => (
@@ -47,7 +48,7 @@ const BeeAvatar = ({ user, className = "h-10 w-10" }) => {
 };
 
 const Navbar = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, API, token } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchOpen, setSearchOpen] = useState(false); // kept for legacy, unused
@@ -59,6 +60,17 @@ const Navbar = () => {
   };
 
   const isActive = (path) => location.pathname === path;
+
+  // BLOCK 450: Prefetch route data on hover for instant navigation
+  const prefetchRouteMap = {
+    '/nectar': ['/explore/trending?limit=10', '/explore/suggested-collectors?limit=8'],
+    '/honeypot': ['/listings?limit=20'],
+    '/collection': ['/records'],
+  };
+  const handlePrefetch = (path) => {
+    const routes = prefetchRouteMap[path];
+    if (routes) routes.forEach(r => prefetchAPI(API, token, r));
+  };
 
   return (
     <>
@@ -87,7 +99,7 @@ const Navbar = () => {
                   The Hive
                 </Button>
               </Link>
-              <Link to="/nectar" data-testid="nav-explore" className={`nav-honey-link ${isActive('/nectar') ? 'nav-active' : ''}`}>
+              <Link to="/nectar" data-testid="nav-explore" onMouseEnter={() => handlePrefetch('/nectar')} className={`nav-honey-link ${isActive('/nectar') ? 'nav-active' : ''}`}>
                 <Button 
                   variant="ghost" 
                   className={`gap-2 ${isActive('/nectar') ? 'bg-honey/20 text-[#C8861A]' : ''}`}
@@ -96,7 +108,7 @@ const Navbar = () => {
                   Nectar
                 </Button>
               </Link>
-              <Link to="/collection" data-testid="nav-collection" className={`nav-honey-link ${isActive('/collection') ? 'nav-active' : ''}`}>
+              <Link to="/collection" data-testid="nav-collection" onMouseEnter={() => handlePrefetch('/collection')} className={`nav-honey-link ${isActive('/collection') ? 'nav-active' : ''}`}>
                 <Button 
                   variant="ghost" 
                   className={`gap-2 ${isActive('/collection') ? 'bg-honey/20 text-[#C8861A]' : ''}`}
@@ -105,7 +117,7 @@ const Navbar = () => {
                   Collection
                 </Button>
               </Link>
-              <Link to="/honeypot" data-testid="nav-honeypot" className={`nav-honey-link ${isActive('/honeypot') ? 'nav-active' : ''}`}>
+              <Link to="/honeypot" data-testid="nav-honeypot" onMouseEnter={() => handlePrefetch('/honeypot')} className={`nav-honey-link ${isActive('/honeypot') ? 'nav-active' : ''}`}>
                 <Button 
                   variant="ghost" 
                   className={`gap-2 ${isActive('/honeypot') ? 'bg-honey/20 text-[#C8861A]' : ''}`}

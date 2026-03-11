@@ -17,6 +17,7 @@ import { resolveImageUrl } from '../utils/imageUrl';
 import { ListingTypeBadge } from '../components/PostCards';
 import ScrollRow from '../components/ScrollRow';
 import { useVariantModal } from '../context/VariantModalContext';
+import { useAPI } from '../hooks/useAPI';
 
 const COUNTRY_NAMES = {US:'United States',GB:'United Kingdom',CA:'Canada',AU:'Australia',DE:'Germany',FR:'France',JP:'Japan',NL:'Netherlands',SE:'Sweden',IT:'Italy',ES:'Spain',BR:'Brazil',MX:'Mexico',NZ:'New Zealand',IE:'Ireland',NO:'Norway',DK:'Denmark',FI:'Finland',BE:'Belgium',AT:'Austria',CH:'Switzerland',PT:'Portugal',PL:'Poland',CZ:'Czech Republic',KR:'South Korea',TW:'Taiwan',SG:'Singapore',ZA:'South Africa',AR:'Argentina',CL:'Chile',CO:'Colombia',PH:'Philippines',IN:'India',IL:'Israel',GR:'Greece',HU:'Hungary',RO:'Romania',HR:'Croatia',SK:'Slovakia',BG:'Bulgaria',RS:'Serbia',UA:'Ukraine',TH:'Thailand',MY:'Malaysia',ID:'Indonesia',VN:'Vietnam',HK:'Hong Kong',AE:'UAE',SA:'Saudi Arabia'};
 
@@ -34,36 +35,39 @@ const ExplorePage = () => {
   const [myKindaPeople, setMyKindaPeople] = useState([]);
   const { openVariantModal } = useVariantModal();
 
+  // BLOCK 450: SWR cache for explore sections — instant back-nav
+  const { data: swrTrending } = useAPI('/explore/trending?limit=10');
+  const { data: swrSuggested } = useAPI('/explore/suggested-collectors?limit=8');
+  const { data: swrTrendingCollections } = useAPI('/explore/trending-in-collections?limit=12');
+  const { data: swrCrownJewels } = useAPI('/explore/crown-jewels?limit=12');
+  const { data: swrMostWanted } = useAPI('/explore/most-wanted?limit=20');
+  const { data: swrNearYou, isLoading: swrNearLoading } = useAPI('/explore/near-you');
+
+  // Sync SWR data into local state
+  useEffect(() => { if (swrTrending) setTrending(swrTrending); }, [swrTrending]);
+  useEffect(() => { if (swrSuggested) setSuggested(swrSuggested); }, [swrSuggested]);
+  useEffect(() => { if (swrTrendingCollections) setTrendingCollections(swrTrendingCollections); }, [swrTrendingCollections]);
+  useEffect(() => { if (swrCrownJewels) setCrownJewels(swrCrownJewels); }, [swrCrownJewels]);
+  useEffect(() => { if (swrMostWanted) setMostWanted(swrMostWanted); }, [swrMostWanted]);
+  useEffect(() => { if (swrNearYou) setNearYou(swrNearYou); }, [swrNearYou]);
+  useEffect(() => {
+    if (swrTrending && !swrNearLoading) setLoading(false);
+  }, [swrTrending, swrNearLoading]);
+
   // Location prompt
   const [showLocationPrompt, setShowLocationPrompt] = useState(false);
   const [regionInput, setRegionInput] = useState('');
 
   const headers = { Authorization: `Bearer ${token}` };
 
-  const fetchData = useCallback(async () => {
-    if (!token) { setLoading(false); return; }
-    try {
-      const [trendRes, sugRes, tcRes, mwRes, nyRes, cjRes] = await Promise.all([
-        axios.get(`${API}/explore/trending?limit=10`, { headers }),
-        axios.get(`${API}/explore/suggested-collectors?limit=8`, { headers }),
-        axios.get(`${API}/explore/trending-in-collections?limit=12`, { headers }),
-        axios.get(`${API}/explore/most-wanted?limit=20`, { headers }),
-        axios.get(`${API}/explore/near-you`, { headers }),
-        axios.get(`${API}/explore/crown-jewels?limit=12`, { headers }),
-      ]);
-      setTrending(trendRes.data);
-      setSuggested(sugRes.data);
-      setTrendingCollections(tcRes.data);
-      setMostWanted(mwRes.data);
-      setNearYou(nyRes.data);
-      setCrownJewels(cjRes.data);
-      // Fetch discovery carousel
-      axios.get(`${API}/discover/my-kinda-people`, { headers }).then(r => setMyKindaPeople(r.data)).catch(() => {});
-    } catch { /* ignore */ }
-    finally { setLoading(false); }
+  // Fetch "My Kinda People" discovery (separate from SWR sections)
+  useEffect(() => {
+    if (!token) return;
+    axios.get(`${API}/discover/my-kinda-people`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => setMyKindaPeople(r.data)).catch(() => {});
   }, [API, token]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {}, []);
 
   // Re-fetch "Your Kinda People" on every page focus/navigation to ensure followed users are excluded
   useEffect(() => {
