@@ -78,7 +78,7 @@ const AlbumArt = ({
           onError={() => setStatus('error')}
           draggable={false}
           decoding={priority ? 'sync' : 'auto'}
-          {...(priority ? { fetchpriority: 'high', loading: 'eager' } : {})}
+          {...(priority ? { fetchPriority: 'high', loading: 'eager' } : {})}
         />
       )}
     </div>

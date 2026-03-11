@@ -76,6 +76,13 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - ShareCard uses proxied + fallback-aware image rendering
   - Files: image_proxy.py, server.py, WeeklyReportPage.js
   - Tested: PASS
+- **BLOCK 369: Mobile Image Emergency Fix** (March 2026) — COMPLETED
+  - Service Worker (/sw.js) with skipWaiting + clients.claim for stale cache flush
+  - HTTPS enforcement in resolveImageUrl() and backend proxy (http→https conversion)
+  - Explicit CORS OPTIONS pre-flight handler (204) + Access-Control-Allow-Origin: * on all proxy responses
+  - Priority/eager loading for first 5 feed images (via imgPriority prop chain) and Daily Prompt
+  - Files: sw.js, index.js, imageUrl.js, image_proxy.py, AlbumArt.js, PostCards.js, HivePage.js
+  - Tested: PASS
 
 ### Layout & Design Features
 - Golden Vault Layout (ProfilePage unified dashboard)
