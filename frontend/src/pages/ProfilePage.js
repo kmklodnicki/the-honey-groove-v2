@@ -637,9 +637,6 @@ const ProfilePage = () => {
         </div>
       </Card>
 
-      {/* Pinned Wax Report */}
-      <WaxReportPin username={username} API={API} token={token} />
-
       {/* Follow Requests Badge — own profile only */}
       {isOwnProfile && followRequestCount > 0 && (
         <div className="mb-4">
@@ -693,7 +690,7 @@ const ProfilePage = () => {
       <>
       {/* Your Week in Wax — profile-level activity summary */}
       {isOwnProfile && records.length > 0 && (
-        <Link to="/wax-report" className="block mb-5" data-testid="profile-week-in-wax">
+        <Link to="/reports/weekly" className="block mt-6 mb-5" data-testid="profile-week-in-wax">
           <div className="rounded-xl border border-honey/30 p-4 transition-all hover:shadow-md hover:border-honey/60"
             style={{ background: 'linear-gradient(135deg, rgba(255,215,0,0.06) 0%, rgba(218,165,32,0.03) 100%)' }}
           >

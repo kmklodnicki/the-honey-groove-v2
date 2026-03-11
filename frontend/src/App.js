@@ -60,6 +60,7 @@ import VerifyEmailPage from "./pages/VerifyEmailPage";
 import ExploreSeeAllPage from "./pages/ExploreSeeAllPage";
 import WaxReportPage from "./pages/WaxReportPage";
 import WaxReportHistory from "./pages/WaxReportHistory";
+import WeeklyReportPage from "./pages/WeeklyReportPage";
 import StripeConnectReturnPage from "./pages/StripeConnectReturnPage";
 import StripeConnectRefreshPage from "./pages/StripeConnectRefreshPage";
 import OrdersPage from "./pages/OrdersPage";
@@ -181,6 +182,7 @@ function AppContent() {
       <Route path="/wax-reports" element={<ProtectedRoute><AppLayout><WaxReportPage /></AppLayout></ProtectedRoute>} />
       <Route path="/wax-reports/history" element={<ProtectedRoute><AppLayout><WaxReportHistory /></AppLayout></ProtectedRoute>} />
       <Route path="/wax-reports/:reportId" element={<ProtectedRoute><AppLayout><WaxReportPage /></AppLayout></ProtectedRoute>} />
+      <Route path="/reports/weekly" element={<ProtectedRoute><WeeklyReportPage /></ProtectedRoute>} />
       <Route path="/profile/:username" element={<ProtectedRoute><AppLayout><ProfilePage /></AppLayout></ProtectedRoute>} />
       <Route path="/record/:recordId" element={<ProtectedRoute><AppLayout><RecordDetailPage /></AppLayout></ProtectedRoute>} />
 

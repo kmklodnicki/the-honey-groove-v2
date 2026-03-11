@@ -90,6 +90,9 @@ const ValuationWizard = ({ open, onClose, onComplete }) => {
     onClose();
   };
 
+  // Ensure finished state only triggers when queue is truly empty
+  const isFullyValued = finished && queue.length === 0 && currentIdx >= queue.length;
+
   const progressPct = totalInitial > 0
     ? Math.round(((totalInitial - remaining) / totalInitial) * 100)
     : 0;

@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, TrendingUp, RefreshCw, Heart, ArrowRight, ShoppingBag, Cloud, Sparkles, CheckSquare, Square, ListChecks, AlertTriangle, Copy, Loader2 } from 'lucide-react';
+import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, RefreshCw, Heart, ArrowRight, ShoppingBag, Cloud, Sparkles, CheckSquare, Square, ListChecks, AlertTriangle, Copy, Loader2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -325,10 +325,10 @@ const CollectionPage = () => {
     }
   };
 
-  // Handle wizard completion — refresh collection value
+  // Handle wizard completion — always refresh collection value
   const handleWizardComplete = (savedCount) => {
+    fetchData(); // Always refresh to sync header counts
     if (savedCount > 0) {
-      fetchData();
       toast.success(`${savedCount} record${savedCount !== 1 ? 's' : ''} valued!`);
     }
   };
@@ -1033,8 +1033,11 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
       onClick={selectMode ? () => onToggleSelect(record.id) : undefined}
     >
       {selectMode && (
-        <div className="absolute top-2 left-2 z-10" data-testid={`select-checkbox-${record.id}`}>
-          {isSelected ? <CheckSquare className="w-5 h-5 text-honey drop-shadow" /> : <Square className="w-5 h-5 text-stone-400 drop-shadow" />}
+        <div className="absolute bottom-12 left-2 z-10" style={{ filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.5))' }} data-testid={`select-checkbox-${record.id}`}>
+          {isSelected
+            ? <CheckSquare className="w-5 h-5 text-honey" style={{ stroke: '#FFD700', filter: 'drop-shadow(0 0 1px #000)' }} />
+            : <Square className="w-5 h-5 text-white" style={{ stroke: '#fff', filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.5))' }} />
+          }
         </div>
       )}
       <Link to={selectMode ? '#' : `/record/${record.id}`} onClick={selectMode ? (e) => e.preventDefault() : undefined}>
@@ -1279,26 +1282,6 @@ const WishlistCard = ({ item, onPromote, onAddToCollection, onDelete }) => (
       </div>
     </div>
   </Card>
-);
-
-
-const WaxReportCTA = () => (
-  <Link to="/wax-reports" className="block mb-6 group" data-testid="wax-report-cta">
-    <Card className="p-4 border-0 shadow-sm hover:shadow-md transition-all rounded-2xl" style={{ background: '#FAEDC7', border: '1px solid rgba(200,134,26,0.15)' }}>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: 'rgba(200,134,26,0.08)' }}>
-            <TrendingUp className="w-5 h-5" style={{ color: '#C8861A' }} />
-          </div>
-          <div>
-            <p className="font-heading text-base" style={{ color: '#2A1A06' }}>your week in wax</p>
-            <p className="text-[11px]" style={{ color: '#8A6B4A' }}>weekly report</p>
-          </div>
-        </div>
-        <span className="text-xs font-medium group-hover:translate-x-0.5 transition-transform" style={{ color: '#C8861A' }}>View &rarr;</span>
-      </div>
-    </Card>
-  </Link>
 );
 
 export default CollectionPage;
