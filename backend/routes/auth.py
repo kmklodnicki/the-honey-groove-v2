@@ -17,6 +17,16 @@ from util.content_filter import detect_offplatform_payment, BLOCK_MESSAGE as OFF
 
 router = APIRouter()
 
+def _check_needs_migration(user: dict) -> bool:
+    """Check if user needs to re-verify Discogs via OAuth (BLOCK 455)."""
+    # User has a discogs connection but hasn't verified via OAuth
+    if user.get("discogs_username") and not user.get("discogs_oauth_verified"):
+        # And hasn't dismissed the modal yet
+        if not user.get("discogs_migration_dismissed"):
+            return True
+    return False
+
+
 async def _build_user_response(user: dict) -> UserResponse:
     """Build UserResponse with computed counts."""
     uid = user["id"]
@@ -62,6 +72,9 @@ async def _build_user_response(user: dict) -> UserResponse:
         golden_hive_status=user.get("golden_hive_status"),
         is_private=user.get("is_private", False),
         dm_setting=user.get("dm_setting", "everyone"),
+        discogs_oauth_verified=user.get("discogs_oauth_verified", False),
+        needs_discogs_migration=_check_needs_migration(user),
+        discogs_migration_dismissed=user.get("discogs_migration_dismissed", False),
     )
 
 # ============== AUTH ROUTES ==============

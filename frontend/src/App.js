@@ -1,4 +1,4 @@
-import React, { useEffect, Suspense, lazy } from "react";
+import React, { useEffect, useState, Suspense, lazy } from "react";
 import "@/App.css";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
@@ -10,6 +10,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { SWRConfig } from "swr";
 import { ArrowLeft } from "lucide-react";
 import Navbar from "./components/Navbar";
+import DiscogsSecurityModal from "./components/DiscogsSecurityModal";
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -99,9 +100,16 @@ const AppLayout = ({ children }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [showMigration, setShowMigration] = useState(false);
+
+  // BLOCK 455: Show Discogs security migration modal on first authenticated page load
+  useEffect(() => {
+    if (user?.needs_discogs_migration) {
+      setShowMigration(true);
+    }
+  }, [user?.needs_discogs_migration]);
 
   const isHome = location.pathname === '/' || location.pathname === '/hive';
-  // Pages with their own inline back button don't need the global floating one
   const hasInlineBack = location.pathname.startsWith('/record/') || location.pathname.startsWith('/vinyl/');
   
   return (
@@ -120,6 +128,7 @@ const AppLayout = ({ children }) => {
       <main className="relative z-10" style={{ overflow: 'visible' }}>
         {children}
       </main>
+      <DiscogsSecurityModal open={showMigration} onClose={() => setShowMigration(false)} />
     </div>
   );
 };

@@ -10,7 +10,7 @@ import { Skeleton } from '../components/ui/skeleton';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '../components/ui/dialog';
-import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin, ShoppingBag, Flag, Sparkles, Eye, X, Cloud, ShieldOff, ShieldCheck, Lock, Clock, Trash2, AlertTriangle } from 'lucide-react';
+import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin, ShoppingBag, Flag, Sparkles, Eye, X, Cloud, ShieldOff, ShieldCheck, Shield, Lock, Clock, Trash2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { FollowListModal } from '../components/FollowList';
@@ -396,6 +396,26 @@ const ProfilePage = () => {
           },
         }}
       />
+      {/* BLOCK 455: Reconnect warning banner for users who dismissed migration */}
+      {isOwnProfile && user?.discogs_migration_dismissed && !user?.discogs_oauth_verified && (
+        <div className="mx-auto max-w-2xl mb-4 px-4" data-testid="discogs-reconnect-banner">
+          <div className="rounded-xl p-3.5 flex items-center gap-3" style={{ background: 'linear-gradient(135deg, #FFF8E1, #FFFDF5)', border: '1px solid rgba(200,134,26,0.3)' }}>
+            <Shield className="w-5 h-5 shrink-0" style={{ color: '#C8861A' }} />
+            <p className="text-sm text-stone-600 flex-1">
+              Your Discogs connection needs re-verification. <button
+                onClick={async () => {
+                  try {
+                    const resp = await axios.get(`${API}/discogs/oauth/start`, { headers: { Authorization: `Bearer ${token}` } });
+                    window.location.href = resp.data.authorization_url;
+                  } catch { /* ignore */ }
+                }}
+                className="font-semibold underline hover:no-underline" style={{ color: '#C8861A' }}
+                data-testid="reconnect-inline-btn"
+              >Reconnect now</button>
+            </p>
+          </div>
+        </div>
+      )}
       {/* Profile Header — Unified Golden Vault Dashboard */}
       <Card className="p-0 overflow-hidden mb-6" style={{ backgroundColor: '#FAF6EE', border: '1px solid rgba(200,134,26,0.2)', boxShadow: '0 4px 24px rgba(200,134,26,0.08)' }} data-testid="dashboard-hero">
         {/* Branding watermark */}

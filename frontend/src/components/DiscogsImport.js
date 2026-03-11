@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
-import { Input } from '../components/ui/input';
 import { Progress } from '../components/ui/progress';
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
@@ -22,11 +21,8 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
   const [importing, setImporting] = useState(false);
   const [progress, setProgress] = useState(null);
   const [showDisconnect, setShowDisconnect] = useState(false);
-  const [showConnect, setShowConnect] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [summary, setSummary] = useState(null);
-  const [discogsUsername, setDiscogsUsername] = useState('');
-  const [connecting, setConnecting] = useState(false);
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -114,34 +110,7 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
       });
       window.location.href = resp.data.authorization_url;
     } catch (err) {
-      if (err.response?.status === 400) {
-        setShowConnect(true);
-      } else {
-        toast.error(err.response?.data?.detail || 'Failed to start Discogs connection');
-      }
-    }
-  };
-
-  const handleTokenConnect = async (e) => {
-    e.preventDefault();
-    const username = discogsUsername.trim();
-    if (!username) return;
-    setConnecting(true);
-    console.log('DISCOGS: connecting with username:', username);
-    try {
-      const resp = await axios.post(`${API}/discogs/connect-token`,
-        { discogs_username: username },
-        { headers: { Authorization: `Bearer ${token}` }, timeout: 30000 }
-      );
-      toast.success(`connected to discogs as ${username}${resp.data.collection_count ? ` (${resp.data.collection_count} records found)` : ''}.`);
-      setShowConnect(false);
-      setDiscogsUsername('');
-      fetchStatus();
-    } catch (err) {
-      const msg = err.response?.data?.detail || '';
-      toast.error(msg || 'could not find that Discogs username. double check and try again.');
-    } finally {
-      setConnecting(false);
+      toast.error(err.response?.data?.detail || 'Failed to start Discogs connection');
     }
   };
 
@@ -199,11 +168,23 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
                 <Disc className="w-5 h-5 text-honey" />
               </div>
               <div>
-                <CardTitle className="text-base">Import from Discogs</CardTitle>
+                <div className="flex items-center gap-2">
+                  <CardTitle className="text-base">Import from Discogs</CardTitle>
+                  {status?.oauth_verified && (
+                    <span className="text-[10px] font-semibold text-green-700 bg-green-50 px-1.5 py-0.5 rounded-full border border-green-200" data-testid="oauth-verified-badge">
+                      Verified
+                    </span>
+                  )}
+                  {status?.needs_migration && (
+                    <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200" data-testid="needs-migration-badge">
+                      Re-verify
+                    </span>
+                  )}
+                </div>
                 <CardDescription>
                   {status?.connected
-                    ? `Connected as ${status.discogs_username}`
-                    : 'Connect your Discogs account to import your collection'}
+                    ? `Connected as @${status.discogs_username}`
+                    : 'Connect your Discogs account securely via OAuth'}
                 </CardDescription>
               </div>
             </div>
@@ -222,8 +203,21 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
               className="bg-vinyl-black text-white hover:bg-vinyl-black/80 rounded-full gap-2 w-full sm:w-auto"
               data-testid="discogs-connect-btn">
               <ExternalLink className="w-4 h-4" />
-              Connect Discogs Account
+              Connect to Discogs
             </Button>
+          ) : status?.needs_migration ? (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 px-3 py-2 rounded-lg" data-testid="migration-needed-msg">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <span>Your connection needs re-verification via secure OAuth login.</span>
+              </div>
+              <Button onClick={handleConnect}
+                className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2"
+                data-testid="discogs-reconnect-btn">
+                <ExternalLink className="w-4 h-4" />
+                Reconnect via OAuth
+              </Button>
+            </div>
           ) : importing && progress ? (
             <div className="space-y-3" data-testid="discogs-import-progress">
               <div className="flex items-center justify-between text-sm">
@@ -396,37 +390,6 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
         </DialogContent>
       </Dialog>
 
-      {/* Connect with Username Dialog */}
-      <Dialog open={showConnect} onOpenChange={setShowConnect}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="font-heading">Connect Discogs</DialogTitle>
-            <DialogDescription>
-              Enter your Discogs username to import your public collection. Make sure your collection is set to public in your Discogs privacy settings.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleTokenConnect} className="space-y-4 pt-2">
-            <Input
-              placeholder="Your Discogs username"
-              value={discogsUsername}
-              onChange={(e) => setDiscogsUsername(e.target.value)}
-              className="border-honey/50"
-              data-testid="discogs-username-input"
-              autoFocus
-            />
-            <div className="flex gap-3 justify-end">
-              <Button type="button" variant="outline" onClick={() => setShowConnect(false)}>Cancel</Button>
-              <Button type="submit"
-                className="bg-honey text-vinyl-black hover:bg-honey-amber"
-                disabled={!discogsUsername.trim() || connecting}
-                data-testid="discogs-username-submit">
-                {connecting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                Connect
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
     </>
   );
 };

@@ -1047,7 +1047,32 @@ async def discogs_oauth_callback(oauth_token: str = Query(...), oauth_verifier: 
         identity_resp.raise_for_status()
         identity = identity_resp.json()
         discogs_username = identity.get("username", "")
+        discogs_id = identity.get("id", None)
         
+        # BLOCK 453: Imposter Protection — check if this Discogs account is already linked to another user
+        if user_id and discogs_username:
+            existing = await db.discogs_tokens.find_one({
+                "discogs_username": discogs_username,
+                "oauth_token": {"$exists": True, "$ne": None},
+                "user_id": {"$ne": user_id}
+            }, {"_id": 0, "user_id": 1})
+            if existing:
+                # Flag for admin review
+                await db.discogs_imposter_flags.update_one(
+                    {"discogs_username": discogs_username, "attempted_user_id": user_id},
+                    {"$set": {
+                        "discogs_username": discogs_username,
+                        "attempted_user_id": user_id,
+                        "existing_user_id": existing["user_id"],
+                        "flagged_at": datetime.now(timezone.utc).isoformat(),
+                        "status": "pending"
+                    }},
+                    upsert=True
+                )
+                logger.warning(f"Imposter blocked: Discogs '{discogs_username}' already linked to user {existing['user_id']}, attempted by {user_id}")
+                frontend_base = FRONTEND_URL
+                return RedirectResponse(url=f"{frontend_base}/collection?discogs=error&message=This Discogs account is already linked to another Honey Groove user. This has been flagged for admin review.")
+
         # Store the access tokens for this user
         if user_id:
             await db.discogs_tokens.update_one(
@@ -1057,9 +1082,22 @@ async def discogs_oauth_callback(oauth_token: str = Query(...), oauth_verifier: 
                     "oauth_token": access_token,
                     "oauth_token_secret": access_token_secret,
                     "discogs_username": discogs_username,
+                    "discogs_id": discogs_id,
+                    "auth_type": "oauth",
+                    "oauth_verified": True,
                     "connected_at": datetime.now(timezone.utc).isoformat()
                 }},
                 upsert=True
+            )
+            
+            # Also update user doc with locked discogs identity
+            await db.users.update_one(
+                {"id": user_id},
+                {"$set": {
+                    "discogs_username": discogs_username,
+                    "discogs_oauth_verified": True,
+                    "discogs_migration_dismissed": False,
+                }}
             )
             
             # Clean up pending
@@ -1075,6 +1113,31 @@ async def discogs_oauth_callback(oauth_token: str = Query(...), oauth_verifier: 
         logger.error(f"Discogs OAuth callback failed: {e}")
         frontend_base = FRONTEND_URL
         return RedirectResponse(url=f"{frontend_base}/collection?discogs=error&message={str(e)}")
+
+
+
+@router.post("/discogs/dismiss-migration")
+async def dismiss_discogs_migration(user: Dict = Depends(require_auth)):
+    """User chose 'Connect Later' — mark migration dismissed so the modal doesn't re-show."""
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {"discogs_migration_dismissed": True}}
+    )
+    return {"dismissed": True}
+
+
+@router.get("/discogs/imposter-flags")
+async def get_imposter_flags(user: Dict = Depends(require_auth)):
+    """Admin-only: view accounts flagged for imposter protection."""
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    flags = await db.discogs_imposter_flags.find({}, {"_id": 0}).sort("flagged_at", -1).to_list(100)
+    for flag in flags:
+        attempted_user = await db.users.find_one({"id": flag.get("attempted_user_id")}, {"_id": 0, "username": 1})
+        existing_user = await db.users.find_one({"id": flag.get("existing_user_id")}, {"_id": 0, "username": 1})
+        flag["attempted_username"] = attempted_user.get("username") if attempted_user else None
+        flag["existing_username"] = existing_user.get("username") if existing_user else None
+    return flags
 
 
 @router.get("/discogs/status")
@@ -1103,7 +1166,10 @@ async def discogs_connection_status(user: Dict = Depends(require_auth)):
         "discogs_username": token_doc.get("discogs_username"),
         "connected_at": token_doc.get("connected_at"),
         "last_synced": last_import.get("completed_at") if last_import else None,
-        "import_status": progress if progress else None
+        "import_status": progress if progress else None,
+        "oauth_verified": bool(token_doc.get("oauth_verified") or token_doc.get("oauth_token")),
+        "auth_type": token_doc.get("auth_type", "unknown"),
+        "needs_migration": token_doc.get("auth_type") == "personal_token" and not token_doc.get("oauth_token"),
     }
 
 
@@ -1513,57 +1579,11 @@ class DiscogsTokenConnect(BaseModel):
 
 @router.post("/discogs/connect-token")
 async def connect_discogs_with_token(data: DiscogsTokenConnect, user: Dict = Depends(require_auth)):
-    """Connect Discogs using the app's personal access token (no OAuth needed)"""
-    if not DISCOGS_TOKEN:
-        raise HTTPException(status_code=400, detail="Discogs token not configured")
-    
-    username = data.discogs_username.strip()
-    headers = {
-        "Authorization": f"Discogs token={DISCOGS_TOKEN}",
-        "User-Agent": DISCOGS_USER_AGENT
-    }
-    # Verify the username exists on Discogs
-    try:
-        resp = requests.get(
-            f"{DISCOGS_API_BASE}/users/{username}",
-            headers=headers, timeout=10
-        )
-        if resp.status_code == 404:
-            raise HTTPException(status_code=400, detail=f"Discogs user '{username}' not found. Please check the spelling.")
-        if resp.status_code != 200:
-            raise HTTPException(status_code=400, detail=f"Could not verify Discogs user (status {resp.status_code})")
-    except requests.RequestException as e:
-        raise HTTPException(status_code=500, detail=f"Failed to verify Discogs user: {str(e)}")
-    
-    # Verify collection is accessible (not private)
-    try:
-        col_resp = requests.get(
-            f"{DISCOGS_API_BASE}/users/{username}/collection/folders/0/releases",
-            params={"page": 1, "per_page": 1},
-            headers=headers, timeout=10
-        )
-        if col_resp.status_code == 403:
-            raise HTTPException(status_code=400, detail=f"The collection for '{username}' is private. Ask them to make it public in Discogs settings, or use OAuth to connect.")
-        if col_resp.status_code != 200:
-            raise HTTPException(status_code=400, detail=f"Could not access collection for '{username}' (status {col_resp.status_code})")
-        col_data = col_resp.json()
-        collection_count = col_data.get("pagination", {}).get("items", 0)
-    except requests.RequestException as e:
-        raise HTTPException(status_code=500, detail=f"Failed to access collection: {str(e)}")
-    
-    # Store as token-based connection
-    await db.discogs_tokens.update_one(
-        {"user_id": user["id"]},
-        {"$set": {
-            "user_id": user["id"],
-            "auth_type": "personal_token",
-            "discogs_username": username,
-            "connected_at": datetime.now(timezone.utc).isoformat()
-        }},
-        upsert=True
+    """DEPRECATED: Manual username connection is no longer supported. Use OAuth."""
+    raise HTTPException(
+        status_code=400,
+        detail="Manual Discogs connection is no longer supported. Please use the secure 'Connect to Discogs' button to verify your identity via OAuth."
     )
-    
-    return {"message": f"Connected as {username}", "discogs_username": username, "collection_count": collection_count}
 
 
 

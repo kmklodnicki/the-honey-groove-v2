@@ -45,6 +45,9 @@ class UserResponse(BaseModel):
     golden_hive_status: Optional[str] = None
     is_private: bool = False
     dm_setting: str = "everyone"  # "everyone" | "following" | "requests"
+    discogs_oauth_verified: bool = False
+    needs_discogs_migration: bool = False
+    discogs_migration_dismissed: bool = False
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None
