@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Disc, Package, Search, Moon, Plus, Music, Feather, ShoppingBag, ArrowRightLeft, Shuffle } from 'lucide-react';
+import { Disc, Package, Search, Moon, Plus, Music, Feather, ShoppingBag, ArrowRightLeft, Shuffle, Gem, MessageCircle, BookOpen, Sparkles } from 'lucide-react';
 import AlbumArt from './AlbumArt';
 import { resolveImageUrl } from '../utils/imageUrl';
 import PhotoLightbox from './PhotoLightbox';
@@ -53,14 +53,14 @@ const AlbumLink = ({ record, children, className = '', onAlbumClick }) => {
 const PILL_STYLES = {
   NOW_SPINNING:         { bg: 'bg-amber-100',   text: 'text-amber-700',   border: 'border-amber-200' },
   NEW_HAUL:             { bg: 'bg-pink-100',     text: 'text-pink-600',    border: 'border-pink-200' },
-  ISO:                  { bg: 'bg-orange-100',   text: 'text-orange-600',  border: 'border-orange-200' },
+  ISO:                  { bg: 'bg-rose-100',     text: 'text-rose-600',    border: 'border-rose-200' },
   ADDED_TO_COLLECTION:  { bg: 'bg-green-100',    text: 'text-green-700',   border: 'border-green-200' },
   listing_sale:         { bg: 'bg-teal-100',     text: 'text-teal-700',    border: 'border-teal-200' },
   listing_trade:        { bg: 'bg-teal-100',     text: 'text-teal-700',    border: 'border-teal-200' },
   listing:              { bg: 'bg-teal-100',     text: 'text-teal-700',    border: 'border-teal-200' },
   WEEKLY_WRAP:          { bg: 'bg-purple-100',   text: 'text-purple-700',  border: 'border-purple-200' },
   VINYL_MOOD:           { bg: 'bg-purple-100',   text: 'text-purple-700',  border: 'border-purple-200' },
-  DAILY_PROMPT:         { bg: 'bg-amber-100',    text: 'text-amber-700',   border: 'border-amber-200' },
+  DAILY_PROMPT:         { bg: 'bg-sky-100',      text: 'text-sky-700',     border: 'border-sky-200' },
   RANDOMIZER:           { bg: 'bg-orange-50',    text: 'text-orange-600',  border: 'border-orange-200' },
   NOTE:                 { bg: 'bg-yellow-100',   text: 'text-yellow-700',  border: 'border-yellow-200' },
   NEW_FEATURE:          { bg: 'bg-green-100',    text: 'text-green-700',   border: 'border-green-200' },
@@ -85,16 +85,26 @@ const VARIANT_PILL_STYLES = {
 const VARIANT_DEFAULT = 'bg-stone-100 text-stone-600 border-stone-200';
 
 const PostTypeBadge = ({ type, mood }) => {
-  if (type === 'NOTE') return null;
+  if (type === 'NOTE') {
+    const s = PILL_STYLES.NOTE;
+    return (
+      <span className="inline-flex items-center gap-1.5">
+        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${s.bg} ${s.text} ${s.border}`}>
+          <BookOpen className="w-3 h-3" />
+          Album Note
+        </span>
+      </span>
+    );
+  }
   const config = {
     NOW_SPINNING: { label: 'Now Spinning', icon: Disc },
     NEW_HAUL: { label: 'New Haul', icon: Package },
-    ISO: { label: 'ISO', icon: Search },
+    ISO: { label: 'Grail Find', icon: Gem },
     ADDED_TO_COLLECTION: { label: 'Added', icon: Plus },
     WEEKLY_WRAP: { label: 'Weekly Wrap', icon: Music },
     VINYL_MOOD: { label: 'Vinyl Mood', icon: Moon },
-    DAILY_PROMPT: { label: 'Daily Prompt', icon: Disc },
-    RANDOMIZER: { label: 'Randomizer', icon: Shuffle },
+    DAILY_PROMPT: { label: 'Daily Prompt', icon: MessageCircle },
+    RANDOMIZER: { label: 'Random Selection', icon: Shuffle },
     listing_sale: { label: 'For Sale', icon: ShoppingBag },
     listing_trade: { label: 'For Trade', icon: ArrowRightLeft },
   };

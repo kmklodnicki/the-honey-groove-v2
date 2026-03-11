@@ -400,15 +400,21 @@ async def get_feed(user: Dict = Depends(require_auth), limit: int = 50, skip: in
         query, {"_id": 0}
     ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
     
+    # Allowed post types in the Hive feed
+    ALLOWED_TYPES = {"NOW_SPINNING", "NEW_HAUL", "ISO", "RANDOMIZER", "DAILY_PROMPT", "NOTE"}
+    
     result = []
     if pinned_resp and skip == 0:
         result.append(pinned_resp)
     for post in posts:
         try:
-            # Exclude Now Spinning / Collection Update posts with no caption
             pt = (post.get("post_type") or "").upper()
             caption = (post.get("caption") or post.get("content") or "").strip()
-            if pt in ("NOW_SPINNING", "COLLECTION_UPDATE", "RANDOMIZER") and not caption:
+            # Only allow whitelisted post types
+            if pt and pt not in ALLOWED_TYPES:
+                continue
+            # Require caption for Now Spinning, Hauls, and Randomizer
+            if pt in ("NOW_SPINNING", "NEW_HAUL", "RANDOMIZER") and not caption:
                 continue
             resp = await build_post_response(post, user["id"])
             if resp:
@@ -426,12 +432,16 @@ async def get_explore_feed(current_user: Optional[Dict] = Depends(get_current_us
     query = {"user_id": {"$nin": exclude_ids}, "source": {"$ne": "discogs_import"}} if exclude_ids else {"source": {"$ne": "discogs_import"}}
     posts = await db.posts.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
     
+    ALLOWED_TYPES = {"NOW_SPINNING", "NEW_HAUL", "ISO", "RANDOMIZER", "DAILY_PROMPT", "NOTE"}
+    
     result = []
     for post in posts:
         uid = current_user["id"] if current_user else None
         pt = (post.get("post_type") or "").upper()
         caption = (post.get("caption") or post.get("content") or "").strip()
-        if pt in ("NOW_SPINNING", "COLLECTION_UPDATE", "RANDOMIZER") and not caption:
+        if pt and pt not in ALLOWED_TYPES:
+            continue
+        if pt in ("NOW_SPINNING", "NEW_HAUL", "RANDOMIZER") and not caption:
             continue
         resp = await build_post_response(post, uid)
         if resp:
