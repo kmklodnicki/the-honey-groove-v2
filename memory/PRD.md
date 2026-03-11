@@ -1,375 +1,66 @@
 # The HoneyGroove - Product Requirements Document
 
-## Overview
-The HoneyGroove is a premium social platform for vinyl collectors built with React frontend, FastAPI backend, and MongoDB.
+## Original Problem Statement
+Premium social platform for vinyl collectors. Features include collection management, marketplace, Discogs integration, community feed, trading, and valuation tools.
 
-## Tech Stack
-- Frontend: React (JS/JSX), Tailwind CSS, Shadcn/UI, Lucide icons, html2canvas
-- Backend: FastAPI (Python), Motor (async MongoDB)
-- Database: MongoDB
-- Integrations: Stripe Connect, Discogs API, Resend (partial), Socket.IO, colorgram.py
+## Core Architecture
+- **Frontend:** React + TypeScript, SWR caching, Shadcn/UI
+- **Backend:** FastAPI (Python), MongoDB (Motor async driver)
+- **Integrations:** Stripe Connect, Discogs OAuth 1.0a, Resend email, Socket.IO real-time
 
 ## What's Been Implemented
 
-### Core Platform
-- Social feed, Golden ID verification, Follow/Follow Back, DMs, Notifications
-- Marketplace with Stripe Connect, Trade disputes, Admin panel
-- User discovery, Global search, Onboarding
+### Security & Auth
+- Discogs OAuth 1.0a flow (replaces manual username input)
+- Imposter protection (flags accounts already linked to other users)
+- "The Great Disconnect" database migration (purged all old credentials)
+- One-time security migration modal for existing users
+- **BLOCK 480: Emergent Environment Alignment** - Dynamic OAuth callback URL via `window.location.origin`, no Vercel dependency
+- **BLOCK 481: Internal Error Resolution** - Comprehensive Discogs response logging, explicit HMAC-SHA1, full error diagnostics
 
-### Session Work (March 2026)
-- BLOCK 242: Live Hive WebSocket
-- BLOCK 243: Valuation Visibility
-- BLOCK 246/248: Zero-Grey Image Pipeline
-- BLOCK 247: Valuation Wizard
-- BLOCK 250: Duplicate Detector
-- BLOCK 252: Week in Wax to Profile
-- BLOCK 254: Streaming Deep Links
-- BLOCK 258: Valuation Wizard Sync
-- BLOCK 260/265: Record Card Checkbox UI
-- BLOCK 263: Profile Component Purge
-- BLOCK 264: Weekly Report Route
-- BLOCK 271: Integrated Spin Feed Logic
-- BLOCK 281: Collection Cleanse UI (Remove button + confirm modal + fade)
-- BLOCK 284: Valuation Wizard True Finish (auto re-fetch, onSave callback)
-- BLOCK 285: Desktop Profile Dashboard (2-col then unified)
-- BLOCK 287: Weekly Report Data Fix (no blank screen, Fresh Start pivot)
-- BLOCK 290: Daily Prompt Instant-On (decoding sync, kill shimmer)
-- BLOCK 291: Weekly Report Story Mode (7 slides, snap scroll, Ken Burns)
-- BLOCK 292: Instagram Story Export (1080x1920, safe zones)
-- BLOCK 293: Branded Export (THE HONEY GROOVE watermark)
-- BLOCK 298: Streaming Everywhere
-- BLOCK 303: Analog Animation Deploy (spinning vinyl disc, 4-bar equalizer)
-- BLOCK 306/317/340: Icon-Only Streaming Links (permanently colored SVG icons)
-- BLOCK 324: Founder Badge Hierarchy
-- BLOCK 327: Report Image Pipeline Fix (ReportImg component)
-- BLOCK 330: Report Compression (removed Vibe Map, reduced spacing)
-- **BLOCK 333: Time & Volume Report Update** (March 2026) — COMPLETED
-  - Added date range subtitle to IntroSlide (e.g. "March 4 – March 11, 2026")
-  - Added "Records Added This Week" (weekAdds) metric to StatsSlide
-  - Fixed missing dateRange prop being passed to IntroSlide
-  - Files: WeeklyReportPage.js
-  - Tested: PASS
-- **BLOCK 224: Daily Prompt Archive** (March 2026) — COMPLETED
-  - Backend: GET /api/prompts/archive returns last 14 prompts before today with response_count and user_responded
-  - Frontend: "See what the Hive said yesterday" link on Daily Prompt card
-  - Frontend: Sheet slide-over drawer (PromptArchiveDrawer.js) showing past prompts
-  - Each prompt links to /hive?prompt_id={id} for deep-linking
-  - Shows dates (Yesterday, X days ago), response counts, and checkmark for responded prompts
-  - Files: daily_prompts.py, DailyPrompt.js, PromptArchiveDrawer.js
-  - Tested: PASS
-- **BLOCK 346: The Mini-Groove Sidebar** (March 2026) — COMPLETED
-  - Overhauled archive drawer into non-clickable Mini-Card display
-  - Each card has "DAILY PROMPT" small-caps gold label header
-  - 40px rounded album cover artwork from featured response
-  - User PFP + @handle shown above the prompt answer
-  - 24px vertical spacing between cards (gap-6)
-  - All interactivity removed (cursor:default, no onClick/Links)
-  - Backend enriched with featured response data (cover, user, caption)
-  - Files: PromptArchiveDrawer.js, daily_prompts.py
-  - Tested: PASS
-- **BLOCK 349: Image Recovery (CORS-Safe Canvas Export)** (March 2026) — COMPLETED
-  - Backend: Created /api/image-proxy endpoint (httpx + in-memory LRU cache) serving external images with CORS headers
-  - Frontend: proxyImageUrl() wraps external URLs through proxy, passes local URLs through
-  - ReportImg component supports fallback chain (spotify_image_url, apple_artwork_url)
-  - Pre-flight image loading before html2canvas export
-  - All report images use crossOrigin="anonymous"
-  - ShareCard uses proxied + fallback-aware image rendering
-  - Files: image_proxy.py, server.py, WeeklyReportPage.js
-  - Tested: PASS
-- **BLOCK 369: Mobile Image Emergency Fix** (March 2026) — COMPLETED
-  - Service Worker (/sw.js) with skipWaiting + clients.claim for stale cache flush
-  - HTTPS enforcement in resolveImageUrl() and backend proxy (http→https conversion)
-  - Explicit CORS OPTIONS pre-flight handler (204) + Access-Control-Allow-Origin: * on all proxy responses
-  - Priority/eager loading for first 5 feed images (via imgPriority prop chain) and Daily Prompt
-  - Files: sw.js, index.js, imageUrl.js, image_proxy.py, AlbumArt.js, PostCards.js, HivePage.js
-  - Tested: PASS
-- **Feed Navigation Overhaul + Badge Rename + BLOCK 379** (March 2026) — COMPLETED
-  - Feed filter pills renamed: All, Now Spinning, Haul, ISO, Sale/Trade, Note, New Feature
-  - Active pill: honey (#FFB800) background with black text; Inactive: transparent with cream border
-  - Mobile: flex-wrap, 10px padding, 12px font, invisible scrollbar
-  - PostTypeBadge "Album Note" → "Note"
-  - BLOCK 379: Archive link centered below Daily Prompt with → arrow; buzz count moved to top-right
-  - Files: HivePage.js, PostCards.js, DailyPrompt.js
-  - Tested: PASS
-- **BLOCK 383: High-Contrast Header Fix** (March 2026) — COMPLETED
-  - Removed decorative yellow circle from Daily Prompt card top-right
-  - Buzz count text uses dark brown (#8B6914) with font-weight 600 for accessibility
-  - Text vertically aligned with DAILY PROMPT label via flex row
-  - Files: DailyPrompt.js
-  - Tested: PASS
-- **BLOCK 387: Centered Cloud Filters** (March 2026) — COMPLETED
-  - Filter bar centered with justify-content:center, max-width:600px, margin:0 auto
-  - Flex-wrap enabled for mobile stacking
-  - Consistent gap:10px between pills
-  - Files: HivePage.js
-  - Tested: PASS
-- **BLOCK 391: History Jump Sidebar** (March 2026) — COMPLETED
-  - Re-enabled onClick on archive mini-cards with navigation to /hive?post={post_id}
-  - Added cursor:pointer, hover:translateY(-2px), hover:border-brightening, hover:shadow-sm
-  - Mini-cards still show user handle (@username), album art, prompt text
-  - Backend enriched with post_id in featured response
-  - Files: PromptArchiveDrawer.js, daily_prompts.py
-  - Tested: PASS
-- **BLOCK 399: Flex-Variant Mobile Fix** (March 2026) — COMPLETED
-  - Variant pill containers wrapped in flex with flex-wrap:wrap and gap:4px
-  - Truncation for long variant names: max-width:150px, text-overflow:ellipsis, overflow:hidden
-  - Mobile (<480px): font-size forced to 11px via CSS media query
-  - Note badge confirmed as "Note"
-  - Files: PostCards.js, App.css
-  - Tested: PASS
-- **BLOCK 407: Equalizer Repositioning** (March 2026) — COMPLETED
-  - Removed LiveEqualizer from absolute overlay on album art
-  - Repositioned inline in StreamingLinks row, right after Apple Music button
-  - Resized to 24px height to match Spotify/Apple button scale
-  - Animation remains active (bouncing bars)
-  - Files: PostCards.js
-  - Tested: PASS
-- **BLOCK 403: Sidebar Deep Link Repair** (March 2026) — COMPLETED
-  - Fixed mini-card routing from broken /hive?promptId= to /hive?post={postId}
-  - Backend resolves post_id via prompt_text match when not stored directly
-  - Added loading spinner overlay on mini-card click for UI feedback
-  - Drawer closes on navigation, post highlights with gold border
-  - Files: PromptArchiveDrawer.js, daily_prompts.py
-  - Tested: PASS
-- **BLOCK 410: High-Fidelity Grooved Vinyl Asset** (March 2026) — COMPLETED
-  - Enlarged SpinningVinyl from 44px to 92px SVG with 13 concentric grooves
-  - Added radial gradients, specular lighting, dead wax area, gold label center
-  - Increased peek from ~10px to ~18px using paddingRight wrapper
-  - Created reusable AlbumWithVinyl wrapper for universal application
-  - Applied to NowSpinningCard, AddedToCollectionCard, DailyPromptPostCard
-  - Files: PostCards.js
-- **BLOCK 412: Desktop-Expansive Variant Badge** (March 2026) — COMPLETED
-  - Desktop (>1024px): removed max-width/truncation, badges expand to full text
-  - Mobile (<480px): retains max-width:150px truncation with 11px font
-  - Used CSS class 'variant-pill-responsive' for responsive behavior
-  - Confirmed equalizer placement in streaming row, not overlapping art
-  - Files: PostCards.js, App.css
-  - Tested: PASS
-- **BLOCK 415: Proportional Peek Refinement** (March 2026) — COMPLETED
-  - Created VINYL_PRESETS: feed (92px/20px), prompt (72px/10px), small (56px/8px)
-  - Feed cards: 20px peek with full 92px grooved vinyl
-  - Daily Prompt cards: 10px peek with scaled 72px vinyl
-  - Small cards: 8px peek with 56px vinyl
-  - Grooves remain sharp at all sizes (SVG viewBox scaling)
-  - Files: PostCards.js
-  - Tested: PASS
-  - Tested: PASS (visual verification)
-- **BLOCK 418: Scroll-to-Top FAB** (March 2026) — COMPLETED
-  - Cleaned up duplicate inline FAB implementation, using reusable BackToTop component
-  - BackToTop component: threshold=400px, glass-morphism style, responsive positioning
-  - data-testid='back-to-top-btn', z-index 100003, mobile bottom offset 80px
-  - Files: CollectionPage.js, BackToTop.js
-  - Tested: PASS (100% - testing agent iteration_182)
-- **BLOCK 432: Smart Track Selection** (March 2026) — COMPLETED
-  - Replaced static "Track (optional)" text input with dynamic searchable dropdown in Now Spinning modal
-  - On record selection, fetches tracklist from Discogs API (/api/discogs/release/{discogs_id})
-  - Dropdown shows track positions (A1, B1...), titles, and durations with search filtering
-  - Cream background (#FFFDF5), gold border, music icon — matches existing UI theme
-  - Fallback: plain text input when record has no discogs_id
-  - Loading state shown while fetching tracklist
-  - Clear (X) button, click-outside-to-close, keyboard searchable
-  - Files: ComposerBar.js
-  - Tested: PASS (100% - testing agent iteration_183, 12/12 features verified)
-- **BLOCK 436: Tracklist Fallback Logic** (March 2026) — COMPLETED
-  - Added `spinTracksFetched` state to detect when Discogs returns empty/null tracklist
-  - Empty tracklist → text input with "Tracklist unavailable—type a track name manually (optional)"
-  - No discogs_id → plain "Track (optional)" text input
-  - Both fallback inputs use matching gold-border (#C8861A), cream-background (#FFFDF5) styling
-  - Manual text entry saves identically to a dropdown-selected track
-  - Files: ComposerBar.js
-  - Tested: PASS (self-tested, visual verification of both states)
-- **BLOCK 439: Duplicate Cleaner Override** (March 2026) — COMPLETED
-  - Fixed bug: "Confirm & Clean" now processes ALL duplicate groups, including those with differing notes
-  - Master selection: keeps record with longest note (most metadata), deletes the rest
-  - Updated frontend warning from "will be skipped" to "the copy with the most detail will be kept"
-  - Toast accurately reflects removed count
-  - Files: collection.py (backend clean_duplicates), CollectionPage.js (warning text)
-  - Tested: PASS (API test: 3 dupes with different notes → 2 removed, master with longest note kept)
-- **BLOCK 442: Dream List UI Parity** (March 2026) — COMPLETED
-  - WishlistCard now matches RecordCard: same honey/20 border, glass morphism bg, hover:-translate-y-1
-  - Price display: median_value badge (top-right) or clickable "Set Value" button opening ValuationAssistantModal
-  - Variant pill on image: gold border, glass morphism, link to /variant/{discogs_id}
-  - Variant text label below title: honey-amber, linkable, matches Collection card
-  - Desktop no-truncate: variant-pill-responsive CSS rule @media (min-width: 1025px)
-  - Removed old '---' placeholder and muted card opacity
-  - Files: CollectionPage.js (WishlistCard), App.css (variant-pill-responsive)
-  - Tested: PASS (100% - testing agent iteration_184, 9/9 features verified)
-- **BLOCK 446: Smart Rarity Engine** (March 2026) — COMPLETED
-  - Backend: calculate_rarity util (Grail/Ultra Rare/Rare/Uncommon/Common/Obscure thresholds)
-  - Obscure exception: have<25 AND want<10 prevents unpopular records from appearing valuable
-  - POST /api/records/enrich-rarity fetches Discogs community data and computes rarity
-  - RecordResponse includes community_have, community_want, rarity_label
-  - RarityBadge component: color-coded (purple/gold Grail, orange Ultra Rare, red Rare, blue Uncommon, gray Common, dark Obscure)
-  - Auto-enrichment on collection load for records missing rarity data
-  - Files: utils/rarity.py, models.py, collection.py, RarityBadge.js, CollectionPage.js
-  - Tested: PASS (100% - testing agent iteration_185, all thresholds verified)
-- **BLOCK 453: Tracklist Data Re-mapping** (March 2026) — COMPLETED
-  - Fixed data mapping: normalizes both 'tracklist' and 'tracks' keys, handles 'name' vs 'title' fields
-  - Added console.log debug for raw API response parsing
-  - Added Refresh (RefreshCw) icon button next to manual input for retry
-  - 8-second AbortController timeout before fallback to manual input
-  - Files: ComposerBar.js
-  - Tested: PASS (100% - testing agent iteration_186, Born To Die shows 12 tracks correctly)
-- **BLOCK 419: Smart-Load Tracklist** (March 2026) — COMPLETED
-  - Extended timeout from 8s to 10s before manual fallback
-  - Silent retry: auto-retries once after 2s on first failure before giving up
-  - Refresh button clears error state and re-initializes fetchTracklist() from scratch
-  - Honeycomb pulsing animation (gold bars) during loading state
-  - Files: ComposerBar.js
-  - Tested: PASS (self-tested, loading animation + 12 tracks confirmed)
-- **BLOCK 422: Listing Alert Confirmation** (March 2026) — COMPLETED
-  - Toast fires on "Notify me when listed" click with dynamic message
-  - Format: "We'll notify you when {Album} ({Variant}) is for sale!" 
-  - Handles missing/generic variant (omits parentheses)
-  - Honey Gold border (#DAA520), cream background (#FFFDF5), 3-second duration
-  - Files: RarityBadge.js, VariantReleasePage.js (passes albumName/variantName)
-  - Tested: PASS (self-tested, toast shown with correct album+variant content)
-- **BLOCK 425: Alert Engine** (March 2026) — COMPLETED
-  - Backend: POST/GET/DELETE /api/listing-alerts for alert subscriptions
-  - Duplicate prevention: returns "Already subscribed" for same discogs_id
-  - Honeypot create_listing: matches alerts by discogs_id, sends in-app + email notification
-  - One-time trigger: alerts marked FULFILLED after notification sent
-  - Email: branded template with album art, direct listing link
-  - Frontend: onNotifySubscribe callback on RarityCard saves alert via API
-  - 👑 Crown emoji for katieintheafterglow (founder) in feed posts and profile page
-  - Files: notifications.py, honeypot.py, emails.py, RarityBadge.js, VariantReleasePage.js, HivePage.js, ProfilePage.js
-  - Tested: PASS (100% - testing agent iteration_187, 8/8 features verified)
-- **BLOCK 457: Daily Prompt Image Restoration** (March 2026) — COMPLETED
-  - Added crossOrigin='anonymous' to AlbumArt and DailyPrompt img tags
-  - Added proxy fallback: onError fires proxyImageUrl() via /api/image-proxy
-  - Added proxyImageUrl() helper in utils/imageUrl.js
-  - Files: AlbumArt.js, DailyPrompt.js, imageUrl.js
-  - Tested: PASS (100% - testing agent iteration_186)
-- **BLOCK 407: Keyboard-Collapse Modal Fix** (March 2026) — COMPLETED
-  - Removed autoFocus from all modal text inputs (spin search, ISO search, note textarea)
-  - Keyboard only appears on manual tap; modal no longer auto-opens keyboard on mobile
-  - Files: ComposerBar.js
-  - Tested: PASS (100% - testing agent iteration_186, 3 inputs verified)
-- **BLOCK 413: Variant Rarity Data Fix** (March 2026) — COMPLETED
-  - Backend: master release fallback when variant stats=0 (fetches master_id community data)
-  - Backend: ?force_refresh=true param busts Discogs cache for fresh pull
-  - Frontend: Re-sync button on VariantReleasePage with stats_source label
-  - Stats subtitle: "via master release" when fallback used, "Variant-specific stats" otherwise
-  - Files: vinyl.py, VariantReleasePage.js
-  - Tested: PASS (100% - testing agent iteration_186, all 14 features verified)
-- **BLOCK 449: Now Spinning Mobile Rescue** (March 2026) — COMPLETED
-  - Modal body: max-h-[80vh] overflow-y-auto for mobile keyboard scrolling
-  - Post button: sticky bottom-0 z-10, always visible above keyboard
-  - Loading state: "Spinning your record..." with animated spinner during submission
-  - Tracklist fetch: 8-second AbortController timeout prevents blocking post submission
-  - Files: ComposerBar.js
-  - Tested: PASS (100% - testing agent iteration_185, full flow verified)
+### Performance
+- SWR client-side caching (Profile, Explore pages)
+- React.lazy() code splitting for pages
+- Service worker static asset pre-caching
+- MongoDB indexes on startup
+- Image prefetch engine for Daily Prompt carousel
 
-### Layout & Design Features
-- Golden Vault Layout (ProfilePage unified dashboard)
-- Valuation Wizard Logic Leak Fix
-- Analog Feed Animations (CSS vinylSpin, equalizer)
+### Features
+- Test Listing Filter Guard (admin can hide test listings)
+- Express Checkout (Stripe Apple/Google Pay)
+- Collection valuation, rarity engine
+- Marketplace, trades, DMs, notifications
+- Daily prompts, mood boards, bingo
+- Weekly Wax email reports
 
-### Payment & Checkout
-- **BLOCK 434/627: Express Wallet Stack** (March 2026) — COMPLETED
-  - Backend: POST /api/payments/create-intent creates Stripe PaymentIntent with Connect transfer_data
-  - Backend: _finalize_payment shared helper for webhook + status polling (marks SOLD, sends notifications + emails)
-  - Backend: Webhook handles both payment_intent.succeeded (express) and checkout.session.completed (legacy)
-  - Backend: GET /api/payments/status/{id} detects pi_* vs cs_* IDs and queries appropriate Stripe API
-  - Frontend: ExpressCheckout component with ExpressCheckoutElement (Apple Pay/Google Pay) + PaymentElement (card)
-  - Frontend: CheckoutSuccessPage at /honeypot/checkout/success with confetti, order summary, View Orders CTA
-  - Frontend: Fallback to legacy redirect checkout if PaymentIntent creation fails
-  - Flow: Buy → create-intent → modal → pay → redirect → success page → webhook confirms
-  - Files: honeypot.py, ExpressCheckout.js, CheckoutSuccessPage.js, ISOPage.js, App.js
-  - Tested: PASS (100% - testing agent iteration_188, 14/14 backend + all frontend verified)
-- **BLOCK 442: Test Mode Filter Guard** (March 2026) — COMPLETED
-  - Backend: Added `is_test_listing` (default: false) field to listings and ListingResponse model
-  - Backend: `_can_see_test_listings()` helper grants admin + @katieintheafterglow override access
-  - Backend: GET /api/listings, ISO matches, and similar listings queries filter out test listings for non-admin users
-  - Backend: PATCH /api/listings/{id}/test-flag (admin-only) toggles the test flag
-  - Backend: GET /api/admin/test-listings (admin-only) returns all flagged test listings
-  - Frontend: Red "TEST LISTING — DO NOT PURCHASE" banner on listing detail modal for test listings
-  - Frontend: CTA buy/offer/trade buttons hidden for test listings
-  - Frontend: Red "TEST" badge pill on ListingCard for admin visibility
-  - Frontend: Admin Panel "Test Listings" section with search, flag, and unflag workflow
-  - Files: models.py, honeypot.py, explore.py, ListingDetailModal.js, HoneypotCards.js, AdminPage.js
-  - Tested: PASS (100% - testing agent iteration_189, 12/12 backend + all frontend verified)
-- **BLOCK 447: Warp Speed Optimization** (March 2026) — COMPLETED
-  - Added compound MongoDB indexes: listings(status+is_test_listing+created_at), posts(post_type+created_at), listing_alerts(release_id+status), listings(discogs_id), prompt_responses(prompt_id+created_at)
-  - Increased image proxy server-side cache from 50→200 entries
-  - Extended Cache-Control to 7 days + stale-while-revalidate for proxied images
-  - Tested: PASS (iteration_190)
-- **BLOCK 448: Carousel & Sidebar Stabilization** (March 2026) — COMPLETED
-  - Shimmer skeleton loading for PromptArchiveDrawer (replaces spinner)
-  - Archive drawer prefetches first 6 card images on data load via dedup cache
-  - Yellow placeholder squares replaced with gradient shimmer
-  - Tested: PASS (iteration_190)
-- **BLOCK 449: PWA Native Feel** (March 2026) — COMPLETED
-  - Service worker rewrite: pre-caches static assets on install, stale-while-revalidate for CSS/JS/fonts
-  - React.lazy code-splitting for 30+ below-fold pages with Suspense fallback
-  - PREFETCH_IMAGES service worker message handler for persistent caching
-  - Tested: PASS (iteration_190)
-- **BLOCK 444: Carousel Prefetch Engine** (March 2026) — COMPLETED
-  - Prefetches current + next 3 carousel slide images on initial load
-  - Rolling buffer: auto-prefetches 2 slides ahead as user navigates
-  - imagePrefetch.js utility with dedup Set prevents redundant requests
-  - Sends URLs to service worker for persistent cache via postMessage
-  - Tested: PASS (iteration_190)
-- **BLOCK 450: Instant Nav Overhaul** (March 2026) — COMPLETED
-  - SWR data caching: useAPI hook wraps authenticated API calls with stale-while-revalidate
-  - ProfilePage: 6 SWR-cached endpoints — 0.92s re-visit, no skeleton on back-nav
-  - ExplorePage: 6 SWR-cached endpoints for all explore sections
-  - Navbar prefetch: onMouseEnter triggers prefetchAPI for Nectar, Collection, Honeypot routes
-  - Selective hydration: fetchPriority="high" on profile avatar
-  - Files: useAPI.js (new hook), App.js, ProfilePage.js, ExplorePage.js, Navbar.js
-  - Tested: PASS (iteration_191, 100% backend + frontend)
-- **BLOCK 453: Discogs OAuth 1.0a Integration** (March 2026) — COMPLETED
-  - Backend: Full OAuth 1.0a flow (request token → authorize → callback → access token)
-  - Backend: Imposter protection — blocks duplicate Discogs accounts, flags for admin review
-  - Backend: Identity lock — discogs_username pulled from API and stored with oauth_verified flag
-  - Backend: Manual connect-token endpoint deprecated (returns 400)
-  - Backend: Admin imposter-flags endpoint for review
-  - Frontend: OAuth-only connect flow, manual username input removed
-  - Frontend: Verified/Re-verify badges on Discogs status
-  - Tested: PASS (iteration_192, 100% backend + frontend)
-- **BLOCK 455: Discogs Security Migration Modal** (March 2026) — COMPLETED
-- **BLOCK 472: Multi-Environment Auth Handler** (March 2026) — COMPLETED
-  - OAuth start uses `Origin` header for dynamic callback URL (localhost, preview, production)
-  - Callback stores `callback_origin` in pending record for correct redirect
-  - Enhanced error logging: callback_url, verification status on failure
-  - Tested: PASS (iteration_193, 11/11 backend + all frontend)
-- **BLOCK 473: The Great Disconnect Migration** (March 2026) — COMPLETED
-  - Admin endpoint POST /api/admin/great-disconnect triggers mass purge
-  - Nullifies discogs_username, resets has_seen_security_migration, deletes all tokens
-  - Hides active listings as HIDDEN_PENDING_VERIFICATION until user re-verifies via OAuth
-  - OAuth callback auto-restores hidden listings after successful verification
-  - Admin UI: "The Great Disconnect" card in Settings with confirmation dialog and result display
-  - Migration script at /app/backend/scripts/great_disconnect.py (standalone or via API)
-  - Tested: PASS (iteration_193, 11/11 backend + all frontend)
-  - Backend: needs_discogs_migration computed in /auth/me for users with token-based connections
-  - Backend: POST /discogs/dismiss-migration to skip modal with persistent profile banner
-  - Frontend: DiscogsSecurityModal with Security Update headline, Reconnect Now (gold) + Connect Later (ghost)
-  - Frontend: Auto-triggers on login when needs_discogs_migration is true
-  - Frontend: Profile reconnect warning banner for dismissed users
-  - Tested: PASS (iteration_192, 100% backend + frontend)
+## Prioritized Backlog
 
-## Backlog (Prioritized)
+### P0 - In Progress
+- **BLOCK 476: Value Recovery Engine** - Fetch collection value via Discogs OAuth tokens, update weekly stats
 
-### P1
-- Real Spotify/Apple Music API (currently search URL placeholders) — BLOCK 254
-- Service Worker Prefetch (BLOCK 248/321) — pre-fetch Daily Prompt image
-- "Secret search feature" — needs clarification from user
+### P1 - Blocked
+- **BLOCK 254: Streaming Service Integration** - Spotify/Apple Music links (awaiting user's Spotify callback URL)
 
-### P2
-- Safari loading animation
+### P2 - Upcoming
+- Service Worker Daily Prompt pre-cache on install event (BLOCK 321)
+- SWR rollout to Marketplace, CollectionPage, ListingDetailModal
+
+### P3 - Future/Backlog
+- Record Store Day Proxy Network
+- Safari-compatible loading animation
 - Pro memberships / Verified Seller badge
 - Buyer Protection features
-- Instagram sharing
-- Admin-editable New Music Friday
-- Backend search filters
-- Full TypeScript migration
-- Record Store Day Proxy Network
+- Instagram sharing re-enable
+- Editable "New Music Friday" in Weekly Wax
+- Backend-powered search filters
+- "Secret Search Feature" (needs user clarification)
 
-## Mocked Services
-- Resend email (except Weekly Wax)
-- Streaming links (search URL placeholders, not real API integration)
+## Key DB Schema
+- `users`: discogs_oauth_verified, has_seen_security_migration, imposter_flag
+- `discogs_tokens`: oauth_token, oauth_token_secret, discogs_username, auth_type
+- `listings`: is_test_listing, status (includes HIDDEN_PENDING_VERIFICATION)
+- `discogs_oauth_pending`: oauth_token, user_id, callback_origin
 
-## Test Accounts
-- User: test@example.com / test123 (username: testuser1)
-- User: test@test.com / test123 (username: testuser)
+## Test Credentials
 - Admin: admin@thehoneygroove.com / admin_password
+- User: test@example.com / test123
