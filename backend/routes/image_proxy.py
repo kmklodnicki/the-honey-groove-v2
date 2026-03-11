@@ -1,5 +1,5 @@
 """Image proxy — serves external images with proper CORS headers for canvas export."""
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import Response
 import httpx
 import hashlib
@@ -10,6 +10,19 @@ router = APIRouter()
 _cache = {}
 _MAX_CACHE = 50
 
+CORS_HEADERS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Max-Age": "86400",
+}
+
+
+@router.options("/image-proxy")
+async def proxy_image_options():
+    """Explicit CORS pre-flight for strict mobile browsers."""
+    return Response(status_code=204, headers=CORS_HEADERS)
+
 
 @router.get("/image-proxy")
 async def proxy_image(url: str = Query(..., description="External image URL to proxy")):
@@ -17,16 +30,17 @@ async def proxy_image(url: str = Query(..., description="External image URL to p
     if not url or not url.startswith("http"):
         raise HTTPException(status_code=400, detail="Valid http(s) URL required")
 
+    # Force HTTPS
+    if url.startswith("http://"):
+        url = url.replace("http://", "https://", 1)
+
     cache_key = hashlib.md5(url.encode()).hexdigest()
     if cache_key in _cache:
         data, content_type = _cache[cache_key]
         return Response(
             content=data,
             media_type=content_type,
-            headers={
-                "Cache-Control": "public, max-age=86400",
-                "Access-Control-Allow-Origin": "*",
-            },
+            headers={**CORS_HEADERS, "Cache-Control": "public, max-age=86400"},
         )
 
     try:
@@ -45,10 +59,7 @@ async def proxy_image(url: str = Query(..., description="External image URL to p
             return Response(
                 content=data,
                 media_type=content_type,
-                headers={
-                    "Cache-Control": "public, max-age=86400",
-                    "Access-Control-Allow-Origin": "*",
-                },
+                headers={**CORS_HEADERS, "Cache-Control": "public, max-age=86400"},
             )
     except HTTPException:
         raise

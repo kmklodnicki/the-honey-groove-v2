@@ -66,7 +66,7 @@ const BeeAvatar = ({ user, className = "h-10 w-10" }) => {
 
 import CommentThread from '../components/CommentItem';
 
-const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, onPin, onToggleFeature, token, API, currentUserId, isAdmin, highlighted, autoOpenComments }) => {
+const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, onPin, onToggleFeature, token, API, currentUserId, isAdmin, highlighted, autoOpenComments, imgPriority }) => {
   const [showComments, setShowComments] = useState(!!autoOpenComments);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
@@ -289,7 +289,7 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
 
       {/* Post Type-Specific Body */}
       <div className="px-4 py-2">
-        <PostCardBody post={post} onAlbumClick={onAlbumClick} />
+        <PostCardBody post={post} onAlbumClick={onAlbumClick} imgPriority={imgPriority} />
       </div>
 
       {/* Actions */}
@@ -853,7 +853,7 @@ const HivePage = () => {
         </Card>
       ) : (
         <div className="space-y-4">
-          {filteredPosts.map(post => (
+          {filteredPosts.map((post, idx) => (
             <PostCard
               key={post.id}
               post={post}
@@ -869,6 +869,7 @@ const HivePage = () => {
               isAdmin={user?.is_admin}
               highlighted={post.id === targetPostId}
               autoOpenComments={post.id === targetPostId && !!targetCommentId}
+              imgPriority={idx < 5}
             />
           ))}
         </div>

@@ -260,7 +260,7 @@ const LiveEqualizer = () => (
 );
 
 // NOW_SPINNING card body
-const NowSpinningCard = ({ post, onAlbumClick }) => {
+const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
   const record = post.record;
   if (!record) return null;
   const variantText = post.color_variant || record.color_variant || post.pressing_variant || record.pressing_notes;
@@ -270,7 +270,7 @@ const NowSpinningCard = ({ post, onAlbumClick }) => {
         {record.cover_url ? (
           <div className="shrink-0 pr-3">
             <div className="relative">
-              <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-24 h-24 rounded-[10px] object-cover shadow-md album-art-hover relative z-[6]" />
+              <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-24 h-24 rounded-[10px] object-cover shadow-md album-art-hover relative z-[6]" priority={imgPriority} />
               <SpinningVinyl />
               <LiveEqualizer />
               {post.honeypot_rating && (
@@ -307,7 +307,7 @@ const NowSpinningCard = ({ post, onAlbumClick }) => {
 };
 
 // NEW_HAUL card body — handles both manual hauls and auto-bundled collection adds
-const NewHaulCard = ({ post, onAlbumClick }) => {
+const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
   const [expanded, setExpanded] = React.useState(false);
   const bundle = post.bundle_records;
   
@@ -427,7 +427,7 @@ const ISOCard = ({ post, onAlbumClick }) => {
 };
 
 // ADDED_TO_COLLECTION card body
-const AddedToCollectionCard = ({ post, onAlbumClick }) => {
+const AddedToCollectionCard = ({ post, onAlbumClick, imgPriority }) => {
   const record = post.record;
   if (!record) return <p className="text-sm"><MentionText text={post.caption} /></p>;
   const variantText = post.color_variant || record.color_variant || record.pressing_notes;
@@ -435,7 +435,7 @@ const AddedToCollectionCard = ({ post, onAlbumClick }) => {
     <AlbumLink record={record} onAlbumClick={onAlbumClick}>
       <div className="flex gap-3 items-center" data-testid="added-card">
         <div className="relative shrink-0">
-          <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-16 h-16 rounded-[10px] object-cover shadow" />
+          <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-16 h-16 rounded-[10px] object-cover shadow" priority={imgPriority} />
         </div>
         <div className="min-w-0">
           <p className="font-medium">{record.title}</p>
@@ -459,7 +459,7 @@ const WeeklyWrapCard = ({ post }) => {
 };
 
 // VINYL_MOOD card body
-const VinylMoodCard = ({ post, onAlbumClick }) => {
+const VinylMoodCard = ({ post, onAlbumClick, imgPriority }) => {
   const record = post.record;
   const mood = post.mood || '';
   const emoji = MOOD_EMOJI_MAP[mood] || '';
@@ -472,7 +472,7 @@ const VinylMoodCard = ({ post, onAlbumClick }) => {
       {record && (
         <AlbumLink record={record} onAlbumClick={onAlbumClick}>
           <div className="flex gap-3 items-center mt-2 rounded-lg p-2" style={{ backgroundColor: color + '15' }}>
-            <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${record.color_variant ? ` ${record.color_variant}` : ''} vinyl record`} className="w-10 h-10 rounded object-cover" />
+            <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${record.color_variant ? ` ${record.color_variant}` : ''} vinyl record`} className="w-10 h-10 rounded object-cover" priority={imgPriority} />
             <div>
               <p className="text-sm font-medium">{record.title}</p>
               <p className="text-xs text-muted-foreground">{record.artist}</p>
@@ -486,13 +486,13 @@ const VinylMoodCard = ({ post, onAlbumClick }) => {
 };
 
 // DAILY_PROMPT card body
-const DailyPromptPostCard = ({ post }) => (
+const DailyPromptPostCard = ({ post, imgPriority }) => (
   <div data-testid="daily-prompt-post-card">
     <p className="text-sm italic text-amber-700 mb-3">{post.prompt_text}</p>
     <div className="flex gap-4 items-start bg-amber-50/60 rounded-lg p-3">
       {post.cover_url ? (
         <div className="relative shrink-0">
-          <AlbumArt src={post.cover_url} alt={`${post.record_artist} ${post.record_title}${post.color_variant ? ` ${post.color_variant}` : ''} vinyl record`} className="w-20 h-20 rounded-[10px] object-cover shadow-md" />
+          <AlbumArt src={post.cover_url} alt={`${post.record_artist} ${post.record_title}${post.color_variant ? ` ${post.color_variant}` : ''} vinyl record`} className="w-20 h-20 rounded-[10px] object-cover shadow-md" priority={imgPriority} />
           {post.honeypot_rating && (
             <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
               style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
@@ -585,17 +585,17 @@ const ListingPostCard = ({ post }) => {
   );
 };
 
-const PostCardBody = ({ post, onAlbumClick }) => {
+const PostCardBody = ({ post, onAlbumClick, imgPriority }) => {
   switch (post.post_type) {
-    case 'NOW_SPINNING': return <NowSpinningCard post={post} onAlbumClick={onAlbumClick} />;
-    case 'NEW_HAUL': return <NewHaulCard post={post} onAlbumClick={onAlbumClick} />;
+    case 'NOW_SPINNING': return <NowSpinningCard post={post} onAlbumClick={onAlbumClick} imgPriority={imgPriority} />;
+    case 'NEW_HAUL': return <NewHaulCard post={post} onAlbumClick={onAlbumClick} imgPriority={imgPriority} />;
     case 'ISO': return <ISOCard post={post} onAlbumClick={onAlbumClick} />;
     case 'NOTE': return <NoteCard post={post} onAlbumClick={onAlbumClick} />;
-    case 'ADDED_TO_COLLECTION': return <AddedToCollectionCard post={post} onAlbumClick={onAlbumClick} />;
+    case 'ADDED_TO_COLLECTION': return <AddedToCollectionCard post={post} onAlbumClick={onAlbumClick} imgPriority={imgPriority} />;
     case 'WEEKLY_WRAP': return <WeeklyWrapCard post={post} />;
-    case 'VINYL_MOOD': return <VinylMoodCard post={post} onAlbumClick={onAlbumClick} />;
-    case 'DAILY_PROMPT': return <DailyPromptPostCard post={post} />;
-    case 'RANDOMIZER': return <NowSpinningCard post={post} onAlbumClick={onAlbumClick} />;
+    case 'VINYL_MOOD': return <VinylMoodCard post={post} onAlbumClick={onAlbumClick} imgPriority={imgPriority} />;
+    case 'DAILY_PROMPT': return <DailyPromptPostCard post={post} imgPriority={imgPriority} />;
+    case 'RANDOMIZER': return <NowSpinningCard post={post} onAlbumClick={onAlbumClick} imgPriority={imgPriority} />;
     case 'listing_sale': return <ListingPostCard post={post} />;
     case 'listing_trade': return <ListingPostCard post={post} />;
     default:

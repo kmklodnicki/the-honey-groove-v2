@@ -3,10 +3,20 @@ const API = process.env.REACT_APP_BACKEND_URL ? `${process.env.REACT_APP_BACKEND
 const SERVE_PATH = '/api/files/serve/';
 
 /**
+ * Force any http:// URL to https:// for mobile browser compatibility.
+ * Mobile Safari/Chrome silently block mixed-content http images.
+ */
+const enforceHttps = (url) => {
+  if (!url || typeof url !== 'string') return url;
+  if (url.startsWith('http://')) return url.replace('http://', 'https://');
+  return url;
+};
+
+/**
  * Resolve an image URL. Handles three cases:
  * 1. Raw storage path (no http prefix) → build proxy URL
  * 2. Old full URL from a different deployment that contains /api/files/serve/ → rewrite to current domain
- * 3. External URLs (discogs, dicebear, etc.) → return as-is
+ * 3. External URLs (discogs, dicebear, etc.) → return as-is, enforced to https
  */
 export function resolveImageUrl(src) {
   if (!src) return null;
@@ -15,12 +25,15 @@ export function resolveImageUrl(src) {
   const serveIdx = src.indexOf(SERVE_PATH);
   if (serveIdx !== -1) {
     const storagePath = src.substring(serveIdx + SERVE_PATH.length);
-    return `${API}/files/serve/${storagePath}`;
+    return enforceHttps(`${API}/files/serve/${storagePath}`);
   }
 
   // Case 3: External URLs (discogs images, dicebear, data URIs, etc.)
-  if (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('/') || src.startsWith('data:')) return src;
+  if (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('data:')) {
+    return enforceHttps(src);
+  }
+  if (src.startsWith('/')) return src;
 
   // Case 1: Raw storage path
-  return `${API}/files/serve/${src}`;
+  return enforceHttps(`${API}/files/serve/${src}`);
 }
