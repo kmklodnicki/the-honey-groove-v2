@@ -1,27 +1,290 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Disc, ArrowLeft, Play, Sparkles, TrendingUp } from 'lucide-react';
+import { Disc, ArrowLeft, Play, Sparkles, TrendingUp, Share2, Download, ChevronDown } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import AlbumArt from '../components/AlbumArt';
+import { resolveImageUrl } from '../utils/imageUrl';
+import html2canvas from 'html2canvas';
 
+// ─── Color utility: extract dominant hue from an image via canvas sampling ───
+const extractDominantColor = (imgUrl) => new Promise((resolve) => {
+  if (!imgUrl) { resolve('#C8861A'); return; }
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => {
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = 10; canvas.height = 10;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, 10, 10);
+      const { data } = ctx.getImageData(0, 0, 10, 10);
+      let r = 0, g = 0, b = 0;
+      for (let i = 0; i < data.length; i += 4) { r += data[i]; g += data[i + 1]; b += data[i + 2]; }
+      const px = data.length / 4;
+      resolve(`rgb(${Math.round(r / px)}, ${Math.round(g / px)}, ${Math.round(b / px)})`);
+    } catch { resolve('#C8861A'); }
+  };
+  img.onerror = () => resolve('#C8861A');
+  img.src = resolveImageUrl(imgUrl);
+});
+
+const darken = (color, factor = 0.3) => {
+  const m = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+  if (!m) return '#0A0A0A';
+  return `rgb(${Math.round(m[1] * factor)}, ${Math.round(m[2] * factor)}, ${Math.round(m[3] * factor)})`;
+};
+
+// ─── Slide Components ───
+
+const IntroSlide = ({ username, dominantColor }) => (
+  <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center snap-start" data-testid="slide-intro">
+    <p className="text-xs font-medium tracking-[0.3em] uppercase mb-4" style={{ color: dominantColor, opacity: 0.7 }}>
+      THE HONEY GROOVE
+    </p>
+    <h1 className="font-heading text-4xl sm:text-6xl font-black text-white leading-tight mb-4" data-testid="intro-title">
+      {username ? `@${username}'s` : 'Your'}<br />Week in the Hive
+    </h1>
+    <p className="text-sm text-stone-500 mt-2">Tap or scroll to explore your weekly story</p>
+    <ChevronDown className="w-6 h-6 text-stone-500 mt-8 animate-bounce" />
+  </div>
+);
+
+const HeroSlide = ({ record, spinCount, isTopSpin, dominantColor }) => {
+  const imgRef = useRef(null);
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center snap-start" data-testid="slide-hero">
+      <p className="text-xs font-medium tracking-[0.2em] uppercase mb-6" style={{ color: dominantColor }}>
+        {isTopSpin ? 'Top Spin of the Week' : 'The Newest Gem'}
+      </p>
+      {record?.cover_url ? (
+        <div className="relative w-56 h-56 sm:w-72 sm:h-72 rounded-2xl overflow-hidden shadow-2xl mb-6 ring-2"
+          style={{ ringColor: dominantColor, animation: 'kenBurns 20s ease-in-out infinite alternate' }}>
+          <img
+            ref={imgRef}
+            src={resolveImageUrl(record.cover_url)}
+            alt={`${record.artist} - ${record.title}`}
+            className="w-full h-full object-cover"
+            crossOrigin="anonymous"
+            decoding="sync"
+          />
+        </div>
+      ) : (
+        <div className="w-56 h-56 rounded-2xl flex items-center justify-center mb-6" style={{ background: `${dominantColor}20` }}>
+          <Disc className="w-20 h-20" style={{ color: dominantColor, opacity: 0.3 }} />
+        </div>
+      )}
+      <h2 className="text-2xl sm:text-4xl font-black text-white leading-tight" data-testid="hero-title">
+        {record?.title || 'No Activity'}
+      </h2>
+      <p className="text-base text-stone-400 mt-1">{record?.artist}</p>
+      {spinCount > 0 && (
+        <div className="flex items-center gap-2 mt-4">
+          <Play className="w-5 h-5" style={{ color: dominantColor }} />
+          <span className="text-lg font-bold" style={{ color: dominantColor }}>
+            {spinCount} spin{spinCount !== 1 ? 's' : ''} this week
+          </span>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const StatsSlide = ({ stats, dominantColor }) => (
+  <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center snap-start" data-testid="slide-stats">
+    <p className="text-xs font-medium tracking-[0.2em] uppercase mb-8" style={{ color: dominantColor }}>
+      The Numbers
+    </p>
+    <div className="grid grid-cols-2 gap-8 max-w-sm w-full">
+      <div>
+        <p className="text-5xl sm:text-7xl font-black" style={{ color: dominantColor }}>{stats.weekSpins}</p>
+        <p className="text-xs text-stone-500 mt-1 tracking-[0.15em] uppercase">Spins</p>
+      </div>
+      <div>
+        <p className="text-5xl sm:text-7xl font-black" style={{ color: dominantColor }}>{stats.weekAdds}</p>
+        <p className="text-xs text-stone-500 mt-1 tracking-[0.15em] uppercase">Added</p>
+      </div>
+      <div className="col-span-2">
+        <p className="text-5xl sm:text-7xl font-black text-white">${stats.totalValue?.toLocaleString() || '0'}</p>
+        <p className="text-xs text-stone-500 mt-1 tracking-[0.15em] uppercase">Collection Value</p>
+      </div>
+    </div>
+    {stats.valueGained > 0 && (
+      <div className="mt-8 flex items-center gap-2">
+        <TrendingUp className="w-5 h-5" style={{ color: '#4ADE80' }} />
+        <span className="text-sm font-bold text-green-400">
+          +${stats.valueGained.toLocaleString()} this week
+        </span>
+      </div>
+    )}
+  </div>
+);
+
+const GenreSlide = ({ genres, dominantColor }) => {
+  if (!genres || genres.length === 0) return null;
+  const total = genres.reduce((s, g) => s + g.count, 0);
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center snap-start" data-testid="slide-genres">
+      <p className="text-xs font-medium tracking-[0.2em] uppercase mb-8" style={{ color: dominantColor }}>
+        Your Vibe Map
+      </p>
+      <div className="space-y-4 max-w-sm w-full">
+        {genres.slice(0, 5).map((g, i) => {
+          const pct = Math.round((g.count / total) * 100);
+          return (
+            <div key={i} className="text-left">
+              <div className="flex justify-between mb-1">
+                <span className="text-sm font-bold text-white">{g.name}</span>
+                <span className="text-sm font-bold" style={{ color: dominantColor }}>{pct}%</span>
+              </div>
+              <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
+                <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${pct}%`, background: dominantColor }} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+const MilestoneSlide = ({ totalRecords, dominantColor }) => {
+  const milestones = [50, 100, 150, 200, 250, 300, 400, 500, 750, 1000];
+  const next = milestones.find(m => m > totalRecords);
+  const away = next ? next - totalRecords : null;
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center snap-start" data-testid="slide-milestone">
+      <Sparkles className="w-10 h-10 mb-6" style={{ color: dominantColor }} />
+      <p className="text-xs font-medium tracking-[0.2em] uppercase mb-4" style={{ color: dominantColor }}>
+        Collection Milestone
+      </p>
+      <p className="text-6xl sm:text-8xl font-black text-white mb-2">{totalRecords}</p>
+      <p className="text-sm text-stone-400">records in your collection</p>
+      {away && (
+        <p className="mt-4 text-lg font-bold" style={{ color: dominantColor }}>
+          Only {away} away from {next}!
+        </p>
+      )}
+    </div>
+  );
+};
+
+const NewAdditionsSlide = ({ additions, dominantColor }) => {
+  if (!additions || additions.length === 0) return null;
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center p-8 snap-start" data-testid="slide-additions">
+      <p className="text-xs font-medium tracking-[0.2em] uppercase mb-6 text-center" style={{ color: dominantColor }}>
+        New This Week
+      </p>
+      <div className="grid grid-cols-2 gap-3 max-w-sm w-full">
+        {additions.slice(0, 4).map((r, i) => (
+          <div key={i} className="rounded-xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)', animationDelay: `${i * 150}ms` }}>
+            <div className="aspect-square overflow-hidden">
+              {r.cover_url ? (
+                <img src={resolveImageUrl(r.cover_url)} alt={r.title} className="w-full h-full object-cover" crossOrigin="anonymous" decoding="sync" />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-stone-900">
+                  <Disc className="w-8 h-8 text-stone-700" />
+                </div>
+              )}
+            </div>
+            <div className="p-2.5">
+              <p className="text-xs font-bold text-white truncate">{r.title}</p>
+              <p className="text-[10px] text-stone-500 truncate">{r.artist}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ─── Share Card (for export) ───
+const ShareCard = React.forwardRef(({ data, dominantColor }, ref) => (
+  <div ref={ref} className="relative overflow-hidden" style={{ width: 1080, height: 1920, background: `linear-gradient(180deg, ${darken(dominantColor, 0.15)} 0%, ${darken(dominantColor, 0.25)} 40%, #0A0A0A 100%)` }}>
+    {/* Safe zone top (250px) */}
+    <div style={{ paddingTop: 180, textAlign: 'center' }}>
+      <p style={{ fontSize: 28, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.5)', fontFamily: '"DM Serif Display", Georgia, serif', textTransform: 'uppercase' }}>
+        THE HONEY GROOVE
+      </p>
+      <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.35)', marginTop: 8 }}>Your Weekly Hive Summary</p>
+    </div>
+    {/* Center: Album art */}
+    <div style={{ display: 'flex', justifyContent: 'center', marginTop: 120 }}>
+      {data.heroRecord?.cover_url ? (
+        <img src={resolveImageUrl(data.heroRecord.cover_url)} alt="" crossOrigin="anonymous"
+          style={{ width: 480, height: 480, borderRadius: 32, objectFit: 'cover', boxShadow: `0 40px 100px ${dominantColor}40` }} />
+      ) : (
+        <div style={{ width: 480, height: 480, borderRadius: 32, background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Disc style={{ width: 120, height: 120, color: dominantColor, opacity: 0.3 }} />
+        </div>
+      )}
+    </div>
+    {/* Record info */}
+    <div style={{ textAlign: 'center', marginTop: 48 }}>
+      <p style={{ fontSize: 36, fontWeight: 900, color: '#fff' }}>{data.heroRecord?.title || 'Your Week'}</p>
+      <p style={{ fontSize: 22, color: 'rgba(255,255,255,0.5)', marginTop: 8 }}>{data.heroRecord?.artist || ''}</p>
+    </div>
+    {/* Bottom stats (safe zone 300px) */}
+    <div style={{ position: 'absolute', bottom: 340, left: 0, right: 0, textAlign: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 80 }}>
+        <div>
+          <p style={{ fontSize: 48, fontWeight: 900, color: dominantColor }}>${data.totalValue?.toLocaleString() || '0'}</p>
+          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 4 }}>Total Value</p>
+        </div>
+        <div>
+          <p style={{ fontSize: 48, fontWeight: 900, color: dominantColor }}>{data.totalRecords}</p>
+          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 4 }}>Records</p>
+        </div>
+      </div>
+    </div>
+    {/* Branding at very bottom */}
+    <div style={{ position: 'absolute', bottom: 80, left: 0, right: 0, textAlign: 'center' }}>
+      <Disc style={{ display: 'inline', width: 24, height: 24, color: dominantColor, opacity: 0.4 }} />
+    </div>
+  </div>
+));
+ShareCard.displayName = 'ShareCard';
+
+// ─── Fresh Start Fallback ───
+const FreshStartSlide = ({ totalValue, dominantColor }) => (
+  <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center snap-start" data-testid="slide-fresh-start">
+    <Disc className="w-16 h-16 mb-6" style={{ color: dominantColor, opacity: 0.4 }} />
+    <h2 className="text-3xl sm:text-4xl font-black text-white mb-2">A Fresh Start in the Hive</h2>
+    <p className="text-sm text-stone-400 mb-8">No spins this week. Your collection is waiting.</p>
+    {totalValue > 0 && (
+      <>
+        <p className="text-6xl sm:text-8xl font-black" style={{ color: dominantColor }}>
+          ${totalValue.toLocaleString()}
+        </p>
+        <p className="text-xs text-stone-500 mt-2 tracking-[0.15em] uppercase">Total Collection Value</p>
+      </>
+    )}
+  </div>
+);
+
+// ─── Main Page ───
 const WeeklyReportPage = () => {
   const { user, token, API } = useAuth();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [dominantColor, setDominantColor] = useState('#C8861A');
+  const [exporting, setExporting] = useState(false);
+  const shareRef = useRef(null);
 
   useEffect(() => {
     if (!token) return;
     const fetchData = async () => {
       try {
-        const [recordsR, spinsR] = await Promise.all([
+        const [recordsR, spinsR, valR] = await Promise.all([
           axios.get(`${API}/records`, { headers: { Authorization: `Bearer ${token}` } }),
           axios.get(`${API}/spins`, { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get(`${API}/valuation/collection-value`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: {} })),
         ]);
         const records = recordsR.data;
         const spins = spinsR.data;
+        const valData = valR.data;
         const week = Date.now() - 7 * 86400000;
 
         const weekAdds = records.filter(r => new Date(r.created_at) > new Date(week));
@@ -29,152 +292,202 @@ const WeeklyReportPage = () => {
 
         // Top spin of the week
         const spinCounts = {};
-        weekSpins.forEach(s => {
-          const key = s.record_id;
-          spinCounts[key] = (spinCounts[key] || 0) + 1;
+        weekSpins.forEach(s => { spinCounts[s.record_id] = (spinCounts[s.record_id] || 0) + 1; });
+        const topSpinEntry = Object.entries(spinCounts).sort((a, b) => b[1] - a[1])[0];
+        const topSpinRecord = topSpinEntry ? records.find(r => r.id === topSpinEntry[0]) : null;
+        const topSpinCount = topSpinEntry ? topSpinEntry[1] : 0;
+
+        // If no spins, use most valuable recent addition
+        const topAddition = weekAdds.length > 0
+          ? weekAdds.sort((a, b) => (b.manual_price || b.median_price || 0) - (a.manual_price || a.median_price || 0))[0]
+          : records.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+
+        const heroRecord = topSpinRecord || topAddition;
+        const isTopSpin = !!topSpinRecord;
+
+        // Genre breakdown from weekly additions (or all records if no additions)
+        const genreSource = weekAdds.length > 0 ? weekAdds : records.slice(0, 50);
+        const genreMap = {};
+        genreSource.forEach(r => {
+          const genre = r.genre || r.style || 'Unknown';
+          genreMap[genre] = (genreMap[genre] || 0) + 1;
         });
-        const topSpinId = Object.entries(spinCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
-        const topSpinRecord = records.find(r => r.id === topSpinId);
+        const genres = Object.entries(genreMap)
+          .map(([name, count]) => ({ name, count }))
+          .sort((a, b) => b.count - a.count);
+
+        const totalValue = valData.total_value || 0;
 
         setData({
           totalRecords: records.length,
           weekAdds: weekAdds.length,
           weekSpins: weekSpins.length,
-          topSpin: topSpinRecord,
-          topSpinCount: spinCounts[topSpinId] || 0,
+          heroRecord,
+          isTopSpin,
+          topSpinCount,
           recentAdds: weekAdds.slice(0, 4),
+          genres,
+          totalValue,
+          valueGained: 0, // Would need historical data to calculate
           username: user?.username,
         });
+
+        // Extract dominant color from hero image
+        if (heroRecord?.cover_url) {
+          extractDominantColor(heroRecord.cover_url).then(setDominantColor);
+        }
       } catch { /* ignore */ }
       setLoading(false);
     };
     fetchData();
   }, [token, API, user]);
 
+  const handleShare = useCallback(async () => {
+    if (!shareRef.current) return;
+    setExporting(true);
+    try {
+      // Temporarily show the share card
+      shareRef.current.style.display = 'block';
+      shareRef.current.style.position = 'fixed';
+      shareRef.current.style.left = '-9999px';
+      shareRef.current.style.top = '0';
+
+      const canvas = await html2canvas(shareRef.current, {
+        width: 1080, height: 1920, scale: 1, useCORS: true, backgroundColor: null,
+      });
+
+      shareRef.current.style.display = 'none';
+
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        const file = new File([blob], `honeygroove-weekly-${Date.now()}.png`, { type: 'image/png' });
+        if (navigator.share && navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file], title: 'The Honey Groove — My Week in Wax' });
+        } else {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = file.name; a.click();
+          URL.revokeObjectURL(url);
+        }
+        setExporting(false);
+      }, 'image/png');
+    } catch {
+      setExporting(false);
+      shareRef.current.style.display = 'none';
+    }
+  }, []);
+
+  // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0A0A0A' }}>
-        <Disc className="w-12 h-12 animate-spin" style={{ color: '#FFD700' }} />
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: '#0A0A0A' }} data-testid="weekly-report-loading">
+        <Disc className="w-12 h-12 animate-spin" style={{ color: '#C8861A' }} />
+        <p className="text-sm font-medium tracking-[0.15em] uppercase" style={{ color: '#C8861A' }}>
+          Digging through the crates...
+        </p>
       </div>
     );
   }
 
+  // No data at all
   if (!data) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ background: '#0A0A0A', color: '#fff' }}>
-        <p className="text-lg font-bold">No data yet</p>
-        <Button onClick={() => navigate(-1)} className="mt-4 rounded-full" variant="outline">Go Back</Button>
+        <Disc className="w-16 h-16 mb-4" style={{ color: '#C8861A', opacity: 0.3 }} />
+        <p className="text-lg font-bold">No collection data yet</p>
+        <p className="text-sm text-stone-500 mt-1">Start adding records to build your weekly story.</p>
+        <Button onClick={() => navigate(-1)} className="mt-6 rounded-full" variant="outline">Go Back</Button>
       </div>
     );
   }
 
+  const bgGradient = `linear-gradient(180deg, ${darken(dominantColor, 0.12)} 0%, ${darken(dominantColor, 0.2)} 30%, #0A0A0A 60%, ${darken(dominantColor, 0.1)} 100%)`;
+  const hasSpins = data.weekSpins > 0;
+
   return (
-    <div className="min-h-screen" style={{ background: 'linear-gradient(180deg, #0A0A0A 0%, #1A0F00 50%, #0A0A0A 100%)' }} data-testid="weekly-report-page">
-      {/* Back button */}
-      <button
-        onClick={() => navigate(-1)}
-        className="fixed top-4 left-4 z-50 w-10 h-10 rounded-full flex items-center justify-center bg-white/10 hover:bg-white/20 transition-colors"
-        data-testid="weekly-report-back"
-      >
-        <ArrowLeft className="w-5 h-5 text-white" />
-      </button>
-
-      {/* Hero: Top Spin */}
-      <div className="flex flex-col items-center pt-20 px-6 pb-10 text-center">
-        <p className="text-xs font-medium tracking-[0.2em] uppercase mb-6" style={{ color: '#C8861A' }}>
-          {data.username ? `@${data.username}'s` : 'Your'} Week in Wax
-        </p>
-
-        {data.topSpin ? (
-          <>
-            <p className="text-sm text-stone-400 mb-4">Top Spin of the Week</p>
-            <div className="w-56 h-56 sm:w-72 sm:h-72 rounded-2xl overflow-hidden shadow-2xl mb-6 ring-2 ring-[#FFD700]/30" data-testid="weekly-top-spin-art">
-              <AlbumArt
-                src={data.topSpin.cover_url}
-                alt={`${data.topSpin.artist} - ${data.topSpin.title}`}
-                className="w-full h-full object-cover"
-                artist={data.topSpin.artist}
-                title={data.topSpin.title}
-              />
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight" data-testid="weekly-top-spin-title">
-              {data.topSpin.title}
-            </h2>
-            <p className="text-base text-stone-400 mt-1">{data.topSpin.artist}</p>
-            <div className="flex items-center gap-2 mt-3">
-              <Play className="w-4 h-4" style={{ color: '#FFD700' }} />
-              <span className="text-sm font-bold" style={{ color: '#FFD700' }}>
-                {data.topSpinCount} spin{data.topSpinCount !== 1 ? 's' : ''} this week
-              </span>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="w-40 h-40 rounded-2xl flex items-center justify-center mb-6" style={{ background: 'rgba(255,215,0,0.1)' }}>
-              <Disc className="w-16 h-16" style={{ color: '#FFD700', opacity: 0.3 }} />
-            </div>
-            <h2 className="text-2xl font-black text-white">No Spins This Week</h2>
-            <p className="text-sm text-stone-400 mt-1">Drop the needle and start your story.</p>
-          </>
-        )}
-      </div>
-
-      {/* Stats strip */}
-      <div className="flex justify-center gap-8 py-8 px-6" data-testid="weekly-stats-strip">
-        <div className="text-center">
-          <p className="text-3xl sm:text-4xl font-black" style={{ color: '#FFD700' }}>{data.weekSpins}</p>
-          <p className="text-xs text-stone-500 mt-1 tracking-wide uppercase">Spins</p>
-        </div>
-        <div className="text-center">
-          <p className="text-3xl sm:text-4xl font-black" style={{ color: '#FFD700' }}>{data.weekAdds}</p>
-          <p className="text-xs text-stone-500 mt-1 tracking-wide uppercase">Added</p>
-        </div>
-        <div className="text-center">
-          <p className="text-3xl sm:text-4xl font-black" style={{ color: '#FFD700' }}>{data.totalRecords}</p>
-          <p className="text-xs text-stone-500 mt-1 tracking-wide uppercase">Total</p>
-        </div>
-      </div>
-
-      {/* Recent Additions */}
-      {data.recentAdds.length > 0 && (
-        <div className="px-6 py-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Sparkles className="w-4 h-4" style={{ color: '#C8861A' }} />
-            <p className="text-xs font-medium tracking-[0.15em] uppercase text-stone-400">New This Week</p>
-          </div>
-          <div className="grid grid-cols-2 gap-3" data-testid="weekly-recent-adds">
-            {data.recentAdds.map(r => (
-              <div key={r.id} className="rounded-xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                <div className="aspect-square">
-                  <AlbumArt src={r.cover_url} alt={r.title} className="w-full h-full object-cover" artist={r.artist} title={r.title} />
-                </div>
-                <div className="p-2.5">
-                  <p className="text-xs font-bold text-white truncate">{r.title}</p>
-                  <p className="text-[10px] text-stone-500 truncate">{r.artist}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+    <div className="relative" style={{ background: bgGradient }} data-testid="weekly-report-page">
+      {/* Desktop: Blurred wallpaper background */}
+      {data.heroRecord?.cover_url && (
+        <div className="fixed inset-0 z-0 hidden lg:block pointer-events-none" aria-hidden="true">
+          <img src={resolveImageUrl(data.heroRecord.cover_url)} alt="" className="w-full h-full object-cover" style={{ filter: 'blur(80px) brightness(0.15)', transform: 'scale(1.2)' }} crossOrigin="anonymous" />
         </div>
       )}
 
-      {/* Vibe footer */}
-      <div className="text-center pb-16 pt-4 px-6">
-        <TrendingUp className="w-6 h-6 mx-auto mb-3" style={{ color: '#C8861A' }} />
-        <p className="text-xs text-stone-500">
-          {data.weekSpins > 10 ? 'Heavy rotation week. The groove is strong.' :
-           data.weekSpins > 3 ? 'Steady listening. Quality over quantity.' :
-           'Quiet week. The vinyl is waiting.'}
-        </p>
-        <Button
+      {/* Content wrapper — centered on desktop */}
+      <div className="relative z-10 max-w-lg mx-auto snap-y snap-mandatory" style={{ scrollSnapType: 'y mandatory' }}>
+        {/* Back button */}
+        <button
           onClick={() => navigate(-1)}
-          variant="outline"
-          className="mt-6 rounded-full text-xs border-stone-700 text-stone-400 hover:text-white hover:border-stone-500"
-          data-testid="weekly-report-done"
+          className="fixed top-4 left-4 z-50 w-10 h-10 rounded-full flex items-center justify-center transition-colors"
+          style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)' }}
+          data-testid="weekly-report-back"
         >
-          Back to Profile
-        </Button>
+          <ArrowLeft className="w-5 h-5 text-white" />
+        </button>
+
+        {/* Slide 1: Intro */}
+        <IntroSlide username={data.username} dominantColor={dominantColor} />
+
+        {/* Slide 2: Hero (Top Spin or Fresh Start) */}
+        {hasSpins ? (
+          <HeroSlide record={data.heroRecord} spinCount={data.topSpinCount} isTopSpin={data.isTopSpin} dominantColor={dominantColor} />
+        ) : (
+          <FreshStartSlide totalValue={data.totalValue} dominantColor={dominantColor} />
+        )}
+
+        {/* Slide 3: Stats */}
+        <StatsSlide stats={data} dominantColor={dominantColor} />
+
+        {/* Slide 4: Genre Breakdown */}
+        <GenreSlide genres={data.genres} dominantColor={dominantColor} />
+
+        {/* Slide 5: New Additions */}
+        <NewAdditionsSlide additions={data.recentAdds} dominantColor={dominantColor} />
+
+        {/* Slide 6: Milestone */}
+        <MilestoneSlide totalRecords={data.totalRecords} dominantColor={dominantColor} />
+
+        {/* Slide 7: Share CTA */}
+        <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center snap-start" data-testid="slide-share">
+          <p className="text-xs font-medium tracking-[0.2em] uppercase mb-6" style={{ color: dominantColor }}>
+            Share Your Week
+          </p>
+          <p className="text-lg text-stone-400 mb-8 max-w-xs">
+            Show the Hive what you've been spinning. Export a ready-to-share story card.
+          </p>
+          <Button
+            onClick={handleShare}
+            disabled={exporting}
+            className="rounded-full px-8 py-3 text-base font-bold gap-2"
+            style={{ background: dominantColor, color: '#0A0A0A' }}
+            data-testid="share-week-btn"
+          >
+            {exporting ? <Disc className="w-5 h-5 animate-spin" /> : <Share2 className="w-5 h-5" />}
+            {exporting ? 'Generating...' : 'Share Your Week'}
+          </Button>
+          <Button
+            onClick={() => navigate(-1)}
+            variant="ghost"
+            className="mt-4 rounded-full text-sm text-stone-500 hover:text-white"
+            data-testid="weekly-report-done"
+          >
+            Back to Profile
+          </Button>
+        </div>
       </div>
+
+      {/* Hidden Share Card for export (1080x1920) */}
+      <div style={{ display: 'none' }}>
+        <ShareCard ref={shareRef} data={data} dominantColor={dominantColor} />
+      </div>
+
+      {/* Ken Burns CSS */}
+      <style>{`
+        @keyframes kenBurns {
+          0% { transform: scale(1); }
+          100% { transform: scale(1.08); }
+        }
+      `}</style>
     </div>
   );
 };
