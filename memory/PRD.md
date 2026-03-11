@@ -15,17 +15,20 @@ Premium social platform for vinyl collectors. Features include collection manage
 - "The Great Disconnect" migration (BLOCK 472/473)
 - Migration modal "The Honey Groove" branding (BLOCK 492)
 - Dev-only migration reset tool (BLOCK 491)
-- **BLOCK 500:** "Authentication: Pure Gold" success screen with gold confetti after OAuth
+- "Authentication: Pure Gold" success screen with gold confetti (BLOCK 500)
 
 ### Valuation & Price Display
-- **BLOCK 487:** Smart Valuation Hierarchy — Market price > Personal valuation (pencil icon) > Dash fallback
-- **BLOCK 483/484:** Honey Gold price pill overlays, priority re-linking after OAuth
-- **BLOCK 494/495:** Avg. Value stat in Week in Wax (`total_value / total_count`), replaces redundant "Total"
+- Smart Valuation Hierarchy: Market > Personal > Dash (BLOCK 487)
+- Honey Gold price pill overlays on ProfilePage and CollectionPage (BLOCK 483/484)
+- Avg. Value stat in Week in Wax (BLOCK 494/495)
+- Priority value re-linking after OAuth re-auth (BLOCK 484)
 
 ### Profile UI
-- **BLOCK 494:** Brand watermark "THE HONEY GROOVE" in dark charcoal (#2C2C2C)
-- **BLOCK 494:** Mood tab removed from profile navigation
-- **BLOCK 494:** Symmetrical 3-stat layout: Added | Spins | Avg. Value
+- Brand watermark "THE HONEY GROOVE" in dark charcoal #2C2C2C (BLOCK 494)
+- Mood tab removed from profile navigation (BLOCK 494)
+- "View Full Report →" link hidden/flagged (BLOCK 503)
+- "Gold Standard" promotional text removed from CollectionPage (BLOCK 505)
+- **BLOCK 509:** Golden Hive Verified badge — premium shield SVG, metallic gold gradient, shimmer animation
 
 ### Performance
 - SWR client-side caching (Profile, Explore pages)
@@ -62,4 +65,4 @@ Premium social platform for vinyl collectors. Features include collection manage
 
 ## Test Credentials
 - Admin: admin@thehoneygroove.com / admin_password
-- User: test@example.com / test123
+- User: test@example.com / test123 (has golden_hive_verified=true for testing)
