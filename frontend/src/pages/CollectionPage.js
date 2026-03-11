@@ -676,13 +676,6 @@ const CollectionPage = () => {
 
         {/* ====== COLLECTION (OWNED) TAB ====== */}
         <TabsContent value="owned">
-          {/* Collection Tagline */}
-          <div className="mb-4 px-1 transition-opacity duration-500" data-testid="reality-header">
-            <p className="font-heading text-lg">
-              <span style={{ background: 'linear-gradient(90deg, #C8861A, #E8A820, #D4A017)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>The Gold Standard{collectionValue && collectionValue.total_value > 0 ? `: $${collectionValue.total_value.toLocaleString(undefined, { maximumFractionDigits: 0 })} worth of wax on your shelf.` : '.'}</span>
-            </p>
-            <p className="text-sm text-stone-500 font-serif italic">Your collection, curated and captured in the light.</p>
-          </div>
 
           {/* Hidden Gems */}
           {hiddenGems.length > 0 && (

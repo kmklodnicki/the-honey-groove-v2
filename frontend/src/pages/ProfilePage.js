@@ -466,11 +466,22 @@ const ProfilePage = () => {
                   {promptStreak.streak} day streak
                 </span>
               )}
-              {/* Golden Hive ID Badge */}
+              {/* BLOCK 509: Golden Hive Verified — Premium Shield with shimmer */}
               {profile.golden_hive_verified && (
-                <div className="mt-1.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-100 to-yellow-50 border border-amber-300/50" data-testid="golden-hive-badge">
-                  <svg className="w-3.5 h-3.5 text-amber-600" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                  <span className="text-xs font-medium text-amber-700">Golden Hive ID</span>
+                <div className="mt-1.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-amber-400/50 golden-shimmer" data-testid="golden-hive-badge">
+                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none">
+                    <defs>
+                      <linearGradient id="goldShield" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#FFD700"/>
+                        <stop offset="100%" stopColor="#DAA520"/>
+                      </linearGradient>
+                    </defs>
+                    <path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" fill="url(#goldShield)"/>
+                    <path d="M9.5 12l2 2 3.5-4" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                  </svg>
+                  <span className="text-xs font-semibold" style={{ letterSpacing: '-0.01em', background: 'linear-gradient(45deg, #FFD700, #DAA520)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                    Golden Hive Verified
+                  </span>
                 </div>
               )}
               {profile.golden_hive_status === 'pending' && isOwnProfile && (
@@ -717,13 +728,14 @@ const ProfilePage = () => {
       <>
       {/* Your Week in Wax — profile-level activity summary */}
       {isOwnProfile && records.length > 0 && (
-        <Link to="/reports/weekly" className="block mt-6 mb-5" data-testid="profile-week-in-wax">
-          <div className="rounded-xl border border-honey/30 p-4 transition-all hover:shadow-md hover:border-honey/60"
+        <div className="block mt-6 mb-5" data-testid="profile-week-in-wax">
+          <div className="rounded-xl border border-honey/30 p-4"
             style={{ background: 'linear-gradient(135deg, rgba(255,215,0,0.06) 0%, rgba(218,165,32,0.03) 100%)' }}
           >
-            <div className="flex items-center justify-between mb-2">
+            <div className="mb-2">
               <h3 className="text-sm font-bold tracking-tight" style={{ color: '#7A5A1A' }}>Your Week in Wax</h3>
-              <span className="text-[10px] text-stone-400">View Full Report &rarr;</span>
+              {/* BLOCK 503: View Full Report link hidden — togglable when ready */}
+              {/* <span className="text-[10px] text-stone-400">View Full Report &rarr;</span> */}
             </div>
             <div className="flex gap-4 text-center">
               <div className="flex-1">
@@ -748,7 +760,7 @@ const ProfilePage = () => {
               </div>
             </div>
           </div>
-        </Link>
+        </div>
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
