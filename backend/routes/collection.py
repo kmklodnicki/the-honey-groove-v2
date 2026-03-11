@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, Query, Request
 from fastapi.security import HTTPAuthorizationCredentials
-from fastapi.responses import Response
+from fastapi.responses import Response, RedirectResponse
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone, timedelta
 import uuid
@@ -952,27 +952,37 @@ async def serve_file(path: str):
 # ============== DISCOGS OAUTH & IMPORT ROUTES ==============
 
 @router.get("/discogs/oauth/start")
-async def discogs_oauth_start(request: Request, user: Dict = Depends(require_auth)):
-    """Step 1: Get request token and return authorization URL"""
+async def discogs_oauth_start(request: Request, user: Dict = Depends(require_auth), frontend_origin: str = Query(default="")):
+    """Step 1: Get request token and return authorization URL
+    BLOCK 480: Uses frontend-provided origin (window.location.origin) as primary source.
+    BLOCK 481: Comprehensive error logging for Discogs responses.
+    """
     if not DISCOGS_CONSUMER_KEY or not DISCOGS_CONSUMER_SECRET:
+        logger.error("Discogs OAuth not configured — DISCOGS_CONSUMER_KEY or DISCOGS_CONSUMER_SECRET is empty")
         raise HTTPException(status_code=400, detail="Discogs OAuth not configured. Please add Consumer Key and Secret in settings.")
     
-    # BLOCK 472: Dynamic callback URL — detect environment from the incoming request
-    request_origin = request.headers.get("origin", "")
-    if request_origin:
-        callback_url = f"{request_origin}/api/discogs/oauth/callback"
-    else:
-        callback_url = f"{FRONTEND_URL}/api/discogs/oauth/callback"
+    # BLOCK 480: Dynamic callback — priority: frontend_origin param > Origin header > FRONTEND_URL
+    origin = frontend_origin or request.headers.get("origin", "") or FRONTEND_URL
+    callback_url = f"{origin}/api/discogs/oauth/callback"
     
-    logger.info(f"Discogs OAuth start: callback_url={callback_url}")
+    logger.info(f"Discogs OAuth start: user={user['id']}")
+    logger.info(f"  frontend_origin param: {repr(frontend_origin)}")
+    logger.info(f"  Origin header: {repr(request.headers.get('origin', ''))}")
+    logger.info(f"  Resolved origin: {origin}")
+    logger.info(f"  callback_url: {callback_url}")
+    logger.info(f"  DISCOGS_CONSUMER_KEY present: {bool(DISCOGS_CONSUMER_KEY)}")
+    logger.info(f"  DISCOGS_CONSUMER_SECRET present: {bool(DISCOGS_CONSUMER_SECRET)}")
     
     try:
+        # BLOCK 481: Explicitly use HMAC-SHA1 as required by Discogs
         oauth = OAuth1Session(
             client_key=DISCOGS_CONSUMER_KEY,
             client_secret=DISCOGS_CONSUMER_SECRET,
-            callback_uri=callback_url
+            callback_uri=callback_url,
+            signature_method="HMAC-SHA1"
         )
         
+        logger.info(f"  Fetching request token from {DISCOGS_REQUEST_TOKEN_URL}...")
         response = oauth.fetch_request_token(
             DISCOGS_REQUEST_TOKEN_URL,
             headers={"User-Agent": DISCOGS_USER_AGENT}
@@ -980,6 +990,8 @@ async def discogs_oauth_start(request: Request, user: Dict = Depends(require_aut
         
         oauth_token = response.get('oauth_token')
         oauth_token_secret = response.get('oauth_token_secret')
+        
+        logger.info(f"  Request token obtained: {oauth_token[:8]}...")
         
         # Store the request token secret (keyed by oauth_token)
         oauth_request_tokens[oauth_token] = oauth_token_secret
@@ -991,7 +1003,7 @@ async def discogs_oauth_start(request: Request, user: Dict = Depends(require_aut
                 "oauth_token": oauth_token,
                 "oauth_token_secret": oauth_token_secret,
                 "user_id": user["id"],
-                "callback_origin": request_origin or FRONTEND_URL,
+                "callback_origin": origin,
                 "created_at": datetime.now(timezone.utc).isoformat()
             }},
             upsert=True
@@ -1002,15 +1014,30 @@ async def discogs_oauth_start(request: Request, user: Dict = Depends(require_aut
         return {"authorization_url": authorization_url}
     
     except Exception as e:
-        logger.error(f"Discogs OAuth start failed: {e}")
+        # BLOCK 481: Log the full Discogs error response
+        error_detail = str(e)
+        logger.error(f"Discogs OAuth start FAILED: {error_detail}")
         logger.error(f"  callback_url used: {callback_url}")
-        logger.error(f"  Ensure this callback URL is registered in the Discogs developer portal")
-        raise HTTPException(status_code=500, detail=f"Failed to start Discogs OAuth: {str(e)}")
+        logger.error(f"  consumer_key (first 4 chars): {DISCOGS_CONSUMER_KEY[:4]}...")
+        
+        # Try to extract the actual Discogs response body
+        if hasattr(e, 'response') and e.response is not None:
+            logger.error(f"  Discogs HTTP status: {e.response.status_code}")
+            logger.error(f"  Discogs response body: {e.response.text}")
+            logger.error(f"  Discogs response headers: {dict(e.response.headers)}")
+            error_detail = f"Discogs returned {e.response.status_code}: {e.response.text}"
+        elif hasattr(e, '__cause__') and e.__cause__ is not None:
+            logger.error(f"  Underlying cause: {e.__cause__}")
+        
+        logger.error(f"  IMPORTANT: Ensure this exact callback URL is registered in the Discogs developer portal: {callback_url}")
+        raise HTTPException(status_code=500, detail=f"Failed to start Discogs OAuth: {error_detail}")
 
 
 @router.get("/discogs/oauth/callback")
 async def discogs_oauth_callback(oauth_token: str = Query(...), oauth_verifier: str = Query(...)):
-    """Step 2: Handle callback from Discogs, exchange for access token"""
+    """Step 2: Handle callback from Discogs, exchange for access token
+    BLOCK 481: Enhanced error logging for every Discogs API interaction."""
+    pending = None
     try:
         # Look up the stored request token secret
         pending = await db.discogs_oauth_pending.find_one({"oauth_token": oauth_token}, {"_id": 0})
@@ -1018,19 +1045,23 @@ async def discogs_oauth_callback(oauth_token: str = Query(...), oauth_verifier: 
             # Try in-memory fallback
             oauth_token_secret = oauth_request_tokens.get(oauth_token)
             if not oauth_token_secret:
+                logger.error(f"OAuth callback: no pending session found for token {oauth_token[:8]}...")
                 raise HTTPException(status_code=400, detail="Invalid or expired OAuth token")
             user_id = None
         else:
             oauth_token_secret = pending["oauth_token_secret"]
             user_id = pending["user_id"]
         
-        # Exchange for access token
+        logger.info(f"OAuth callback: exchanging tokens for user {user_id}")
+        
+        # BLOCK 481: Exchange for access token with HMAC-SHA1
         oauth = OAuth1Session(
             client_key=DISCOGS_CONSUMER_KEY,
             client_secret=DISCOGS_CONSUMER_SECRET,
             resource_owner_key=oauth_token,
             resource_owner_secret=oauth_token_secret,
-            verifier=oauth_verifier
+            verifier=oauth_verifier,
+            signature_method="HMAC-SHA1"
         )
         
         access_tokens = oauth.fetch_access_token(
@@ -1040,23 +1071,33 @@ async def discogs_oauth_callback(oauth_token: str = Query(...), oauth_verifier: 
         
         access_token = access_tokens.get('oauth_token')
         access_token_secret = access_tokens.get('oauth_token_secret')
+        logger.info(f"OAuth callback: access token obtained for user {user_id}")
         
         # Get user identity from Discogs
         identity_oauth = OAuth1Session(
             client_key=DISCOGS_CONSUMER_KEY,
             client_secret=DISCOGS_CONSUMER_SECRET,
             resource_owner_key=access_token,
-            resource_owner_secret=access_token_secret
+            resource_owner_secret=access_token_secret,
+            signature_method="HMAC-SHA1"
         )
         
         identity_resp = identity_oauth.get(
             f"{DISCOGS_API_BASE}/oauth/identity",
             headers={"User-Agent": DISCOGS_USER_AGENT}
         )
+        
+        # BLOCK 481: Log full response on identity failure
+        if not identity_resp.ok:
+            logger.error(f"Discogs identity request failed: HTTP {identity_resp.status_code}")
+            logger.error(f"  Response body: {identity_resp.text}")
+            logger.error(f"  Response headers: {dict(identity_resp.headers)}")
         identity_resp.raise_for_status()
+        
         identity = identity_resp.json()
         discogs_username = identity.get("username", "")
         discogs_id = identity.get("id", None)
+        logger.info(f"OAuth callback: identity verified as '{discogs_username}' (id={discogs_id})")
         
         # BLOCK 453: Imposter Protection — check if this Discogs account is already linked to another user
         if user_id and discogs_username:
@@ -1123,13 +1164,20 @@ async def discogs_oauth_callback(oauth_token: str = Query(...), oauth_verifier: 
             oauth_request_tokens.pop(oauth_token, None)
         
         # BLOCK 472: Redirect to the frontend that initiated the flow (dynamic env support)
-        from fastapi.responses import RedirectResponse
         frontend_base = pending.get("callback_origin", FRONTEND_URL) if pending else FRONTEND_URL
         return RedirectResponse(url=f"{frontend_base}/collection?discogs=connected&username={discogs_username}")
     
     except Exception as e:
-        logger.error(f"Discogs OAuth callback failed: {e}")
-        logger.error(f"  oauth_token: {oauth_token}, oauth_verifier present: {bool(oauth_verifier)}")
+        # BLOCK 481: Comprehensive error logging
+        logger.error(f"Discogs OAuth callback FAILED: {e}")
+        logger.error(f"  oauth_token: {oauth_token[:8]}..., oauth_verifier present: {bool(oauth_verifier)}")
+        
+        # Extract full Discogs response if available
+        if hasattr(e, 'response') and e.response is not None:
+            logger.error(f"  Discogs HTTP status: {e.response.status_code}")
+            logger.error(f"  Discogs response body: {e.response.text}")
+            logger.error(f"  This could indicate: Timestamp refused, Signature invalid, or Consumer Key unknown")
+        
         frontend_base = pending.get("callback_origin", FRONTEND_URL) if pending else FRONTEND_URL
         return RedirectResponse(url=f"{frontend_base}/collection?discogs=error&message={str(e)}")
 

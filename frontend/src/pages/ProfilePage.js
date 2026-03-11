@@ -405,7 +405,8 @@ const ProfilePage = () => {
               Your Discogs connection needs re-verification. <button
                 onClick={async () => {
                   try {
-                    const resp = await axios.get(`${API}/discogs/oauth/start`, { headers: { Authorization: `Bearer ${token}` } });
+                    const origin = encodeURIComponent(window.location.origin);
+                    const resp = await axios.get(`${API}/discogs/oauth/start?frontend_origin=${origin}`, { headers: { Authorization: `Bearer ${token}` } });
                     window.location.href = resp.data.authorization_url;
                   } catch { /* ignore */ }
                 }}

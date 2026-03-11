@@ -24,7 +24,9 @@ const DiscogsSecurityModal = ({ open, onClose }) => {
   const handleReconnect = async () => {
     await markSeen();
     try {
-      const resp = await axios.get(`${API}/discogs/oauth/start`, {
+      // BLOCK 480: Pass window.location.origin for dynamic callback URL
+      const origin = encodeURIComponent(window.location.origin);
+      const resp = await axios.get(`${API}/discogs/oauth/start?frontend_origin=${origin}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       window.location.href = resp.data.authorization_url;
