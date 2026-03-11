@@ -280,13 +280,13 @@ const SpinningVinyl = () => (
   </div>
 );
 
-// Live 4-bar equalizer with staggered bounce + white glow
+// Live 4-bar equalizer with staggered bounce + honey glow
 const LiveEqualizer = () => (
   <div className="absolute bottom-1.5 right-1.5 z-[6] flex items-end gap-[2px] pointer-events-none" style={{ display: 'flex', visibility: 'visible', minHeight: '16px', height: '16px' }} data-testid="live-equalizer">
-    <span className="w-[3px] rounded-full" style={{ background: '#fff', boxShadow: '0 0 4px rgba(255,255,255,0.5)', animation: 'eqBar1 0.8s ease-in-out infinite alternate', height: '40%' }} />
-    <span className="w-[3px] rounded-full" style={{ background: '#fff', boxShadow: '0 0 4px rgba(255,255,255,0.5)', animation: 'eqBar2 0.6s ease-in-out infinite alternate', height: '70%' }} />
-    <span className="w-[3px] rounded-full" style={{ background: '#fff', boxShadow: '0 0 4px rgba(255,255,255,0.5)', animation: 'eqBar3 0.9s ease-in-out infinite alternate', height: '50%' }} />
-    <span className="w-[3px] rounded-full" style={{ background: '#fff', boxShadow: '0 0 4px rgba(255,255,255,0.5)', animation: 'eqBar4 0.7s ease-in-out infinite alternate', height: '60%' }} />
+    <span className="w-[3px] rounded-full" style={{ background: '#FFB800', boxShadow: '0 0 4px rgba(255,184,0,0.5)', animation: 'eqBar1 0.8s ease-in-out infinite alternate', height: '40%' }} />
+    <span className="w-[3px] rounded-full" style={{ background: '#FFB800', boxShadow: '0 0 4px rgba(255,184,0,0.5)', animation: 'eqBar2 0.6s ease-in-out infinite alternate', height: '70%' }} />
+    <span className="w-[3px] rounded-full" style={{ background: '#FFB800', boxShadow: '0 0 4px rgba(255,184,0,0.5)', animation: 'eqBar3 0.9s ease-in-out infinite alternate', height: '50%' }} />
+    <span className="w-[3px] rounded-full" style={{ background: '#FFB800', boxShadow: '0 0 4px rgba(255,184,0,0.5)', animation: 'eqBar4 0.7s ease-in-out infinite alternate', height: '60%' }} />
   </div>
 );
 
