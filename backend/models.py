@@ -461,7 +461,7 @@ class HoldAccept(BaseModel):
 
 class AdminHoldResolve(BaseModel):
     """Admin resolves a mutual hold dispute."""
-    resolution: str  # "full_reversal", "penalize_initiator", "penalize_responder", "partial"
+    resolution: str  # "full_reversal", "penalize_initiator", "penalize_responder", "partial", "extend_investigation"
     notes: str
     partial_refund_initiator: Optional[float] = None
     partial_refund_responder: Optional[float] = None

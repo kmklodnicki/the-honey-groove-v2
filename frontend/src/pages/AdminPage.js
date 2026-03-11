@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/
 import {
   Loader2, Copy, Download, Plus, Users, Key, Check, X, Trash2,
   MessageSquare, Grid3X3, Flag, Settings, ChevronRight, Search,
-  ToggleLeft, ToggleRight, Pencil, Calendar, Hash, Shield, DollarSign, ArrowRightLeft, AlertTriangle, Flame, Heart
+  ToggleLeft, ToggleRight, Pencil, Calendar, Hash, Shield, DollarSign, ArrowRightLeft, AlertTriangle, Flame, Heart, Clock
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -738,29 +738,29 @@ const HoldDisputesSection = ({ API, headers }) => {
                     data-testid={`resolve-full_reversal-${trade.id}`}
                   >
                     {resolving === trade.id ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> : null}
-                    Refund Both
+                    Release Both Holds
                   </Button>
                   <Button size="sm" variant="outline"
-                    className="h-10 rounded-xl bg-white text-[#996012] border-[#996012] hover:bg-[#C8861A]/5 font-medium"
+                    className="h-10 rounded-xl bg-white text-red-700 border-red-300 hover:bg-red-50 font-medium"
                     disabled={resolving === trade.id}
                     onClick={() => {
-                      if (window.confirm(`The proposer's hold of $${amt} will be kept by the platform. The recipient's hold will be fully reversed. This action is final.`))
-                        resolve(trade.id, 'penalize_initiator');
+                      const disputeOpener = trade.dispute?.opened_by;
+                      const offenderRole = disputeOpener === trade.initiator_id ? 'penalize_responder' : 'penalize_initiator';
+                      const offenderName = disputeOpener === trade.initiator_id ? trade.responder?.username : trade.initiator?.username;
+                      if (window.confirm(`@${offenderName}'s hold of $${amt} will be captured. The victim's hold will be fully reversed. This action is final.`))
+                        resolve(trade.id, offenderRole);
                     }}
-                    data-testid={`resolve-penalize_initiator-${trade.id}`}
+                    data-testid={`resolve-capture-offender-${trade.id}`}
                   >
-                    Proposer Forfeits Hold
+                    Capture Offender & Refund Victim
                   </Button>
                   <Button size="sm" variant="outline"
-                    className="h-10 rounded-xl bg-white text-[#996012] border-[#996012] hover:bg-[#C8861A]/5 font-medium"
+                    className="h-10 rounded-xl bg-white text-amber-700 border-amber-300 hover:bg-amber-50 font-medium"
                     disabled={resolving === trade.id}
-                    onClick={() => {
-                      if (window.confirm(`The recipient's hold of $${amt} will be kept by the platform. The proposer's hold will be fully reversed. This action is final.`))
-                        resolve(trade.id, 'penalize_responder');
-                    }}
-                    data-testid={`resolve-penalize_responder-${trade.id}`}
+                    onClick={() => resolve(trade.id, 'extend_investigation')}
+                    data-testid={`resolve-extend-${trade.id}`}
                   >
-                    Recipient Forfeits Hold
+                    <Clock className="w-3.5 h-3.5 mr-1.5" /> Extend Investigation
                   </Button>
                   <Button size="sm" variant="outline"
                     className="h-10 rounded-xl bg-white text-[#8A6B4A] border-[#8A6B4A]/40 hover:bg-[#C8861A]/5 font-medium"

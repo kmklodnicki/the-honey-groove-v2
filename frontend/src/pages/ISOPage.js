@@ -17,7 +17,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '../components/ui/select';
-import { Search, Plus, CheckCircle2, Loader2, Trash2, Tag, DollarSign, Disc, ArrowRightLeft, ShoppingBag, Camera, X, MessageSquare, Shield } from 'lucide-react';
+import { Search, Plus, CheckCircle2, Loader2, Trash2, Tag, DollarSign, Disc, ArrowRightLeft, ShoppingBag, Camera, X, MessageSquare, Shield, HelpCircle } from 'lucide-react';
 import {
   Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
 } from '../components/ui/tooltip';
@@ -78,6 +78,7 @@ const ISOPage = () => {
   const [deleteConfirmId, setDeleteConfirmId] = useState(null); // listing or iso id pending delete
   const [deleteConfirmType, setDeleteConfirmType] = useState(null); // 'listing' or 'iso'
   const [showEssentialsUpsell, setShowEssentialsUpsell] = useState(false);
+  const [showHowTradesWork, setShowHowTradesWork] = useState(false);
   const pendingCheckoutRef = useRef(null);
 
   // Check Stripe status
@@ -772,6 +773,15 @@ const ISOPage = () => {
 
         {/* ====== TRADE TAB ====== */}
         <TabsContent value="trade">
+          {/* How Trades Work CTA */}
+          <button
+            onClick={() => setShowHowTradesWork(true)}
+            className="flex items-center gap-1.5 text-sm text-[#C8861A] hover:text-[#996012] hover:underline mb-5 transition-colors"
+            data-testid="how-trades-work-btn"
+          >
+            <HelpCircle className="w-4 h-4" /> How do trades work?
+          </button>
+
           {/* Active Trades */}
           <h3 className="font-heading text-lg text-vinyl-black mb-3" data-testid="active-trades-title">Active Trades</h3>
           {activeTrades.length === 0 ? (
@@ -1160,6 +1170,84 @@ const ISOPage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* How Trades Work Modal */}
+      <Dialog open={showHowTradesWork} onOpenChange={setShowHowTradesWork}>
+        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-xl flex items-center gap-2">
+              <ArrowRightLeft className="w-5 h-5 text-[#C8861A]" /> How Trading Works: The 4-Step Groove
+            </DialogTitle>
+            <DialogDescription>Secure, scam-free vinyl trading.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-5 pt-2">
+            {/* Step 1 */}
+            <div className="flex gap-3" data-testid="trade-step-1">
+              <div className="w-8 h-8 rounded-full bg-[#E8A820]/20 flex items-center justify-center shrink-0 mt-0.5">
+                <span className="text-sm font-bold text-[#996012]">1</span>
+              </div>
+              <div>
+                <p className="font-heading text-sm font-semibold text-[#2A1A06]">Agree & Value</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">Both parties agree on the exchange. The system sets the hold amount based on Discogs Median value.</p>
+              </div>
+            </div>
+            {/* Step 2 */}
+            <div className="flex gap-3" data-testid="trade-step-2">
+              <div className="w-8 h-8 rounded-full bg-[#E8A820]/20 flex items-center justify-center shrink-0 mt-0.5">
+                <span className="text-sm font-bold text-[#996012]">2</span>
+              </div>
+              <div>
+                <p className="font-heading text-sm font-semibold text-[#2A1A06]">Activate the Mutual Hold</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">Collectors authorize the Mutual Hold. No money is moved yet — it's just a pending safety authorization. This ensures everyone is incentivized to ship their wax safely.</p>
+              </div>
+            </div>
+            {/* Step 3 */}
+            <div className="flex gap-3" data-testid="trade-step-3">
+              <div className="w-8 h-8 rounded-full bg-[#E8A820]/20 flex items-center justify-center shrink-0 mt-0.5">
+                <span className="text-sm font-bold text-[#996012]">3</span>
+              </div>
+              <div>
+                <p className="font-heading text-sm font-semibold text-[#2A1A06]">Secure Shipping</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">Both parties upload tracking. The system monitors the journey.</p>
+              </div>
+            </div>
+            {/* Step 4 */}
+            <div className="flex gap-3" data-testid="trade-step-4">
+              <div className="w-8 h-8 rounded-full bg-[#E8A820]/20 flex items-center justify-center shrink-0 mt-0.5">
+                <span className="text-sm font-bold text-[#996012]">4</span>
+              </div>
+              <div>
+                <p className="font-heading text-sm font-semibold text-[#2A1A06]">Instant Release</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">Once both sides confirm receipt and condition, the holds are reversed. Cost to you: <strong>$0</strong>.</p>
+              </div>
+            </div>
+
+            {/* Dispute Section */}
+            <div className="bg-red-50/50 border border-red-200/50 rounded-xl p-4 space-y-3" data-testid="trade-dispute-info">
+              <p className="font-heading text-sm font-semibold text-red-800 flex items-center gap-1.5">
+                <Shield className="w-4 h-4" /> What happens if you Dispute?
+              </p>
+              <p className="text-sm text-red-700/80 leading-relaxed">
+                If a record arrives damaged, is the wrong pressing, or never shows up, you can hit the <strong>Dispute</strong> button before the 48-hour release window closes.
+              </p>
+              <div className="space-y-2 pl-1">
+                <div className="flex gap-2">
+                  <span className="text-red-400 mt-0.5 shrink-0">1.</span>
+                  <p className="text-sm text-red-700/80"><strong>Hold Locked:</strong> The Mutual Holds are frozen and will not be released.</p>
+                </div>
+                <div className="flex gap-2">
+                  <span className="text-red-400 mt-0.5 shrink-0">2.</span>
+                  <p className="text-sm text-red-700/80"><strong>Human Review:</strong> A Honey Groove moderator steps in to review photos, tracking data, and chat history.</p>
+                </div>
+                <div className="flex gap-2">
+                  <span className="text-red-400 mt-0.5 shrink-0">3.</span>
+                  <p className="text-sm text-red-700/80"><strong>Resolution:</strong> If the dispute is valid (e.g., you were scammed), the offender's hold is captured to compensate you, and their account is flagged or banned. The honest collector is always made whole.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

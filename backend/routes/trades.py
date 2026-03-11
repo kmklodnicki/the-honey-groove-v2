@@ -1093,6 +1093,15 @@ async def resolve_dispute(trade_id: str, data: AdminDisputeResolve, user: Dict =
         }})
         await complete_trade(trade)
 
+    # Send in-app notifications to both parties
+    outcome_labels = {
+        "COMPLETED": "Your trade dispute has been resolved. The trade is now complete.",
+        "CANCELLED": "Your trade dispute has been resolved. The trade has been cancelled.",
+    }
+    outcome_msg = outcome_labels.get(data.resolution, "Your trade dispute has been resolved.")
+    for uid in [trade["initiator_id"], trade["responder_id"]]:
+        await create_notification(uid, "DISPUTE_RESOLVED", "Trade Dispute Resolved", outcome_msg, {"trade_id": trade_id})
+
     updated = await db.trades.find_one({"id": trade_id}, {"_id": 0})
     return await build_trade_response(updated)
 
@@ -1219,6 +1228,45 @@ async def resolve_hold_dispute(trade_id: str, data: AdminHoldResolve, user: Dict
             if u_obj and u_obj.get("email"):
                 tpl = email_tpl.hold_reversed(u_obj.get("username", ""), hold_amt)
                 await send_email_fire_and_forget(u_obj["email"], tpl["subject"], tpl["html"])
+
+    elif data.resolution == "extend_investigation":
+        # Keep holds frozen, extend investigation period
+        extended_deadline = (datetime.now(timezone.utc) + timedelta(hours=72)).isoformat()
+        dispute["investigation_extended"] = True
+        dispute["extended_deadline"] = extended_deadline
+        await db.trades.update_one({"id": trade_id}, {"$set": {
+            "dispute": dispute, "updated_at": now,
+        }})
+        # Notify both parties
+        for u_obj in [initiator, responder]:
+            if u_obj:
+                await create_notification(
+                    u_obj["id"], "DISPUTE_EXTENDED",
+                    "Dispute Under Extended Review",
+                    f"Your trade dispute is under extended investigation by a Honey Groove moderator. Holds remain frozen.",
+                    {"trade_id": trade_id}
+                )
+                if u_obj.get("email"):
+                    tpl = email_tpl.hold_dispute_filed(u_obj.get("username", ""), "The Honey Groove Team", hold_amt, TRADE_URL)
+                    await send_email_fire_and_forget(u_obj["email"], "Your dispute is under extended review", tpl["html"])
+
+    # Send in-app notifications for all resolutions (except extend which is handled above)
+    if data.resolution != "extend_investigation":
+        outcome_labels = {
+            "full_reversal": "Both holds have been released. Trade cancelled.",
+            "penalize_initiator": "Dispute resolved. The offender's hold has been captured.",
+            "penalize_responder": "Dispute resolved. The offender's hold has been captured.",
+            "partial": "Dispute resolved with a custom settlement.",
+        }
+        outcome_msg = outcome_labels.get(data.resolution, "Dispute resolved.")
+        for u_obj in [initiator, responder]:
+            if u_obj:
+                await create_notification(
+                    u_obj["id"], "DISPUTE_RESOLVED",
+                    "Trade Dispute Resolved",
+                    outcome_msg,
+                    {"trade_id": trade_id}
+                )
 
     updated = await db.trades.find_one({"id": trade_id}, {"_id": 0})
     return await build_trade_response(updated)
