@@ -185,6 +185,15 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - Toast accurately reflects removed count
   - Files: collection.py (backend clean_duplicates), CollectionPage.js (warning text)
   - Tested: PASS (API test: 3 dupes with different notes → 2 removed, master with longest note kept)
+- **BLOCK 442: Dream List UI Parity** (March 2026) — COMPLETED
+  - WishlistCard now matches RecordCard: same honey/20 border, glass morphism bg, hover:-translate-y-1
+  - Price display: median_value badge (top-right) or clickable "Set Value" button opening ValuationAssistantModal
+  - Variant pill on image: gold border, glass morphism, link to /variant/{discogs_id}
+  - Variant text label below title: honey-amber, linkable, matches Collection card
+  - Desktop no-truncate: variant-pill-responsive CSS rule @media (min-width: 1025px)
+  - Removed old '---' placeholder and muted card opacity
+  - Files: CollectionPage.js (WishlistCard), App.css (variant-pill-responsive)
+  - Tested: PASS (100% - testing agent iteration_184, 9/9 features verified)
 
 ### Layout & Design Features
 - Golden Vault Layout (ProfilePage unified dashboard)
