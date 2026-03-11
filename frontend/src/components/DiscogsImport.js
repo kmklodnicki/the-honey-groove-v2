@@ -12,6 +12,7 @@ import { ExternalLink, RefreshCw, CheckCircle2, AlertCircle, Loader2, Unplug, Di
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import AlbumArt from './AlbumArt';
+import PureGoldModal from './PureGoldModal';
 
 const DiscogsImport = ({ onImportComplete, compact = false }) => {
   const { token, API } = useAuth();
@@ -23,6 +24,7 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
   const [showDisconnect, setShowDisconnect] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [summary, setSummary] = useState(null);
+  const [showPureGold, setShowPureGold] = useState(false);
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -85,6 +87,8 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
       toast.success(`discogs connected as ${params.get('username') || ''}.`);
       window.history.replaceState({}, '', window.location.pathname);
       fetchStatus();
+      // BLOCK 500: Show the "Pure Gold" success screen
+      setShowPureGold(true);
       // BLOCK 484: Trigger priority price re-link for first 50 records
       axios.post(`${API}/valuation/priority-relink`, {}, {
         headers: { Authorization: `Bearer ${token}` }
@@ -396,6 +400,8 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
         </DialogContent>
       </Dialog>
 
+      {/* BLOCK 500: Pure Gold success screen */}
+      <PureGoldModal open={showPureGold} onClose={() => setShowPureGold(false)} />
     </>
   );
 };

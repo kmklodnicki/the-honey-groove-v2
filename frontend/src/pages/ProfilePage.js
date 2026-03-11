@@ -16,7 +16,6 @@ import { formatDistanceToNow } from 'date-fns';
 import { FollowListModal } from '../components/FollowList';
 import { FollowRequestsBadge, FollowRequestsModal } from '../components/FollowRequests';
 import { usePageTitle } from '../hooks/usePageTitle';
-import { MoodBoardTab } from '../components/MoodBoardTab';
 import ReportModal from '../components/ReportModal';
 import MentionText from '../components/MentionText';
 import {
@@ -420,9 +419,9 @@ const ProfilePage = () => {
       )}
       {/* Profile Header — Unified Golden Vault Dashboard */}
       <Card className="p-0 overflow-hidden mb-6" style={{ backgroundColor: '#FAF6EE', border: '1px solid rgba(200,134,26,0.2)', boxShadow: '0 4px 24px rgba(200,134,26,0.08)' }} data-testid="dashboard-hero">
-        {/* Branding watermark */}
+        {/* Branding watermark — BLOCK 494: deeper charcoal for legibility */}
         <div className="px-6 pt-4 pb-0">
-          <span className="text-[10px] font-medium tracking-[0.25em] uppercase" style={{ color: 'rgba(200,134,26,0.25)', fontFamily: '"DM Serif Display", Georgia, serif' }}>
+          <span className="text-[10px] font-medium tracking-[0.25em] uppercase" style={{ color: '#2C2C2C', fontFamily: '"DM Serif Display", Georgia, serif' }} data-testid="brand-watermark">
             THE HONEY GROOVE
           </span>
         </div>
@@ -741,9 +740,11 @@ const ProfilePage = () => {
                 }).length}</p>
                 <p className="text-[10px] text-stone-500">Spins</p>
               </div>
-              <div className="flex-1">
-                <p className="text-lg font-bold" style={{ color: '#C8861A' }}>{records.length}</p>
-                <p className="text-[10px] text-stone-500">Total</p>
+              <div className="flex-1" data-testid="avg-value-stat">
+                <p className="text-lg font-bold" style={{ color: '#C8861A' }}>
+                  {swrCollectionValue?.avg_value > 0 ? `$${swrCollectionValue.avg_value.toFixed(2)}` : '–'}
+                </p>
+                <p className="text-[10px] text-stone-500">Avg. Value</p>
               </div>
             </div>
           </div>
@@ -771,9 +772,6 @@ const ProfilePage = () => {
           </TabsTrigger>
           <TabsTrigger value="trades" className="data-[state=active]:bg-honey text-xs sm:text-sm shrink-0 px-3" data-testid="tab-trades">
             Trades
-          </TabsTrigger>
-          <TabsTrigger value="mood" className="data-[state=active]:bg-honey text-xs sm:text-sm shrink-0 px-3" data-testid="tab-mood">
-            Mood
           </TabsTrigger>
         </TabsList>
 
@@ -842,17 +840,38 @@ const ProfilePage = () => {
                           No. {record.edition_number}
                         </div>
                       )}
-                      {/* BLOCK 483: Price overlay pill — Honey Gold, top-right */}
+                      {/* BLOCK 487: Smart Valuation Hierarchy — Market > Personal > Dash */}
                       {(() => {
-                        const val = swrRecordValues?.[record.id];
-                        return val && val > 0 ? (
+                        const marketVal = swrRecordValues?.[record.id];
+                        const personalVal = record.custom_valuation;
+                        if (marketVal && marketVal > 0) {
+                          return (
+                            <div
+                              className="absolute top-2 right-2 px-2.5 py-0.5 rounded-full font-bold text-xs z-[5] transition-transform duration-200 hover:scale-110 cursor-default"
+                              style={{ background: 'rgba(255, 191, 0, 0.85)', color: '#000' }}
+                              data-testid={`price-pill-${record.id}`}
+                            >
+                              ${Math.round(marketVal)}
+                            </div>
+                          );
+                        }
+                        if (personalVal && personalVal > 0) {
+                          return (
+                            <div
+                              className="absolute top-2 right-2 px-2.5 py-0.5 rounded-full font-semibold text-xs z-[5] flex items-center gap-1 transition-transform duration-200 hover:scale-110 cursor-default"
+                              style={{ background: 'rgba(255, 191, 0, 0.55)', color: '#000' }}
+                              data-testid={`price-pill-personal-${record.id}`}
+                            >
+                              <Edit className="w-2.5 h-2.5" />${Math.round(personalVal)}
+                            </div>
+                          );
+                        }
+                        return record.discogs_id ? (
                           <div
-                            className="absolute top-2 right-2 px-2.5 py-0.5 rounded-full font-bold text-xs z-[5] transition-transform duration-200 hover:scale-110 cursor-default"
-                            style={{ background: 'rgba(255, 191, 0, 0.85)', color: '#000' }}
-                            data-testid={`price-pill-${record.id}`}
-                          >
-                            ${Math.round(val)}
-                          </div>
+                            className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs z-[5] opacity-40 cursor-default"
+                            style={{ background: 'rgba(255, 191, 0, 0.4)', color: '#000' }}
+                            data-testid={`price-pill-none-${record.id}`}
+                          >–</div>
                         ) : null;
                       })()}
                     </div>
@@ -1204,10 +1223,6 @@ const ProfilePage = () => {
           )}
         </TabsContent>
 
-        {/* Mood Board Tab */}
-        <TabsContent value="mood">
-          <MoodBoardTab username={username} />
-        </TabsContent>
       </Tabs>
       </>
       )}

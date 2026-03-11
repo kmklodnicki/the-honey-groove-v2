@@ -1157,12 +1157,19 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
             </div>
           )}
 
-          {/* BLOCK 483: Value badge — Honey Gold pill, top-right with hover pop */}
+          {/* BLOCK 487: Smart Valuation Hierarchy — Market > Personal > Dash */}
           {value > 0 ? (
             <div className="absolute top-2 right-2 px-2.5 py-1 rounded-full font-bold text-sm z-[5] transition-transform duration-200 hover:scale-110 cursor-default"
               style={{ background: 'rgba(255, 191, 0, 0.85)', color: '#000' }}
               data-testid={`record-value-${record.id}`}>
               ${value.toFixed(0)}
+            </div>
+          ) : record.custom_valuation && record.custom_valuation > 0 ? (
+            <div className="absolute top-2 right-2 px-2.5 py-1 rounded-full font-semibold text-sm z-[5] flex items-center gap-1 transition-transform duration-200 hover:scale-110 cursor-default"
+              style={{ background: 'rgba(255, 191, 0, 0.55)', color: '#000' }}
+              data-testid={`record-value-personal-${record.id}`}>
+              <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 3a2.83 2.83 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+              ${record.custom_valuation.toFixed(0)}
             </div>
           ) : record.discogs_id && onValueThis ? (
             <button
@@ -1173,6 +1180,12 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
             >
               Value This
             </button>
+          ) : record.discogs_id ? (
+            <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs z-[5] opacity-40 cursor-default"
+              style={{ background: 'rgba(255, 191, 0, 0.4)', color: '#000' }}
+              data-testid={`record-value-none-${record.id}`}>
+              –
+            </div>
           ) : null}
         </div>
       </Link>

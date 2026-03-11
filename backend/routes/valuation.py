@@ -80,10 +80,13 @@ async def get_collection_value(user: Dict = Depends(require_auth)):
             valued += 1
 
     total_records = await db.records.count_documents({"user_id": user["id"]})
+    # BLOCK 495: Calculate avg_value
+    avg_value = round(total / total_records, 2) if total_records > 0 else 0
     return {
         "total_value": round(total, 2),
         "valued_count": valued,
         "total_count": total_records,
+        "avg_value": avg_value,
     }
 
 
@@ -100,16 +103,18 @@ async def get_user_collection_value(username: str):
     discogs_ids = list({r["discogs_id"] for r in records if r.get("discogs_id")})
     if not discogs_ids:
         total_records = await db.records.count_documents({"user_id": target["id"]})
-        return {"total_value": 0, "valued_count": 0, "total_count": total_records}
+        return {"total_value": 0, "valued_count": 0, "total_count": total_records, "avg_value": 0}
     values = await db.collection_values.find(
         {"release_id": {"$in": discogs_ids}}, {"_id": 0}
     ).to_list(5000)
     total = sum(v["median_value"] for v in values if v.get("median_value"))
     total_records = await db.records.count_documents({"user_id": target["id"]})
+    avg_value = round(total / total_records, 2) if total_records > 0 else 0
     return {
         "total_value": round(total, 2),
         "valued_count": len(values),
         "total_count": total_records,
+        "avg_value": avg_value,
     }
 
 
