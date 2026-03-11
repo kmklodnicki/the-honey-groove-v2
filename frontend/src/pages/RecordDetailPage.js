@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
@@ -6,7 +6,7 @@ import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import {
   Disc, Users, BarChart3, Heart, Clock, ArrowLeft,
-  Loader2, Calendar, Play, User, TrendingUp, ShoppingBag, ArrowRightLeft
+  Loader2, Calendar, Play, User, TrendingUp, ShoppingBag, ArrowRightLeft, Pencil, Check, BookOpen
 } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { toast } from 'sonner';
@@ -26,6 +26,10 @@ const RecordDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [spinning, setSpinning] = useState(false);
   const [rarity, setRarity] = useState(null);
+  const [notesText, setNotesText] = useState('');
+  const [notesSaved, setNotesSaved] = useState(true);
+  const [notesSaving, setNotesSaving] = useState(false);
+  const saveTimerRef = useRef(null);
 
   useEffect(() => {
     (async () => {
@@ -46,6 +50,31 @@ const RecordDetailPage = () => {
       setLoading(false);
     })();
   }, [recordId, API, token, navigate]);
+
+  // Initialize notes from record data
+  useEffect(() => {
+    if (data?.record?.notes) setNotesText(data.record.notes);
+  }, [data]);
+
+  // Auto-save notes after 1.5s of inactivity
+  const saveNotes = useCallback(async (text) => {
+    setNotesSaving(true);
+    try {
+      await axios.put(`${API}/records/${recordId}/notes`, { notes: text }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setNotesSaved(true);
+    } catch { /* silent */ }
+    setNotesSaving(false);
+  }, [API, recordId, token]);
+
+  const handleNotesChange = (e) => {
+    const text = e.target.value;
+    setNotesText(text);
+    setNotesSaved(false);
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    saveTimerRef.current = setTimeout(() => saveNotes(text), 1500);
+  };
 
   const logSpin = async () => {
     setSpinning(true);
@@ -309,8 +338,50 @@ const RecordDetailPage = () => {
         </div>
       )}
 
-      {/* Notes */}
-      {record.notes && record.notes !== 'Imported from Discogs' && (
+      {/* Collector's Notebook — Private Notes (owner only) */}
+      {isOwner && (
+        <div className="mt-8" data-testid="collectors-notebook">
+          <div className="flex items-center gap-2 mb-2">
+            <BookOpen className="w-4 h-4 text-honey-amber" />
+            <h3 className="font-heading text-lg">Collector's Notebook</h3>
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground bg-stone-100 px-2 py-0.5 rounded-full">Private</span>
+            {notesSaving && <Loader2 className="w-3.5 h-3.5 animate-spin text-honey-amber ml-auto" />}
+            {!notesSaving && notesSaved && notesText && <Check className="w-3.5 h-3.5 text-emerald-500 ml-auto" />}
+          </div>
+          <div className="relative">
+            <textarea
+              value={notesText}
+              onChange={handleNotesChange}
+              placeholder="Add personal notes about this copy... condition, purchase story, pressing details..."
+              rows={4}
+              className="w-full rounded-xl p-4 text-sm text-vinyl-black/80 resize-none focus:outline-none focus:ring-2 focus:ring-[#C8861A]/30 transition-all"
+              style={{
+                background: 'rgba(255,246,230,0.35)',
+                border: '1px solid rgba(218,165,32,0.2)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+              }}
+              data-testid="notebook-textarea"
+            />
+            {!notesSaved && !notesSaving && (
+              <button
+                onClick={() => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); saveNotes(notesText); }}
+                className="absolute bottom-3 right-3 px-3 py-1 rounded-full text-xs font-medium text-[#2A1A06] transition-all"
+                style={{
+                  background: 'linear-gradient(135deg, #E8A820, #D49A18)',
+                  animation: 'pulse 2s infinite',
+                }}
+                data-testid="save-note-btn"
+              >
+                Save Note
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Notes (public/read-only view for non-owners) */}
+      {!isOwner && record.notes && record.notes !== 'Imported from Discogs' && (
         <div className="mt-8" data-testid="record-notes">
           <h3 className="font-heading text-lg mb-2">Notes</h3>
           <p className="text-sm text-vinyl-black/70 bg-honey/5 rounded-xl p-4 border border-honey/10">{record.notes}</p>

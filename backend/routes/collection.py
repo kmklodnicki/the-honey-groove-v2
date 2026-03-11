@@ -160,6 +160,21 @@ async def get_record(record_id: str, current_user: Optional[Dict] = Depends(get_
     return RecordResponse(**record, spin_count=spin_count)
 
 
+
+@router.put("/records/{record_id}/notes")
+async def update_record_notes(record_id: str, body: dict, user: Dict = Depends(require_auth)):
+    """Update notes for a specific record (private to the owner)."""
+    record = await db.records.find_one({"id": record_id}, {"_id": 0})
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found")
+    if record["user_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Not your record")
+    notes_text = body.get("notes", "")
+    await db.records.update_one({"id": record_id}, {"$set": {"notes": notes_text}})
+    return {"success": True, "notes": notes_text}
+
+
+
 @router.get("/records/{record_id}/detail")
 async def get_record_detail(record_id: str, current_user: Optional[Dict] = Depends(get_current_user)):
     """Enriched record detail: community stats, market value, related posts, owners."""

@@ -5,12 +5,30 @@ export default function ScrollRow({ children, className = '' }) {
   const ref = useRef(null);
   const [canLeft, setCanLeft] = useState(false);
   const [canRight, setCanRight] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isMobile, setIsMobile] = useState(false);
+  const touchStartRef = useRef(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    setIsMobile(mq.matches);
+    const handler = (e) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   const check = useCallback(() => {
     const el = ref.current;
     if (!el) return;
     setCanLeft(el.scrollLeft > 4);
     setCanRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+    // Compute active page and total pages
+    const pageW = el.clientWidth;
+    const total = Math.max(1, Math.ceil(el.scrollWidth / pageW));
+    const active = Math.round(el.scrollLeft / pageW);
+    setTotalPages(total);
+    setActiveIdx(Math.min(active, total - 1));
   }, []);
 
   useEffect(() => {
@@ -30,18 +48,36 @@ export default function ScrollRow({ children, className = '' }) {
     el.scrollBy({ left: dir * amount, behavior: 'smooth' });
   };
 
+  // Touch swipe handlers for mobile
+  const onTouchStart = (e) => {
+    touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  };
+
+  const onTouchEnd = (e) => {
+    if (!touchStartRef.current) return;
+    const dx = e.changedTouches[0].clientX - touchStartRef.current.x;
+    const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
+    // Only trigger if horizontal swipe > 50px and more horizontal than vertical
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+      scroll(dx < 0 ? 1 : -1);
+    }
+    touchStartRef.current = null;
+  };
+
   return (
     <div className="relative group/scroll" data-testid="scroll-row">
       {/* Scrollable content */}
       <div
         ref={ref}
+        onTouchStart={isMobile ? onTouchStart : undefined}
+        onTouchEnd={isMobile ? onTouchEnd : undefined}
         className={`flex gap-3 overflow-x-auto pb-10 -mx-1 px-1 scrollbar-hide scroll-smooth ${className}`}
       >
         {children}
       </div>
 
-      {/* Floating Glass Dock — bottom-center navigation */}
-      {(canLeft || canRight) && (
+      {/* Desktop: Floating Glass Dock arrows */}
+      {!isMobile && (canLeft || canRight) && (
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 backdrop-blur-md shadow-md border border-honey/20" data-testid="scroll-dock">
           <button
             onClick={() => scroll(-1)}
@@ -62,6 +98,22 @@ export default function ScrollRow({ children, className = '' }) {
           >
             <ChevronRight className="w-4 h-4" />
           </button>
+        </div>
+      )}
+
+      {/* Mobile: Minimalist dot indicators */}
+      {isMobile && totalPages > 1 && (
+        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1.5" data-testid="scroll-dots">
+          {Array.from({ length: totalPages }).map((_, i) => (
+            <div
+              key={i}
+              className={`rounded-full transition-all duration-300 ${
+                i === activeIdx
+                  ? 'w-4 h-1.5 bg-[#C8861A]/70'
+                  : 'w-1.5 h-1.5 bg-stone-300/60'
+              }`}
+            />
+          ))}
         </div>
       )}
     </div>
