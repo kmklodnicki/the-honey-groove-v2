@@ -33,21 +33,15 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
 - Discovery exclusivity fix (BLOCK 188)
 - BLOCK 221: Clickable variant pills
 - BLOCK 228: Back-to-Top Button
-- BLOCK 229: Dream Value Re-Calculator (3-tier resolution, manual pricing, Valuation Assistant)
+- BLOCK 229: Dream Value Re-Calculator
 - BLOCK 231: Snap-Load Shimmer (2-pulse animation, honey-fade-in transitions)
-- **BLOCK 237: Community Benchmark Logic** (March 2026)
-  - "The Hive Says..." UI — Valuation Assistant shows community average with "Accept Hive" button
-  - Anti-inflation trimmed mean bumped to 10% (top/bottom 10% discarded)
-  - Pending items endpoint enriched with `hive_average` and `hive_count`
-  - Consistency trigger: new users adding same record see community price as suggested value
-  - Success state: "Benchmark Set!" banner with personalized copy
-  - "The Hive Pricing Standard" info section explaining trimmed mean
-  - Tooltip on pending links: "The Hive doesn't have a price for these grails yet"
-  - All UI copy matches user specifications exactly
-
-## DB Collections
-- `community_valuations`: release_id, average_value, contribution_count, contributions[], timestamps
-- `iso_items`: Added manual_price field
+- BLOCK 237: Community Benchmark Logic
+- **BLOCK 241: Daily Prompt Shimmer Sync** (March 2026)
+  - AlbumArt component: replaced infinite `animate-shimmer` with 2-pulse `honey-shimmer`
+  - Image fade-in: 300ms `transition-opacity` on img element (opacity 0 -> 1 when loaded)
+  - Glass fallback uses `honey-fade-in` transition
+  - Legacy `@keyframes shimmer` in App.css replaced with `honeyShimmer` reference
+  - Mobile verified: Daily Prompt card + all album arts have smooth 2-pulse -> fade-in flow
 
 ## Backlog (Prioritized)
 ### P0

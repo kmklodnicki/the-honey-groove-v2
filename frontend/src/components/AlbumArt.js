@@ -25,11 +25,11 @@ const AlbumArt = ({ src, alt = '', className = '', style, artist, title, ...prop
   return (
     <div className={`relative overflow-hidden ${className}`} style={style} {...props}>
       {status === 'loading' && (
-        <div className="absolute inset-0 bg-[#F0E8D8] animate-shimmer" />
+        <div className="absolute inset-0 honey-shimmer" />
       )}
       {showGlassFallback ? (
         <div
-          className="w-full h-full flex flex-col items-center justify-center p-3 text-center"
+          className="w-full h-full flex flex-col items-center justify-center p-3 text-center honey-fade-in"
           style={{
             background: 'linear-gradient(135deg, rgba(255,246,230,0.9), rgba(218,165,32,0.15))',
             backdropFilter: 'blur(20px)',
@@ -44,7 +44,7 @@ const AlbumArt = ({ src, alt = '', className = '', style, artist, title, ...prop
         <img
           src={status === 'error' || !resolvedSrc ? FALLBACK : resolvedSrc}
           alt={alt}
-          className="w-full h-full object-cover"
+          className={`w-full h-full object-cover transition-opacity duration-300 ease-in ${status === 'loaded' ? 'opacity-100' : 'opacity-0'}`}
           onLoad={() => setStatus('loaded')}
           onError={() => setStatus('error')}
           draggable={false}

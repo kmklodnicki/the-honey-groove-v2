@@ -252,15 +252,10 @@
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* Album art shimmer loading */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
+/* Album art shimmer loading — 2-pulse then rest (synced with BLOCK 231) */
 .animate-shimmer {
-  background: linear-gradient(90deg, #F0E8D8 25%, rgba(200,134,26,0.1) 50%, #F0E8D8 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
+  background-color: #e5e0da;
+  animation: honeyShimmer 2s ease-in-out 1 forwards;
 }
 
 
