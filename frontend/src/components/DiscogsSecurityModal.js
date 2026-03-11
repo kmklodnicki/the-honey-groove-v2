@@ -6,38 +6,41 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 
 /**
- * BLOCK 455: Discogs Security Migration Modal
- * Shows on first login when user has old token-based Discogs connection
- * but no OAuth verification.
+ * BLOCK 455 + 462: Discogs Security Migration Modal (one-and-done)
+ * Shows ONCE when user has old token-based Discogs connection.
+ * Either button sets has_seen_security_migration = true — never shows again.
  */
 const DiscogsSecurityModal = ({ open, onClose }) => {
   const { token, API } = useAuth();
 
+  const markSeen = async () => {
+    try {
+      await axios.post(`${API}/discogs/dismiss-migration`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+    } catch { /* ignore */ }
+  };
+
   const handleReconnect = async () => {
+    await markSeen();
     try {
       const resp = await axios.get(`${API}/discogs/oauth/start`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       window.location.href = resp.data.authorization_url;
     } catch {
-      // Fallback: redirect to collection page
       window.location.href = '/collection';
     }
   };
 
-  const handleDismiss = async () => {
-    try {
-      await axios.post(`${API}/discogs/dismiss-migration`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-    } catch { /* ignore */ }
+  const handleLater = async () => {
+    await markSeen();
     onClose();
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) handleDismiss(); }}>
+    <Dialog open={open} onOpenChange={(v) => { if (!v) handleLater(); }}>
       <DialogContent className="sm:max-w-md p-0 overflow-hidden border-0" data-testid="discogs-migration-modal">
-        {/* Header band */}
         <div className="px-6 pt-6 pb-4" style={{ background: 'linear-gradient(135deg, #1A1A1A 0%, #2A1A06 100%)' }}>
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-full flex items-center justify-center"
@@ -50,11 +53,10 @@ const DiscogsSecurityModal = ({ open, onClose }) => {
           </div>
         </div>
 
-        {/* Body */}
         <div className="px-6 pb-6 space-y-5">
           <p className="text-sm text-stone-600 leading-relaxed">
-            We've made some security updates to keep the honey groove safe. To connect your collection, 
-            you must now sign in through our secure Discogs flow. If you previously connected, your 
+            We've made some security updates to keep The Honey Groove safe. To connect your collection,
+            you must now sign in through our secure Discogs flow. If you previously connected, your
             account has been safely disconnected for verification.
           </p>
 
@@ -88,7 +90,7 @@ const DiscogsSecurityModal = ({ open, onClose }) => {
             </Button>
             <Button
               variant="ghost"
-              onClick={handleDismiss}
+              onClick={handleLater}
               className="w-full h-10 rounded-full text-sm text-stone-400 hover:text-stone-600"
               data-testid="connect-later-btn"
             >

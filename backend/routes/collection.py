@@ -1118,10 +1118,13 @@ async def discogs_oauth_callback(oauth_token: str = Query(...), oauth_verifier: 
 
 @router.post("/discogs/dismiss-migration")
 async def dismiss_discogs_migration(user: Dict = Depends(require_auth)):
-    """User chose 'Connect Later' — mark migration dismissed so the modal doesn't re-show."""
+    """BLOCK 462: One-and-done — mark migration modal as permanently seen."""
     await db.users.update_one(
         {"id": user["id"]},
-        {"$set": {"discogs_migration_dismissed": True}}
+        {"$set": {
+            "has_seen_security_migration": True,
+            "discogs_migration_dismissed": True,
+        }}
     )
     return {"dismissed": True}
 

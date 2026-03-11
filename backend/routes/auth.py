@@ -18,12 +18,12 @@ from util.content_filter import detect_offplatform_payment, BLOCK_MESSAGE as OFF
 router = APIRouter()
 
 def _check_needs_migration(user: dict) -> bool:
-    """Check if user needs to re-verify Discogs via OAuth (BLOCK 455)."""
-    # User has a discogs connection but hasn't verified via OAuth
+    """Check if user needs to re-verify Discogs via OAuth (BLOCK 455/462).
+    One-and-done: once has_seen_security_migration is True, never triggers again."""
+    if user.get("has_seen_security_migration"):
+        return False
     if user.get("discogs_username") and not user.get("discogs_oauth_verified"):
-        # And hasn't dismissed the modal yet
-        if not user.get("discogs_migration_dismissed"):
-            return True
+        return True
     return False
 
 
