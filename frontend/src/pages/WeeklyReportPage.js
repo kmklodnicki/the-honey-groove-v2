@@ -7,6 +7,16 @@ import { Button } from '../components/ui/button';
 import { resolveImageUrl } from '../utils/imageUrl';
 import html2canvas from 'html2canvas';
 
+// ─── Report image: honey placeholder, crossOrigin for export, no broken icons ───
+const ReportImg = ({ src, alt, className, style }) => {
+  const [err, setErr] = React.useState(false);
+  const resolved = src ? resolveImageUrl(src) : null;
+  if (!resolved || err) {
+    return <div className={className} style={{ ...style, background: '#FFB800', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Disc style={{ width: '30%', height: '30%', color: 'rgba(0,0,0,0.15)' }} /></div>;
+  }
+  return <img src={resolved} alt={alt || ''} className={className} style={style} crossOrigin="anonymous" decoding="sync" fetchpriority="high" loading="eager" onError={() => setErr(true)} draggable={false} />;
+};
+
 // ─── Color utility: extract dominant hue from an image via canvas sampling ───
 const extractDominantColor = (imgUrl) => new Promise((resolve) => {
   if (!imgUrl) { resolve('#C8861A'); return; }
@@ -51,7 +61,6 @@ const IntroSlide = ({ username, dominantColor }) => (
 );
 
 const HeroSlide = ({ record, spinCount, isTopSpin, dominantColor }) => {
-  const imgRef = useRef(null);
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center snap-start" data-testid="slide-hero">
       <p className="text-xs font-medium tracking-[0.2em] uppercase mb-6" style={{ color: dominantColor }}>
@@ -60,14 +69,7 @@ const HeroSlide = ({ record, spinCount, isTopSpin, dominantColor }) => {
       {record?.cover_url ? (
         <div className="relative w-56 h-56 sm:w-72 sm:h-72 rounded-2xl overflow-hidden shadow-2xl mb-6 ring-2"
           style={{ ringColor: dominantColor, animation: 'kenBurns 20s ease-in-out infinite alternate' }}>
-          <img
-            ref={imgRef}
-            src={resolveImageUrl(record.cover_url)}
-            alt={`${record.artist} - ${record.title}`}
-            className="w-full h-full object-cover"
-            crossOrigin="anonymous"
-            decoding="sync"
-          />
+          <ReportImg src={record.cover_url} alt={`${record.artist} - ${record.title}`} className="w-full h-full object-cover" />
         </div>
       ) : (
         <div className="w-56 h-56 rounded-2xl flex items-center justify-center mb-6" style={{ background: `${dominantColor}20` }}>
@@ -181,7 +183,7 @@ const NewAdditionsSlide = ({ additions, dominantColor }) => {
           <div key={i} className="rounded-xl overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)', animationDelay: `${i * 150}ms` }}>
             <div className="aspect-square overflow-hidden">
               {r.cover_url ? (
-                <img src={resolveImageUrl(r.cover_url)} alt={r.title} className="w-full h-full object-cover" crossOrigin="anonymous" decoding="sync" />
+                <ReportImg src={r.cover_url} alt={r.title} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-stone-900">
                   <Disc className="w-8 h-8 text-stone-700" />
@@ -409,7 +411,7 @@ const WeeklyReportPage = () => {
       {/* Desktop: Blurred wallpaper background */}
       {data.heroRecord?.cover_url && (
         <div className="fixed inset-0 z-0 hidden lg:block pointer-events-none" aria-hidden="true">
-          <img src={resolveImageUrl(data.heroRecord.cover_url)} alt="" className="w-full h-full object-cover" style={{ filter: 'blur(80px) brightness(0.15)', transform: 'scale(1.2)' }} crossOrigin="anonymous" />
+          <ReportImg src={data.heroRecord.cover_url} alt="" className="w-full h-full object-cover" style={{ filter: 'blur(80px) brightness(0.15)', transform: 'scale(1.2)' }} />
         </div>
       )}
 
