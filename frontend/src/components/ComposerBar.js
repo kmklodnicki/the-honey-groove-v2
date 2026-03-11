@@ -52,6 +52,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const [spinTracksLoading, setSpinTracksLoading] = useState(false);
   const [spinTrackDropdownOpen, setSpinTrackDropdownOpen] = useState(false);
   const [spinTrackSearch, setSpinTrackSearch] = useState('');
+  const [spinTracksFetched, setSpinTracksFetched] = useState(false);
 
   // New Haul
   const [haulStoreName, setHaulStoreName] = useState('');
@@ -93,7 +94,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const resetAll = () => {
     setSpinRecordId(''); setSpinTrack(''); setSpinCaption(''); setSpinMood('');
     setSpinSearch(''); setSpinSearchResults([]); setSpinSelectedRecord(null);
-    setSpinTracks([]); setSpinTracksLoading(false); setSpinTrackDropdownOpen(false); setSpinTrackSearch('');
+    setSpinTracks([]); setSpinTracksLoading(false); setSpinTrackDropdownOpen(false); setSpinTrackSearch(''); setSpinTracksFetched(false);
     setHaulStoreName(''); setHaulCaption(''); setHaulItems([]); setHaulSearch(''); setHaulResults([]);
     setIsoArtist(''); setIsoAlbum(''); setIsoPressing(''); setIsoCondition('');
     setIsoPriceMin(''); setIsoPriceMax(''); setIsoCaption('');
@@ -165,6 +166,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     setSpinTrack('');
     setSpinTracks([]);
     setSpinTrackSearch('');
+    setSpinTracksFetched(false);
     // Fetch tracklist if the record has a discogs_id
     if (rec.discogs_id) {
       setSpinTracksLoading(true);
@@ -177,6 +179,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
         setSpinTracks([]);
       }).finally(() => {
         setSpinTracksLoading(false);
+        setSpinTracksFetched(true);
       });
     }
   };
@@ -189,6 +192,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     setSpinTracksLoading(false);
     setSpinTrackDropdownOpen(false);
     setSpinTrackSearch('');
+    setSpinTracksFetched(false);
   };
 
   const searchDiscogs = useCallback((query) => {
@@ -543,8 +547,11 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                   )}
                 </>
               ) : (
-                <Input placeholder="Track (optional)" value={spinTrack} onChange={e => setSpinTrack(e.target.value)}
-                  className="border-honey/50"
+                <Input
+                  placeholder={spinTracksFetched ? 'Tracklist unavailable\u2014type a track name manually (optional)' : 'Track (optional)'}
+                  value={spinTrack}
+                  onChange={e => setSpinTrack(e.target.value)}
+                  style={{ border: '1px solid rgba(200,134,26,0.5)', background: '#FFFDF5' }}
                   data-testid="spin-track-input" />
               )}
             </div>

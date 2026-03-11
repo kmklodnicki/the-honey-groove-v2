@@ -170,6 +170,14 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - Clear (X) button, click-outside-to-close, keyboard searchable
   - Files: ComposerBar.js
   - Tested: PASS (100% - testing agent iteration_183, 12/12 features verified)
+- **BLOCK 436: Tracklist Fallback Logic** (March 2026) — COMPLETED
+  - Added `spinTracksFetched` state to detect when Discogs returns empty/null tracklist
+  - Empty tracklist → text input with "Tracklist unavailable—type a track name manually (optional)"
+  - No discogs_id → plain "Track (optional)" text input
+  - Both fallback inputs use matching gold-border (#C8861A), cream-background (#FFFDF5) styling
+  - Manual text entry saves identically to a dropdown-selected track
+  - Files: ComposerBar.js
+  - Tested: PASS (self-tested, visual verification of both states)
 
 ### Layout & Design Features
 - Golden Vault Layout (ProfilePage unified dashboard)
