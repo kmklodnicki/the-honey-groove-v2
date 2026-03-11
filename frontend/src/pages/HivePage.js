@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useSocket } from '../context/SocketContext';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
@@ -405,6 +406,7 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
 const HivePage = () => {
   usePageTitle('The Hive');
   const { user, token, API } = useAuth();
+  const { socket, connected } = useSocket();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [posts, setPosts] = useState([]);
@@ -417,6 +419,9 @@ const HivePage = () => {
   const [followingIds, setFollowingIds] = useState([]);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
+
+  // Live feed: queued new posts from WebSocket
+  const [newPostsQueue, setNewPostsQueue] = useState([]);
 
   const targetPostId = searchParams.get('post');
   const targetCommentId = searchParams.get('comment');
@@ -521,6 +526,35 @@ const HivePage = () => {
       setShowOnboarding(true);
     }
   }, [fetchFeed, fetchRecords, user]);
+
+  // WebSocket: listen for NEW_POST events
+  useEffect(() => {
+    if (!socket) return;
+    const handleNewPost = (data) => {
+      const { post, author_id } = data;
+      // Don't queue our own posts (we already see them via handlePostCreated)
+      if (author_id === user?.id) return;
+      // Don't queue duplicates
+      setNewPostsQueue(prev => {
+        if (prev.some(p => p.id === post.id)) return prev;
+        return [post, ...prev];
+      });
+    };
+    socket.on('NEW_POST', handleNewPost);
+    return () => socket.off('NEW_POST', handleNewPost);
+  }, [socket, user?.id]);
+
+  // Flush queued posts into the feed
+  const showNewPosts = () => {
+    setPosts(prev => {
+      const existingIds = new Set(prev.map(p => p.id));
+      const unique = newPostsQueue.filter(p => !existingIds.has(p.id));
+      return [...unique, ...prev];
+    });
+    setNewPostsQueue([]);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
 
   // Back to top scroll listener
   useEffect(() => {
@@ -694,8 +728,8 @@ const HivePage = () => {
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-heading text-3xl text-vinyl-black">The Hive</h1>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <div className="w-2 h-2 bg-honey rounded-full animate-pulse" />
-          Live Feed
+          <div className={`w-2 h-2 rounded-full ${connected ? 'bg-honey animate-pulse' : 'bg-stone-300'}`} />
+          {connected ? 'Live Feed' : 'Feed'}
         </div>
       </div>
 
@@ -773,6 +807,25 @@ const HivePage = () => {
             Clear Filter
           </Button>
         </div>
+      )}
+
+      {/* Live Feed: New Posts Notification */}
+      {newPostsQueue.length > 0 && (
+        <button
+          onClick={showNewPosts}
+          className="w-full mb-4 py-2.5 px-4 rounded-xl border border-honey/50 text-sm font-medium flex items-center justify-center gap-2 transition-all duration-300 hover:shadow-md animate-in slide-in-from-top-2 fade-in duration-300"
+          style={{
+            background: 'linear-gradient(135deg, rgba(244,185,66,0.12) 0%, rgba(217,140,47,0.08) 100%)',
+            color: '#C8861A',
+          }}
+          data-testid="new-posts-btn"
+        >
+          <ArrowUp className="w-4 h-4" />
+          {newPostsQueue.length === 1
+            ? '1 new post'
+            : `${newPostsQueue.length} new posts`}
+          <span className="text-xs opacity-70">— tap to see</span>
+        </button>
       )}
 
       {filteredPosts.length === 0 ? (

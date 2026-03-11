@@ -13,6 +13,7 @@ from database import put_object, get_object, init_storage, storage_key
 from database import STRIPE_API_KEY, PLATFORM_FEE_PERCENT, FRONTEND_URL
 from database import DISCOGS_TOKEN, DISCOGS_USER_AGENT, DISCOGS_CONSUMER_KEY, DISCOGS_CONSUMER_SECRET
 from database import DISCOGS_REQUEST_TOKEN_URL, DISCOGS_AUTHORIZE_URL, DISCOGS_ACCESS_TOKEN_URL, DISCOGS_API_BASE
+from live_hive import emit_new_post
 from database import oauth_request_tokens, import_progress, EMERGENT_KEY
 from models import *
 from io import BytesIO
@@ -292,6 +293,17 @@ def generate_share_graphic(graphic_type: str, data: Dict, format_type: str = "sq
         raise HTTPException(status_code=500, detail="Failed to generate image")
 
 
+async def _emit_and_return(post_response, user_id: str):
+    """Emit NEW_POST via Socket.IO and return the PostResponse."""
+    if post_response:
+        try:
+            await emit_new_post(post_response.dict(), user_id)
+        except Exception as e:
+            logger.warning(f"Socket emit failed (non-blocking): {e}")
+    return post_response
+
+
+
 
 # ============== FEED/POSTS ROUTES ==============
 
@@ -526,7 +538,7 @@ async def composer_now_spinning(data: NowSpinningCreate, user: Dict = Depends(re
     await parse_and_notify_mentions(post_doc.get("caption", ""), post_doc["id"], user["id"])
     await _shadow_flag_post(post_doc, user)
     
-    return await build_post_response(post_doc, user["id"])
+    return await _emit_and_return(await build_post_response(post_doc, user["id"]), user["id"])
 
 @router.post("/composer/randomizer", response_model=PostResponse)
 async def composer_randomizer(data: NowSpinningCreate, user: Dict = Depends(require_auth)):
@@ -548,7 +560,7 @@ async def composer_randomizer(data: NowSpinningCreate, user: Dict = Depends(requ
     await db.posts.insert_one(post_doc)
     await parse_and_notify_mentions(post_doc.get("caption", ""), post_doc["id"], user["id"])
     await _shadow_flag_post(post_doc, user)
-    return await build_post_response(post_doc, user["id"])
+    return await _emit_and_return(await build_post_response(post_doc, user["id"]), user["id"])
 
 
 
@@ -607,7 +619,7 @@ async def composer_new_haul(data: NewHaulCreate, user: Dict = Depends(require_au
     await parse_and_notify_mentions(post_doc.get("caption", ""), post_doc["id"], user["id"])
     await _shadow_flag_post(post_doc, user)
     
-    return await build_post_response(post_doc, user["id"])
+    return await _emit_and_return(await build_post_response(post_doc, user["id"]), user["id"])
 
 @router.post("/composer/iso", response_model=PostResponse)
 async def composer_iso(data: ISOPostCreate, user: Dict = Depends(require_auth)):
@@ -653,7 +665,7 @@ async def composer_iso(data: ISOPostCreate, user: Dict = Depends(require_auth)):
     await parse_and_notify_mentions(post_doc.get("caption", ""), post_doc["id"], user["id"])
     await _shadow_flag_post(post_doc, user)
     
-    return await build_post_response(post_doc, user["id"])
+    return await _emit_and_return(await build_post_response(post_doc, user["id"]), user["id"])
 
 @router.post("/composer/vinyl-mood", response_model=PostResponse)
 async def composer_vinyl_mood(data: VinylMoodCreate, user: Dict = Depends(require_auth)):
@@ -674,7 +686,7 @@ async def composer_vinyl_mood(data: VinylMoodCreate, user: Dict = Depends(requir
     await parse_and_notify_mentions(post_doc.get("caption", ""), post_doc["id"], user["id"])
     await _shadow_flag_post(post_doc, user)
     
-    return await build_post_response(post_doc, user["id"])
+    return await _emit_and_return(await build_post_response(post_doc, user["id"]), user["id"])
 
 
 @router.post("/composer/note", response_model=PostResponse)
@@ -707,7 +719,7 @@ async def composer_note(data: NoteCreate, user: Dict = Depends(require_auth)):
     await db.posts.insert_one(post_doc)
     await parse_and_notify_mentions(post_doc.get("caption", "") or post_doc.get("text", ""), post_doc["id"], user["id"])
     await _shadow_flag_post(post_doc, user)
-    return await build_post_response(post_doc, user["id"])
+    return await _emit_and_return(await build_post_response(post_doc, user["id"]), user["id"])
 
 
 # ============== SEARCH ROUTES ==============

@@ -2,10 +2,12 @@
 import asyncio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import socketio
 import os
 import logging
 
 from database import db, client, init_storage, logger
+from live_hive import sio
 
 from routes.auth import router as auth_router
 from routes.hive import router as hive_router
@@ -206,3 +208,7 @@ async def _schedule_auto_payouts():
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
+
+
+# Wrap FastAPI with Socket.IO ASGI app for real-time support
+combined_app = socketio.ASGIApp(sio, other_asgi_app=app, socketio_path="/api/ws/socket.io")

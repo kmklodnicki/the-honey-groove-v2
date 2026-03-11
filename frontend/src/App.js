@@ -3,6 +3,7 @@ import "@/App.css";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { VariantModalProvider } from "./context/VariantModalContext";
+import { SocketProvider } from "./context/SocketContext";
 import VariantModal from "./components/VariantModal";
 import { Toaster } from "./components/ui/sonner";
 import { HelmetProvider } from "react-helmet-async";
@@ -242,11 +243,13 @@ function App() {
       <BrowserRouter>
         <ScrollToTop />
         <AuthProvider>
+          <SocketProvider>
           <VariantModalProvider>
             <AppContent />
             <VariantModal />
             <Toaster />
           </VariantModalProvider>
+          </SocketProvider>
         </AuthProvider>
       </BrowserRouter>
     </HelmetProvider>
