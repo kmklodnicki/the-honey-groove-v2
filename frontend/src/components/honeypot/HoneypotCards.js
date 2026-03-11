@@ -194,6 +194,7 @@ export const ListingCard = ({ listing, currentUserId, onProposeTrade, onBuyNow, 
           {listing.condition && <GradeLabel condition={listing.condition} variant="compact" />}
           <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${tc.color}`}>{tc.label}</span>
           {listing.international_shipping && <span className="text-[10px] text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded-full border border-blue-200" data-testid={`listing-intl-${listing.id}`}>Intl Shipping</span>}
+          {listing.is_test_listing && <span className="text-[10px] font-bold text-red-700 bg-red-50 px-1.5 py-0.5 rounded-full border border-red-300" data-testid={`listing-test-badge-${listing.id}`}>TEST</span>}
         </div>
         {listing.user && (
           <div className="flex items-center gap-1 mt-0.5">

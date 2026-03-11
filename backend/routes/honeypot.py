@@ -59,6 +59,17 @@ async def _get_platform_fee_percent() -> float:
     return PLATFORM_FEE_PERCENT
 
 
+def _can_see_test_listings(user: Optional[Dict]) -> bool:
+    """Return True if user is admin or the founder @katieintheafterglow."""
+    if not user:
+        return False
+    if user.get("is_admin"):
+        return True
+    if (user.get("username") or "").lower() == "katieintheafterglow":
+        return True
+    return False
+
+
 @router.get("/platform-fee")
 async def get_platform_fee():
     """Public endpoint to get the current platform fee percentage."""
@@ -360,6 +371,7 @@ async def create_listing(data: ListingCreate, user: Dict = Depends(require_auth)
         "international_shipping": data.international_shipping or False,
         "international_shipping_cost": data.international_shipping_cost if (data.international_shipping) else None,
         "offplatform_flagged": offplatform_flagged,
+        "is_test_listing": False,
         "status": "ACTIVE",
         "created_at": now
     }
@@ -456,6 +468,8 @@ async def get_listings(listing_type: Optional[str] = None, search: Optional[str]
     """Browse marketplace listings"""
     hidden_ids = await get_hidden_user_ids()
     query = {"status": "ACTIVE"}
+    if not _can_see_test_listings(current_user):
+        query["is_test_listing"] = {"$ne": True}
     if hidden_ids:
         query["user_id"] = {"$nin": hidden_ids}
     if listing_type and listing_type in LISTING_TYPES:
@@ -520,6 +534,7 @@ async def get_iso_matches(user: Dict = Depends(require_auth)):
     matches = await db.listings.find({
         "status": "ACTIVE",
         "user_id": {"$ne": user["id"]},
+        "is_test_listing": {"$ne": True},
         "$or": or_conditions
     }, {"_id": 0}).sort("created_at", -1).to_list(50)
     
@@ -556,7 +571,7 @@ async def get_listing(listing_id: str, current_user: Optional[Dict] = Depends(ge
 
     # Similar listings by the same artist (max 5, exclude current)
     similar = await db.listings.find(
-        {"artist": {"$regex": listing["artist"], "$options": "i"}, "status": "ACTIVE", "id": {"$ne": listing_id}},
+        {"artist": {"$regex": listing["artist"], "$options": "i"}, "status": "ACTIVE", "id": {"$ne": listing_id}, "is_test_listing": {"$ne": True}},
         {"_id": 0}
     ).limit(5).to_list(5)
     similar_enriched = []
@@ -651,6 +666,34 @@ async def update_listing(listing_id: str, data: ListingUpdate, user: Dict = Depe
     updated = await db.listings.find_one({"id": listing_id}, {"_id": 0})
     user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url"), "country": user.get("country"), "title_label": user.get("title_label"), "golden_hive": user.get("golden_hive", False)}
     return ListingResponse(**{k: v for k, v in updated.items() if k != '_id'}, user=user_data)
+
+
+@router.patch("/listings/{listing_id}/test-flag")
+async def toggle_test_listing(listing_id: str, body: Dict, user: Dict = Depends(require_auth)):
+    """Admin-only: toggle is_test_listing flag on a listing."""
+    if not _can_see_test_listings(user):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    listing = await db.listings.find_one({"id": listing_id})
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+    new_val = bool(body.get("is_test_listing", not listing.get("is_test_listing", False)))
+    await db.listings.update_one({"id": listing_id}, {"$set": {"is_test_listing": new_val}})
+    return {"id": listing_id, "is_test_listing": new_val}
+
+
+@router.get("/admin/test-listings")
+async def get_test_listings(user: Dict = Depends(require_auth)):
+    """Admin-only: get all listings flagged as test."""
+    if not _can_see_test_listings(user):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    listings = await db.listings.find({"is_test_listing": True}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    result = []
+    for listing in listings:
+        seller = await db.users.find_one({"id": listing["user_id"]}, {"_id": 0, "password_hash": 0})
+        user_data = {"id": seller["id"], "username": seller["username"], "avatar_url": seller.get("avatar_url")} if seller else None
+        result.append({**listing, "user": user_data})
+    return result
+
 
 
 # ============== STRIPE CONNECT & PAYMENTS ==============

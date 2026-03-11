@@ -587,6 +587,16 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                     </div>
                   )}
 
+                  {/* TEST LISTING safety banner */}
+                  {listing.is_test_listing && (
+                    <div className="mx-6 my-2 bg-red-50 border-2 border-red-400 rounded-xl px-4 py-3 flex items-center gap-3" data-testid="test-listing-banner">
+                      <AlertTriangle className="w-5 h-5 text-red-600 shrink-0" />
+                      <p className="text-sm font-bold text-red-700 uppercase tracking-wide">
+                        TEST LISTING — DO NOT PURCHASE
+                      </p>
+                    </div>
+                  )}
+
                   {/* Shipping insurance indicator */}
                   {listing.insured !== null && listing.insured !== undefined && (
                     <div className="px-6 py-2" data-testid="listing-insurance-status">
@@ -642,7 +652,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                   )}
 
                   {/* CTA buttons */}
-                  {!isOwn && (
+                  {!isOwn && !listing.is_test_listing && (
                     <div className="px-6 pt-4 pb-3 space-y-2.5" data-testid="listing-cta-section">
                       {isBuyNow && (
                         <Button onClick={handleBuyNowClick}

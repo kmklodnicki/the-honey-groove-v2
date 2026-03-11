@@ -341,6 +341,7 @@ class ListingResponse(BaseModel):
     international_shipping: Optional[bool] = False
     international_shipping_cost: Optional[float] = None
     offplatform_flagged: Optional[bool] = None
+    is_test_listing: Optional[bool] = False
     status: str = "ACTIVE"
     created_at: str
     user: Optional[Dict[str, Any]] = None

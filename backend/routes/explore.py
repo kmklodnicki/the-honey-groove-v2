@@ -825,7 +825,7 @@ async def get_near_you(user: Dict = Depends(require_auth), collector_limit: int 
     listings = []
     if nearby_ids:
         listings = await db.listings.find(
-            {"user_id": {"$in": nearby_ids}, "status": "ACTIVE"}, {"_id": 0}
+            {"user_id": {"$in": nearby_ids}, "status": "ACTIVE", "is_test_listing": {"$ne": True}}, {"_id": 0}
         ).sort("created_at", -1).limit(listing_limit).to_list(listing_limit)
         for l in listings:
             seller = next((u for u in collectors if u["id"] == l["user_id"]), None)
@@ -917,7 +917,7 @@ async def get_active_iso_matches(user: Dict = Depends(require_auth)):
         return []
     matches = []
     for iso in isos:
-        query = {"status": "ACTIVE", "user_id": {"$ne": user["id"], "$nin": hidden_ids}, "user_id": {"$ne": user["id"]}}
+        query = {"status": "ACTIVE", "is_test_listing": {"$ne": True}, "user_id": {"$ne": user["id"], "$nin": hidden_ids}, "user_id": {"$ne": user["id"]}}
         if hidden_ids:
             query["user_id"] = {"$ne": user["id"], "$nin": hidden_ids}
         query["$or"] = [

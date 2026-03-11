@@ -39,6 +39,7 @@ const AdminPage = () => {
     { key: 'watchtower', label: 'Watchtower', icon: AlertTriangle },
     { key: 'gate', label: 'The Gate', icon: Shield },
     { key: 'golden_hive', label: 'Golden Hive ID', icon: Shield },
+    { key: 'test_listings', label: 'Test Listings', icon: Flag },
     { key: 'settings', label: 'Platform Settings', icon: Settings },
   ];
 
@@ -76,6 +77,7 @@ const AdminPage = () => {
       {section === 'watchtower' && <WatchtowerSection API={API} headers={headers} />}
       {section === 'gate' && <GateSection API={API} headers={headers} />}
       {section === 'golden_hive' && <GoldenHiveAdminSection API={API} headers={headers} />}
+      {section === 'test_listings' && <TestListingsSection API={API} headers={headers} />}
       {section === 'settings' && <SettingsSection API={API} headers={headers} />}
     </div>
   );
@@ -1943,3 +1945,135 @@ const GoldenHiveAdminSection = ({ API, headers }) => {
 
 
 export default AdminPage;
+
+// ═══════════════════════════════════════════════
+// TEST LISTINGS SECTION
+// ═══════════════════════════════════════════════
+const TestListingsSection = ({ API, headers }) => {
+  const [listings, setListings] = useState([]);
+  const [allListings, setAllListings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [toggling, setToggling] = useState(null);
+
+  const fetchTestListings = useCallback(async () => {
+    try {
+      const r = await axios.get(`${API}/admin/test-listings`, { headers });
+      setListings(r.data);
+    } catch { }
+  }, [API, headers]);
+
+  const fetchAllActive = useCallback(async () => {
+    try {
+      const r = await axios.get(`${API}/listings?limit=200`, { headers });
+      setAllListings(r.data);
+    } catch { }
+  }, [API, headers]);
+
+  useEffect(() => {
+    Promise.all([fetchTestListings(), fetchAllActive()]).finally(() => setLoading(false));
+  }, [fetchTestListings, fetchAllActive]);
+
+  const toggleFlag = async (listingId, newVal) => {
+    setToggling(listingId);
+    try {
+      await axios.patch(`${API}/listings/${listingId}/test-flag`, { is_test_listing: newVal }, { headers });
+      toast.success(newVal ? 'Marked as test listing' : 'Unmarked — now visible to all');
+      await Promise.all([fetchTestListings(), fetchAllActive()]);
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to update');
+    } finally {
+      setToggling(null);
+    }
+  };
+
+  const filteredActive = allListings.filter(l =>
+    !l.is_test_listing && (
+      !search ||
+      l.album?.toLowerCase().includes(search.toLowerCase()) ||
+      l.artist?.toLowerCase().includes(search.toLowerCase()) ||
+      l.user?.username?.toLowerCase().includes(search.toLowerCase())
+    )
+  );
+
+  if (loading) return <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-amber-500" /></div>;
+
+  return (
+    <div className="space-y-6" data-testid="admin-test-listings">
+      <div>
+        <h2 className="font-heading text-xl text-[#2A1A06] mb-1">Test Listing Manager</h2>
+        <p className="text-sm text-[#8A6B4A]">Flag listings as test so they're hidden from regular users. Only you and admins can see them.</p>
+      </div>
+
+      {/* Currently flagged test listings */}
+      <div>
+        <h3 className="text-sm font-semibold text-[#2A1A06] mb-3 flex items-center gap-2">
+          <Flag className="w-4 h-4 text-red-500" /> Flagged Test Listings ({listings.length})
+        </h3>
+        {listings.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-4">No test listings flagged.</p>
+        ) : (
+          <div className="space-y-2">
+            {listings.map(l => (
+              <Card key={l.id} className="p-3 flex items-center gap-3 border-red-200 bg-red-50/40" data-testid={`test-listing-${l.id}`}>
+                {l.photo_urls?.[0] && (
+                  <img src={l.photo_urls[0]} alt="" className="w-12 h-12 rounded-lg object-cover border border-red-200" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-[#2A1A06] truncate">{l.artist} — {l.album}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {l.user?.username ? `@${l.user.username}` : 'Unknown'} · ${l.price || 0} · {l.status}
+                  </p>
+                </div>
+                <Button size="sm" variant="outline"
+                  onClick={() => toggleFlag(l.id, false)}
+                  disabled={toggling === l.id}
+                  className="border-green-300 text-green-700 hover:bg-green-50 rounded-full text-xs px-3"
+                  data-testid={`unflag-test-${l.id}`}>
+                  {toggling === l.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3 mr-1" />}
+                  Unflag
+                </Button>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Search & flag active listings */}
+      <div>
+        <h3 className="text-sm font-semibold text-[#2A1A06] mb-3">Flag a Listing as Test</h3>
+        <div className="relative mb-3">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input placeholder="Search active listings by album, artist, or seller..."
+            value={search} onChange={e => setSearch(e.target.value)}
+            className="pl-9 border-[#C8861A]/30"
+            data-testid="test-listing-search" />
+        </div>
+        <div className="space-y-2 max-h-96 overflow-y-auto">
+          {filteredActive.slice(0, 20).map(l => (
+            <Card key={l.id} className="p-3 flex items-center gap-3" data-testid={`active-listing-${l.id}`}>
+              {l.photo_urls?.[0] && (
+                <img src={l.photo_urls[0]} alt="" className="w-12 h-12 rounded-lg object-cover border border-stone-200" />
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-[#2A1A06] truncate">{l.artist} — {l.album}</p>
+                <p className="text-xs text-muted-foreground">
+                  {l.user?.username ? `@${l.user.username}` : 'Unknown'} · ${l.price || 0} · {l.listing_type}
+                </p>
+              </div>
+              <Button size="sm" variant="outline"
+                onClick={() => toggleFlag(l.id, true)}
+                disabled={toggling === l.id}
+                className="border-red-300 text-red-600 hover:bg-red-50 rounded-full text-xs px-3"
+                data-testid={`flag-test-${l.id}`}>
+                {toggling === l.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Flag className="w-3 h-3 mr-1" />}
+                Mark Test
+              </Button>
+            </Card>
+          ))}
+          {filteredActive.length === 0 && <p className="text-sm text-muted-foreground py-4">No matching active listings.</p>}
+        </div>
+      </div>
+    </div>
+  );
+};
