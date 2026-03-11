@@ -83,6 +83,14 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - Priority/eager loading for first 5 feed images (via imgPriority prop chain) and Daily Prompt
   - Files: sw.js, index.js, imageUrl.js, image_proxy.py, AlbumArt.js, PostCards.js, HivePage.js
   - Tested: PASS
+- **Feed Navigation Overhaul + Badge Rename + BLOCK 379** (March 2026) — COMPLETED
+  - Feed filter pills renamed: All, Now Spinning, Haul, ISO, Sale/Trade, Note, New Feature
+  - Active pill: honey (#FFB800) background with black text; Inactive: transparent with cream border
+  - Mobile: flex-wrap, 10px padding, 12px font, invisible scrollbar
+  - PostTypeBadge "Album Note" → "Note"
+  - BLOCK 379: Archive link centered below Daily Prompt with → arrow; buzz count moved to top-right
+  - Files: HivePage.js, PostCards.js, DailyPrompt.js
+  - Tested: PASS
 
 ### Layout & Design Features
 - Golden Vault Layout (ProfilePage unified dashboard)
