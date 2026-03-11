@@ -51,6 +51,16 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - Author filtering: users don't see their own posts in the notification
   - Live Feed indicator: shows connected/disconnected state with animated honey dot
   - Tested: 100% backend (11/11), frontend visual verification passed
+- **BLOCK 243: Valuation Visibility Overhaul** (March 2026)
+  - Backend: `POST /valuation/community-value/{discogs_id}` — submit community valuation for any record
+  - Backend: `GET /valuation/community-average/{discogs_id}` — get trimmed-mean community average
+  - Frontend: `ValuationAssistantModal.js` — full rewrite with `focusItem` prop for single-record valuation mode
+  - Frontend: `RecordCard` in CollectionPage — "Value This" amber-bordered button when price is null/0 and record has discogs_id
+  - Frontend: TreasuryHeader — amber "⚠️ N records pending valuation" warning under Dream Value
+  - Frontend: ProfilePage — matching amber pending link under Dream Value
+  - Persistence: saving value instantly updates RecordCard from "Value This" → price badge (no refresh)
+  - Data Sync: focus mode shows "Hive Average: $XX.XX" from community trimmed mean
+  - Tested: 100% backend (13/13), 100% frontend verification
 
 ## Backlog (Prioritized)
 ### P0
