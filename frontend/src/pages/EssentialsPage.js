@@ -179,7 +179,7 @@ const GrooveGatewayModal = ({ item, open, onClose }) => {
                 data-testid="groove-gateway-acquire-btn"
               >
                 <Diamond className="w-4 h-4 inline-block mr-2 -mt-0.5" />
-                Acquire via The Honey Groove Partner
+                Acquire via Partner
               </button>
 
               <p className="text-[10px] text-muted-foreground mt-3">Secured by The Honey Groove</p>
@@ -337,11 +337,11 @@ const ProductCard = ({ item, onAcquire }) => {
 
         <Button
           onClick={() => onAcquire(item)}
-          className="mt-auto bg-stone-900 text-white hover:bg-stone-800 rounded-full gap-2 w-full"
+          className="mt-auto bg-stone-900 text-white hover:bg-stone-800 rounded-full gap-2 w-full text-sm whitespace-normal text-center py-3 px-4"
           data-testid={`cta-${item.id}`}
         >
-          <Diamond className="w-3.5 h-3.5" />
-          Acquire via The Honey Groove Partner
+          <Diamond className="w-3.5 h-3.5 shrink-0" />
+          Acquire via Partner
         </Button>
       </div>
     </div>

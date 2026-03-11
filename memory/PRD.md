@@ -266,7 +266,8 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - **Global Adaptive UI (BLOCK 125):** State dropdown conditional on Country=US. City/Postal marked "(Optional)" in italic. Non-US: 2-column grid. US: 3-column grid.
 - **Global Groove (BLOCK 127):** Near You algorithm: US users match by state, non-US match by country. Backend accepts state + postal_code fields.
 - **Visual Hierarchy Overhaul (BLOCK 129):** Composer buttons shifted to Light Honey Cream (#FDE68A) with dark text (#78350F). City/Postal removed from Settings. Member Discovery shows country names.
-- **Dropdown Clipping Fix:** User profile dropdown z-50, bg-white/95, backdrop-blur, glassmorphism shadow. Floats over page content.
+- **Dropdown Clipping Fix (BLOCK 153):** User profile dropdown z-[9999], bg-white/95, backdrop-blur, glassmorphism shadow. Floats over page content. VERIFIED ✅
+- **Acquire Button Overflow Fix (BLOCK 155):** Shortened "Acquire via The Honey Groove Partner" → "Acquire via Partner" on Collection and Essentials pages. No overflow on mobile. VERIFIED ✅
 - **Multi-Channel Notifications:** Approve triggers "Welcome to the Inner Circle" celebration notification + "You're Verified" email. Deny triggers "Verification Update" notification with reason + email with reason callout.
 - **Denial Reasons Modal:** Quick-select buttons (Blurry, Expired, Wrong Document, Name Does Not Match) + custom text input. Reason injected into both notification and email. Async email sending keeps admin dashboard fast.
 - **Clutter-Free Feed (BLOCK 147):** Post buttons disabled until caption has >=1 char. Subtext: "Only posts with comments will be shared in The Hive." Backend excludes discogs_import and captionless posts from feed.
