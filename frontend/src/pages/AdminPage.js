@@ -43,7 +43,7 @@ const AdminPage = () => {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24" data-testid="admin-page">
+    <div className="max-w-7xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 pr-10" data-testid="admin-page">
       <h1 className="font-heading text-3xl text-vinyl-black mb-6">Admin Panel</h1>
 
       {/* Tab nav */}
@@ -1262,7 +1262,7 @@ const UserManagementSection = ({ API, headers }) => {
 
   return (
     <div data-testid="user-management-section">
-      {/* Search + filter */}
+      {/* Search + filter + user count */}
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -1274,7 +1274,7 @@ const UserManagementSection = ({ API, headers }) => {
             data-testid="user-search"
           />
         </div>
-        <div className="flex gap-1">
+        <div className="flex gap-1 items-center">
           {['all', 'admin', 'standard'].map(f => (
             <Button key={f} size="sm"
               variant={roleFilter === f ? 'default' : 'outline'}
@@ -1284,6 +1284,11 @@ const UserManagementSection = ({ API, headers }) => {
               {f === 'all' ? 'All Users' : f === 'admin' ? 'Admins' : 'Standard'}
             </Button>
           ))}
+          {!loading && (
+            <span className="ml-2 inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold bg-[#E8A820]/10 text-[#C8861A] border border-[#C8861A]/20 whitespace-nowrap" data-testid="user-count-badge">
+              <Users className="w-3 h-3 mr-1" />{users.length} {users.length === 1 ? 'user' : 'users'}
+            </span>
+          )}
         </div>
       </div>
 
@@ -1295,15 +1300,15 @@ const UserManagementSection = ({ API, headers }) => {
           <p className="text-muted-foreground text-sm">No users found.</p>
         </Card>
       ) : (
-        <div className="border border-honey/20 rounded-xl overflow-hidden bg-white">
+        <div className="border border-honey/20 rounded-xl overflow-x-auto bg-white">
           {/* Header */}
-          <div className="hidden sm:grid sm:grid-cols-[1fr_1fr_120px_80px_100px] gap-3 px-4 py-2.5 bg-honey/5 border-b border-honey/15 text-xs font-medium text-[#8A6B4A]">
-            <span>Username</span><span>Email</span><span>Joined</span><span>Role</span><span></span>
+          <div className="hidden sm:grid sm:grid-cols-[1fr_1fr_100px_120px_70px_120px] gap-3 px-4 py-2.5 bg-honey/5 border-b border-honey/15 text-xs font-medium text-[#8A6B4A] min-w-[700px]">
+            <span>Username</span><span>Email</span><span>Joined</span><span>Title</span><span>Role</span><span className="text-right">Actions</span>
           </div>
           {/* Rows */}
           <div className="divide-y divide-[#C8861A]/10">
             {users.map(u => (
-              <div key={u.id} className="flex flex-col sm:grid sm:grid-cols-[1fr_1fr_120px_120px_80px_100px] gap-1 sm:gap-3 px-4 py-3 items-start sm:items-center hover:bg-honey/5 transition-colors"
+              <div key={u.id} className="flex flex-col sm:grid sm:grid-cols-[1fr_1fr_100px_120px_70px_120px] gap-1 sm:gap-3 px-4 py-3 items-start sm:items-center hover:bg-honey/5 transition-colors min-w-[700px]"
                 data-testid={`user-row-${u.username}`}>
                 <div className="flex items-center gap-2 min-w-0">
                   <img src={resolveImageUrl(u.avatar_url)} alt="" className="w-7 h-7 rounded-full shrink-0" />
@@ -1332,7 +1337,7 @@ const UserManagementSection = ({ API, headers }) => {
                 }`}>
                   {u.is_admin ? 'Admin' : 'User'}
                 </span>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 justify-end min-w-[100px]">
                   {u.is_admin ? (
                     <Button size="sm" variant="outline"
                       onClick={() => setConfirmModal({ userId: u.id, username: u.username, action: 'revoke' })}
