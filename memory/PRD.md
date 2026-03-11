@@ -110,6 +110,13 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - Backend enriched with post_id in featured response
   - Files: PromptArchiveDrawer.js, daily_prompts.py
   - Tested: PASS
+- **BLOCK 399: Flex-Variant Mobile Fix** (March 2026) — COMPLETED
+  - Variant pill containers wrapped in flex with flex-wrap:wrap and gap:4px
+  - Truncation for long variant names: max-width:150px, text-overflow:ellipsis, overflow:hidden
+  - Mobile (<480px): font-size forced to 11px via CSS media query
+  - Note badge confirmed as "Note"
+  - Files: PostCards.js, App.css
+  - Tested: PASS
 
 ### Layout & Design Features
 - Golden Vault Layout (ProfilePage unified dashboard)
