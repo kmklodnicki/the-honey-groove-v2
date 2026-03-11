@@ -8,7 +8,7 @@ import MentionText from './MentionText';
 
 // Streaming deep links — Spotify & Apple Music search
 // Icon-only streaming links — monochromatic at rest, brand colors on hover, ~20px elegant icons
-const StreamingLinks = ({ artist, album }) => {
+const StreamingLinks = ({ artist, album, showEqualizer }) => {
   if (!artist || !album) return null;
   const q = encodeURIComponent(`${artist} ${album}`);
   const spotifyUrl = `https://open.spotify.com/search/${q}`;
@@ -27,6 +27,7 @@ const StreamingLinks = ({ artist, album }) => {
           <path d="M23.994 6.124a9.23 9.23 0 00-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 00-1.877-.726 10.496 10.496 0 00-1.564-.15c-.04-.003-.083-.01-.124-.013H5.986c-.152.01-.303.017-.455.026-.747.043-1.49.123-2.193.4-1.336.53-2.3 1.452-2.865 2.78-.192.448-.292.925-.363 1.408-.056.392-.088.785-.1 1.18 0 .032-.007.062-.01.093v12.223c.01.14.017.283.027.424.05.815.154 1.624.497 2.373.65 1.42 1.738 2.353 3.234 2.802.42.127.856.187 1.293.228.555.053 1.11.06 1.667.06h11.03a12.5 12.5 0 001.57-.1c.822-.106 1.596-.35 2.295-.81a5.046 5.046 0 001.88-2.207c.186-.42.293-.87.37-1.324.113-.675.138-1.358.137-2.04-.002-3.8 0-7.595-.003-11.393zm-6.423 3.99v5.712c0 .417-.058.827-.244 1.206-.29.59-.76.962-1.388 1.14-.35.1-.706.157-1.07.173-.95.042-1.8-.6-1.965-1.48-.18-.965.407-1.867 1.35-2.076.39-.086.784-.14 1.176-.208.254-.046.464-.175.56-.433.05-.14.073-.29.073-.443V10.12a.507.507 0 00-.4-.497c-.09-.02-.183-.03-.273-.042-.578-.074-1.156-.14-1.734-.218-.378-.05-.756-.104-1.132-.162a.475.475 0 00-.076-.003c-.318.008-.512.2-.512.52-.003 2.563-.002 5.124-.005 7.687 0 .373-.047.74-.2 1.084-.307.69-.827 1.1-1.566 1.27-.325.074-.655.117-.99.128a1.79 1.79 0 01-1.723-1.13 1.756 1.756 0 011.028-2.386c.395-.137.81-.2 1.22-.27.274-.047.5-.182.598-.463.045-.128.063-.266.063-.403V7.272c0-.37.148-.634.49-.803.126-.062.263-.1.4-.125l4.148-.753c.308-.056.617-.108.927-.153.088-.013.178-.01.265.004.282.05.435.233.454.52.003.058.004.117.004.176 0 1.262 0 2.524-.003 3.786z"/>
         </svg>
       </a>
+      {showEqualizer && <LiveEqualizer />}
     </div>
   );
 };
@@ -253,9 +254,9 @@ const SpinningVinyl = () => (
   </div>
 );
 
-// Live 4-bar equalizer with staggered bounce + honey glow
+// Live 4-bar equalizer with staggered bounce + honey glow — inline in streaming row
 const LiveEqualizer = () => (
-  <div className="absolute bottom-1.5 right-1.5 z-[6] flex items-end gap-[2px] pointer-events-none" style={{ display: 'flex', visibility: 'visible', minHeight: '16px', height: '16px' }} data-testid="live-equalizer">
+  <div className="flex items-end gap-[2px] shrink-0" style={{ height: '24px', width: '18px' }} data-testid="live-equalizer">
     <span className="w-[3px] rounded-full" style={{ background: '#FFB800', boxShadow: '0 0 4px rgba(255,184,0,0.5)', animation: 'eqBar1 0.8s ease-in-out infinite alternate', height: '40%' }} />
     <span className="w-[3px] rounded-full" style={{ background: '#FFB800', boxShadow: '0 0 4px rgba(255,184,0,0.5)', animation: 'eqBar2 0.6s ease-in-out infinite alternate', height: '70%' }} />
     <span className="w-[3px] rounded-full" style={{ background: '#FFB800', boxShadow: '0 0 4px rgba(255,184,0,0.5)', animation: 'eqBar3 0.9s ease-in-out infinite alternate', height: '50%' }} />
@@ -276,7 +277,6 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
             <div className="relative">
               <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-24 h-24 rounded-[10px] object-cover shadow-md album-art-hover relative z-[6]" priority={imgPriority} />
               <SpinningVinyl />
-              <LiveEqualizer />
               {post.honeypot_rating && (
                 <div className="absolute top-1 right-4 z-[7] px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
                   style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
@@ -285,7 +285,7 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
                 </div>
               )}
             </div>
-            <StreamingLinks artist={record.artist} album={record.title} />
+            <StreamingLinks artist={record.artist} album={record.title} showEqualizer />
           </div>
         ) : (
           <div className="w-24 h-24 rounded-lg bg-vinyl-black flex items-center justify-center">

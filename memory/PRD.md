@@ -117,6 +117,13 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - Note badge confirmed as "Note"
   - Files: PostCards.js, App.css
   - Tested: PASS
+- **BLOCK 407: Equalizer Repositioning** (March 2026) — COMPLETED
+  - Removed LiveEqualizer from absolute overlay on album art
+  - Repositioned inline in StreamingLinks row, right after Apple Music button
+  - Resized to 24px height to match Spotify/Apple button scale
+  - Animation remains active (bouncing bars)
+  - Files: PostCards.js
+  - Tested: PASS
 
 ### Layout & Design Features
 - Golden Vault Layout (ProfilePage unified dashboard)
