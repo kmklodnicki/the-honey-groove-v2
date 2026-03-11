@@ -473,6 +473,8 @@ async def composer_now_spinning(data: NowSpinningCreate, user: Dict = Depends(re
         "user_id": user["id"],
         "record_id": data.record_id,
         "notes": data.track,
+        "caption": data.caption,
+        "mood": data.mood,
         "created_at": now
     })
     
@@ -486,6 +488,7 @@ async def composer_now_spinning(data: NowSpinningCreate, user: Dict = Depends(re
         "record_id": data.record_id,
         "track": data.track,
         "mood": data.mood,
+        "spin_id": spin_id,
         "color_variant": record.get("color_variant") or record.get("pressing_notes"),
         "created_at": now
     }
@@ -718,17 +721,52 @@ async def get_post(post_id: str, user: Dict = Depends(require_auth)):
 
 @router.delete("/posts/{post_id}")
 async def delete_post(post_id: str, user: Dict = Depends(require_auth)):
-    """Delete a post owned by the current user, along with its likes and comments."""
+    """Delete a post owned by the current user, along with its likes, comments, and linked spin."""
     post = await db.posts.find_one({"id": post_id})
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
     if post["user_id"] != user["id"]:
         raise HTTPException(status_code=403, detail="You can only delete your own posts")
 
+    # Bidirectional: also delete linked spin
+    if post.get("spin_id"):
+        await db.spins.delete_one({"id": post["spin_id"]})
+    elif post.get("post_type") == "NOW_SPINNING":
+        # Fallback: match by user+record+timestamp
+        await db.spins.delete_one({
+            "user_id": user["id"],
+            "record_id": post.get("record_id"),
+            "created_at": post.get("created_at")
+        })
+
     await db.likes.delete_many({"post_id": post_id})
     await db.comments.delete_many({"post_id": post_id})
     await db.posts.delete_one({"id": post_id})
     return {"message": "Post deleted"}
+
+@router.delete("/spins/{spin_id}")
+async def delete_spin(spin_id: str, user: Dict = Depends(require_auth)):
+    """Delete a spin and its linked feed post (bidirectional)."""
+    spin = await db.spins.find_one({"id": spin_id})
+    if not spin:
+        raise HTTPException(status_code=404, detail="Spin not found")
+    if spin["user_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="You can only delete your own spins")
+
+    # Delete the corresponding post
+    post = await db.posts.find_one({"spin_id": spin_id})
+    if not post:
+        post = await db.posts.find_one({
+            "user_id": user["id"], "record_id": spin.get("record_id"),
+            "post_type": "NOW_SPINNING", "created_at": spin.get("created_at")
+        })
+    if post:
+        await db.likes.delete_many({"post_id": post["id"]})
+        await db.comments.delete_many({"post_id": post["id"]})
+        await db.posts.delete_one({"id": post["id"]})
+
+    await db.spins.delete_one({"id": spin_id})
+    return {"message": "Spin and linked post deleted"}
 
 
 

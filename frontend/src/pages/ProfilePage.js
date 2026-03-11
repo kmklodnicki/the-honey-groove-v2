@@ -10,7 +10,7 @@ import { Skeleton } from '../components/ui/skeleton';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '../components/ui/dialog';
-import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin, ShoppingBag, Flag, Sparkles, Eye, X, Cloud, ShieldOff, ShieldCheck, Lock, Clock } from 'lucide-react';
+import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin, ShoppingBag, Flag, Sparkles, Eye, X, Cloud, ShieldOff, ShieldCheck, Lock, Clock, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { FollowListModal } from '../components/FollowList';
@@ -69,6 +69,21 @@ const ProfilePage = () => {
   const [followRequestsOpen, setFollowRequestsOpen] = useState(false);
   const [goldenHiveModalOpen, setGoldenHiveModalOpen] = useState(false);
   const [goldenHiveCheckoutLoading, setGoldenHiveCheckoutLoading] = useState(false);
+  const [deleteSpinTarget, setDeleteSpinTarget] = useState(null);
+
+  const handleDeleteSpin = async () => {
+    if (!deleteSpinTarget) return;
+    try {
+      await axios.delete(`${API}/spins/${deleteSpinTarget.id}`, { 
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      toast.success('Spin and linked post deleted.');
+      setSpins(prev => prev.filter(s => s.id !== deleteSpinTarget.id));
+      setDeleteSpinTarget(null);
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Failed to delete spin.');
+    }
+  };
 
   const { openVariantModal } = useVariantModal();
 
@@ -666,7 +681,7 @@ const ProfilePage = () => {
             ISO
           </TabsTrigger>
           <TabsTrigger value="spinning" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-spinning">
-            Spinning
+            Spin History
           </TabsTrigger>
           <TabsTrigger value="trades" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-trades">
             Trades
@@ -967,29 +982,54 @@ const ProfilePage = () => {
           )}
         </TabsContent>
 
-        {/* Spinning Tab */}
+        {/* Spin History Tab */}
         <TabsContent value="spinning">
           {spins.length === 0 ? (
             <EmptyState icon={Play} title="No spins yet" sub={isOwnProfile ? 'Spin a record to see your history here!' : `@${username} hasn't spun anything yet`} />
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-3" data-testid="spin-history-list">
               {spins.map(spin => (
-                <Card key={spin.id} className="p-4 border-honey/30 flex items-center gap-4" data-testid={`spin-${spin.id}`}>
-                  {spin.record?.cover_url ? (
-                    <AlbumArt src={spin.record.cover_url} alt={`${spin.record.artist} ${spin.record.title} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow" />
-                  ) : (
-                    <div className="w-14 h-14 rounded-lg bg-vinyl-black flex items-center justify-center">
-                      <Disc className="w-6 h-6 text-honey" />
+                <Card key={spin.id} className="p-4 border-honey/30" data-testid={`spin-${spin.id}`}>
+                  <div className="flex items-start gap-4">
+                    {spin.record?.cover_url ? (
+                      <AlbumArt src={spin.record.cover_url} alt={`${spin.record.artist} ${spin.record.title} vinyl record`} className="w-16 h-16 rounded-lg object-cover shadow" />
+                    ) : (
+                      <div className="w-16 h-16 rounded-lg bg-vinyl-black flex items-center justify-center shrink-0">
+                        <Disc className="w-6 h-6 text-honey" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm truncate">{spin.record?.title || 'Unknown'}</p>
+                          <p className="text-xs text-muted-foreground truncate">{spin.record?.artist || 'Unknown'}</p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          {spin.mood && (
+                            <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: '#FFF8E1', color: '#3E2723' }}>
+                              {spin.mood}
+                            </span>
+                          )}
+                          <p className="text-[10px] text-muted-foreground">
+                            {formatDistanceToNow(new Date(spin.created_at), { addSuffix: true })}
+                          </p>
+                        </div>
+                      </div>
+                      {spin.notes && <p className="text-xs text-honey-amber mt-1">Track: {spin.notes}</p>}
+                      {spin.caption && (
+                        <p className="text-sm text-vinyl-black/80 mt-2 leading-relaxed">{spin.caption}</p>
+                      )}
                     </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{spin.record?.title || 'Unknown'}</p>
-                    <p className="text-xs text-muted-foreground truncate">{spin.record?.artist || 'Unknown'}</p>
-                    {spin.notes && <p className="text-xs text-honey-amber mt-0.5">Track: {spin.notes}</p>}
+                    {isOwnProfile && (
+                      <button
+                        onClick={() => setDeleteSpinTarget(spin)}
+                        className="shrink-0 p-1.5 rounded-full hover:bg-red-50 text-muted-foreground hover:text-red-500 transition-colors"
+                        data-testid={`delete-spin-${spin.id}`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
-                  <p className="text-xs text-muted-foreground shrink-0">
-                    {formatDistanceToNow(new Date(spin.created_at), { addSuffix: true })}
-                  </p>
                 </Card>
               ))}
             </div>
@@ -1258,6 +1298,28 @@ const ProfilePage = () => {
                 ) : 'Get Verified Now'}
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Spin Confirmation Dialog */}
+      <Dialog open={!!deleteSpinTarget} onOpenChange={(open) => !open && setDeleteSpinTarget(null)}>
+        <DialogContent className="sm:max-w-xs" aria-describedby="delete-spin-desc">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-center" style={{ color: '#D98C2F' }}>
+              Delete this spin?
+            </DialogTitle>
+            <DialogDescription id="delete-spin-desc" className="text-center text-sm text-muted-foreground mt-1">
+              This will also remove the linked post from The Hive feed. This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-2 pt-3" data-testid="delete-spin-confirm">
+            <Button onClick={() => setDeleteSpinTarget(null)} variant="outline" className="flex-1 rounded-full">
+              Cancel
+            </Button>
+            <Button onClick={handleDeleteSpin} className="flex-1 rounded-full text-white" style={{ background: 'linear-gradient(135deg, #EF4444, #DC2626)' }} data-testid="confirm-delete-spin">
+              Delete
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

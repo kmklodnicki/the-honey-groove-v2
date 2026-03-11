@@ -391,7 +391,26 @@ async def get_user_spins(username: str, limit: int = 50, current_user: Optional[
     for spin in spins:
         record = await db.records.find_one({"id": spin["record_id"]}, {"_id": 0})
         if record:
-            result.append({**spin, "record": record})
+            # Try to get caption/mood from spin doc first, then from corresponding post
+            caption = spin.get("caption") or ""
+            mood = spin.get("mood") or ""
+            post_id = None
+            if not caption and not mood:
+                # Lookup the corresponding post
+                post = await db.posts.find_one({
+                    "user_id": target["id"],
+                    "record_id": spin["record_id"],
+                    "post_type": "NOW_SPINNING",
+                    "created_at": spin["created_at"]
+                }, {"_id": 0, "caption": 1, "mood": 1, "id": 1})
+                if post:
+                    caption = post.get("caption", "")
+                    mood = post.get("mood", "")
+                    post_id = post.get("id")
+            else:
+                post = await db.posts.find_one({"spin_id": spin["id"]}, {"_id": 0, "id": 1})
+                post_id = post.get("id") if post else None
+            result.append({**spin, "record": record, "caption": caption, "mood": mood, "post_id": post_id})
     return result
 
 @router.get("/users/{username}/iso")

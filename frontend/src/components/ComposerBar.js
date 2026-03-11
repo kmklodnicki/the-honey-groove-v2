@@ -327,7 +327,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
       {/* Composer Bar — Command Center */}
       <div className="bg-white rounded-xl border border-honey/30 p-4 mb-6 shadow-sm" data-testid="composer-bar">
         <p className="text-sm text-muted-foreground mb-1">What's on the turntable?</p>
-        <p className="text-[10px] text-muted-foreground/70 mb-3 italic">Only posts with comments will be shared on The Honey Groove feed.</p>
+        <p className="text-[10px] text-muted-foreground/70 mb-3 italic">Only posts with comments will be shared in The Hive.</p>
         <div className="flex flex-row gap-1.5 justify-between w-full">
           {spectrum.map(chip => {
             const Icon = chip.icon;
