@@ -1,5 +1,10 @@
 /* HoneyGroove App Styles */
 
+/* Hide scrollbar but keep scroll functionality */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+
 /* Button Variants */
 .btn-primary {
     @apply inline-flex items-center justify-center rounded-full text-sm font-medium h-10 px-8 py-2;

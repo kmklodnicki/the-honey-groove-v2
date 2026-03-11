@@ -674,28 +674,28 @@ const ProfilePage = () => {
       ) : (
       /* 4 Tabs */
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="bg-honey/10 mb-6 w-full grid grid-cols-7">
-          <TabsTrigger value="collection" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-collection">
+        <TabsList className="bg-honey/10 mb-6 w-full flex overflow-x-auto no-scrollbar gap-1 p-1" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <TabsTrigger value="collection" className="data-[state=active]:bg-honey text-xs sm:text-sm shrink-0 px-3" data-testid="tab-collection">
             Collection
           </TabsTrigger>
-          <TabsTrigger value="dreaming" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-dreaming">
+          <TabsTrigger value="dreaming" className="data-[state=active]:bg-honey text-xs sm:text-sm shrink-0 px-3" data-testid="tab-dreaming">
             Dream List
           </TabsTrigger>
           {!isOwnProfile && tasteMatch && (
-            <TabsTrigger value="in-common" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-in-common">
+            <TabsTrigger value="in-common" className="data-[state=active]:bg-honey text-xs sm:text-sm shrink-0 px-3" data-testid="tab-in-common">
               In Common
             </TabsTrigger>
           )}
-          <TabsTrigger value="iso" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-iso">
+          <TabsTrigger value="iso" className="data-[state=active]:bg-honey text-xs sm:text-sm shrink-0 px-3" data-testid="tab-iso">
             ISO
           </TabsTrigger>
-          <TabsTrigger value="spinning" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-spinning">
+          <TabsTrigger value="spinning" className="data-[state=active]:bg-honey text-xs sm:text-sm shrink-0 px-3" data-testid="tab-spinning">
             Spin History
           </TabsTrigger>
-          <TabsTrigger value="trades" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-trades">
+          <TabsTrigger value="trades" className="data-[state=active]:bg-honey text-xs sm:text-sm shrink-0 px-3" data-testid="tab-trades">
             Trades
           </TabsTrigger>
-          <TabsTrigger value="mood" className="data-[state=active]:bg-honey text-xs sm:text-sm" data-testid="tab-mood">
+          <TabsTrigger value="mood" className="data-[state=active]:bg-honey text-xs sm:text-sm shrink-0 px-3" data-testid="tab-mood">
             Mood
           </TabsTrigger>
         </TabsList>
