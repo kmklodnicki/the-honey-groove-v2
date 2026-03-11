@@ -102,12 +102,13 @@ const AppLayout = ({ children }) => {
   const location = useLocation();
   const [showMigration, setShowMigration] = useState(false);
 
-  // BLOCK 455: Show Discogs security migration modal on first authenticated page load
+  // BLOCK 492: Mount migration modal immediately after session loads
+  // Trigger: user.needs_discogs_migration (computed from has_seen_security_migration === false)
   useEffect(() => {
-    if (user?.needs_discogs_migration) {
+    if (user && user.needs_discogs_migration === true) {
       setShowMigration(true);
     }
-  }, [user?.needs_discogs_migration]);
+  }, [user]);
 
   const isHome = location.pathname === '/' || location.pathname === '/hive';
   const hasInlineBack = location.pathname.startsWith('/record/') || location.pathname.startsWith('/vinyl/');

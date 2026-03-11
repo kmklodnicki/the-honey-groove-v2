@@ -18,10 +18,17 @@ from util.content_filter import detect_offplatform_payment, BLOCK_MESSAGE as OFF
 router = APIRouter()
 
 def _check_needs_migration(user: dict) -> bool:
-    """Check if user needs to re-verify Discogs via OAuth (BLOCK 455/462).
-    One-and-done: once has_seen_security_migration is True, never triggers again."""
-    if user.get("has_seen_security_migration"):
+    """BLOCK 492: Check if user needs to see the security migration modal.
+    Trigger: has_seen_security_migration is explicitly False (set by Great Disconnect).
+    One-and-done: once has_seen_security_migration is True or dismissed, never triggers again."""
+    if user.get("has_seen_security_migration") is True:
         return False
+    if user.get("discogs_migration_dismissed") is True:
+        return False
+    # BLOCK 492: If the flag was explicitly set to False (Great Disconnect), trigger modal
+    if user.get("has_seen_security_migration") is False:
+        return True
+    # Legacy fallback: user has old discogs_username but not OAuth verified
     if user.get("discogs_username") and not user.get("discogs_oauth_verified"):
         return True
     return False
@@ -202,6 +209,27 @@ async def update_me(update_data: UserUpdate, user: Dict = Depends(require_auth))
     updated = await db.users.find_one({"id": user["id"]}, {"_id": 0, "password_hash": 0})
     return await _build_user_response(updated)
 
+
+# ============== BLOCK 491: DEBUG RESET MIGRATION FLAG ==============
+
+@router.post("/debug/reset-migration")
+async def debug_reset_migration(user: Dict = Depends(require_auth)):
+    """BLOCK 491: Dev-only tool to reset migration flags so the modal re-triggers.
+    Only allowed for @katie or in non-production environments."""
+    allowed_users = ["katieintheafterglow"]
+    if user.get("username") not in allowed_users:
+        raise HTTPException(status_code=403, detail="Debug tool restricted to authorized users")
+
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {
+            "has_seen_security_migration": False,
+            "discogs_oauth_verified": False,
+            "discogs_migration_dismissed": False,
+        }}
+    )
+    logger.info(f"BLOCK 491: Migration flags reset for user {user['id']} ({user.get('username')})")
+    return {"message": "Migration flags reset. Reload to trigger modal."}
 
 
 # ============== EMAIL VERIFICATION ==============

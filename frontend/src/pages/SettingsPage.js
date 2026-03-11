@@ -862,6 +862,42 @@ const SettingsPage = () => {
 
       <ReportModal open={bugReportOpen} onOpenChange={setBugReportOpen} targetType="bug" targetId={null} />
 
+      {/* BLOCK 491: Dev-only migration reset tool — visible only in dev or for @katie */}
+      {(process.env.NODE_ENV === 'development' || user?.username === 'katieintheafterglow') && (
+        <Card className="border-red-500/40 bg-red-50/50" data-testid="debug-reset-card">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-bold text-red-600 flex items-center gap-2">
+              <Bug className="w-4 h-4" /> DEBUG: Dev Tools
+            </CardTitle>
+            <CardDescription className="text-xs text-red-400">Only visible in development or for @katie</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              variant="outline"
+              className="border-red-500 text-red-600 hover:bg-red-100 rounded-full font-semibold"
+              data-testid="debug-reset-migration-btn"
+              onClick={async () => {
+                try {
+                  await axios.put(`${API}/auth/me`, {}, { headers: { Authorization: `Bearer ${token}` } });
+                  // Direct DB flag reset via dedicated debug endpoint
+                  await axios.post(`${API}/debug/reset-migration`, {}, { headers: { Authorization: `Bearer ${token}` } });
+                  // Clear cached session data
+                  localStorage.removeItem('honeygroove_token');
+                  localStorage.removeItem('swr-cache');
+                  sessionStorage.clear();
+                  toast.success('Migration flag reset. Reloading...');
+                  setTimeout(() => window.location.reload(true), 500);
+                } catch (err) {
+                  toast.error('Reset failed: ' + (err.response?.data?.detail || err.message));
+                }
+              }}
+            >
+              Reset Migration Flag
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       <CropModal
         open={showCrop}
         onClose={() => { setShowCrop(false); setCropSrc(null); }}

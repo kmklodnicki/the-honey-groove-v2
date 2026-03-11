@@ -50,7 +50,7 @@ const DiscogsSecurityModal = ({ open, onClose }) => {
               <Shield className="w-5 h-5 text-amber-400" />
             </div>
             <h2 className="text-xl font-bold text-white" style={{ fontFamily: '"DM Serif Display", serif' }}>
-              Security Update
+              The Honey Groove
             </h2>
           </div>
         </div>
