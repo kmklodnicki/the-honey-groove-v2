@@ -7,54 +7,27 @@ import PhotoLightbox from './PhotoLightbox';
 import MentionText from './MentionText';
 
 // Streaming deep links — Spotify & Apple Music search
+// Icon-only streaming links — monochromatic at rest, brand colors on hover, ~20px elegant icons
 const StreamingLinks = ({ artist, album }) => {
   if (!artist || !album) return null;
   const q = encodeURIComponent(`${artist} ${album}`);
   const spotifyUrl = `https://open.spotify.com/search/${q}`;
   const appleUrl = `https://music.apple.com/us/search?term=${q}`;
   return (
-    <div className="flex items-center gap-1.5 mt-2" data-testid="streaming-links">
+    <div className="flex items-center gap-2 mt-1.5" data-testid="streaming-links">
       <a href={spotifyUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
-        className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold transition-all hover:scale-105"
-        style={{ background: '#1DB954', color: '#fff' }} data-testid="spotify-link">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-        Spotify
-      </a>
-      <a href={appleUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
-        className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold transition-all hover:scale-105"
-        style={{ background: '#FC3C44', color: '#fff' }} data-testid="apple-music-link">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M23.994 6.124a9.23 9.23 0 00-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 00-1.877-.726 10.496 10.496 0 00-1.564-.15c-.04-.003-.083-.01-.124-.013H5.986c-.152.01-.303.017-.455.026-.747.043-1.49.123-2.193.4-1.336.53-2.3 1.452-2.865 2.78-.192.448-.292.925-.363 1.408-.056.392-.088.785-.1 1.18 0 .032-.007.062-.01.093v12.223c.01.14.017.283.027.424.05.815.154 1.624.497 2.373.65 1.42 1.738 2.353 3.234 2.802.42.127.856.187 1.293.228.555.053 1.11.06 1.667.06h11.03a12.5 12.5 0 001.57-.1c.822-.106 1.596-.35 2.295-.81a5.046 5.046 0 001.88-2.207c.186-.42.293-.87.37-1.324.113-.675.138-1.358.137-2.04-.002-3.8 0-7.595-.003-11.393zm-6.423 3.99v5.712c0 .417-.058.827-.244 1.206-.29.59-.76.962-1.388 1.14-.35.1-.706.157-1.07.173-.95.042-1.8-.6-1.965-1.48-.18-.965.407-1.867 1.35-2.076.39-.086.784-.14 1.176-.208.254-.046.464-.175.56-.433.05-.14.073-.29.073-.443V10.12a.507.507 0 00-.4-.497c-.09-.02-.183-.03-.273-.042-.578-.074-1.156-.14-1.734-.218-.378-.05-.756-.104-1.132-.162a.475.475 0 00-.076-.003c-.318.008-.512.2-.512.52-.003 2.563-.002 5.124-.005 7.687 0 .373-.047.74-.2 1.084-.307.69-.827 1.1-1.566 1.27-.325.074-.655.117-.99.128a1.79 1.79 0 01-1.723-1.13 1.756 1.756 0 011.028-2.386c.395-.137.81-.2 1.22-.27.274-.047.5-.182.598-.463.045-.128.063-.266.063-.403V7.272c0-.37.148-.634.49-.803.126-.062.263-.1.4-.125l4.148-.753c.308-.056.617-.108.927-.153.088-.013.178-.01.265.004.282.05.435.233.454.52.003.058.004.117.004.176 0 1.262 0 2.524-.003 3.786z"/></svg>
-        Apple
-      </a>
-    </div>
-  );
-};
-
-// Ghost-style streaming icons for album art overlays — bottom-right, white at rest, full color on hover
-const StreamingOverlay = ({ artist, album }) => {
-  if (!artist || !album) return null;
-  const q = encodeURIComponent(`${artist} ${album}`);
-  const spotifyUrl = `https://open.spotify.com/search/${q}`;
-  const appleUrl = `https://music.apple.com/us/search?term=${q}`;
-  return (
-    <div className="absolute bottom-1.5 right-1.5 z-[7] flex items-center gap-1 pointer-events-auto" data-testid="streaming-overlay">
-      <a href={spotifyUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
-        className="w-6 h-6 rounded-full flex items-center justify-center transition-all hover:scale-110 group/spo"
-        style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(6px)' }}
-        data-testid="streaming-overlay-spotify">
-        <svg width="14" height="14" viewBox="0 0 24 24" className="transition-colors" style={{ fill: 'rgba(255,255,255,0.6)' }}
+        className="transition-all hover:scale-110" data-testid="spotify-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" className="transition-colors" style={{ fill: '#B0A898' }}
           onMouseEnter={e => e.currentTarget.style.fill = '#1DB954'}
-          onMouseLeave={e => e.currentTarget.style.fill = 'rgba(255,255,255,0.6)'}>
+          onMouseLeave={e => e.currentTarget.style.fill = '#B0A898'}>
           <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
         </svg>
       </a>
       <a href={appleUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
-        className="w-6 h-6 rounded-full flex items-center justify-center transition-all hover:scale-110 group/apl"
-        style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(6px)' }}
-        data-testid="streaming-overlay-apple">
-        <svg width="13" height="13" viewBox="0 0 24 24" className="transition-colors" style={{ fill: 'rgba(255,255,255,0.6)' }}
+        className="transition-all hover:scale-110" data-testid="apple-music-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" className="transition-colors" style={{ fill: '#B0A898' }}
           onMouseEnter={e => e.currentTarget.style.fill = '#FC3C44'}
-          onMouseLeave={e => e.currentTarget.style.fill = 'rgba(255,255,255,0.6)'}>
+          onMouseLeave={e => e.currentTarget.style.fill = '#B0A898'}>
           <path d="M23.994 6.124a9.23 9.23 0 00-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 00-1.877-.726 10.496 10.496 0 00-1.564-.15c-.04-.003-.083-.01-.124-.013H5.986c-.152.01-.303.017-.455.026-.747.043-1.49.123-2.193.4-1.336.53-2.3 1.452-2.865 2.78-.192.448-.292.925-.363 1.408-.056.392-.088.785-.1 1.18 0 .032-.007.062-.01.093v12.223c.01.14.017.283.027.424.05.815.154 1.624.497 2.373.65 1.42 1.738 2.353 3.234 2.802.42.127.856.187 1.293.228.555.053 1.11.06 1.667.06h11.03a12.5 12.5 0 001.57-.1c.822-.106 1.596-.35 2.295-.81a5.046 5.046 0 001.88-2.207c.186-.42.293-.87.37-1.324.113-.675.138-1.358.137-2.04-.002-3.8 0-7.595-.003-11.393zm-6.423 3.99v5.712c0 .417-.058.827-.244 1.206-.29.59-.76.962-1.388 1.14-.35.1-.706.157-1.07.173-.95.042-1.8-.6-1.965-1.48-.18-.965.407-1.867 1.35-2.076.39-.086.784-.14 1.176-.208.254-.046.464-.175.56-.433.05-.14.073-.29.073-.443V10.12a.507.507 0 00-.4-.497c-.09-.02-.183-.03-.273-.042-.578-.074-1.156-.14-1.734-.218-.378-.05-.756-.104-1.132-.162a.475.475 0 00-.076-.003c-.318.008-.512.2-.512.52-.003 2.563-.002 5.124-.005 7.687 0 .373-.047.74-.2 1.084-.307.69-.827 1.1-1.566 1.27-.325.074-.655.117-.99.128a1.79 1.79 0 01-1.723-1.13 1.756 1.756 0 011.028-2.386c.395-.137.81-.2 1.22-.27.274-.047.5-.182.598-.463.045-.128.063-.266.063-.403V7.272c0-.37.148-.634.49-.803.126-.062.263-.1.4-.125l4.148-.753c.308-.056.617-.108.927-.153.088-.013.178-.01.265.004.282.05.435.233.454.52.003.058.004.117.004.176 0 1.262 0 2.524-.003 3.786z"/>
         </svg>
       </a>
