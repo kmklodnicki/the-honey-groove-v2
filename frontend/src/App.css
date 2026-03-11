@@ -619,13 +619,15 @@ main {
   50% { box-shadow: 0 0 16px rgba(244,185,66,0.5); }
 }
 
-/* BLOCK 399: Mobile variant pill sizing */
+/* BLOCK 412/415: Responsive variant pill — expand on desktop, truncate on mobile */
+.variant-pill-responsive {
+  white-space: nowrap;
+}
 @media (max-width: 480px) {
-  [data-testid="variant-pill"],
-  [data-testid="variant-pill-glass"],
-  [data-testid="variant-pill-ghost"],
-  [data-testid="variant-pill-gold"] {
-    font-size: 11px !important;
+  .variant-pill-responsive {
     max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 11px !important;
   }
 }

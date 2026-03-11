@@ -172,8 +172,8 @@ const VariantTag = ({ variant, glass, ghost, gold, prefix, linkTo }) => {
   const label = prefix ? `${prefix} ${variant}` : variant;
 
   const linkClass = linkTo ? 'cursor-pointer transition-transform duration-150 hover:scale-105 active:scale-100' : '';
-  // Mobile truncation for long variant names
-  const truncStyle = { maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' };
+  // Mobile-only truncation: expand full on desktop (>1024px), truncate on mobile (<480px)
+  const truncClass = 'variant-pill-responsive';
 
   const wrap = (content, testId) => {
     if (!linkTo) return content;
@@ -186,8 +186,8 @@ const VariantTag = ({ variant, glass, ghost, gold, prefix, linkTo }) => {
 
   if (glass) {
     return wrap(
-      <span className="inline-flex items-center gap-1 text-[10px] sm:text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-        style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)', ...truncStyle }}
+      <span className={`inline-flex items-center gap-1 text-[10px] sm:text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${truncClass}`}
+        style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
         data-testid="variant-pill-glass">
         {label}
       </span>,
@@ -196,8 +196,7 @@ const VariantTag = ({ variant, glass, ghost, gold, prefix, linkTo }) => {
   }
   if (ghost) {
     return wrap(
-      <span className="inline-flex items-center gap-1 text-[10px] sm:text-[10px] font-medium px-2 py-0.5 rounded-full border border-stone-300 text-stone-400 bg-transparent"
-        style={truncStyle}
+      <span className={`inline-flex items-center gap-1 text-[10px] sm:text-[10px] font-medium px-2 py-0.5 rounded-full border border-stone-300 text-stone-400 bg-transparent ${truncClass}`}
         data-testid="variant-pill-ghost">
         <Disc className="w-2.5 h-2.5 shrink-0" />
         <span className="truncate">{label}</span>
@@ -207,8 +206,7 @@ const VariantTag = ({ variant, glass, ghost, gold, prefix, linkTo }) => {
   }
   if (gold) {
     return wrap(
-      <span className="inline-flex items-center gap-1 text-[10px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-400 bg-gradient-to-r from-yellow-400/80 via-amber-400/80 to-yellow-500/80 text-amber-950"
-        style={truncStyle}
+      <span className={`inline-flex items-center gap-1 text-[10px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-400 bg-gradient-to-r from-yellow-400/80 via-amber-400/80 to-yellow-500/80 text-amber-950 ${truncClass}`}
         data-testid="variant-pill-gold">
         <Disc className="w-2.5 h-2.5 shrink-0" />
         <span className="truncate">{label}</span>
@@ -217,8 +215,8 @@ const VariantTag = ({ variant, glass, ghost, gold, prefix, linkTo }) => {
     );
   }
   return wrap(
-    <span className="inline-flex items-center gap-1 text-[11px] sm:text-[11px] font-bold tracking-wide px-2.5 py-1 rounded-full"
-      style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)', ...truncStyle }}
+    <span className={`inline-flex items-center gap-1 text-[11px] sm:text-[11px] font-bold tracking-wide px-2.5 py-1 rounded-full ${truncClass}`}
+      style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
       data-testid="variant-pill">
       <Disc className="w-3 h-3 shrink-0" />
       <span className="truncate">{label}</span>
@@ -240,23 +238,30 @@ const EditionTag = ({ number }) => {
 
 // Spinning vinyl disc — slides out from behind right side of album art sleeve
 // High-fidelity grooved vinyl record — peeking behind album art
-// High-fidelity grooved vinyl record — peeking behind album art
-const SpinningVinyl = ({ size = 92 }) => {
-  const offset = size <= 64 ? '-4px' : '-6px';
+// Size presets: 'feed' (92px, 20px peek), 'prompt' (72px, 10px peek), 'small' (56px, 8px peek)
+const VINYL_PRESETS = {
+  feed:   { size: 92, peek: 20, offset: '-2px' },
+  prompt: { size: 72, peek: 10, offset: '-2px' },
+  small:  { size: 56, peek: 8,  offset: '-2px' },
+};
+
+const SpinningVinyl = ({ preset = 'feed' }) => {
+  const { size, offset } = VINYL_PRESETS[preset] || VINYL_PRESETS.feed;
+  const uid = `v${size}`;
   return (
     <div className="absolute top-1/2 -translate-y-1/2 z-[5] pointer-events-none" style={{ right: offset }} data-testid="spinning-vinyl-icon">
       <svg width={size} height={size} viewBox="0 0 92 92" fill="none" style={{ animation: 'vinylSpin 1.8s linear infinite', filter: 'drop-shadow(1px 1px 3px rgba(0,0,0,0.3))' }}>
         <defs>
-          <radialGradient id={`vg${size}`} cx="50%" cy="45%" r="50%">
+          <radialGradient id={`vg${uid}`} cx="50%" cy="45%" r="50%">
             <stop offset="0%" stopColor="#2A2A2A" />
             <stop offset="100%" stopColor="#111" />
           </radialGradient>
-          <radialGradient id={`sp${size}`} cx="35%" cy="30%" r="45%">
+          <radialGradient id={`sp${uid}`} cx="35%" cy="30%" r="45%">
             <stop offset="0%" stopColor="rgba(255,255,255,0.08)" />
             <stop offset="100%" stopColor="rgba(255,255,255,0)" />
           </radialGradient>
         </defs>
-        <circle cx="46" cy="46" r="44" fill={`url(#vg${size})`} />
+        <circle cx="46" cy="46" r="44" fill={`url(#vg${uid})`} />
         <circle cx="46" cy="46" r="43" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
         {[40,38,36,34,32,30,28,26,24,22,20,18,16].map((r, i) => (
           <circle key={r} cx="46" cy="46" r={r} fill="none"
@@ -268,19 +273,22 @@ const SpinningVinyl = ({ size = 92 }) => {
         <circle cx="46" cy="46" r="11.2" fill="none" stroke="rgba(0,0,0,0.15)" strokeWidth="0.5" />
         <circle cx="46" cy="46" r="3" fill="#1A1A1A" />
         <circle cx="46" cy="46" r="1.5" fill="#333" />
-        <circle cx="46" cy="46" r="43" fill={`url(#sp${size})`} />
+        <circle cx="46" cy="46" r="43" fill={`url(#sp${uid})`} />
       </svg>
     </div>
   );
 };
 
-// Wrapper: album art with peeking vinyl behind — visible within card padding
-const AlbumWithVinyl = ({ children, showVinyl = true, size }) => (
-  <div className="relative" style={{ paddingRight: showVinyl ? '24px' : 0, marginRight: showVinyl ? '-4px' : 0 }}>
-    {showVinyl && <SpinningVinyl size={size} />}
-    {children}
-  </div>
-);
+// Wrapper: album art with peeking vinyl behind — proportional peek per card type
+const AlbumWithVinyl = ({ children, showVinyl = true, preset = 'feed' }) => {
+  const { peek } = VINYL_PRESETS[preset] || VINYL_PRESETS.feed;
+  return (
+    <div className="relative" style={{ paddingRight: showVinyl ? `${peek + 4}px` : 0 }}>
+      {showVinyl && <SpinningVinyl preset={preset} />}
+      {children}
+    </div>
+  );
+};
 
 // Live 4-bar equalizer with staggered bounce + honey glow — inline in streaming row
 const LiveEqualizer = () => (
@@ -468,7 +476,7 @@ const AddedToCollectionCard = ({ post, onAlbumClick, imgPriority }) => {
     <AlbumLink record={record} onAlbumClick={onAlbumClick}>
       <div className="flex gap-3 items-center" data-testid="added-card">
         <div className="shrink-0 pr-2">
-          <AlbumWithVinyl size={64}>
+          <AlbumWithVinyl preset="small">
             <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-16 h-16 rounded-[10px] object-cover shadow relative z-[6]" priority={imgPriority} />
           </AlbumWithVinyl>
         </div>
@@ -529,7 +537,7 @@ const DailyPromptPostCard = ({ post, imgPriority }) => (
     <div className="flex gap-4 items-start bg-amber-50/60 rounded-lg p-3">
       {post.cover_url ? (
         <div className="shrink-0 pr-2">
-          <AlbumWithVinyl>
+          <AlbumWithVinyl preset="prompt">
             <AlbumArt src={post.cover_url} alt={`${post.record_artist} ${post.record_title}${post.color_variant ? ` ${post.color_variant}` : ''} vinyl record`} className="w-20 h-20 rounded-[10px] object-cover shadow-md relative z-[6]" priority={imgPriority} />
             {post.honeypot_rating && (
               <div className="absolute top-1 right-1 z-[7] px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"

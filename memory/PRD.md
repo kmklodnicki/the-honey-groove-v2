@@ -138,6 +138,21 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - Created reusable AlbumWithVinyl wrapper for universal application
   - Applied to NowSpinningCard, AddedToCollectionCard, DailyPromptPostCard
   - Files: PostCards.js
+- **BLOCK 412: Desktop-Expansive Variant Badge** (March 2026) — COMPLETED
+  - Desktop (>1024px): removed max-width/truncation, badges expand to full text
+  - Mobile (<480px): retains max-width:150px truncation with 11px font
+  - Used CSS class 'variant-pill-responsive' for responsive behavior
+  - Confirmed equalizer placement in streaming row, not overlapping art
+  - Files: PostCards.js, App.css
+  - Tested: PASS
+- **BLOCK 415: Proportional Peek Refinement** (March 2026) — COMPLETED
+  - Created VINYL_PRESETS: feed (92px/20px), prompt (72px/10px), small (56px/8px)
+  - Feed cards: 20px peek with full 92px grooved vinyl
+  - Daily Prompt cards: 10px peek with scaled 72px vinyl
+  - Small cards: 8px peek with 56px vinyl
+  - Grooves remain sharp at all sizes (SVG viewBox scaling)
+  - Files: PostCards.js
+  - Tested: PASS
   - Tested: PASS (visual verification)
 
 ### Layout & Design Features
