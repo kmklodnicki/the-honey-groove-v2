@@ -191,3 +191,20 @@ h1, h2, h3, h4, h5, h6 {
 .honey-fade-in {
   animation: honeyFadeIn 200ms ease-out forwards;
 }
+
+
+/* BLOCK 247: Valuation Wizard slide transitions */
+.wizard-card {
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+.wizard-card.slide-out {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+.wizard-card.slide-in {
+  animation: wizardSlideIn 300ms ease-out forwards;
+}
+@keyframes wizardSlideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}

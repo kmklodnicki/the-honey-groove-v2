@@ -33,6 +33,7 @@ import { VariantTag } from '../components/PostCards';
 import SEOHead from '../components/SEOHead';
 import BackToTop from '../components/BackToTop';
 import ValuationAssistantModal from '../components/ValuationAssistantModal';
+import ValuationWizard from '../components/ValuationWizard';
 import { useBlurPlaceholders } from '../hooks/useBlurPlaceholders';
 
 // Counting animation hook
@@ -63,7 +64,7 @@ const HoneycombIcon = ({ className }) => (
 );
 
 // Treasury Header — Premium Collection & Dream Value Dashboard
-const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamLoading, collectionTab, onTabChange, valuedCount, totalCount, onRefresh, refreshing, onPendingClick }) => {
+const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamLoading, collectionTab, onTabChange, valuedCount, totalCount, onRefresh, refreshing, onPendingClick, onOpenWizard }) => {
   const animCollection = useCountUp(collectionValue, 1600, true);
   const animDream = useCountUp(dreamValue, 1600, true);
 
@@ -105,7 +106,19 @@ const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamL
                 ${Math.round(animCollection).toLocaleString()}
               </p>
               {valuedCount != null && (
-                <p className="text-[10px] text-stone-400 mt-0.5">{valuedCount} of {totalCount} valued</p>
+                <div>
+                  <p className="text-[10px] text-stone-400 mt-0.5">{valuedCount} of {totalCount} records valued</p>
+                  {totalCount - valuedCount > 0 && onOpenWizard && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onOpenWizard(); }}
+                      className="mt-1 text-[10px] font-semibold px-2.5 py-1 rounded-full transition-all hover:scale-105"
+                      style={{ background: 'rgba(255,215,0,0.2)', color: '#7A5A1A', border: '1px solid rgba(218,165,32,0.3)' }}
+                      data-testid="add-missing-values-btn"
+                    >
+                      Add Missing Values
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           </button>
@@ -217,6 +230,7 @@ const CollectionPage = () => {
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [valuationModalOpen, setValuationModalOpen] = useState(false);
   const [valuationFocusItem, setValuationFocusItem] = useState(null);
+  const [wizardOpen, setWizardOpen] = useState(false);
   const navigate = useNavigate();
 
   // Blur placeholders for record cover images
@@ -303,6 +317,14 @@ const CollectionPage = () => {
     } else if (typeof result === 'number') {
       // Dream value update from pending items mode
       setDreamlistValue(prev => prev ? { ...prev, total_value: result } : prev);
+    }
+  };
+
+  // Handle wizard completion — refresh collection value
+  const handleWizardComplete = (savedCount) => {
+    if (savedCount > 0) {
+      fetchData();
+      toast.success(`${savedCount} record${savedCount !== 1 ? 's' : ''} valued!`);
     }
   };
 
@@ -575,7 +597,7 @@ const CollectionPage = () => {
 
       <Tabs value={collectionTab} onValueChange={handleTabChange}>
         {/* Treasury Dashboard — Premium Value Display */}
-        {collectionValue && collectionValue.total_value > 0 && (
+        {collectionValue && (collectionValue.total_value > 0 || (collectionValue.total_count > collectionValue.valued_count)) && (
           <TreasuryHeader
             collectionValue={collectionValue?.total_value || 0}
             dreamValue={dreamlistValue?.total_value || 0}
@@ -588,6 +610,7 @@ const CollectionPage = () => {
             onRefresh={handleRefreshValues}
             refreshing={refreshing}
             onPendingClick={() => { setValuationFocusItem(null); setValuationModalOpen(true); }}
+            onOpenWizard={() => setWizardOpen(true)}
           />
         )}
 
@@ -827,6 +850,11 @@ const CollectionPage = () => {
         onClose={() => { setValuationModalOpen(false); setValuationFocusItem(null); }}
         onValuesUpdated={handleValuationUpdate}
         focusItem={valuationFocusItem}
+      />
+      <ValuationWizard
+        open={wizardOpen}
+        onClose={() => setWizardOpen(false)}
+        onComplete={handleWizardComplete}
       />
       <BackToTop />
     </div>

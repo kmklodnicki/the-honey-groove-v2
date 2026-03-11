@@ -397,6 +397,104 @@ async def get_community_average(discogs_id: int):
     }
 
 
+# ===================== COLLECTION COMPLETIONIST WIZARD =====================
+
+@router.get("/valuation/unvalued-queue")
+async def get_unvalued_queue(user: Dict = Depends(require_auth)):
+    """Returns collection records that have no market or community value — the wizard queue."""
+    records = await db.records.find(
+        {"user_id": user["id"], "discogs_id": {"$ne": None}},
+        {"_id": 0, "id": 1, "discogs_id": 1, "title": 1, "artist": 1, "cover_url": 1, "year": 1}
+    ).to_list(5000)
+    if not records:
+        return []
+
+    discogs_ids = list({r["discogs_id"] for r in records if r.get("discogs_id")})
+
+    # Fetch existing collection_values
+    col_vals = await db.collection_values.find(
+        {"release_id": {"$in": discogs_ids}}, {"_id": 0, "release_id": 1, "median_value": 1}
+    ).to_list(5000)
+    valued_set = {v["release_id"] for v in col_vals if v.get("median_value") and v["median_value"] > 0}
+
+    # Fetch community valuations
+    community = await db.community_valuations.find(
+        {"release_id": {"$in": discogs_ids}}, {"_id": 0, "release_id": 1, "average_value": 1, "contribution_count": 1}
+    ).to_list(5000)
+    community_map = {c["release_id"]: c for c in community}
+
+    queue = []
+    for r in records:
+        did = r.get("discogs_id")
+        if not did or did in valued_set:
+            continue
+        # Check if community value exists (still show but include benchmark)
+        cv = community_map.get(did)
+        entry = {
+            "id": r["id"],
+            "discogs_id": did,
+            "title": r.get("title", "Unknown"),
+            "artist": r.get("artist", "Unknown"),
+            "cover_url": r.get("cover_url"),
+            "year": r.get("year"),
+        }
+        if cv and cv.get("average_value") and cv["average_value"] > 0:
+            entry["hive_average"] = cv["average_value"]
+            entry["hive_count"] = cv.get("contribution_count", 0)
+        queue.append(entry)
+    return queue
+
+
+@router.post("/valuation/wizard-save/{discogs_id}")
+async def wizard_save_value(discogs_id: int, body: ManualValueInput, user: Dict = Depends(require_auth)):
+    """Save a value from the wizard: updates community valuations AND collection_values cache."""
+    if body.value <= 0:
+        raise HTTPException(status_code=400, detail="Value must be positive")
+
+    now = datetime.now(timezone.utc).isoformat()
+
+    # 1) Update community_valuations (trimmed mean)
+    existing = await db.community_valuations.find_one({"release_id": discogs_id})
+    if existing:
+        contributions = existing.get("contributions", [])
+        contributions = [c for c in contributions if c["user_id"] != user["id"]]
+        contributions.append({"user_id": user["id"], "value": round(body.value, 2), "at": now})
+        avg = _trimmed_mean([c["value"] for c in contributions])
+        await db.community_valuations.update_one(
+            {"release_id": discogs_id},
+            {"$set": {
+                "contributions": contributions,
+                "average_value": round(avg, 2),
+                "contribution_count": len(contributions),
+                "updated_at": now,
+            }}
+        )
+    else:
+        avg = round(body.value, 2)
+        await db.community_valuations.insert_one({
+            "release_id": discogs_id,
+            "contributions": [{"user_id": user["id"], "value": round(body.value, 2), "at": now}],
+            "average_value": avg,
+            "contribution_count": 1,
+            "created_at": now,
+            "updated_at": now,
+        })
+
+    # 2) Update collection_values so the record counts as "valued" in the summary
+    await db.collection_values.update_one(
+        {"release_id": discogs_id},
+        {"$set": {
+            "release_id": discogs_id,
+            "median_value": round(avg, 2),
+            "last_updated": now,
+            "source": "community",
+        }},
+        upsert=True,
+    )
+
+    return {"message": "Value saved", "average_value": round(avg, 2)}
+
+
 # ===================== HIDDEN GEMS =====================
 async def get_hidden_gems(user: Dict = Depends(require_auth), limit: int = 3):
     """Top N most valuable records in the user's collection."""
