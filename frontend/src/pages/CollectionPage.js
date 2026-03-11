@@ -955,7 +955,7 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
 
 const WishlistCard = ({ item, onPromote, onAddToCollection, onDelete }) => (
   <Card className="group overflow-hidden border-stone-200/60 hover:shadow-md transition-all" data-testid={`wishlist-card-${item.id}`}>
-    <Link to={item.discogs_id ? `/record/discogs-${item.discogs_id}` : '#'} className="block">
+    <Link to={item.discogs_id ? `/variant/${item.discogs_id}` : '#'} className="block">
       <div className="relative aspect-square bg-stone-100">
         {item.cover_url ? (
           <AlbumArt src={item.cover_url} alt={`${item.artist} ${item.album}${item.color_variant ? ` ${item.color_variant}` : ''} vinyl record`} className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity" />
