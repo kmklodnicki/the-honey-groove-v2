@@ -14,7 +14,7 @@ const StreamingLinks = ({ artist, album }) => {
   const spotifyUrl = `https://open.spotify.com/search/${q}`;
   const appleUrl = `https://music.apple.com/us/search?term=${q}`;
   return (
-    <div className="flex items-center justify-center gap-2 mt-0" data-testid="streaming-links">
+    <div className="flex items-center gap-2 mt-4 mb-3" data-testid="streaming-links">
       <a href={spotifyUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
         className="transition-all hover:scale-110" data-testid="spotify-link">
         <svg width="20" height="20" viewBox="0 0 24 24" className="transition-colors" style={{ fill: '#B0A898' }}
