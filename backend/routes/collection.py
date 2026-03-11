@@ -187,8 +187,8 @@ async def detect_duplicates(user: Dict = Depends(require_auth)):
 
 @router.delete("/records/duplicates/clean")
 async def clean_duplicates(user: Dict = Depends(require_auth)):
-    """Remove duplicate records, keeping the oldest copy of each discogs_id.
-    Skips groups where records have different notes (needs manual review)."""
+    """Remove duplicate records, keeping the best copy of each discogs_id.
+    For groups with different notes, keeps the record with the longest note (most metadata)."""
     pipeline = [
         {"$match": {"user_id": user["id"], "discogs_id": {"$ne": None}}},
         {"$group": {
@@ -201,13 +201,12 @@ async def clean_duplicates(user: Dict = Depends(require_auth)):
     groups = await db.records.aggregate(pipeline).to_list(500)
     ids_to_delete = []
     for g in groups:
-        notes_set = {r.get("notes") or "" for r in g["records"]}
-        if len(notes_set) > 1:
-            continue  # Skip groups needing manual review
-        # Sort by created_at, keep the first (oldest)
-        sorted_recs = sorted(g["records"], key=lambda r: r.get("created_at", ""))
-        for r in sorted_recs[1:]:
-            ids_to_delete.append(r["id"])
+        recs = g["records"]
+        # Pick master: longest note first, then oldest created_at as tiebreaker
+        master = max(recs, key=lambda r: (len(r.get("notes") or ""), -(hash(r.get("created_at", "")))))
+        for r in recs:
+            if r["id"] != master["id"]:
+                ids_to_delete.append(r["id"])
     if ids_to_delete:
         await db.records.delete_many({"id": {"$in": ids_to_delete}, "user_id": user["id"]})
     return {"removed_count": len(ids_to_delete)}

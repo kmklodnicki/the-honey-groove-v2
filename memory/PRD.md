@@ -178,6 +178,13 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - Manual text entry saves identically to a dropdown-selected track
   - Files: ComposerBar.js
   - Tested: PASS (self-tested, visual verification of both states)
+- **BLOCK 439: Duplicate Cleaner Override** (March 2026) — COMPLETED
+  - Fixed bug: "Confirm & Clean" now processes ALL duplicate groups, including those with differing notes
+  - Master selection: keeps record with longest note (most metadata), deletes the rest
+  - Updated frontend warning from "will be skipped" to "the copy with the most detail will be kept"
+  - Toast accurately reflects removed count
+  - Files: collection.py (backend clean_duplicates), CollectionPage.js (warning text)
+  - Tested: PASS (API test: 3 dupes with different notes → 2 removed, master with longest note kept)
 
 ### Layout & Design Features
 - Golden Vault Layout (ProfilePage unified dashboard)

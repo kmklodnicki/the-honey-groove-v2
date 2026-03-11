@@ -934,7 +934,7 @@ const CollectionPage = () => {
               {dupeData.duplicate_groups.some(g => g.needs_review) && (
                 <div className="mb-4 px-3 py-2 rounded-lg border border-amber-200 bg-amber-50 text-xs text-amber-800">
                   <AlertTriangle className="inline w-3.5 h-3.5 mr-1 -mt-0.5" />
-                  {dupeData.duplicate_groups.filter(g => g.needs_review).length} group{dupeData.duplicate_groups.filter(g => g.needs_review).length !== 1 ? 's have' : ' has'} records with different notes and will be skipped for manual review.
+                  {dupeData.duplicate_groups.filter(g => g.needs_review).length} group{dupeData.duplicate_groups.filter(g => g.needs_review).length !== 1 ? 's have' : ' has'} records with different notes. The copy with the most detail will be kept.
                 </div>
               )}
               <div className="max-h-48 overflow-y-auto space-y-2 mb-5">
