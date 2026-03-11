@@ -448,12 +448,12 @@ const HivePage = () => {
 
   const headers = { Authorization: `Bearer ${token}` };
 
-  const FEED_LIMIT = 50;
+  const FEED_LIMIT = 20;
 
   const fetchFeed = useCallback(async () => {
     try {
       const response = await axios.get(`${API}/feed`, {
-        params: { limit: FEED_LIMIT, skip: 0 },
+        params: { limit: FEED_LIMIT },
         headers: { Authorization: `Bearer ${token}` }
       });
       let feedPosts = response.data;
@@ -479,8 +479,13 @@ const HivePage = () => {
     if (loadingMore || !hasMore) return;
     setLoadingMore(true);
     try {
+      // Cursor-based: use the created_at of the last post as the cursor
+      const lastPost = posts[posts.length - 1];
+      const before = lastPost?.created_at || null;
+      const params = { limit: FEED_LIMIT };
+      if (before) params.before = before;
       const response = await axios.get(`${API}/feed`, {
-        params: { limit: FEED_LIMIT, skip: posts.length },
+        params,
         headers: { Authorization: `Bearer ${token}` }
       });
       const newPosts = response.data;
@@ -815,19 +820,32 @@ const HivePage = () => {
         </div>
       )}
 
-      {/* View Older Posts */}
+      {/* Show Older Posts — Diamond Glass Bar */}
       {filteredPosts.length > 0 && hasMore && activeFilter === 'all' && feedMode === 'all' && (
         <div className="flex justify-center pt-6 pb-2">
-          <Button
+          <button
             onClick={loadMore}
             disabled={loadingMore}
-            variant="outline"
-            className="rounded-full border-honey/50 text-honey-amber hover:bg-honey/10 px-6"
+            className="w-full max-w-md py-3 px-6 rounded-xl border border-honey/40 backdrop-blur-md transition-all duration-300 hover:shadow-[0_0_20px_rgba(244,185,66,0.2)] hover:border-honey/60 disabled:opacity-60"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(244,185,66,0.08) 50%, rgba(255,255,255,0.7) 100%)',
+            }}
             data-testid="load-more-btn"
           >
-            {loadingMore ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-            {loadingMore ? 'loading...' : 'view older posts'}
-          </Button>
+            <span className="flex items-center justify-center gap-2 font-medium text-sm" style={{ color: '#C8861A' }}>
+              {loadingMore ? (
+                <>
+                  <Disc className="w-4 h-4 animate-spin" />
+                  loading...
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-4 h-4" />
+                  show older posts
+                </>
+              )}
+            </span>
+          </button>
         </div>
       )}
       {filteredPosts.length > 0 && !hasMore && activeFilter === 'all' && feedMode === 'all' && (

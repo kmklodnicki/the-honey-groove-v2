@@ -382,7 +382,7 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
     )
 
 @router.get("/feed", response_model=List[PostResponse])
-async def get_feed(user: Dict = Depends(require_auth), limit: int = 50, skip: int = 0):
+async def get_feed(user: Dict = Depends(require_auth), limit: int = 20, skip: int = 0, before: Optional[str] = None):
     hidden_ids = await get_hidden_user_ids()
     blocked_ids = await get_all_blocked_ids(user["id"])
     exclude_ids = list(set(hidden_ids + blocked_ids))
@@ -396,33 +396,52 @@ async def get_feed(user: Dict = Depends(require_auth), limit: int = 50, skip: in
     query = {"is_pinned": {"$ne": True}, "source": {"$ne": "discogs_import"}}
     if exclude_ids:
         query["user_id"] = {"$nin": exclude_ids}
+    if before:
+        query["created_at"] = {"$lt": before}
 
-    posts = await db.posts.find(
-        query, {"_id": 0}
-    ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
-    
     # Allowed post types in the Hive feed
     ALLOWED_TYPES = {"NOW_SPINNING", "NEW_HAUL", "ISO", "RANDOMIZER", "DAILY_PROMPT", "NOTE"}
-    
+
+    # Over-fetch to compensate for Python-side filtering, then trim to limit
     result = []
-    if pinned_resp and skip == 0:
+    if pinned_resp and not before and skip == 0:
         result.append(pinned_resp)
-    for post in posts:
-        try:
-            pt = (post.get("post_type") or "").upper()
-            caption = (post.get("caption") or post.get("content") or "").strip()
-            # Only allow whitelisted post types
-            if pt and pt not in ALLOWED_TYPES:
-                continue
-            # Require caption for Now Spinning, Hauls, and Randomizer
-            if pt in ("NOW_SPINNING", "NEW_HAUL", "RANDOMIZER") and not caption:
-                continue
-            resp = await build_post_response(post, user["id"])
-            if resp:
-                result.append(resp)
-        except Exception as e:
-            logger.error(f"build_post_response failed for post {post.get('id', '?')}: {e}")
-    
+
+    batch_size = limit * 4
+    current_skip = skip
+    max_iterations = 5
+    for _ in range(max_iterations):
+        if len(result) >= limit:
+            break
+        posts = await db.posts.find(
+            query, {"_id": 0}
+        ).sort("created_at", -1).skip(current_skip).limit(batch_size).to_list(batch_size)
+        if not posts:
+            break
+        for post in posts:
+            if len(result) >= limit + 1:
+                break
+            try:
+                pt = (post.get("post_type") or "").upper()
+                caption = (post.get("caption") or post.get("content") or "").strip()
+                if pt and pt not in ALLOWED_TYPES:
+                    continue
+                if pt in ("NOW_SPINNING", "NEW_HAUL", "RANDOMIZER") and not caption:
+                    continue
+                resp = await build_post_response(post, user["id"])
+                if resp:
+                    result.append(resp)
+            except Exception as e:
+                logger.error(f"build_post_response failed for post {post.get('id', '?')}: {e}")
+        current_skip += batch_size
+        if len(posts) < batch_size:
+            break
+
+    # If we collected more than limit, there are more posts available
+    # Trim to exactly limit
+    if len(result) > limit:
+        result = result[:limit]
+
     return result
 
 @router.get("/explore", response_model=List[PostResponse])
