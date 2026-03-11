@@ -1157,10 +1157,10 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
             </div>
           )}
 
-          {/* Value badge — glassy prominent OR "Value This" button */}
+          {/* BLOCK 483: Value badge — Honey Gold pill, top-right with hover pop */}
           {value > 0 ? (
-            <div className="absolute top-2 right-2 px-2.5 py-1 rounded-full font-black z-[5]"
-              style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', fontSize: '18px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
+            <div className="absolute top-2 right-2 px-2.5 py-1 rounded-full font-bold text-sm z-[5] transition-transform duration-200 hover:scale-110 cursor-default"
+              style={{ background: 'rgba(255, 191, 0, 0.85)', color: '#000' }}
               data-testid={`record-value-${record.id}`}>
               ${value.toFixed(0)}
             </div>

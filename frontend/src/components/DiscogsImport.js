@@ -85,11 +85,15 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
       toast.success(`discogs connected as ${params.get('username') || ''}.`);
       window.history.replaceState({}, '', window.location.pathname);
       fetchStatus();
+      // BLOCK 484: Trigger priority price re-link for first 50 records
+      axios.post(`${API}/valuation/priority-relink`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).catch(() => {});
     } else if (discogsParam === 'error') {
       toast.error('Failed to connect Discogs: ' + (params.get('message') || 'Unknown error'));
       window.history.replaceState({}, '', window.location.pathname);
     }
-  }, [fetchStatus]);
+  }, [fetchStatus, API, token]);
 
   const fetchSummary = async () => {
     try {

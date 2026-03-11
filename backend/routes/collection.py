@@ -951,6 +951,46 @@ async def serve_file(path: str):
 
 # ============== DISCOGS OAUTH & IMPORT ROUTES ==============
 
+async def _priority_value_relink(user_id: str):
+    """BLOCK 484: Background task — fetch Discogs market prices for user's first 50 records after OAuth re-auth."""
+    from database import get_discogs_market_data
+    try:
+        records = await db.records.find(
+            {"user_id": user_id, "discogs_id": {"$ne": None}},
+            {"_id": 0, "discogs_id": 1}
+        ).to_list(50)
+        discogs_ids = list({r["discogs_id"] for r in records if r.get("discogs_id")})
+        if not discogs_ids:
+            return
+
+        # Only fetch stale/missing values
+        existing = await db.collection_values.find(
+            {"release_id": {"$in": discogs_ids}},
+            {"_id": 0, "release_id": 1, "last_updated": 1}
+        ).to_list(5000)
+        cutoff = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+        fresh_ids = {d["release_id"] for d in existing if d.get("last_updated", "") >= cutoff}
+        stale_ids = [did for did in discogs_ids if did not in fresh_ids]
+
+        fetched = 0
+        for did in stale_ids:
+            try:
+                data = get_discogs_market_data(did)
+                if data:
+                    now = datetime.now(timezone.utc).isoformat()
+                    await db.collection_values.update_one(
+                        {"release_id": did},
+                        {"$set": {"release_id": did, "median_value": data["median_value"], "low_value": data["low_value"], "high_value": data["high_value"], "last_updated": now}},
+                        upsert=True
+                    )
+                    fetched += 1
+            except Exception as e:
+                logger.warning(f"Priority relink failed for {did}: {e}")
+            await asyncio.sleep(1.1)  # Respect Discogs rate limit
+        logger.info(f"BLOCK 484: Priority relink for {user_id}: {fetched}/{len(stale_ids)} fetched")
+    except Exception as e:
+        logger.error(f"BLOCK 484: Priority relink error for {user_id}: {e}")
+
 @router.get("/discogs/oauth/start")
 async def discogs_oauth_start(request: Request, user: Dict = Depends(require_auth), frontend_origin: str = Query(default="")):
     """Step 1: Get request token and return authorization URL
@@ -1162,6 +1202,9 @@ async def discogs_oauth_callback(oauth_token: str = Query(...), oauth_verifier: 
             # Clean up pending
             await db.discogs_oauth_pending.delete_one({"oauth_token": oauth_token})
             oauth_request_tokens.pop(oauth_token, None)
+            
+            # BLOCK 484: Trigger priority price fetch for first 50 records
+            asyncio.create_task(_priority_value_relink(user_id))
         
         # BLOCK 472: Redirect to the frontend that initiated the flow (dynamic env support)
         frontend_base = pending.get("callback_origin", FRONTEND_URL) if pending else FRONTEND_URL

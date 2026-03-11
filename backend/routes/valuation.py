@@ -948,6 +948,38 @@ async def set_price_alert(iso_id: str, body: dict, user: Dict = Depends(require_
     return {"message": "Price alert set", "target_price": target_price}
 
 
+# ===================== PRIORITY RE-LINK (BLOCK 484) =====================
+
+@router.post("/valuation/priority-relink")
+async def priority_relink(user: Dict = Depends(require_auth)):
+    """BLOCK 484: After OAuth re-auth, immediately fetch prices for the first 50 records.
+    Skips records that already have fresh cached values."""
+    records = await db.records.find(
+        {"user_id": user["id"], "discogs_id": {"$ne": None}},
+        {"_id": 0, "discogs_id": 1}
+    ).sort("created_at", -1).to_list(50)
+    discogs_ids = list({r["discogs_id"] for r in records if r.get("discogs_id")})
+    if not discogs_ids:
+        return {"message": "No records to relink", "fetched": 0, "total": 0}
+
+    # Check which already have fresh values
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=CACHE_TTL_HOURS)).isoformat()
+    fresh = await db.collection_values.find(
+        {"release_id": {"$in": discogs_ids}, "last_updated": {"$gte": cutoff}},
+        {"_id": 0, "release_id": 1}
+    ).to_list(5000)
+    fresh_ids = {d["release_id"] for d in fresh}
+    stale_ids = [did for did in discogs_ids if did not in fresh_ids]
+
+    if not stale_ids:
+        return {"message": "All top 50 values are fresh", "fetched": 0, "total": len(discogs_ids)}
+
+    # Fire background task for stale records
+    asyncio.create_task(_background_refresh(user["id"], stale_ids))
+    logger.info(f"Priority relink for {user['id']}: {len(stale_ids)} stale out of {len(discogs_ids)} records")
+    return {"message": f"Re-linking {len(stale_ids)} records", "fetched": len(stale_ids), "total": len(discogs_ids)}
+
+
 # ===================== BACKGROUND REFRESH =====================
 
 @router.post("/valuation/refresh")

@@ -55,6 +55,9 @@ const ProfilePage = () => {
   const { data: swrCollectionValue } = useAPI(!profileLocked ? `/valuation/collection/${username}` : null);
   const { data: swrPromptStreak } = useAPI(!profileLocked ? `/prompts/streak/${username}` : null);
   const { data: swrDreamValue } = useAPI(!profileLocked ? `/valuation/dreamlist/${username}` : null);
+  // BLOCK 483: Fetch per-record values for price overlay badges (own profile only)
+  const isOwnProfile = user?.username === username;
+  const { data: swrRecordValues } = useAPI(isOwnProfile && !profileLocked ? `/valuation/record-values` : null);
   const [followLoading, setFollowLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('collection');
   const [followListType, setFollowListType] = useState(null);
@@ -98,8 +101,6 @@ const ProfilePage = () => {
   };
 
   const { openVariantModal } = useVariantModal();
-
-  const isOwnProfile = user?.username === username;
 
   // BLOCK 450: Sync SWR cached data into local state for the rest of the component
   useEffect(() => {
@@ -841,6 +842,19 @@ const ProfilePage = () => {
                           No. {record.edition_number}
                         </div>
                       )}
+                      {/* BLOCK 483: Price overlay pill — Honey Gold, top-right */}
+                      {(() => {
+                        const val = swrRecordValues?.[record.id];
+                        return val && val > 0 ? (
+                          <div
+                            className="absolute top-2 right-2 px-2.5 py-0.5 rounded-full font-bold text-xs z-[5] transition-transform duration-200 hover:scale-110 cursor-default"
+                            style={{ background: 'rgba(255, 191, 0, 0.85)', color: '#000' }}
+                            data-testid={`price-pill-${record.id}`}
+                          >
+                            ${Math.round(val)}
+                          </div>
+                        ) : null;
+                      })()}
                     </div>
                     <div className="p-3">
                       <h4 className="font-medium text-sm truncate">{record.title}</h4>
