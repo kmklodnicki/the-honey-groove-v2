@@ -847,7 +847,7 @@ const CollectionPage = () => {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {wishlistItems.map(item => (
-                <WishlistCard key={item.id} item={item} onPromote={handleWishlistToISO} onAddToCollection={handleWishlistToCollection} onDelete={handleDeleteWishlistItem} />
+                <WishlistCard key={item.id} item={item} onPromote={handleWishlistToISO} onAddToCollection={handleWishlistToCollection} onDelete={handleDeleteWishlistItem} onValueThis={handleValueThis} />
               ))}
             </div>
           )}
@@ -1237,28 +1237,42 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
 };
 
 
-const WishlistCard = ({ item, onPromote, onAddToCollection, onDelete }) => (
-  <Card className="group overflow-hidden border-stone-200/60 hover:shadow-md transition-all" data-testid={`wishlist-card-${item.id}`}>
+const WishlistCard = ({ item, onPromote, onAddToCollection, onDelete, onValueThis }) => (
+  <Card className="relative group overflow-hidden border-honey/20 hover:shadow-honey transition-all duration-300 hover:-translate-y-1" style={{ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', background: 'rgba(255,255,255,0.75)' }} data-testid={`wishlist-card-${item.id}`}>
     <Link to={item.discogs_id ? `/variant/${item.discogs_id}` : '#'} className="block">
       <div className="relative aspect-square bg-stone-100">
         {item.cover_url ? (
-          <AlbumArt src={item.cover_url} alt={`${item.artist} ${item.album}${item.color_variant ? ` ${item.color_variant}` : ''} vinyl record`} className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity" />
+          <AlbumArt src={item.cover_url} alt={`${item.artist} ${item.album}${item.color_variant ? ` ${item.color_variant}` : ''} vinyl record`} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center"><Disc className="w-10 h-10 text-stone-300" /></div>
+          <div className="w-full h-full flex items-center justify-center"><Disc className="w-10 h-10 text-honey" /></div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+
+        {/* Variant pill overlay with scrim */}
         {item.color_variant && (
           <>
-            <div className="absolute top-0 left-0 w-1/2 h-1/2 z-[4] pointer-events-none" style={{ background: 'linear-gradient(135deg, rgba(0,0,0,0.25) 0%, transparent 60%)' }} />
-            <div
-              className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] font-bold px-2 py-0.5 rounded-full z-[5]"
-              style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
-              data-testid={`variant-wishlist-${item.id}`}
-            >
-              {item.color_variant}
-            </div>
+            <div className="absolute top-0 left-0 w-1/2 h-1/2 z-[4] pointer-events-none rounded-tl-2xl" style={{ background: 'linear-gradient(135deg, rgba(0,0,0,0.25) 0%, transparent 60%)' }} />
+            {item.discogs_id ? (
+              <Link
+                to={`/variant/${item.discogs_id}`}
+                onClick={e => e.stopPropagation()}
+                className="variant-pill-responsive absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] font-bold px-2 py-0.5 rounded-full z-[5] cursor-pointer transition-transform duration-150 hover:scale-105"
+                style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
+                data-testid={`variant-wishlist-${item.id}`}
+              >
+                {item.color_variant}
+              </Link>
+            ) : (
+              <div
+                className="variant-pill-responsive absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] font-bold px-2 py-0.5 rounded-full z-[5]"
+                style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
+                data-testid={`variant-wishlist-${item.id}`}
+              >
+                {item.color_variant}
+              </div>
+            )}
           </>
         )}
+
         {item.preferred_number && (
           <div
             className={`absolute ${item.color_variant ? 'top-8' : 'top-2'} left-2 uppercase text-[9px] font-bold px-2 py-0.5 rounded-full z-[5]`}
@@ -1268,6 +1282,8 @@ const WishlistCard = ({ item, onPromote, onAddToCollection, onDelete }) => (
             Seeking No. {item.preferred_number}
           </div>
         )}
+
+        {/* Value badge — glassy prominent OR "Set Value" button */}
         {item.median_value > 0 ? (
           <div className="absolute top-2 right-2 px-2.5 py-1 rounded-full font-black z-[5]"
             style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', fontSize: '18px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
@@ -1277,18 +1293,32 @@ const WishlistCard = ({ item, onPromote, onAddToCollection, onDelete }) => (
               <span className="text-[8px] font-normal ml-0.5 opacity-60">{item.value_source === 'community' ? 'c' : 'm'}</span>
             )}
           </div>
-        ) : (
-          <div className="absolute top-2 right-2 px-2.5 py-1 rounded-full font-black z-[5]"
-            style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: 'rgba(0,0,0,0.5)', fontSize: '14px', letterSpacing: '1px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
-            data-testid={`median-value-placeholder-${item.id}`}>
-            ---
-          </div>
-        )}
+        ) : onValueThis ? (
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onValueThis({ id: item.id, discogs_id: item.discogs_id, album: item.album, title: item.album, artist: item.artist, cover_url: item.cover_url }); }}
+            className="absolute top-2 right-2 px-2.5 py-1 rounded-full text-[11px] font-bold z-[5] transition-all hover:scale-105"
+            style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#C8861A', border: '2px solid #DAA520', boxShadow: '0 4px 16px 0 rgba(0,0,0,0.08)' }}
+            data-testid={`set-value-btn-${item.id}`}
+          >
+            Set Value
+          </button>
+        ) : null}
       </div>
     </Link>
     <div className="p-3">
       <p className="font-medium text-sm truncate">{item.album}</p>
       <p className="text-xs text-muted-foreground truncate">{item.artist}</p>
+      {item.color_variant && (
+        item.discogs_id ? (
+          <Link to={`/variant/${item.discogs_id}`} onClick={e => e.stopPropagation()} className="variant-pill-responsive text-[11px] text-honey-amber font-medium truncate mt-0.5 block hover:underline cursor-pointer transition-transform duration-150 hover:scale-105 origin-left" data-testid={`variant-label-wishlist-${item.id}`}>
+            {item.color_variant}
+          </Link>
+        ) : (
+          <p className="variant-pill-responsive text-[11px] text-honey-amber font-medium truncate mt-0.5" data-testid={`variant-label-wishlist-${item.id}`}>
+            {item.color_variant}
+          </p>
+        )
+      )}
       <div className="flex flex-col gap-2 mt-2">
         <Button size="sm" onClick={() => onAddToCollection(item.id)}
           className="w-full h-8 text-[0.8rem] rounded-full font-semibold border-0"

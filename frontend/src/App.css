@@ -619,7 +619,7 @@ main {
   50% { box-shadow: 0 0 16px rgba(244,185,66,0.5); }
 }
 
-/* BLOCK 412/415: Responsive variant pill — expand on desktop, truncate on mobile */
+/* BLOCK 412/415/442: Responsive variant pill — expand on desktop, truncate on mobile */
 .variant-pill-responsive {
   white-space: nowrap;
 }
@@ -629,5 +629,13 @@ main {
     overflow: hidden;
     text-overflow: ellipsis;
     font-size: 11px !important;
+  }
+}
+@media (min-width: 1025px) {
+  .variant-pill-responsive {
+    max-width: none !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    white-space: nowrap;
   }
 }
