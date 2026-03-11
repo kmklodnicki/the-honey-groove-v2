@@ -42,6 +42,15 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - Glass fallback uses `honey-fade-in` transition
   - Legacy `@keyframes shimmer` in App.css replaced with `honeyShimmer` reference
   - Mobile verified: Daily Prompt card + all album arts have smooth 2-pulse -> fade-in flow
+- **BLOCK 242: Live Hive WebSocket Integration** (March 2026)
+  - Backend: `live_hive.py` — Socket.IO async server with `emit_new_post()` broadcast
+  - Backend: `server.py` — `combined_app` wraps FastAPI with Socket.IO at `/api/ws/socket.io`
+  - Backend: All composer endpoints (`now-spinning`, `note`, `new-haul`, `iso`, `randomizer`, `vinyl-mood`) emit `NEW_POST` via `_emit_and_return()`
+  - Frontend: `SocketContext.js` — global provider managing Socket.IO connection lifecycle
+  - Frontend: `HivePage.js` — listens for `NEW_POST`, queues new posts, shows floating "N new posts" button
+  - Author filtering: users don't see their own posts in the notification
+  - Live Feed indicator: shows connected/disconnected state with animated honey dot
+  - Tested: 100% backend (11/11), frontend visual verification passed
 
 ## Backlog (Prioritized)
 ### P0
