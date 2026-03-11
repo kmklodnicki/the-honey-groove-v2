@@ -14,7 +14,7 @@ const StreamingLinks = ({ artist, album }) => {
   const spotifyUrl = `https://open.spotify.com/search/${q}`;
   const appleUrl = `https://music.apple.com/us/search?term=${q}`;
   return (
-    <div className="flex items-center gap-2 mt-1.5" data-testid="streaming-links">
+    <div className="flex items-center justify-center gap-2 mt-0" data-testid="streaming-links">
       <a href={spotifyUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
         className="transition-all hover:scale-110" data-testid="spotify-link">
         <svg width="20" height="20" viewBox="0 0 24 24" className="transition-colors" style={{ fill: '#B0A898' }}
@@ -272,17 +272,20 @@ const NowSpinningCard = ({ post, onAlbumClick }) => {
     <AlbumLink record={record} onAlbumClick={onAlbumClick}>
       <div className="flex gap-4 items-start" data-testid="now-spinning-card">
         {record.cover_url ? (
-          <div className="relative shrink-0 pr-3">
-            <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-24 h-24 rounded-[10px] object-cover shadow-md album-art-hover relative z-[6]" />
-            <SpinningVinyl />
-            <LiveEqualizer />
-            {post.honeypot_rating && (
-              <div className="absolute top-1 right-4 z-[7] px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
-                style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
-                data-testid="feed-rating-pill">
-                {post.honeypot_rating}
-              </div>
-            )}
+          <div className="shrink-0 pr-3">
+            <div className="relative">
+              <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-24 h-24 rounded-[10px] object-cover shadow-md album-art-hover relative z-[6]" />
+              <SpinningVinyl />
+              <LiveEqualizer />
+              {post.honeypot_rating && (
+                <div className="absolute top-1 right-4 z-[7] px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
+                  style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
+                  data-testid="feed-rating-pill">
+                  {post.honeypot_rating}
+                </div>
+              )}
+            </div>
+            <StreamingLinks artist={record.artist} album={record.title} />
           </div>
         ) : (
           <div className="w-24 h-24 rounded-lg bg-vinyl-black flex items-center justify-center">
@@ -301,8 +304,6 @@ const NowSpinningCard = ({ post, onAlbumClick }) => {
           )}
           {post.track && <p className="text-xs text-honey-amber mt-1">Track: {post.track}</p>}
           {post.caption && <p className="text-sm mt-2"><MentionText text={post.caption} /></p>}
-          {/* Streaming deep links */}
-          <StreamingLinks artist={record.artist} album={record.title} />
         </div>
       </div>
     </AlbumLink>
