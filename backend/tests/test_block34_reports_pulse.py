@@ -93,7 +93,7 @@ class TestReportSubmission(TestAuth):
             "target_type": "bug",
             "reason": "UI / display issue",
             "notes": "Test bug report from automated testing",
-            "page_url": "https://record-spin-hub.preview.emergentagent.com/hive",
+            "page_url": "https://record-pay-hub.preview.emergentagent.com/hive",
             "browser_info": "TestAgent/1.0"
         }, headers=headers)
         assert resp.status_code == 200, f"Failed: {resp.text}"
@@ -109,7 +109,7 @@ class TestReportSubmission(TestAuth):
             "target_id": "test_listing_123",
             "reason": "Incorrect grading",
             "notes": "Test listing report",
-            "page_url": "https://record-spin-hub.preview.emergentagent.com/honeypot",
+            "page_url": "https://record-pay-hub.preview.emergentagent.com/honeypot",
             "browser_info": "TestAgent/1.0"
         }, headers=headers)
         assert resp.status_code == 200, f"Failed: {resp.text}"

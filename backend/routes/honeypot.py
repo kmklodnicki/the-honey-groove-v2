@@ -931,6 +931,87 @@ async def create_payment_checkout(request: Request, body: Dict, user: Dict = Dep
     return {"url": session.url, "session_id": session.id}
 
 
+@router.post("/payments/create-intent")
+async def create_payment_intent(request: Request, body: Dict, user: Dict = Depends(require_auth)):
+    """Create a PaymentIntent for Express Checkout (Apple Pay / Google Pay) via Stripe Elements."""
+    listing_id = body.get("listing_id")
+    offer_amount = body.get("offer_amount")
+
+    listing = await db.listings.find_one_and_update(
+        {"id": listing_id, "status": "ACTIVE"},
+        {"$set": {"status": "PENDING", "locked_at": datetime.now(timezone.utc).isoformat(), "locked_by": user["id"]}},
+        return_document=False,
+    )
+    if listing:
+        listing.pop("_id", None)
+    if not listing:
+        raise HTTPException(status_code=409, detail="This honey has already been claimed!")
+    if listing["user_id"] == user["id"]:
+        await db.listings.update_one({"id": listing_id}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
+        raise HTTPException(status_code=400, detail="Cannot buy your own listing")
+
+    if listing["listing_type"] in ("BUY_NOW", "SALE"):
+        amount = float(listing.get("price") or 0)
+    elif listing["listing_type"] == "MAKE_OFFER" and offer_amount:
+        amount = float(offer_amount)
+    else:
+        await db.listings.update_one({"id": listing_id}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
+        raise HTTPException(status_code=400, detail="Invalid listing type or missing offer amount")
+
+    if amount < 0.01:
+        await db.listings.update_one({"id": listing_id}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
+        raise HTTPException(status_code=400, detail="Amount must be at least $0.01")
+
+    seller = await db.users.find_one({"id": listing["user_id"]}, {"_id": 0})
+    if not seller or not seller.get("stripe_account_id") or not seller.get("stripe_charges_enabled"):
+        await db.listings.update_one({"id": listing_id}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
+        raise HTTPException(status_code=400, detail="Seller's Stripe account is not ready")
+
+    fee_pct = await _get_platform_fee_percent()
+    platform_fee = round(amount * fee_pct / 100, 2)
+    amount_cents = max(int(round(amount * 100)), 50)
+    fee_cents = max(int(round(platform_fee * 100)), 1)
+
+    stripe_sdk.api_key = STRIPE_API_KEY
+    try:
+        intent = stripe_sdk.PaymentIntent.create(
+            amount=amount_cents,
+            currency="usd",
+            automatic_payment_methods={"enabled": True},
+            application_fee_amount=fee_cents,
+            transfer_data={"destination": seller["stripe_account_id"]},
+            metadata={
+                "listing_id": listing_id, "buyer_id": user["id"],
+                "seller_id": listing["user_id"], "type": "express_purchase",
+            },
+        )
+    except Exception as e:
+        await db.listings.update_one({"id": listing_id}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
+        logger.error(f"PaymentIntent creation failed for {listing_id}: {e}")
+        raise HTTPException(status_code=500, detail="Could not initialize payment. Please try again.")
+
+    now = datetime.now(timezone.utc).isoformat()
+    honey_id = await _next_honey_order_id()
+    await db.payment_transactions.insert_one({
+        "id": honey_id, "session_id": intent.id,
+        "listing_id": listing_id, "buyer_id": user["id"],
+        "seller_id": listing["user_id"], "amount": amount,
+        "platform_fee": platform_fee, "seller_payout": round(amount - platform_fee, 2),
+        "currency": "usd", "payment_status": "PENDING",
+        "type": "express_purchase",
+        "metadata": {"listing_id": listing_id, "seller_stripe_account": seller["stripe_account_id"]},
+        "created_at": now, "updated_at": now,
+    })
+
+    return {
+        "client_secret": intent.client_secret,
+        "payment_intent_id": intent.id,
+        "amount": amount,
+        "seller_stripe_account": seller["stripe_account_id"],
+        "publishable_key": os.environ.get("STRIPE_PUBLISHABLE_KEY", ""),
+    }
+
+
 @router.get("/payments/status/{session_id}")
 async def get_payment_status(session_id: str, request: Request, user: Dict = Depends(require_auth)):
     txn = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0})

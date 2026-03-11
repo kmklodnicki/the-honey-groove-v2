@@ -28,6 +28,7 @@ import { Link, useSearchParams, useNavigate } from 'react-router-dom';
 import Fuse from 'fuse.js';
 import { ProposeTradeModal } from './TradesPage';
 import { usePageTitle } from '../hooks/usePageTitle';
+import ExpressCheckout from '../components/ExpressCheckout';
 import ListingDetailModal from '../components/ListingDetailModal';
 import EssentialsUpsellModal from '../components/EssentialsUpsellModal';
 import AlbumArt from '../components/AlbumArt';
@@ -69,6 +70,7 @@ const ISOPage = () => {
   const [offerTarget, setOfferTarget] = useState(null);
   const [offerAmount, setOfferAmount] = useState('');
   const [paymentLoading, setPaymentLoading] = useState(false);
+  const [expressCheckout, setExpressCheckout] = useState(null); // { clientSecret, amount, listingId }
   const [platformFee, setPlatformFee] = useState(6);
   const [selectedListingId, setSelectedListingId] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -450,10 +452,24 @@ const ISOPage = () => {
     setPaymentLoading(true);
     try {
       const body = pending.type === 'offer'
-        ? { listing_id: pending.listing.id, offer_amount: pending.offerAmount, origin_url: window.location.origin }
-        : { listing_id: pending.listing.id, origin_url: window.location.origin };
-      const resp = await axios.post(`${API}/payments/checkout`, body, { headers: { Authorization: `Bearer ${token}` } });
-      if (resp.data.url) window.location.href = resp.data.url;
+        ? { listing_id: pending.listing.id, offer_amount: pending.offerAmount }
+        : { listing_id: pending.listing.id };
+      // Try express checkout (PaymentIntent) first
+      const resp = await axios.post(`${API}/payments/create-intent`, body, { headers: { Authorization: `Bearer ${token}` } });
+      if (resp.data.client_secret) {
+        setExpressCheckout({
+          clientSecret: resp.data.client_secret,
+          amount: resp.data.amount,
+          listingId: pending.listing.id,
+          album: pending.listing.album,
+          artist: pending.listing.artist,
+        });
+        setPaymentLoading(false);
+        return;
+      }
+      // Fallback to redirect checkout
+      const resp2 = await axios.post(`${API}/payments/checkout`, { ...body, origin_url: window.location.origin }, { headers: { Authorization: `Bearer ${token}` } });
+      if (resp2.data.url) window.location.href = resp2.data.url;
       else toast.error('could not start checkout. try again.');
     } catch (err) {
       const status = err.response?.status;
@@ -1260,6 +1276,29 @@ const ISOPage = () => {
               </div>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Express Checkout Modal (Apple Pay / Google Pay + Card) */}
+      <Dialog open={!!expressCheckout} onOpenChange={(open) => { if (!open) { setExpressCheckout(null); } }}>
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto" data-testid="express-checkout-modal">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-heading">Checkout</DialogTitle>
+            {expressCheckout && (
+              <DialogDescription className="text-sm">
+                {expressCheckout.album} {expressCheckout.artist ? `by ${expressCheckout.artist}` : ''} — ${expressCheckout.amount?.toFixed(2)}
+              </DialogDescription>
+            )}
+          </DialogHeader>
+          {expressCheckout && (
+            <ExpressCheckout
+              clientSecret={expressCheckout.clientSecret}
+              amount={expressCheckout.amount}
+              listingId={expressCheckout.listingId}
+              onSuccess={() => { setExpressCheckout(null); fetchData(); toast.success('Payment confirmed!'); }}
+              onCancel={() => setExpressCheckout(null)}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>
