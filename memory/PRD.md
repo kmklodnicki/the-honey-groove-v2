@@ -124,6 +124,13 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - Animation remains active (bouncing bars)
   - Files: PostCards.js
   - Tested: PASS
+- **BLOCK 403: Sidebar Deep Link Repair** (March 2026) — COMPLETED
+  - Fixed mini-card routing from broken /hive?promptId= to /hive?post={postId}
+  - Backend resolves post_id via prompt_text match when not stored directly
+  - Added loading spinner overlay on mini-card click for UI feedback
+  - Drawer closes on navigation, post highlights with gold border
+  - Files: PromptArchiveDrawer.js, daily_prompts.py
+  - Tested: PASS
 
 ### Layout & Design Features
 - Golden Vault Layout (ProfilePage unified dashboard)

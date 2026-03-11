@@ -9,6 +9,7 @@ import { resolveImageUrl } from '../utils/imageUrl';
 
 const MiniCard = ({ prompt, onNavigate }) => {
   const feat = prompt.featured;
+  const [navigating, setNavigating] = useState(false);
   const formatDate = (dateStr) => {
     try {
       const d = new Date(dateStr);
@@ -21,10 +22,13 @@ const MiniCard = ({ prompt, onNavigate }) => {
   };
 
   const handleClick = () => {
-    // Navigate to the specific post, or to prompt filter view
-    if (feat?.post_id) {
-      onNavigate(`/hive?post=${feat.post_id}`);
+    setNavigating(true);
+    // Route to the individual post via /hive?post={postId}
+    const postId = feat?.post_id;
+    if (postId) {
+      onNavigate(`/hive?post=${postId}`);
     } else {
+      // No valid post_id — navigate to prompt filter as fallback
       onNavigate(`/hive?prompt_id=${prompt.id}`);
     }
   };
@@ -32,10 +36,15 @@ const MiniCard = ({ prompt, onNavigate }) => {
   return (
     <div
       onClick={handleClick}
-      className="rounded-xl border border-amber-200/40 bg-white/60 overflow-hidden transition-all duration-200 hover:border-amber-300/70 hover:shadow-sm hover:-translate-y-0.5"
+      className={`rounded-xl border border-amber-200/40 bg-white/60 overflow-hidden transition-all duration-200 hover:border-amber-300/70 hover:shadow-sm hover:-translate-y-0.5 relative ${navigating ? 'opacity-60 pointer-events-none' : ''}`}
       style={{ cursor: 'pointer' }}
       data-testid={`prompt-mini-card-${prompt.id}`}
     >
+      {navigating && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/40 rounded-xl" data-testid="mini-card-loading">
+          <Loader2 className="w-5 h-5 animate-spin text-amber-500" />
+        </div>
+      )}
       {/* DAILY PROMPT label */}
       <div className="px-3.5 pt-3">
         <span

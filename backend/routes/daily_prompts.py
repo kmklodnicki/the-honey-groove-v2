@@ -311,6 +311,20 @@ async def get_prompt_archive(user: Dict = Depends(require_auth)):
                 {"id": feat_doc["user_id"]},
                 {"_id": 0, "username": 1, "avatar_url": 1},
             )
+            # Resolve post_id: use stored value, or look up linked DAILY_PROMPT post
+            post_id = feat_doc.get("post_id")
+            if not post_id:
+                linked = await db.posts.find_one(
+                    {"post_type": "DAILY_PROMPT", "user_id": feat_doc["user_id"], "prompt_text": p["text"]},
+                    {"_id": 0, "id": 1},
+                )
+                if not linked:
+                    # Broader search: any DAILY_PROMPT post by this user with matching prompt_id
+                    linked = await db.posts.find_one(
+                        {"post_type": "DAILY_PROMPT", "user_id": feat_doc["user_id"], "prompt_id": p["id"]},
+                        {"_id": 0, "id": 1},
+                    )
+                post_id = linked["id"] if linked else None
             featured = {
                 "cover_url": feat_doc.get("cover_url"),
                 "record_title": feat_doc.get("record_title"),
@@ -318,7 +332,7 @@ async def get_prompt_archive(user: Dict = Depends(require_auth)):
                 "caption": feat_doc.get("caption"),
                 "username": feat_user.get("username") if feat_user else None,
                 "avatar_url": feat_user.get("avatar_url") if feat_user else None,
-                "post_id": feat_doc.get("post_id"),
+                "post_id": post_id,
             }
 
         results.append({
