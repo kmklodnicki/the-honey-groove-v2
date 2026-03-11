@@ -176,6 +176,12 @@ h1, h2, h3, h4, h5, h6 {
   background-color: #e5e0da;
 }
 
+/* BLOCK 246: shimmer overlay for blur-up — plays over blurred image, not grey */
+.honey-shimmer-overlay {
+  animation: honeyShimmer 2s ease-in-out 1 forwards;
+  background: linear-gradient(135deg, rgba(229,224,218,0.25) 0%, rgba(229,224,218,0.05) 50%, rgba(229,224,218,0.25) 100%);
+}
+
 /* Fade-in for data replacing skeletons */
 @keyframes honeyFadeIn {
   from { opacity: 0; }

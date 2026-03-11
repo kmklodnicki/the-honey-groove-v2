@@ -286,6 +286,7 @@ def get_discogs_release(release_id: int) -> Optional[Dict]:
                 "genre": data.get("genres", []),
                 "style": data.get("styles", []),
                 "cover_url": data.get("images", [{}])[0].get("uri") if data.get("images") else None,
+                "thumb_url": data.get("images", [{}])[0].get("uri150") if data.get("images") else data.get("thumb"),
                 "tracklist": [{"position": t.get("position"), "title": t.get("title"), "duration": t.get("duration")} for t in data.get("tracklist", [])],
                 "format": [f.get("name", "") for f in data.get("formats", [])],
                 "label": label_names,

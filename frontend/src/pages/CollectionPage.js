@@ -33,6 +33,7 @@ import { VariantTag } from '../components/PostCards';
 import SEOHead from '../components/SEOHead';
 import BackToTop from '../components/BackToTop';
 import ValuationAssistantModal from '../components/ValuationAssistantModal';
+import { useBlurPlaceholders } from '../hooks/useBlurPlaceholders';
 
 // Counting animation hook
 const useCountUp = (target, duration = 1400, enabled = true) => {
@@ -217,6 +218,10 @@ const CollectionPage = () => {
   const [valuationModalOpen, setValuationModalOpen] = useState(false);
   const [valuationFocusItem, setValuationFocusItem] = useState(null);
   const navigate = useNavigate();
+
+  // Blur placeholders for record cover images
+  const coverUrls = useMemo(() => records.map(r => r.cover_url).filter(Boolean), [records]);
+  const blurMap = useBlurPlaceholders(coverUrls);
 
   // Auto-open valuation modal if ?filter=pending_value
   useEffect(() => {
@@ -751,6 +756,7 @@ const CollectionPage = () => {
                   isSelected={selectedIds.has(record.id)}
                   onToggleSelect={toggleSelect}
                   onValueThis={handleValueThis}
+                  blurData={record.cover_url ? blurMap[record.cover_url] : null}
                 />
               ))}
             </div>
@@ -891,7 +897,7 @@ const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg, pending
   );
 };
 
-const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, isSpinning, value, selectMode, isSelected, onToggleSelect, onValueThis }) => {
+const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, isSpinning, value, selectMode, isSelected, onToggleSelect, onValueThis, blurData }) => {
   return (
     <Card 
       className={`relative group border-honey/20 overflow-hidden hover:shadow-honey transition-all hover:-translate-y-1 ${isSelected ? 'ring-2 ring-honey shadow-honey' : ''} ${selectMode ? 'cursor-pointer' : ''}`}
@@ -911,6 +917,8 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
               src={record.cover_url} 
               alt={`${record.artist} ${record.title}${record.color_variant ? ` ${record.color_variant}` : ''} vinyl record`}
               className={`w-full h-full object-cover ${isSpinning ? 'animate-spin-slow' : ''}`}
+              blurDataUrl={blurData?.blur_data_url}
+              thumbSrc={blurData?.thumb_url}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">

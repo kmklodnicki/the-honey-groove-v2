@@ -4,16 +4,27 @@ import { resolveImageUrl } from '../utils/imageUrl';
 
 const FALLBACK = '/vinyl-placeholder.svg';
 
-const AlbumArt = ({ src, alt = '', className = '', style, artist, title, ...props }) => {
+const AlbumArt = ({
+  src,
+  alt = '',
+  className = '',
+  style,
+  artist,
+  title,
+  blurDataUrl,
+  thumbSrc,
+  priority = false,
+  ...props
+}) => {
   const resolvedSrc = resolveImageUrl(src);
   const [status, setStatus] = useState(resolvedSrc ? 'loading' : 'error');
+  // The blur source: prefer inline base64, fall back to small thumb URL
+  const blurSrc = blurDataUrl || thumbSrc || null;
 
-  // Reset status when src changes
   useEffect(() => {
     setStatus(resolveImageUrl(src) ? 'loading' : 'error');
   }, [src]);
 
-  // Timeout: if still loading after 8s, show fallback
   useEffect(() => {
     if (status !== 'loading') return;
     const t = setTimeout(() => setStatus(s => s === 'loading' ? 'error' : s), 8000);
@@ -24,9 +35,26 @@ const AlbumArt = ({ src, alt = '', className = '', style, artist, title, ...prop
 
   return (
     <div className={`relative overflow-hidden ${className}`} style={style} {...props}>
+      {/* Layer 1: Blur placeholder OR grey shimmer */}
       {status === 'loading' && (
-        <div className="absolute inset-0 honey-shimmer" />
+        blurSrc ? (
+          <div className="absolute inset-0">
+            <img
+              src={blurSrc}
+              alt=""
+              aria-hidden="true"
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ filter: 'blur(20px)', transform: 'scale(1.2)' }}
+              draggable={false}
+            />
+            <div className="absolute inset-0 honey-shimmer-overlay" />
+          </div>
+        ) : (
+          <div className="absolute inset-0 honey-shimmer" />
+        )
       )}
+
+      {/* Layer 2: Glass fallback (no cover art at all) */}
       {showGlassFallback ? (
         <div
           className="w-full h-full flex flex-col items-center justify-center p-3 text-center honey-fade-in"
@@ -41,6 +69,7 @@ const AlbumArt = ({ src, alt = '', className = '', style, artist, title, ...prop
           {artist && <p className="text-[10px] text-vinyl-black/50 mt-0.5 truncate max-w-full">{artist}</p>}
         </div>
       ) : (
+        /* Layer 3: High-res image — fades in over blur */
         <img
           src={status === 'error' || !resolvedSrc ? FALLBACK : resolvedSrc}
           alt={alt}
@@ -48,6 +77,7 @@ const AlbumArt = ({ src, alt = '', className = '', style, artist, title, ...prop
           onLoad={() => setStatus('loaded')}
           onError={() => setStatus('error')}
           draggable={false}
+          {...(priority ? { fetchpriority: 'high', loading: 'eager' } : {})}
         />
       )}
     </div>

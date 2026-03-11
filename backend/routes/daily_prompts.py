@@ -72,7 +72,62 @@ async def seed_prompts():
     logger.info(f"Seeded {len(docs)} daily prompts")
 
 
+
+async def backfill_blur_placeholders():
+    """Background task: generate blur_data_url for image_cache entries that have thumb_url but no blur."""
+    entries = await db.image_cache.find(
+        {"thumb_url": {"$exists": True, "$ne": None}, "blur_data_url": {"$exists": False}},
+        {"_id": 0, "release_id": 1, "thumb_url": 1, "image_url": 1}
+    ).limit(20).to_list(20)
+    if not entries:
+        return
+    count = 0
+    for entry in entries:
+        blur = _generate_blur_data_url(entry["thumb_url"])
+        if blur:
+            await db.image_cache.update_one(
+                {"image_url": entry.get("image_url")},
+                {"$set": {"blur_data_url": blur}}
+            )
+            count += 1
+    if count > 0:
+        logger.info(f"Blur backfill: generated {count} placeholders")
+
+
+
 # ─────────── Image Cache ───────────
+
+import base64
+
+
+def _generate_blur_data_url(image_url: str) -> Optional[str]:
+    """Download a small image and create a tiny 10px base64 JPEG for blur-up placeholder."""
+    try:
+        from PIL import Image
+        headers = {"User-Agent": "HoneyGroove/1.0"}
+        resp = requests.get(image_url, timeout=10, headers=headers)
+        if resp.status_code != 200:
+            return None
+        img = Image.open(BytesIO(resp.content)).convert("RGB")
+        img = img.resize((10, 10), Image.LANCZOS)
+        buf = BytesIO()
+        img.save(buf, format="JPEG", quality=40)
+        b64 = base64.b64encode(buf.getvalue()).decode()
+        return f"data:image/jpeg;base64,{b64}"
+    except Exception as e:
+        logger.warning(f"Blur placeholder generation failed: {e}")
+        return None
+
+
+def _get_thumb_url(image_url: str) -> Optional[str]:
+    """Convert a Discogs CDN high-res URL to its 150px thumbnail counterpart."""
+    if not image_url or "discogs.com" not in image_url:
+        return None
+    # Replace high-res params with thumbnail params
+    import re
+    thumb = re.sub(r'/q:\d+/h:\d+/w:\d+/', '/q:40/h:150/w:150/', image_url)
+    return thumb if thumb != image_url else None
+
 
 async def get_cached_image(release_id: int) -> Optional[str]:
     """Get cached high-res image URL for a release."""
@@ -84,8 +139,14 @@ async def get_cached_image(release_id: int) -> Optional[str]:
     return None
 
 
+async def get_cached_blur(release_id: int) -> Optional[str]:
+    """Get cached blur data URL for a release."""
+    cached = await db.image_cache.find_one({"release_id": release_id}, {"_id": 0, "blur_data_url": 1})
+    return cached.get("blur_data_url") if cached else None
+
+
 async def cache_discogs_image(release_id: int) -> Optional[str]:
-    """Fetch and cache high-res Discogs image for a release."""
+    """Fetch and cache high-res Discogs image + blur placeholder for a release."""
     existing = await get_cached_image(release_id)
     if existing:
         return existing
@@ -93,17 +154,63 @@ async def cache_discogs_image(release_id: int) -> Optional[str]:
     if not release or not release.get("cover_url"):
         return None
     image_url = release["cover_url"]
+    thumb_url = release.get("thumb_url")
+    # Generate blur from the accessible 150px thumbnail
+    blur_data_url = _generate_blur_data_url(thumb_url) if thumb_url else None
+    update_doc = {
+        "release_id": release_id,
+        "image_url": image_url,
+        "cached_at": datetime.now(timezone.utc).isoformat(),
+        "resolution": "high",
+    }
+    if thumb_url:
+        update_doc["thumb_url"] = thumb_url
+    if blur_data_url:
+        update_doc["blur_data_url"] = blur_data_url
     await db.image_cache.update_one(
         {"release_id": release_id},
-        {"$set": {
-            "release_id": release_id,
-            "image_url": image_url,
-            "cached_at": datetime.now(timezone.utc).isoformat(),
-            "resolution": "high",
-        }},
+        {"$set": update_doc},
         upsert=True,
     )
     return image_url
+
+
+@router.get("/image/blur-placeholder")
+async def get_blur_placeholder(url: str):
+    """Generate or return cached blur placeholder for any image URL."""
+    if not url:
+        raise HTTPException(status_code=400, detail="url required")
+    # Check cache by URL
+    cached = await db.image_cache.find_one({"image_url": url}, {"_id": 0, "blur_data_url": 1, "thumb_url": 1})
+    if cached and cached.get("blur_data_url"):
+        return {"blur_data_url": cached["blur_data_url"]}
+    # Try to generate from cached thumb_url
+    thumb = cached.get("thumb_url") if cached else None
+    if thumb:
+        blur = _generate_blur_data_url(thumb)
+        if blur:
+            await db.image_cache.update_one({"image_url": url}, {"$set": {"blur_data_url": blur}})
+            return {"blur_data_url": blur}
+    return {"blur_data_url": None}
+
+
+@router.post("/image/blur-batch")
+async def get_blur_batch(data: dict):
+    """Return blur_data_url and thumb_url for a batch of cover_urls.
+    Input: {"urls": ["url1", "url2", ...]}
+    Returns: {"results": {"url1": {"blur_data_url": ..., "thumb_url": ...}, ...}}"""
+    urls = data.get("urls", [])
+    if not urls or len(urls) > 50:
+        raise HTTPException(status_code=400, detail="Provide 1-50 urls")
+    results = {}
+    for url in urls:
+        cached = await db.image_cache.find_one({"image_url": url}, {"_id": 0, "blur_data_url": 1, "thumb_url": 1})
+        if cached:
+            results[url] = {"blur_data_url": cached.get("blur_data_url"), "thumb_url": cached.get("thumb_url")}
+        else:
+            results[url] = {"blur_data_url": None, "thumb_url": None}
+    return {"results": results}
+
 
 
 # ─────────── Today's Prompt ───────────
@@ -288,6 +395,22 @@ async def get_prompt_responses(prompt_id: str, user: Dict = Depends(require_auth
                 {"_id": 0, "id": 1}
             )
             r["post_id"] = linked_post["id"] if linked_post else None
+        # Include blur placeholder and thumb from image cache
+        r["blur_data_url"] = None
+        r["thumb_url"] = None
+        if r.get("cover_url"):
+            blur_doc = await db.image_cache.find_one({"image_url": r["cover_url"]}, {"_id": 0, "blur_data_url": 1, "thumb_url": 1})
+            if blur_doc:
+                r["blur_data_url"] = blur_doc.get("blur_data_url")
+                r["thumb_url"] = blur_doc.get("thumb_url")
+            # Fallback: look up by record's discogs_id
+            if not r["blur_data_url"] and r.get("record_id"):
+                rec = await db.records.find_one({"id": r["record_id"]}, {"_id": 0, "discogs_id": 1})
+                if rec and rec.get("discogs_id"):
+                    cache_doc = await db.image_cache.find_one({"release_id": rec["discogs_id"]}, {"_id": 0, "blur_data_url": 1, "thumb_url": 1})
+                    if cache_doc:
+                        r["blur_data_url"] = cache_doc.get("blur_data_url")
+                        r["thumb_url"] = cache_doc.get("thumb_url")
 
     return responses
 
