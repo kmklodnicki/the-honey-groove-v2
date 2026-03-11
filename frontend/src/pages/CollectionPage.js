@@ -236,6 +236,8 @@ const CollectionPage = () => {
   const [dupeData, setDupeData] = useState(null);
   const [dupeLoading, setDupeLoading] = useState(false);
   const [dupeCleaning, setDupeCleaning] = useState(false);
+  const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
+  const [fadingIds, setFadingIds] = useState(new Set());
   const navigate = useNavigate();
 
   // Blur placeholders for record cover images
@@ -323,6 +325,15 @@ const CollectionPage = () => {
       // Dream value update from pending items mode
       setDreamlistValue(prev => prev ? { ...prev, total_value: result } : prev);
     }
+  };
+
+  // Handle individual wizard save — update header count in real-time
+  const handleWizardSave = (result) => {
+    // Decrement the pending valuation count in collectionValue
+    setCollectionValue(prev => {
+      if (!prev) return prev;
+      return { ...prev, pending_count: Math.max(0, (prev.pending_count || 0) - 1) };
+    });
   };
 
   // Handle wizard completion — always refresh collection value
@@ -439,23 +450,23 @@ const CollectionPage = () => {
   const exitSelectMode = () => { setSelectMode(false); setSelectedIds(new Set()); };
   const selectAll = () => setSelectedIds(new Set(sortedAndFilteredRecords.map(r => r.id)));
 
-  const handleBulkDreamify = async () => {
+  const handleBulkRemove = async () => {
     if (selectedIds.size === 0) return;
+    setRemoveConfirmOpen(false);
+    // Fade out the cards
+    setFadingIds(new Set(selectedIds));
+    // Wait for fade animation
+    await new Promise(r => setTimeout(r, 400));
     try {
-      const res = await axios.post(`${API}/records/bulk-move-to-wishlist`, { record_ids: [...selectedIds] }, { headers: { Authorization: `Bearer ${token}` }});
+      await Promise.all([...selectedIds].map(id =>
+        axios.delete(`${API}/records/${id}`, { headers: { Authorization: `Bearer ${token}` } })
+      ));
       setRecords(prev => prev.filter(r => !selectedIds.has(r.id)));
+      toast.success(`${selectedIds.size} record${selectedIds.size !== 1 ? 's' : ''} removed.`);
       exitSelectMode();
-      toast.success(`Collection Refined. Your shelf is looking lighter.`);
-    } catch { toast.error('bulk move failed.'); }
-  };
-  const handleBulkHuntify = async () => {
-    if (selectedIds.size === 0) return;
-    try {
-      const res = await axios.post(`${API}/records/bulk-move-to-iso`, { record_ids: [...selectedIds] }, { headers: { Authorization: `Bearer ${token}` }});
-      setRecords(prev => prev.filter(r => !selectedIds.has(r.id)));
-      exitSelectMode();
-      toast.success(`Collection Refined. Your shelf is looking lighter.`);
-    } catch { toast.error('bulk move failed.'); }
+      fetchData();
+    } catch { toast.error('Could not remove records.'); }
+    setFadingIds(new Set());
   };
 
   const handleWishlistToISO = async (isoId) => {
@@ -755,20 +766,12 @@ const CollectionPage = () => {
                 <Button
                   size="sm"
                   disabled={selectedIds.size === 0}
-                  onClick={handleBulkDreamify}
-                  className="bg-stone-100 text-stone-700 hover:bg-stone-200 gap-1.5 rounded-full text-xs"
-                  data-testid="bulk-dreamify-btn"
+                  onClick={() => setRemoveConfirmOpen(true)}
+                  variant="ghost"
+                  className="gap-1.5 rounded-full text-xs text-red-600 hover:text-red-700 hover:bg-red-50"
+                  data-testid="bulk-remove-btn"
                 >
-                  <Cloud className="w-3.5 h-3.5" /> Dreamify
-                </Button>
-                <Button
-                  size="sm"
-                  disabled={selectedIds.size === 0}
-                  onClick={handleBulkHuntify}
-                  className="bg-amber-100 text-amber-800 hover:bg-amber-200 gap-1.5 rounded-full text-xs"
-                  data-testid="bulk-huntify-btn"
-                >
-                  <ArrowRight className="w-3.5 h-3.5" /> Huntify
+                  <Trash2 className="w-3.5 h-3.5" /> Remove
                 </Button>
               </div>
             </div>
@@ -814,6 +817,7 @@ const CollectionPage = () => {
                   onToggleSelect={toggleSelect}
                   onValueThis={handleValueThis}
                   blurData={record.cover_url ? blurMap[record.cover_url] : null}
+                  isFading={fadingIds.has(record.id)}
                 />
               ))}
             </div>
@@ -879,6 +883,30 @@ const CollectionPage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Bulk Remove Confirmation */}
+      <AlertDialog open={removeConfirmOpen} onOpenChange={setRemoveConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-heading">Remove {selectedIds.size} record{selectedIds.size !== 1 ? 's' : ''}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Remove {selectedIds.size === 1 ? 'this record' : 'these records'}? This will delete your valuation, spin history, and notes for {selectedIds.size === 1 ? 'this specific copy' : 'these specific copies'}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-full" data-testid="remove-cancel-btn">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkRemove}
+              className="rounded-full border-0 font-semibold text-white"
+              style={{ background: 'linear-gradient(135deg, #EF4444, #DC2626)' }}
+              data-testid="remove-confirm-btn"
+            >
+              Remove Forever
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <ValuationAssistantModal
         open={valuationModalOpen}
         onClose={() => { setValuationModalOpen(false); setValuationFocusItem(null); }}
@@ -889,6 +917,7 @@ const CollectionPage = () => {
         open={wizardOpen}
         onClose={() => setWizardOpen(false)}
         onComplete={handleWizardComplete}
+        onSave={handleWizardSave}
       />
       <BackToTop />
 
@@ -1024,10 +1053,10 @@ const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg, pending
   );
 };
 
-const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, isSpinning, value, selectMode, isSelected, onToggleSelect, onValueThis, blurData }) => {
+const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, isSpinning, value, selectMode, isSelected, onToggleSelect, onValueThis, blurData, isFading }) => {
   return (
     <Card 
-      className={`relative group border-honey/20 overflow-hidden hover:shadow-honey transition-all hover:-translate-y-1 ${isSelected ? 'ring-2 ring-honey shadow-honey' : ''} ${selectMode ? 'cursor-pointer' : ''}`}
+      className={`relative group border-honey/20 overflow-hidden hover:shadow-honey transition-all duration-300 hover:-translate-y-1 ${isSelected ? 'ring-2 ring-honey shadow-honey' : ''} ${selectMode ? 'cursor-pointer' : ''} ${isFading ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}
       style={{ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', background: 'rgba(255,255,255,0.75)' }}
       data-testid={`record-card-${record.id}`}
       onClick={selectMode ? () => onToggleSelect(record.id) : undefined}

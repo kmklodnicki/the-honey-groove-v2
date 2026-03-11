@@ -8,7 +8,7 @@ import { DollarSign, Check, Loader2, SkipForward, X, PartyPopper, ChevronRight }
 import { toast } from 'sonner';
 import AlbumArt from './AlbumArt';
 
-const ValuationWizard = ({ open, onClose, onComplete }) => {
+const ValuationWizard = ({ open, onClose, onComplete, onSave }) => {
   const { token, API } = useAuth();
   const [queue, setQueue] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -16,30 +16,41 @@ const ValuationWizard = ({ open, onClose, onComplete }) => {
   const [value, setValue] = useState('');
   const [saving, setSaving] = useState(false);
   const [slideDirection, setSlideDirection] = useState('');
-  const [totalInitial, setTotalInitial] = useState(0);
+  const [totalProcessed, setTotalProcessed] = useState(0);
   const [savedCount, setSavedCount] = useState(0);
   const [finished, setFinished] = useState(false);
+  const [globalTotal, setGlobalTotal] = useState(0);
 
-  const fetchQueue = useCallback(async () => {
-    setLoading(true);
+  const fetchQueue = useCallback(async (isRefill = false) => {
+    if (!isRefill) setLoading(true);
     try {
       const r = await axios.get(`${API}/valuation/unvalued-queue`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setQueue(r.data);
-      setTotalInitial(r.data.length);
+      const newQueue = r.data;
+      setQueue(newQueue);
       setCurrentIdx(0);
       setValue('');
-      setSavedCount(0);
-      setFinished(r.data.length === 0);
+      if (!isRefill) {
+        setGlobalTotal(newQueue.length);
+        setSavedCount(0);
+        setTotalProcessed(0);
+      }
+      if (newQueue.length === 0) {
+        setFinished(true);
+      }
     } catch {
       toast.error('Could not load records');
+      if (!isRefill) setFinished(true);
     }
-    setLoading(false);
+    if (!isRefill) setLoading(false);
   }, [API, token]);
 
   useEffect(() => {
-    if (open) fetchQueue();
+    if (open) {
+      setFinished(false);
+      fetchQueue();
+    }
   }, [open, fetchQueue]);
 
   const current = queue[currentIdx];
@@ -47,9 +58,11 @@ const ValuationWizard = ({ open, onClose, onComplete }) => {
 
   const advanceToNext = () => {
     setSlideDirection('slide-out');
+    setTotalProcessed(p => p + 1);
     setTimeout(() => {
       if (currentIdx + 1 >= queue.length) {
-        setFinished(true);
+        // Local batch exhausted — check if more exist globally
+        fetchQueue(true);
       } else {
         setCurrentIdx(i => i + 1);
         setValue('');
@@ -68,12 +81,15 @@ const ValuationWizard = ({ open, onClose, onComplete }) => {
     if (!current?.discogs_id) return;
     setSaving(true);
     try {
-      await axios.post(
+      const resp = await axios.post(
         `${API}/valuation/wizard-save/${current.discogs_id}`,
         { value: num },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setSavedCount(c => c + 1);
+      setGlobalTotal(g => Math.max(0, g - 1));
+      // Notify parent to decrement header count in real-time
+      onSave?.({ discogs_id: current.discogs_id, value: num, average_value: resp.data?.average_value });
       advanceToNext();
     } catch {
       toast.error('Could not save value');
@@ -90,12 +106,12 @@ const ValuationWizard = ({ open, onClose, onComplete }) => {
     onClose();
   };
 
-  // Ensure finished state only triggers when queue is truly empty
-  const isFullyValued = finished && queue.length === 0 && currentIdx >= queue.length;
+  // Ensure finished state only triggers when queue is truly empty after refetch
+  const isFullyValued = finished && queue.length === 0;
 
-  const progressPct = totalInitial > 0
-    ? Math.round(((totalInitial - remaining) / totalInitial) * 100)
-    : 0;
+  const progressPct = globalTotal > 0
+    ? Math.round(((totalProcessed) / (totalProcessed + remaining)) * 100)
+    : 100;
 
   return (
     <Dialog open={open} onOpenChange={v => { if (!v) handleDone(); }}>
@@ -150,7 +166,7 @@ const ValuationWizard = ({ open, onClose, onComplete }) => {
             {/* Header */}
             <div className="flex items-center justify-between px-5 pt-4 pb-2">
               <p className="text-xs font-medium text-muted-foreground" data-testid="wizard-counter">
-                Record {totalInitial - remaining + 1} of {totalInitial} remaining
+                {remaining} record{remaining !== 1 ? 's' : ''} remaining{globalTotal > queue.length ? ` (${globalTotal} total)` : ''}
               </p>
               <button
                 onClick={handleDone}
