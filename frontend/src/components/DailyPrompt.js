@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import RecordSearchResult from './RecordSearchResult';
 import AlbumArt from './AlbumArt';
+import { resolveImageUrl } from '../utils/imageUrl';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Link } from 'react-router-dom';
 
@@ -137,7 +138,22 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
                     }}
                     data-testid="prompt-album-art-container"
                   >
-                    {currentResp.cover_url ? <AlbumArt src={currentResp.cover_url} alt={`${currentResp.record_artist || ''} ${currentResp.record_title || ''} vinyl record`} className="w-full h-full object-cover" blurDataUrl={currentResp.blur_data_url} thumbSrc={currentResp.thumb_url} priority={carouselIdx === 0} /> : <div className="w-full h-full flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>}
+                    {currentResp.cover_url ? (
+                      carouselIdx === 0 ? (
+                        /* Priority: Direct <img> — no AlbumArt state machine, no blur layer, zero delay */
+                        <img
+                          src={resolveImageUrl(currentResp.cover_url)}
+                          alt={`${currentResp.record_artist || ''} ${currentResp.record_title || ''} vinyl record`}
+                          className="w-full h-full object-cover"
+                          fetchpriority="high"
+                          decoding="sync"
+                          loading="eager"
+                          draggable={false}
+                        />
+                      ) : (
+                        <AlbumArt src={currentResp.cover_url} alt={`${currentResp.record_artist || ''} ${currentResp.record_title || ''} vinyl record`} className="w-full h-full object-cover" blurDataUrl={currentResp.blur_data_url} thumbSrc={currentResp.thumb_url} />
+                      )
+                    ) : <div className="w-full h-full flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>}
                     {currentResp.color_variant && (
                       <div className="absolute bottom-0.5 right-0.5 max-w-[90%] truncate uppercase text-[8px] font-bold px-1 py-0.5 rounded-full"
                         style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}>
