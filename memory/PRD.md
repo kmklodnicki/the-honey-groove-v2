@@ -265,6 +265,19 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
 - Valuation Wizard Logic Leak Fix
 - Analog Feed Animations (CSS vinylSpin, equalizer)
 
+### Payment & Checkout
+- **BLOCK 434/627: Express Wallet Stack** (March 2026) — COMPLETED
+  - Backend: POST /api/payments/create-intent creates Stripe PaymentIntent with Connect transfer_data
+  - Backend: _finalize_payment shared helper for webhook + status polling (marks SOLD, sends notifications + emails)
+  - Backend: Webhook handles both payment_intent.succeeded (express) and checkout.session.completed (legacy)
+  - Backend: GET /api/payments/status/{id} detects pi_* vs cs_* IDs and queries appropriate Stripe API
+  - Frontend: ExpressCheckout component with ExpressCheckoutElement (Apple Pay/Google Pay) + PaymentElement (card)
+  - Frontend: CheckoutSuccessPage at /honeypot/checkout/success with confetti, order summary, View Orders CTA
+  - Frontend: Fallback to legacy redirect checkout if PaymentIntent creation fails
+  - Flow: Buy → create-intent → modal → pay → redirect → success page → webhook confirms
+  - Files: honeypot.py, ExpressCheckout.js, CheckoutSuccessPage.js, ISOPage.js, App.js
+  - Tested: PASS (100% - testing agent iteration_188, 14/14 backend + all frontend verified)
+
 ## Backlog (Prioritized)
 
 ### P1
