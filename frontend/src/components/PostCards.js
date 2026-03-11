@@ -119,7 +119,7 @@ const PostTypeBadge = ({ type, mood }) => {
       <span className="inline-flex items-center gap-1.5">
         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${s.bg} ${s.text} ${s.border}`}>
           <BookOpen className="w-3 h-3" />
-          Album Note
+          Note
         </span>
       </span>
     );

@@ -444,10 +444,10 @@ const HivePage = () => {
   const FEED_FILTERS = [
     { key: 'all', label: 'All' },
     { key: 'NOW_SPINNING', label: 'Now Spinning' },
-    { key: 'NEW_HAUL', label: 'New Haul' },
+    { key: 'NEW_HAUL', label: 'Haul' },
     { key: 'ISO', label: 'ISO' },
-    { key: 'listing', label: 'For Sale/Trade' },
-    { key: 'NOTE', label: 'A Note' },
+    { key: 'listing', label: 'Sale/Trade' },
+    { key: 'NOTE', label: 'Note' },
     { key: 'NEW_FEATURE', label: 'New Feature' },
   ];
 
@@ -771,20 +771,25 @@ const HivePage = () => {
       <DailyPromptCard records={records} onPostCreated={handlePostCreated} />
 
       {/* Content Filter Bar */}
-      <div className="flex flex-wrap gap-1.5 mb-4" data-testid="feed-filter-bar">
+      <div className="flex flex-wrap gap-2 mb-4 overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }} data-testid="feed-filter-bar">
         {FEED_FILTERS.map(f => {
-          const s = PILL_STYLES[f.key] || PILL_STYLES.all;
           const isActive = activeFilter === f.key;
           return (
             <button
               key={f.key}
               onClick={() => setActiveFilter(f.key)}
-              className={`px-3 py-1 rounded-full text-xs font-medium transition-all border ${
+              className={`shrink-0 rounded-full text-xs font-medium transition-all border whitespace-nowrap ${
                 isActive
-                  ? `${s.bg} ${s.text} ${s.border} shadow-sm font-semibold`
-                  : `bg-white ${s.text} ${s.border} hover:${s.bg}`
+                  ? 'text-black shadow-sm font-semibold'
+                  : 'bg-transparent hover:bg-amber-50'
               }`}
-              style={!isActive ? { opacity: 0.65 } : undefined}
+              style={{
+                padding: '5px 10px',
+                fontSize: '12px',
+                ...(isActive
+                  ? { background: '#FFB800', borderColor: '#FFB800', color: '#000' }
+                  : { borderColor: 'rgba(200,134,26,0.3)', color: 'rgba(120,80,20,0.7)' }),
+              }}
               data-testid={`filter-${f.key}`}
             >
               {f.label}

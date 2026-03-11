@@ -85,18 +85,17 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
     <>
       <Card className="my-4 p-5 border-orange-200/60 bg-gradient-to-br from-amber-50/80 to-orange-50/60 relative overflow-hidden" data-testid="daily-prompt-card">
         <div className="absolute top-0 right-0 w-24 h-24 bg-amber-100/40 rounded-full -translate-y-8 translate-x-8" />
-        <p className="text-[11px] uppercase tracking-widest text-amber-600/70 font-medium mb-2">Daily Prompt</p>
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-[11px] uppercase tracking-widest text-amber-600/70 font-medium">Daily Prompt</p>
+          {buzzCount > 0 && (
+            <a href={`/hive?prompt_id=${prompt.id}`} className="text-[11px] text-amber-600/60 hover:text-amber-800 hover:underline font-medium transition" data-testid="buzz-count-top">
+              {buzzCount} buzzed in
+            </a>
+          )}
+        </div>
         <p className="font-heading text-xl md:text-2xl text-vinyl-black leading-snug mb-3 italic" data-testid="daily-prompt-text">
           {prompt.text}
         </p>
-
-        <button
-          onClick={() => setArchiveOpen(true)}
-          className="text-[11px] text-amber-600/70 hover:text-amber-800 hover:underline transition font-medium mb-3 block"
-          data-testid="prompt-archive-link"
-        >
-          See what the Hive said yesterday
-        </button>
 
         {!hasBuzzedIn ? (
           /* ── GATEKEEPER: Pre-buzz state ── */
@@ -121,11 +120,6 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
             <div className="flex items-center gap-3 mb-3">
               <span className="text-sm text-amber-700 font-medium">buzzed in</span>
               {streak > 0 && <span className="flex items-center gap-1 text-sm text-amber-600 font-bold">🐝 {streak} {streak === 1 ? 'day' : 'days'} in a row</span>}
-              {buzzCount > 0 && (
-                <a href={`/hive?prompt_id=${prompt.id}`} className="text-xs text-amber-600 hover:text-amber-800 hover:underline font-medium transition ml-auto" data-testid="buzz-count-link">
-                  {buzzCount} buzzed in
-                </a>
-              )}
             </div>
 
             {/* Carousel */}
@@ -200,6 +194,17 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
             ) : null}
           </div>
         )}
+
+        {/* Centered archive link — secondary explore action */}
+        <div className="text-center mt-4">
+          <button
+            onClick={() => setArchiveOpen(true)}
+            className="text-[11px] text-amber-600/50 hover:text-amber-800 hover:underline transition font-medium inline-flex items-center gap-1"
+            data-testid="prompt-archive-link"
+          >
+            See what the Hive said yesterday <span className="text-[10px]">&rarr;</span>
+          </button>
+        </div>
       </Card>
 
       <BuzzInModal
