@@ -203,6 +203,31 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - Auto-enrichment on collection load for records missing rarity data
   - Files: utils/rarity.py, models.py, collection.py, RarityBadge.js, CollectionPage.js
   - Tested: PASS (100% - testing agent iteration_185, all thresholds verified)
+- **BLOCK 453: Tracklist Data Re-mapping** (March 2026) — COMPLETED
+  - Fixed data mapping: normalizes both 'tracklist' and 'tracks' keys, handles 'name' vs 'title' fields
+  - Added console.log debug for raw API response parsing
+  - Added Refresh (RefreshCw) icon button next to manual input for retry
+  - 8-second AbortController timeout before fallback to manual input
+  - Files: ComposerBar.js
+  - Tested: PASS (100% - testing agent iteration_186, Born To Die shows 12 tracks correctly)
+- **BLOCK 457: Daily Prompt Image Restoration** (March 2026) — COMPLETED
+  - Added crossOrigin='anonymous' to AlbumArt and DailyPrompt img tags
+  - Added proxy fallback: onError fires proxyImageUrl() via /api/image-proxy
+  - Added proxyImageUrl() helper in utils/imageUrl.js
+  - Files: AlbumArt.js, DailyPrompt.js, imageUrl.js
+  - Tested: PASS (100% - testing agent iteration_186)
+- **BLOCK 407: Keyboard-Collapse Modal Fix** (March 2026) — COMPLETED
+  - Removed autoFocus from all modal text inputs (spin search, ISO search, note textarea)
+  - Keyboard only appears on manual tap; modal no longer auto-opens keyboard on mobile
+  - Files: ComposerBar.js
+  - Tested: PASS (100% - testing agent iteration_186, 3 inputs verified)
+- **BLOCK 413: Variant Rarity Data Fix** (March 2026) — COMPLETED
+  - Backend: master release fallback when variant stats=0 (fetches master_id community data)
+  - Backend: ?force_refresh=true param busts Discogs cache for fresh pull
+  - Frontend: Re-sync button on VariantReleasePage with stats_source label
+  - Stats subtitle: "via master release" when fallback used, "Variant-specific stats" otherwise
+  - Files: vinyl.py, VariantReleasePage.js
+  - Tested: PASS (100% - testing agent iteration_186, all 14 features verified)
 - **BLOCK 449: Now Spinning Mobile Rescue** (March 2026) — COMPLETED
   - Modal body: max-h-[80vh] overflow-y-auto for mobile keyboard scrolling
   - Post button: sticky bottom-0 z-10, always visible above keyboard
