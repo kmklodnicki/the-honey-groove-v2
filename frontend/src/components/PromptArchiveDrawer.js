@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from './ui/sheet';
 import { Loader2, Disc, Clock } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { resolveImageUrl } from '../utils/imageUrl';
 
-const MiniCard = ({ prompt }) => {
+const MiniCard = ({ prompt, onNavigate }) => {
   const feat = prompt.featured;
   const formatDate = (dateStr) => {
     try {
@@ -19,10 +20,20 @@ const MiniCard = ({ prompt }) => {
     } catch { return ''; }
   };
 
+  const handleClick = () => {
+    // Navigate to the specific post, or to prompt filter view
+    if (feat?.post_id) {
+      onNavigate(`/hive?post=${feat.post_id}`);
+    } else {
+      onNavigate(`/hive?prompt_id=${prompt.id}`);
+    }
+  };
+
   return (
     <div
-      className="rounded-xl border border-amber-200/40 bg-white/60 overflow-hidden"
-      style={{ cursor: 'default' }}
+      onClick={handleClick}
+      className="rounded-xl border border-amber-200/40 bg-white/60 overflow-hidden transition-all duration-200 hover:border-amber-300/70 hover:shadow-sm hover:-translate-y-0.5"
+      style={{ cursor: 'pointer' }}
       data-testid={`prompt-mini-card-${prompt.id}`}
     >
       {/* DAILY PROMPT label */}
@@ -113,6 +124,7 @@ const MiniCard = ({ prompt }) => {
 
 const PromptArchiveDrawer = ({ open, onOpenChange }) => {
   const { token, API } = useAuth();
+  const navigate = useNavigate();
   const [prompts, setPrompts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -124,6 +136,11 @@ const PromptArchiveDrawer = ({ open, onOpenChange }) => {
       .catch(() => setPrompts([]))
       .finally(() => setLoading(false));
   }, [open, token, API]);
+
+  const handleNavigate = (path) => {
+    onOpenChange(false);
+    navigate(path);
+  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -149,7 +166,7 @@ const PromptArchiveDrawer = ({ open, onOpenChange }) => {
         ) : (
           <div className="flex flex-col gap-6" data-testid="prompt-archive-list">
             {prompts.map((p) => (
-              <MiniCard key={p.id} prompt={p} />
+              <MiniCard key={p.id} prompt={p} onNavigate={handleNavigate} />
             ))}
           </div>
         )}

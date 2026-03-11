@@ -84,11 +84,10 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
   return (
     <>
       <Card className="my-4 p-5 border-orange-200/60 bg-gradient-to-br from-amber-50/80 to-orange-50/60 relative overflow-hidden" data-testid="daily-prompt-card">
-        <div className="absolute top-0 right-0 w-24 h-24 bg-amber-100/40 rounded-full -translate-y-8 translate-x-8" />
         <div className="flex items-center justify-between mb-2">
           <p className="text-[11px] uppercase tracking-widest text-amber-600/70 font-medium">Daily Prompt</p>
           {buzzCount > 0 && (
-            <a href={`/hive?prompt_id=${prompt.id}`} className="text-[11px] text-amber-600/60 hover:text-amber-800 hover:underline font-medium transition" data-testid="buzz-count-top">
+            <a href={`/hive?prompt_id=${prompt.id}`} className="text-[11px] font-semibold transition relative z-10" style={{ color: '#8B6914' }} data-testid="buzz-count-top">
               {buzzCount} buzzed in
             </a>
           )}

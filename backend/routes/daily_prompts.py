@@ -300,11 +300,11 @@ async def get_prompt_archive(user: Dict = Depends(require_auth)):
             {"prompt_id": p["id"], "user_id": user["id"]}
         ) is not None
 
-        # Fetch featured response (most recent) with user + cover art data
+        # Fetch featured response (most recent) with user + cover art data + post_id
         featured = None
         feat_doc = await db.prompt_responses.find_one(
             {"prompt_id": p["id"]},
-            {"_id": 0, "user_id": 1, "cover_url": 1, "record_title": 1, "record_artist": 1, "caption": 1},
+            {"_id": 0, "user_id": 1, "cover_url": 1, "record_title": 1, "record_artist": 1, "caption": 1, "post_id": 1},
         )
         if feat_doc:
             feat_user = await db.users.find_one(
@@ -318,6 +318,7 @@ async def get_prompt_archive(user: Dict = Depends(require_auth)):
                 "caption": feat_doc.get("caption"),
                 "username": feat_user.get("username") if feat_user else None,
                 "avatar_url": feat_user.get("avatar_url") if feat_user else None,
+                "post_id": feat_doc.get("post_id"),
             }
 
         results.append({

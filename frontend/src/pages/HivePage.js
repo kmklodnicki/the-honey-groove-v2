@@ -770,8 +770,8 @@ const HivePage = () => {
       {/* Daily Prompt */}
       <DailyPromptCard records={records} onPostCreated={handlePostCreated} />
 
-      {/* Content Filter Bar */}
-      <div className="flex flex-wrap gap-2 mb-4 overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }} data-testid="feed-filter-bar">
+      {/* Content Filter Bar — centered cloud */}
+      <div className="flex flex-wrap justify-center items-center gap-2.5 mb-4 w-full mx-auto" style={{ maxWidth: '600px' }} data-testid="feed-filter-bar">
         {FEED_FILTERS.map(f => {
           const isActive = activeFilter === f.key;
           return (
