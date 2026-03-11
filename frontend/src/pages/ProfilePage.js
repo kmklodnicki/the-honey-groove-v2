@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../com
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '../components/ui/dialog';
-import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin, ShoppingBag, Flag, Sparkles, Eye, X, Cloud, ShieldOff, ShieldCheck, Shield, Lock, Clock, Trash2, AlertTriangle } from 'lucide-react';
+import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin, ShoppingBag, Flag, Sparkles, Eye, X, Cloud, ShieldOff, ShieldCheck, Shield, Lock, Clock, Trash2, AlertTriangle, Unplug } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { FollowListModal } from '../components/FollowList';
@@ -626,11 +626,19 @@ const ProfilePage = () => {
                     <Edit className="w-3 h-3" /> Edit Profile
                   </Button>
                 </Link>
-                {/* Stripe — secondary style */}
+                {/* Stripe — secondary style, BLOCK 524: disconnect icon + mobile scaling */}
                 {stripeStatus && (
                   stripeStatus.stripe_connected ? (
-                    <span className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium border border-green-200 text-green-600 bg-green-50" data-testid="stripe-connected-badge">
-                      <CreditCard className="w-3 h-3" /> Stripe Connected
+                    <span className="inline-flex items-center justify-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-full text-[10px] sm:text-[11px] font-medium border border-green-200 text-green-600 bg-green-50 whitespace-nowrap" data-testid="stripe-connected-badge">
+                      <CreditCard className="w-3 h-3 shrink-0" /> Stripe Connected
+                      <button
+                        onClick={(e) => { e.stopPropagation(); e.preventDefault(); /* disconnect handled in settings */ }}
+                        className="ml-0.5 p-0.5 rounded-full hover:bg-green-100 transition-colors min-w-[20px] min-h-[20px] inline-flex items-center justify-center"
+                        title="Manage in Settings"
+                        data-testid="stripe-disconnect-icon"
+                      >
+                        <Unplug className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-green-400 hover:text-green-600" />
+                      </button>
                     </span>
                   ) : (
                     <Button size="sm" variant="outline" onClick={handleStripeConnect} disabled={stripeLoading}
@@ -654,12 +662,17 @@ const ProfilePage = () => {
                 )}
               </>
             )}
-            {/* BLOCK 515/517: Golden Hive Verified badge — visible to ALL viewers, after action buttons */}
+            {/* BLOCK 515/517/523: Golden Hive Verified badge — right column, with tooltip + mobile touch */}
             {profile.golden_hive_verified && (
               <TooltipProvider delayDuration={200}>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="mt-0.5 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full border border-amber-500/60 golden-shimmer cursor-default" data-testid="golden-hive-badge">
+                    <button
+                      type="button"
+                      className="mt-0.5 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full border border-amber-500/60 golden-shimmer cursor-default focus:outline-none"
+                      onClick={(e) => e.preventDefault()}
+                      data-testid="golden-hive-badge"
+                    >
                       <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none">
                         <defs>
                           <linearGradient id="goldShieldR" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -673,9 +686,9 @@ const ProfilePage = () => {
                       <span className="text-xs font-bold" style={{ letterSpacing: '-0.01em', color: '#2C2C2C' }}>
                         Golden Hive Verified
                       </span>
-                    </div>
+                    </button>
                   </TooltipTrigger>
-                  <TooltipContent side="bottom" className="max-w-[220px] px-3 py-2.5" style={{ background: '#1A1A1A', color: '#fff', borderRadius: '8px' }}>
+                  <TooltipContent side="top" className="max-w-[220px] px-3 py-2.5" style={{ background: '#1A1A1A', color: '#fff', borderRadius: '8px' }}>
                     <p className="font-bold text-xs mb-1">Golden Hive ID</p>
                     <p className="text-[11px] leading-relaxed opacity-90">This user has been officially ID verified. They are a trusted member of The Honey Groove community.</p>
                   </TooltipContent>

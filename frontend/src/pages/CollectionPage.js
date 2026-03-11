@@ -387,12 +387,14 @@ const CollectionPage = () => {
   const handleLogSpin = async (record) => {
     setSpinningRecordId(record.id);
     try {
-      await axios.post(`${API}/spins`, 
+      const resp = await axios.post(`${API}/spins`, 
         { record_id: record.id },
         { headers: { Authorization: `Bearer ${token}` }}
       );
       toast.success(`now spinning: ${record.title}`);
-      fetchData(); // Refresh to update spin count
+      // BLOCK 520: Increment local spin count immediately for real-time update
+      setRecords(prev => prev.map(r => r.id === record.id ? { ...r, spin_count: (r.spin_count || 0) + 1 } : r));
+      fetchData(); // Also refresh from server
     } catch (error) {
       console.error('Failed to log spin:', error);
       toast.error('could not log spin. try again.');

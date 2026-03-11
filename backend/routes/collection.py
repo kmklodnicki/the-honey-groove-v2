@@ -562,14 +562,33 @@ async def log_spin(spin_data: SpinCreate, user: Dict = Depends(require_auth)):
     if not record:
         raise HTTPException(status_code=404, detail="Record not found in your collection")
     
-    spin_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
+    
+    # BLOCK 519: Deduplication — prevent double spin of same record within 5 minutes
+    five_min_ago = (datetime.now(timezone.utc) - timedelta(minutes=5)).isoformat()
+    recent_spin = await db.spins.find_one({
+        "user_id": user["id"],
+        "record_id": spin_data.record_id,
+        "spun_at": {"$gte": five_min_ago}
+    })
+    if recent_spin:
+        return SpinResponse(
+            id=recent_spin["id"],
+            record_id=spin_data.record_id,
+            user_id=user["id"],
+            notes=recent_spin.get("notes", ""),
+            created_at=recent_spin.get("created_at", now),
+            record=RecordResponse(**record, spin_count=0)
+        )
+    
+    spin_id = str(uuid.uuid4())
     
     spin_doc = {
         "id": spin_id,
         "user_id": user["id"],
         "record_id": spin_data.record_id,
         "notes": spin_data.notes,
+        "spun_at": now,
         "created_at": now
     }
     
