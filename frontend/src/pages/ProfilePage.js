@@ -421,7 +421,7 @@ const ProfilePage = () => {
                   {profile.favorite_genre}
                 </span>
               )}
-              {profile.founding_member && (
+              {profile.founding_member && profile.title_label?.toLowerCase() !== 'founder' && (
                 <div className="mt-1 inline-block" data-testid="founding-badge">
                   <span className="italic text-xs" style={{ color: '#C8861A', fontFamily: '"DM Serif Display", serif' }}>founding member</span>
                 </div>
