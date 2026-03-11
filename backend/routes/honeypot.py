@@ -782,10 +782,16 @@ async def create_payment_checkout(request: Request, body: Dict, user: Dict = Dep
         # Rollback — can't buy your own listing
         await db.listings.update_one({"id": listing_id}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
         raise HTTPException(status_code=400, detail="Cannot buy your own listing")
-    if listing["listing_type"] == "BUY_NOW":
-        amount = float(listing["price"])
+    if listing["listing_type"] in ("BUY_NOW", "SALE"):
+        amount = float(listing.get("price") or 0)
+        if amount < 0.01:
+            await db.listings.update_one({"id": listing_id}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
+            raise HTTPException(status_code=400, detail="Listing price is invalid. Minimum price is $0.01.")
     elif listing["listing_type"] == "MAKE_OFFER" and offer_amount:
         amount = float(offer_amount)
+        if amount < 0.01:
+            await db.listings.update_one({"id": listing_id}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
+            raise HTTPException(status_code=400, detail="Offer amount must be at least $0.01.")
     else:
         await db.listings.update_one({"id": listing_id}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
         raise HTTPException(status_code=400, detail="Invalid listing type or missing offer amount")
@@ -812,6 +818,10 @@ async def create_payment_checkout(request: Request, body: Dict, user: Dict = Dep
     amount_cents = int(round(amount * 100))
     fee_cents = int(round(platform_fee * 100))
 
+    # Stripe requires a minimum of $0.50 USD — pad sub-$0.50 transactions
+    stripe_amount_cents = max(amount_cents, 50)
+    stripe_fee_cents = max(fee_cents, 1) if stripe_amount_cents > amount_cents else fee_cents
+
     host_url = body.get("origin_url", str(request.base_url).rstrip("/"))
     success_url = f"{host_url}/honeypot?payment=success&session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = f"{host_url}/honeypot?payment=cancelled"
@@ -824,7 +834,7 @@ async def create_payment_checkout(request: Request, body: Dict, user: Dict = Dep
                 "price_data": {
                     "currency": "usd",
                     "product_data": {"name": f"{listing['album']} by {listing['artist']}"},
-                    "unit_amount": amount_cents,
+                    "unit_amount": stripe_amount_cents,
                 },
                 "quantity": 1,
             }],
@@ -835,20 +845,32 @@ async def create_payment_checkout(request: Request, body: Dict, user: Dict = Dep
                 "allowed_countries": [user.get("country", "US")] if user.get("country") else ["US", "GB", "CA", "AU", "DE", "FR", "JP", "NL", "SE", "IT", "ES", "BR", "MX", "NZ", "IE", "NO", "DK", "FI", "BE", "AT", "CH", "PT", "PL", "CZ", "KR", "TW", "SG", "ZA", "AR", "CL", "CO", "PH", "IN", "IL", "GR", "HU", "RO", "HR", "SK", "BG", "RS", "UA", "TH", "MY", "ID", "VN", "HK", "AE", "SA"],
             },
             payment_intent_data={
-                "application_fee_amount": fee_cents,
+                "application_fee_amount": stripe_fee_cents,
                 "transfer_data": {"destination": seller["stripe_account_id"]},
             },
             metadata={
                 "listing_id": listing_id, "buyer_id": user["id"],
                 "seller_id": listing["user_id"], "type": "marketplace_purchase",
                 "buyer_country": user.get("country", ""),
+                "original_amount_cents": str(amount_cents),
             },
         )
+    except stripe_sdk.error.InvalidRequestError as e:
+        await db.listings.update_one({"id": listing_id}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
+        logger.error(f"Stripe validation error for listing {listing_id}: {e}")
+        raise HTTPException(status_code=400, detail=f"Payment could not be processed: {e.user_message or str(e)}")
+    except stripe_sdk.error.CardError as e:
+        await db.listings.update_one({"id": listing_id}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
+        logger.error(f"Card error for listing {listing_id}: {e}")
+        raise HTTPException(status_code=400, detail=f"Card declined: {e.user_message or 'Please check your card details and try again.'}")
     except Exception as e:
         # ── ROLLBACK on Stripe failure ──
         await db.listings.update_one({"id": listing_id}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
         logger.error(f"Stripe checkout error, listing {listing_id} rolled back to ACTIVE: {e}")
-        raise HTTPException(status_code=500, detail=f"Stripe checkout error: {str(e)}")
+        err_str = str(e)
+        if "amount" in err_str.lower():
+            raise HTTPException(status_code=400, detail="The transaction amount is too low for card processing. Please try a higher price.")
+        raise HTTPException(status_code=500, detail=f"Payment processing failed. Please try again or contact support.")
 
     now = datetime.now(timezone.utc).isoformat()
     honey_id = await _next_honey_order_id()
@@ -1120,6 +1142,10 @@ async def pay_trade_sweetener(trade_id: str, request: Request, body: Dict, user:
     amount_cents = int(round(amount * 100))
     fee_cents = int(round(platform_fee * 100))
 
+    # Stripe requires a minimum of $0.50 USD — pad sub-$0.50 transactions
+    stripe_amount_cents = max(amount_cents, 50)
+    stripe_fee_cents = max(fee_cents, 1) if stripe_amount_cents > amount_cents else fee_cents
+
     host_url = body.get("origin_url", str(request.base_url).rstrip("/"))
     success_url = f"{host_url}/honeypot?payment=success&session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = f"{host_url}/honeypot?payment=cancelled"
@@ -1132,7 +1158,7 @@ async def pay_trade_sweetener(trade_id: str, request: Request, body: Dict, user:
                 "price_data": {
                     "currency": "usd",
                     "product_data": {"name": f"Trade sweetener — Trade #{trade_id[:8]}"},
-                    "unit_amount": amount_cents,
+                    "unit_amount": stripe_amount_cents,
                 },
                 "quantity": 1,
             }],
@@ -1140,7 +1166,7 @@ async def pay_trade_sweetener(trade_id: str, request: Request, body: Dict, user:
             success_url=success_url,
             cancel_url=cancel_url,
             payment_intent_data={
-                "application_fee_amount": fee_cents,
+                "application_fee_amount": stripe_fee_cents,
                 "transfer_data": {"destination": recipient["stripe_account_id"]},
             },
             metadata={
@@ -1148,8 +1174,12 @@ async def pay_trade_sweetener(trade_id: str, request: Request, body: Dict, user:
                 "recipient_id": recipient_id, "type": "trade_sweetener",
             },
         )
+    except stripe_sdk.error.InvalidRequestError as e:
+        logger.error(f"Stripe validation error for sweetener on trade {trade_id}: {e}")
+        raise HTTPException(status_code=400, detail=f"Payment could not be processed: {e.user_message or str(e)}")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Stripe checkout error: {str(e)}")
+        logger.error(f"Stripe sweetener checkout error for trade {trade_id}: {e}")
+        raise HTTPException(status_code=500, detail="Payment processing failed. Please try again or contact support.")
 
     now = datetime.now(timezone.utc).isoformat()
     honey_trade_id = await _next_honey_order_id()

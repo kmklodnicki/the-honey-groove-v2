@@ -456,11 +456,19 @@ const ISOPage = () => {
       if (resp.data.url) window.location.href = resp.data.url;
       else toast.error('could not start checkout. try again.');
     } catch (err) {
-      if (err.response?.status === 409) {
+      const status = err.response?.status;
+      const detail = err.response?.data?.detail || '';
+      if (status === 409) {
         toast.error('Buzzkill! Someone else just grabbed this record. Keep hunting!');
         navigate('/nectar');
+      } else if (status === 400 && detail.toLowerCase().includes('card')) {
+        toast.error(detail || 'Your card was declined. Please check your details and try again.');
+      } else if (status === 400 && detail.toLowerCase().includes('price')) {
+        toast.error(detail || 'There is a price issue with this listing. Please contact the seller.');
+      } else if (status === 400 && detail.toLowerCase().includes('stripe')) {
+        toast.error(detail || 'The seller has not set up payments yet.');
       } else {
-        toast.error(err.response?.data?.detail || 'Payment failed');
+        toast.error(detail || 'Payment could not be processed. Please try again.');
       }
     } finally {
       setPaymentLoading(false);
