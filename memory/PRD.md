@@ -8,38 +8,35 @@ Premium social platform for vinyl collectors. Features include collection manage
 - **Backend:** FastAPI (Python), MongoDB (Motor async driver)
 - **Integrations:** Stripe Connect, Discogs OAuth 1.0a, Resend email, Socket.IO real-time
 
-## What's Been Implemented (This Session — Blocks 480-524)
+## What's Been Implemented (This Session — Blocks 480-527)
 
 ### Security & Auth
-- BLOCK 480: Dynamic OAuth callback via window.location.origin
-- BLOCK 481: Comprehensive Discogs error logging, explicit HMAC-SHA1
-- BLOCK 491: Dev-only migration reset tool (@katie)
-- BLOCK 492: Migration modal mount fix
+- BLOCK 480/481: Dynamic OAuth callback, HMAC-SHA1, error logging
+- BLOCK 491/492: Dev reset tool, migration modal mount fix
 - BLOCK 500: "Authentication: Pure Gold" success screen
-- BLOCK 513: Honey Gold Connect to Discogs button (#FFBF00)
+- BLOCK 513: Honey Gold Connect to Discogs button
 
 ### Golden Hive ID System
-- BLOCK 509: Premium shield SVG badge + shimmer
-- BLOCK 510: Stripe webhook auto-approves + admin email + notification
+- BLOCK 509: Premium shield SVG + shimmer
+- BLOCK 510: Stripe webhook auto-approve + admin email
 - BLOCK 511: @katieintheafterglow admin override
-- BLOCK 515: Badge moved to right action column, dark charcoal text
-- BLOCK 517: Hover tooltip with dark charcoal background
-- BLOCK 523: Mobile touch-to-reveal (button element, tooltip side=top)
+- BLOCK 515: Badge in right column, dark charcoal text
+- BLOCK 517: Hover tooltip
+- BLOCK 523: Mobile touch-to-reveal
 
-### Activity Tracking
-- BLOCK 519: Spin deduplication (same record within 5 min), spun_at timestamp
-- BLOCK 520: Real-time local state update on spin click
-
-### Valuation & Price Display
-- BLOCK 487: Smart Valuation Hierarchy (Market > Personal > Dash)
-- BLOCK 483/484: Honey Gold price pills + priority re-linking
-- BLOCK 494/495: Avg. Value stat in Week in Wax
+### Activity & Valuation
+- BLOCK 519/520: Spin deduplication, real-time count update
+- BLOCK 487: Smart Valuation Hierarchy
+- BLOCK 483/484: Price pills + re-linking
+- BLOCK 494/495: Avg. Value in Week in Wax
 
 ### UI Refinements
 - BLOCK 494: Brand watermark #2C2C2C, Mood tab removed
 - BLOCK 503: "View Full Report" hidden
-- BLOCK 505: "Gold Standard" promo text removed
+- BLOCK 505: "Gold Standard" promo removed
 - BLOCK 524: Stripe disconnect icon + mobile scaling
+- BLOCK 525: ISO empty state text updated (#4A4A4A, 16px)
+- BLOCK 527: Stripe disconnect confirmation modal
 
 ## Prioritized Backlog
 

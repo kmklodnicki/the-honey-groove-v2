@@ -1076,7 +1076,7 @@ const ProfilePage = () => {
         {/* ISO Tab */}
         <TabsContent value="iso">
           {isos.length === 0 ? (
-            <EmptyState icon={Search} title="No ISOs yet" sub={isOwnProfile ? 'These are records that you are actively searching for to purchase.' : `@${username} isn't searching for anything right now`} />
+            <EmptyState icon={Search} title="No ISOs yet" sub={isOwnProfile ? 'These are records that you are actively searching for to purchase.' : `@${username} isn't searching for anything right now`} subStyle={{ color: '#4A4A4A', fontSize: '16px' }} />
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {isos.map(iso => (
