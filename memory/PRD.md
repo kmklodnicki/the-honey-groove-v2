@@ -310,6 +310,14 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - imagePrefetch.js utility with dedup Set prevents redundant requests
   - Sends URLs to service worker for persistent cache via postMessage
   - Tested: PASS (iteration_190)
+- **BLOCK 450: Instant Nav Overhaul** (March 2026) — COMPLETED
+  - SWR data caching: useAPI hook wraps authenticated API calls with stale-while-revalidate
+  - ProfilePage: 6 SWR-cached endpoints — 0.92s re-visit, no skeleton on back-nav
+  - ExplorePage: 6 SWR-cached endpoints for all explore sections
+  - Navbar prefetch: onMouseEnter triggers prefetchAPI for Nectar, Collection, Honeypot routes
+  - Selective hydration: fetchPriority="high" on profile avatar
+  - Files: useAPI.js (new hook), App.js, ProfilePage.js, ExplorePage.js, Navbar.js
+  - Tested: PASS (iteration_191, 100% backend + frontend)
 
 ## Backlog (Prioritized)
 
