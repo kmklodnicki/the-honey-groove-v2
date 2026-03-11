@@ -1048,6 +1048,8 @@ const SettingsSection = ({ API, headers }) => {
   const [fee, setFee] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [runningDisconnect, setRunningDisconnect] = useState(false);
+  const [disconnectResult, setDisconnectResult] = useState(null);
 
   useEffect(() => {
     (async () => {
@@ -1089,6 +1091,45 @@ const SettingsSection = ({ API, headers }) => {
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save'}
           </Button>
         </div>
+      </Card>
+
+      {/* BLOCK 473: Great Disconnect Migration */}
+      <Card className="p-6 border-red-200 max-w-md mt-4" data-testid="great-disconnect-section">
+        <h3 className="font-heading text-lg mb-1 text-red-700">The Great Disconnect</h3>
+        <p className="text-xs text-muted-foreground mb-4">
+          Purge all manually-entered Discogs credentials, reset migration flags, and temporarily hide unverified listings.
+        </p>
+        {disconnectResult ? (
+          <div className="text-xs space-y-1 bg-red-50 p-3 rounded-lg border border-red-200" data-testid="disconnect-result">
+            <p className="font-semibold text-red-700">Migration complete:</p>
+            <p>Users reset: {disconnectResult.users_reset}</p>
+            <p>Tokens deleted: {disconnectResult.tokens_deleted}</p>
+            <p>Listings hidden: {disconnectResult.listings_hidden}</p>
+          </div>
+        ) : (
+          <Button
+            variant="destructive"
+            onClick={async () => {
+              if (!window.confirm('This will disconnect ALL users from Discogs and hide unverified listings. Are you sure?')) return;
+              setRunningDisconnect(true);
+              try {
+                const r = await axios.post(`${API}/admin/great-disconnect`, {}, { headers });
+                setDisconnectResult(r.data);
+                toast.success('Great Disconnect migration complete');
+              } catch (err) {
+                toast.error(err.response?.data?.detail || 'Migration failed');
+              } finally {
+                setRunningDisconnect(false);
+              }
+            }}
+            disabled={runningDisconnect}
+            className="rounded-full gap-2"
+            data-testid="great-disconnect-btn"
+          >
+            {runningDisconnect ? <Loader2 className="w-4 h-4 animate-spin" /> : <AlertTriangle className="w-4 h-4" />}
+            Run Great Disconnect
+          </Button>
+        )}
       </Card>
     </div>
   );

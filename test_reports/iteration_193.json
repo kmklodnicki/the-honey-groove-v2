@@ -1,0 +1,104 @@
+{
+  "summary": "BLOCK 472 & 473: Multi-Environment Auth Handler & Great Disconnect Migration - All features verified. Backend API tests (11/11 passed). Frontend admin UI fully functional.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_block472_473_great_disconnect.py",
+    "/app/test_reports/pytest/block472_473_great_disconnect_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "BLOCK 472 VERIFIED: GET /api/discogs/oauth/start uses Origin header for dynamic callback URL detection (lines 960-967 in collection.py)",
+    "BLOCK 472 VERIFIED: OAuth start includes enhanced error logging with callback_url info",
+    "BLOCK 472 VERIFIED: OAuth callback uses stored callback_origin for dynamic redirect (lines 1125-1128)",
+    "BLOCK 473 VERIFIED: POST /api/admin/great-disconnect endpoint is admin-only (returns 403 for non-admin)",
+    "BLOCK 473 VERIFIED: Great disconnect resets users (discogs_username=null, has_seen_security_migration=false, discogs_oauth_verified=false)",
+    "BLOCK 473 VERIFIED: Great disconnect deletes all discogs_tokens",
+    "BLOCK 473 VERIFIED: Great disconnect sets active listings to HIDDEN_PENDING_VERIFICATION status",
+    "BLOCK 473 VERIFIED: Great disconnect returns counts (users_reset, tokens_deleted, listings_hidden)",
+    "BLOCK 473 VERIFIED: OAuth callback auto-restores HIDDEN_PENDING_VERIFICATION listings after successful verification (lines 1114-1119)",
+    "BLOCK 472/473 FRONTEND VERIFIED: Admin Settings shows 'The Great Disconnect' card with red title",
+    "BLOCK 472/473 FRONTEND VERIFIED: Confirmation dialog appears when clicking 'Run Great Disconnect'",
+    "BLOCK 472/473 FRONTEND VERIFIED: Result panel displays users_reset, tokens_deleted, listings_hidden after execution",
+    "BLOCK 472/473 FRONTEND VERIFIED: Success toast 'Great Disconnect migration complete' appears after execution",
+    "DEPRECATED ENDPOINT VERIFIED: POST /api/discogs/connect-token returns 400 'Manual Discogs connection is no longer supported'"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_block472_473_great_disconnect.py"
+  ],
+  "success_rate": {
+    "backend": "100% (11/11 tests passed)",
+    "frontend": "100% (all UI features verified)"
+  },
+  "test_credentials": {
+    "admin_email": "admin@thehoneygroove.com",
+    "admin_password": "admin_password",
+    "user_email": "test@example.com",
+    "user_password": "test123"
+  },
+  "seed_data_creation": "None - used existing admin and test user accounts",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "BLOCK 472/473 fully verified. The Great Disconnect migration has been executed multiple times (idempotent - returns 0 counts since data already purged). OAuth flow correctly uses Origin header for dynamic callback URL. Key files: collection.py (lines 950-1135 for OAuth and great-disconnect endpoints), great_disconnect.py script, AdminPage.js SettingsSection (lines 1095-1135). The HIDDEN_PENDING_VERIFICATION listing status is used by great disconnect and restored by OAuth callback.",
+  "features_verified": {
+    "oauth_start_dynamic_callback": {
+      "status": "PASS",
+      "details": "GET /api/discogs/oauth/start uses request.headers.get('origin') for dynamic callback URL"
+    },
+    "oauth_start_error_logging": {
+      "status": "PASS",
+      "details": "Enhanced logging includes callback_url on error"
+    },
+    "oauth_callback_origin_redirect": {
+      "status": "PASS",
+      "details": "Callback uses pending.callback_origin for redirect"
+    },
+    "great_disconnect_admin_only": {
+      "status": "PASS",
+      "details": "Returns 403 for non-admin, 200 for admin"
+    },
+    "great_disconnect_user_reset": {
+      "status": "PASS",
+      "details": "Sets discogs_username=null, has_seen_security_migration=false, discogs_oauth_verified=false"
+    },
+    "great_disconnect_token_purge": {
+      "status": "PASS",
+      "details": "Deletes all records from discogs_tokens collection"
+    },
+    "great_disconnect_listing_hide": {
+      "status": "PASS",
+      "details": "Sets ACTIVE listings to HIDDEN_PENDING_VERIFICATION with hidden_reason='great_disconnect_migration'"
+    },
+    "great_disconnect_result_counts": {
+      "status": "PASS",
+      "details": "Returns users_reset, tokens_deleted, listings_hidden counts"
+    },
+    "oauth_restores_hidden_listings": {
+      "status": "PASS",
+      "details": "Callback restores HIDDEN_PENDING_VERIFICATION listings to ACTIVE after verification"
+    },
+    "deprecated_connect_token": {
+      "status": "PASS",
+      "details": "POST /api/discogs/connect-token returns 400"
+    },
+    "frontend_great_disconnect_card": {
+      "status": "PASS",
+      "details": "Admin Settings shows 'The Great Disconnect' card with description and button"
+    },
+    "frontend_confirmation_dialog": {
+      "status": "PASS",
+      "details": "window.confirm dialog appears with disconnect warning message"
+    },
+    "frontend_result_display": {
+      "status": "PASS",
+      "details": "Result panel shows users_reset, tokens_deleted, listings_hidden after execution"
+    }
+  }
+}

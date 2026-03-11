@@ -952,13 +952,19 @@ async def serve_file(path: str):
 # ============== DISCOGS OAUTH & IMPORT ROUTES ==============
 
 @router.get("/discogs/oauth/start")
-async def discogs_oauth_start(user: Dict = Depends(require_auth)):
+async def discogs_oauth_start(request: Request, user: Dict = Depends(require_auth)):
     """Step 1: Get request token and return authorization URL"""
     if not DISCOGS_CONSUMER_KEY or not DISCOGS_CONSUMER_SECRET:
         raise HTTPException(status_code=400, detail="Discogs OAuth not configured. Please add Consumer Key and Secret in settings.")
     
-    frontend_url = FRONTEND_URL
-    callback_url = f"{frontend_url}/api/discogs/oauth/callback"
+    # BLOCK 472: Dynamic callback URL — detect environment from the incoming request
+    request_origin = request.headers.get("origin", "")
+    if request_origin:
+        callback_url = f"{request_origin}/api/discogs/oauth/callback"
+    else:
+        callback_url = f"{FRONTEND_URL}/api/discogs/oauth/callback"
+    
+    logger.info(f"Discogs OAuth start: callback_url={callback_url}")
     
     try:
         oauth = OAuth1Session(
@@ -985,6 +991,7 @@ async def discogs_oauth_start(user: Dict = Depends(require_auth)):
                 "oauth_token": oauth_token,
                 "oauth_token_secret": oauth_token_secret,
                 "user_id": user["id"],
+                "callback_origin": request_origin or FRONTEND_URL,
                 "created_at": datetime.now(timezone.utc).isoformat()
             }},
             upsert=True
@@ -996,6 +1003,8 @@ async def discogs_oauth_start(user: Dict = Depends(require_auth)):
     
     except Exception as e:
         logger.error(f"Discogs OAuth start failed: {e}")
+        logger.error(f"  callback_url used: {callback_url}")
+        logger.error(f"  Ensure this callback URL is registered in the Discogs developer portal")
         raise HTTPException(status_code=500, detail=f"Failed to start Discogs OAuth: {str(e)}")
 
 
@@ -1070,7 +1079,7 @@ async def discogs_oauth_callback(oauth_token: str = Query(...), oauth_verifier: 
                     upsert=True
                 )
                 logger.warning(f"Imposter blocked: Discogs '{discogs_username}' already linked to user {existing['user_id']}, attempted by {user_id}")
-                frontend_base = FRONTEND_URL
+                frontend_base = pending.get("callback_origin", FRONTEND_URL) if pending else FRONTEND_URL
                 return RedirectResponse(url=f"{frontend_base}/collection?discogs=error&message=This Discogs account is already linked to another Honey Groove user. This has been flagged for admin review.")
 
         # Store the access tokens for this user
@@ -1097,21 +1106,31 @@ async def discogs_oauth_callback(oauth_token: str = Query(...), oauth_verifier: 
                     "discogs_username": discogs_username,
                     "discogs_oauth_verified": True,
                     "discogs_migration_dismissed": False,
+                    "has_seen_security_migration": True,
                 }}
             )
+            
+            # BLOCK 473: Restore any listings hidden by the Great Disconnect
+            restored = await db.listings.update_many(
+                {"user_id": user_id, "status": "HIDDEN_PENDING_VERIFICATION", "hidden_reason": "great_disconnect_migration"},
+                {"$set": {"status": "ACTIVE"}, "$unset": {"hidden_at": "", "hidden_reason": ""}}
+            )
+            if restored.modified_count > 0:
+                logger.info(f"Restored {restored.modified_count} listings for user {user_id} after OAuth verification")
             
             # Clean up pending
             await db.discogs_oauth_pending.delete_one({"oauth_token": oauth_token})
             oauth_request_tokens.pop(oauth_token, None)
         
-        # Redirect to frontend import page with success
+        # BLOCK 472: Redirect to the frontend that initiated the flow (dynamic env support)
         from fastapi.responses import RedirectResponse
-        frontend_base = FRONTEND_URL
+        frontend_base = pending.get("callback_origin", FRONTEND_URL) if pending else FRONTEND_URL
         return RedirectResponse(url=f"{frontend_base}/collection?discogs=connected&username={discogs_username}")
     
     except Exception as e:
         logger.error(f"Discogs OAuth callback failed: {e}")
-        frontend_base = FRONTEND_URL
+        logger.error(f"  oauth_token: {oauth_token}, oauth_verifier present: {bool(oauth_verifier)}")
+        frontend_base = pending.get("callback_origin", FRONTEND_URL) if pending else FRONTEND_URL
         return RedirectResponse(url=f"{frontend_base}/collection?discogs=error&message={str(e)}")
 
 
@@ -1141,6 +1160,18 @@ async def get_imposter_flags(user: Dict = Depends(require_auth)):
         flag["attempted_username"] = attempted_user.get("username") if attempted_user else None
         flag["existing_username"] = existing_user.get("username") if existing_user else None
     return flags
+
+
+@router.post("/admin/great-disconnect")
+async def run_great_disconnect_endpoint(user: Dict = Depends(require_auth)):
+    """Admin-only: Execute the Great Disconnect migration (BLOCK 473)."""
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    from scripts.great_disconnect import run_great_disconnect
+    results = await run_great_disconnect()
+    return results
+
 
 
 @router.get("/discogs/status")
