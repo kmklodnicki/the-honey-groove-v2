@@ -91,6 +91,25 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - BLOCK 379: Archive link centered below Daily Prompt with → arrow; buzz count moved to top-right
   - Files: HivePage.js, PostCards.js, DailyPrompt.js
   - Tested: PASS
+- **BLOCK 383: High-Contrast Header Fix** (March 2026) — COMPLETED
+  - Removed decorative yellow circle from Daily Prompt card top-right
+  - Buzz count text uses dark brown (#8B6914) with font-weight 600 for accessibility
+  - Text vertically aligned with DAILY PROMPT label via flex row
+  - Files: DailyPrompt.js
+  - Tested: PASS
+- **BLOCK 387: Centered Cloud Filters** (March 2026) — COMPLETED
+  - Filter bar centered with justify-content:center, max-width:600px, margin:0 auto
+  - Flex-wrap enabled for mobile stacking
+  - Consistent gap:10px between pills
+  - Files: HivePage.js
+  - Tested: PASS
+- **BLOCK 391: History Jump Sidebar** (March 2026) — COMPLETED
+  - Re-enabled onClick on archive mini-cards with navigation to /hive?post={post_id}
+  - Added cursor:pointer, hover:translateY(-2px), hover:border-brightening, hover:shadow-sm
+  - Mini-cards still show user handle (@username), album art, prompt text
+  - Backend enriched with post_id in featured response
+  - Files: PromptArchiveDrawer.js, daily_prompts.py
+  - Tested: PASS
 
 ### Layout & Design Features
 - Golden Vault Layout (ProfilePage unified dashboard)
