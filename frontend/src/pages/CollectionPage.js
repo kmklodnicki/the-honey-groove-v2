@@ -849,13 +849,25 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
           {record.color_variant && (
             <>
               <div className="absolute top-0 left-0 w-1/2 h-1/2 z-[4] pointer-events-none rounded-tl-2xl" style={{ background: 'linear-gradient(135deg, rgba(0,0,0,0.25) 0%, transparent 60%)' }} />
-              <div
-                className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] font-bold px-2 py-0.5 rounded-full z-[5]"
-                style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
-                data-testid={`variant-${record.id}`}
-              >
-                {record.color_variant}
-              </div>
+              {record.discogs_id ? (
+                <Link
+                  to={`/variant/${record.discogs_id}`}
+                  onClick={e => e.stopPropagation()}
+                  className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] font-bold px-2 py-0.5 rounded-full z-[5] cursor-pointer transition-transform duration-150 hover:scale-105"
+                  style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
+                  data-testid={`variant-${record.id}`}
+                >
+                  {record.color_variant}
+                </Link>
+              ) : (
+                <div
+                  className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] font-bold px-2 py-0.5 rounded-full z-[5]"
+                  style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
+                  data-testid={`variant-${record.id}`}
+                >
+                  {record.color_variant}
+                </div>
+              )}
             </>
           )}
 
@@ -905,9 +917,15 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
             </h4>
             <p className="text-xs text-muted-foreground truncate">{record.artist}</p>
             {record.color_variant && (
-              <p className="text-[11px] text-honey-amber font-medium truncate mt-0.5" data-testid={`variant-label-${record.id}`}>
-                {record.color_variant}
-              </p>
+              record.discogs_id ? (
+                <Link to={`/variant/${record.discogs_id}`} onClick={e => e.stopPropagation()} className="text-[11px] text-honey-amber font-medium truncate mt-0.5 block hover:underline cursor-pointer transition-transform duration-150 hover:scale-105 origin-left" data-testid={`variant-label-${record.id}`}>
+                  {record.color_variant}
+                </Link>
+              ) : (
+                <p className="text-[11px] text-honey-amber font-medium truncate mt-0.5" data-testid={`variant-label-${record.id}`}>
+                  {record.color_variant}
+                </p>
+              )
             )}
           </Link>
           

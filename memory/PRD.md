@@ -8,7 +8,7 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
 - User collections (vinyl records via Discogs API)
 - Marketplace ("Honeypot") with Stripe Connect
 - Trade dispute system
-- Golden ID paid verification workflow (Stripe → ID Upload)
+- Golden ID paid verification workflow (Stripe -> ID Upload)
 - User discovery ("Nectar") with follow/follow-back
 - DMs, notifications (browser push)
 - Admin panel with user management
@@ -47,6 +47,7 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
 - Discovery exclusivity fix (BLOCK 188)
 - Mobile profile tab scrolling fix
 - **BLOCK 215: Mobile Profile Dropdown "God Mode"** - Fixed using React Portal with `position: fixed`, `getBoundingClientRect()` positioning, and max `z-index`. (March 2026)
+- **BLOCK 221: Variant Teleportation Logic** - All variant pills (VariantTag) are now clickable `<Link>` components. In the Hive Feed, clicking navigates to `/variant/{discogs_id}`. Collection page variant overlays and labels are also clickable. Hover state: `scale(1.05)` + pointer cursor. (March 2026)
 
 ## Backlog (Prioritized)
 ### P0
@@ -61,11 +62,11 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
 - Re-enable Instagram sharing
 - Admin-editable "New Music Friday" in Weekly Wax
 - Backend-powered search filters
-- TypeScript migration cleanup (.js → .tsx)
+- TypeScript migration cleanup (.js -> .tsx)
 
 ## Mocked Services
 - Resend email integration (except Weekly Wax)
 
 ## Test Accounts
-- Admin: admin@thehoneygroove.com (password needs reset)
-- Test: test@test.com / test123
+- User: test@test.com / test123
+- Existing user: katieintheafterglow (kmklodnicki@gmail.com)
