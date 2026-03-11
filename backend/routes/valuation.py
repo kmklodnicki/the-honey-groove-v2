@@ -222,8 +222,8 @@ async def _recalculate_dream_value(user_id: str):
     }
 
 
-def _trimmed_mean(values: list, trim_pct: float = 0.05) -> float:
-    """Calculate trimmed mean, discarding top/bottom trim_pct."""
+def _trimmed_mean(values: list, trim_pct: float = 0.10) -> float:
+    """Calculate trimmed mean, discarding top/bottom trim_pct (10% default for anti-inflation)."""
     if not values:
         return 0
     if len(values) <= 2:
@@ -260,7 +260,7 @@ class ManualValueInput(_BaseModel):
 
 @router.get("/valuation/pending-items")
 async def get_pending_items(user: Dict = Depends(require_auth)):
-    """Return dream list items with no resolved price (for Valuation Assistant)."""
+    """Return dream list items with no resolved price, enriched with community averages."""
     items = await db.iso_items.find(
         {"user_id": user["id"], "status": "WISHLIST"}, {"_id": 0}
     ).to_list(5000)
@@ -276,25 +276,30 @@ async def get_pending_items(user: Dict = Depends(require_auth)):
         missing = [d for d in discogs_ids if d not in discogs_map]
         if missing:
             cvs = await db.community_valuations.find(
-                {"release_id": {"$in": missing}}, {"_id": 0, "release_id": 1, "average_value": 1}
+                {"release_id": {"$in": missing}}, {"_id": 0}
             ).to_list(5000)
-            community_map = {c["release_id"]: c.get("average_value") for c in cvs if c.get("average_value")}
+            community_map = {c["release_id"]: {"average_value": c.get("average_value"), "contribution_count": c.get("contribution_count", 0)} for c in cvs if c.get("average_value")}
 
     pending = []
     for item in items:
         did = item.get("discogs_id")
         has_discogs = did and did in discogs_map
-        has_community = did and did in community_map
         has_manual = item.get("manual_price") and item["manual_price"] > 0
-        if not has_discogs and not has_community and not has_manual:
-            pending.append({
+        community_data = community_map.get(did)
+        # Pending if no discogs value AND no manual price (community suggestions don't auto-resolve)
+        if not has_discogs and not has_manual:
+            entry = {
                 "id": item["id"],
                 "artist": item.get("artist", ""),
                 "album": item.get("album", ""),
                 "cover_url": item.get("cover_url"),
                 "discogs_id": did,
                 "manual_price": item.get("manual_price"),
-            })
+            }
+            if community_data:
+                entry["hive_average"] = community_data["average_value"]
+                entry["hive_count"] = community_data["contribution_count"]
+            pending.append(entry)
     return pending
 
 

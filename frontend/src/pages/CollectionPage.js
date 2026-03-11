@@ -137,7 +137,12 @@ const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamL
               )}
               <p className="text-[10px] text-stone-400 mt-0.5">
                 {dreamPendingCount > 0 ? (
-                  <button onClick={e => { e.stopPropagation(); onPendingClick?.(); }} className="underline decoration-dotted cursor-pointer hover:text-amber-600 transition-colors" data-testid="treasury-pending-btn">
+                  <button
+                    onClick={e => { e.stopPropagation(); onPendingClick?.(); }}
+                    className="underline decoration-dotted cursor-pointer hover:text-amber-600 transition-colors"
+                    title="The Hive doesn't have a price for these grails yet. Click to help set the benchmark!"
+                    data-testid="treasury-pending-btn"
+                  >
                     (+{dreamPendingCount} pending)
                   </button>
                 ) : 'if only...'}
@@ -830,7 +835,14 @@ const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg, pending
               ${displayValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
             {pendingCount > 0 && (
-              <button onClick={onPendingClick} className="text-sm font-normal text-stone-400 ml-1 underline decoration-dotted cursor-pointer hover:text-amber-600 transition-colors" data-testid="dream-pending-count">(+{pendingCount} pending)</button>
+              <button
+                onClick={onPendingClick}
+                className="text-sm font-normal text-stone-400 ml-1 underline decoration-dotted cursor-pointer hover:text-amber-600 transition-colors"
+                title="The Hive doesn't have a price for these grails yet. Click to help set the benchmark!"
+                data-testid="dream-pending-count"
+              >
+                (+{pendingCount} pending)
+              </button>
             )}
             ...{' '}
             <span className="text-base font-light text-stone-400 font-serif italic">(Value of Dream Records)</span>

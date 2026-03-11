@@ -28,21 +28,26 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
 - Follow Back feature (BLOCK 195)
 - Clickable usernames throughout app (BLOCK 202)
 - Admin panel polish with user count (BLOCK 200)
-- Desktop dropdown clipping fix (BLOCK 197)
+- Desktop/Mobile dropdown fixes (BLOCK 197, 215)
 - Sub-dollar transaction logic (BLOCK 193)
 - Discovery exclusivity fix (BLOCK 188)
-- Mobile profile tab scrolling fix
-- BLOCK 215: Mobile Profile Dropdown "God Mode" - React Portal fix
-- BLOCK 221: Variant Teleportation Logic - Clickable variant pills
-- BLOCK 228: Back-to-Top Button on CollectionPage + ProfilePage
-- BLOCK 229: Dream Value Re-Calculator with 3-tier resolution, community valuations, manual pricing, Valuation Assistant Modal
-- **BLOCK 231: Snap-Load Shimmer Limit** (March 2026)
-  - Custom `@keyframes honeyShimmer` — 2-pulse animation then rests on #e5e0da
-  - `.honey-shimmer` class replaces Tailwind `animate-pulse` in all skeleton components
-  - Updated shadcn Skeleton component to use `honey-shimmer`
-  - `.honey-fade-in` (200ms) applied to data containers on HivePage, CollectionPage, ProfilePage, ExplorePage
-  - Audited ComposerBar, AdminPage, VariantCompletion skeletons — all updated
-  - Intentional pulse animations (notification dots, attention indicators) kept as-is
+- BLOCK 221: Clickable variant pills
+- BLOCK 228: Back-to-Top Button
+- BLOCK 229: Dream Value Re-Calculator (3-tier resolution, manual pricing, Valuation Assistant)
+- BLOCK 231: Snap-Load Shimmer (2-pulse animation, honey-fade-in transitions)
+- **BLOCK 237: Community Benchmark Logic** (March 2026)
+  - "The Hive Says..." UI — Valuation Assistant shows community average with "Accept Hive" button
+  - Anti-inflation trimmed mean bumped to 10% (top/bottom 10% discarded)
+  - Pending items endpoint enriched with `hive_average` and `hive_count`
+  - Consistency trigger: new users adding same record see community price as suggested value
+  - Success state: "Benchmark Set!" banner with personalized copy
+  - "The Hive Pricing Standard" info section explaining trimmed mean
+  - Tooltip on pending links: "The Hive doesn't have a price for these grails yet"
+  - All UI copy matches user specifications exactly
+
+## DB Collections
+- `community_valuations`: release_id, average_value, contribution_count, contributions[], timestamps
+- `iso_items`: Added manual_price field
 
 ## Backlog (Prioritized)
 ### P0
