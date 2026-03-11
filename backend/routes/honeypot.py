@@ -1012,6 +1012,39 @@ async def create_payment_intent(request: Request, body: Dict, user: Dict = Depen
     }
 
 
+async def _finalize_payment(txn: dict):
+    """Mark listing as SOLD, send notifications and emails for a completed payment."""
+    listing_id = txn.get("listing_id")
+    if listing_id:
+        await db.listings.update_one({"id": listing_id}, {"$set": {"status": "SOLD"}})
+
+    listing = await db.listings.find_one({"id": listing_id}, {"_id": 0}) if listing_id else None
+    buyer = await db.users.find_one({"id": txn["buyer_id"]}, {"_id": 0})
+    seller = await db.users.find_one({"id": txn["seller_id"]}, {"_id": 0})
+
+    await create_notification(txn["seller_id"], "SALE_COMPLETED", "You made a sale!",
+                              f"@{buyer.get('username','?')} bought {listing.get('album','?') if listing else '?'} for ${txn['amount']}. Payout: ${txn.get('seller_payout', 0)}",
+                              {"listing_id": listing_id, "amount": txn["amount"]})
+    await create_notification(txn["buyer_id"], "PURCHASE_COMPLETED", "Purchase confirmed!",
+                              f"Your payment of ${txn['amount']} for {listing.get('album','?') if listing else '?'} is confirmed.",
+                              {"listing_id": listing_id})
+
+    if listing and seller and buyer and txn.get("type") in ("marketplace_purchase", "express_purchase"):
+        fee_pct = await _get_platform_fee_percent()
+        amount = float(txn.get("amount", 0))
+        fee_amount = round(amount * fee_pct / 100, 2)
+        payout_amount = round(amount - fee_amount, 2)
+        listing_url = f"{FRONTEND_URL}/honeypot/listing/{listing_id}"
+        from templates.emails import sale_confirmed_seller, sale_confirmed_buyer
+        if seller.get("email"):
+            tpl_s = sale_confirmed_seller(seller.get("username",""), listing.get("album",""), listing.get("artist",""), f"{amount:.2f}", f"{fee_amount:.2f}", f"{payout_amount:.2f}", f"{fee_pct:g}", listing_url)
+            await send_email_fire_and_forget(seller["email"], tpl_s["subject"], tpl_s["html"])
+        if buyer.get("email"):
+            tpl_b = sale_confirmed_buyer(buyer.get("username",""), listing.get("album",""), listing.get("artist",""), seller.get("username",""), f"{amount:.2f}", listing_url)
+            await send_email_fire_and_forget(buyer["email"], tpl_b["subject"], tpl_b["html"])
+
+
+
 @router.get("/payments/status/{session_id}")
 async def get_payment_status(session_id: str, request: Request, user: Dict = Depends(require_auth)):
     txn = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0})
@@ -1021,14 +1054,24 @@ async def get_payment_status(session_id: str, request: Request, user: Dict = Dep
         return {"status": txn["payment_status"], "amount": txn["amount"], "session_id": session_id}
 
     stripe_sdk.api_key = STRIPE_API_KEY
+    now = datetime.now(timezone.utc).isoformat()
+    new_status = "PENDING"
+
     try:
-        session = stripe_sdk.checkout.Session.retrieve(session_id)
-        now = datetime.now(timezone.utc).isoformat()
-        new_status = "PENDING"
-        if session.payment_status == "paid":
-            new_status = "PAID"
-        elif session.status == "expired":
-            new_status = "EXPIRED"
+        if session_id.startswith("pi_"):
+            # PaymentIntent-based flow (Express Checkout)
+            intent = stripe_sdk.PaymentIntent.retrieve(session_id)
+            if intent.status == "succeeded":
+                new_status = "PAID"
+            elif intent.status in ("canceled", "requires_payment_method"):
+                new_status = "FAILED"
+        else:
+            # Checkout Session-based flow (legacy redirect)
+            session = stripe_sdk.checkout.Session.retrieve(session_id)
+            if session.payment_status == "paid":
+                new_status = "PAID"
+            elif session.status == "expired":
+                new_status = "EXPIRED"
     except Exception:
         return {"status": txn["payment_status"], "amount": txn["amount"], "session_id": session_id}
 
@@ -1037,30 +1080,7 @@ async def get_payment_status(session_id: str, request: Request, user: Dict = Dep
             "payment_status": new_status, "updated_at": now,
         }})
         if new_status == "PAID":
-            await db.listings.update_one({"id": txn["listing_id"]}, {"$set": {"status": "SOLD"}})
-            listing = await db.listings.find_one({"id": txn["listing_id"]}, {"_id": 0})
-            buyer = await db.users.find_one({"id": txn["buyer_id"]}, {"_id": 0})
-            seller = await db.users.find_one({"id": txn["seller_id"]}, {"_id": 0})
-            await create_notification(txn["seller_id"], "SALE_COMPLETED", "You made a sale!",
-                                      f"@{buyer.get('username','?')} bought {listing.get('album','?')} for ${txn['amount']}. Payout: ${txn['seller_payout']}",
-                                      {"listing_id": txn["listing_id"], "amount": txn["amount"]})
-            await create_notification(txn["buyer_id"], "PURCHASE_COMPLETED", "Purchase confirmed!",
-                                      f"Your payment of ${txn['amount']} for {listing.get('album','?')} is confirmed.",
-                                      {"listing_id": txn["listing_id"]})
-            # Send sale confirmed emails
-            if listing and seller and buyer and txn.get("type") == "marketplace_purchase":
-                fee_pct = await _get_platform_fee_percent()
-                amount = float(txn.get("amount", 0))
-                fee_amount = round(amount * fee_pct / 100, 2)
-                payout_amount = round(amount - fee_amount, 2)
-                listing_url = f"{FRONTEND_URL}/honeypot/listing/{txn['listing_id']}"
-                from templates.emails import sale_confirmed_seller, sale_confirmed_buyer
-                if seller.get("email"):
-                    tpl_s = sale_confirmed_seller(seller.get("username",""), listing.get("album",""), listing.get("artist",""), f"{amount:.2f}", f"{fee_amount:.2f}", f"{payout_amount:.2f}", f"{fee_pct:g}", listing_url)
-                    await send_email_fire_and_forget(seller["email"], tpl_s["subject"], tpl_s["html"])
-                if buyer.get("email"):
-                    tpl_b = sale_confirmed_buyer(buyer.get("username",""), listing.get("album",""), listing.get("artist",""), seller.get("username",""), f"{amount:.2f}", listing_url)
-                    await send_email_fire_and_forget(buyer["email"], tpl_b["subject"], tpl_b["html"])
+            await _finalize_payment(txn)
 
     return {"status": new_status, "amount": txn["amount"], "session_id": session_id}
 
@@ -1069,70 +1089,54 @@ async def get_payment_status(session_id: str, request: Request, user: Dict = Dep
 async def stripe_webhook(request: Request):
     body_bytes = await request.body()
     sig = request.headers.get("Stripe-Signature", "")
-    webhook_url = f"{str(request.base_url).rstrip('/')}/api/webhook/stripe"
-    stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_secret=STRIPE_WEBHOOK_SECRET, webhook_url=webhook_url)
+    now = datetime.now(timezone.utc).isoformat()
+
+    # --- Handle PaymentIntent events (Express Checkout) via raw Stripe SDK ---
     try:
-        event = await stripe_checkout.handle_webhook(body_bytes, sig)
-        if event.payment_status == "paid" and event.session_id:
-            now = datetime.now(timezone.utc).isoformat()
-            txn = await db.payment_transactions.find_one({"session_id": event.session_id}, {"_id": 0})
+        raw_event = stripe_sdk.Webhook.construct_event(body_bytes, sig, STRIPE_WEBHOOK_SECRET)
+    except Exception as e:
+        logging.error(f"Webhook signature verification failed: {e}")
+        return {"received": True}
+
+    event_type = raw_event.get("type", "")
+
+    # PaymentIntent succeeded (Express Checkout flow)
+    if event_type == "payment_intent.succeeded":
+        pi = raw_event["data"]["object"]
+        pi_id = pi["id"]
+        txn = await db.payment_transactions.find_one({"session_id": pi_id}, {"_id": 0})
+        if txn and txn["payment_status"] != "PAID":
+            await db.payment_transactions.update_one({"session_id": pi_id}, {"$set": {
+                "payment_status": "PAID", "updated_at": now,
+            }})
+            await _finalize_payment(txn)
+        return {"received": True}
+
+    # Checkout Session completed (legacy redirect flow)
+    if event_type == "checkout.session.completed":
+        session = raw_event["data"]["object"]
+        session_id = session.get("id", "")
+        payment_status = session.get("payment_status", "")
+        if payment_status == "paid" and session_id:
+            txn = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0})
             if txn and txn["payment_status"] != "PAID":
-                await db.payment_transactions.update_one({"session_id": event.session_id}, {"$set": {
+                await db.payment_transactions.update_one({"session_id": session_id}, {"$set": {
                     "payment_status": "PAID", "updated_at": now,
                 }})
-                listing_id = txn.get("listing_id")
-                if listing_id:
-                    await db.listings.update_one({"id": listing_id}, {"$set": {"status": "SOLD"}})
-
-                # Send sale confirmed emails to seller and buyer
-                if txn.get("type") == "marketplace_purchase" and listing_id:
-                    listing = await db.listings.find_one({"id": listing_id}, {"_id": 0})
-                    seller = await db.users.find_one({"id": txn["seller_id"]}, {"_id": 0})
-                    buyer = await db.users.find_one({"id": txn["buyer_id"]}, {"_id": 0})
-                    if listing and seller and buyer:
-                        fee_pct = await _get_platform_fee_percent()
-                        amount = float(txn.get("amount", 0))
-                        fee_amount = round(amount * fee_pct / 100, 2)
-                        payout_amount = round(amount - fee_amount, 2)
-                        album = listing.get("album", "")
-                        artist = listing.get("artist", "")
-                        listing_url = f"{FRONTEND_URL}/honeypot/listing/{listing_id}"
-
-                        from templates.emails import sale_confirmed_seller, sale_confirmed_buyer
-                        if seller.get("email"):
-                            tpl_s = sale_confirmed_seller(
-                                username=seller.get("username", ""),
-                                album=album, artist=artist,
-                                price=f"{amount:.2f}",
-                                fee_amount=f"{fee_amount:.2f}",
-                                payout_amount=f"{payout_amount:.2f}",
-                                fee_pct=f"{fee_pct:g}",
-                                sale_url=listing_url,
-                            )
-                            await send_email_fire_and_forget(seller["email"], tpl_s["subject"], tpl_s["html"])
-                        if buyer.get("email"):
-                            tpl_b = sale_confirmed_buyer(
-                                username=buyer.get("username", ""),
-                                album=album, artist=artist,
-                                seller_username=seller.get("username", ""),
-                                price=f"{amount:.2f}",
-                                purchase_url=listing_url,
-                            )
-                            await send_email_fire_and_forget(buyer["email"], tpl_b["subject"], tpl_b["html"])
+                await _finalize_payment(txn)
 
             # Handle Golden Hive verification payments
-            golden_txn = await db.golden_hive_payments.find_one({"session_id": event.session_id}, {"_id": 0})
+            golden_txn = await db.golden_hive_payments.find_one({"session_id": session_id}, {"_id": 0})
             if golden_txn and golden_txn.get("payment_status") != "PAID":
                 await db.golden_hive_payments.update_one(
-                    {"session_id": event.session_id},
+                    {"session_id": session_id},
                     {"$set": {"payment_status": "PAID", "paid_at": now}}
                 )
                 await db.users.update_one(
                     {"id": golden_txn["user_id"]},
                     {"$set": {"golden_hive_status": "PAID_PENDING_UPLOAD", "golden_hive_payment_at": now}}
                 )
-    except Exception as e:
-        logging.error(f"Webhook error: {e}")
+
     return {"received": True}
 
 

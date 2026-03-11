@@ -70,6 +70,7 @@ import EssentialsPage from "./pages/EssentialsPage";
 import VinylVariantPage from "./pages/VinylVariantPage";
 import VariantReleasePage from "./pages/VariantReleasePage";
 import SearchPage from "./pages/SearchPage";
+import CheckoutSuccessPage from "./pages/CheckoutSuccessPage";
 
 // Auth guards — loading is ALWAYS false. No gates.
 // If user exists (from JWT decode or login), render children.
@@ -173,6 +174,7 @@ function AppContent() {
       <Route path="/create-haul" element={<ProtectedRoute><AppLayout><CreateHaulPage /></AppLayout></ProtectedRoute>} />
       <Route path="/honeypot" element={<ProtectedRoute><AppLayout><ISOPage /></AppLayout></ProtectedRoute>} />
       <Route path="/honeypot/listing/:listingId" element={<ProtectedRoute><AppLayout><ISOPage /></AppLayout></ProtectedRoute>} />
+      <Route path="/honeypot/checkout/success" element={<ProtectedRoute><AppLayout><CheckoutSuccessPage /></AppLayout></ProtectedRoute>} />
       <Route path="/iso" element={<Navigate to="/honeypot" replace />} />
       <Route path="/trades" element={<ProtectedRoute><AppLayout><TradesPage /></AppLayout></ProtectedRoute>} />
       <Route path="/messages" element={<ProtectedRoute><AppLayout><MessagesPage /></AppLayout></ProtectedRoute>} />
