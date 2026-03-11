@@ -61,6 +61,7 @@ const ProfilePage = () => {
   const [dreamingItems, setDreamingItems] = useState([]);
   const [dreamValue, setDreamValue] = useState(null);
   const [isBlocked, setIsBlocked] = useState(false);
+  const [followsMe, setFollowsMe] = useState(false);
   const [blockLoading, setBlockLoading] = useState(false);
   const [showBlockConfirm, setShowBlockConfirm] = useState(false);
   const [profileUnavailable, setProfileUnavailable] = useState(false);
@@ -124,6 +125,7 @@ const ProfilePage = () => {
           axios.get(`${API}/block/check/${username}`, { headers: { Authorization: `Bearer ${token}` }}),
         ]);
         setIsFollowing(followRes.data.is_following);
+        setFollowsMe(followRes.data.follows_me || false);
         setIsBlocked(blockRes.data.is_blocked);
         setFollowRequestPending(followRes.data.follow_request_pending || profileRes.data.follow_request_status === 'pending');
       }
@@ -408,6 +410,7 @@ const ProfilePage = () => {
                     className={`rounded-full ${
                       isFollowing ? 'bg-white border border-vinyl-black/30 text-vinyl-black hover:bg-red-50 hover:text-red-600' :
                       followRequestPending ? 'bg-white border border-amber-400 text-amber-700 hover:bg-red-50 hover:text-red-600' :
+                      followsMe && !isFollowing ? 'bg-honey text-vinyl-black hover:bg-honey-amber shadow-[0_0_12px_rgba(244,185,66,0.4)] animate-[honeyPulse_2s_ease-in-out_infinite]' :
                       'bg-honey text-vinyl-black hover:bg-honey-amber'
                     }`}
                     data-testid="follow-btn"
@@ -416,6 +419,7 @@ const ProfilePage = () => {
                       isFollowing ? <><UserMinus className="w-4 h-4 mr-1" />Following</> :
                       followRequestPending ? <><Loader2 className="w-4 h-4 mr-1" />Requested</> :
                       profile?.is_private ? <><Lock className="w-4 h-4 mr-1" />Request to Follow</> :
+                      followsMe ? <><UserPlus className="w-4 h-4 mr-1" />Follow Back</> :
                       <><UserPlus className="w-4 h-4 mr-1" />Follow</>
                     }
                   </Button>
@@ -652,11 +656,16 @@ const ProfilePage = () => {
               size="sm"
               onClick={handleFollow}
               disabled={followLoading || followRequestPending}
-              className={`rounded-full mt-2 ${followRequestPending ? 'bg-white border border-amber-400 text-amber-700' : 'bg-honey text-vinyl-black hover:bg-honey-amber'}`}
+              className={`rounded-full mt-2 ${
+                followRequestPending ? 'bg-white border border-amber-400 text-amber-700' :
+                followsMe ? 'bg-honey text-vinyl-black hover:bg-honey-amber shadow-[0_0_12px_rgba(244,185,66,0.4)] animate-[honeyPulse_2s_ease-in-out_infinite]' :
+                'bg-honey text-vinyl-black hover:bg-honey-amber'
+              }`}
               data-testid="locked-follow-btn"
             >
               {followLoading ? <Loader2 className="w-4 h-4 animate-spin" /> :
                 followRequestPending ? 'Requested' :
+                followsMe ? <><UserPlus className="w-4 h-4 mr-1" /> Follow Back</> :
                 <><Lock className="w-4 h-4 mr-1" /> Request to Follow</>
               }
             </Button>

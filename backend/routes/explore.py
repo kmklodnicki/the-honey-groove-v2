@@ -153,12 +153,18 @@ async def check_following(username: str, user: Dict = Depends(require_auth)):
         "following_id": target_user["id"]
     })
     
+    # Check if they follow us (reciprocal check)
+    reverse = await db.followers.find_one({
+        "follower_id": target_user["id"],
+        "following_id": user["id"]
+    })
+    
     follow_request_pending = False
     if not existing:
         req = await db.follow_requests.find_one({"from_id": user["id"], "to_id": target_user["id"], "status": "pending"})
         follow_request_pending = req is not None
     
-    return {"is_following": existing is not None, "follow_request_pending": follow_request_pending}
+    return {"is_following": existing is not None, "follows_me": reverse is not None, "follow_request_pending": follow_request_pending}
 
 @router.get("/users/{username}/followers")
 async def get_followers(username: str, current_user: Optional[Dict] = Depends(get_current_user)):
@@ -191,12 +197,21 @@ async def get_followers(username: str, current_user: Optional[Dict] = Depends(ge
                 their_discogs = {r["discogs_id"] for r in their_records if r.get("discogs_id")}
                 records_in_common = len(viewer_discogs & their_discogs)
             
+            # Check if this user follows the viewer
+            follows_me = False
+            if current_user and current_user["id"] != follower_user["id"]:
+                follows_me = await db.followers.find_one({
+                    "follower_id": follower_user["id"],
+                    "following_id": current_user["id"]
+                }) is not None
+            
             result.append({
                 "id": follower_user["id"],
                 "username": follower_user["username"],
                 "avatar_url": follower_user.get("avatar_url"),
                 "bio": follower_user.get("bio"),
                 "is_following": is_following,
+                "follows_me": follows_me,
                 "records_in_common": records_in_common
             })
     
@@ -233,12 +248,21 @@ async def get_following(username: str, current_user: Optional[Dict] = Depends(ge
                 their_discogs = {r["discogs_id"] for r in their_records if r.get("discogs_id")}
                 records_in_common = len(viewer_discogs & their_discogs)
             
+            # Check if this user follows the viewer
+            follows_me = False
+            if current_user and current_user["id"] != following_user["id"]:
+                follows_me = await db.followers.find_one({
+                    "follower_id": following_user["id"],
+                    "following_id": current_user["id"]
+                }) is not None
+            
             result.append({
                 "id": following_user["id"],
                 "username": following_user["username"],
                 "avatar_url": following_user.get("avatar_url"),
                 "bio": following_user.get("bio"),
                 "is_following": is_following,
+                "follows_me": follows_me,
                 "records_in_common": records_in_common
             })
     
@@ -1027,6 +1051,11 @@ async def my_kinda_people(user: Dict = Depends(require_auth)):
     async for f in db.followers.find({"follower_id": my_id}, {"_id": 0, "following_id": 1}):
         following_ids.add(f["following_id"])
 
+    # Get users who follow the current user (for "Follow Back" feature)
+    follower_ids = set()
+    async for f in db.followers.find({"following_id": my_id}, {"_id": 0, "follower_id": 1}):
+        follower_ids.add(f["follower_id"])
+
     # Get all other users who have records (exclude self, blocked, and followed)
     exclude_ids = blocked_ids | following_ids
     other_user_ids = set()
@@ -1061,8 +1090,9 @@ async def my_kinda_people(user: Dict = Depends(require_auth)):
                 if len(shared_covers) >= 3:
                     break
 
-        # Priority: common realities >= 3, then owns wishlist items, then score
-        priority = len(shared_discogs) * 10 + len(owns_my_wish) * 5 + score
+        # Priority: followers get a big boost, then common records, wishlist items, score
+        follows_me = uid in follower_ids
+        priority = (500 if follows_me else 0) + len(shared_discogs) * 10 + len(owns_my_wish) * 5 + score
 
         results.append({
             "user_id": uid,
@@ -1071,6 +1101,7 @@ async def my_kinda_people(user: Dict = Depends(require_auth)):
             "common_count": len(shared_discogs),
             "wishlist_match_count": len(owns_my_wish),
             "shared_covers": shared_covers,
+            "follows_me": follows_me,
             "priority": priority,
         })
 

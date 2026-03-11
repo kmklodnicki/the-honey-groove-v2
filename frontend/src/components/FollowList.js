@@ -67,6 +67,8 @@ const UserRow = ({ u, currentUserId, token, API, onFollowChange }) => {
           className={`shrink-0 rounded-full text-xs px-4 ${
             following
               ? 'border-vinyl-black/30 hover:bg-red-50 hover:text-red-600 hover:border-red-200'
+              : u.follows_me && !following
+              ? 'bg-honey text-vinyl-black hover:bg-honey-amber shadow-[0_0_10px_rgba(244,185,66,0.35)]'
               : 'bg-honey text-vinyl-black hover:bg-honey-amber'
           }`}
           data-testid={`follow-toggle-${u.username}`}
@@ -75,6 +77,8 @@ const UserRow = ({ u, currentUserId, token, API, onFollowChange }) => {
             <Loader2 className="w-3 h-3 animate-spin" />
           ) : following ? (
             <><UserMinus className="w-3 h-3 mr-1" />Following</>
+          ) : u.follows_me ? (
+            <><UserPlus className="w-3 h-3 mr-1" />Follow Back</>
           ) : (
             <><UserPlus className="w-3 h-3 mr-1" />Follow</>
           )}

@@ -189,24 +189,43 @@ const ExplorePage = () => {
         ) : (
           <ScrollRow>
             {myKindaPeople.map(p => (
-              <Link key={p.username} to={`/profile/${p.username}?tab=in-common`} className="flex-shrink-0 w-40 group" data-testid={`kinda-${p.username}`}>
-                <Card className="p-3 border-honey/30 hover:shadow-honey transition-all text-center">
-                  <div className="w-14 h-14 mx-auto rounded-full overflow-hidden bg-honey/10 mb-2">
-                    {p.avatar_url ? <img src={p.avatar_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Users className="w-6 h-6 text-honey" /></div>}
-                  </div>
-                  <p className="text-sm font-medium truncate">@{p.username}</p>
-                  <p className="text-xs font-bold mt-0.5" style={{ color: '#C8861A' }}>{p.common_count || 0} {(p.common_count || 0) === 1 ? 'record' : 'records'} in common</p>
-                  {p.shared_covers?.length > 0 && (
-                    <div className="flex justify-center gap-1 mt-2">
-                      {p.shared_covers.slice(0, 3).map((c, i) => (
-                        <div key={i} className="w-10 h-10 rounded-md overflow-hidden bg-vinyl-black">
-                          <AlbumArt src={c.cover_url} alt={c.title} className="w-full h-full object-cover" />
-                        </div>
-                      ))}
+              <div key={p.username} className="flex-shrink-0 w-40 group" data-testid={`kinda-${p.username}`}>
+                <Card className={`p-3 border-honey/30 hover:shadow-honey transition-all text-center ${p.follows_me ? 'ring-1 ring-honey/40' : ''}`}>
+                  <Link to={`/profile/${p.username}?tab=in-common`}>
+                    <div className="w-14 h-14 mx-auto rounded-full overflow-hidden bg-honey/10 mb-2">
+                      {p.avatar_url ? <img src={p.avatar_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Users className="w-6 h-6 text-honey" /></div>}
                     </div>
+                    <p className="text-sm font-medium truncate">@{p.username}</p>
+                    <p className="text-xs font-bold mt-0.5" style={{ color: '#C8861A' }}>{p.common_count || 0} {(p.common_count || 0) === 1 ? 'record' : 'records'} in common</p>
+                    {p.shared_covers?.length > 0 && (
+                      <div className="flex justify-center gap-1 mt-2">
+                        {p.shared_covers.slice(0, 3).map((c, i) => (
+                          <div key={i} className="w-10 h-10 rounded-md overflow-hidden bg-vinyl-black">
+                            <AlbumArt src={c.cover_url} alt={c.title} className="w-full h-full object-cover" />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </Link>
+                  {p.follows_me && (
+                    <button
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        try {
+                          await axios.post(`${API}/follow/${p.username}`, {}, { headers: { Authorization: `Bearer ${token}` }});
+                          toast.success(`now following @${p.username}`);
+                          setMyKindaPeople(prev => prev.filter(u => u.username !== p.username));
+                        } catch { toast.error('could not follow.'); }
+                      }}
+                      className="mt-2 w-full text-xs font-semibold py-1.5 px-2 rounded-full bg-honey text-vinyl-black hover:bg-honey-amber transition-all"
+                      style={{ animation: 'honeyPulse 2s ease-in-out infinite' }}
+                      data-testid={`follow-back-${p.username}`}
+                    >
+                      Follow Back
+                    </button>
                   )}
                 </Card>
-              </Link>
+              </div>
             ))}
           </ScrollRow>
         )}
