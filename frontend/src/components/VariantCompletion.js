@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, ChevronDown, ChevronUp, ChevronRight, Loader2 } from 'lucide-react';
 import { Card } from './ui/card';
@@ -16,6 +16,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { toast } from 'sonner';
+import DuplicateConfirmationModal from './DuplicateConfirmationModal';
 
 const API = process.env.REACT_APP_BACKEND_URL + '/api';
 
@@ -109,6 +110,8 @@ export default function VariantCompletion({ discogsId }) {
   const [expanded, setExpanded] = useState(false);
   const [confirmVariant, setConfirmVariant] = useState(null);
   const [adding, setAdding] = useState(false);
+  const [dupModal, setDupModal] = useState({ open: false, copyCount: 0, title: '' });
+  const pendingAddRef = useRef(null);
 
   useEffect(() => {
     if (!discogsId) return;
@@ -118,6 +121,57 @@ export default function VariantCompletion({ discogsId }) {
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [discogsId, token]);
+
+  const executeVariantAdd = useCallback(async (recordData, variant) => {
+    await axios.post(`${API}/records`, recordData, { headers: { Authorization: `Bearer ${token}` } });
+
+    // Update local state
+    setData(prev => {
+      if (!prev) return prev;
+      const updatedVariants = prev.variants.map(v =>
+        v.name === variant.name ? { ...v, owned: true } : v
+      );
+      updatedVariants.sort((a, b) => (a.owned === b.owned ? a.name.localeCompare(b.name) : a.owned ? -1 : 1));
+      const newOwned = updatedVariants.filter(v => v.owned).length;
+      const total = updatedVariants.length;
+      const newPct = total ? Math.round((newOwned / total) * 100) : 0;
+      return { ...prev, variants: updatedVariants, owned_count: newOwned, completion_pct: newPct };
+    });
+
+    toast.success(`${variant.name} added to your collection!`);
+
+    const updatedOwned = data.owned_count + 1;
+    if (updatedOwned === data.total_variants) {
+      try {
+        const confetti = (await import('canvas-confetti')).default;
+        confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+      } catch {}
+      toast.success('You completed the full variant set!', { duration: 5000 });
+    }
+  }, [data, token]);
+
+  const handleDupConfirm = useCallback(async () => {
+    setDupModal({ open: false, copyCount: 0, title: '' });
+    if (!pendingAddRef.current) return;
+    setAdding(true);
+    try {
+      const { recordData, variant } = pendingAddRef.current;
+      await executeVariantAdd({ ...recordData, instance_id: Date.now() }, variant);
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Could not add to collection.');
+    } finally {
+      setAdding(false);
+      setConfirmVariant(null);
+      pendingAddRef.current = null;
+    }
+  }, [executeVariantAdd]);
+
+  const handleDupCancel = useCallback(() => {
+    setDupModal({ open: false, copyCount: 0, title: '' });
+    pendingAddRef.current = null;
+    setAdding(false);
+    setConfirmVariant(null);
+  }, []);
 
   const handleAddToCollection = useCallback(async () => {
     if (!confirmVariant || !data || !token) return;
@@ -132,7 +186,6 @@ export default function VariantCompletion({ discogsId }) {
     }
 
     try {
-      // Fetch release details from Discogs to get title/artist/cover
       let title = data.album || '';
       let artist = data.artist || '';
       let coverUrl = '';
@@ -147,56 +200,29 @@ export default function VariantCompletion({ discogsId }) {
         artist = rel.artist || artist;
         coverUrl = rel.cover_url || '';
         year = rel.year || null;
-      } catch {
-        // Use data from parent if Discogs fetch fails
-      }
+      } catch {}
 
-      await axios.post(`${API}/records`, {
-        discogs_id: releaseId,
-        title,
-        artist,
-        cover_url: coverUrl,
-        year,
-        format: 'Vinyl',
-        color_variant: confirmVariant.name,
-      }, { headers: { Authorization: `Bearer ${token}` } });
+      const recordData = {
+        discogs_id: releaseId, title, artist, cover_url: coverUrl,
+        year, format: 'Vinyl', color_variant: confirmVariant.name,
+      };
 
-      // Update local state
-      setData(prev => {
-        if (!prev) return prev;
-        const updatedVariants = prev.variants.map(v =>
-          v.name === confirmVariant.name ? { ...v, owned: true } : v
-        );
-        // Re-sort: owned first, then alphabetical
-        updatedVariants.sort((a, b) => (a.owned === b.owned ? a.name.localeCompare(b.name) : a.owned ? -1 : 1));
-        const newOwned = updatedVariants.filter(v => v.owned).length;
-        const total = updatedVariants.length;
-        const newPct = total ? Math.round((newOwned / total) * 100) : 0;
-
-        return {
-          ...prev,
-          variants: updatedVariants,
-          owned_count: newOwned,
-          completion_pct: newPct,
-        };
+      // Check for duplicates
+      const ownerCheck = await axios.get(`${API}/records/check-ownership`, {
+        params: { discogs_id: releaseId },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      toast.success(`${confirmVariant.name} added to your collection!`);
-
-      // Check if this was the final variant (100% completion)
-      const updatedOwned = data.owned_count + 1;
-      if (updatedOwned === data.total_variants) {
-        // Trigger celebration
-        try {
-          const confetti = (await import('canvas-confetti')).default;
-          confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
-        } catch {}
-        toast.success('You completed the full variant set!', { duration: 5000 });
+      if (ownerCheck.data.in_collection) {
+        pendingAddRef.current = { recordData, variant: confirmVariant };
+        setDupModal({ open: true, copyCount: ownerCheck.data.copy_count || 1, title });
+        return;
       }
+
+      await executeVariantAdd(recordData, confirmVariant);
     } catch (err) {
       if (err.response?.status === 409) {
         toast.info('Already in your collection.');
-        // Still mark as owned locally
         setData(prev => {
           if (!prev) return prev;
           const updatedVariants = prev.variants.map(v =>
@@ -214,7 +240,7 @@ export default function VariantCompletion({ discogsId }) {
       setAdding(false);
       setConfirmVariant(null);
     }
-  }, [confirmVariant, data, token]);
+  }, [confirmVariant, data, token, executeVariantAdd]);
 
   if (loading) return <TrackerSkeleton />;
   if (!data || data.error || data.total_variants <= 1) return null;
@@ -304,6 +330,14 @@ export default function VariantCompletion({ discogsId }) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <DuplicateConfirmationModal
+        open={dupModal.open}
+        copyCount={dupModal.copyCount}
+        recordTitle={dupModal.title}
+        onConfirm={handleDupConfirm}
+        onCancel={handleDupCancel}
+      />
     </>
   );
 }

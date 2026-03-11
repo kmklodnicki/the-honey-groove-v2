@@ -14,6 +14,7 @@ import { trackEvent } from '../utils/analytics';
 import { usePageTitle } from '../hooks/usePageTitle';
 import RecordSearchResult from '../components/RecordSearchResult';
 import AlbumArt from '../components/AlbumArt';
+import DuplicateConfirmationModal from '../components/DuplicateConfirmationModal';
 
 const AddRecordPage = () => {
   usePageTitle('Add Record');
@@ -31,6 +32,10 @@ const AddRecordPage = () => {
   const [colorVariant, setColorVariant] = useState('');
   const [editionNumber, setEditionNumber] = useState('');
   const [adding, setAdding] = useState(false);
+
+  // Duplicate detection state
+  const [dupModal, setDupModal] = useState({ open: false, copyCount: 0, title: '' });
+  const pendingAddRef = useRef(null);
 
   // Manual entry state
   const [manualMode, setManualMode] = useState(false);
@@ -79,6 +84,39 @@ const AddRecordPage = () => {
     setSearchQuery('');
   };
 
+  const executeAdd = async (recordData) => {
+    await axios.post(`${API}/records`, recordData, {
+      headers: { Authorization: `Bearer ${token}` },
+      timeout: 15000,
+    });
+    toast.success('Added to Collection. Your Gold Standard just grew.');
+    trackEvent('collection_record_added');
+    navigate('/collection');
+  };
+
+  const handleDupConfirm = async () => {
+    setDupModal({ open: false, copyCount: 0, title: '' });
+    if (!pendingAddRef.current) return;
+    setAdding(true);
+    try {
+      // Generate a unique instance_id for the new copy
+      const data = { ...pendingAddRef.current, instance_id: Date.now() };
+      await executeAdd(data);
+    } catch (error) {
+      console.error('Add error:', error);
+      toast.error(error.response?.data?.detail || "couldn't add that record. please try again.");
+    } finally {
+      setAdding(false);
+      pendingAddRef.current = null;
+    }
+  };
+
+  const handleDupCancel = () => {
+    setDupModal({ open: false, copyCount: 0, title: '' });
+    pendingAddRef.current = null;
+    setAdding(false);
+  };
+
   const handleAddRecord = async () => {
     if (!selectedRecord && !manualMode) {
       toast.error('Please select or enter a record');
@@ -93,7 +131,7 @@ const AddRecordPage = () => {
     setAdding(true);
     try {
       if (isDreaming) {
-        // Add to Dreaming (WISHLIST ISO)
+        // Add to Dreaming (WISHLIST ISO) — no duplicate check needed
         const isoData = manualMode ? {
           artist: manualArtist,
           album: manualTitle,
@@ -119,7 +157,7 @@ const AddRecordPage = () => {
         trackEvent('dreaming_record_added');
         navigate('/collection?tab=wishlist');
       } else {
-        // Add to Collection
+        // Add to Collection — check for duplicates first
         const recordData = manualMode ? {
           title: manualTitle,
           artist: manualArtist,
@@ -139,14 +177,27 @@ const AddRecordPage = () => {
           edition_number: editionNumber ? parseInt(editionNumber) : null,
         };
 
-        await axios.post(`${API}/records`, recordData, {
+        // Duplicate detection: check ownership before adding
+        const checkParams = recordData.discogs_id
+          ? { discogs_id: recordData.discogs_id }
+          : { artist: recordData.artist, title: recordData.title };
+        const ownerCheck = await axios.get(`${API}/records/check-ownership`, {
+          params: checkParams,
           headers: { Authorization: `Bearer ${token}` },
-          timeout: 15000,
         });
 
-        toast.success('Added to Collection. Your Gold Standard just grew.');
-        trackEvent('collection_record_added');
-        navigate('/collection');
+        if (ownerCheck.data.in_collection) {
+          // Show duplicate modal — store pending data
+          pendingAddRef.current = recordData;
+          setDupModal({
+            open: true,
+            copyCount: ownerCheck.data.copy_count || 1,
+            title: recordData.title,
+          });
+          return; // Don't setAdding(false) — modal handles it
+        }
+
+        await executeAdd(recordData);
       }
     } catch (error) {
       console.error('Add error:', error);
@@ -161,6 +212,7 @@ const AddRecordPage = () => {
   };
 
   return (
+    <>
     <div className="max-w-2xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8">
       <Button 
         variant="ghost" 
@@ -441,6 +493,15 @@ const AddRecordPage = () => {
         </>
       )}
     </div>
+
+    <DuplicateConfirmationModal
+      open={dupModal.open}
+      copyCount={dupModal.copyCount}
+      recordTitle={dupModal.title}
+      onConfirm={handleDupConfirm}
+      onCancel={handleDupCancel}
+    />
+    </>
   );
 };
 

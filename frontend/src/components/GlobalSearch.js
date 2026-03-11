@@ -12,6 +12,7 @@ import { formatGradeDisplay } from '../utils/grading';
 import safeStorage from '../utils/safeStorage';
 import { resolveImageUrl } from '../utils/imageUrl';
 import { PostTypeBadge } from './PostCards';
+import DuplicateConfirmationModal from './DuplicateConfirmationModal';
 
 const POST_ICONS = {
   NOW_SPINNING: Disc, ISO: Search, NEW_HAUL: Plus, NOTE: Feather,
@@ -44,6 +45,10 @@ const GlobalSearch = ({ onClose }) => {
   const debounceRef = useRef(null);
   const abortRef = useRef(null);
   const discogsAbortRef = useRef(null);
+
+  // Duplicate detection state
+  const [dupModal, setDupModal] = useState({ open: false, copyCount: 0, title: '' });
+  const pendingAddRef = useRef(null);
 
   // Infinite scroll state for records
   const [paginatedRecords, setPaginatedRecords] = useState([]);
@@ -170,13 +175,41 @@ const GlobalSearch = ({ onClose }) => {
   const goToListing = (l) => { navigate(`/honeypot?listing=${l.id}`); onClose?.(); };
 
   const addToCollection = async (r) => {
+    const recordData = {
+      title: r.title, artist: r.artist, cover_url: r.cover_url,
+      discogs_id: r.discogs_id, year: r.year, format: r.format,
+    };
     try {
-      await axios.post(`${API}/records`, {
-        title: r.title, artist: r.artist, cover_url: r.cover_url,
-        discogs_id: r.discogs_id, year: r.year, format: r.format,
-      }, { headers: { Authorization: `Bearer ${token}` }, timeout: 15000 });
+      // Check for duplicates first
+      const checkParams = r.discogs_id ? { discogs_id: r.discogs_id } : { artist: r.artist, title: r.title };
+      const ownerCheck = await axios.get(`${API}/records/check-ownership`, {
+        params: checkParams, headers: { Authorization: `Bearer ${token}` },
+      });
+      if (ownerCheck.data.in_collection) {
+        pendingAddRef.current = recordData;
+        setDupModal({ open: true, copyCount: ownerCheck.data.copy_count || 1, title: r.title });
+        return;
+      }
+      await axios.post(`${API}/records`, recordData, { headers: { Authorization: `Bearer ${token}` }, timeout: 15000 });
       toast.success('added to collection.');
     } catch (e) { toast.error(e.response?.data?.detail || "couldn't add that record. please try again."); }
+  };
+
+  const handleDupConfirm = async () => {
+    setDupModal({ open: false, copyCount: 0, title: '' });
+    if (!pendingAddRef.current) return;
+    try {
+      await axios.post(`${API}/records`, { ...pendingAddRef.current, instance_id: Date.now() }, {
+        headers: { Authorization: `Bearer ${token}` }, timeout: 15000,
+      });
+      toast.success('added another copy to collection.');
+    } catch (e) { toast.error(e.response?.data?.detail || "couldn't add that record."); }
+    finally { pendingAddRef.current = null; }
+  };
+
+  const handleDupCancel = () => {
+    setDupModal({ open: false, copyCount: 0, title: '' });
+    pendingAddRef.current = null;
   };
 
   const followUser = async (u) => {
@@ -230,6 +263,7 @@ const GlobalSearch = ({ onClose }) => {
   }, [loadMoreRecords]);
 
   return (
+    <>
     <div className="flex flex-col h-full" data-testid="global-search">
       {/* Search input */}
       <div className="flex items-center gap-2 p-4 border-b border-honey/20">
@@ -439,6 +473,15 @@ const GlobalSearch = ({ onClose }) => {
         )}
       </div>
     </div>
+
+    <DuplicateConfirmationModal
+      open={dupModal.open}
+      copyCount={dupModal.copyCount}
+      recordTitle={dupModal.title}
+      onConfirm={handleDupConfirm}
+      onCancel={handleDupCancel}
+    />
+    </>
   );
 };
 

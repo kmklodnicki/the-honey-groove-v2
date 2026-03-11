@@ -102,9 +102,9 @@ async def check_record_ownership(
     title: Optional[str] = None,
     user: Dict = Depends(require_auth),
 ):
-    """Check if the current user has a record in their collection."""
+    """Check if the current user has a record in their collection. Returns copy count for duplicate detection."""
     if not discogs_id and not (artist and title):
-        return {"in_collection": False, "record_id": None}
+        return {"in_collection": False, "record_id": None, "copy_count": 0}
 
     query = {"user_id": user["id"]}
     if discogs_id:
@@ -113,10 +113,11 @@ async def check_record_ownership(
         query["artist"] = {"$regex": f"^{artist}$", "$options": "i"}
         query["title"] = {"$regex": f"^{title}$", "$options": "i"}
 
-    record = await db.records.find_one(query, {"_id": 0, "id": 1})
-    if record:
-        return {"in_collection": True, "record_id": record["id"]}
-    return {"in_collection": False, "record_id": None}
+    records = await db.records.find(query, {"_id": 0, "id": 1}).to_list(None)
+    copy_count = len(records)
+    if copy_count > 0:
+        return {"in_collection": True, "record_id": records[0]["id"], "copy_count": copy_count}
+    return {"in_collection": False, "record_id": None, "copy_count": 0}
 
 
 @router.get("/records", response_model=List[RecordResponse])

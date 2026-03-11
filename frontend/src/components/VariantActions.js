@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, Search, Plus, ArrowRightLeft, DollarSign, Loader2, Check } from 'lucide-react';
 import { Button } from './ui/button';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 import axios from 'axios';
+import DuplicateConfirmationModal from './DuplicateConfirmationModal';
 
 const API = process.env.REACT_APP_BACKEND_URL + '/api';
 
@@ -14,6 +15,8 @@ export default function VariantActions({ variant }) {
   const [ownership, setOwnership] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
+  const [dupModal, setDupModal] = useState({ open: false, copyCount: 0, title: '' });
+  const pendingAddRef = useRef(null);
 
   const { artist, album, variant: variantName, discogs_id, cover_url, year, label, catalog_number } = variant;
 
@@ -45,17 +48,45 @@ export default function VariantActions({ variant }) {
 
   const addToCollection = async () => {
     setActionLoading('collection');
+    const recordData = {
+      discogs_id, title: album, artist, cover_url, year,
+      color_variant: variantName, format: 'Vinyl',
+      notes: [label, catalog_number].filter(Boolean).join(' / '),
+    };
     try {
-      await axios.post(`${API}/records`, {
-        discogs_id, title: album, artist, cover_url, year,
-        color_variant: variantName, format: 'Vinyl',
-        notes: [label, catalog_number].filter(Boolean).join(' / '),
-      }, { headers });
+      // Check for duplicates
+      const ownerCheck = await axios.get(`${API}/records/check-ownership`, {
+        params: { discogs_id }, headers,
+      });
+      if (ownerCheck.data.in_collection) {
+        pendingAddRef.current = recordData;
+        setDupModal({ open: true, copyCount: ownerCheck.data.copy_count || 1, title: album });
+        setActionLoading(null);
+        return;
+      }
+      await axios.post(`${API}/records`, recordData, { headers });
       toast.success(`${album} added to your collection!`);
       setOwnership(prev => ({ ...prev, owned: true }));
     } catch (e) {
       toast.error(e.response?.data?.detail || 'Failed to add to collection');
     } finally { setActionLoading(null); }
+  };
+
+  const handleDupConfirm = async () => {
+    setDupModal({ open: false, copyCount: 0, title: '' });
+    if (!pendingAddRef.current) return;
+    setActionLoading('collection');
+    try {
+      await axios.post(`${API}/records`, { ...pendingAddRef.current, instance_id: Date.now() }, { headers });
+      toast.success(`Another copy of ${album} added!`);
+      setOwnership(prev => ({ ...prev, owned: true }));
+    } catch (e) { toast.error(e.response?.data?.detail || 'Failed to add'); }
+    finally { setActionLoading(null); pendingAddRef.current = null; }
+  };
+
+  const handleDupCancel = () => {
+    setDupModal({ open: false, copyCount: 0, title: '' });
+    pendingAddRef.current = null;
   };
 
   const addToISO = async (status) => {
@@ -98,6 +129,7 @@ export default function VariantActions({ variant }) {
   const btnPrimary = `${btnBase} bg-honey text-vinyl-black hover:bg-honey-amber px-6 font-semibold shadow-sm`;
 
   return (
+    <>
     <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2.5 mt-5" data-testid="variant-actions">
       {!owned ? (
         <>
@@ -156,5 +188,14 @@ export default function VariantActions({ variant }) {
         </>
       )}
     </div>
+
+    <DuplicateConfirmationModal
+      open={dupModal.open}
+      copyCount={dupModal.copyCount}
+      recordTitle={dupModal.title}
+      onConfirm={handleDupConfirm}
+      onCancel={handleDupCancel}
+    />
+    </>
   );
 }
