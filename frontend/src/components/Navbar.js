@@ -61,7 +61,7 @@ const Navbar = () => {
 
   return (
     <>
-    <nav className="hidden md:block fixed top-0 left-0 right-0 z-[100000] glass border-b border-honey/30">
+    <nav className="hidden md:block fixed top-0 left-0 right-0 z-[100000] glass border-b border-honey/30" style={{ overflow: 'visible', contain: 'none' }}>
       <div className="max-w-6xl mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between h-[88px]">
           {/* Logo */}
@@ -155,7 +155,7 @@ const Navbar = () => {
                     <BeeAvatar user={user} className="h-10 w-10" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_4px_6px_-2px_rgba(0,0,0,0.05)] backdrop-blur-sm bg-white/95 border border-honey/20" align="end" forceMount style={{ zIndex: 9999 }}>
+                <DropdownMenuContent className="w-56 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_4px_6px_-2px_rgba(0,0,0,0.05)] backdrop-blur-sm bg-white/95 border border-honey/20" align="end" forceMount style={{ zIndex: 2147483647, position: 'fixed' }}>
                   <div className="flex items-center gap-2 p-2">
                     <BeeAvatar user={user} className="h-8 w-8" />
                     <div className="flex flex-col">
@@ -219,7 +219,7 @@ const Navbar = () => {
 
     {/* Mobile Slim Top Bar */}
     {user && (
-      <div className="md:hidden fixed top-0 left-0 right-0 z-[100000] h-[52px] bg-[#FAF6EE] border-b border-[#C8861A]/10" data-testid="mobile-top-bar">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-[100000] h-[52px] bg-[#FAF6EE] border-b border-[#C8861A]/10" data-testid="mobile-top-bar" style={{ overflow: 'visible', contain: 'none' }}>
         <div className="flex items-center h-full px-3">
           <Link to="/hive" className="shrink-0 mr-auto overflow-visible">
             <img src="/logo-wordmark.png" alt="the Honey Groove" style={{minWidth: '120px', width: '120px'}} className="object-contain" />
@@ -250,7 +250,7 @@ const Navbar = () => {
                   <BeeAvatar user={user} className="h-8 w-8" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
+              <DropdownMenuContent className="w-56" align="end" forceMount style={{ zIndex: 2147483647, position: 'fixed' }}>
                 <div className="flex items-center gap-2 p-2">
                   <BeeAvatar user={user} className="h-8 w-8" />
                   <div className="flex flex-col">
