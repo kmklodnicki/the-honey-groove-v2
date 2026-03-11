@@ -61,7 +61,7 @@ const HoneycombIcon = ({ className }) => (
 );
 
 // Treasury Header — Premium Collection & Dream Value Dashboard
-const TreasuryHeader = ({ collectionValue, dreamValue, collectionTab, onTabChange, valuedCount, totalCount, onRefresh, refreshing }) => {
+const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamLoading, collectionTab, onTabChange, valuedCount, totalCount, onRefresh, refreshing }) => {
   const animCollection = useCountUp(collectionValue, 1600, true);
   const animDream = useCountUp(dreamValue, 1600, true);
 
@@ -127,10 +127,16 @@ const TreasuryHeader = ({ collectionValue, dreamValue, collectionTab, onTabChang
             </div>
             <div className="text-left">
               <p className="text-[10px] font-medium uppercase tracking-widest text-stone-500">Dream Records</p>
-              <p className="font-serif text-2xl font-bold leading-tight" style={{ color: '#1A1A1A' }} data-testid="treasury-dream-value">
-                ${Math.round(animDream).toLocaleString()}
+              {dreamLoading ? (
+                <div className="h-8 w-24 rounded-md bg-gradient-to-r from-stone-200 via-stone-100 to-stone-200 animate-pulse mt-1" data-testid="treasury-dream-shimmer" />
+              ) : (
+                <p className="font-serif text-2xl font-bold leading-tight" style={{ color: '#1A1A1A' }} data-testid="treasury-dream-value">
+                  ${Math.round(animDream).toLocaleString()}
+                </p>
+              )}
+              <p className="text-[10px] text-stone-400 mt-0.5">
+                {dreamPendingCount > 0 ? `(+${dreamPendingCount} pending)` : 'if only...'}
               </p>
-              <p className="text-[10px] text-stone-400 mt-0.5">if only...</p>
             </div>
           </button>
         </div>
@@ -357,7 +363,7 @@ const CollectionPage = () => {
 
       // If this was the last dream list item, force value to 0 immediately
       if (updatedWishlist.length === 0) {
-        setDreamlistValue({ total_value: 0, valued_count: 0, total_count: 0 });
+        setDreamlistValue({ total_value: 0, valued_count: 0, total_count: 0, pending_count: 0 });
         setDreamSubtractMsg(null);
       } else if (item?.discogs_id && dreamlistValue) {
         // Show subtraction message and update dream value
@@ -396,7 +402,7 @@ const CollectionPage = () => {
       toast.success('removed from Dream List.');
       // If this was the last item, force dream value to 0
       if (updatedWishlist.length === 0) {
-        setDreamlistValue({ total_value: 0, valued_count: 0, total_count: 0 });
+        setDreamlistValue({ total_value: 0, valued_count: 0, total_count: 0, pending_count: 0 });
       } else {
         // Refetch dream value from backend to stay accurate
         axios.get(`${API}/valuation/dreamlist`, { headers: { Authorization: `Bearer ${token}` } })
@@ -518,6 +524,8 @@ const CollectionPage = () => {
           <TreasuryHeader
             collectionValue={collectionValue?.total_value || 0}
             dreamValue={dreamlistValue?.total_value || 0}
+            dreamPendingCount={dreamlistValue?.pending_count || 0}
+            dreamLoading={dreamlistValue === null}
             collectionTab={collectionTab}
             onTabChange={handleTabChange}
             valuedCount={collectionValue?.valued_count}
@@ -705,6 +713,7 @@ const CollectionPage = () => {
             itemCount={wishlistItems.length}
             countKey={countKey}
             subtractMsg={dreamSubtractMsg}
+            pendingCount={dreamlistValue?.pending_count || 0}
           />
           <p className="text-sm text-muted-foreground mt-9 mb-5 px-4 leading-relaxed" data-testid="dreamlist-helper-text">These are your dream records. If you want to actively search for a record on this list, move it to Actively Seeking.</p>
 
@@ -759,7 +768,7 @@ const CollectionPage = () => {
   );
 };
 
-const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg }) => {
+const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg, pendingCount }) => {
   const animatedValue = useCountUp(totalValue, 1400, true);
   // Reset count animation on key change (tab switch)
   const [localKey, setLocalKey] = useState(countKey);
@@ -791,6 +800,9 @@ const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg }) => {
             <span className="font-serif italic" style={{ color: '#C8861A' }} data-testid="dream-debt-amount">
               ${displayValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
+            {pendingCount > 0 && (
+              <span className="text-sm font-normal text-stone-400 ml-1" data-testid="dream-pending-count">(+{pendingCount} pending)</span>
+            )}
             ...{' '}
             <span className="text-base font-light text-stone-400 font-serif italic">(Value of Dream Records)</span>
           </p>

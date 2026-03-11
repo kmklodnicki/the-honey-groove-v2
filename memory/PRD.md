@@ -33,8 +33,9 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
 - Discovery exclusivity fix (BLOCK 188)
 - Mobile profile tab scrolling fix
 - BLOCK 215: Mobile Profile Dropdown "God Mode" - React Portal fix
-- BLOCK 221: Variant Teleportation Logic - Clickable variant pills linking to /variant/{discogs_id}
-- **BLOCK 228: Back-to-Top Button ("Digger's Elevator")** - Smart floating BTT on CollectionPage and ProfilePage. Appears after 400px scroll, glassmorphism styling, z-index 100003, mobile-aware positioning (bottom: 80px on mobile). (March 2026)
+- BLOCK 221: Variant Teleportation Logic - Clickable variant pills
+- BLOCK 228: Back-to-Top Button - Smart floating BTT on CollectionPage + ProfilePage
+- **BLOCK 229: Dream Value Re-Calculator** - Backend returns `pending_count` for unvalued dream items. Frontend shows `$X,XXX (+N pending)` in TreasuryHeader, DreamDebtHeader, and ProfilePage. Shimmer loading state while fetching. WishlistCard shows `---` for unvalued items. (March 2026)
 
 ## Backlog (Prioritized)
 ### P0
