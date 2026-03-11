@@ -44,6 +44,7 @@ const ProfilePage = () => {
   const [spins, setSpins] = useState([]);
   const [isos, setIsos] = useState([]);
   const [trades, setTrades] = useState([]);
+  const [userListings, setUserListings] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showStripeDisconnect, setShowStripeDisconnect] = useState(false);
@@ -224,7 +225,13 @@ const ProfilePage = () => {
         .then(r => setDreamingItems(r.data))
         .catch(() => {});
     }
-  }, [activeTab, API, username, spins.length, isos.length, trades.length, dreamingItems.length]);
+    // BLOCK 530: Fetch user's active listings for "For Sale" tab
+    if (activeTab === 'for-sale' && userListings.length === 0) {
+      axios.get(`${API}/marketplace?seller=${username}`)
+        .then(r => setUserListings(Array.isArray(r.data) ? r.data : r.data?.listings || []))
+        .catch(() => {});
+    }
+  }, [activeTab, API, username, spins.length, isos.length, trades.length, dreamingItems.length, userListings.length]);
 
   const handleFollow = async () => {
     setFollowLoading(true);
@@ -437,6 +444,18 @@ const ProfilePage = () => {
                 {firstLetter}
               </AvatarFallback>
             </Avatar>
+            {/* BLOCK 533: Report/Block icons — horizontal row beside profile photo */}
+            {!isOwnProfile && (
+              <div className="flex gap-2 items-start pt-1" data-testid="admin-action-icons">
+                <button onClick={() => setReportSellerOpen(true)} className="p-1 rounded-full text-stone-400/50 hover:text-red-500 transition-colors" data-testid="report-seller-btn" title="Report">
+                  <Flag className="w-3.5 h-3.5" />
+                </button>
+                <button onClick={() => isBlocked ? handleUnblock() : setShowBlockConfirm(true)} disabled={blockLoading}
+                  className={`p-1 rounded-full transition-colors ${isBlocked ? 'text-red-500 hover:text-stone-600' : 'text-stone-400/50 hover:text-red-500'}`} data-testid="block-btn" title={isBlocked ? 'Unblock' : 'Block'}>
+                  {blockLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : isBlocked ? <ShieldCheck className="w-3.5 h-3.5" /> : <ShieldOff className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+            )}
             <div style={{ minWidth: 0 }}>
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="font-heading text-xl lg:text-2xl break-words" style={{ flexShrink: 1, minWidth: 0 }} data-testid="profile-username">@{profile.username}{profile.username === 'katieintheafterglow' && <span className="ml-1" title="Founder">👑</span>}{profile.country && <span className="ml-1.5" data-testid="profile-country-flag">{countryFlag(profile.country)}</span>}</h1>
@@ -599,15 +618,6 @@ const ProfilePage = () => {
                 <Button size="sm" variant="outline" onClick={() => navigate(`/messages?to=${profile.id}`)} className="rounded-full w-full border-vinyl-black/30" data-testid="profile-message-btn">
                   <MessageCircle className="w-4 h-4 mr-1" /> Message
                 </Button>
-                <div className="flex gap-2 justify-center">
-                  <Button size="sm" variant="ghost" onClick={() => setReportSellerOpen(true)} className="rounded-full text-muted-foreground/60 hover:text-red-500" data-testid="report-seller-btn">
-                    <Flag className="w-3 h-3" />
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => isBlocked ? handleUnblock() : setShowBlockConfirm(true)} disabled={blockLoading}
-                    className={`rounded-full ${isBlocked ? 'text-red-500 hover:text-stone-600' : 'text-muted-foreground/60 hover:text-red-500'}`} data-testid="block-btn">
-                    {blockLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : isBlocked ? <ShieldCheck className="w-3 h-3" /> : <ShieldOff className="w-3 h-3" />}
-                  </Button>
-                </div>
                 {/* Taste Match Pill */}
                 {tasteMatch && !tasteLoading && (
                   <button onClick={() => setCommonGroundOpen(true)}
@@ -793,6 +803,9 @@ const ProfilePage = () => {
           <TabsTrigger value="collection" className="data-[state=active]:bg-honey text-xs sm:text-sm shrink-0 px-3" data-testid="tab-collection">
             Collection
           </TabsTrigger>
+          <TabsTrigger value="for-sale" className="data-[state=active]:bg-honey text-xs sm:text-sm shrink-0 px-3" data-testid="tab-for-sale">
+            For Sale
+          </TabsTrigger>
           <TabsTrigger value="dreaming" className="data-[state=active]:bg-honey text-xs sm:text-sm shrink-0 px-3" data-testid="tab-dreaming">
             Dream List
           </TabsTrigger>
@@ -803,9 +816,6 @@ const ProfilePage = () => {
           )}
           <TabsTrigger value="iso" className="data-[state=active]:bg-honey text-xs sm:text-sm shrink-0 px-3" data-testid="tab-iso">
             ISO
-          </TabsTrigger>
-          <TabsTrigger value="spinning" className="data-[state=active]:bg-honey text-xs sm:text-sm shrink-0 px-3" data-testid="tab-spinning">
-            Spin History
           </TabsTrigger>
           <TabsTrigger value="trades" className="data-[state=active]:bg-honey text-xs sm:text-sm shrink-0 px-3" data-testid="tab-trades">
             Trades
@@ -925,6 +935,52 @@ const ProfilePage = () => {
           )}
         </TabsContent>
 
+        {/* BLOCK 530: For Sale Tab — user's marketplace listings */}
+        <TabsContent value="for-sale" data-testid="for-sale-tab">
+          {/* BLOCK 530: Stripe disconnect notice */}
+          {isOwnProfile && stripeStatus && !stripeStatus.stripe_connected && (
+            <div className="mb-4 p-3 rounded-lg border border-amber-300/50 bg-amber-50/50 text-sm text-stone-600 text-center" data-testid="sales-paused-notice">
+              Sales are currently paused. <button onClick={() => navigate('/settings')} className="font-bold underline" style={{ color: '#C8861A' }}>Connect Stripe</button> to start selling.
+            </div>
+          )}
+          {userListings.length === 0 ? (
+            <EmptyState icon={ShoppingBag} title="No listings yet" sub={isOwnProfile ? 'List records from your collection to start selling on The Honey Groove.' : `@${username} doesn't have anything for sale right now.`} />
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {userListings.map(listing => (
+                <Card
+                  key={listing.id}
+                  className="border-honey/30 overflow-hidden transition-all hover:-translate-y-1 cursor-pointer"
+                  onClick={() => navigate(`/marketplace/${listing.id}`)}
+                  data-testid={`listing-card-${listing.id}`}
+                >
+                  <div className="relative aspect-square bg-vinyl-black">
+                    {listing.cover_url || listing.record?.cover_url ? (
+                      <AlbumArt src={listing.cover_url || listing.record?.cover_url} alt={listing.title || listing.record?.title} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>
+                    )}
+                    {listing.price > 0 && (
+                      <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full font-bold text-xs z-[5]"
+                        style={{ background: 'rgba(255, 191, 0, 0.85)', color: '#000' }}
+                        data-testid={`listing-price-${listing.id}`}>
+                        ${listing.price}
+                      </div>
+                    )}
+                  </div>
+                  <CardContent className="p-2">
+                    <p className="text-xs font-bold truncate">{listing.title || listing.record?.title}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">{listing.artist || listing.record?.artist}</p>
+                    <Button size="sm" variant="outline" className="w-full mt-2 h-7 text-[10px] rounded-full border-honey/40 font-semibold" data-testid={`view-listing-${listing.id}`}>
+                      View Listing
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
         {/* Dreaming Tab */}
         <TabsContent value="dreaming">
           {dreamingItems.length === 0 ? (
@@ -969,19 +1025,19 @@ const ProfilePage = () => {
                           Seeking No. {item.preferred_number}
                         </div>
                       )}
-                      {/* Price badge — always visible */}
+                      {/* BLOCK 531: Unified Honey Gold price badge — mini variant */}
                       {!ownerHasIt && (
                         item.median_value > 0 ? (
-                          <div className="absolute top-2 right-2 px-2.5 py-1 rounded-full font-black z-[5]"
-                            style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', fontSize: '18px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
+                          <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full font-bold text-xs z-[5] transition-transform duration-200 hover:scale-110 cursor-default"
+                            style={{ background: 'rgba(255, 191, 0, 0.85)', color: '#000' }}
                             data-testid={`dream-value-${item.id}`}>
                             ${Math.round(item.median_value)}
                           </div>
                         ) : (
-                          <div className="absolute top-2 right-2 px-2.5 py-1 rounded-full font-black z-[5]"
-                            style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: 'rgba(0,0,0,0.5)', fontSize: '14px', letterSpacing: '1px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
+                          <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs z-[5] opacity-40 cursor-default"
+                            style={{ background: 'rgba(255, 191, 0, 0.4)', color: '#000' }}
                             data-testid={`dream-value-placeholder-${item.id}`}>
-                            ---
+                            –
                           </div>
                         )
                       )}
