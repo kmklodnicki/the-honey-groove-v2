@@ -289,6 +289,27 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - Frontend: Admin Panel "Test Listings" section with search, flag, and unflag workflow
   - Files: models.py, honeypot.py, explore.py, ListingDetailModal.js, HoneypotCards.js, AdminPage.js
   - Tested: PASS (100% - testing agent iteration_189, 12/12 backend + all frontend verified)
+- **BLOCK 447: Warp Speed Optimization** (March 2026) — COMPLETED
+  - Added compound MongoDB indexes: listings(status+is_test_listing+created_at), posts(post_type+created_at), listing_alerts(release_id+status), listings(discogs_id), prompt_responses(prompt_id+created_at)
+  - Increased image proxy server-side cache from 50→200 entries
+  - Extended Cache-Control to 7 days + stale-while-revalidate for proxied images
+  - Tested: PASS (iteration_190)
+- **BLOCK 448: Carousel & Sidebar Stabilization** (March 2026) — COMPLETED
+  - Shimmer skeleton loading for PromptArchiveDrawer (replaces spinner)
+  - Archive drawer prefetches first 6 card images on data load via dedup cache
+  - Yellow placeholder squares replaced with gradient shimmer
+  - Tested: PASS (iteration_190)
+- **BLOCK 449: PWA Native Feel** (March 2026) — COMPLETED
+  - Service worker rewrite: pre-caches static assets on install, stale-while-revalidate for CSS/JS/fonts
+  - React.lazy code-splitting for 30+ below-fold pages with Suspense fallback
+  - PREFETCH_IMAGES service worker message handler for persistent caching
+  - Tested: PASS (iteration_190)
+- **BLOCK 444: Carousel Prefetch Engine** (March 2026) — COMPLETED
+  - Prefetches current + next 3 carousel slide images on initial load
+  - Rolling buffer: auto-prefetches 2 slides ahead as user navigates
+  - imagePrefetch.js utility with dedup Set prevents redundant requests
+  - Sends URLs to service worker for persistent cache via postMessage
+  - Tested: PASS (iteration_190)
 
 ## Backlog (Prioritized)
 
