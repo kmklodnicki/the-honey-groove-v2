@@ -210,7 +210,10 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
         <CardContent>
           {!status?.connected ? (
             <Button onClick={handleConnect}
-              className="bg-vinyl-black text-white hover:bg-vinyl-black/80 rounded-full gap-2 w-full sm:w-auto"
+              className="rounded-full gap-2 w-full sm:w-auto font-bold text-sm transition-all hover:shadow-lg"
+              style={{ background: '#FFBF00', color: '#1A1A1A', border: '1.5px solid #DAA520' }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#E5AB00'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#FFBF00'; }}
               data-testid="discogs-connect-btn">
               <ExternalLink className="w-4 h-4" />
               Connect to Discogs

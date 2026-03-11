@@ -1171,14 +1171,48 @@ async def stripe_webhook(request: Request):
             # Handle Golden Hive verification payments
             golden_txn = await db.golden_hive_payments.find_one({"session_id": session_id}, {"_id": 0})
             if golden_txn and golden_txn.get("payment_status") != "PAID":
+                user_id = golden_txn["user_id"]
                 await db.golden_hive_payments.update_one(
                     {"session_id": session_id},
                     {"$set": {"payment_status": "PAID", "paid_at": now}}
                 )
+                # BLOCK 510: Immediately unlock Golden Hive on payment
                 await db.users.update_one(
-                    {"id": golden_txn["user_id"]},
-                    {"$set": {"golden_hive_status": "PAID_PENDING_UPLOAD", "golden_hive_payment_at": now}}
+                    {"id": user_id},
+                    {"$set": {
+                        "golden_hive": True,
+                        "golden_hive_verified": True,
+                        "golden_hive_status": "APPROVED",
+                        "golden_hive_payment_at": now,
+                        "golden_hive_verified_at": now,
+                    }}
                 )
+                logging.info(f"BLOCK 510: Golden Hive unlocked for user {user_id}")
+
+                # BLOCK 510: Send admin email notification (skip for @katie to avoid inbox clutter)
+                buyer = await db.users.find_one({"id": user_id}, {"_id": 0, "username": 1, "email": 1})
+                buyer_username = buyer.get("username", "unknown") if buyer else "unknown"
+                admin_email = "katie@thehoneygroove.com"
+                if buyer and buyer.get("email") != admin_email:
+                    from services.email_service import send_email_fire_and_forget
+                    admin_html = f"""
+                    <div style="font-family: Georgia, serif; padding: 20px; max-width: 500px;">
+                      <h2 style="color: #C8861A;">New Golden Hive ID Issued</h2>
+                      <p>Another collector has gone gold! The Golden Shield is now active on their profile.</p>
+                      <p style="font-size: 18px; font-weight: bold;">@{buyer_username}</p>
+                    </div>
+                    """
+                    await send_email_fire_and_forget(admin_email, f"New Golden Hive ID Issued: @{buyer_username}", admin_html)
+
+                # BLOCK 510: Notify user in-app for celebration confetti trigger
+                await db.notifications.insert_one({
+                    "id": str(uuid.uuid4()),
+                    "user_id": user_id,
+                    "type": "golden_hive_unlocked",
+                    "message": "Your Golden Hive ID is now active! Welcome to the inner circle.",
+                    "read": False,
+                    "created_at": now,
+                })
 
     return {"received": True}
 

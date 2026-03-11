@@ -83,8 +83,10 @@ const DiscogsSecurityModal = ({ open, onClose }) => {
           <div className="flex flex-col gap-2.5 pt-1">
             <Button
               onClick={handleReconnect}
-              className="w-full h-11 rounded-full text-sm font-semibold gap-2"
-              style={{ background: 'linear-gradient(135deg, #FFB300, #FFA000)', color: '#1A1A1A' }}
+              className="w-full h-11 rounded-full text-sm font-bold gap-2 transition-all hover:shadow-lg"
+              style={{ background: '#FFBF00', color: '#1A1A1A', border: '1.5px solid #DAA520' }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#E5AB00'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = '#FFBF00'; }}
               data-testid="reconnect-now-btn"
             >
               <ExternalLink className="w-4 h-4" />

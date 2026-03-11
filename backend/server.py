@@ -168,6 +168,18 @@ async def startup_event():
     await db.bingo_marks.create_index([("user_id", 1), ("card_id", 1)], unique=True)
     await db.bingo_squares.create_index("id", unique=True)
 
+    # BLOCK 511: Admin Override — ensure @katieintheafterglow is always Golden Hive Verified + admin
+    await db.users.update_one(
+        {"username": "katieintheafterglow"},
+        {"$set": {
+            "golden_hive_verified": True,
+            "golden_hive": True,
+            "golden_hive_status": "APPROVED",
+            "is_admin": True,
+        }}
+    )
+    logger.info("BLOCK 511: Admin override applied for @katieintheafterglow")
+
     # Verification + payout indexes
     await db.verification_requests.create_index("user_id")
     await db.verification_requests.create_index("status")
