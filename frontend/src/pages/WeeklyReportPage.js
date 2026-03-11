@@ -48,21 +48,20 @@ const darken = (color, factor = 0.3) => {
 // ─── Slide Components ───
 
 const IntroSlide = ({ username, dominantColor }) => (
-  <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center snap-start" data-testid="slide-intro">
-    <p className="text-xs font-medium tracking-[0.3em] uppercase mb-4" style={{ color: dominantColor, opacity: 0.7 }}>
+  <div className="min-h-[50vh] flex flex-col items-center justify-center p-8 text-center snap-start" data-testid="slide-intro">
+    <p className="text-sm font-medium tracking-[0.3em] uppercase mb-3" style={{ color: dominantColor }}>
       THE HONEY GROOVE
     </p>
-    <h1 className="font-heading text-4xl sm:text-6xl font-black text-white leading-tight mb-4" data-testid="intro-title">
+    <h1 className="font-heading text-3xl sm:text-5xl font-black text-white leading-tight mb-2" data-testid="intro-title">
       {username ? `@${username}'s` : 'Your'}<br />Week in the Hive
     </h1>
-    <p className="text-sm text-stone-500 mt-2">Tap or scroll to explore your weekly story</p>
-    <ChevronDown className="w-6 h-6 text-stone-500 mt-8 animate-bounce" />
+    <ChevronDown className="w-5 h-5 text-stone-500 mt-4 animate-bounce" />
   </div>
 );
 
 const HeroSlide = ({ record, spinCount, isTopSpin, dominantColor }) => {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center snap-start" data-testid="slide-hero">
+    <div className="min-h-[50vh] flex flex-col items-center justify-center p-8 text-center snap-start" data-testid="slide-hero">
       <p className="text-xs font-medium tracking-[0.2em] uppercase mb-6" style={{ color: dominantColor }}>
         {isTopSpin ? 'Top Spin of the Week' : 'The Newest Gem'}
       </p>
@@ -93,7 +92,7 @@ const HeroSlide = ({ record, spinCount, isTopSpin, dominantColor }) => {
 };
 
 const StatsSlide = ({ stats, dominantColor }) => (
-  <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center snap-start" data-testid="slide-stats">
+  <div className="min-h-[50vh] flex flex-col items-center justify-center p-8 text-center snap-start" data-testid="slide-stats">
     <p className="text-xs font-medium tracking-[0.2em] uppercase mb-8" style={{ color: dominantColor }}>
       The Numbers
     </p>
@@ -122,40 +121,12 @@ const StatsSlide = ({ stats, dominantColor }) => (
   </div>
 );
 
-const GenreSlide = ({ genres, dominantColor }) => {
-  if (!genres || genres.length === 0) return null;
-  const total = genres.reduce((s, g) => s + g.count, 0);
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center snap-start" data-testid="slide-genres">
-      <p className="text-xs font-medium tracking-[0.2em] uppercase mb-8" style={{ color: dominantColor }}>
-        Your Vibe Map
-      </p>
-      <div className="space-y-4 max-w-sm w-full">
-        {genres.slice(0, 5).map((g, i) => {
-          const pct = Math.round((g.count / total) * 100);
-          return (
-            <div key={i} className="text-left">
-              <div className="flex justify-between mb-1">
-                <span className="text-sm font-bold text-white">{g.name}</span>
-                <span className="text-sm font-bold" style={{ color: dominantColor }}>{pct}%</span>
-              </div>
-              <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.1)' }}>
-                <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${pct}%`, background: dominantColor }} />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
-
 const MilestoneSlide = ({ totalRecords, dominantColor }) => {
   const milestones = [50, 100, 150, 200, 250, 300, 400, 500, 750, 1000];
   const next = milestones.find(m => m > totalRecords);
   const away = next ? next - totalRecords : null;
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center snap-start" data-testid="slide-milestone">
+    <div className="min-h-[50vh] flex flex-col items-center justify-center p-8 text-center snap-start" data-testid="slide-milestone">
       <Sparkles className="w-10 h-10 mb-6" style={{ color: dominantColor }} />
       <p className="text-xs font-medium tracking-[0.2em] uppercase mb-4" style={{ color: dominantColor }}>
         Collection Milestone
@@ -174,7 +145,7 @@ const MilestoneSlide = ({ totalRecords, dominantColor }) => {
 const NewAdditionsSlide = ({ additions, dominantColor }) => {
   if (!additions || additions.length === 0) return null;
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 snap-start" data-testid="slide-additions">
+    <div className="min-h-[50vh] flex flex-col items-center justify-center p-8 snap-start" data-testid="slide-additions">
       <p className="text-xs font-medium tracking-[0.2em] uppercase mb-6 text-center" style={{ color: dominantColor }}>
         New This Week
       </p>
@@ -250,7 +221,7 @@ ShareCard.displayName = 'ShareCard';
 
 // ─── Fresh Start Fallback ───
 const FreshStartSlide = ({ totalValue, dominantColor }) => (
-  <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center snap-start" data-testid="slide-fresh-start">
+  <div className="min-h-[50vh] flex flex-col items-center justify-center p-8 text-center snap-start" data-testid="slide-fresh-start">
     <Disc className="w-16 h-16 mb-6" style={{ color: dominantColor, opacity: 0.4 }} />
     <h2 className="text-3xl sm:text-4xl font-black text-white mb-2">A Fresh Start in the Hive</h2>
     <p className="text-sm text-stone-400 mb-8">No spins this week. Your collection is waiting.</p>
@@ -440,17 +411,14 @@ const WeeklyReportPage = () => {
         {/* Slide 3: Stats */}
         <StatsSlide stats={data} dominantColor={dominantColor} />
 
-        {/* Slide 4: Genre Breakdown */}
-        <GenreSlide genres={data.genres} dominantColor={dominantColor} />
-
-        {/* Slide 5: New Additions */}
+        {/* Slide 4: New Additions */}
         <NewAdditionsSlide additions={data.recentAdds} dominantColor={dominantColor} />
 
         {/* Slide 6: Milestone */}
         <MilestoneSlide totalRecords={data.totalRecords} dominantColor={dominantColor} />
 
         {/* Slide 7: Share CTA */}
-        <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center snap-start" data-testid="slide-share">
+        <div className="min-h-[50vh] flex flex-col items-center justify-center p-8 text-center snap-start" data-testid="slide-share">
           <p className="text-xs font-medium tracking-[0.2em] uppercase mb-6" style={{ color: dominantColor }}>
             Share Your Week
           </p>
