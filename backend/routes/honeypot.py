@@ -385,6 +385,36 @@ async def create_listing(data: ListingCreate, user: Dict = Depends(require_auth)
                 from templates.emails import wantlist_match
                 tpl = wantlist_match(iso_user.get("username", ""), data.album or "", data.artist or "", user.get("username", ""), str(data.price or ""), f"{FRONTEND_URL}/honeypot/listing/{listing_id}")
                 await send_email_fire_and_forget(iso_user["email"], tpl["subject"], tpl["html"])
+
+    # BLOCK 425: Listing Alert matching — notify users who subscribed for this release
+    if data.discogs_id:
+        alerts = await db.listing_alerts.find({
+            "discogs_id": data.discogs_id, "status": "ACTIVE", "user_id": {"$ne": user["id"]}
+        }, {"_id": 0}).to_list(100)
+        for alert in alerts:
+            alert_user = await db.users.find_one({"id": alert["user_id"]}, {"_id": 0})
+            if alert_user:
+                album_display = alert.get("album_name") or data.album or "a record"
+                await create_notification(
+                    alert_user["id"], "LISTING_ALERT",
+                    "Good news!",
+                    f"{album_display} is now available in the Honeypot.",
+                    {"listing_id": listing_id, "discogs_id": data.discogs_id}
+                )
+                if alert_user.get("email"):
+                    from templates.emails import listing_alert_email
+                    tpl = listing_alert_email(
+                        username=alert_user.get("username", ""),
+                        album=data.album or "",
+                        artist=data.artist or "",
+                        cover_url=data.cover_url or alert.get("cover_url", ""),
+                        listing_url=f"{FRONTEND_URL}/honeypot/listing/{listing_id}",
+                    )
+                    await send_email_fire_and_forget(alert_user["email"], tpl["subject"], tpl["html"])
+            # Mark as fulfilled — one-time trigger
+            await db.listing_alerts.update_one(
+                {"id": alert["id"]}, {"$set": {"status": "FULFILLED", "fulfilled_at": datetime.now(timezone.utc).isoformat()}}
+            )
     
     # Send listing confirmed email to seller
     if user.get("email"):

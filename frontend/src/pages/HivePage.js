@@ -245,7 +245,9 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
                 @{post.user?.username}
               </Link>
               {post.user?.founding_member && (
-                <span title="founding member of the Honey Groove" className="inline-block ml-1 cursor-help" style={{ color: '#C8861A', fontSize: '12px' }}>🍯</span>
+                post.user?.username === 'katieintheafterglow'
+                  ? <span title="Founder of the Honey Groove" className="inline-block ml-1 cursor-help" style={{ fontSize: '13px' }}>👑</span>
+                  : <span title="founding member of the Honey Groove" className="inline-block ml-1 cursor-help" style={{ color: '#C8861A', fontSize: '12px' }}>🍯</span>
               )}
               {post.user?.golden_hive_verified && (
                 <span title="Golden Hive ID — Verified Collector" className="inline-flex items-center gap-0.5 ml-0.5 text-amber-600 cursor-help" data-testid="hive-golden-badge">

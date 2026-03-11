@@ -73,7 +73,7 @@ export const RarityBadge = ({ label, size = 'sm' }) => {
   );
 };
 
-export const RarityCard = ({ rarity, label, honeypotListings, onForSaleClick, albumName, variantName }) => {
+export const RarityCard = ({ rarity, label, honeypotListings, onForSaleClick, albumName, variantName, onNotifySubscribe }) => {
   if (!rarity?.tier) return null;
   const cardLabel = label || 'Global Variant Rarity';
   const useHoneypot = honeypotListings != null;
@@ -90,6 +90,7 @@ export const RarityCard = ({ rarity, label, honeypotListings, onForSaleClick, al
       duration: 3000,
       style: { border: '2px solid #DAA520', background: '#FFFDF5' },
     });
+    if (onNotifySubscribe) onNotifySubscribe();
     if (onForSaleClick) onForSaleClick();
   };
 

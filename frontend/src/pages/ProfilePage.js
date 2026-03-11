@@ -421,9 +421,12 @@ const ProfilePage = () => {
                   {profile.favorite_genre}
                 </span>
               )}
-              {profile.founding_member && profile.title_label?.toLowerCase() !== 'founder' && (
+              {profile.founding_member && (
                 <div className="mt-1 inline-block" data-testid="founding-badge">
-                  <span className="italic text-xs" style={{ color: '#C8861A', fontFamily: '"DM Serif Display", serif' }}>founding member</span>
+                  {profile.username === 'katieintheafterglow'
+                    ? <span className="text-xs font-medium" style={{ color: '#C8861A', fontFamily: '"DM Serif Display", serif' }}>👑 founder</span>
+                    : profile.title_label?.toLowerCase() !== 'founder' && <span className="italic text-xs" style={{ color: '#C8861A', fontFamily: '"DM Serif Display", serif' }}>founding member</span>
+                  }
                 </div>
               )}
               {promptStreak && promptStreak.streak > 0 && (

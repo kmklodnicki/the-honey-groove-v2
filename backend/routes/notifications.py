@@ -16,6 +16,60 @@ from models import *
 
 router = APIRouter()
 
+# ============== LISTING ALERT ROUTES ==============
+
+class ListingAlertCreate(BaseModel):
+    discogs_id: int
+    album_name: str
+    variant_name: Optional[str] = None
+    artist: Optional[str] = None
+    cover_url: Optional[str] = None
+
+
+@router.post("/listing-alerts")
+async def create_listing_alert(data: ListingAlertCreate, user: Dict = Depends(require_auth)):
+    """Subscribe to be notified when a specific release is listed in the Honeypot."""
+    existing = await db.listing_alerts.find_one({
+        "user_id": user["id"], "discogs_id": data.discogs_id, "status": "ACTIVE"
+    })
+    if existing:
+        return {"message": "Already subscribed", "id": existing["id"]}
+
+    alert_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    doc = {
+        "id": alert_id,
+        "user_id": user["id"],
+        "discogs_id": data.discogs_id,
+        "album_name": data.album_name,
+        "variant_name": data.variant_name,
+        "artist": data.artist,
+        "cover_url": data.cover_url,
+        "status": "ACTIVE",
+        "created_at": now,
+    }
+    await db.listing_alerts.insert_one(doc)
+    return {"message": "Alert created", "id": alert_id}
+
+
+@router.get("/listing-alerts")
+async def get_listing_alerts(user: Dict = Depends(require_auth)):
+    """Get all active listing alerts for the current user."""
+    alerts = await db.listing_alerts.find(
+        {"user_id": user["id"], "status": "ACTIVE"}, {"_id": 0}
+    ).to_list(100)
+    return alerts
+
+
+@router.delete("/listing-alerts/{alert_id}")
+async def delete_listing_alert(alert_id: str, user: Dict = Depends(require_auth)):
+    """Unsubscribe from a listing alert."""
+    result = await db.listing_alerts.delete_one({"id": alert_id, "user_id": user["id"]})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Alert not found")
+    return {"message": "Alert removed"}
+
+
 # ============== NOTIFICATION ROUTES ==============
 
 @router.get("/notifications")

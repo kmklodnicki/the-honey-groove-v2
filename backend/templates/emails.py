@@ -194,6 +194,28 @@ def new_trade_offer(username: str, proposer: str, record_name: str, their_record
     }
 
 
+def listing_alert_email(username: str, album: str, artist: str, cover_url: str, listing_url: str) -> dict:
+    cover_html = f'<img src="{cover_url}" alt="{album}" style="width:120px;height:120px;object-fit:cover;border-radius:8px;margin:0 auto 12px auto;display:block;" />' if cover_url else ""
+    body = f"""
+    <p style="{GREETING}">Hey {username},</p>
+    <p>A record you were watching just landed in the Honeypot!</p>
+    <div style="text-align:center;padding:20px;margin:16px 0;background:#FFF8EE;border-radius:12px;border:2px solid #DAA520;">
+        {cover_html}
+        <p style="{H}font-size:22px;margin:0 0 4px 0;">{album}</p>
+        <p style="{AMBER}font-size:16px;font-style:italic;margin:0;">by {artist}</p>
+    </div>
+    <p>Don't wait — these tend to go fast.</p>
+    <div style="text-align:center;margin:20px 0;">
+        <a href="{listing_url}" style="{BTN}">view the listing</a>
+    </div>
+    {SIG_SHORT}
+    """
+    return {
+        "subject": f"Good news! {album} is now in the Honeypot. \U0001F36F",
+        "html": wrap_email(body),
+    }
+
+
 def new_dm(username: str, sender: str, context_record: str, dm_url: str) -> dict:
     context_line = f'<p style="{MUTED}">Re: {context_record}</p>' if context_record else ""
     body = f"""

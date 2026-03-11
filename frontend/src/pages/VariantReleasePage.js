@@ -182,6 +182,17 @@ export default function VariantReleasePage() {
             onForSaleClick={() => navigate(`/honeypot?q=${encodeURIComponent(ov.artist + ' ' + ov.album)}`)}
             albumName={ov.album}
             variantName={ov.variant}
+            onNotifySubscribe={() => {
+              if (token) {
+                axios.post(`${API}/listing-alerts`, {
+                  discogs_id: parseInt(releaseId),
+                  album_name: ov.album || '',
+                  variant_name: ov.variant || null,
+                  artist: ov.artist || '',
+                  cover_url: ov.cover_url || '',
+                }, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+              }
+            }}
           />
         </section>
       )}
