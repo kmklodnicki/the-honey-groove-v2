@@ -61,6 +61,27 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - Persistence: saving value instantly updates RecordCard from "Value This" → price badge (no refresh)
   - Data Sync: focus mode shows "Hive Average: $XX.XX" from community trimmed mean
   - Tested: 100% backend (13/13), 100% frontend verification
+- **BLOCK 246: Zero-Grey Image Pipeline** (March 2026)
+  - Backend: `_generate_blur_data_url()` — generates 10px base64 JPEG from Discogs 150px thumbnails
+  - Backend: `cache_discogs_image()` — now also stores `thumb_url` and `blur_data_url` in image_cache
+  - Backend: `GET /image/blur-placeholder` — returns cached blur data for any image URL
+  - Backend: `POST /image/blur-batch` — batch blur lookup for multiple cover URLs
+  - Backend: Prompt responses endpoint enriches with `blur_data_url` and `thumb_url`
+  - Frontend: `AlbumArt.js` — accepts `blurDataUrl`, `thumbSrc`, `priority` props; shows blurred placeholder instead of grey shimmer
+  - Frontend: `DailyPromptCard` — passes blur data + `fetchpriority="high"` + preload link injection for LCP
+  - Frontend: `useBlurPlaceholders` hook — batch-fetches blur data for collection records
+  - CSS: `honey-shimmer-overlay` plays over blurred image (not grey)
+  - Backfilled 6 existing image_cache entries with blur data
+- **BLOCK 247: Collection Completionist Flow** (March 2026)
+  - Backend: `GET /valuation/unvalued-queue` — returns records without market/community value
+  - Backend: `POST /valuation/wizard-save/{discogs_id}` — saves to community_valuations + collection_values
+  - Frontend: `ValuationWizard.js` — full-screen sequential wizard with slide animations
+  - TreasuryHeader: "X of Y records valued" + "Add Missing Values" CTA button
+  - Wizard UX: one record at a time, large art, Hive Benchmark, currency input
+  - Navigation: Save & Next (slide animation), Skip, Done for now
+  - Progress bar: "Record X of Y remaining"
+  - Celebration state: "Collection Fully Valued! The Hive thanks you."
+  - Tested: 100% backend (10/10), 100% frontend verification
 
 ## Backlog (Prioritized)
 ### P0
