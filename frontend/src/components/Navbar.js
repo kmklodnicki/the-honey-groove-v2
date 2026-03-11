@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
@@ -244,50 +245,7 @@ const Navbar = () => {
             >
               <AlertTriangle className="h-5 w-5 text-vinyl-black" />
             </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="relative h-11 w-11 flex items-center justify-center rounded-full -mr-1" data-testid="mobile-user-menu" style={{ zIndex: 10 }}>
-                  <BeeAvatar user={user} className="h-8 w-8" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount style={{ zIndex: 2147483647, position: 'fixed' }}>
-                <div className="flex items-center gap-2 p-2">
-                  <BeeAvatar user={user} className="h-8 w-8" />
-                  <div className="flex flex-col">
-                    <p className="text-sm font-medium">@{user.username}</p>
-                    <p className="text-xs text-muted-foreground">{user.email}</p>
-                  </div>
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate(`/profile/${user.username}`)} data-testid="mobile-menu-profile">
-                  <User className="mr-2 h-4 w-4" /> Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/settings')} data-testid="mobile-menu-settings">
-                  <Settings className="mr-2 h-4 w-4" /> Settings
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/orders')} data-testid="mobile-menu-orders">
-                  <Package className="mr-2 h-4 w-4" /> Orders
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/essentials')} data-testid="mobile-menu-essentials">
-                  <Sparkles className="mr-2 h-4 w-4" /> Honey Essentials
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/trades')} data-testid="mobile-menu-trades">
-                  <ArrowRightLeft className="mr-2 h-4 w-4" /> Trades
-                </DropdownMenuItem>
-                {user.is_admin && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => navigate('/admin')} data-testid="mobile-menu-admin">
-                      <Settings className="mr-2 h-4 w-4" /> Admin Panel
-                    </DropdownMenuItem>
-                  </>
-                )}
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="text-red-600" data-testid="mobile-menu-logout">
-                  <LogOut className="mr-2 h-4 w-4" /> Log out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <MobileProfileMenu user={user} onLogout={handleLogout} />
           </div>
         </div>
       </div>
@@ -337,6 +295,126 @@ const Navbar = () => {
       targetType="bug"
       targetId={null}
     />
+    </>
+  );
+};
+
+
+// Mobile Profile Menu — Portal-based, bypasses all stacking contexts
+const MobileProfileMenu = ({ user, onLogout }) => {
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef(null);
+  const [pos, setPos] = useState({ top: 0, right: 0 });
+
+  const toggle = useCallback(() => {
+    if (!open && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setPos({ top: rect.bottom + 6, right: window.innerWidth - rect.right });
+    }
+    setOpen(prev => !prev);
+  }, [open]);
+
+  // Close on route change
+  const location = useLocation();
+  useEffect(() => { setOpen(false); }, [location.pathname]);
+
+  const go = (path) => { setOpen(false); navigate(path); };
+
+  const menuItems = [
+    { icon: User, label: 'Profile', action: () => go(`/profile/${user.username}`), testId: 'mobile-menu-profile' },
+    { icon: Settings, label: 'Settings', action: () => go('/settings'), testId: 'mobile-menu-settings' },
+    { icon: Package, label: 'Orders', action: () => go('/orders'), testId: 'mobile-menu-orders' },
+    { icon: Sparkles, label: 'Honey Essentials', action: () => go('/essentials'), testId: 'mobile-menu-essentials' },
+    { icon: ArrowRightLeft, label: 'Trades', action: () => go('/trades'), testId: 'mobile-menu-trades' },
+  ];
+
+  if (user.is_admin) {
+    menuItems.push({ separator: true });
+    menuItems.push({ icon: Settings, label: 'Admin Panel', action: () => go('/admin'), testId: 'mobile-menu-admin' });
+  }
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        onClick={toggle}
+        className="relative h-11 w-11 flex items-center justify-center rounded-full -mr-1"
+        data-testid="mobile-user-menu"
+        style={{ zIndex: 10, WebkitTapHighlightColor: 'transparent' }}
+      >
+        <BeeAvatar user={user} className="h-8 w-8" />
+      </button>
+      {open && ReactDOM.createPortal(
+        <>
+          {/* Backdrop */}
+          <div
+            onClick={() => setOpen(false)}
+            data-testid="mobile-menu-backdrop"
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 2147483646,
+              background: 'transparent',
+            }}
+          />
+          {/* Menu */}
+          <div
+            data-testid="mobile-menu-portal"
+            style={{
+              position: 'fixed',
+              top: pos.top,
+              right: pos.right,
+              zIndex: 2147483647,
+              width: 224,
+              borderRadius: 8,
+              border: '1px solid rgba(200,134,26,0.2)',
+              background: 'rgba(255,255,255,0.97)',
+              backdropFilter: 'blur(12px)',
+              boxShadow: '0 10px 25px -5px rgba(0,0,0,0.15), 0 8px 10px -6px rgba(0,0,0,0.1)',
+              overflow: 'hidden',
+              animation: 'mobileMenuIn 150ms ease-out',
+            }}
+          >
+            {/* User header */}
+            <div className="flex items-center gap-2 p-3 border-b border-honey/10">
+              <BeeAvatar user={user} className="h-8 w-8" />
+              <div className="flex flex-col min-w-0">
+                <p className="text-sm font-medium truncate">@{user.username}</p>
+                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+              </div>
+            </div>
+            {/* Menu items */}
+            <div className="py-1">
+              {menuItems.map((item, i) => {
+                if (item.separator) return <div key={`sep-${i}`} className="h-px bg-honey/10 my-1" />;
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.testId}
+                    onClick={item.action}
+                    data-testid={item.testId}
+                    className="flex items-center gap-2 w-full px-3 py-2.5 text-sm text-left hover:bg-honey/5 active:bg-honey/10 transition-colors"
+                  >
+                    <Icon className="h-4 w-4 shrink-0 text-muted-foreground" /> {item.label}
+                  </button>
+                );
+              })}
+            </div>
+            {/* Logout */}
+            <div className="border-t border-honey/10 py-1">
+              <button
+                onClick={() => { setOpen(false); onLogout(); }}
+                data-testid="mobile-menu-logout"
+                className="flex items-center gap-2 w-full px-3 py-2.5 text-sm text-red-600 hover:bg-red-50 active:bg-red-100 transition-colors"
+              >
+                <LogOut className="h-4 w-4 shrink-0" /> Log out
+              </button>
+            </div>
+          </div>
+        </>,
+        document.body
+      )}
     </>
   );
 };
