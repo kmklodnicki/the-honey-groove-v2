@@ -57,6 +57,16 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - Shows dates (Yesterday, X days ago), response counts, and checkmark for responded prompts
   - Files: daily_prompts.py, DailyPrompt.js, PromptArchiveDrawer.js
   - Tested: PASS
+- **BLOCK 346: The Mini-Groove Sidebar** (March 2026) — COMPLETED
+  - Overhauled archive drawer into non-clickable Mini-Card display
+  - Each card has "DAILY PROMPT" small-caps gold label header
+  - 40px rounded album cover artwork from featured response
+  - User PFP + @handle shown above the prompt answer
+  - 24px vertical spacing between cards (gap-6)
+  - All interactivity removed (cursor:default, no onClick/Links)
+  - Backend enriched with featured response data (cover, user, caption)
+  - Files: PromptArchiveDrawer.js, daily_prompts.py
+  - Tested: PASS
 
 ### Layout & Design Features
 - Golden Vault Layout (ProfilePage unified dashboard)
