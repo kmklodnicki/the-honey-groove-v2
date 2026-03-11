@@ -284,6 +284,9 @@ A full-stack web application called **The HoneyGroove**, a social platform for v
 - **Spin History Tab:** Renamed "Spinning" → "Spin History" on profile. Enhanced journal view: album artwork, relative timestamp, caption, mood badge, track name. Trash icon on own profile entries.
 - **Global Spin Removal:** Bidirectional delete: deleting spin removes linked post, deleting post removes linked spin. "Are you sure?" confirmation dialog. DELETE /api/spins/{id} and DELETE /api/posts/{id} both handle bidirectional cleanup.
 
+- **Dropdown Clipping Fix (BLOCK 181):** Root cause identified: Radix UI DropdownMenu portal rendered with z-[9999] while the nav had z-[100000], causing the nav to cover the dropdown. Fixed by increasing DropdownMenuContent portal z-index to z-[200000] in `dropdown-menu.jsx`. Affects all dropdowns across the app (user menu, notifications, post menus). VERIFIED ✅
+- **Infinite Groove Pagination (BLOCK 184):** Feed pagination was broken because backend fetched N posts from DB, filtered in Python to fewer, and frontend's `hasMore` check failed (returned < limit). Fixed with: (1) Cursor-based pagination using `before` timestamp parameter instead of `skip`, (2) Backend over-fetches (limit*4) to compensate for Python-side filtering, (3) FEED_LIMIT reduced from 50 to 20, (4) Diamond Glass styled "show older posts" button with honey glow text and spinning record loading animation. End-of-feed shows "you've reached the beginning of the hive." VERIFIED ✅
+
 ### Future / Backlog
 - **P0:** User's secret search feature (details TBD — user has mentioned multiple times)
 - Refactor `ISOPage.js` and `ProfilePage.js` to reduce complexity (break into smaller components)
