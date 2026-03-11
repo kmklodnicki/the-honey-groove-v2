@@ -328,6 +328,19 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - Frontend: Verified/Re-verify badges on Discogs status
   - Tested: PASS (iteration_192, 100% backend + frontend)
 - **BLOCK 455: Discogs Security Migration Modal** (March 2026) — COMPLETED
+- **BLOCK 472: Multi-Environment Auth Handler** (March 2026) — COMPLETED
+  - OAuth start uses `Origin` header for dynamic callback URL (localhost, preview, production)
+  - Callback stores `callback_origin` in pending record for correct redirect
+  - Enhanced error logging: callback_url, verification status on failure
+  - Tested: PASS (iteration_193, 11/11 backend + all frontend)
+- **BLOCK 473: The Great Disconnect Migration** (March 2026) — COMPLETED
+  - Admin endpoint POST /api/admin/great-disconnect triggers mass purge
+  - Nullifies discogs_username, resets has_seen_security_migration, deletes all tokens
+  - Hides active listings as HIDDEN_PENDING_VERIFICATION until user re-verifies via OAuth
+  - OAuth callback auto-restores hidden listings after successful verification
+  - Admin UI: "The Great Disconnect" card in Settings with confirmation dialog and result display
+  - Migration script at /app/backend/scripts/great_disconnect.py (standalone or via API)
+  - Tested: PASS (iteration_193, 11/11 backend + all frontend)
   - Backend: needs_discogs_migration computed in /auth/me for users with token-based connections
   - Backend: POST /discogs/dismiss-migration to skip modal with persistent profile banner
   - Frontend: DiscogsSecurityModal with Security Update headline, Reconnect Now (gold) + Connect Later (ghost)
