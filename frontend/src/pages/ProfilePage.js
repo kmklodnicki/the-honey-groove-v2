@@ -402,8 +402,8 @@ const ProfilePage = () => {
             </Avatar>
             <div style={{ minWidth: 0 }}>
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="font-heading text-xl lg:text-2xl break-words" style={{ flexShrink: 1, minWidth: 0 }} data-testid="profile-username">@{profile.username}{profile.country && <span className="ml-1.5" data-testid="profile-country-flag">{countryFlag(profile.country)}</span>}</h1>
-                {profile.title_label && <TitleBadge label={profile.title_label} />}
+                <h1 className="font-heading text-xl lg:text-2xl break-words" style={{ flexShrink: 1, minWidth: 0 }} data-testid="profile-username">@{profile.username}{profile.username === 'katieintheafterglow' && <span className="ml-1" title="Founder">👑</span>}{profile.country && <span className="ml-1.5" data-testid="profile-country-flag">{countryFlag(profile.country)}</span>}</h1>
+                {profile.title_label && profile.username !== 'katieintheafterglow' && <TitleBadge label={profile.title_label} />}
               </div>
               {profile.bio && <p className="text-sm text-muted-foreground mt-1"><MentionText text={profile.bio} /></p>}
               {profile.setup && (
@@ -421,12 +421,9 @@ const ProfilePage = () => {
                   {profile.favorite_genre}
                 </span>
               )}
-              {profile.founding_member && (
+              {profile.founding_member && profile.username !== 'katieintheafterglow' && (
                 <div className="mt-1 inline-block" data-testid="founding-badge">
-                  {profile.username === 'katieintheafterglow'
-                    ? <span className="text-xs font-medium" style={{ color: '#C8861A', fontFamily: '"DM Serif Display", serif' }}>👑 founder</span>
-                    : profile.title_label?.toLowerCase() !== 'founder' && <span className="italic text-xs" style={{ color: '#C8861A', fontFamily: '"DM Serif Display", serif' }}>founding member</span>
-                  }
+                  <span className="italic text-xs" style={{ color: '#C8861A', fontFamily: '"DM Serif Display", serif' }}>founding member</span>
                 </div>
               )}
               {promptStreak && promptStreak.streak > 0 && (

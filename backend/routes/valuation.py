@@ -166,11 +166,25 @@ async def get_user_wishlist_value(username: str):
 # ===================== DREAM VALUE HELPERS =====================
 
 async def _resolve_dream_item_value(discogs_id, user_manual_price=None):
-    """3-tier value resolution: Discogs median -> Community valuation -> User manual price."""
+    """3-tier value resolution: Discogs median -> Direct fetch -> Community valuation -> User manual price."""
     if discogs_id:
         cached = await db.collection_values.find_one({"release_id": discogs_id}, {"_id": 0, "median_value": 1})
         if cached and cached.get("median_value"):
             return cached["median_value"], "discogs"
+        # BLOCK 428: Direct fetch from Discogs marketplace when cache misses
+        try:
+            data = get_discogs_market_data(discogs_id)
+            if data:
+                median = data.get("median_value") or data.get("low_value")
+                if median and median > 0:
+                    await db.collection_values.update_one(
+                        {"release_id": discogs_id},
+                        {"$set": {"release_id": discogs_id, "median_value": median, "low_value": data.get("low_value"), "source": "direct_fetch"}},
+                        upsert=True
+                    )
+                    return median, "discogs"
+        except Exception:
+            pass
         community = await db.community_valuations.find_one({"release_id": discogs_id}, {"_id": 0, "average_value": 1})
         if community and community.get("average_value"):
             return community["average_value"], "community"
@@ -180,7 +194,8 @@ async def _resolve_dream_item_value(discogs_id, user_manual_price=None):
 
 
 async def _recalculate_dream_value(user_id: str):
-    """Recalculate dream value for a user using 3-tier resolution."""
+    """Recalculate dream value for a user using 3-tier resolution.
+    BLOCK 428: Forces direct Discogs market fetch for items missing cached values."""
     items = await db.iso_items.find(
         {"user_id": user_id, "status": "WISHLIST"},
         {"_id": 0, "discogs_id": 1, "manual_price": 1}
@@ -196,6 +211,26 @@ async def _recalculate_dream_value(user_id: str):
             {"release_id": {"$in": discogs_ids}}, {"_id": 0, "release_id": 1, "median_value": 1}
         ).to_list(5000)
         discogs_map = {v["release_id"]: v.get("median_value") for v in vals if v.get("median_value")}
+
+    # BLOCK 428: Direct fetch for items missing from collection_values cache
+    missing_from_cache = [did for did in discogs_ids if did not in discogs_map]
+    if missing_from_cache:
+        for did in missing_from_cache[:20]:  # Limit to avoid rate-limiting
+            try:
+                data = get_discogs_market_data(did)
+                if data:
+                    median = data.get("median_value") or data.get("low_value")
+                    if median and median > 0:
+                        discogs_map[did] = median
+                        # Cache for future use
+                        await db.collection_values.update_one(
+                            {"release_id": did},
+                            {"$set": {"release_id": did, "median_value": median, "low_value": data.get("low_value"), "source": "direct_fetch"}},
+                            upsert=True
+                        )
+                        logger.info(f"Dream value: direct-fetched {did} → ${median}")
+            except Exception as e:
+                logger.warning(f"Dream value direct fetch failed for {did}: {e}")
 
     community_map = {}
     missing_ids = [did for did in discogs_ids if did not in discogs_map]

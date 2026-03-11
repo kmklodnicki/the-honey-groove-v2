@@ -1033,18 +1033,18 @@ const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg, pending
             <span className="font-serif italic" style={{ color: '#C8861A' }} data-testid="dream-debt-amount">
               ${displayValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
+            ...{' '}
+            <span className="text-base font-light text-stone-400 font-serif italic">(Value of Dream Records)</span>
             {pendingCount > 0 && (
               <button
                 onClick={onPendingClick}
-                className="text-sm font-normal text-stone-400 ml-1 underline decoration-dotted cursor-pointer hover:text-amber-600 transition-colors"
+                className="text-sm font-normal text-stone-400 ml-1.5 underline decoration-dotted cursor-pointer hover:text-amber-600 transition-colors"
                 title="The Hive doesn't have a price for these grails yet. Click to help set the benchmark!"
                 data-testid="dream-pending-count"
               >
                 (+{pendingCount} pending)
               </button>
             )}
-            ...{' '}
-            <span className="text-base font-light text-stone-400 font-serif italic">(Value of Dream Records)</span>
           </p>
           <p className="text-xs text-stone-400 mt-2">{itemCount} record{itemCount !== 1 ? 's' : ''} on Dream List</p>
         </>
