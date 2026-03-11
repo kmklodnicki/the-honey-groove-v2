@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import AlbumArt from '../components/AlbumArt';
 import { resolveImageUrl } from '../utils/imageUrl';
 
@@ -1312,7 +1312,7 @@ const UserManagementSection = ({ API, headers }) => {
                 data-testid={`user-row-${u.username}`}>
                 <div className="flex items-center gap-2 min-w-0">
                   <img src={resolveImageUrl(u.avatar_url)} alt="" className="w-7 h-7 rounded-full shrink-0" />
-                  <span className="text-sm font-medium truncate">@{u.username}</span>
+                  <Link to={`/profile/${u.username}`} className="text-sm font-medium truncate hover:underline" style={{ color: '#C8861A' }} data-testid={`admin-user-link-${u.username}`}>@{u.username}</Link>
                 </div>
                 <span className="text-xs text-muted-foreground break-all">{u.email}</span>
                 <span className="text-xs text-muted-foreground">{fmtDate(u.created_at)}</span>

@@ -195,7 +195,7 @@ const ExplorePage = () => {
                     <div className="w-14 h-14 mx-auto rounded-full overflow-hidden bg-honey/10 mb-2">
                       {p.avatar_url ? <img src={p.avatar_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Users className="w-6 h-6 text-honey" /></div>}
                     </div>
-                    <p className="text-sm font-medium truncate">@{p.username}</p>
+                    <p className="text-sm font-medium truncate hover:underline" style={{ color: '#C8861A' }}>@{p.username}</p>
                     <p className="text-xs font-bold mt-0.5" style={{ color: '#C8861A' }}>{p.common_count || 0} {(p.common_count || 0) === 1 ? 'record' : 'records'} in common</p>
                     {p.shared_covers?.length > 0 && (
                       <div className="flex justify-center gap-1 mt-2">
