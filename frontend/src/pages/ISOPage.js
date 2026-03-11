@@ -350,6 +350,7 @@ const ISOPage = () => {
     const album = listAlbum || selectedRelease?.title;
     if (!artist || !album) { toast.error('artist and album are required.'); return; }
     if (listType !== 'TRADE' && !listPrice) { toast.error('price is required for buy/offer listings.'); return; }
+    if (listType !== 'TRADE' && parseFloat(listPrice) < 0.01) { toast.error('minimum price is $0.01.'); return; }
     if (listPhotos.length === 0) { toast.error('at least 1 photo is required.'); return; }
     if (!listCondition) { toast.error('condition is required.'); return; }
 
@@ -923,8 +924,13 @@ const ISOPage = () => {
                   <div className="space-y-2">
                     <div className="relative">
                       <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input placeholder="Price" type="number" value={listPrice} onChange={e => setListPrice(e.target.value)} className="pl-9 border-honey/50" data-testid="list-price-input" />
+                      <Input placeholder="Price" type="number" min="0.01" step="0.01" value={listPrice} onChange={e => setListPrice(e.target.value)} className="pl-9 border-honey/50" data-testid="list-price-input" />
                     </div>
+                    {listPrice && parseFloat(listPrice) > 0 && parseFloat(listPrice) < 0.50 && (
+                      <p className="text-[11px] text-amber-700 bg-amber-50/80 border border-amber-200/60 rounded-lg px-3 py-1.5" data-testid="low-price-warning">
+                        heads up: processing fees may exceed this price. you might receive $0 after fees.
+                      </p>
+                    )}
                     {pricingAssist && pricingAssist.low !== null && (
                       <p className="text-[11px] text-muted-foreground pl-1" data-testid="pricing-assist-hint">
                         recent sales: ${pricingAssist.low?.toFixed(2)} · ${pricingAssist.high?.toFixed(2)} on Discogs

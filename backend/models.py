@@ -310,7 +310,7 @@ class ListingCreate(BaseModel):
     condition: Optional[str] = None
     pressing_notes: Optional[str] = None
     listing_type: str
-    price: Optional[float] = None
+    price: Optional[float] = Field(None, ge=0.01)
     shipping_cost: Optional[float] = None
     description: Optional[str] = None
     photo_urls: List[str] = Field(..., min_length=1, max_length=10)
@@ -343,7 +343,7 @@ class ListingResponse(BaseModel):
     user: Optional[Dict[str, Any]] = None
 
 class ListingUpdate(BaseModel):
-    price: Optional[float] = None
+    price: Optional[float] = Field(None, ge=0.01)
     shipping_cost: Optional[float] = None
     description: Optional[str] = None
     condition: Optional[str] = None
