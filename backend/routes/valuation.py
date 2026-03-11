@@ -348,9 +348,56 @@ async def set_manual_value(iso_id: str, body: ManualValueInput, user: Dict = Dep
     result = await _recalculate_dream_value(user["id"])
     return {"message": "Value saved", "dream_value": result}
 
-# ===================== HIDDEN GEMS =====================
 
-@router.get("/valuation/hidden-gems")
+@router.post("/valuation/community-value/{discogs_id}")
+async def submit_community_value(discogs_id: int, body: ManualValueInput, user: Dict = Depends(require_auth)):
+    """Submit a community valuation for any record by discogs_id. Returns the new average."""
+    if body.value <= 0:
+        raise HTTPException(status_code=400, detail="Value must be positive")
+
+    now = datetime.now(timezone.utc).isoformat()
+    existing = await db.community_valuations.find_one({"release_id": discogs_id})
+    if existing:
+        contributions = existing.get("contributions", [])
+        contributions = [c for c in contributions if c["user_id"] != user["id"]]
+        contributions.append({"user_id": user["id"], "value": round(body.value, 2), "at": now})
+        avg = _trimmed_mean([c["value"] for c in contributions])
+        await db.community_valuations.update_one(
+            {"release_id": discogs_id},
+            {"$set": {
+                "contributions": contributions,
+                "average_value": round(avg, 2),
+                "contribution_count": len(contributions),
+                "updated_at": now,
+            }}
+        )
+    else:
+        avg = round(body.value, 2)
+        await db.community_valuations.insert_one({
+            "release_id": discogs_id,
+            "contributions": [{"user_id": user["id"], "value": round(body.value, 2), "at": now}],
+            "average_value": avg,
+            "contribution_count": 1,
+            "created_at": now,
+            "updated_at": now,
+        })
+
+    return {"message": "Community value saved", "average_value": round(avg, 2)}
+
+
+@router.get("/valuation/community-average/{discogs_id}")
+async def get_community_average(discogs_id: int):
+    """Get the community average value for a specific Discogs release."""
+    doc = await db.community_valuations.find_one({"release_id": discogs_id}, {"_id": 0})
+    if not doc or not doc.get("average_value"):
+        return {"average_value": 0, "contribution_count": 0}
+    return {
+        "average_value": doc["average_value"],
+        "contribution_count": doc.get("contribution_count", 0),
+    }
+
+
+# ===================== HIDDEN GEMS =====================
 async def get_hidden_gems(user: Dict = Depends(require_auth), limit: int = 3):
     """Top N most valuable records in the user's collection."""
     records = await db.records.find(

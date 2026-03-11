@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, TrendingUp, RefreshCw, Heart, ArrowRight, ShoppingBag, Cloud, Sparkles, CheckSquare, Square, ListChecks } from 'lucide-react';
+import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, TrendingUp, RefreshCw, Heart, ArrowRight, ShoppingBag, Cloud, Sparkles, CheckSquare, Square, ListChecks, AlertTriangle } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -139,11 +139,12 @@ const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamL
                 {dreamPendingCount > 0 ? (
                   <button
                     onClick={e => { e.stopPropagation(); onPendingClick?.(); }}
-                    className="underline decoration-dotted cursor-pointer hover:text-amber-600 transition-colors"
+                    className="flex items-center gap-1 text-amber-600 hover:text-amber-700 transition-colors group/pending"
                     title="The Hive doesn't have a price for these grails yet. Click to help set the benchmark!"
                     data-testid="treasury-pending-btn"
                   >
-                    (+{dreamPendingCount} pending)
+                    <AlertTriangle className="w-3 h-3 shrink-0" />
+                    <span className="underline decoration-dotted group-hover/pending:decoration-solid">{dreamPendingCount} record{dreamPendingCount !== 1 ? 's' : ''} pending valuation</span>
                   </button>
                 ) : 'if only...'}
               </p>
@@ -214,6 +215,7 @@ const CollectionPage = () => {
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [valuationModalOpen, setValuationModalOpen] = useState(false);
+  const [valuationFocusItem, setValuationFocusItem] = useState(null);
   const navigate = useNavigate();
 
   // Auto-open valuation modal if ?filter=pending_value
@@ -275,6 +277,30 @@ const CollectionPage = () => {
     } catch { toast.error('could not refresh values. try again.'); }
     finally { setRefreshing(false); }
   };
+
+  // Open the ValuationAssistantModal focused on a specific record
+  const handleValueThis = (record) => {
+    setValuationFocusItem({
+      record_id: record.id,
+      discogs_id: record.discogs_id || record.release_id,
+      album: record.album || record.title,
+      artist: record.artist,
+      cover_url: record.cover_url || record.thumb,
+    });
+    setValuationModalOpen(true);
+  };
+
+  // Handle callback from ValuationAssistantModal
+  const handleValuationUpdate = (result) => {
+    if (result?.type === 'record_valued') {
+      // Instant persistence: update the valueMap for this record
+      setValueMap(prev => ({ ...prev, [result.record_id]: result.value }));
+    } else if (typeof result === 'number') {
+      // Dream value update from pending items mode
+      setDreamlistValue(prev => prev ? { ...prev, total_value: result } : prev);
+    }
+  };
+
 
   useEffect(() => {
     fetchData();
@@ -556,7 +582,7 @@ const CollectionPage = () => {
             totalCount={collectionValue?.total_count}
             onRefresh={handleRefreshValues}
             refreshing={refreshing}
-            onPendingClick={() => setValuationModalOpen(true)}
+            onPendingClick={() => { setValuationFocusItem(null); setValuationModalOpen(true); }}
           />
         )}
 
@@ -724,6 +750,7 @@ const CollectionPage = () => {
                   selectMode={selectMode}
                   isSelected={selectedIds.has(record.id)}
                   onToggleSelect={toggleSelect}
+                  onValueThis={handleValueThis}
                 />
               ))}
             </div>
@@ -739,7 +766,7 @@ const CollectionPage = () => {
             countKey={countKey}
             subtractMsg={dreamSubtractMsg}
             pendingCount={dreamlistValue?.pending_count || 0}
-            onPendingClick={() => setValuationModalOpen(true)}
+            onPendingClick={() => { setValuationFocusItem(null); setValuationModalOpen(true); }}
           />
           <p className="text-sm text-muted-foreground mt-9 mb-5 px-4 leading-relaxed" data-testid="dreamlist-helper-text">These are your dream records. If you want to actively search for a record on this list, move it to Actively Seeking.</p>
 
@@ -791,11 +818,9 @@ const CollectionPage = () => {
       </AlertDialog>
       <ValuationAssistantModal
         open={valuationModalOpen}
-        onClose={() => setValuationModalOpen(false)}
-        onValuesUpdated={(dv) => {
-          setDreamlistValue(dv);
-          setCountKey(k => k + 1);
-        }}
+        onClose={() => { setValuationModalOpen(false); setValuationFocusItem(null); }}
+        onValuesUpdated={handleValuationUpdate}
+        focusItem={valuationFocusItem}
       />
       <BackToTop />
     </div>
@@ -866,7 +891,7 @@ const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg, pending
   );
 };
 
-const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, isSpinning, value, selectMode, isSelected, onToggleSelect }) => {
+const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, isSpinning, value, selectMode, isSelected, onToggleSelect, onValueThis }) => {
   return (
     <Card 
       className={`relative group border-honey/20 overflow-hidden hover:shadow-honey transition-all hover:-translate-y-1 ${isSelected ? 'ring-2 ring-honey shadow-honey' : ''} ${selectMode ? 'cursor-pointer' : ''}`}
@@ -953,14 +978,23 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
             </div>
           )}
 
-          {/* Value badge — glassy prominent */}
-          {value > 0 && (
+          {/* Value badge — glassy prominent OR "Value This" button */}
+          {value > 0 ? (
             <div className="absolute top-2 right-2 px-2.5 py-1 rounded-full font-black z-[5]"
               style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', fontSize: '18px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
               data-testid={`record-value-${record.id}`}>
               ${value.toFixed(0)}
             </div>
-          )}
+          ) : record.discogs_id && onValueThis ? (
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onValueThis(record); }}
+              className="absolute top-2 right-2 px-2.5 py-1 rounded-full text-[11px] font-bold z-[5] transition-all hover:scale-105"
+              style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#C8861A', border: '2px solid #DAA520', boxShadow: '0 4px 16px 0 rgba(0,0,0,0.08)' }}
+              data-testid={`value-this-btn-${record.id}`}
+            >
+              Value This
+            </button>
+          ) : null}
         </div>
       </Link>
 

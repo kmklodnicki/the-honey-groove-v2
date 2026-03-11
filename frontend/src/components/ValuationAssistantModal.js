@@ -4,13 +4,13 @@ import axios from 'axios';
 import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { DollarSign, Check, Loader2, Info, ChevronDown, ChevronUp } from 'lucide-react';
+import { DollarSign, Check, Loader2, Info, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import AlbumArt from './AlbumArt';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
-const ValuationAssistantModal = ({ open, onClose, onValuesUpdated }) => {
+const ValuationAssistantModal = ({ open, onClose, onValuesUpdated, focusItem }) => {
   const { token } = useAuth();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,15 +19,39 @@ const ValuationAssistantModal = ({ open, onClose, onValuesUpdated }) => {
   const [showInfo, setShowInfo] = useState(false);
   const [successItem, setSuccessItem] = useState(null);
 
+  // Single-record focus mode state
+  const [focusCommunity, setFocusCommunity] = useState(null);
+  const [focusLoading, setFocusLoading] = useState(false);
+  const [focusValue, setFocusValue] = useState('');
+  const [focusSaving, setFocusSaving] = useState(false);
+  const [focusSaved, setFocusSaved] = useState(false);
+
   useEffect(() => {
     if (!open) return;
-    setLoading(true);
     setSuccessItem(null);
-    axios.get(`${API}/api/valuation/pending-items`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => { setItems(r.data); setLoading(false); })
-      .catch(() => { setLoading(false); });
-  }, [open, token]);
+    setFocusSaved(false);
+    setFocusValue('');
 
+    if (focusItem) {
+      // Single-record mode: fetch community average for focus item
+      setLoading(false);
+      if (focusItem.discogs_id) {
+        setFocusLoading(true);
+        axios.get(`${API}/api/valuation/community-average/${focusItem.discogs_id}`)
+          .then(r => setFocusCommunity(r.data))
+          .catch(() => setFocusCommunity(null))
+          .finally(() => setFocusLoading(false));
+      }
+    } else {
+      // Pending items list mode
+      setLoading(true);
+      axios.get(`${API}/api/valuation/pending-items`, { headers: { Authorization: `Bearer ${token}` } })
+        .then(r => { setItems(r.data); setLoading(false); })
+        .catch(() => { setLoading(false); });
+    }
+  }, [open, token, focusItem]);
+
+  // Save for pending dream list items
   const handleSave = async (item, val) => {
     const num = parseFloat(val);
     if (!num || num <= 0) { toast.error('Enter a valid amount'); return; }
@@ -51,16 +75,52 @@ const ValuationAssistantModal = ({ open, onClose, onValuesUpdated }) => {
     }
   };
 
+  // Save for single-record focus mode (community valuation)
+  const handleFocusSave = async () => {
+    const num = parseFloat(focusValue);
+    if (!num || num <= 0) { toast.error('Enter a valid amount'); return; }
+    if (!focusItem?.discogs_id) { toast.error('No Discogs ID for this record'); return; }
+    setFocusSaving(true);
+    try {
+      const res = await axios.post(
+        `${API}/api/valuation/community-value/${focusItem.discogs_id}`,
+        { value: num },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setFocusSaved(true);
+      setSuccessItem(focusItem.album || focusItem.title);
+      // Report new value back to parent for instant UI update
+      onValuesUpdated?.({
+        type: 'record_valued',
+        record_id: focusItem.record_id,
+        discogs_id: focusItem.discogs_id,
+        value: res.data.average_value || num,
+      });
+      setTimeout(() => { setSuccessItem(null); onClose(); }, 1500);
+    } catch {
+      toast.error('Could not save value');
+    }
+    setFocusSaving(false);
+  };
+
+  const acceptFocusHiveValue = () => {
+    if (focusCommunity?.average_value > 0) {
+      setFocusValue(focusCommunity.average_value.toString());
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
       <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto p-0" data-testid="valuation-assistant-modal">
         {/* Header */}
         <div className="px-5 pt-5 pb-3">
           <DialogTitle className="font-heading text-lg leading-tight">
-            Help the Hive Value Your Grails
+            {focusItem ? 'Value This Record' : 'Help the Hive Value Your Grails'}
           </DialogTitle>
           <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
-            Some of your rarest wax doesn't have official market data yet. By adding your estimate, you help build a stable price guide for every collector in the Hive.
+            {focusItem
+              ? 'No market data for this one yet. Your estimate helps build a stable price guide for every collector in the Hive.'
+              : 'Some of your rarest wax doesn\'t have official market data yet. By adding your estimate, you help build a stable price guide for every collector in the Hive.'}
           </p>
         </div>
 
@@ -74,7 +134,90 @@ const ValuationAssistantModal = ({ open, onClose, onValuesUpdated }) => {
 
         {/* Content */}
         <div className="px-5 pb-4">
-          {loading ? (
+          {focusItem ? (
+            /* ===== SINGLE RECORD MODE ===== */
+            <div>
+              <div className="rounded-xl border border-stone-200 bg-stone-50/50 overflow-hidden" data-testid="focus-item-card">
+                <div className="flex items-center gap-3 p-3">
+                  <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-stone-200">
+                    {focusItem.cover_url ? (
+                      <AlbumArt src={focusItem.cover_url} alt={focusItem.album || focusItem.title} className="w-16 h-16 object-cover" />
+                    ) : (
+                      <div className="w-16 h-16 flex items-center justify-center text-stone-400 text-xs">N/A</div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold truncate">{focusItem.album || focusItem.title}</p>
+                    <p className="text-xs text-muted-foreground truncate">{focusItem.artist}</p>
+
+                    {/* Community Average */}
+                    {focusLoading ? (
+                      <div className="mt-1.5 h-4 w-32 rounded honey-shimmer" />
+                    ) : focusCommunity?.average_value > 0 ? (
+                      <div className="mt-1.5 flex items-center gap-1.5" data-testid="focus-hive-benchmark">
+                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(255,215,0,0.15)', color: '#7A5A1A' }}>
+                          Hive Average: ${focusCommunity.average_value.toFixed(2)}
+                        </span>
+                        <span className="text-[10px] text-stone-400">
+                          ({focusCommunity.contribution_count} {focusCommunity.contribution_count === 1 ? 'submission' : 'submissions'})
+                        </span>
+                      </div>
+                    ) : (
+                      <p className="mt-1.5 text-[10px] text-stone-400 italic">No community data yet — be the first!</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Value input */}
+                {!focusSaved ? (
+                  <div className="px-3 pb-3 flex items-center gap-2">
+                    <span className="text-[11px] text-stone-500 font-medium shrink-0">Your Estimate:</span>
+                    <div className="relative flex-1">
+                      <DollarSign className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400" />
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min="0.01"
+                        placeholder="0.00"
+                        value={focusValue}
+                        onChange={e => setFocusValue(e.target.value)}
+                        className="h-9 pl-6 text-sm"
+                        data-testid="focus-value-input"
+                        autoFocus
+                      />
+                    </div>
+                    {focusCommunity?.average_value > 0 && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={acceptFocusHiveValue}
+                        className="h-9 px-2.5 text-[11px] font-semibold rounded-full shrink-0 border-amber-300 hover:bg-amber-50"
+                        data-testid="focus-accept-hive-btn"
+                      >
+                        Accept Hive
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      onClick={handleFocusSave}
+                      disabled={focusSaving || !focusValue}
+                      className="h-9 px-3 rounded-full font-semibold text-xs border-0 shrink-0"
+                      style={{ background: '#FFD700', color: '#1A1A1A' }}
+                      data-testid="focus-save-btn"
+                    >
+                      {focusSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Save to Hive'}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="px-3 pb-3 text-center">
+                    <p className="text-sm font-medium" style={{ color: '#7A5A1A' }}>
+                      <Check className="inline w-4 h-4 mr-1 -mt-0.5" /> Value saved!
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : loading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-6 h-6 animate-spin" style={{ color: '#C8861A' }} />
             </div>

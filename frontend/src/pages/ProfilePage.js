@@ -10,7 +10,7 @@ import { Skeleton } from '../components/ui/skeleton';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '../components/ui/dialog';
-import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin, ShoppingBag, Flag, Sparkles, Eye, X, Cloud, ShieldOff, ShieldCheck, Lock, Clock, Trash2 } from 'lucide-react';
+import { Disc, Edit, UserPlus, UserMinus, Loader2, Search, Play, ArrowRightLeft, CreditCard, Star, MessageCircle, MapPin, ShoppingBag, Flag, Sparkles, Eye, X, Cloud, ShieldOff, ShieldCheck, Lock, Clock, Trash2, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { FollowListModal } from '../components/FollowList';
@@ -586,22 +586,25 @@ const ProfilePage = () => {
 
             {/* Value of Dream Records sub-headline */}
             {dreamValue && dreamValue.total_count > 0 && (
-              <p className="mt-2 font-serif italic text-sm" style={{ color: '#C8861A' }} data-testid="profile-dream-value">
-                Value of Dream Records: ${dreamValue.total_value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              <div className="mt-2" data-testid="profile-dream-value">
+                <p className="font-serif italic text-sm" style={{ color: '#C8861A' }}>
+                  Value of Dream Records: ${dreamValue.total_value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                </p>
                 {dreamValue.pending_count > 0 && isOwnProfile && (
                   <Link
                     to="/collection?tab=wishlist&filter=pending_value"
-                    className="text-stone-400 text-xs ml-1 not-italic underline decoration-dotted hover:text-amber-600 transition-colors"
+                    className="inline-flex items-center gap-1 mt-1 text-xs text-amber-600 hover:text-amber-700 transition-colors group/pending"
                     title="The Hive doesn't have a price for these grails yet. Click to help set the benchmark!"
                     data-testid="profile-pending-link"
                   >
-                    (+{dreamValue.pending_count} pending)
+                    <AlertTriangle className="w-3 h-3 shrink-0" />
+                    <span className="underline decoration-dotted group-hover/pending:decoration-solid">{dreamValue.pending_count} record{dreamValue.pending_count !== 1 ? 's' : ''} pending valuation</span>
                   </Link>
                 )}
                 {dreamValue.pending_count > 0 && !isOwnProfile && (
                   <span className="text-stone-400 text-xs ml-1 not-italic">(+{dreamValue.pending_count} pending)</span>
                 )}
-              </p>
+              </div>
             )}
 
             {/* Stripe Connect - owner only */}
