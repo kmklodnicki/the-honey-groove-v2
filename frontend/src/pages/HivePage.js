@@ -579,6 +579,7 @@ const HivePage = () => {
     if (activeFilter === 'all') return result;
     if (activeFilter === 'listing') return result.filter(p => p.post_type === 'listing_sale' || p.post_type === 'listing_trade');
     if (activeFilter === 'NEW_FEATURE') return result.filter(p => p.is_new_feature);
+    if (activeFilter === 'NOW_SPINNING') return result.filter(p => p.post_type === 'NOW_SPINNING' || p.post_type === 'RANDOMIZER');
     return result.filter(p => p.post_type === activeFilter);
   }, [posts, feedMode, activeFilter, followingIds, user?.id, promptFilter]);
 

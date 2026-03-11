@@ -44,27 +44,17 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
 - BLOCK 248: Instant-On Prompt Asset (dominant color backgrounds)
 - BLOCK 250: Duplicate Detector Utility
 - BLOCK 252: Week in Wax Migration to Profile
-- **BLOCK 254: Streaming Deep Links** (March 2026)
-  - StreamingLinks component in PostCards.js renders Spotify/Apple Music search pills on Now Spinning posts
-  - UI placeholders using search URLs (not real API integrations)
-  - Tested: PASS
-- **BLOCK 258: Valuation Wizard Sync** (March 2026)
-  - Wizard correctly processes full queue, advances through records, handles completion
-  - Tested: PASS (conditional - no unvalued records in test data)
-- **BLOCK 260/265: Record Card Checkbox UI** (March 2026)
-  - Selection checkbox relocated to bottom-left (absolute bottom-12 left-2)
-  - Drop-shadow for contrast on album art backgrounds
-  - Gold/honey color when selected, white when unselected
-  - Tested: PASS
-- **BLOCK 263: Profile Component Purge** (March 2026)
-  - WaxReportCTA dead code removed from CollectionPage
-  - Week in Wax only lives on ProfilePage now
-  - Tested: PASS
-- **BLOCK 264: Weekly Report Route** (March 2026)
-  - /reports/weekly route loads WeeklyReportPage (not wrapped in AppLayout)
-  - Dark gradient background, stats strip, top spin, recent additions
-  - Fixed double /api prefix bug
-  - Tested: PASS
+- BLOCK 254: Streaming Deep Links (Spotify/Apple search pills, MOCKED)
+- BLOCK 258: Valuation Wizard Sync
+- BLOCK 260/265: Record Card Checkbox UI (bottom-left, drop-shadow)
+- BLOCK 263: Profile Component Purge (WaxReportCTA removed)
+- BLOCK 264: Weekly Report Route (/reports/weekly)
+- **BLOCK 271: Integrated Spin Feed Logic** (March 2026)
+  - Randomizer posts now display as "Now Spinning from Randomizer" with Shuffle icon
+  - Pill style: soft violet accent (bg-violet-50, text-violet-600, border-violet-200)
+  - Feed grouping: "Now Spinning" filter includes RANDOMIZER posts
+  - Card rendering: RANDOMIZER already uses NowSpinningCard (unchanged)
+  - Files: PostCards.js (pill label + style), HivePage.js (filter logic)
 
 ## Backlog (Prioritized)
 ### P0
@@ -90,6 +80,6 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
 - Streaming Service (Spotify/Apple Music links are search URL placeholders)
 
 ## Test Accounts
-- User: testuser1 / test123
+- User: test@test.com / test123 (username: testuser)
 - Admin: admin / admin_password
 - Existing user: katieintheafterglow (kmklodnicki@gmail.com)
