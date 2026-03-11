@@ -47,6 +47,7 @@ async def add_record(record_data: RecordCreate, user: Dict = Depends(require_aut
         "id": record_id,
         "user_id": user["id"],
         "discogs_id": record_data.discogs_id,
+        "instance_id": record_data.instance_id,
         "title": record_data.title,
         "artist": record_data.artist,
         "cover_url": record_data.cover_url,
@@ -79,6 +80,7 @@ async def add_record(record_data: RecordCreate, user: Dict = Depends(require_aut
     return RecordResponse(
         id=record_id,
         discogs_id=record_data.discogs_id,
+        instance_id=record_data.instance_id,
         title=record_data.title,
         artist=record_data.artist,
         cover_url=record_data.cover_url,
@@ -132,6 +134,18 @@ async def get_my_records(user: Dict = Depends(require_auth)):
         {"$project": {"_spins": 0, "_id": 0}}
     ]
     records = await db.records.aggregate(pipeline).to_list(None)
+    
+    # Compute copy_number / total_copies for multi-copy records
+    from collections import Counter, defaultdict
+    discogs_counts = Counter(r["discogs_id"] for r in records if r.get("discogs_id"))
+    discogs_seen = defaultdict(int)
+    for r in records:
+        did = r.get("discogs_id")
+        if did and discogs_counts[did] > 1:
+            discogs_seen[did] += 1
+            r["copy_number"] = discogs_seen[did]
+            r["total_copies"] = discogs_counts[did]
+    
     return [RecordResponse(**r) for r in records]
 
 @router.get("/records/{record_id}", response_model=RecordResponse)
@@ -262,9 +276,18 @@ async def get_user_records(username: str, current_user: Optional[Dict] = Depends
     
     records = await db.records.find({"user_id": user["id"]}, {"_id": 0}).sort("created_at", -1).to_list(None)
     
+    # Compute copy_number / total_copies for multi-copy records
+    from collections import Counter, defaultdict
+    discogs_counts = Counter(r["discogs_id"] for r in records if r.get("discogs_id"))
+    discogs_seen = defaultdict(int)
     result = []
     for record in records:
         spin_count = await db.spins.count_documents({"record_id": record["id"]})
+        did = record.get("discogs_id")
+        if did and discogs_counts[did] > 1:
+            discogs_seen[did] += 1
+            record["copy_number"] = discogs_seen[did]
+            record["total_copies"] = discogs_counts[did]
         result.append(RecordResponse(**record, spin_count=spin_count))
     
     return result
@@ -1103,6 +1126,7 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
             try:
                 basic_info = release.get("basic_information", {})
                 discogs_id = basic_info.get("id")
+                instance_id = release.get("instance_id")
                 
                 # Extract title/artist early for skip logging
                 artists = basic_info.get("artists", [])
@@ -1115,11 +1139,20 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
                     skipped_records.append({"title": release_title, "artist": release_artist, "discogs_id": None, "reason": "missing_data"})
                     continue
                 
-                # Check if already exists in user's collection
-                existing = await db.records.find_one({
-                    "user_id": user_id,
-                    "discogs_id": discogs_id
-                })
+                # Check if this specific copy (instance) already exists
+                # Use instance_id as unique key to allow multiple copies of same release
+                if instance_id:
+                    existing = await db.records.find_one({
+                        "user_id": user_id,
+                        "instance_id": instance_id
+                    })
+                else:
+                    # Fallback: if no instance_id, check by discogs_id
+                    existing = await db.records.find_one({
+                        "user_id": user_id,
+                        "discogs_id": discogs_id,
+                        "instance_id": None
+                    })
                 
                 if existing:
                     skipped += 1
@@ -1144,13 +1177,14 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
                     "id": record_id,
                     "user_id": user_id,
                     "discogs_id": discogs_id,
+                    "instance_id": instance_id,
                     "title": release_title,
                     "artist": release_artist,
                     "cover_url": cover_url,
                     "year": basic_info.get("year"),
                     "format": format_name,
                     "color_variant": color_variant,
-                    "notes": "Imported from Discogs",
+                    "notes": release.get("notes", [{}])[0].get("value", "") if release.get("notes") else "Imported from Discogs",
                     "source": "discogs_import",
                     "created_at": now
                 }

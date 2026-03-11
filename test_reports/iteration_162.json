@@ -1,0 +1,70 @@
+{
+  "summary": "Completed testing of BLOCK 167 (Multi-copy Discogs import feature). All tests passed. Backend correctly accepts instance_id, computes copy_number/total_copies for records with same discogs_id, and frontend displays 'Copy X of Y' badges correctly.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_block167_multi_copy.py",
+    "/app/test_reports/pytest/multi_copy_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Code review passed: instance_id field properly added to RecordCreate/RecordResponse models",
+    "Code review passed: Import logic at lines 1143-1155 correctly checks instance_id for duplicate detection",
+    "Code review passed: copy_number/total_copies computed correctly in GET /api/records (lines 138-147)",
+    "Code review passed: Feed filters source != discogs_import at line 395 in hive.py"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_block167_multi_copy.py"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "100%"
+  },
+  "test_credentials": "demo@test.com / demouser (admin)",
+  "seed_data_creation": "Temporarily created 2 test records with same discogs_id (14215683) but different instance_ids (111111, 222222) to verify multi-copy badges. Records deleted after test.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "BLOCK 167 multi-copy import feature fully tested. Backend: POST /api/records accepts instance_id, GET /api/records returns copy_number/total_copies for records sharing same discogs_id. Frontend: CollectionPage.js shows 'Copy X of Y' badge (data-testid='copy-badge-{id}') on cards with total_copies > 1. Records with unique discogs_id correctly show null copy fields. Feed integrity maintained via source filter.",
+  "features_verified": {
+    "backend_instance_id_field": {
+      "status": "PASS",
+      "details": "POST /api/records accepts instance_id field and returns it in response"
+    },
+    "backend_copy_number_computation": {
+      "status": "PASS",
+      "details": "GET /api/records computes copy_number (1-N) and total_copies for records with same discogs_id"
+    },
+    "backend_unique_records_null_copy": {
+      "status": "PASS",
+      "details": "Records with unique discogs_id have null copy_number and null total_copies"
+    },
+    "backend_different_notes_per_copy": {
+      "status": "PASS",
+      "details": "Each copy can have different notes field values"
+    },
+    "backend_feed_integrity": {
+      "status": "PASS",
+      "details": "Feed endpoints filter source='discogs_import' posts"
+    },
+    "frontend_copy_badge_display": {
+      "status": "PASS",
+      "details": "Collection page shows 'Copy X of Y' badge on cards with total_copies > 1 using data-testid='copy-badge-{id}'"
+    },
+    "frontend_no_badge_unique_records": {
+      "status": "PASS",
+      "details": "Records with unique discogs_id do not show copy badges"
+    },
+    "user_records_endpoint": {
+      "status": "PASS",
+      "details": "GET /api/users/{username}/records also returns copy_number/total_copies"
+    }
+  },
+  "mocked_api_note": "Resend email service is MOCKED"
+}

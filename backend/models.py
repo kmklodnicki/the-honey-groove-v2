@@ -72,6 +72,7 @@ class TokenResponse(BaseModel):
 # Record Models
 class RecordCreate(BaseModel):
     discogs_id: Optional[int] = None
+    instance_id: Optional[int] = None
     title: str
     artist: str
     cover_url: Optional[str] = None
@@ -84,6 +85,7 @@ class RecordCreate(BaseModel):
 class RecordResponse(BaseModel):
     id: str
     discogs_id: Optional[int] = None
+    instance_id: Optional[int] = None
     title: str
     artist: str
     cover_url: Optional[str] = None
@@ -95,6 +97,8 @@ class RecordResponse(BaseModel):
     user_id: str
     created_at: str
     spin_count: int = 0
+    copy_number: Optional[int] = None
+    total_copies: Optional[int] = None
 
 class DiscogsSearchResult(BaseModel):
     discogs_id: int

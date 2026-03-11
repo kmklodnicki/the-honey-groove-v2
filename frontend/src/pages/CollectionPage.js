@@ -877,6 +877,15 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
             </div>
           )}
 
+          {/* Multi-copy badge */}
+          {record.total_copies > 1 && (
+            <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide z-[5]"
+              style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', color: '#996012', border: '1px solid rgba(218,165,32,0.4)' }}
+              data-testid={`copy-badge-${record.id}`}>
+              Copy {record.copy_number} of {record.total_copies}
+            </div>
+          )}
+
           {/* Value badge — glassy prominent */}
           {value > 0 && (
             <div className="absolute top-2 right-2 px-2.5 py-1 rounded-full font-black z-[5]"
