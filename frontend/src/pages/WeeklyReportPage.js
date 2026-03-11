@@ -7,14 +7,61 @@ import { Button } from '../components/ui/button';
 import { resolveImageUrl } from '../utils/imageUrl';
 import html2canvas from 'html2canvas';
 
-// ─── Report image: honey placeholder, crossOrigin for export, no broken icons ───
-const ReportImg = ({ src, alt, className, style }) => {
-  const [err, setErr] = React.useState(false);
-  const resolved = src ? resolveImageUrl(src) : null;
-  if (!resolved || err) {
+const API_BASE = process.env.REACT_APP_BACKEND_URL ? `${process.env.REACT_APP_BACKEND_URL}/api` : '/api';
+
+// ─── Proxy wrapper: route external images through our CORS-safe proxy ───
+const proxyImageUrl = (url) => {
+  if (!url) return null;
+  const resolved = resolveImageUrl(url);
+  if (!resolved) return null;
+  // Only proxy external URLs (discogs, etc.) — local files are already CORS-safe
+  if (resolved.startsWith('data:') || resolved.includes('/api/files/serve/')) return resolved;
+  if (resolved.startsWith('http')) {
+    return `${API_BASE}/image-proxy?url=${encodeURIComponent(resolved)}`;
+  }
+  return resolved;
+};
+
+// ─── Pre-flight: ensure an image is loaded in the browser cache before export ───
+const preflightImage = (url) => new Promise((resolve) => {
+  if (!url) { resolve(false); return; }
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => resolve(true);
+  img.onerror = () => resolve(false);
+  img.src = url;
+  setTimeout(() => resolve(false), 8000);
+});
+
+// ─── Report image with proxy + fallback chain ───
+const ReportImg = ({ src, fallbacks, alt, className, style }) => {
+  const [currentSrc, setCurrentSrc] = React.useState(() => proxyImageUrl(src));
+  const [fallbackIdx, setFallbackIdx] = React.useState(0);
+  const [failed, setFailed] = React.useState(false);
+
+  React.useEffect(() => {
+    setCurrentSrc(proxyImageUrl(src));
+    setFallbackIdx(0);
+    setFailed(false);
+  }, [src]);
+
+  const handleError = () => {
+    const fbs = fallbacks || [];
+    if (fallbackIdx < fbs.length) {
+      const nextUrl = proxyImageUrl(fbs[fallbackIdx]);
+      if (nextUrl) {
+        setCurrentSrc(nextUrl);
+        setFallbackIdx(i => i + 1);
+        return;
+      }
+    }
+    setFailed(true);
+  };
+
+  if (!currentSrc || failed) {
     return <div className={className} style={{ ...style, background: '#FFB800', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Disc style={{ width: '30%', height: '30%', color: 'rgba(0,0,0,0.15)' }} /></div>;
   }
-  return <img src={resolved} alt={alt || ''} className={className} style={style} crossOrigin="anonymous" decoding="sync" fetchpriority="high" loading="eager" onError={() => setErr(true)} draggable={false} />;
+  return <img src={currentSrc} alt={alt || ''} className={className} style={style} crossOrigin="anonymous" decoding="sync" fetchpriority="high" loading="eager" onError={handleError} draggable={false} />;
 };
 
 // ─── Color utility: extract dominant hue from an image via canvas sampling ───
@@ -36,7 +83,7 @@ const extractDominantColor = (imgUrl) => new Promise((resolve) => {
     } catch { resolve('#C8861A'); }
   };
   img.onerror = () => resolve('#C8861A');
-  img.src = resolveImageUrl(imgUrl);
+  img.src = proxyImageUrl(imgUrl) || resolveImageUrl(imgUrl);
 });
 
 const darken = (color, factor = 0.3) => {
@@ -62,7 +109,8 @@ const IntroSlide = ({ username, dominantColor, dateRange }) => (
   </div>
 );
 
-const HeroSlide = ({ record, spinCount, isTopSpin, dominantColor }) => {
+const HeroSlide = ({ record, fallbacks, spinCount, isTopSpin, dominantColor }) => {
+  const recordFallbacks = fallbacks || [];
   return (
     <div className="min-h-[50vh] flex flex-col items-center justify-center p-8 text-center snap-start" data-testid="slide-hero">
       <p className="text-xs font-medium tracking-[0.2em] uppercase mb-6" style={{ color: dominantColor }}>
@@ -71,7 +119,7 @@ const HeroSlide = ({ record, spinCount, isTopSpin, dominantColor }) => {
       {record?.cover_url ? (
         <div className="relative w-56 h-56 sm:w-72 sm:h-72 rounded-2xl overflow-hidden shadow-2xl mb-6 ring-2"
           style={{ ringColor: dominantColor, animation: 'kenBurns 20s ease-in-out infinite alternate' }}>
-          <ReportImg src={record.cover_url} alt={`${record.artist} - ${record.title}`} className="w-full h-full object-cover" />
+          <ReportImg src={record.cover_url} fallbacks={recordFallbacks} alt={`${record.artist} - ${record.title}`} className="w-full h-full object-cover" />
         </div>
       ) : (
         <div className="w-56 h-56 rounded-2xl flex items-center justify-center mb-6" style={{ background: `${dominantColor}20` }}>
@@ -176,6 +224,25 @@ const NewAdditionsSlide = ({ additions, dominantColor }) => {
 };
 
 // ─── Share Card (for export) ───
+const ShareCardImg = ({ data, dominantColor }) => {
+  const [src, setSrc] = React.useState(() => proxyImageUrl(data.heroRecord?.cover_url));
+  const [tried, setTried] = React.useState(0);
+  const fallbacks = data.heroFallbacks || [];
+  const handleError = () => {
+    if (tried < fallbacks.length) {
+      setSrc(proxyImageUrl(fallbacks[tried]));
+      setTried(t => t + 1);
+    }
+  };
+  if (!src) {
+    return <div style={{ width: 480, height: 480, borderRadius: 32, background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Disc style={{ width: 120, height: 120, color: dominantColor, opacity: 0.3 }} />
+    </div>;
+  }
+  return <img src={src} alt="" crossOrigin="anonymous" onError={handleError}
+    style={{ width: 480, height: 480, borderRadius: 32, objectFit: 'cover', boxShadow: `0 40px 100px ${dominantColor}40` }} />;
+};
+
 const ShareCard = React.forwardRef(({ data, dominantColor }, ref) => (
   <div ref={ref} className="relative overflow-hidden" style={{ width: 1080, height: 1920, background: `linear-gradient(180deg, ${darken(dominantColor, 0.15)} 0%, ${darken(dominantColor, 0.25)} 40%, #0A0A0A 100%)` }}>
     {/* Safe zone top (250px) */}
@@ -185,11 +252,10 @@ const ShareCard = React.forwardRef(({ data, dominantColor }, ref) => (
       </p>
       <p style={{ fontSize: 16, color: 'rgba(255,255,255,0.35)', marginTop: 8 }}>Your Weekly Hive Summary</p>
     </div>
-    {/* Center: Album art */}
+    {/* Center: Album art — proxied for CORS-safe canvas rendering */}
     <div style={{ display: 'flex', justifyContent: 'center', marginTop: 120 }}>
       {data.heroRecord?.cover_url ? (
-        <img src={resolveImageUrl(data.heroRecord.cover_url)} alt="" crossOrigin="anonymous"
-          style={{ width: 480, height: 480, borderRadius: 32, objectFit: 'cover', boxShadow: `0 40px 100px ${dominantColor}40` }} />
+        <ShareCardImg data={data} dominantColor={dominantColor} />
       ) : (
         <div style={{ width: 480, height: 480, borderRadius: 32, background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Disc style={{ width: 120, height: 120, color: dominantColor, opacity: 0.3 }} />
@@ -281,6 +347,13 @@ const WeeklyReportPage = () => {
         const heroRecord = topSpinRecord || topAddition;
         const isTopSpin = !!topSpinRecord;
 
+        // Build image fallback chain for the hero record
+        const heroFallbacks = [];
+        if (heroRecord) {
+          if (heroRecord.spotify_image_url) heroFallbacks.push(heroRecord.spotify_image_url);
+          if (heroRecord.apple_artwork_url) heroFallbacks.push(heroRecord.apple_artwork_url);
+        }
+
         const totalValue = valData.total_value || 0;
 
         // Date range for header
@@ -294,6 +367,7 @@ const WeeklyReportPage = () => {
           weekAdds: weekAdds.length,
           weekSpins: weekSpins.length,
           heroRecord,
+          heroFallbacks,
           isTopSpin,
           topSpinCount,
           recentAdds: weekAdds.slice(0, 4),
@@ -317,14 +391,30 @@ const WeeklyReportPage = () => {
     if (!shareRef.current) return;
     setExporting(true);
     try {
+      // Pre-flight: ensure hero image is loaded in browser cache via proxy
+      if (data?.heroRecord?.cover_url) {
+        const proxied = proxyImageUrl(data.heroRecord.cover_url);
+        const loaded = await preflightImage(proxied);
+        // If primary fails, try fallbacks
+        if (!loaded && data.heroFallbacks) {
+          for (const fb of data.heroFallbacks) {
+            const fbProxied = proxyImageUrl(fb);
+            if (fbProxied && await preflightImage(fbProxied)) break;
+          }
+        }
+      }
+
       // Temporarily show the share card
       shareRef.current.style.display = 'block';
       shareRef.current.style.position = 'fixed';
       shareRef.current.style.left = '-9999px';
       shareRef.current.style.top = '0';
 
+      // Wait a tick for images to render in the DOM
+      await new Promise(r => setTimeout(r, 500));
+
       const canvas = await html2canvas(shareRef.current, {
-        width: 1080, height: 1920, scale: 1, useCORS: true, backgroundColor: null,
+        width: 1080, height: 1920, scale: 1, useCORS: true, allowTaint: false, backgroundColor: null,
       });
 
       shareRef.current.style.display = 'none';
@@ -344,9 +434,9 @@ const WeeklyReportPage = () => {
       }, 'image/png');
     } catch {
       setExporting(false);
-      shareRef.current.style.display = 'none';
+      if (shareRef.current) shareRef.current.style.display = 'none';
     }
-  }, []);
+  }, [data]);
 
   // Loading state
   if (loading) {
@@ -380,7 +470,7 @@ const WeeklyReportPage = () => {
       {/* Desktop: Blurred wallpaper background */}
       {data.heroRecord?.cover_url && (
         <div className="fixed inset-0 z-0 hidden lg:block pointer-events-none" aria-hidden="true">
-          <ReportImg src={data.heroRecord.cover_url} alt="" className="w-full h-full object-cover" style={{ filter: 'blur(80px) brightness(0.15)', transform: 'scale(1.2)' }} />
+          <ReportImg src={data.heroRecord.cover_url} fallbacks={data.heroFallbacks} alt="" className="w-full h-full object-cover" style={{ filter: 'blur(80px) brightness(0.15)', transform: 'scale(1.2)' }} />
         </div>
       )}
 
@@ -401,7 +491,7 @@ const WeeklyReportPage = () => {
 
         {/* Slide 2: Hero (Top Spin or Fresh Start) */}
         {hasSpins ? (
-          <HeroSlide record={data.heroRecord} spinCount={data.topSpinCount} isTopSpin={data.isTopSpin} dominantColor={dominantColor} />
+          <HeroSlide record={data.heroRecord} fallbacks={data.heroFallbacks} spinCount={data.topSpinCount} isTopSpin={data.isTopSpin} dominantColor={dominantColor} />
         ) : (
           <FreshStartSlide totalValue={data.totalValue} dominantColor={dominantColor} />
         )}

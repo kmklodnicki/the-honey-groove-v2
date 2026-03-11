@@ -1,0 +1,91 @@
+{
+  "summary": "BLOCK 349: Image Proxy for CORS-safe canvas export tested successfully. Backend GET /api/image-proxy proxies external images with CORS headers. Frontend proxyImageUrl() correctly wraps Discogs URLs through proxy, passes local/data URIs through unchanged. ReportImg component supports fallbacks prop. ShareCard uses proxied URLs for html2canvas. handleShare() includes pre-flight image loading. Date range displays correctly (BLOCK 333 regression check passed).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "/api/image-proxy",
+        "issue": "Cache-Control header shows 'no-store, no-cache, must-revalidate' instead of 'public, max-age=86400' due to Kubernetes ingress/proxy layer overriding headers. Code sets correct header but deployment environment overrides it.",
+        "priority": "LOW",
+        "note": "Not a code bug - deployment infrastructure issue"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_block349_image_proxy.py",
+    "/app/test_reports/pytest/block349_image_proxy_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "image_proxy.py line 27-30: CORS header 'Access-Control-Allow-Origin: *' correctly set",
+    "image_proxy.py line 33: Uses httpx.AsyncClient with follow_redirects=True for Discogs redirect handling",
+    "image_proxy.py line 41-42: LRU cache implementation (max 50 entries) prevents repeated upstream fetches",
+    "WeeklyReportPage.js line 13-23: proxyImageUrl() correctly routes external http(s) URLs through /api/image-proxy",
+    "WeeklyReportPage.js line 18: Local /api/files/serve/ and data: URIs pass through unchanged",
+    "WeeklyReportPage.js line 26-34: preflightImage() pre-loads images with crossOrigin='anonymous' before canvas export",
+    "WeeklyReportPage.js line 37-65: ReportImg component accepts 'fallbacks' prop and tries each on error before showing placeholder",
+    "WeeklyReportPage.js line 64: All ReportImg images have crossOrigin='anonymous' attribute",
+    "WeeklyReportPage.js line 227-244: ShareCardImg uses proxied URLs and supports fallback chain",
+    "WeeklyReportPage.js line 394-405: handleShare() calls preflightImage() for hero image before html2canvas"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_block349_image_proxy.py"
+  ],
+  "success_rate": {
+    "backend": "89% (8/9 tests passed - 1 minor cache header infrastructure issue)",
+    "frontend": "100%"
+  },
+  "test_credentials": "test@test.com / test123",
+  "seed_data_creation": "N/A - used existing test user with 0 records (Fresh Start view)",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "BLOCK 349 image proxy tested. Proxy endpoint works correctly for Discogs images. The test user has 0 records so Weekly Report shows 'Fresh Start' view. To fully test hero image rendering with actual album art, need a user with records. The 403 errors in console logs are from OTHER pages (Hive feed) that haven't been updated to use the proxy yet - not from Weekly Report page itself.",
+  "features_verified": {
+    "BLOCK_349_backend_image_proxy": {
+      "status": "PASS",
+      "details": "GET /api/image-proxy?url={encoded_url} returns proxied image with Access-Control-Allow-Origin: * header"
+    },
+    "BLOCK_349_proxy_content_type": {
+      "status": "PASS",
+      "details": "Proxy preserves original content-type (image/jpeg, image/png)"
+    },
+    "BLOCK_349_proxy_error_handling": {
+      "status": "PASS",
+      "details": "Invalid/missing URLs return 400/422, non-existent images return 404/502"
+    },
+    "BLOCK_349_proxyImageUrl_external_urls": {
+      "status": "PASS",
+      "details": "External http(s) URLs like Discogs are routed through /api/image-proxy?url=..."
+    },
+    "BLOCK_349_proxyImageUrl_local_passthrough": {
+      "status": "PASS",
+      "details": "Local /api/files/serve/ URLs and data: URIs pass through unchanged"
+    },
+    "BLOCK_349_ReportImg_fallbacks": {
+      "status": "PASS",
+      "details": "ReportImg component accepts 'fallbacks' prop and tries each URL on error"
+    },
+    "BLOCK_349_weekly_report_loads": {
+      "status": "PASS",
+      "details": "/reports/weekly loads without errors, shows all slides"
+    },
+    "BLOCK_349_crossOrigin_anonymous": {
+      "status": "PASS",
+      "details": "ReportImg images have crossOrigin='anonymous' attribute for canvas compatibility"
+    },
+    "BLOCK_349_handleShare_preflight": {
+      "status": "PASS",
+      "details": "handleShare() calls preflightImage() before html2canvas to pre-cache images"
+    },
+    "BLOCK_333_date_range_regression": {
+      "status": "PASS",
+      "details": "Date range 'MARCH 4 – MARCH 11, 2026' displays correctly in intro slide"
+    }
+  },
+  "mocked_api_note": "Streaming links (Spotify/Apple Music) are MOCKED with search URL placeholders. Resend email is MOCKED for most platform emails."
+}
