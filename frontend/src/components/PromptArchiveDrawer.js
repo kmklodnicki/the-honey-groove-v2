@@ -2,8 +2,114 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from './ui/sheet';
-import { Loader2, MessageCircle, CheckCircle2, Clock } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Loader2, Disc, Clock } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { resolveImageUrl } from '../utils/imageUrl';
+
+const MiniCard = ({ prompt }) => {
+  const feat = prompt.featured;
+  const formatDate = (dateStr) => {
+    try {
+      const d = new Date(dateStr);
+      const now = new Date();
+      const diff = Math.floor((now - d) / 86400000);
+      if (diff <= 1) return 'Yesterday';
+      if (diff <= 6) return `${diff} days ago`;
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    } catch { return ''; }
+  };
+
+  return (
+    <div
+      className="rounded-xl border border-amber-200/40 bg-white/60 overflow-hidden"
+      style={{ cursor: 'default' }}
+      data-testid={`prompt-mini-card-${prompt.id}`}
+    >
+      {/* DAILY PROMPT label */}
+      <div className="px-3.5 pt-3">
+        <span
+          className="text-[9px] font-semibold tracking-[0.2em] uppercase"
+          style={{ color: '#C8861A', fontVariant: 'small-caps' }}
+          data-testid="mini-card-label"
+        >
+          Daily Prompt
+        </span>
+      </div>
+
+      {/* Prompt text */}
+      <div className="px-3.5 pt-1 pb-2">
+        <p className="text-[13px] font-medium text-vinyl-black italic leading-snug">
+          "{prompt.text}"
+        </p>
+        <span className="text-[9px] text-stone-400 uppercase tracking-wider mt-1 block">
+          {formatDate(prompt.scheduled_date)}
+          {prompt.response_count > 0 && (
+            <span className="ml-2 text-amber-600">{prompt.response_count} buzzed in</span>
+          )}
+        </span>
+      </div>
+
+      {/* Featured response mini-card body */}
+      {feat && (
+        <div className="px-3.5 pb-3.5">
+          <div className="rounded-lg bg-amber-50/60 p-2.5">
+            {/* User identity row */}
+            <div className="flex items-center gap-1.5 mb-2">
+              <Avatar className="w-4 h-4" data-testid="mini-card-avatar">
+                <AvatarImage src={feat.avatar_url} alt={feat.username || ''} />
+                <AvatarFallback className="text-[6px] bg-amber-200 text-amber-800">
+                  {(feat.username || '?')[0]?.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-[10px] text-stone-500 font-medium" data-testid="mini-card-username">
+                @{feat.username || 'anonymous'}
+              </span>
+            </div>
+
+            {/* Album art + answer */}
+            <div className="flex items-start gap-2.5">
+              {/* 40px album cover */}
+              <div
+                className="shrink-0 w-10 h-10 rounded-md overflow-hidden"
+                style={{ background: '#FFB800' }}
+                data-testid="mini-card-artwork"
+              >
+                {feat.cover_url ? (
+                  <img
+                    src={resolveImageUrl(feat.cover_url)}
+                    alt={feat.record_title || ''}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    draggable={false}
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Disc className="w-5 h-5 text-amber-900/20" />
+                  </div>
+                )}
+              </div>
+
+              {/* Record info */}
+              <div className="flex-1 min-w-0">
+                <p className="text-[12px] font-semibold text-vinyl-black truncate leading-tight">
+                  {feat.record_title || 'Unknown'}
+                </p>
+                <p className="text-[10px] text-stone-500 truncate">
+                  {feat.record_artist || 'Unknown'}
+                </p>
+                {feat.caption && (
+                  <p className="text-[10px] text-stone-600 italic line-clamp-2 mt-0.5 leading-snug">
+                    {feat.caption}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const PromptArchiveDrawer = ({ open, onOpenChange }) => {
   const { token, API } = useAuth();
@@ -19,26 +125,15 @@ const PromptArchiveDrawer = ({ open, onOpenChange }) => {
       .finally(() => setLoading(false));
   }, [open, token, API]);
 
-  const formatDate = (dateStr) => {
-    try {
-      const d = new Date(dateStr);
-      const now = new Date();
-      const diff = Math.floor((now - d) / 86400000);
-      if (diff <= 1) return 'Yesterday';
-      if (diff <= 6) return `${diff} days ago`;
-      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    } catch { return ''; }
-  };
-
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="overflow-y-auto bg-[#FAF6EE]" data-testid="prompt-archive-drawer">
-        <SheetHeader className="mb-4">
+        <SheetHeader className="mb-5">
           <SheetTitle className="font-heading text-xl text-vinyl-black" data-testid="prompt-archive-title">
-            Prompt Archive
+            The Mini-Groove
           </SheetTitle>
           <SheetDescription className="text-amber-700 text-xs tracking-wide">
-            See what the Hive has been buzzing about
+            A look back at what the Hive has been buzzing about
           </SheetDescription>
         </SheetHeader>
 
@@ -52,35 +147,9 @@ const PromptArchiveDrawer = ({ open, onOpenChange }) => {
             <p className="text-sm">No past prompts yet.</p>
           </div>
         ) : (
-          <div className="space-y-2" data-testid="prompt-archive-list">
+          <div className="flex flex-col gap-6" data-testid="prompt-archive-list">
             {prompts.map((p) => (
-              <Link
-                key={p.id}
-                to={`/hive?prompt_id=${p.id}`}
-                onClick={() => onOpenChange(false)}
-                className="block rounded-xl p-3.5 transition-all duration-200 hover:bg-amber-100/60 border border-transparent hover:border-amber-200/60"
-                data-testid={`prompt-archive-item-${p.id}`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <p className="text-sm font-medium text-vinyl-black italic leading-snug flex-1">
-                    "{p.text}"
-                  </p>
-                  {p.user_responded && (
-                    <CheckCircle2 className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                  )}
-                </div>
-                <div className="flex items-center gap-3 mt-2">
-                  <span className="text-[10px] text-stone-400 uppercase tracking-wider">
-                    {formatDate(p.scheduled_date)}
-                  </span>
-                  {p.response_count > 0 && (
-                    <span className="flex items-center gap-1 text-[10px] text-amber-600 font-medium">
-                      <MessageCircle className="w-3 h-3" />
-                      {p.response_count} buzzed in
-                    </span>
-                  )}
-                </div>
-              </Link>
+              <MiniCard key={p.id} prompt={p} />
             ))}
           </div>
         )}

@@ -285,10 +285,9 @@ async def get_todays_prompt(user: Dict = Depends(require_auth)):
 
 @router.get("/prompts/archive")
 async def get_prompt_archive(user: Dict = Depends(require_auth)):
-    """Return the last 14 prompts (excluding today) with their response counts."""
+    """Return the last 14 prompts (excluding today) with featured responses for mini-cards."""
     today_start, _ = _get_today_range()
 
-    # Fetch prompts scheduled before today, newest first
     prompts = await db.prompts.find(
         {"scheduled_date": {"$lt": today_start.isoformat()}, "active": True},
         {"_id": 0},
@@ -300,12 +299,34 @@ async def get_prompt_archive(user: Dict = Depends(require_auth)):
         user_responded = await db.prompt_responses.find_one(
             {"prompt_id": p["id"], "user_id": user["id"]}
         ) is not None
+
+        # Fetch featured response (most recent) with user + cover art data
+        featured = None
+        feat_doc = await db.prompt_responses.find_one(
+            {"prompt_id": p["id"]},
+            {"_id": 0, "user_id": 1, "cover_url": 1, "record_title": 1, "record_artist": 1, "caption": 1},
+        )
+        if feat_doc:
+            feat_user = await db.users.find_one(
+                {"id": feat_doc["user_id"]},
+                {"_id": 0, "username": 1, "avatar_url": 1},
+            )
+            featured = {
+                "cover_url": feat_doc.get("cover_url"),
+                "record_title": feat_doc.get("record_title"),
+                "record_artist": feat_doc.get("record_artist"),
+                "caption": feat_doc.get("caption"),
+                "username": feat_user.get("username") if feat_user else None,
+                "avatar_url": feat_user.get("avatar_url") if feat_user else None,
+            }
+
         results.append({
             "id": p["id"],
             "text": p["text"],
             "scheduled_date": p["scheduled_date"],
             "response_count": response_count,
             "user_responded": user_responded,
+            "featured": featured,
         })
 
     return results
