@@ -13,14 +13,15 @@ Premium social platform for vinyl collectors. Features include collection manage
 ### Security & Auth
 - Discogs OAuth dynamic callback via window.location.origin (BLOCK 480)
 - Comprehensive Discogs error logging, explicit HMAC-SHA1 (BLOCK 481)
-- Migration modal mount fix — triggers on has_seen_security_migration===false (BLOCK 492)
-- Dev-only migration reset tool for @katie (BLOCK 491)
+- Migration modal mount fix (BLOCK 492), Dev-only reset tool (BLOCK 491)
 - "Authentication: Pure Gold" success screen with gold confetti (BLOCK 500)
 
 ### Golden Hive ID System
-- **BLOCK 509:** Premium shield SVG badge, metallic gold gradient "Golden Hive Verified", shimmer animation
-- **BLOCK 510:** Stripe webhook auto-approves Golden Hive on payment, admin email to katie@thehoneygroove.com (exempt for @katie), in-app notification
-- **BLOCK 511:** Admin override — @katieintheafterglow hard-coded as golden_hive_verified + is_admin on every startup
+- **BLOCK 509:** Premium shield SVG badge with metallic gold gradient + shimmer
+- **BLOCK 510:** Stripe webhook auto-approves + admin email + in-app notification
+- **BLOCK 511:** @katieintheafterglow hard-coded as golden_hive_verified + is_admin
+- **BLOCK 515:** Badge moved to right-side action column, dark charcoal text #2C2C2C, bold, darker shield outline
+- **BLOCK 517:** Hover tooltip with dark charcoal background, "Golden Hive ID" headline, trust message
 
 ### Valuation & Price Display
 - Smart Valuation Hierarchy: Market > Personal > Dash (BLOCK 487)
@@ -29,10 +30,9 @@ Premium social platform for vinyl collectors. Features include collection manage
 
 ### UI Refinements
 - Brand watermark "THE HONEY GROOVE" in dark charcoal #2C2C2C (BLOCK 494)
-- Mood tab removed (BLOCK 494)
-- "View Full Report" link hidden/flagged (BLOCK 503)
-- "Gold Standard" promo text removed from CollectionPage (BLOCK 505)
-- **BLOCK 513:** "Connect to Discogs" button in Honey Gold (#FFBF00), dark border (#DAA520), hover #E5AB00
+- Mood tab removed (BLOCK 494), "View Full Report" hidden (BLOCK 503)
+- "Gold Standard" promo text removed (BLOCK 505)
+- **BLOCK 513:** Honey Gold Connect to Discogs button (#FFBF00)
 
 ## Prioritized Backlog
 
@@ -52,13 +52,7 @@ Premium social platform for vinyl collectors. Features include collection manage
 - Editable "New Music Friday", Backend search filters
 - "Secret Search Feature" (needs clarification)
 
-## Key API Endpoints
-- `/api/golden-hive/status` (GET) - Current user's Golden Hive verification status
-- `/api/webhook/stripe` (POST) - Handles payment_intent.succeeded + checkout.session.completed
-- `/api/valuation/collection/{username}` (GET) - Returns total_value, avg_value
-- `/api/debug/reset-migration` (POST) - Dev-only reset (@katie only)
-
 ## Test Credentials
 - Admin: admin@thehoneygroove.com / admin_password
-- User: test@example.com / test123 (has golden_hive_verified=true)
-- Katie: katieintheafterglow (golden_hive_verified=true, is_admin=true)
+- User: test@example.com / test123 (golden_hive_verified=true)
+- Katie: katieintheafterglow (golden_hive_verified + is_admin)
