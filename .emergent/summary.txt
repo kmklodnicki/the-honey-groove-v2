@@ -1,59 +1,68 @@
 <analysis>**original_problem_statement:**
-The user is building **The HoneyGroove**, a premium social platform for vinyl collectors. Development is iterative, with features and fixes requested in BLOCKS. The main goal of this session was to resolve a series of UI bugs, implement a paid verification system (Golden ID), and perform final data purges before a major version deployment.
+The user is iteratively building **The HoneyGroove**, a premium social platform for vinyl collectors. The goal of this session was to implement a very large series of user-provided UI/UX, performance, and logic-fixing BLOCK instructions, focusing on mobile responsiveness, feed navigation, image loading, and UI enhancements.
 
-Recent user requests included:
-*   **BLOCK 215:** Fix the mobile profile dropdown menu, which is not reliably clickable and gets clipped by other UI elements. The user has provided a specific technical solution involving React Portals and fixed positioning.
-*   **BLOCK 214:** Fix the mobile avatar touch target size.
-*   **BLOCK 211:** Perform a final data purge of all test listings and transactions.
-*   **BLOCK 207:** Implement a paid Golden ID verification workflow, locking the ID upload step behind a Stripe payment.
-*   **BLOCK 204:** Gate the Golden ID upload interface behind a successful Stripe Payouts account connection.
-*   **BLOCK 202:** Make all usernames throughout the app clickable links.
-*   **BLOCK 200:** Fix UI clipping issues in the admin panel and add a total user count.
-*   **BLOCK 197:** A final attempt to fix the recurring desktop dropdown clipping bug.
-*   **BLOCK 195:** Implement a Follow Back feature for reciprocal follows.
-*   **BLOCK 191:** Lower the minimum marketplace listing price to /bin/bash.01.
-*   **BLOCK 188:** Fix a bug where already-followed users were being suggested.
-*   **BLOCK 184:** Implement infinite scroll/pagination for the main feed.
+User requests included:
+*   **BLOCK 333:** Add a date range and Records Added metric to the Weekly Report.
+*   **BLOCK 224:** Implement the long-pending Daily Prompt Archive feature.
+*   **BLOCK 346:** Overhaul the archive panel into non-clickable Mini-Groove display cards.
+*   **BLOCK 349:** Implement a backend image proxy to fix CORS/403 errors for album art in the Weekly Report.
+*   **BLOCK 369:** A critical mobile fix involving a service worker, HTTPS enforcement, and disabling lazy-loading for key images.
+*   **BLOCK 379 & 372:** Update feed filter names, styles, and reposition the Daily Prompt archive link.
+*   **BLOCK 383, 387, 391:** A series of UI refinements to remove decorative elements, center the filter bar, and make the archive mini-cards clickable deep links.
+*   **BLOCK 399:** Add responsive flex-wrapping and text truncation to variant/note pills on feed cards.
+*   **BLOCK 407:** Reposition the animated equalizer icon from the album art overlay to the action row.
+*   **BLOCK 403:** Fix the sidebar deep-linking to route to individual post pages instead of an empty filtered view.
+*   **BLOCK 410 & 415:** Implement a high-fidelity grooved peeking vinyl animation, universally applied to all album art with proportional scaling for different card sizes.
+*   **BLOCK 412:** Make variant badges on feed cards expand fully on desktop while retaining truncation on mobile.
+*   **BLOCK 418:** Add a Scroll to Top floating action button (FAB) to the Collection page.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The HoneyGroove is a feature-rich full-stack application (React/TypeScript, FastAPI, MongoDB). Key systems include a social feed with post aggregation, detailed user collections, a marketplace (Honeypot), and a trade dispute system. This session introduced a complete, multi-step Golden ID verification workflow that gates ID uploads behind Stripe connection and a one-time payment. Numerous critical UI bugs have been resolved, including a persistent header dropdown clipping issue on desktop and various layout problems on mobile and in the admin panel. The user discovery logic and feed pagination have also been fixed and improved.
+The HoneyGroove is a feature-rich full-stack application (React/TypeScript, FastAPI, MongoDB). This session successfully implemented and tested a massive number of features. The long-forgotten Daily Prompt Archive is now live, accessible via a redesigned Mini-Groove sidebar with clickable deep links. A robust backend image proxy now serves all external images, fixing critical CORS issues for the Weekly Report canvas export. Mobile performance has been improved with a new service worker, HTTPS enforcement, and prioritized image loading. The UI has been significantly polished with a universally applied peeking vinyl animation, repositioned elements for better readability (like the equalizer), and more responsive layouts for feed filters and card metadata pills.
 
 **Last working item**:
-    - Last item agent was working: **BLOCK 215: THE MOBILE MENU GOD MODE**. The agent was tasked with fixing the mobile profile dropdown menu, which is not reliably clickable and gets clipped by the header. The user provided a specific implementation plan. The agent has just started investigating the relevant files.
-    - Status: IN PROGRESS
+    - Last item agent was working: **BLOCK 418: THE HIVE-RISE SCROLL BUTTON**. The agent was adding a floating action button (FAB) to the  to allow users to scroll to the top smoothly.
+    - Status: BLOCKED
     - Agent Testing Done: N
-    - Which testing method agent to use? screenshot tool
+    - Which testing method agent to use? Frontend testing agent or screenshot tool, after the compilation error is resolved.
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  - Issue 1:  (P0) The mobile profile dropdown menu is unusable because it's either not clickable or renders behind other elements.
+  - Issue 1:  (P0) Fix React Hook Violation in CollectionPage.jsx
 
   Issues Detail:
   - Issue 1: 
-     - Attempted fixes: The agent previously increased the avatar's touch target size (), but this did not solve the root problem of the menu being clipped or obscured by a parent element's stacking context ( or  conflicts).
+     - Attempted fixes: The agent correctly identified that the  and  hooks for the FAB were being called conditionally, violating React's rules. The agent attempted to move the hooks to the top of the component but inadvertently created a duplicate state variable declaration (), leading to a new compilation error. The code at lines 623-629 in  needs to be removed.
      - Next debug checklist: 
-        1.  Implement the user's explicit instructions for **BLOCK 215**.
-        2.  Refactor  (or the relevant mobile header component).
-        3.  Use a **React Portal** to render the mobile dropdown menu outside the main DOM hierarchy, appending it to .
-        4.  Change the dropdown's CSS  to .
-        5.  Use  on the avatar button to calculate and set the  and  styles for the portal-rendered menu, ensuring it's positioned correctly.
-        6.  Set the  to the maximum possible value ().
-        7.  Use the  in mobile view to confirm the dropdown appears correctly and is fully interactive.
-     - Why fix this issue and what will be achieved with the fix? This is a critical UI bug that prevents mobile users from accessing their profile, settings, and logout functions.
+        1. View .
+        2. Use  to delete the duplicate  state declaration and its associated  hook from lines 623-629.
+        3. Verify the application compiles and runs correctly.
+        4. Test the Scroll to Top button functionality.
+     - Why fix this issue and what will be achieved with the fix? This is a compilation-blocking bug. Fixing it will make the application runnable again and complete the implementation of the Scroll to Top feature (BLOCK 418).
      - Status:  IN PROGRESS
-     - Is recurring issue? Y (This is the mobile variant of the previously fixed desktop dropdown issue).
+     - Is recurring issue? Y (The agent struggled with React hook rules).
      - Should Test frontend/backend/both after fix? frontend
-     - Blocked on other issue: None
+     - Blocked on other issue: None.
 
 **In progress Task List**:
-  - None.
+  - Task 1:  (P0) Complete and Verify BLOCK 418: The Hive-Rise Scroll Button
+  
+ Task Detail:
+  - Task 1: 
+     - Where to resume: Resolve the compilation error in  as described in Issue 1 above.
+     - What will be achieved with this? This will add a user-friendly scroll to top button on the collection page, improving navigation on a potentially long page.
+     - Status:  BLOCKED
+     - Should Test frontend/backend/both after fix? frontend
+     - Blocked on something: Issue 1.
 
 **Upcoming and Future Tasks**
 - **Upcoming Tasks:**
-    - **P0:** Clarify and implement the user's secret search feature idea. The agent must ask for details as the top priority after the current bug is fixed.
+    - **P0: Complete Streaming Service Integration (BLOCK 254):** The UI buttons for Spotify/Apple Music exist, but the backend service to fetch the actual streaming URLs from a third-party API still needs to be implemented.
+    - **P1: Complete Service Worker Caching (BLOCK 321):** A service worker has been created, but the original request to aggressively cache specific assets like the Daily Prompt image on install has not been fully implemented.
+    - **P2: Clarify Secret Search Feature:** Proactively ask the user for details on this long-pending idea from a previous session.
 - **Future Tasks:**
+    - Implement a Record Store Day Proxy Network.
     - Re-implement a new, fully Safari-compatible loading animation.
     - Implement Pro memberships or a Verified Seller badge.
     - Implement deferred Buyer Protection features.
@@ -62,137 +71,201 @@ The HoneyGroove is a feature-rich full-stack application (React/TypeScript, Fast
     - Enhance search filters to be powered by the backend.
 
 **Completed work in this session**
-- List of all completed tasks with file and method name:
-  - **Feature: Paid Golden ID Workflow (BLOCK 207, 204):**
-    - : Implemented a full state machine UI for Golden ID verification (Connect Stripe -> Pay Fee -> Upload ID).
-    - : Added  to user model and API endpoints.
-    - : Added  endpoint for the verification fee.
-    - : Updated webhook handler for  to update user status to .
-    - : Added a Paid badge to the admin user list.
-  - **Bug Fix: Discovery Exclusivity Sync (BLOCK 188):**
-    - : Corrected a query in  to use the  collection instead of , fixing a bug where followed users were still suggested.
-  - **Bug Fix: Sub-Dollar Transactions (BLOCK 193):**
-    - : Modified checkout logic to correctly handle prices below Stripe's /bin/bash.50 minimum by adjusting fees and improving error handling.
-  - **Bug Fix: Recurring Desktop Dropdown Clipping (BLOCK 181, 197):**
-    - : Resolved the desktop dropdown clipping by removing conflicting inline styles, setting , and ensuring a max .
-  - **UI Feature: Reciprocal Follow Back (BLOCK 195):**
-    - : Enhanced user/discovery endpoints to return a  boolean.
-    - , , : Updated UI to show a Follow Back button with a glowing animation.
-  - **UI Feature: Clickable Usernames (BLOCK 202):**
-    - : Made usernames in the admin table clickable links to profiles.
-    - : Ensured discovery card usernames were styled as links.
-  - **UI Fix: Admin Panel Polish (BLOCK 200):**
-    - : Fixed table layout clipping, corrected grid column mismatch, and added a Total Users count badge.
-    - : Added container padding to prevent clipping.
-  - **UI Fix: Mobile Profile Tabs (Final Sync):**
-    - : Changed the tab container from a fixed grid to a horizontally scrollable flex row to prevent text mashing on mobile.
-  - **Feature: Feed Pagination (BLOCK 184):**
-    - : Implemented cursor-based pagination for the main feed.
-    - : Added logic to fetch more posts and a Show Older Posts button.
-  - **Data Purge (BLOCK 189, 211):** Executed multiple scripts to purge all test listings, transactions, and associated data from the database.
-
-- Recently completed:
-  - Mobile Avatar Touch Target Fix (DONE)
-  - Final Honeypot Data Purge (DONE)
-  - Mobile Profile Tab Scrolling (DONE)
-  - Paid Golden ID Paywall (DONE)
-  - Clickable Usernames & Admin Polish (DONE)
-  - Desktop Dropdown Clipping (DONE)
-  - Sub-Dollar Transaction Logic (DONE)
-  - Follow Back Feature (DONE)
-  - Discovery Logic Fix (DONE)
-  - Feed Pagination (DONE)
+- **Feature: Daily Prompt Archive (BLOCK 224, 346, 391, 403):** Implemented the long-pending archive feature, including the Mini-Groove sidebar UI, and fixed deep-linking to individual post pages.
+- **Feature: Robust Image Proxy & Report Fix (BLOCK 349):** Created a backend image proxy to solve CORS issues, enabling reliable image rendering in the Weekly Wrapped shareable canvas.
+- **Feature: Mobile Image Emergency Fix (BLOCK 369):** Created and registered a service worker with , enforced HTTPS on all image URLs, and disabled lazy-loading for the first 5 feed items to improve mobile asset delivery.
+- **Feature: Feed Navigation & UI Overhaul (BLOCK 372, 379, 387):** Redesigned the feed filter pills with new names, responsive styles, and a centered layout. Repositioned the Daily Prompt archive link for better flow.
+- **Feature: High-Fidelity Grooved Vinyl Animation (BLOCK 410, 415):** Implemented a universal, high-resolution peeking vinyl animation with realistic grooves, applied to all album art with proportional scaling.
+- **Feature: Responsive Variant Badge (BLOCK 399, 412):** Made variant badges expand fully on desktop while retaining truncation on mobile.
+- **Feature: UI Readability & Polish (BLOCK 383, 407):** Removed decorative elements for higher contrast on the Daily Prompt card and cleanly repositioned the animated equalizer icon into the action row.
+- **Fix:** Fixed a bug in  where the  prop was not being passed to the  component.
+- **Fix:** Testing agent fixed a missing closing brace in a CSS  animation.
 
 **Earlier issues found/mentioned but not fixed**
-   - None.
+   - **Issue 1: Incomplete Service Worker Caching (BLOCK 321).**
+     - The user has repeatedly requested aggressive caching, specifically adding the Daily Prompt image to a service worker's install step to guarantee it's cached locally. A service worker file was created (), but it only contains basic fetch caching, not the specific pre-caching logic requested.
+     - **Debug checklist:**
+        1. Modify .
+        2. Add an  event listener.
+        3. Inside the  event, use  and  to pre-fetch and store the URL for the current Daily Prompt image.
+        4. The URL for the daily prompt image needs to be fetched or passed to the service worker.
+     - **Why to solve this issue and what will be achieved with this?** Guarantees an instant-on experience for the app's most critical daily content, even on poor connections, fulfilling a persistent user request for performance.
+     - **Should Test frontend/backend/both after fix:** frontend
 
 **Known issue recurrence from previous fork**
-  - **Dropdown Clipping:** The desktop version of this bug was fixed multiple times ( changes, then finally  and ). The current task () is the mobile manifestation of this same root problem, requiring a more robust solution (React Portal) as requested by the user.
+  - None.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- **React Portals:** The prescribed solution for the current mobile dropdown bug, used to break components out of their parent's clipping context.
-- **UI State Machines:** The Golden ID verification flow is a prime example, managed in React state () to conditionally render different UI components for each step of the process (Stripe connect, payment, upload).
-- **Cursor-Based Pagination:** Implemented in the backend () to allow for efficient, scalable infinite scroll functionality.
-- **Stripe Webhooks & Checkout:** The Stripe integration was extended to handle one-time payments for the verification fee, using  webhooks to update user status in the database asynchronously.
-- **CSS Stacking Contexts:** A recurring theme. Debugging and fixing UI clipping issues involved a deep understanding of how , , , and / properties create new stacking contexts that trap child elements.
-- **Database Query Debugging:** The discovery feature was fixed by identifying and correcting a simple but critical bug: querying the wrong collection name ( instead of ).
+- **React Hook Rules:** The agent encountered and struggled with the Hooks can only be called at the top level of a React function rule. This is a critical concept for the next agent to be aware of when modifying components.
+- **Service Worker:** A new service worker () was created and registered. It uses a  lifecycle and a  event listener for a network-first caching strategy.
+- **Backend Image Proxy:** A FastAPI  was created to proxy external image requests, adding necessary  headers to prevent client-side CORS errors.
+- **Advanced CSS & Responsiveness:** Extensive use of  queries for mobile-first design,  for responsive containers,  for truncation, and CSS variables for theming.
+- **Component Prop Drilling:** The  prop was passed down through multiple component layers ( ->  ->  -> ) to control image loading behavior.
+- **DOM Manipulation (for Canvas):** The  logic in  was enhanced with pre-flight image loading to ensure images are fully downloaded before attempting to draw them to the canvas.
 
 **key DB schema**
-  - ****: Added  (e.g., NOT_PAID, PAID_PENDING_UPLOAD, PENDING_REVIEW) and  to manage the paid verification flow.
-  - ****: No schema change, but all test data purged.
-  - ****: No schema change, but all test data purged.
+  - No direct schema changes. Logic was added to the backend to look up  in the  collection using  as a key when it was missing from a .
 
 **changes in tech stack**
-  - None.
+  - **Backend:**  is used for making asynchronous HTTP requests in the new image proxy.
+  - **Frontend:** A service worker () was introduced to handle caching.
 
 **All files of reference**
-- **Currently being investigated:**
-    -  (for the mobile dropdown issue)
-- **Feature-defining files from this session:**
-    -  (The entire Golden ID workflow logic lives here)
-    -  (Contains the critical fixes for user discovery and follow logic)
-    -  (Handles all payment logic, including sub-dollar and verification fees)
-    -  (All admin panel UI improvements)
+- **Blocked File:** 
+- **Core Feature Files:**
+    - 
+    - 
+    - 
+    - 
+    -  (New)
+    -  (New)
 
 **Areas that need refactoring**:
-- The mix of  and  files persists. A dedicated effort to complete the TypeScript migration would improve code quality and maintainability.
+- **Streaming Service (BLOCK 254):** The  component is polished UI, but it still lacks a proper backend service to fetch dynamic URLs from Spotify/Apple Music. This is a pending upcoming task.
+- The codebase still has a mix of , , and  files. A full migration to TypeScript would improve maintainability.
 
 **key api endpoints**
-- ****: MODIFIED to support cursor-based pagination.
-- ****: MODIFIED to correctly exclude followed users and include  data.
-- **** & ****: MODIFIED to include  data.
-- ****: MODIFIED to handle sub-dollar amounts for marketplace items.
-- ****: NEW endpoint to initiate the one-time verification fee payment.
-- ****: NEW endpoint to fetch the user's current verification status for the frontend state machine.
-- ****: MODIFIED to listen for  and update .
+- ** (GET):** New endpoint that fetches an external image and returns it with permissive CORS headers.
+- ** (GET):** Modified to include  in the response for deep-linking.
 
 **Critical Info for New Agent**
-- **Your absolute #1 priority is BLOCK 215.** You must fix the mobile dropdown menu. The user has explicitly directed you to use a **React Portal** with  and dynamic positioning via . Do not try other  or  fixes; follow the user's specified architecture.
-- Nearly all items from the user's recent Final System Sync checklists have been completed and verified. The only outstanding item is the mobile dropdown bug.
-- After fixing the mobile dropdown, your next priority is to proactively ask the user about their secret search feature idea, as this has been on the upcoming task list for a while.
+- **IMMEDIATE BLOCKER:** The application is currently in a non-compilable state. You must first fix the React hook violation in  by removing the duplicate  state declaration (lines 623-629). This is preventing the last feature (BLOCK 418) from being completed and tested.
+- **React Hook Sensitivity:** The previous agent repeatedly struggled with React hook rules. Be extra careful when adding or moving  or  hooks in any component. They must always be at the top level, not inside conditionals or loops.
+- **Completed Work:** A massive amount of work was completed. Before starting new tasks, review the Completed work in this session section to avoid re-implementing features. The long-pending Daily Prompt Archive is now done.
 
 **documents and test reports created in this job**
-  - /app/test_reports/iteration_20.json
-  - /app/memory/PRD.md (updated)
+  - /app/test_reports/iteration_9.json
+  - /app/test_reports/iteration_10.json
+  - /app/test_reports/iteration_11.json
+  - /app/test_reports/iteration_12.json
+  - /app/test_reports/iteration_13.json
+  - /app/test_reports/iteration_14.json
+  - /app/test_reports/iteration_15.json
+  - /app/test_reports/iteration_16.json
+  - /app/memory/PRD.md (updated after each major feature completion)
 
 **Last 10 User Messages and any pending HUMAN messages** 
-10. **Request (BLOCK 215):** Fix the mobile dropdown menu using a React Portal and . (IN PROGRESS)
-9.  **Request (BLOCK 214):** A master deployment checklist, with the only new item being a fix for the mobile avatar's touch target size. (DONE)
-8.  **Request (BLOCK 211):** A final data purge of the marketplace. (DONE)
-7.  **Request (Final Sync):** A checklist including fixing mobile tab layout, which was the only remaining item. (DONE)
-6.  **Request (BLOCK 207):** Implement the paid verification workflow, locking ID upload behind a Stripe payment. (DONE)
-5.  **Request (BLOCK 204):** Implement the first step of the verification workflow, gating ID upload behind Stripe account connection. (DONE)
-4.  **Request (BLOCK 202):** Make all usernames clickable links. (DONE)
-3.  **Request (BLOCK 200):** Fix admin panel UI clipping and add a user count. (DONE)
-2.  **Request (BLOCK 197):** A final, more forceful attempt to fix the desktop dropdown clipping. (DONE)
-1.  **Request (BLOCK 195):** Implement the Follow Back feature for reciprocal follows. (DONE)
+10. **Request (Scroll-to-Top FAB):** Add a floating action button to scroll to the top of the collection view (). (BLOCKED)
+9. **Request (Vinyl Peek Refinement):** Make variant badges expand on desktop and use proportional peeking for the vinyl animation (). (DONE)
+8. **Request (High-Fidelity Vinyl):** Implement a detailed, grooved texture on a larger peeking vinyl animation, applied universally (). (DONE)
+7. **Request (Sidebar Deep Link Fix):** Fix sidebar links to route to the specific post detail page () instead of an empty filtered view (). (DONE)
+6. **Request (Equalizer Repositioning):** Move the animated equalizer icon from the album art overlay to the action row next to streaming buttons (). (DONE)
+5. **Request (Flex-Variant Mobile Fix):** Make variant/note pills wrap correctly on mobile and truncate long text (). (DONE)
+4. **Request (UI Trifecta):** Remove decorative elements for high contrast, center the feed filters, and make the archive mini-cards clickable (). (DONE)
+3. **Request (Feed Nav & Story-Flow):** Update filter names, styles, and reposition the archive link on the Daily Prompt card (). (DONE)
+2. **Request (Mobile Image Fix):** Implement a service worker, enforce HTTPS, and prioritize critical images to fix mobile asset loading (). (DONE)
+1. **Request (Image Proxy):** Create a backend proxy to fix CORS errors preventing weekly report images from rendering on the shareable canvas (). (DONE)
 
 **Project Health Check:**
-- **Broken:** The mobile profile dropdown menu is non-functional, blocking access to core user navigation.
-- **Mocked:**  integration for most platform emails (excluding the Weekly Wax) is still mocked.
+- **Broken:** Yes. The frontend will not compile due to a React Hook / duplicate variable error in .
+- **Mocked:**
+    -  integration for most platform emails.
+    - **Streaming Service:** The UI for Spotify/Apple Music links is polished but does not fetch real data from a backend service.
+- **In-Progress:** The Scroll to Top FAB () is coded but blocked by a compilation error.
 
 **3rd Party Integrations**
-- **Stripe Connect:** LIVE MODE. Used for seller payouts and the new Golden ID verification fee.
-- **Discogs API:** Used for all record data.
-- **Resend:** Live for the Weekly Wax email; mocked for other platform emails.
-- **Google Tag Manager / Google Analytics:** For analytics.
-- **Fuse.js:** For client-side fuzzy searching.
-- **Discord:** A link to a Discord server is present in the UI.
+- **Stripe Connect:** Live for seller payouts and Golden ID payments.
+- **Discogs API:** Used for all record data and median pricing.
+- **Resend:** Used for the Weekly Wax email, mocked for others.
+- **Socket.IO:** For real-time feed updates.
+- **colorgram.py (via 
+Usage:   
+  pip <command> [options]
+
+Commands:
+  install                     Install packages.
+  lock                        Generate a lock file.
+  download                    Download packages.
+  uninstall                   Uninstall packages.
+  freeze                      Output installed packages in requirements format.
+  inspect                     Inspect the python environment.
+  list                        List installed packages.
+  show                        Show information about installed packages.
+  check                       Verify installed packages have compatible 
+dependencies.
+  config                      Manage local and global configuration.
+  search                      Search PyPI for packages.
+  cache                       Inspect and manage pip's wheel cache.
+  index                       Inspect information available from package 
+indexes.
+  wheel                       Build wheels from your requirements.
+  hash                        Compute hashes of package archives.
+  completion                  A helper command used for command completion.
+  debug                       Show information useful for debugging.
+  help                        Show help for commands.
+
+General Options:
+  -h, --help                  Show help.
+  --debug                     Let unhandled exceptions propagate outside the
+                              main subroutine, instead of logging them to
+                              stderr.
+  --isolated                  Run pip in an isolated mode, ignoring
+                              environment variables and user configuration.
+  --require-virtualenv        Allow pip to only run in a virtual environment;
+                              exit with an error otherwise.
+  --python <python>           Run pip with the specified Python interpreter.
+  -v, --verbose               Give more output. Option is additive, and can be
+                              used up to 3 times.
+  -V, --version               Show version and exit.
+  -q, --quiet                 Give less output. Option is additive, and can be
+                              used up to 3 times (corresponding to WARNING,
+                              ERROR, and CRITICAL logging levels).
+  --log <path>                Path to a verbose appending log.
+  --no-input                  Disable prompting for input.
+  --keyring-provider <keyring_provider>
+                              Enable the credential lookup via the keyring
+                              library if user input is allowed. Specify which
+                              mechanism to use [auto, disabled, import,
+                              subprocess]. (default: auto)
+  --proxy <proxy>             Specify a proxy in the form
+                              scheme://[user:passwd@]proxy.server:port.
+  --retries <retries>         Maximum attempts to establish a new HTTP
+                              connection. (default: 5)
+  --timeout <sec>             Set the socket timeout (default 15 seconds).
+  --exists-action <action>    Default action when a path already exists:
+                              (s)witch, (i)gnore, (w)ipe, (b)ackup, (a)bort.
+  --trusted-host <hostname>   Mark this host or host:port pair as trusted,
+                              even though it does not have valid or any HTTPS.
+  --cert <path>               Path to PEM-encoded CA certificate bundle. If
+                              provided, overrides the default. See 'SSL
+                              Certificate Verification' in pip documentation
+                              for more information.
+  --client-cert <path>        Path to SSL client certificate, a single file
+                              containing the private key and the certificate
+                              in PEM format.
+  --cache-dir <dir>           Store the cache data in <dir>.
+  --no-cache-dir              Disable the cache.
+  --disable-pip-version-check
+                              Don't periodically check PyPI to determine
+                              whether a new version of pip is available for
+                              download. Implied with --no-
+                              index.
+  --no-color                  Suppress colored output.
+  --use-feature <feature>     Enable new functionality, that may be backward
+                              incompatible.
+  --use-deprecated <feature>  Enable deprecated functionality, that will be
+                              removed in the future.
+  --resume-retries <resume_retries>
+                              Maximum attempts to resume or restart an
+                              incomplete download. (default: 5)):** For server-side dominant color extraction.
+- **Pillow:** For server-side image processing.
+- **html2canvas:** For client-side generation of the shareable weekly report image.
+- **httpx:** For the backend image proxy.
 
 **Testing status**
-  - Testing agent used after significant changes: YES. The testing agent was used after completing the initial feed pagination and dropdown fixes.
+  - Testing agent used after significant changes: YES. The testing agent was used successfully after every completed BLOCK, providing 100% pass rates and even contributing a CSS fix.
   - Troubleshoot agent used after agent stuck in loop: NO
   - Test files created: []
-  - Known regressions: None. The current issue is a known bug, not a regression.
+  - Known regressions: None.
 
 **Credentials to test flow:**
 - Admin: , Password: 
-- User: , Email: , Password: 
 - User: , Password: 
-- The database contains a few persistent users (, ) and test users created during this session may still exist.
 
 **What agent forgot to execute**
-- Nothing was forgotten. The agent worked through all user requests systematically and is currently addressing the latest one.</analysis>
+- **Full Service Worker Caching (BLOCK 321):** A service worker was created, but the user's specific request to pre-cache the Daily Prompt image during the  phase was not implemented. The current SW only does runtime caching.
+- **Streaming Service Backend (BLOCK 254):** This remains a pending upcoming task. The frontend UI exists, but the backend logic to fetch streaming links is missing.
+- **Clarification on Secret Search Feature:** The agent did not ask the user for more details on this pending task.</analysis>

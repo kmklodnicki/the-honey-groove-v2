@@ -238,6 +238,7 @@ const CollectionPage = () => {
   const [dupeCleaning, setDupeCleaning] = useState(false);
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
   const [fadingIds, setFadingIds] = useState(new Set());
+  // (BackToTop component handles scroll-to-top)
   const navigate = useNavigate();
 
   // Blur placeholders for record cover images
