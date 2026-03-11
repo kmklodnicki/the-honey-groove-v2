@@ -67,6 +67,15 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - Backend enriched with featured response data (cover, user, caption)
   - Files: PromptArchiveDrawer.js, daily_prompts.py
   - Tested: PASS
+- **BLOCK 349: Image Recovery (CORS-Safe Canvas Export)** (March 2026) — COMPLETED
+  - Backend: Created /api/image-proxy endpoint (httpx + in-memory LRU cache) serving external images with CORS headers
+  - Frontend: proxyImageUrl() wraps external URLs through proxy, passes local URLs through
+  - ReportImg component supports fallback chain (spotify_image_url, apple_artwork_url)
+  - Pre-flight image loading before html2canvas export
+  - All report images use crossOrigin="anonymous"
+  - ShareCard uses proxied + fallback-aware image rendering
+  - Files: image_proxy.py, server.py, WeeklyReportPage.js
+  - Tested: PASS
 
 ### Layout & Design Features
 - Golden Vault Layout (ProfilePage unified dashboard)
