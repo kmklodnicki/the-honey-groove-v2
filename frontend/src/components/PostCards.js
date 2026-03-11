@@ -171,6 +171,8 @@ const VariantTag = ({ variant, glass, ghost, gold, prefix, linkTo }) => {
   const label = prefix ? `${prefix} ${variant}` : variant;
 
   const linkClass = linkTo ? 'cursor-pointer transition-transform duration-150 hover:scale-105 active:scale-100' : '';
+  // Mobile truncation for long variant names
+  const truncStyle = { maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' };
 
   const wrap = (content, testId) => {
     if (!linkTo) return content;
@@ -183,8 +185,8 @@ const VariantTag = ({ variant, glass, ghost, gold, prefix, linkTo }) => {
 
   if (glass) {
     return wrap(
-      <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full truncate max-w-full"
-        style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
+      <span className="inline-flex items-center gap-1 text-[10px] sm:text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+        style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)', ...truncStyle }}
         data-testid="variant-pill-glass">
         {label}
       </span>,
@@ -193,30 +195,32 @@ const VariantTag = ({ variant, glass, ghost, gold, prefix, linkTo }) => {
   }
   if (ghost) {
     return wrap(
-      <span className="inline-flex items-center gap-1 mt-0.5 text-[10px] font-medium px-2 py-0.5 rounded-full border border-stone-300 text-stone-400 bg-transparent truncate max-w-full"
+      <span className="inline-flex items-center gap-1 text-[10px] sm:text-[10px] font-medium px-2 py-0.5 rounded-full border border-stone-300 text-stone-400 bg-transparent"
+        style={truncStyle}
         data-testid="variant-pill-ghost">
-        <Disc className="w-2.5 h-2.5" />
-        {label}
+        <Disc className="w-2.5 h-2.5 shrink-0" />
+        <span className="truncate">{label}</span>
       </span>,
       'variant-pill-ghost'
     );
   }
   if (gold) {
     return wrap(
-      <span className="inline-flex items-center gap-1 mt-0.5 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-400 bg-gradient-to-r from-yellow-400/80 via-amber-400/80 to-yellow-500/80 text-amber-950 truncate max-w-full"
+      <span className="inline-flex items-center gap-1 text-[10px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-400 bg-gradient-to-r from-yellow-400/80 via-amber-400/80 to-yellow-500/80 text-amber-950"
+        style={truncStyle}
         data-testid="variant-pill-gold">
-        <Disc className="w-2.5 h-2.5" />
-        {label}
+        <Disc className="w-2.5 h-2.5 shrink-0" />
+        <span className="truncate">{label}</span>
       </span>,
       'variant-pill-gold'
     );
   }
   return wrap(
-    <span className={`inline-flex items-center gap-1 mt-1 text-[11px] font-bold tracking-wide px-2.5 py-1 rounded-full truncate max-w-full`}
-      style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
+    <span className="inline-flex items-center gap-1 text-[11px] sm:text-[11px] font-bold tracking-wide px-2.5 py-1 rounded-full"
+      style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)', ...truncStyle }}
       data-testid="variant-pill">
-      <Disc className="w-3 h-3" />
-      {label}
+      <Disc className="w-3 h-3 shrink-0" />
+      <span className="truncate">{label}</span>
     </span>,
     'variant-pill'
   );
@@ -291,13 +295,15 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
         <div className="flex-1 min-w-0">
           <p className="font-heading text-lg leading-tight">{record.title}</p>
           <p className="text-sm text-muted-foreground">{record.artist}</p>
-          {variantText && <VariantTag variant={variantText} linkTo={variantLink(record)} />}
-          {(record.edition_number || post.edition_number) && <EditionTag number={record.edition_number || post.edition_number} />}
-          {!variantText && record.format && record.format !== 'Vinyl' && (
-            <span className="inline-flex items-center gap-1 mt-0.5 text-[10px] font-medium px-2 py-0.5 rounded-full border border-stone-200 text-stone-500 bg-stone-50" data-testid="format-pill">
-              <Disc className="w-2.5 h-2.5" /> {record.format}
-            </span>
-          )}
+          <div className="flex flex-wrap gap-1 mt-1" data-testid="card-meta-pills">
+            {variantText && <VariantTag variant={variantText} linkTo={variantLink(record)} />}
+            {(record.edition_number || post.edition_number) && <EditionTag number={record.edition_number || post.edition_number} />}
+            {!variantText && record.format && record.format !== 'Vinyl' && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border border-stone-200 text-stone-500 bg-stone-50" data-testid="format-pill">
+                <Disc className="w-2.5 h-2.5" /> {record.format}
+              </span>
+            )}
+          </div>
           {post.track && <p className="text-xs text-honey-amber mt-1">Track: {post.track}</p>}
           {post.caption && <p className="text-sm mt-2"><MentionText text={post.caption} /></p>}
         </div>
@@ -440,8 +446,10 @@ const AddedToCollectionCard = ({ post, onAlbumClick, imgPriority }) => {
         <div className="min-w-0">
           <p className="font-medium">{record.title}</p>
           <p className="text-sm text-muted-foreground">{record.artist}</p>
-          {variantText && <VariantTag variant={variantText} linkTo={variantLink(record)} />}
-          {(record.edition_number || post.edition_number) && <EditionTag number={record.edition_number || post.edition_number} />}
+          <div className="flex flex-wrap gap-1 mt-1" data-testid="card-meta-pills">
+            {variantText && <VariantTag variant={variantText} linkTo={variantLink(record)} />}
+            {(record.edition_number || post.edition_number) && <EditionTag number={record.edition_number || post.edition_number} />}
+          </div>
         </div>
       </div>
     </AlbumLink>
@@ -507,7 +515,9 @@ const DailyPromptPostCard = ({ post, imgPriority }) => (
       <div className="flex-1 min-w-0">
         <p className="font-heading text-lg leading-tight">{post.record_title}</p>
         <p className="text-sm text-muted-foreground">{post.record_artist}</p>
-        {(post.color_variant || post.pressing_variant) && <VariantTag variant={post.color_variant || post.pressing_variant} linkTo={variantLink(post.record)} />}
+        <div className="flex flex-wrap gap-1 mt-1" data-testid="card-meta-pills">
+          {(post.color_variant || post.pressing_variant) && <VariantTag variant={post.color_variant || post.pressing_variant} linkTo={variantLink(post.record)} />}
+        </div>
       </div>
     </div>
     {post.caption && <p className="text-sm mt-3">{post.caption}</p>}
@@ -573,11 +583,13 @@ const ListingPostCard = ({ post }) => {
         <div className="flex-1 min-w-0">
           <p className="font-medium text-sm truncate">{post.record_title}</p>
           <p className="text-xs text-muted-foreground truncate">{post.record_artist}</p>
-          {variantText && <VariantTag variant={variantText} linkTo={variantLink(post.record)} />}
-          <span className={`inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100/60 text-teal-700`}>
-            {isSale ? <ShoppingBag className="w-3 h-3" /> : <ArrowRightLeft className="w-3 h-3" />}
-            {isSale ? 'For Sale' : 'For Trade'}
-          </span>
+          <div className="flex flex-wrap gap-1 mt-1" data-testid="card-meta-pills">
+            {variantText && <VariantTag variant={variantText} linkTo={variantLink(post.record)} />}
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100/60 text-teal-700`}>
+              {isSale ? <ShoppingBag className="w-3 h-3" /> : <ArrowRightLeft className="w-3 h-3" />}
+              {isSale ? 'For Sale' : 'For Trade'}
+            </span>
+          </div>
           {post.pressing_notes && <p className="text-xs italic text-stone-500 font-serif mt-1 truncate">{post.pressing_notes.length > 60 ? post.pressing_notes.slice(0, 60) + '...' : post.pressing_notes}</p>}
         </div>
       </div>

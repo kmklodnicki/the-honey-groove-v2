@@ -618,3 +618,14 @@ main {
   0%, 100% { box-shadow: 0 0 8px rgba(244,185,66,0.3); }
   50% { box-shadow: 0 0 16px rgba(244,185,66,0.5); }
 }
+
+/* BLOCK 399: Mobile variant pill sizing */
+@media (max-width: 480px) {
+  [data-testid="variant-pill"],
+  [data-testid="variant-pill-glass"],
+  [data-testid="variant-pill-ghost"],
+  [data-testid="variant-pill-gold"] {
+    font-size: 11px !important;
+    max-width: 150px;
+  }
+}
