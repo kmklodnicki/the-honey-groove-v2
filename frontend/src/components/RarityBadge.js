@@ -1,5 +1,6 @@
 import React from 'react';
 import { Disc } from 'lucide-react';
+import { toast } from 'sonner';
 
 const TIER_CONFIG = {
   'Grail':      { label: 'Grail',      color: '#FFF', bg: 'linear-gradient(135deg, #7B2FF2, #C8861A)', border: '#7B2FF2', glow: '0 0 12px rgba(123,47,242,0.4)' },
@@ -72,7 +73,7 @@ export const RarityBadge = ({ label, size = 'sm' }) => {
   );
 };
 
-export const RarityCard = ({ rarity, label, honeypotListings, onForSaleClick }) => {
+export const RarityCard = ({ rarity, label, honeypotListings, onForSaleClick, albumName, variantName }) => {
   if (!rarity?.tier) return null;
   const cardLabel = label || 'Global Variant Rarity';
   const useHoneypot = honeypotListings != null;
@@ -81,6 +82,16 @@ export const RarityCard = ({ rarity, label, honeypotListings, onForSaleClick }) 
   const forSaleLabel = useHoneypot
     ? (isEmptyHoneypot ? 'Notify me when listed' : `${forSaleCount} in Honeypot`)
     : 'For Sale';
+
+  const handleNotifyClick = () => {
+    const cleanVariant = variantName && variantName !== 'Standard' && variantName.trim() ? variantName.trim() : '';
+    const displayName = cleanVariant ? `${albumName || 'this record'} (${cleanVariant})` : (albumName || 'this record');
+    toast.success(`We'll notify you when ${displayName} is for sale!`, {
+      duration: 3000,
+      style: { border: '2px solid #DAA520', background: '#FFFDF5' },
+    });
+    if (onForSaleClick) onForSaleClick();
+  };
 
   return (
     <div
@@ -111,9 +122,9 @@ export const RarityCard = ({ rarity, label, honeypotListings, onForSaleClick }) 
           <p className="text-[11px] text-muted-foreground uppercase tracking-wider mt-0.5">Wantlist</p>
         </div>
         <div
-          className={`text-center ${onForSaleClick ? 'cursor-pointer hover:bg-honey/10 rounded-lg -m-1 p-1 transition-colors' : ''}`}
-          onClick={onForSaleClick}
-          role={onForSaleClick ? 'link' : undefined}
+          className={`text-center ${(onForSaleClick || isEmptyHoneypot) ? 'cursor-pointer hover:bg-honey/10 rounded-lg -m-1 p-1 transition-colors' : ''}`}
+          onClick={isEmptyHoneypot ? handleNotifyClick : onForSaleClick}
+          role={onForSaleClick || isEmptyHoneypot ? 'button' : undefined}
           data-testid="rarity-listings"
         >
           {isEmptyHoneypot ? (

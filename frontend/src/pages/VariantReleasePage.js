@@ -180,6 +180,8 @@ export default function VariantReleasePage() {
             label="Global Variant Scarcity"
             honeypotListings={honeypot?.active_listings ?? 0}
             onForSaleClick={() => navigate(`/honeypot?q=${encodeURIComponent(ov.artist + ' ' + ov.album)}`)}
+            albumName={ov.album}
+            variantName={ov.variant}
           />
         </section>
       )}

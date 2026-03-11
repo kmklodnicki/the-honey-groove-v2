@@ -217,6 +217,13 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - Honeycomb pulsing animation (gold bars) during loading state
   - Files: ComposerBar.js
   - Tested: PASS (self-tested, loading animation + 12 tracks confirmed)
+- **BLOCK 422: Listing Alert Confirmation** (March 2026) — COMPLETED
+  - Toast fires on "Notify me when listed" click with dynamic message
+  - Format: "We'll notify you when {Album} ({Variant}) is for sale!" 
+  - Handles missing/generic variant (omits parentheses)
+  - Honey Gold border (#DAA520), cream background (#FFFDF5), 3-second duration
+  - Files: RarityBadge.js, VariantReleasePage.js (passes albumName/variantName)
+  - Tested: PASS (self-tested, toast shown with correct album+variant content)
 - **BLOCK 457: Daily Prompt Image Restoration** (March 2026) — COMPLETED
   - Added crossOrigin='anonymous' to AlbumArt and DailyPrompt img tags
   - Added proxy fallback: onError fires proxyImageUrl() via /api/image-proxy
