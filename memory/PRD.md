@@ -8,49 +8,55 @@ Premium social platform for vinyl collectors. Features include collection manage
 - **Backend:** FastAPI (Python), MongoDB (Motor async driver)
 - **Integrations:** Stripe Connect, Discogs OAuth 1.0a, Resend email, Socket.IO real-time
 
-## What's Been Implemented (This Session)
+## What's Been Implemented (This Session — Blocks 480-524)
 
 ### Security & Auth
-- Discogs OAuth dynamic callback via window.location.origin (BLOCK 480)
-- Comprehensive Discogs error logging, explicit HMAC-SHA1 (BLOCK 481)
-- Migration modal mount fix (BLOCK 492), Dev-only reset tool (BLOCK 491)
-- "Authentication: Pure Gold" success screen with gold confetti (BLOCK 500)
+- BLOCK 480: Dynamic OAuth callback via window.location.origin
+- BLOCK 481: Comprehensive Discogs error logging, explicit HMAC-SHA1
+- BLOCK 491: Dev-only migration reset tool (@katie)
+- BLOCK 492: Migration modal mount fix
+- BLOCK 500: "Authentication: Pure Gold" success screen
+- BLOCK 513: Honey Gold Connect to Discogs button (#FFBF00)
 
 ### Golden Hive ID System
-- **BLOCK 509:** Premium shield SVG badge with metallic gold gradient + shimmer
-- **BLOCK 510:** Stripe webhook auto-approves + admin email + in-app notification
-- **BLOCK 511:** @katieintheafterglow hard-coded as golden_hive_verified + is_admin
-- **BLOCK 515:** Badge moved to right-side action column, dark charcoal text #2C2C2C, bold, darker shield outline
-- **BLOCK 517:** Hover tooltip with dark charcoal background, "Golden Hive ID" headline, trust message
+- BLOCK 509: Premium shield SVG badge + shimmer
+- BLOCK 510: Stripe webhook auto-approves + admin email + notification
+- BLOCK 511: @katieintheafterglow admin override
+- BLOCK 515: Badge moved to right action column, dark charcoal text
+- BLOCK 517: Hover tooltip with dark charcoal background
+- BLOCK 523: Mobile touch-to-reveal (button element, tooltip side=top)
+
+### Activity Tracking
+- BLOCK 519: Spin deduplication (same record within 5 min), spun_at timestamp
+- BLOCK 520: Real-time local state update on spin click
 
 ### Valuation & Price Display
-- Smart Valuation Hierarchy: Market > Personal > Dash (BLOCK 487)
-- Honey Gold price pill overlays (BLOCK 483/484)
-- Avg. Value stat in Week in Wax (BLOCK 494/495)
+- BLOCK 487: Smart Valuation Hierarchy (Market > Personal > Dash)
+- BLOCK 483/484: Honey Gold price pills + priority re-linking
+- BLOCK 494/495: Avg. Value stat in Week in Wax
 
 ### UI Refinements
-- Brand watermark "THE HONEY GROOVE" in dark charcoal #2C2C2C (BLOCK 494)
-- Mood tab removed (BLOCK 494), "View Full Report" hidden (BLOCK 503)
-- "Gold Standard" promo text removed (BLOCK 505)
-- **BLOCK 513:** Honey Gold Connect to Discogs button (#FFBF00)
+- BLOCK 494: Brand watermark #2C2C2C, Mood tab removed
+- BLOCK 503: "View Full Report" hidden
+- BLOCK 505: "Gold Standard" promo text removed
+- BLOCK 524: Stripe disconnect icon + mobile scaling
 
 ## Prioritized Backlog
 
 ### P0 - Next
-- **BLOCK 476: Value Recovery Engine** - Use OAuth tokens for Weekly Wax collection value
+- **BLOCK 476: Value Recovery Engine** - Weekly Wax collection value via OAuth
 
 ### P1 - Blocked
-- **BLOCK 254: Streaming Service** - Spotify/Apple Music links (awaiting callback URL)
+- **BLOCK 254: Streaming Service** - Spotify/Apple Music (awaiting callback URL)
 
 ### P2 - Upcoming
 - Service Worker Daily Prompt pre-cache (BLOCK 321)
-- SWR rollout to Marketplace, CollectionPage, ListingDetailModal
+- SWR rollout to remaining pages
 
 ### P3 - Future/Backlog
 - Record Store Day Proxy Network, Safari loading animation
 - Pro memberships, Buyer Protection, Instagram sharing
 - Editable "New Music Friday", Backend search filters
-- "Secret Search Feature" (needs clarification)
 
 ## Test Credentials
 - Admin: admin@thehoneygroove.com / admin_password
