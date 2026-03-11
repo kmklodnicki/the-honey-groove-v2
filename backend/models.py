@@ -206,6 +206,7 @@ class PostResponse(BaseModel):
     is_new_feature: bool = False
     content: Optional[str] = None
     intent: Optional[str] = None
+    bundle_records: Optional[List[Dict[str, Any]]] = None
 
 # Comment Models
 class CommentCreate(BaseModel):

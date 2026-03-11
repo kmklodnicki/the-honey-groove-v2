@@ -377,7 +377,8 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
         is_pinned=post.get("is_pinned", False),
         is_new_feature=post.get("is_new_feature", False),
         content=post.get("content"),
-        intent=post.get("intent")
+        intent=post.get("intent"),
+        bundle_records=post.get("bundle_records")
     )
 
 @router.get("/feed", response_model=List[PostResponse])

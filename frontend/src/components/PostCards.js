@@ -256,8 +256,54 @@ const NowSpinningCard = ({ post, onAlbumClick }) => {
   );
 };
 
-// NEW_HAUL card body
+// NEW_HAUL card body — handles both manual hauls and auto-bundled collection adds
 const NewHaulCard = ({ post, onAlbumClick }) => {
+  const [expanded, setExpanded] = React.useState(false);
+  const bundle = post.bundle_records;
+  
+  // Auto-bundle flow: stacked album art grid
+  if (bundle && bundle.length > 0) {
+    const shown = expanded ? bundle : bundle.slice(0, 4);
+    const extra = bundle.length - 4;
+    return (
+      <div data-testid="haul-bundle-card">
+        {post.caption && <p className="text-sm mb-3"><MentionText text={post.caption} /></p>}
+        <div className="grid grid-cols-4 gap-1.5">
+          {shown.map((item, idx) => (
+            <AlbumLink key={idx} record={item} onAlbumClick={onAlbumClick}>
+              <div className="relative group/cover">
+                <AlbumArt src={item.cover_url} alt={`${item.artist} - ${item.title}`} 
+                  className="w-full aspect-square rounded-lg object-cover border border-stone-200/60" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-lg opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-end p-1.5">
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-medium text-white truncate">{item.title}</p>
+                    <p className="text-[9px] text-white/70 truncate">{item.artist}</p>
+                  </div>
+                </div>
+              </div>
+            </AlbumLink>
+          ))}
+          {!expanded && extra > 0 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setExpanded(true); }}
+              className="aspect-square rounded-lg flex items-center justify-center text-sm font-bold"
+              style={{ background: 'rgba(232,168,32,0.12)', color: '#996012', border: '1px dashed rgba(200,134,26,0.3)' }}
+              data-testid="haul-bundle-expand"
+            >
+              +{extra} more
+            </button>
+          )}
+        </div>
+        {expanded && bundle.length > 4 && (
+          <button onClick={() => setExpanded(false)} className="text-xs text-muted-foreground mt-2 hover:underline" data-testid="haul-bundle-collapse">
+            Show less
+          </button>
+        )}
+      </div>
+    );
+  }
+  
+  // Manual haul flow (from composer)
   const haul = post.haul;
   if (!haul) return <p className="text-sm"><MentionText text={post.caption} /></p>;
   const items = haul.items || [];

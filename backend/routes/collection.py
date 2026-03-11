@@ -64,18 +64,53 @@ async def add_record(record_data: RecordCreate, user: Dict = Depends(require_aut
     # Invalidate completion cache for this user (ownership changed)
     await db.completion_cache.delete_many({"user_id": user["id"]})
     
-    # Create activity post
-    post_id = str(uuid.uuid4())
-    post_doc = {
-        "id": post_id,
+    # ---- 10-MINUTE HAUL AGGREGATION WINDOW ----
+    # Check for an existing bundle post within the last 10 minutes
+    ten_min_ago = (datetime.now(timezone.utc) - timedelta(minutes=10)).isoformat()
+    existing_bundle = await db.posts.find_one({
         "user_id": user["id"],
-        "post_type": "ADDED_TO_COLLECTION",
-        "caption": f"Added {record_data.title} by {record_data.artist} to their collection",
+        "post_type": "NEW_HAUL",
+        "is_auto_bundle": True,
+        "created_at": {"$gte": ten_min_ago},
+    }, {"_id": 0}, sort=[("created_at", -1)])
+    
+    new_entry = {
         "record_id": record_id,
+        "title": record_data.title,
+        "artist": record_data.artist,
+        "cover_url": record_data.cover_url,
         "color_variant": record_data.color_variant,
-        "created_at": now
     }
-    await db.posts.insert_one(post_doc)
+    
+    if existing_bundle:
+        # Append to existing bundle
+        bundle = existing_bundle.get("bundle_records", [])
+        bundle.append(new_entry)
+        count = len(bundle)
+        headline = existing_bundle.get("caption") or ""
+        if not headline and record_data.notes:
+            headline = record_data.notes
+        await db.posts.update_one(
+            {"id": existing_bundle["id"]},
+            {"$set": {
+                "bundle_records": bundle,
+                "caption": headline or f"Added {count} records to their collection",
+            }}
+        )
+    else:
+        # Create a new auto-bundle post
+        post_id = str(uuid.uuid4())
+        caption = record_data.notes or f"Added {record_data.title} by {record_data.artist} to their collection"
+        post_doc = {
+            "id": post_id,
+            "user_id": user["id"],
+            "post_type": "NEW_HAUL",
+            "is_auto_bundle": True,
+            "caption": caption,
+            "bundle_records": [new_entry],
+            "created_at": now
+        }
+        await db.posts.insert_one(post_doc)
     
     return RecordResponse(
         id=record_id,
