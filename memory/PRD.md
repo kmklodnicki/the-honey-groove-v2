@@ -8,35 +8,33 @@ Premium social platform for vinyl collectors. Features include collection manage
 - **Backend:** FastAPI (Python), MongoDB (Motor async driver)
 - **Integrations:** Stripe Connect, Discogs OAuth 1.0a, Resend email, Socket.IO real-time
 
-## What's Been Implemented (This Session — Blocks 480-527)
+## What's Been Implemented (This Session — Blocks 480-534)
+
+### Profile Layout
+- BLOCK 533: Report/Block icons moved beside profile photo (horizontal, muted grey)
+- BLOCK 534: Right column cleaned — only Follow/Message, Stripe, Golden Hive
+- BLOCK 532: Tab order: Collection | For Sale | Dream List | ISO | Trades
+- BLOCK 530: New "For Sale" tab with listings, View Listing buttons, Stripe paused notice
+- BLOCK 531: Dream List price badges → Honey Gold mini variant
 
 ### Security & Auth
 - BLOCK 480/481: Dynamic OAuth callback, HMAC-SHA1, error logging
-- BLOCK 491/492: Dev reset tool, migration modal mount fix
-- BLOCK 500: "Authentication: Pure Gold" success screen
-- BLOCK 513: Honey Gold Connect to Discogs button
+- BLOCK 491/492/500: Dev reset, modal mount fix, Pure Gold success screen
+- BLOCK 513/527: Honey Gold connect button, Stripe disconnect guard
 
-### Golden Hive ID System
-- BLOCK 509: Premium shield SVG + shimmer
-- BLOCK 510: Stripe webhook auto-approve + admin email
-- BLOCK 511: @katieintheafterglow admin override
-- BLOCK 515: Badge in right column, dark charcoal text
-- BLOCK 517: Hover tooltip
-- BLOCK 523: Mobile touch-to-reveal
+### Golden Hive ID
+- BLOCK 509/510/511: Shield badge, Stripe webhook auto-approve, admin override
+- BLOCK 515/517/523: Right column placement, tooltip, mobile touch
 
 ### Activity & Valuation
 - BLOCK 519/520: Spin deduplication, real-time count update
 - BLOCK 487: Smart Valuation Hierarchy
-- BLOCK 483/484: Price pills + re-linking
-- BLOCK 494/495: Avg. Value in Week in Wax
+- BLOCK 483/484/494/495: Price pills, re-linking, Avg. Value
 
 ### UI Refinements
 - BLOCK 494: Brand watermark #2C2C2C, Mood tab removed
-- BLOCK 503: "View Full Report" hidden
-- BLOCK 505: "Gold Standard" promo removed
-- BLOCK 524: Stripe disconnect icon + mobile scaling
-- BLOCK 525: ISO empty state text updated (#4A4A4A, 16px)
-- BLOCK 527: Stripe disconnect confirmation modal
+- BLOCK 503/505: "View Full Report" hidden, "Gold Standard" removed
+- BLOCK 524/525: Stripe disconnect icon, ISO empty state
 
 ## Prioritized Backlog
 
@@ -53,7 +51,7 @@ Premium social platform for vinyl collectors. Features include collection manage
 ### P3 - Future/Backlog
 - Record Store Day Proxy Network, Safari loading animation
 - Pro memberships, Buyer Protection, Instagram sharing
-- Editable "New Music Friday", Backend search filters
+- Backend search filters
 
 ## Test Credentials
 - Admin: admin@thehoneygroove.com / admin_password
