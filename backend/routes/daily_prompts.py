@@ -281,6 +281,36 @@ async def get_todays_prompt(user: Dict = Depends(require_auth)):
     }
 
 
+# ─────────── Prompt Archive ───────────
+
+@router.get("/prompts/archive")
+async def get_prompt_archive(user: Dict = Depends(require_auth)):
+    """Return the last 14 prompts (excluding today) with their response counts."""
+    today_start, _ = _get_today_range()
+
+    # Fetch prompts scheduled before today, newest first
+    prompts = await db.prompts.find(
+        {"scheduled_date": {"$lt": today_start.isoformat()}, "active": True},
+        {"_id": 0},
+    ).sort("scheduled_date", -1).to_list(14)
+
+    results = []
+    for p in prompts:
+        response_count = await db.prompt_responses.count_documents({"prompt_id": p["id"]})
+        user_responded = await db.prompt_responses.find_one(
+            {"prompt_id": p["id"], "user_id": user["id"]}
+        ) is not None
+        results.append({
+            "id": p["id"],
+            "text": p["text"],
+            "scheduled_date": p["scheduled_date"],
+            "response_count": response_count,
+            "user_responded": user_responded,
+        })
+
+    return results
+
+
 async def _calculate_streak(user_id: str) -> int:
     """Calculate consecutive days the user has buzzed in."""
     today_start, _ = _get_today_range()

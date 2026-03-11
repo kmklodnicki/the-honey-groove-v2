@@ -14,6 +14,7 @@ import AlbumArt from './AlbumArt';
 import { resolveImageUrl } from '../utils/imageUrl';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Link } from 'react-router-dom';
+import PromptArchiveDrawer from './PromptArchiveDrawer';
 
 // ─── Daily Prompt Card (top of Hive feed) ───
 
@@ -30,6 +31,7 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
   const [responses, setResponses] = useState([]);
   const [carouselIdx, setCarouselIdx] = useState(0);
   const [loadingResponses, setLoadingResponses] = useState(false);
+  const [archiveOpen, setArchiveOpen] = useState(false);
 
   const fetchPrompt = useCallback(async () => {
     try {
@@ -87,6 +89,14 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
         <p className="font-heading text-xl md:text-2xl text-vinyl-black leading-snug mb-3 italic" data-testid="daily-prompt-text">
           {prompt.text}
         </p>
+
+        <button
+          onClick={() => setArchiveOpen(true)}
+          className="text-[11px] text-amber-600/70 hover:text-amber-800 hover:underline transition font-medium mb-3 block"
+          data-testid="prompt-archive-link"
+        >
+          See what the Hive said yesterday
+        </button>
 
         {!hasBuzzedIn ? (
           /* ── GATEKEEPER: Pre-buzz state ── */
@@ -205,6 +215,8 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
           onPostCreated?.();
         }}
       />
+
+      <PromptArchiveDrawer open={archiveOpen} onOpenChange={setArchiveOpen} />
     </>
   );
 };

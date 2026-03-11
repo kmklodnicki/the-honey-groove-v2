@@ -47,10 +47,13 @@ const darken = (color, factor = 0.3) => {
 
 // ─── Slide Components ───
 
-const IntroSlide = ({ username, dominantColor }) => (
+const IntroSlide = ({ username, dominantColor, dateRange }) => (
   <div className="min-h-[50vh] flex flex-col items-center justify-center p-8 text-center snap-start" data-testid="slide-intro">
-    <p className="text-sm font-medium tracking-[0.3em] uppercase mb-3" style={{ color: dominantColor }}>
+    <p className="text-sm font-medium tracking-[0.3em] uppercase mb-1" style={{ color: dominantColor }}>
       THE HONEY GROOVE
+    </p>
+    <p className="text-[11px] tracking-[0.15em] uppercase mb-4" style={{ color: 'rgba(255,255,255,0.35)', fontVariant: 'small-caps' }} data-testid="report-date-range">
+      {dateRange}
     </p>
     <h1 className="font-heading text-3xl sm:text-5xl font-black text-white leading-tight mb-2" data-testid="intro-title">
       {username ? `@${username}'s` : 'Your'}<br />Week in the Hive
@@ -93,25 +96,25 @@ const HeroSlide = ({ record, spinCount, isTopSpin, dominantColor }) => {
 
 const StatsSlide = ({ stats, dominantColor }) => (
   <div className="min-h-[50vh] flex flex-col items-center justify-center p-8 text-center snap-start" data-testid="slide-stats">
-    <p className="text-xs font-medium tracking-[0.2em] uppercase mb-8" style={{ color: dominantColor }}>
+    <p className="text-xs font-medium tracking-[0.2em] uppercase mb-6" style={{ color: dominantColor }}>
       The Numbers
     </p>
-    <div className="grid grid-cols-2 gap-8 max-w-sm w-full">
+    <div className="grid grid-cols-3 gap-6 max-w-md w-full">
       <div>
-        <p className="text-5xl sm:text-7xl font-black" style={{ color: dominantColor }}>{stats.weekSpins}</p>
+        <p className="text-4xl sm:text-6xl font-black" style={{ color: dominantColor }}>{stats.weekSpins}</p>
         <p className="text-xs text-stone-500 mt-1 tracking-[0.15em] uppercase">Spins</p>
       </div>
       <div>
-        <p className="text-5xl sm:text-7xl font-black" style={{ color: dominantColor }}>{stats.weekAdds}</p>
+        <p className="text-4xl sm:text-6xl font-black" style={{ color: dominantColor }}>{stats.weekAdds}</p>
         <p className="text-xs text-stone-500 mt-1 tracking-[0.15em] uppercase">Added</p>
       </div>
-      <div className="col-span-2">
-        <p className="text-5xl sm:text-7xl font-black text-white">${stats.totalValue?.toLocaleString() || '0'}</p>
-        <p className="text-xs text-stone-500 mt-1 tracking-[0.15em] uppercase">Collection Value</p>
+      <div>
+        <p className="text-4xl sm:text-6xl font-black text-white">${stats.totalValue?.toLocaleString() || '0'}</p>
+        <p className="text-xs text-stone-500 mt-1 tracking-[0.15em] uppercase">Value</p>
       </div>
     </div>
     {stats.valueGained > 0 && (
-      <div className="mt-8 flex items-center gap-2">
+      <div className="mt-6 flex items-center gap-2">
         <TrendingUp className="w-5 h-5" style={{ color: '#4ADE80' }} />
         <span className="text-sm font-bold text-green-400">
           +${stats.valueGained.toLocaleString()} this week
@@ -278,18 +281,13 @@ const WeeklyReportPage = () => {
         const heroRecord = topSpinRecord || topAddition;
         const isTopSpin = !!topSpinRecord;
 
-        // Genre breakdown from weekly additions (or all records if no additions)
-        const genreSource = weekAdds.length > 0 ? weekAdds : records.slice(0, 50);
-        const genreMap = {};
-        genreSource.forEach(r => {
-          const genre = r.genre || r.style || 'Unknown';
-          genreMap[genre] = (genreMap[genre] || 0) + 1;
-        });
-        const genres = Object.entries(genreMap)
-          .map(([name, count]) => ({ name, count }))
-          .sort((a, b) => b.count - a.count);
-
         const totalValue = valData.total_value || 0;
+
+        // Date range for header
+        const weekEnd = new Date();
+        const weekStart = new Date(week);
+        const fmt = (d) => d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+        const dateRange = `${fmt(weekStart)} – ${fmt(weekEnd)}, ${weekEnd.getFullYear()}`;
 
         setData({
           totalRecords: records.length,
@@ -299,10 +297,10 @@ const WeeklyReportPage = () => {
           isTopSpin,
           topSpinCount,
           recentAdds: weekAdds.slice(0, 4),
-          genres,
           totalValue,
-          valueGained: 0, // Would need historical data to calculate
+          valueGained: 0,
           username: user?.username,
+          dateRange,
         });
 
         // Extract dominant color from hero image
@@ -399,7 +397,7 @@ const WeeklyReportPage = () => {
         </button>
 
         {/* Slide 1: Intro */}
-        <IntroSlide username={data.username} dominantColor={dominantColor} />
+        <IntroSlide username={data.username} dominantColor={dominantColor} dateRange={data.dateRange} />
 
         {/* Slide 2: Hero (Top Spin or Fresh Start) */}
         {hasSpins ? (
