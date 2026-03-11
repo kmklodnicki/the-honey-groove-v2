@@ -7,6 +7,7 @@ import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Skeleton } from '../components/ui/skeleton';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '../components/ui/dialog';
@@ -466,24 +467,6 @@ const ProfilePage = () => {
                   {promptStreak.streak} day streak
                 </span>
               )}
-              {/* BLOCK 509: Golden Hive Verified — Premium Shield with shimmer */}
-              {profile.golden_hive_verified && (
-                <div className="mt-1.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-amber-400/50 golden-shimmer" data-testid="golden-hive-badge">
-                  <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none">
-                    <defs>
-                      <linearGradient id="goldShield" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#FFD700"/>
-                        <stop offset="100%" stopColor="#DAA520"/>
-                      </linearGradient>
-                    </defs>
-                    <path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" fill="url(#goldShield)"/>
-                    <path d="M9.5 12l2 2 3.5-4" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-                  </svg>
-                  <span className="text-xs font-semibold" style={{ letterSpacing: '-0.01em', background: 'linear-gradient(45deg, #FFD700, #DAA520)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                    Golden Hive Verified
-                  </span>
-                </div>
-              )}
               {profile.golden_hive_status === 'pending' && isOwnProfile && (
                 <div className="mt-1.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-100 border border-stone-200" data-testid="golden-hive-pending">
                   <Clock className="w-3 h-3 text-stone-500" />
@@ -670,6 +653,34 @@ const ProfilePage = () => {
                   </div>
                 )}
               </>
+            )}
+            {/* BLOCK 515/517: Golden Hive Verified badge — visible to ALL viewers, after action buttons */}
+            {profile.golden_hive_verified && (
+              <TooltipProvider delayDuration={200}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="mt-0.5 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full border border-amber-500/60 golden-shimmer cursor-default" data-testid="golden-hive-badge">
+                      <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none">
+                        <defs>
+                          <linearGradient id="goldShieldR" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#FFD700"/>
+                            <stop offset="100%" stopColor="#B8860B"/>
+                          </linearGradient>
+                        </defs>
+                        <path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" fill="url(#goldShieldR)" stroke="#8B6914" strokeWidth="0.5"/>
+                        <path d="M9.5 12l2 2 3.5-4" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                      </svg>
+                      <span className="text-xs font-bold" style={{ letterSpacing: '-0.01em', color: '#2C2C2C' }}>
+                        Golden Hive Verified
+                      </span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-[220px] px-3 py-2.5" style={{ background: '#1A1A1A', color: '#fff', borderRadius: '8px' }}>
+                    <p className="font-bold text-xs mb-1">Golden Hive ID</p>
+                    <p className="text-[11px] leading-relaxed opacity-90">This user has been officially ID verified. They are a trusted member of The Honey Groove community.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
           </div>
         </div>
