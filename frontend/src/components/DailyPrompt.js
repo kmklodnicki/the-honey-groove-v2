@@ -131,7 +131,7 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
                   {/* Album art — GPU-accelerated with dominant color background */}
                   <div className="relative shrink-0 w-16 h-16 rounded-lg overflow-hidden"
                     style={{
-                      backgroundColor: currentResp.dominant_color || '#1A1A1A',
+                      backgroundColor: currentResp.dominant_color || '#FFB800',
                       transform: 'translateZ(0)',
                       willChange: 'transform',
                     }}
