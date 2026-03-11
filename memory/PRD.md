@@ -277,6 +277,18 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - Flow: Buy → create-intent → modal → pay → redirect → success page → webhook confirms
   - Files: honeypot.py, ExpressCheckout.js, CheckoutSuccessPage.js, ISOPage.js, App.js
   - Tested: PASS (100% - testing agent iteration_188, 14/14 backend + all frontend verified)
+- **BLOCK 442: Test Mode Filter Guard** (March 2026) — COMPLETED
+  - Backend: Added `is_test_listing` (default: false) field to listings and ListingResponse model
+  - Backend: `_can_see_test_listings()` helper grants admin + @katieintheafterglow override access
+  - Backend: GET /api/listings, ISO matches, and similar listings queries filter out test listings for non-admin users
+  - Backend: PATCH /api/listings/{id}/test-flag (admin-only) toggles the test flag
+  - Backend: GET /api/admin/test-listings (admin-only) returns all flagged test listings
+  - Frontend: Red "TEST LISTING — DO NOT PURCHASE" banner on listing detail modal for test listings
+  - Frontend: CTA buy/offer/trade buttons hidden for test listings
+  - Frontend: Red "TEST" badge pill on ListingCard for admin visibility
+  - Frontend: Admin Panel "Test Listings" section with search, flag, and unflag workflow
+  - Files: models.py, honeypot.py, explore.py, ListingDetailModal.js, HoneypotCards.js, AdminPage.js
+  - Tested: PASS (100% - testing agent iteration_189, 12/12 backend + all frontend verified)
 
 ## Backlog (Prioritized)
 
