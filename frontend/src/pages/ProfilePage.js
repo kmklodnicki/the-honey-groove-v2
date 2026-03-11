@@ -350,7 +350,7 @@ const ProfilePage = () => {
   const profileDesc = `@${profile.username}'s vinyl collection on The Honey Groove. ${records.length} records collected.${profile.bio ? ` ${profile.bio.slice(0, 160)}` : ''}${profile.city ? ` Based in ${profile.city}.` : ''}`;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8" data-testid="profile-page">
+    <div className="max-w-3xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8 honey-fade-in" data-testid="profile-page">
       <SEOHead
         title={profileTitle}
         description={profileDesc}

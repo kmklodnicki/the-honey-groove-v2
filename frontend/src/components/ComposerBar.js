@@ -754,7 +754,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
             {/* Record display */}
             {randAnimating ? (
               <div className="flex flex-col items-center py-8" data-testid="randomizer-shuffling">
-                <div className="w-40 h-40 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center animate-pulse">
+                <div className="w-40 h-40 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center honey-shimmer">
                   <Shuffle className="w-10 h-10 text-amber-600 animate-spin" />
                 </div>
                 <p className="text-sm text-muted-foreground mt-3">shuffling your collection...</p>

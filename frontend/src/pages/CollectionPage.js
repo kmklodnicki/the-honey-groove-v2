@@ -129,7 +129,7 @@ const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamL
             <div className="text-left">
               <p className="text-[10px] font-medium uppercase tracking-widest text-stone-500">Dream Records</p>
               {dreamLoading ? (
-                <div className="h-8 w-24 rounded-md bg-gradient-to-r from-stone-200 via-stone-100 to-stone-200 animate-pulse mt-1" data-testid="treasury-dream-shimmer" />
+                <div className="h-8 w-24 rounded-md honey-shimmer mt-1" data-testid="treasury-dream-shimmer" />
               ) : (
                 <p className="font-serif text-2xl font-bold leading-tight" style={{ color: '#1A1A1A' }} data-testid="treasury-dream-value">
                   ${Math.round(animDream).toLocaleString()}
@@ -517,7 +517,7 @@ const CollectionPage = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8 pt-[64px] md:pt-24 pb-24 md:pb-8">
+    <div className="max-w-6xl mx-auto px-4 py-8 pt-[64px] md:pt-24 pb-24 md:pb-8 honey-fade-in">
       <SEOHead
         title={`My Collection — ${records.length} Records`}
         description={`Your vinyl collection on The Honey Groove. ${records.length} records owned, ${wishlistItems.length} on the Dream List.`}

@@ -160,7 +160,7 @@ const ExplorePage = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8" data-testid="explore-page">
+    <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8 honey-fade-in" data-testid="explore-page">
       <h1 className="font-heading text-3xl text-vinyl-black mb-1">Nectar</h1>
       <p className="text-sm text-muted-foreground mb-8">what the hive is into right now.</p>
 

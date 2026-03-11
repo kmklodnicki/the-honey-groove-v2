@@ -85,7 +85,7 @@ const VariantRow = ({ variant, onAdd, adding }) => {
 };
 
 const TrackerSkeleton = () => (
-  <Card className="p-5 border-honey/20 animate-pulse" data-testid="variant-tracker-skeleton">
+  <Card className="p-5 border-honey/20 honey-shimmer" data-testid="variant-tracker-skeleton">
     <div className="flex items-center justify-between mb-3">
       <div className="h-5 w-32 bg-stone-200 rounded" />
       <div className="h-4 w-20 bg-stone-200 rounded" />

@@ -34,21 +34,15 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
 - Mobile profile tab scrolling fix
 - BLOCK 215: Mobile Profile Dropdown "God Mode" - React Portal fix
 - BLOCK 221: Variant Teleportation Logic - Clickable variant pills
-- BLOCK 228: Back-to-Top Button - Smart floating BTT on CollectionPage + ProfilePage
-- **BLOCK 229: Dream Value Re-Calculator** (March 2026)
-  - 3-tier value resolution: Discogs median -> Community valuation -> User manual price -> "pending"
-  - `community_valuations` collection with trimmed mean (top/bottom 5% discarded)
-  - `manual_price` field on `iso_items`
-  - Valuation Assistant Modal — clickable (+N pending) opens modal to manually value unpriced records
-  - `?filter=pending_value` URL param auto-opens modal on Collection page
-  - Profile page pending count links to collection with filter
-  - Shimmer loading state for dream values
-  - Backend endpoints: GET /valuation/pending-items, PUT /valuation/manual-value/{iso_id}
-  - All 11 tests passing (100%)
-
-## DB Schema Updates
-- `iso_items`: Added `manual_price: float` (optional)
-- `community_valuations` (new collection): `release_id`, `average_value`, `contribution_count`, `contributions[]`, timestamps
+- BLOCK 228: Back-to-Top Button on CollectionPage + ProfilePage
+- BLOCK 229: Dream Value Re-Calculator with 3-tier resolution, community valuations, manual pricing, Valuation Assistant Modal
+- **BLOCK 231: Snap-Load Shimmer Limit** (March 2026)
+  - Custom `@keyframes honeyShimmer` — 2-pulse animation then rests on #e5e0da
+  - `.honey-shimmer` class replaces Tailwind `animate-pulse` in all skeleton components
+  - Updated shadcn Skeleton component to use `honey-shimmer`
+  - `.honey-fade-in` (200ms) applied to data containers on HivePage, CollectionPage, ProfilePage, ExplorePage
+  - Audited ComposerBar, AdminPage, VariantCompletion skeletons — all updated
+  - Intentional pulse animations (notification dots, attention indicators) kept as-is
 
 ## Backlog (Prioritized)
 ### P0

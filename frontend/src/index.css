@@ -160,3 +160,28 @@ h1, h2, h3, h4, h5, h6 {
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
+
+
+/* BLOCK 231: 2-pulse shimmer — pulses twice then rests on a solid skeleton color */
+@keyframes honeyShimmer {
+  0%   { opacity: 1; }
+  25%  { opacity: 0.5; }
+  50%  { opacity: 1; }
+  75%  { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.honey-shimmer {
+  animation: honeyShimmer 2s ease-in-out 1 forwards;
+  background-color: #e5e0da;
+}
+
+/* Fade-in for data replacing skeletons */
+@keyframes honeyFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.honey-fade-in {
+  animation: honeyFadeIn 200ms ease-out forwards;
+}
