@@ -37,52 +37,52 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
 - BLOCK 291: Weekly Report Story Mode (7 slides, snap scroll, Ken Burns)
 - BLOCK 292: Instagram Story Export (1080x1920, safe zones)
 - BLOCK 293: Branded Export (THE HONEY GROOVE watermark)
-- BLOCK 298: Streaming Everywhere (ghost icons on art — later removed per BLOCK 303)
-
-- **BLOCK 303: Analog Animation Deploy** (March 2026)
-  - Removed Spotify/Apple Music overlays from album art
-  - Spinning vinyl disc slides out from behind right side of sleeve (vinylSpin CSS, 44px SVG)
-  - 4-bar white glow equalizer in bottom-right of album art
-  - Streaming links relocated below album art as text pill links
-  - Files: PostCards.js, App.css
+- BLOCK 298: Streaming Everywhere
+- BLOCK 303: Analog Animation Deploy (spinning vinyl disc, 4-bar equalizer)
+- BLOCK 306/317/340: Icon-Only Streaming Links (permanently colored SVG icons)
+- BLOCK 324: Founder Badge Hierarchy
+- BLOCK 327: Report Image Pipeline Fix (ReportImg component)
+- BLOCK 330: Report Compression (removed Vibe Map, reduced spacing)
+- **BLOCK 333: Time & Volume Report Update** (March 2026) — COMPLETED
+  - Added date range subtitle to IntroSlide (e.g. "March 4 – March 11, 2026")
+  - Added "Records Added This Week" (weekAdds) metric to StatsSlide
+  - Fixed missing dateRange prop being passed to IntroSlide
+  - Files: WeeklyReportPage.js
+  - Tested: PASS
+- **BLOCK 224: Daily Prompt Archive** (March 2026) — COMPLETED
+  - Backend: GET /api/prompts/archive returns last 14 prompts before today with response_count and user_responded
+  - Frontend: "See what the Hive said yesterday" link on Daily Prompt card
+  - Frontend: Sheet slide-over drawer (PromptArchiveDrawer.js) showing past prompts
+  - Each prompt links to /hive?prompt_id={id} for deep-linking
+  - Shows dates (Yesterday, X days ago), response counts, and checkmark for responded prompts
+  - Files: daily_prompts.py, DailyPrompt.js, PromptArchiveDrawer.js
   - Tested: PASS
 
-- **Golden Vault Layout** (March 2026)
-  - Merged 2 split cards into single unified DashboardHero card
-  - 3-column desktop grid: Identity (1fr) | Stats (1.5fr) | Actions (1fr)
-  - 20% gold vertical dividers between sections
-  - "THE HONEY GROOVE" watermark at top-left (serif, tracked, 25% opacity)
-  - Hero stats: oversized Records + Value with editorial letter-spacing
-  - Inline valuation progress bar (replaces popup interruption)
-  - Button hierarchy: Golden Hive = primary with gold glow, Stripe = outline
-  - Cream background (#FAF6EE) + 1px gold border + cohesive box-shadow
-  - Files: ProfilePage.js
-  - Tested: PASS
-
-- **Valuation Wizard Logic Leak Fix** (March 2026)
-  - Success confetti only fires when isFullyValued (queue.length === 0 after refetch)
-  - "Loading next batch..." spinner when local batch ends but more exist
-  - Inline progress bar in profile stats card tracks unvalued count
-  - Files: ValuationWizard.js, ProfilePage.js
-  - Tested: PASS (code review)
+### Layout & Design Features
+- Golden Vault Layout (ProfilePage unified dashboard)
+- Valuation Wizard Logic Leak Fix
+- Analog Feed Animations (CSS vinylSpin, equalizer)
 
 ## Backlog (Prioritized)
-### P0
-- Daily Prompt Archive (BLOCK 224) - forgotten twice, slide-over drawer
 
 ### P1
-- Real Spotify/Apple Music API (currently search URL placeholders)
-- Service Worker Prefetch (BLOCK 248)
-- "Secret search feature" - needs clarification
+- Real Spotify/Apple Music API (currently search URL placeholders) — BLOCK 254
+- Service Worker Prefetch (BLOCK 248/321) — pre-fetch Daily Prompt image
+- "Secret search feature" — needs clarification from user
 
 ### P2
-- Safari loading animation, Pro memberships, Buyer Protection
-- Instagram sharing, Admin-editable New Music Friday
-- Backend search filters, TypeScript migration
+- Safari loading animation
+- Pro memberships / Verified Seller badge
+- Buyer Protection features
+- Instagram sharing
+- Admin-editable New Music Friday
+- Backend search filters
+- Full TypeScript migration
+- Record Store Day Proxy Network
 
 ## Mocked Services
 - Resend email (except Weekly Wax)
-- Streaming links (search URL placeholders)
+- Streaming links (search URL placeholders, not real API integration)
 
 ## Test Accounts
 - User: test@test.com / test123 (username: testuser)
