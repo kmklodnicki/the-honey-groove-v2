@@ -23,7 +23,6 @@ export default function ScrollRow({ children, className = '' }) {
     if (!el) return;
     setCanLeft(el.scrollLeft > 4);
     setCanRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
-    // Compute active page and total pages
     const pageW = el.clientWidth;
     const total = Math.max(1, Math.ceil(el.scrollWidth / pageW));
     const active = Math.round(el.scrollLeft / pageW);
@@ -48,7 +47,6 @@ export default function ScrollRow({ children, className = '' }) {
     el.scrollBy({ left: dir * amount, behavior: 'smooth' });
   };
 
-  // Touch swipe handlers for mobile
   const onTouchStart = (e) => {
     touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
   };
@@ -57,11 +55,18 @@ export default function ScrollRow({ children, className = '' }) {
     if (!touchStartRef.current) return;
     const dx = e.changedTouches[0].clientX - touchStartRef.current.x;
     const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
-    // Only trigger if horizontal swipe > 50px and more horizontal than vertical
     if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
       scroll(dx < 0 ? 1 : -1);
     }
     touchStartRef.current = null;
+  };
+
+  const arrowBtnStyle = {
+    background: 'rgba(255,255,255,0.7)',
+    backdropFilter: 'blur(12px)',
+    WebkitBackdropFilter: 'blur(12px)',
+    border: '1px solid rgba(218,165,32,0.15)',
+    boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
   };
 
   return (
@@ -71,39 +76,38 @@ export default function ScrollRow({ children, className = '' }) {
         ref={ref}
         onTouchStart={isMobile ? onTouchStart : undefined}
         onTouchEnd={isMobile ? onTouchEnd : undefined}
-        className={`flex gap-3 overflow-x-auto pb-10 -mx-1 px-1 scrollbar-hide scroll-smooth ${className}`}
+        className={`flex gap-3 overflow-x-auto pb-4 -mx-1 px-1 scrollbar-hide scroll-smooth ${className}`}
       >
         {children}
       </div>
 
-      {/* Desktop: Floating Glass Dock arrows */}
-      {!isMobile && (canLeft || canRight) && (
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 backdrop-blur-md shadow-md border border-honey/20" data-testid="scroll-dock">
-          <button
-            onClick={() => scroll(-1)}
-            disabled={!canLeft}
-            className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${canLeft ? 'text-vinyl-black/70 hover:text-vinyl-black hover:bg-honey/10' : 'text-vinyl-black/20 cursor-default'}`}
-            aria-label="Scroll left"
-            data-testid="scroll-left"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <div className="w-px h-4 bg-honey/30" />
-          <button
-            onClick={() => scroll(1)}
-            disabled={!canRight}
-            className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${canRight ? 'text-vinyl-black/70 hover:text-vinyl-black hover:bg-honey/10' : 'text-vinyl-black/20 cursor-default'}`}
-            aria-label="Scroll right"
-            data-testid="scroll-right"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
+      {/* Desktop: Left/Right edge Diamond Glass arrows — visible on hover */}
+      {!isMobile && canLeft && (
+        <button
+          onClick={() => scroll(-1)}
+          className="absolute top-1/2 -translate-y-1/2 -left-5 z-20 w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover/scroll:opacity-100 transition-opacity duration-200 hover:scale-110 text-[#996012]"
+          style={arrowBtnStyle}
+          aria-label="Scroll left"
+          data-testid="scroll-left"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+      )}
+      {!isMobile && canRight && (
+        <button
+          onClick={() => scroll(1)}
+          className="absolute top-1/2 -translate-y-1/2 -right-5 z-20 w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover/scroll:opacity-100 transition-opacity duration-200 hover:scale-110 text-[#996012]"
+          style={arrowBtnStyle}
+          aria-label="Scroll right"
+          data-testid="scroll-right"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
       )}
 
       {/* Mobile: Minimalist dot indicators */}
       {isMobile && totalPages > 1 && (
-        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1.5" data-testid="scroll-dots">
+        <div className="flex items-center justify-center gap-1.5 mt-1" data-testid="scroll-dots">
           {Array.from({ length: totalPages }).map((_, i) => (
             <div
               key={i}

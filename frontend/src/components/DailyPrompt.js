@@ -376,7 +376,7 @@ const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
               )}
 
               <Textarea
-                placeholder="Share your thoughts on this prompt..."
+                placeholder="My take on today's prompt is..."
                 value={caption} onChange={e => setCaption(e.target.value)}
                 className="border-amber-200 resize-none" rows={2}
                 data-testid="buzz-caption"

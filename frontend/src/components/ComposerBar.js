@@ -445,7 +445,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
             </div>
 
             <MentionTextarea
-              placeholder={moodCfg ? moodCfg.placeholder : 'add a note...'}
+              placeholder={moodCfg ? moodCfg.placeholder : "Right now I'm..."}
               value={spinCaption} onChange={setSpinCaption}
               className="resize-none"
               style={{ borderColor: 'rgba(200,134,26,0.5)' }}
@@ -499,7 +499,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                 <p className="text-xs text-muted-foreground">{haulItems.length} record{haulItems.length !== 1 ? 's' : ''}</p>
               </div>
             )}
-            <MentionTextarea placeholder="Caption (optional)" value={haulCaption} onChange={setHaulCaption} className="border-honey/50 resize-none" rows={2} data-testid="haul-caption-input" />
+            <MentionTextarea placeholder="I just got..." value={haulCaption} onChange={setHaulCaption} className="border-honey/50 resize-none" rows={2} data-testid="haul-caption-input" />
             <Button onClick={submitNewHaul} disabled={submitting || haulItems.length === 0 || !haulCaption.trim()} className="w-full bg-amber-100 text-amber-800 hover:bg-amber-200 rounded-full" data-testid="haul-submit-btn">
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Package className="w-4 h-4 mr-2" />}
               Post Haul ({haulItems.length} record{haulItems.length !== 1 ? 's' : ''})
@@ -617,7 +617,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                       <Input placeholder="Min budget ($)" type="number" value={isoPriceMin} onChange={e => setIsoPriceMin(e.target.value)} className="border-honey/50" />
                       <Input placeholder="Max budget ($)" type="number" value={isoPriceMax} onChange={e => setIsoPriceMax(e.target.value)} className="border-honey/50" />
                     </div>
-                    <MentionTextarea placeholder="Caption (optional)" value={isoCaption} onChange={setIsoCaption} className="border-honey/50 resize-none" rows={2} data-testid="iso-caption-input" />
+                    <MentionTextarea placeholder="I'm looking for this because..." value={isoCaption} onChange={setIsoCaption} className="border-honey/50 resize-none" rows={2} data-testid="iso-caption-input" />
                     <Button onClick={submitISO} disabled={submitting || !isoCaption.trim() || (isoManualMode && (!isoArtist || !isoAlbum)) || (!isoManualMode && !isoSelectedRelease)}
                       className="w-full rounded-full"
                       style={isoIntent === 'dreaming'
@@ -644,7 +644,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
           </DialogHeader>
           <div className="space-y-3">
             <MentionTextarea
-              placeholder="what's on your mind?"
+              placeholder="Thinking about..."
               value={noteText}
               onChange={v => setNoteText(isAdmin ? v : v.slice(0, 1500))}
               className="border-stone-200 resize-none text-base min-h-[120px] focus-visible:ring-amber-300"
@@ -785,7 +785,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
             {randRecord && !randAnimating && (
               <>
                 <MentionTextarea
-                  placeholder="Add a caption (optional)"
+                  placeholder="Thinking about..."
                   value={randCaption} onChange={setRandCaption}
                   className="border-honey/50 resize-none"
                   rows={2} data-testid="randomizer-caption-input"
