@@ -82,6 +82,25 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - Progress bar: "Record X of Y remaining"
   - Celebration state: "Collection Fully Valued! The Hive thanks you."
   - Tested: 100% backend (10/10), 100% frontend verification
+- **BLOCK 248: Instant-On Prompt Asset** (March 2026)
+  - Backend: `_extract_dominant_color()` — extracts 1px dominant hex color from Discogs thumbnail
+  - Backend: `cache_discogs_image()` now stores `dominant_color` in image_cache
+  - Backend: Prompt responses include `dominant_color` field
+  - Frontend: DailyPromptCard album art container uses dominant color as background (no grey flash)
+  - Frontend: GPU acceleration via `transform: translateZ(0)` + `will-change: transform`
+  - Frontend: `<link rel="preload">` injection for first response's cover_url
+- **BLOCK 250: Duplicate Detector Utility** (March 2026)
+  - Backend: `GET /records/duplicates` — groups records by discogs_id, flags those with different notes for review
+  - Backend: `DELETE /records/duplicates/clean` — removes extra copies keeping oldest, skips review groups
+  - Frontend: "Duplicates" button in CollectionPage filter bar
+  - Frontend: Confirmation modal with record list, dupe counts, review warnings
+  - Frontend: "No Duplicates Found" clean state with sparkle icon
+- **BLOCK 252: Week in Wax Migration** (March 2026)
+  - Removed WaxReportCTA from CollectionPage
+  - Added "Your Week in Wax" section to ProfilePage below bio/stats, above tabs
+  - Shows 7-day Added/Spins/Total stats with link to full Wax Report
+  - Only visible for own profile when collection has records
+  - Tested: 100% backend (11/11), all frontend verified
 
 ## Backlog (Prioritized)
 ### P0
