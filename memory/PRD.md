@@ -22,20 +22,6 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
 - Database: MongoDB
 - Integrations: Stripe Connect (live), Discogs API, Resend (partial), Google Analytics
 
-## Architecture
-```
-/app/
-├── backend/
-│   ├── routes/ (auth, users, hive, checkout, stripe, etc.)
-│   ├── services/
-│   └── models.py
-├── frontend/
-│   └── src/
-│       ├── components/ (Navbar, PostCards, FollowList, etc.)
-│       ├── pages/ (HivePage, ProfilePage, SettingsPage, etc.)
-│       └── components/ui/ (Shadcn components)
-```
-
 ## What's Been Implemented
 - Full social feed with cursor-based pagination (BLOCK 184)
 - Golden ID paid verification workflow (BLOCK 204, 207)
@@ -46,12 +32,14 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
 - Sub-dollar transaction logic (BLOCK 193)
 - Discovery exclusivity fix (BLOCK 188)
 - Mobile profile tab scrolling fix
-- **BLOCK 215: Mobile Profile Dropdown "God Mode"** - Fixed using React Portal with `position: fixed`, `getBoundingClientRect()` positioning, and max `z-index`. (March 2026)
-- **BLOCK 221: Variant Teleportation Logic** - All variant pills (VariantTag) are now clickable `<Link>` components. In the Hive Feed, clicking navigates to `/variant/{discogs_id}`. Collection page variant overlays and labels are also clickable. Hover state: `scale(1.05)` + pointer cursor. (March 2026)
+- BLOCK 215: Mobile Profile Dropdown "God Mode" - React Portal fix
+- BLOCK 221: Variant Teleportation Logic - Clickable variant pills linking to /variant/{discogs_id}
+- **BLOCK 228: Back-to-Top Button ("Digger's Elevator")** - Smart floating BTT on CollectionPage and ProfilePage. Appears after 400px scroll, glassmorphism styling, z-index 100003, mobile-aware positioning (bottom: 80px on mobile). (March 2026)
 
 ## Backlog (Prioritized)
 ### P0
 - "Secret search feature" - needs user clarification
+- Daily Prompt Archive (BLOCK 222/224) - View yesterday's prompt responses from Hive feed
 
 ### P1
 - Safari-compatible loading animation

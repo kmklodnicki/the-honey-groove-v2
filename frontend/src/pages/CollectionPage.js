@@ -31,6 +31,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import AlbumArt from '../components/AlbumArt';
 import { VariantTag } from '../components/PostCards';
 import SEOHead from '../components/SEOHead';
+import BackToTop from '../components/BackToTop';
 
 // Counting animation hook
 const useCountUp = (target, duration = 1400, enabled = true) => {
@@ -753,6 +754,7 @@ const CollectionPage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <BackToTop />
     </div>
   );
 };

@@ -31,6 +31,7 @@ import SEOHead from '../components/SEOHead';
 import { useVariantModal } from '../context/VariantModalContext';
 import { EmptyState } from '../components/EmptyState';
 import WaxReportPin from '../components/WaxReportPin';
+import BackToTop from '../components/BackToTop';
 
 const ProfilePage = () => {
   usePageTitle('Profile');
@@ -1333,6 +1334,7 @@ const ProfilePage = () => {
         </DialogContent>
       </Dialog>
 
+      <BackToTop />
     </div>
   );
 };
