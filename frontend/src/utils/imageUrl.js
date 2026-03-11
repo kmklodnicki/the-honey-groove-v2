@@ -13,6 +13,14 @@ const enforceHttps = (url) => {
 };
 
 /**
+ * Build a proxy URL for an image to bypass CORS/regional blocks.
+ */
+export function proxyImageUrl(src) {
+  if (!src) return null;
+  return `${API}/image-proxy?url=${encodeURIComponent(enforceHttps(src))}`;
+}
+
+/**
  * Resolve an image URL. Handles three cases:
  * 1. Raw storage path (no http prefix) → build proxy URL
  * 2. Old full URL from a different deployment that contains /api/files/serve/ → rewrite to current domain

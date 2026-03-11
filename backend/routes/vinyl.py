@@ -365,12 +365,15 @@ async def get_rarity_by_discogs_id(discogs_id: int):
 # ========== Release-ID based Variant Detail ==========
 
 @router.get("/release/{release_id}")
-async def get_variant_by_release_id(release_id: int):
+async def get_variant_by_release_id(release_id: int, force_refresh: bool = False):
     """Return variant detail data for a specific Discogs release ID.
 
     This ensures Owners, Wantlist, and Market Price are variant-specific,
-    NOT master album stats.
+    NOT master album stats. Pass ?force_refresh=true to bypass cache.
     """
+    if force_refresh:
+        # Invalidate cache to force a fresh pull
+        await db.discogs_releases.delete_one({"discogs_id": release_id})
     discogs_data = await _get_cached_discogs_release(release_id)
     if not discogs_data:
         return {"error": "Release not found on Discogs", "release_id": release_id}
@@ -399,6 +402,24 @@ async def get_variant_by_release_id(release_id: int):
     discogs_want = discogs_data.get("community_want", 0)
     discogs_for_sale = discogs_data.get("num_for_sale", 0)
     lowest_price = discogs_market.get("low_value")
+
+    # BLOCK 413: Fallback to master release when variant stats are 0
+    stats_source = "variant"
+    master_id = discogs_data.get("master_id")
+    if discogs_have == 0 and discogs_want == 0 and master_id:
+        try:
+            master_data = get_discogs_release(master_id)
+            if master_data:
+                master_have = master_data.get("community_have", 0)
+                master_want = master_data.get("community_want", 0)
+                if master_have > 0 or master_want > 0:
+                    discogs_have = master_have
+                    discogs_want = master_want
+                    discogs_for_sale = master_data.get("num_for_sale", discogs_for_sale)
+                    stats_source = "master"
+                    logger.info(f"Variant {release_id}: using master {master_id} stats (have={master_have}, want={master_want})")
+        except Exception as e:
+            logger.warning(f"Master release fallback failed for {release_id}: {e}")
 
     rarity = calculate_rarity(discogs_have, discogs_want, discogs_for_sale)
 
@@ -442,6 +463,8 @@ async def get_variant_by_release_id(release_id: int):
             "discogs_have": discogs_have,
             "discogs_want": discogs_want,
             "lowest_price": lowest_price,
+            "stats_source": stats_source,
+            "master_id": master_id,
         },
         "honeypot": {
             "active_listings": honeypot_count,

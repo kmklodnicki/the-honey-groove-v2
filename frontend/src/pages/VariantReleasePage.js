@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   Disc, Users, TrendingUp, TrendingDown, DollarSign, BarChart3,
-  Calendar, ArrowLeft, Loader2, Heart
+  Calendar, ArrowLeft, Loader2, Heart, RefreshCw
 } from 'lucide-react';
 import { Card } from '../components/ui/card';
 import AlbumArt from '../components/AlbumArt';
@@ -31,6 +31,7 @@ export default function VariantReleasePage() {
   const { token } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [resyncing, setResyncing] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -63,6 +64,15 @@ export default function VariantReleasePage() {
   }
 
   const { variant_overview: ov, scarcity, value: val, community, honeypot } = data;
+
+  const handleResync = () => {
+    setResyncing(true);
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    axios.get(`${API}/vinyl/release/${releaseId}?force_refresh=true`, { headers })
+      .then(r => setData(r.data))
+      .catch(() => {})
+      .finally(() => setResyncing(false));
+  };
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-28" data-testid="variant-release-page">
@@ -140,9 +150,23 @@ export default function VariantReleasePage() {
           </div>
 
           {/* Variant-specific quick stats */}
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-muted-foreground">
+              {scarcity.stats_source === 'master' ? 'Stats from master release' : 'Variant-specific stats'}
+            </span>
+            <button
+              onClick={handleResync}
+              disabled={resyncing}
+              className="inline-flex items-center gap-1 text-[11px] text-honey-amber hover:underline transition-colors disabled:opacity-50"
+              data-testid="resync-btn"
+            >
+              <RefreshCw className={`w-3 h-3 ${resyncing ? 'animate-spin' : ''}`} />
+              Re-sync
+            </button>
+          </div>
           <div className="grid grid-cols-3 gap-3">
-            <Stat icon={Users} label="Owners" value={scarcity.discogs_have != null ? scarcity.discogs_have.toLocaleString() : '—'} sub="global (this pressing)" />
-            <Stat icon={Heart} label="Wantlist" value={scarcity.discogs_want != null ? scarcity.discogs_want.toLocaleString() : '—'} sub="global (this pressing)" />
+            <Stat icon={Users} label="Owners" value={scarcity.discogs_have != null ? scarcity.discogs_have.toLocaleString() : '—'} sub={scarcity.stats_source === 'master' ? 'via master release' : 'global (this pressing)'} />
+            <Stat icon={Heart} label="Wantlist" value={scarcity.discogs_want != null ? scarcity.discogs_want.toLocaleString() : '—'} sub={scarcity.stats_source === 'master' ? 'via master release' : 'global (this pressing)'} />
             <Stat icon={DollarSign} label="Lowest" value={scarcity.lowest_price ? `$${scarcity.lowest_price.toFixed(2)}` : '—'} sub="current listing" />
           </div>
         </div>

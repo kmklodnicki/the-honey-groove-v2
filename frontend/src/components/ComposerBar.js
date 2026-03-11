@@ -11,7 +11,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '../components/ui/select';
-import { Disc, Package, Search, Loader2, X, Feather, ImagePlus, Tag, Shuffle, ChevronDown, Music } from 'lucide-react';
+import { Disc, Package, Search, Loader2, X, Feather, ImagePlus, Tag, Shuffle, ChevronDown, Music, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import AlbumArt from './AlbumArt';
@@ -169,23 +169,41 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     setSpinTracksFetched(false);
     // Fetch tracklist if the record has a discogs_id
     if (rec.discogs_id) {
-      setSpinTracksLoading(true);
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 8000);
-      axios.get(`${API}/discogs/release/${rec.discogs_id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-        signal: controller.signal,
-      }).then(resp => {
-        const tracks = (resp.data.tracklist || []).filter(t => t.title);
-        setSpinTracks(tracks);
-      }).catch(() => {
-        setSpinTracks([]);
-      }).finally(() => {
-        clearTimeout(timeout);
-        setSpinTracksLoading(false);
-        setSpinTracksFetched(true);
-      });
+      fetchTracklist(rec.discogs_id);
     }
+  };
+
+  const fetchTracklist = (discogsId) => {
+    setSpinTracksLoading(true);
+    setSpinTracksFetched(false);
+    setSpinTracks([]);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    axios.get(`${API}/discogs/release/${discogsId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: controller.signal,
+    }).then(resp => {
+      console.log('[Tracklist] Raw API response for', discogsId, resp.data);
+      const raw = resp.data;
+      // Map tracklist — handle both 'tracklist' and 'tracks' keys
+      const trackArray = raw.tracklist || raw.tracks || [];
+      const tracks = trackArray.filter(t => t && (t.title || t.name));
+      // Normalize: ensure each track has 'title'
+      const normalized = tracks.map(t => ({
+        position: t.position || '',
+        title: t.title || t.name || '',
+        duration: t.duration || '',
+      }));
+      console.log('[Tracklist] Parsed', normalized.length, 'tracks');
+      setSpinTracks(normalized);
+    }).catch(err => {
+      console.warn('[Tracklist] Fetch failed for', discogsId, err.message);
+      setSpinTracks([]);
+    }).finally(() => {
+      clearTimeout(timeout);
+      setSpinTracksLoading(false);
+      setSpinTracksFetched(true);
+    });
   };
 
   const deselectSpinRecord = () => {
@@ -420,7 +438,6 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                     onChange={e => { setSpinSearch(e.target.value); searchCollection(e.target.value); }}
                     className="pl-9 border-honey/50"
                     data-testid="spin-record-search"
-                    autoFocus
                   />
                   {spinSearchResults.length > 0 && (
                     <div className="absolute z-50 left-0 right-0 mt-1 border rounded-lg max-h-52 overflow-y-auto shadow-lg bg-white" style={{ borderColor: 'rgba(200,134,26,0.3)' }}>
@@ -551,12 +568,24 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                   )}
                 </>
               ) : (
-                <Input
-                  placeholder={spinTracksFetched ? 'Tracklist unavailable\u2014type a track name manually (optional)' : 'Track (optional)'}
-                  value={spinTrack}
-                  onChange={e => setSpinTrack(e.target.value)}
-                  style={{ border: '1px solid rgba(200,134,26,0.5)', background: '#FFFDF5' }}
-                  data-testid="spin-track-input" />
+                <div className="flex items-center gap-1.5">
+                  <Input
+                    placeholder={spinTracksFetched ? 'Tracklist unavailable\u2014type a track name manually (optional)' : 'Track (optional)'}
+                    value={spinTrack}
+                    onChange={e => setSpinTrack(e.target.value)}
+                    style={{ border: '1px solid rgba(200,134,26,0.5)', background: '#FFFDF5' }}
+                    data-testid="spin-track-input" />
+                  {spinTracksFetched && spinSelectedRecord?.discogs_id && (
+                    <button
+                      onClick={() => fetchTracklist(spinSelectedRecord.discogs_id)}
+                      className="shrink-0 p-2 rounded-md transition-colors hover:bg-amber-50"
+                      title="Retry fetching tracklist"
+                      data-testid="spin-track-refresh"
+                    >
+                      <RefreshCw className="w-4 h-4" style={{ color: '#C8861A' }} />
+                    </button>
+                  )}
+                </div>
               )}
             </div>
 
@@ -730,7 +759,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input placeholder="Search Discogs for an album..." value={isoDiscogsQuery}
                         onChange={e => { setIsoDiscogsQuery(e.target.value); searchDiscogsForISO(e.target.value); }}
-                        className="pl-9 border-honey/50" data-testid="iso-discogs-search" autoFocus />
+                        className="pl-9 border-honey/50" data-testid="iso-discogs-search" />
                       {isoSearchLoading && <Loader2 className="w-4 h-4 animate-spin absolute right-3 top-3 text-muted-foreground" />}
                     </div>
                     {isoDiscogsResults.length > 0 && (
@@ -796,7 +825,6 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               className="border-stone-200 resize-none text-base min-h-[120px] focus-visible:ring-amber-300"
               rows={4}
               maxLength={isAdmin ? undefined : 1500}
-              autoFocus
               data-testid="note-text-input"
             />
             <div className="flex items-center justify-between">

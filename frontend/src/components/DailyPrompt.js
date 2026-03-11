@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import RecordSearchResult from './RecordSearchResult';
 import AlbumArt from './AlbumArt';
-import { resolveImageUrl } from '../utils/imageUrl';
+import { resolveImageUrl, proxyImageUrl } from '../utils/imageUrl';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Link } from 'react-router-dom';
 import PromptArchiveDrawer from './PromptArchiveDrawer';
@@ -148,10 +148,17 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
                           src={resolveImageUrl(currentResp.cover_url)}
                           alt={`${currentResp.record_artist || ''} ${currentResp.record_title || ''} vinyl record`}
                           className="w-full h-full object-cover"
+                          crossOrigin="anonymous"
                           fetchpriority="high"
                           decoding="sync"
                           loading="eager"
                           draggable={false}
+                          onError={(e) => {
+                            if (!e.target.dataset.proxied) {
+                              e.target.dataset.proxied = '1';
+                              e.target.src = proxyImageUrl(currentResp.cover_url);
+                            }
+                          }}
                         />
                       ) : (
                         <AlbumArt src={currentResp.cover_url} alt={`${currentResp.record_artist || ''} ${currentResp.record_title || ''} vinyl record`} className="w-full h-full object-cover" blurDataUrl={currentResp.blur_data_url} thumbSrc={currentResp.thumb_url} />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Disc } from 'lucide-react';
-import { resolveImageUrl } from '../utils/imageUrl';
+import { resolveImageUrl, proxyImageUrl } from '../utils/imageUrl';
 
 const FALLBACK = '/vinyl-placeholder.svg';
 
@@ -74,8 +74,16 @@ const AlbumArt = ({
           src={status === 'error' || !resolvedSrc ? FALLBACK : resolvedSrc}
           alt={alt}
           className={`w-full h-full object-cover transition-opacity duration-300 ease-in ${status === 'loaded' ? 'opacity-100' : 'opacity-0'}`}
+          crossOrigin="anonymous"
           onLoad={() => setStatus('loaded')}
-          onError={() => setStatus('error')}
+          onError={(e) => {
+            if (!e.target.dataset.proxied && resolvedSrc) {
+              e.target.dataset.proxied = '1';
+              e.target.src = proxyImageUrl(src);
+            } else {
+              setStatus('error');
+            }
+          }}
           draggable={false}
           decoding={priority ? 'sync' : 'auto'}
           {...(priority ? { fetchPriority: 'high', loading: 'eager' } : {})}
