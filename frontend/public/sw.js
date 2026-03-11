@@ -118,4 +118,29 @@ self.addEventListener('message', (event) => {
       });
     });
   }
+
+  // BLOCK 321: Daily Prompt image pre-cache
+  // Main thread sends the prompt image URL after fetching /prompts/today
+  // We cache it eagerly with high priority so it's instant on next visit
+  if (event.data?.type === 'PREFETCH_DAILY_PROMPT') {
+    const urls = event.data.urls || [];
+    if (urls.length === 0) return;
+    caches.open(IMG_CACHE).then((cache) => {
+      // Pre-cache all prompt-related images (prompt artwork + first few responses)
+      urls.forEach((url) => {
+        cache.match(url).then((cached) => {
+          if (!cached) {
+            fetch(url, { mode: 'cors', credentials: 'omit' })
+              .then((resp) => {
+                if (resp.ok) {
+                  // Put in cache with high priority — evict old entries if needed
+                  cache.put(url, resp);
+                }
+              })
+              .catch(() => {});
+          }
+        });
+      });
+    });
+  }
 });

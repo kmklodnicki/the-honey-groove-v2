@@ -42,6 +42,15 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
       setBuzzResponse(r.data.response);
       setStreak(r.data.streak);
       setBuzzCount(r.data.buzz_count || 0);
+      // BLOCK 321: Send Daily Prompt image to service worker for aggressive pre-cache
+      const promptImg = r.data.prompt?.image_url;
+      if (promptImg && navigator.serviceWorker?.controller) {
+        const resolved = resolveImageUrl(promptImg);
+        navigator.serviceWorker.controller.postMessage({
+          type: 'PREFETCH_DAILY_PROMPT',
+          urls: [resolved],
+        });
+      }
     } catch { /* ignore */ }
     finally { setLoading(false); }
   }, [API, token]);
@@ -62,6 +71,16 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
         .map(resp => resp.cover_url ? resolveImageUrl(resp.cover_url) : null)
         .filter(Boolean);
       prefetchImages(urls);
+      // BLOCK 321: Also send all response images to SW for persistent cache
+      const allUrls = r.data
+        .map(resp => resp.cover_url ? resolveImageUrl(resp.cover_url) : null)
+        .filter(Boolean);
+      if (allUrls.length > 0 && navigator.serviceWorker?.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: 'PREFETCH_DAILY_PROMPT',
+          urls: allUrls,
+        });
+      }
     } catch { /* ignore */ }
     finally { setLoadingResponses(false); }
   }, [API, token, prompt, hasBuzzedIn]);
