@@ -173,22 +173,22 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     }
   };
 
-  const fetchTracklist = (discogsId) => {
+  const fetchTracklist = (discogsId, isRetry = false) => {
     setSpinTracksLoading(true);
     setSpinTracksFetched(false);
     setSpinTracks([]);
+    setSpinTrack('');
+    setSpinTrackSearch('');
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
+    const timeout = setTimeout(() => controller.abort(), 10000);
     axios.get(`${API}/discogs/release/${discogsId}`, {
       headers: { Authorization: `Bearer ${token}` },
       signal: controller.signal,
     }).then(resp => {
       console.log('[Tracklist] Raw API response for', discogsId, resp.data);
       const raw = resp.data;
-      // Map tracklist — handle both 'tracklist' and 'tracks' keys
       const trackArray = raw.tracklist || raw.tracks || [];
       const tracks = trackArray.filter(t => t && (t.title || t.name));
-      // Normalize: ensure each track has 'title'
       const normalized = tracks.map(t => ({
         position: t.position || '',
         title: t.title || t.name || '',
@@ -196,13 +196,21 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
       }));
       console.log('[Tracklist] Parsed', normalized.length, 'tracks');
       setSpinTracks(normalized);
-    }).catch(err => {
-      console.warn('[Tracklist] Fetch failed for', discogsId, err.message);
-      setSpinTracks([]);
-    }).finally(() => {
-      clearTimeout(timeout);
       setSpinTracksLoading(false);
       setSpinTracksFetched(true);
+    }).catch(err => {
+      console.warn('[Tracklist] Fetch failed for', discogsId, err.message, isRetry ? '(retry)' : '');
+      clearTimeout(timeout);
+      if (!isRetry) {
+        // Silent retry after 2s on first failure
+        setTimeout(() => fetchTracklist(discogsId, true), 2000);
+      } else {
+        setSpinTracks([]);
+        setSpinTracksLoading(false);
+        setSpinTracksFetched(true);
+      }
+    }).finally(() => {
+      clearTimeout(timeout);
     });
   };
 
@@ -482,8 +490,13 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
             {/* Track selector — searchable dropdown when tracks available */}
             <div className="relative" ref={trackDropdownRef}>
               {spinTracksLoading ? (
-                <div className="flex items-center gap-2 px-3 py-2.5 rounded-md text-sm" style={{ border: '1px solid rgba(200,134,26,0.5)', background: '#FFFDF5' }}>
-                  <Loader2 className="w-4 h-4 animate-spin" style={{ color: '#C8861A' }} />
+                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-sm" style={{ border: '1px solid rgba(200,134,26,0.5)', background: '#FFFDF5' }} data-testid="spin-track-loading">
+                  <div className="flex gap-1 items-end h-4">
+                    <span className="w-1 rounded-full animate-pulse" style={{ background: '#C8861A', height: '8px', animationDelay: '0ms', animationDuration: '800ms' }} />
+                    <span className="w-1 rounded-full animate-pulse" style={{ background: '#C8861A', height: '12px', animationDelay: '200ms', animationDuration: '800ms' }} />
+                    <span className="w-1 rounded-full animate-pulse" style={{ background: '#C8861A', height: '16px', animationDelay: '400ms', animationDuration: '800ms' }} />
+                    <span className="w-1 rounded-full animate-pulse" style={{ background: '#C8861A', height: '10px', animationDelay: '600ms', animationDuration: '800ms' }} />
+                  </div>
                   <span style={{ color: '#8A6B4A' }}>Loading tracklist...</span>
                 </div>
               ) : spinTracks.length > 0 ? (

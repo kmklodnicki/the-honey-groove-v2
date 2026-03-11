@@ -210,6 +210,13 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - 8-second AbortController timeout before fallback to manual input
   - Files: ComposerBar.js
   - Tested: PASS (100% - testing agent iteration_186, Born To Die shows 12 tracks correctly)
+- **BLOCK 419: Smart-Load Tracklist** (March 2026) — COMPLETED
+  - Extended timeout from 8s to 10s before manual fallback
+  - Silent retry: auto-retries once after 2s on first failure before giving up
+  - Refresh button clears error state and re-initializes fetchTracklist() from scratch
+  - Honeycomb pulsing animation (gold bars) during loading state
+  - Files: ComposerBar.js
+  - Tested: PASS (self-tested, loading animation + 12 tracks confirmed)
 - **BLOCK 457: Daily Prompt Image Restoration** (March 2026) — COMPLETED
   - Added crossOrigin='anonymous' to AlbumArt and DailyPrompt img tags
   - Added proxy fallback: onError fires proxyImageUrl() via /api/image-proxy
