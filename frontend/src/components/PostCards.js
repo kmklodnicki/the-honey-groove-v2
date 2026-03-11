@@ -239,18 +239,46 @@ const EditionTag = ({ number }) => {
 };
 
 // Spinning vinyl disc — slides out from behind right side of album art sleeve
-const SpinningVinyl = () => (
-  <div className="absolute top-1/2 -right-3 -translate-y-1/2 z-[5] pointer-events-none" data-testid="spinning-vinyl-icon">
-    <svg width="44" height="44" viewBox="0 0 48 48" fill="none" className="drop-shadow-lg" style={{ animation: 'vinylSpin 1.8s linear infinite' }}>
-      <circle cx="24" cy="24" r="22" fill="#1A1A1A" />
-      <circle cx="24" cy="24" r="19" fill="none" stroke="#2A2A2A" strokeWidth="0.6" />
-      <circle cx="24" cy="24" r="16" fill="none" stroke="#2A2A2A" strokeWidth="0.4" />
-      <circle cx="24" cy="24" r="13" fill="none" stroke="#2A2A2A" strokeWidth="0.4" />
-      <circle cx="24" cy="24" r="10" fill="none" stroke="#2A2A2A" strokeWidth="0.3" />
-      <circle cx="24" cy="24" r="7" fill="#DAA520" />
-      <circle cx="24" cy="24" r="3" fill="#1A1A1A" />
-      <circle cx="24" cy="24" r="1.2" fill="#444" />
-    </svg>
+// High-fidelity grooved vinyl record — peeking behind album art
+// High-fidelity grooved vinyl record — peeking behind album art
+const SpinningVinyl = ({ size = 92 }) => {
+  const offset = size <= 64 ? '-4px' : '-6px';
+  return (
+    <div className="absolute top-1/2 -translate-y-1/2 z-[5] pointer-events-none" style={{ right: offset }} data-testid="spinning-vinyl-icon">
+      <svg width={size} height={size} viewBox="0 0 92 92" fill="none" style={{ animation: 'vinylSpin 1.8s linear infinite', filter: 'drop-shadow(1px 1px 3px rgba(0,0,0,0.3))' }}>
+        <defs>
+          <radialGradient id={`vg${size}`} cx="50%" cy="45%" r="50%">
+            <stop offset="0%" stopColor="#2A2A2A" />
+            <stop offset="100%" stopColor="#111" />
+          </radialGradient>
+          <radialGradient id={`sp${size}`} cx="35%" cy="30%" r="45%">
+            <stop offset="0%" stopColor="rgba(255,255,255,0.08)" />
+            <stop offset="100%" stopColor="rgba(255,255,255,0)" />
+          </radialGradient>
+        </defs>
+        <circle cx="46" cy="46" r="44" fill={`url(#vg${size})`} />
+        <circle cx="46" cy="46" r="43" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
+        {[40,38,36,34,32,30,28,26,24,22,20,18,16].map((r, i) => (
+          <circle key={r} cx="46" cy="46" r={r} fill="none"
+            stroke={i % 3 === 0 ? 'rgba(60,60,60,0.7)' : 'rgba(40,40,40,0.5)'}
+            strokeWidth={i % 2 === 0 ? '0.6' : '0.35'} />
+        ))}
+        <circle cx="46" cy="46" r="14" fill="#1E1E1E" />
+        <circle cx="46" cy="46" r="12" fill="#DAA520" />
+        <circle cx="46" cy="46" r="11.2" fill="none" stroke="rgba(0,0,0,0.15)" strokeWidth="0.5" />
+        <circle cx="46" cy="46" r="3" fill="#1A1A1A" />
+        <circle cx="46" cy="46" r="1.5" fill="#333" />
+        <circle cx="46" cy="46" r="43" fill={`url(#sp${size})`} />
+      </svg>
+    </div>
+  );
+};
+
+// Wrapper: album art with peeking vinyl behind — visible within card padding
+const AlbumWithVinyl = ({ children, showVinyl = true, size }) => (
+  <div className="relative" style={{ paddingRight: showVinyl ? '24px' : 0, marginRight: showVinyl ? '-4px' : 0 }}>
+    {showVinyl && <SpinningVinyl size={size} />}
+    {children}
   </div>
 );
 
@@ -273,10 +301,9 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
     <AlbumLink record={record} onAlbumClick={onAlbumClick}>
       <div className="flex gap-4 items-start" data-testid="now-spinning-card">
         {record.cover_url ? (
-          <div className="shrink-0 pr-3">
-            <div className="relative">
+          <div className="shrink-0" style={{ overflow: 'visible' }}>
+            <AlbumWithVinyl>
               <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-24 h-24 rounded-[10px] object-cover shadow-md album-art-hover relative z-[6]" priority={imgPriority} />
-              <SpinningVinyl />
               {post.honeypot_rating && (
                 <div className="absolute top-1 right-4 z-[7] px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
                   style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
@@ -284,7 +311,7 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
                   {post.honeypot_rating}
                 </div>
               )}
-            </div>
+            </AlbumWithVinyl>
             <StreamingLinks artist={record.artist} album={record.title} showEqualizer />
           </div>
         ) : (
@@ -440,8 +467,10 @@ const AddedToCollectionCard = ({ post, onAlbumClick, imgPriority }) => {
   return (
     <AlbumLink record={record} onAlbumClick={onAlbumClick}>
       <div className="flex gap-3 items-center" data-testid="added-card">
-        <div className="relative shrink-0">
-          <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-16 h-16 rounded-[10px] object-cover shadow" priority={imgPriority} />
+        <div className="shrink-0 pr-2">
+          <AlbumWithVinyl size={64}>
+            <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-16 h-16 rounded-[10px] object-cover shadow relative z-[6]" priority={imgPriority} />
+          </AlbumWithVinyl>
         </div>
         <div className="min-w-0">
           <p className="font-medium">{record.title}</p>
@@ -499,15 +528,17 @@ const DailyPromptPostCard = ({ post, imgPriority }) => (
     <p className="text-sm italic text-amber-700 mb-3">{post.prompt_text}</p>
     <div className="flex gap-4 items-start bg-amber-50/60 rounded-lg p-3">
       {post.cover_url ? (
-        <div className="relative shrink-0">
-          <AlbumArt src={post.cover_url} alt={`${post.record_artist} ${post.record_title}${post.color_variant ? ` ${post.color_variant}` : ''} vinyl record`} className="w-20 h-20 rounded-[10px] object-cover shadow-md" priority={imgPriority} />
-          {post.honeypot_rating && (
-            <div className="absolute top-1 right-1 px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
+        <div className="shrink-0 pr-2">
+          <AlbumWithVinyl>
+            <AlbumArt src={post.cover_url} alt={`${post.record_artist} ${post.record_title}${post.color_variant ? ` ${post.color_variant}` : ''} vinyl record`} className="w-20 h-20 rounded-[10px] object-cover shadow-md relative z-[6]" priority={imgPriority} />
+            {post.honeypot_rating && (
+              <div className="absolute top-1 right-1 z-[7] px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
               style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
               data-testid="feed-rating-pill">
               🍯 {post.honeypot_rating}
             </div>
           )}
+          </AlbumWithVinyl>
         </div>
       ) : (
         <div className="w-20 h-20 rounded-lg bg-amber-100 flex items-center justify-center"><Disc className="w-8 h-8 text-amber-300" /></div>
