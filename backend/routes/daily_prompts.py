@@ -119,6 +119,22 @@ def _generate_blur_data_url(image_url: str) -> Optional[str]:
         return None
 
 
+def _extract_dominant_color(image_url: str) -> Optional[str]:
+    """Extract the dominant color from a small thumbnail as a hex string."""
+    try:
+        from PIL import Image
+        headers = {"User-Agent": "HoneyGroove/1.0"}
+        resp = requests.get(image_url, timeout=10, headers=headers)
+        if resp.status_code != 200:
+            return None
+        img = Image.open(BytesIO(resp.content)).convert("RGB")
+        img = img.resize((1, 1), Image.LANCZOS)
+        r, g, b = img.getpixel((0, 0))
+        return f"#{r:02x}{g:02x}{b:02x}"
+    except Exception:
+        return None
+
+
 def _get_thumb_url(image_url: str) -> Optional[str]:
     """Convert a Discogs CDN high-res URL to its 150px thumbnail counterpart."""
     if not image_url or "discogs.com" not in image_url:
@@ -157,6 +173,7 @@ async def cache_discogs_image(release_id: int) -> Optional[str]:
     thumb_url = release.get("thumb_url")
     # Generate blur from the accessible 150px thumbnail
     blur_data_url = _generate_blur_data_url(thumb_url) if thumb_url else None
+    dominant_color = _extract_dominant_color(thumb_url) if thumb_url else None
     update_doc = {
         "release_id": release_id,
         "image_url": image_url,
@@ -167,6 +184,8 @@ async def cache_discogs_image(release_id: int) -> Optional[str]:
         update_doc["thumb_url"] = thumb_url
     if blur_data_url:
         update_doc["blur_data_url"] = blur_data_url
+    if dominant_color:
+        update_doc["dominant_color"] = dominant_color
     await db.image_cache.update_one(
         {"release_id": release_id},
         {"$set": update_doc},
@@ -395,22 +414,25 @@ async def get_prompt_responses(prompt_id: str, user: Dict = Depends(require_auth
                 {"_id": 0, "id": 1}
             )
             r["post_id"] = linked_post["id"] if linked_post else None
-        # Include blur placeholder and thumb from image cache
+        # Include blur placeholder, thumb, and dominant color from image cache
         r["blur_data_url"] = None
         r["thumb_url"] = None
+        r["dominant_color"] = None
         if r.get("cover_url"):
-            blur_doc = await db.image_cache.find_one({"image_url": r["cover_url"]}, {"_id": 0, "blur_data_url": 1, "thumb_url": 1})
+            blur_doc = await db.image_cache.find_one({"image_url": r["cover_url"]}, {"_id": 0, "blur_data_url": 1, "thumb_url": 1, "dominant_color": 1})
             if blur_doc:
                 r["blur_data_url"] = blur_doc.get("blur_data_url")
                 r["thumb_url"] = blur_doc.get("thumb_url")
+                r["dominant_color"] = blur_doc.get("dominant_color")
             # Fallback: look up by record's discogs_id
             if not r["blur_data_url"] and r.get("record_id"):
                 rec = await db.records.find_one({"id": r["record_id"]}, {"_id": 0, "discogs_id": 1})
                 if rec and rec.get("discogs_id"):
-                    cache_doc = await db.image_cache.find_one({"release_id": rec["discogs_id"]}, {"_id": 0, "blur_data_url": 1, "thumb_url": 1})
+                    cache_doc = await db.image_cache.find_one({"release_id": rec["discogs_id"]}, {"_id": 0, "blur_data_url": 1, "thumb_url": 1, "dominant_color": 1})
                     if cache_doc:
                         r["blur_data_url"] = cache_doc.get("blur_data_url")
                         r["thumb_url"] = cache_doc.get("thumb_url")
+                        r["dominant_color"] = cache_doc.get("dominant_color")
 
     return responses
 

@@ -123,8 +123,15 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
                   onClick={e => { if (!currentResp.post_id) e.preventDefault(); }}
                   data-testid="prompt-response-link"
                 >
-                  {/* Album art */}
-                  <div className="relative shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-vinyl-black">
+                  {/* Album art — GPU-accelerated with dominant color background */}
+                  <div className="relative shrink-0 w-16 h-16 rounded-lg overflow-hidden"
+                    style={{
+                      backgroundColor: currentResp.dominant_color || '#1A1A1A',
+                      transform: 'translateZ(0)',
+                      willChange: 'transform',
+                    }}
+                    data-testid="prompt-album-art-container"
+                  >
                     {currentResp.cover_url ? <AlbumArt src={currentResp.cover_url} alt={`${currentResp.record_artist || ''} ${currentResp.record_title || ''} vinyl record`} className="w-full h-full object-cover" blurDataUrl={currentResp.blur_data_url} thumbSrc={currentResp.thumb_url} priority={carouselIdx === 0} /> : <div className="w-full h-full flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>}
                     {currentResp.color_variant && (
                       <div className="absolute bottom-0.5 right-0.5 max-w-[90%] truncate uppercase text-[8px] font-bold px-1 py-0.5 rounded-full"

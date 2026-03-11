@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, TrendingUp, RefreshCw, Heart, ArrowRight, ShoppingBag, Cloud, Sparkles, CheckSquare, Square, ListChecks, AlertTriangle } from 'lucide-react';
+import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, TrendingUp, RefreshCw, Heart, ArrowRight, ShoppingBag, Cloud, Sparkles, CheckSquare, Square, ListChecks, AlertTriangle, Copy, Loader2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +25,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '../components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog';
 import { toast } from 'sonner';
 import DiscogsImport from '../components/DiscogsImport';
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -231,6 +232,10 @@ const CollectionPage = () => {
   const [valuationModalOpen, setValuationModalOpen] = useState(false);
   const [valuationFocusItem, setValuationFocusItem] = useState(null);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [dupeModalOpen, setDupeModalOpen] = useState(false);
+  const [dupeData, setDupeData] = useState(null);
+  const [dupeLoading, setDupeLoading] = useState(false);
+  const [dupeCleaning, setDupeCleaning] = useState(false);
   const navigate = useNavigate();
 
   // Blur placeholders for record cover images
@@ -326,6 +331,29 @@ const CollectionPage = () => {
       fetchData();
       toast.success(`${savedCount} record${savedCount !== 1 ? 's' : ''} valued!`);
     }
+  };
+
+  // Duplicate detection
+  const handleCheckDuplicates = async () => {
+    setDupeLoading(true);
+    try {
+      const r = await axios.get(`${API}/records/duplicates`, { headers: { Authorization: `Bearer ${token}` } });
+      setDupeData(r.data);
+      setDupeModalOpen(true);
+    } catch { toast.error('Could not check for duplicates'); }
+    setDupeLoading(false);
+  };
+
+  const handleCleanDuplicates = async () => {
+    setDupeCleaning(true);
+    try {
+      const r = await axios.delete(`${API}/records/duplicates/clean`, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success(`Removed ${r.data.removed_count} duplicate${r.data.removed_count !== 1 ? 's' : ''}!`);
+      setDupeModalOpen(false);
+      setDupeData(null);
+      fetchData();
+    } catch { toast.error('Could not clean duplicates'); }
+    setDupeCleaning(false);
   };
 
 
@@ -670,11 +698,6 @@ const CollectionPage = () => {
             </div>
           )}
 
-          {/* Your Week in Wax CTA */}
-          {collectionValue && collectionValue.valued_count > 0 && (
-            <WaxReportCTA />
-          )}
-
           {/* Search and Sort Controls */}
           <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <div className="relative flex-1">
@@ -709,6 +732,17 @@ const CollectionPage = () => {
             >
               <ListChecks className="w-4 h-4" />
               {selectMode ? 'Cancel' : 'Select'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCheckDuplicates}
+              disabled={dupeLoading}
+              className="gap-1.5 shrink-0 border-honey/50 text-stone-600"
+              data-testid="remove-duplicates-btn"
+            >
+              {dupeLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Copy className="w-4 h-4" />}
+              Duplicates
             </Button>
           </div>
 
@@ -857,6 +891,71 @@ const CollectionPage = () => {
         onComplete={handleWizardComplete}
       />
       <BackToTop />
+
+      {/* Duplicate Detector Modal */}
+      <Dialog open={dupeModalOpen} onOpenChange={setDupeModalOpen}>
+        <DialogContent className="max-w-md" data-testid="duplicate-modal">
+          <DialogTitle className="font-heading text-lg">Duplicate Records Found</DialogTitle>
+          {dupeData && dupeData.total_duplicates > 0 ? (
+            <div>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                We found <strong>{dupeData.total_duplicates}</strong> duplicate {dupeData.total_duplicates === 1 ? 'entry' : 'entries'} across {dupeData.duplicate_groups.length} record{dupeData.duplicate_groups.length !== 1 ? 's' : ''} in your collection. This will remove the extra copies and keep one of each. This action cannot be undone.
+              </p>
+              {dupeData.duplicate_groups.some(g => g.needs_review) && (
+                <div className="mb-4 px-3 py-2 rounded-lg border border-amber-200 bg-amber-50 text-xs text-amber-800">
+                  <AlertTriangle className="inline w-3.5 h-3.5 mr-1 -mt-0.5" />
+                  {dupeData.duplicate_groups.filter(g => g.needs_review).length} group{dupeData.duplicate_groups.filter(g => g.needs_review).length !== 1 ? 's have' : ' has'} records with different notes and will be skipped for manual review.
+                </div>
+              )}
+              <div className="max-h-48 overflow-y-auto space-y-2 mb-5">
+                {dupeData.duplicate_groups.slice(0, 10).map((g, i) => (
+                  <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-stone-50 border border-stone-200" data-testid={`dupe-group-${i}`}>
+                    <div className="w-8 h-8 rounded overflow-hidden bg-stone-200 shrink-0">
+                      {g.records[0]?.cover_url && (
+                        <AlbumArt src={g.records[0].cover_url} alt="" className="w-8 h-8 object-cover" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold truncate">{g.records[0]?.title}</p>
+                      <p className="text-[10px] text-stone-400">{g.records[0]?.artist}</p>
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 shrink-0" data-testid={`dupe-count-${i}`}>
+                      {g.count}x
+                    </span>
+                    {g.needs_review && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700">review</span>
+                    )}
+                  </div>
+                ))}
+                {dupeData.duplicate_groups.length > 10 && (
+                  <p className="text-xs text-stone-400 text-center">...and {dupeData.duplicate_groups.length - 10} more</p>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setDupeModalOpen(false)} className="flex-1 rounded-full" data-testid="dupe-cancel-btn">
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleCleanDuplicates}
+                  disabled={dupeCleaning}
+                  className="flex-1 rounded-full font-semibold border-0"
+                  style={{ background: '#dc2626', color: '#fff' }}
+                  data-testid="dupe-confirm-btn"
+                >
+                  {dupeCleaning ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm & Clean'}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8" data-testid="no-duplicates">
+              <Sparkles className="w-10 h-10 mx-auto mb-3" style={{ color: '#C8861A' }} />
+              <p className="text-sm font-semibold">No Duplicates Found</p>
+              <p className="text-xs text-muted-foreground mt-1">Your collection is already clean!</p>
+              <Button onClick={() => setDupeModalOpen(false)} className="mt-4 rounded-full" variant="outline" data-testid="dupe-close-btn">Close</Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

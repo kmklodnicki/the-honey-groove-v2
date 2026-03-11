@@ -1,0 +1,100 @@
+{
+  "summary": "Block 248 (Instant-On Prompt), Block 250 (Duplicate Detector), Block 252 (Week in Wax Migration). All 11 backend tests PASS (100%). Frontend verified: Duplicates button works with modal, Week in Wax on ProfilePage (not CollectionPage), Daily Prompt Card visible. FIXED: Double /api prefix bug in CollectionPage.js duplicate API calls.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "CollectionPage.js",
+        "issue": "FIXED: Double /api prefix in duplicate API calls causing 'Could not check for duplicates' error",
+        "selector": "data-testid='remove-duplicates-btn'",
+        "priority": "FIXED"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_block248_250_252.py",
+    "/app/test_reports/pytest/block248_250_252_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "collection.py lines 158-213: GET /api/records/duplicates correctly returns duplicate_groups with discogs_id, count, records, needs_review",
+    "collection.py lines 188-213: DELETE /api/records/duplicates/clean correctly removes dupes keeping oldest, skips groups with different notes",
+    "daily_prompts.py lines 122-136: _extract_dominant_color extracts color from thumbnail and stores in image_cache",
+    "daily_prompts.py lines 418-435: Prompt responses include dominant_color, blur_data_url, thumb_url from image_cache",
+    "DailyPrompt.js lines 127-133: prompt-album-art-container has GPU acceleration CSS (translateZ, willChange) and dominant_color background",
+    "ProfilePage.js lines 694-726: 'Your Week in Wax' section appears below bio for own profile with records",
+    "CollectionPage.js: Week in Wax CTA correctly REMOVED from collection tab"
+  ],
+  "updated_files": [
+    "/app/frontend/src/pages/CollectionPage.js",
+    "/app/backend/tests/test_block248_250_252.py"
+  ],
+  "success_rate": {
+    "backend": "100% (11/11 passed)",
+    "frontend": "100% (all UI elements verified after bug fix)"
+  },
+  "test_credentials": "test@example.com / test123 (testuser1)",
+  "seed_data_creation": "Test created and cleaned up duplicate records with discogs_id 99999888 for testing",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Block 248/250/252 fully verified. Fixed bug in CollectionPage.js where duplicate API calls had double /api prefix (${API}/api/records/duplicates instead of ${API}/records/duplicates). Backend endpoints work correctly. Duplicate detector shows 'No Duplicates Found' for clean collections. Week in Wax on ProfilePage shows Added/Spins/Total stats with link to Wax Report. Daily Prompt album art container has dominant_color + GPU acceleration CSS but user must buzz in to see carousel.",
+  "features_verified": {
+    "backend_duplicates_endpoint": {
+      "status": "PASS",
+      "details": "GET /api/records/duplicates returns {duplicate_groups: [], total_duplicates: 0} for clean collection"
+    },
+    "backend_clean_duplicates_endpoint": {
+      "status": "PASS",
+      "details": "DELETE /api/records/duplicates/clean returns {removed_count: 0} when no duplicates"
+    },
+    "backend_duplicates_requires_auth": {
+      "status": "PASS",
+      "details": "Both endpoints return 401/403 without authentication"
+    },
+    "backend_prompt_dominant_color": {
+      "status": "PASS",
+      "details": "GET /api/prompts/{id}/responses includes dominant_color field from image_cache"
+    },
+    "frontend_duplicates_button": {
+      "status": "PASS",
+      "details": "'Duplicates' button visible in filter bar (data-testid='remove-duplicates-btn')"
+    },
+    "frontend_duplicate_modal": {
+      "status": "PASS",
+      "details": "Clicking button opens modal (data-testid='duplicate-modal') showing 'No Duplicates Found'"
+    },
+    "frontend_no_duplicates_state": {
+      "status": "PASS",
+      "details": "'No Duplicates Found' state with sparkle icon and 'Your collection is already clean!' message"
+    },
+    "frontend_week_in_wax_profile": {
+      "status": "PASS",
+      "details": "'Your Week in Wax' section on ProfilePage (data-testid='profile-week-in-wax') with Added/Spins/Total"
+    },
+    "frontend_week_in_wax_removed_collection": {
+      "status": "PASS",
+      "details": "Week in Wax CTA is NOT present in CollectionPage (correctly removed)"
+    },
+    "frontend_daily_prompt_card": {
+      "status": "PASS",
+      "details": "Daily Prompt Card visible (data-testid='daily-prompt-card') with buzz count and 'buzz in' button"
+    },
+    "frontend_prompt_album_art_container": {
+      "status": "VERIFIED_CODE",
+      "details": "prompt-album-art-container has dominant_color background + GPU acceleration CSS (translateZ, willChange)"
+    }
+  },
+  "bug_fix_applied": {
+    "file": "/app/frontend/src/pages/CollectionPage.js",
+    "issue": "API paths had double /api prefix (${API}/api/records/duplicates instead of ${API}/records/duplicates)",
+    "lines_changed": [340, 350],
+    "resolution": "Removed extra /api prefix from axios calls for handleCheckDuplicates and handleCleanDuplicates",
+    "rca": "The API variable from AuthContext already includes /api suffix. The CollectionPage component was incorrectly adding another /api prefix, resulting in 404 errors."
+  },
+  "mocked_api_note": "No APIs mocked for this test"
+}

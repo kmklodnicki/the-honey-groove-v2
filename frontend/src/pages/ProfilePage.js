@@ -689,7 +689,42 @@ const ProfilePage = () => {
           </div>
         </div>
       ) : (
-      /* 4 Tabs */
+      /* Week in Wax + 4 Tabs */
+      <>
+      {/* Your Week in Wax — profile-level activity summary */}
+      {isOwnProfile && records.length > 0 && (
+        <Link to="/wax-report" className="block mb-5" data-testid="profile-week-in-wax">
+          <div className="rounded-xl border border-honey/30 p-4 transition-all hover:shadow-md hover:border-honey/60"
+            style={{ background: 'linear-gradient(135deg, rgba(255,215,0,0.06) 0%, rgba(218,165,32,0.03) 100%)' }}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-sm font-bold tracking-tight" style={{ color: '#7A5A1A' }}>Your Week in Wax</h3>
+              <span className="text-[10px] text-stone-400">View Full Report &rarr;</span>
+            </div>
+            <div className="flex gap-4 text-center">
+              <div className="flex-1">
+                <p className="text-lg font-bold" style={{ color: '#C8861A' }}>{records.filter(r => {
+                  const d = new Date(r.created_at);
+                  return d > new Date(Date.now() - 7 * 86400000);
+                }).length}</p>
+                <p className="text-[10px] text-stone-500">Added</p>
+              </div>
+              <div className="flex-1">
+                <p className="text-lg font-bold" style={{ color: '#C8861A' }}>{spins.filter(s => {
+                  const d = new Date(s.spun_at || s.created_at);
+                  return d > new Date(Date.now() - 7 * 86400000);
+                }).length}</p>
+                <p className="text-[10px] text-stone-500">Spins</p>
+              </div>
+              <div className="flex-1">
+                <p className="text-lg font-bold" style={{ color: '#C8861A' }}>{records.length}</p>
+                <p className="text-[10px] text-stone-500">Total</p>
+              </div>
+            </div>
+          </div>
+        </Link>
+      )}
+
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="bg-honey/10 mb-6 w-full flex overflow-x-auto no-scrollbar gap-1 p-1" style={{ WebkitOverflowScrolling: 'touch' }}>
           <TabsTrigger value="collection" className="data-[state=active]:bg-honey text-xs sm:text-sm shrink-0 px-3" data-testid="tab-collection">
@@ -1136,6 +1171,7 @@ const ProfilePage = () => {
           <MoodBoardTab username={username} />
         </TabsContent>
       </Tabs>
+      </>
       )}
 
       {/* Common Ground Overlay (BLOCK 40.2) */}
