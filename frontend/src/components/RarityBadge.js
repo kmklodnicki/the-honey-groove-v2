@@ -2,14 +2,27 @@ import React from 'react';
 import { Disc } from 'lucide-react';
 
 const TIER_CONFIG = {
-  'Ultra Rare': { label: 'Ultra Rare', color: '#8B0000' },
-  'Rare':       { label: 'Rare',       color: '#B8860B' },
-  'Uncommon':   { label: 'Uncommon',   color: '#556B2F' },
-  'Common':     { label: 'Common',     color: '#555' },
+  'Grail':      { label: 'Grail',      color: '#FFF', bg: 'linear-gradient(135deg, #7B2FF2, #C8861A)', border: '#7B2FF2', glow: '0 0 12px rgba(123,47,242,0.4)' },
+  'Ultra Rare': { label: 'Ultra Rare', color: '#FFF', bg: 'linear-gradient(135deg, #FF6B00, #FF9500)', border: '#FF6B00', glow: '0 0 10px rgba(255,107,0,0.3)' },
+  'Rare':       { label: 'Rare',       color: '#FFF', bg: '#DC2626', border: '#DC2626', glow: 'none' },
+  'Uncommon':   { label: 'Uncommon',   color: '#FFF', bg: '#2563EB', border: '#2563EB', glow: 'none' },
+  'Common':     { label: 'Common',     color: '#FFF', bg: '#9CA3AF', border: '#9CA3AF', glow: 'none' },
+  'Obscure':    { label: 'Obscure',    color: '#CBD5E1', bg: 'rgba(0,0,0,0.6)', border: '#475569', glow: 'none' },
+};
+
+// Pill-style tier display used on detail pages
+const PILL_COLOR = {
+  'Ultra Rare': '#8B0000',
+  'Rare':       '#B8860B',
+  'Uncommon':   '#556B2F',
+  'Common':     '#555',
+  'Grail':      '#7B2FF2',
+  'Obscure':    '#475569',
 };
 
 export const RarityPill = ({ tier, size = 'md' }) => {
-  const cfg = TIER_CONFIG[tier] || TIER_CONFIG['Common'];
+  const label = TIER_CONFIG[tier]?.label || tier || 'Common';
+  const pillColor = PILL_COLOR[tier] || '#555';
   const sizes = {
     sm: 'text-[9px] px-2 py-0.5 gap-1',
     md: 'text-[10px] px-2.5 py-1 gap-1.5',
@@ -23,7 +36,7 @@ export const RarityPill = ({ tier, size = 'md' }) => {
         background: 'rgba(255,215,0,0.2)',
         backdropFilter: 'blur(14px)',
         WebkitBackdropFilter: 'blur(14px)',
-        color: cfg.color,
+        color: pillColor,
         letterSpacing: '0.5px',
         border: '2px solid #DAA520',
         boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)',
@@ -31,6 +44,29 @@ export const RarityPill = ({ tier, size = 'md' }) => {
       data-testid="rarity-pill"
     >
       <Disc className={size === 'sm' ? 'w-2.5 h-2.5 opacity-40' : 'w-3 h-3 opacity-40'} />
+      {label}
+    </span>
+  );
+};
+
+
+// Compact badge for collection cards — uses vivid color-coded backgrounds
+export const RarityBadge = ({ label, size = 'sm' }) => {
+  if (!label) return null;
+  const cfg = TIER_CONFIG[label] || TIER_CONFIG['Common'];
+  const isSmall = size === 'sm';
+  return (
+    <span
+      className={`inline-flex items-center font-bold uppercase tracking-wider rounded-full whitespace-nowrap ${isSmall ? 'text-[9px] px-2 py-0.5' : 'text-[10px] px-2.5 py-0.5'}`}
+      style={{
+        background: cfg.bg,
+        color: cfg.color,
+        border: `1.5px solid ${cfg.border}`,
+        boxShadow: cfg.glow,
+        letterSpacing: '0.5px',
+      }}
+      data-testid={`rarity-badge-${label.toLowerCase().replace(/\s/g, '-')}`}
+    >
       {cfg.label}
     </span>
   );

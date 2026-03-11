@@ -99,6 +99,9 @@ class RecordResponse(BaseModel):
     spin_count: int = 0
     copy_number: Optional[int] = None
     total_copies: Optional[int] = None
+    community_have: Optional[int] = None
+    community_want: Optional[int] = None
+    rarity_label: Optional[str] = None
 
 class DiscogsSearchResult(BaseModel):
     discogs_id: int

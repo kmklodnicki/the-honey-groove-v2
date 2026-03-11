@@ -14,6 +14,7 @@ from database import DISCOGS_TOKEN, DISCOGS_USER_AGENT, DISCOGS_CONSUMER_KEY, DI
 from database import DISCOGS_REQUEST_TOKEN_URL, DISCOGS_AUTHORIZE_URL, DISCOGS_ACCESS_TOKEN_URL, DISCOGS_API_BASE
 from database import oauth_request_tokens, import_progress, EMERGENT_KEY, APP_NAME
 from models import *
+from utils.rarity import calculate_rarity
 from fastapi import UploadFile, File
 from requests_oauthlib import OAuth1Session
 import asyncio
@@ -252,6 +253,32 @@ async def get_record(record_id: str, current_user: Optional[Dict] = Depends(get_
     spin_count = await db.spins.count_documents({"record_id": record_id})
     
     return RecordResponse(**record, spin_count=spin_count)
+
+
+@router.post("/records/enrich-rarity")
+async def enrich_rarity(user: Dict = Depends(require_auth)):
+    """Fetch community have/want from Discogs and compute rarity labels for all records missing them."""
+    records = await db.records.find(
+        {"user_id": user["id"], "discogs_id": {"$ne": None}, "rarity_label": {"$in": [None, ""]}},
+        {"_id": 0, "id": 1, "discogs_id": 1}
+    ).to_list(500)
+    enriched = 0
+    for rec in records:
+        try:
+            release = get_discogs_release(rec["discogs_id"])
+            if not release:
+                continue
+            have = release.get("community_have", 0)
+            want = release.get("community_want", 0)
+            label = calculate_rarity(have, want)
+            await db.records.update_one(
+                {"id": rec["id"]},
+                {"$set": {"community_have": have, "community_want": want, "rarity_label": label}}
+            )
+            enriched += 1
+        except Exception as e:
+            logger.warning(f"Rarity enrichment failed for {rec['discogs_id']}: {e}")
+    return {"enriched": enriched, "total": len(records)}
 
 
 

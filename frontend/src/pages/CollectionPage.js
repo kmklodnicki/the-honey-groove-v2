@@ -36,6 +36,7 @@ import BackToTop from '../components/BackToTop';
 import ValuationAssistantModal from '../components/ValuationAssistantModal';
 import ValuationWizard from '../components/ValuationWizard';
 import { useBlurPlaceholders } from '../hooks/useBlurPlaceholders';
+import { RarityBadge } from '../components/RarityBadge';
 
 // Counting animation hook
 const useCountUp = (target, duration = 1400, enabled = true) => {
@@ -279,6 +280,16 @@ const CollectionPage = () => {
       setCollectionValue(valueRes.data);
       setHiddenGems(gemsRes.data || []);
       setValueMap(valMapRes.data || {});
+      // Background: enrich rarity for records missing it
+      const needsRarity = recordsRes.data.some(r => r.discogs_id && !r.rarity_label);
+      if (needsRarity) {
+        axios.post(`${API}/records/enrich-rarity`, {}, { headers }).then(res => {
+          if (res.data.enriched > 0) {
+            // Refetch records to get updated rarity labels
+            axios.get(`${API}/records`, { headers }).then(r => setRecords(r.data));
+          }
+        }).catch(() => {});
+      }
       // Fetch wishlist (WISHLIST ISO items) and dream value
       Promise.all([
         axios.get(`${API}/iso/dreamlist`, { headers }).then(r => setWishlistItems(r.data || [])),
@@ -1173,6 +1184,11 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
               {record.title}
             </h4>
             <p className="text-xs text-muted-foreground truncate">{record.artist}</p>
+            {record.rarity_label && (
+              <div className="mt-1">
+                <RarityBadge label={record.rarity_label} size="sm" />
+              </div>
+            )}
             {record.color_variant && (
               record.discogs_id ? (
                 <Link to={`/variant/${record.discogs_id}`} onClick={e => e.stopPropagation()} className="text-[11px] text-honey-amber font-medium truncate mt-0.5 block hover:underline cursor-pointer transition-transform duration-150 hover:scale-105 origin-left" data-testid={`variant-label-${record.id}`}>

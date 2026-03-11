@@ -170,14 +170,18 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     // Fetch tracklist if the record has a discogs_id
     if (rec.discogs_id) {
       setSpinTracksLoading(true);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000);
       axios.get(`${API}/discogs/release/${rec.discogs_id}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
+        signal: controller.signal,
       }).then(resp => {
         const tracks = (resp.data.tracklist || []).filter(t => t.title);
         setSpinTracks(tracks);
       }).catch(() => {
         setSpinTracks([]);
       }).finally(() => {
+        clearTimeout(timeout);
         setSpinTracksLoading(false);
         setSpinTracksFetched(true);
       });
@@ -394,7 +398,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
 
       {/* ═══ Now Spinning Modal (merged with Mood) ═══ */}
       <Dialog open={activeModal === 'NOW_SPINNING'} onOpenChange={(open) => !open && closeModal()}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-heading flex items-center gap-2" style={{ color: '#D98C2F' }}>
               <Disc className="w-5 h-5" /> Now Spinning
@@ -591,11 +595,14 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               rows={2} data-testid="spin-caption-input" />
 
             <Button onClick={submitNowSpinning} disabled={submitting || !spinRecordId || !spinCaption.trim()}
-              className="w-full rounded-full transition-all duration-200 text-white"
+              className="w-full rounded-full transition-all duration-200 text-white sticky bottom-0 z-10"
               style={{ background: 'linear-gradient(135deg, #FFB300, #FFA000)' }}
               data-testid="spin-submit-btn">
-              {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Disc className="w-4 h-4 mr-2" />}
-              {spinMood ? `Post Now Spinning · ${MOOD_CONFIG[spinMood].emoji} ${spinMood}` : 'Post Now Spinning'}
+              {submitting ? (
+                <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Spinning your record...</>
+              ) : (
+                <><Disc className="w-4 h-4 mr-2" /> {spinMood ? `Post Now Spinning · ${MOOD_CONFIG[spinMood].emoji} ${spinMood}` : 'Post Now Spinning'}</>
+              )}
             </Button>
           </div>
         </DialogContent>
