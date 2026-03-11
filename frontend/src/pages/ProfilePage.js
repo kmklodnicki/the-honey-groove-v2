@@ -588,7 +588,12 @@ const ProfilePage = () => {
             {dreamValue && dreamValue.total_count > 0 && (
               <p className="mt-2 font-serif italic text-sm" style={{ color: '#C8861A' }} data-testid="profile-dream-value">
                 Value of Dream Records: ${dreamValue.total_value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                {dreamValue.pending_count > 0 && (
+                {dreamValue.pending_count > 0 && isOwnProfile && (
+                  <Link to="/collection?tab=wishlist&filter=pending_value" className="text-stone-400 text-xs ml-1 not-italic underline decoration-dotted hover:text-amber-600 transition-colors" data-testid="profile-pending-link">
+                    (+{dreamValue.pending_count} pending)
+                  </Link>
+                )}
+                {dreamValue.pending_count > 0 && !isOwnProfile && (
                   <span className="text-stone-400 text-xs ml-1 not-italic">(+{dreamValue.pending_count} pending)</span>
                 )}
               </p>

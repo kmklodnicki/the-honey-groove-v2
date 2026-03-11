@@ -137,36 +137,6 @@ async def get_wishlist_value(user: Dict = Depends(require_auth)):
     }
 
 
-@router.get("/valuation/dreamlist")
-async def get_dreamlist_value(user: Dict = Depends(require_auth)):
-    """Total estimated value of Dream Wishlist items only."""
-    total_count = await db.iso_items.count_documents({"user_id": user["id"], "status": "WISHLIST"})
-    # Safeguard: if no Dream List items, value is always $0
-    if total_count == 0:
-        return {"total_value": 0, "valued_count": 0, "total_count": 0, "pending_count": 0}
-
-    items = await db.iso_items.find(
-        {"user_id": user["id"], "status": "WISHLIST", "discogs_id": {"$ne": None}},
-        {"_id": 0, "discogs_id": 1}
-    ).to_list(5000)
-    discogs_ids = list({i["discogs_id"] for i in items if i.get("discogs_id")})
-    if not discogs_ids:
-        return {"total_value": 0, "valued_count": 0, "total_count": total_count, "pending_count": total_count}
-
-    values = await db.collection_values.find(
-        {"release_id": {"$in": discogs_ids}}, {"_id": 0}
-    ).to_list(5000)
-
-    total = sum(v["median_value"] for v in values if v.get("median_value"))
-    valued_count = len([v for v in values if v.get("median_value")])
-    return {
-        "total_value": round(total, 2),
-        "valued_count": valued_count,
-        "total_count": total_count,
-        "pending_count": total_count - valued_count,
-    }
-
-
 @router.get("/valuation/wishlist/{username}")
 async def get_user_wishlist_value(username: str):
     """ISO Value for any user (Actively Seeking only, public)."""
@@ -192,34 +162,187 @@ async def get_user_wishlist_value(username: str):
     }
 
 
+
+# ===================== DREAM VALUE HELPERS =====================
+
+async def _resolve_dream_item_value(discogs_id, user_manual_price=None):
+    """3-tier value resolution: Discogs median -> Community valuation -> User manual price."""
+    if discogs_id:
+        cached = await db.collection_values.find_one({"release_id": discogs_id}, {"_id": 0, "median_value": 1})
+        if cached and cached.get("median_value"):
+            return cached["median_value"], "discogs"
+        community = await db.community_valuations.find_one({"release_id": discogs_id}, {"_id": 0, "average_value": 1})
+        if community and community.get("average_value"):
+            return community["average_value"], "community"
+    if user_manual_price and user_manual_price > 0:
+        return user_manual_price, "manual"
+    return None, "pending"
+
+
+async def _recalculate_dream_value(user_id: str):
+    """Recalculate dream value for a user using 3-tier resolution."""
+    items = await db.iso_items.find(
+        {"user_id": user_id, "status": "WISHLIST"},
+        {"_id": 0, "discogs_id": 1, "manual_price": 1}
+    ).to_list(5000)
+    total_count = len(items)
+    if total_count == 0:
+        return {"total_value": 0, "valued_count": 0, "total_count": 0, "pending_count": 0}
+
+    discogs_ids = list({i["discogs_id"] for i in items if i.get("discogs_id")})
+    discogs_map = {}
+    if discogs_ids:
+        vals = await db.collection_values.find(
+            {"release_id": {"$in": discogs_ids}}, {"_id": 0, "release_id": 1, "median_value": 1}
+        ).to_list(5000)
+        discogs_map = {v["release_id"]: v.get("median_value") for v in vals if v.get("median_value")}
+
+    community_map = {}
+    missing_ids = [did for did in discogs_ids if did not in discogs_map]
+    if missing_ids:
+        cvs = await db.community_valuations.find(
+            {"release_id": {"$in": missing_ids}}, {"_id": 0, "release_id": 1, "average_value": 1}
+        ).to_list(5000)
+        community_map = {c["release_id"]: c.get("average_value") for c in cvs if c.get("average_value")}
+
+    total = 0.0
+    valued = 0
+    for item in items:
+        did = item.get("discogs_id")
+        val = discogs_map.get(did) or community_map.get(did) or (item.get("manual_price") if item.get("manual_price") and item["manual_price"] > 0 else None)
+        if val:
+            total += val
+            valued += 1
+
+    return {
+        "total_value": round(total, 2),
+        "valued_count": valued,
+        "total_count": total_count,
+        "pending_count": total_count - valued,
+    }
+
+
+def _trimmed_mean(values: list, trim_pct: float = 0.05) -> float:
+    """Calculate trimmed mean, discarding top/bottom trim_pct."""
+    if not values:
+        return 0
+    if len(values) <= 2:
+        return sum(values) / len(values)
+    sorted_vals = sorted(values)
+    trim_count = max(1, int(len(sorted_vals) * trim_pct))
+    trimmed = sorted_vals[trim_count:-trim_count] if len(sorted_vals) > trim_count * 2 else sorted_vals
+    return sum(trimmed) / len(trimmed) if trimmed else 0
+
+
+# ===================== DREAM VALUE ENDPOINTS =====================
+
+@router.get("/valuation/dreamlist")
+async def get_dreamlist_value(user: Dict = Depends(require_auth)):
+    """Total estimated value of Dream Wishlist items (3-tier resolution)."""
+    return await _recalculate_dream_value(user["id"])
+
+
 @router.get("/valuation/dreamlist/{username}")
 async def get_user_dreamlist_value(username: str):
     """Dream Wishlist Value for any user (WISHLIST only, public)."""
     target = await db.users.find_one({"username": username.lower()}, {"_id": 0, "id": 1})
     if not target:
         raise HTTPException(status_code=404, detail="User not found")
-    total_count = await db.iso_items.count_documents({"user_id": target["id"], "status": "WISHLIST"})
-    # Safeguard: if no Dream List items, value is always $0
-    if total_count == 0:
-        return {"total_value": 0, "valued_count": 0, "total_count": 0, "pending_count": 0}
+    return await _recalculate_dream_value(target["id"])
+
+
+# ===================== PENDING ITEMS & MANUAL VALUATION =====================
+
+from pydantic import BaseModel as _BaseModel
+
+class ManualValueInput(_BaseModel):
+    value: float
+
+@router.get("/valuation/pending-items")
+async def get_pending_items(user: Dict = Depends(require_auth)):
+    """Return dream list items with no resolved price (for Valuation Assistant)."""
     items = await db.iso_items.find(
-        {"user_id": target["id"], "status": "WISHLIST", "discogs_id": {"$ne": None}},
-        {"_id": 0, "discogs_id": 1}
+        {"user_id": user["id"], "status": "WISHLIST"}, {"_id": 0}
     ).to_list(5000)
-    discogs_ids = list({i["discogs_id"] for i in items if i.get("discogs_id")})
-    if not discogs_ids:
-        return {"total_value": 0, "valued_count": 0, "total_count": total_count, "pending_count": total_count}
-    values = await db.collection_values.find(
-        {"release_id": {"$in": discogs_ids}}, {"_id": 0}
-    ).to_list(5000)
-    total = sum(v["median_value"] for v in values if v.get("median_value"))
-    valued_count = len([v for v in values if v.get("median_value")])
-    return {
-        "total_value": round(total, 2),
-        "valued_count": valued_count,
-        "total_count": total_count,
-        "pending_count": total_count - valued_count,
-    }
+
+    discogs_ids = [i["discogs_id"] for i in items if i.get("discogs_id")]
+    discogs_map = {}
+    community_map = {}
+    if discogs_ids:
+        vals = await db.collection_values.find(
+            {"release_id": {"$in": discogs_ids}}, {"_id": 0, "release_id": 1, "median_value": 1}
+        ).to_list(5000)
+        discogs_map = {v["release_id"]: v.get("median_value") for v in vals if v.get("median_value")}
+        missing = [d for d in discogs_ids if d not in discogs_map]
+        if missing:
+            cvs = await db.community_valuations.find(
+                {"release_id": {"$in": missing}}, {"_id": 0, "release_id": 1, "average_value": 1}
+            ).to_list(5000)
+            community_map = {c["release_id"]: c.get("average_value") for c in cvs if c.get("average_value")}
+
+    pending = []
+    for item in items:
+        did = item.get("discogs_id")
+        has_discogs = did and did in discogs_map
+        has_community = did and did in community_map
+        has_manual = item.get("manual_price") and item["manual_price"] > 0
+        if not has_discogs and not has_community and not has_manual:
+            pending.append({
+                "id": item["id"],
+                "artist": item.get("artist", ""),
+                "album": item.get("album", ""),
+                "cover_url": item.get("cover_url"),
+                "discogs_id": did,
+                "manual_price": item.get("manual_price"),
+            })
+    return pending
+
+
+@router.put("/valuation/manual-value/{iso_id}")
+async def set_manual_value(iso_id: str, body: ManualValueInput, user: Dict = Depends(require_auth)):
+    """Set a manual price for a dream list item. Also contributes to community valuations."""
+    if body.value <= 0:
+        raise HTTPException(status_code=400, detail="Value must be positive")
+
+    iso = await db.iso_items.find_one({"id": iso_id, "user_id": user["id"]}, {"_id": 0})
+    if not iso:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    await db.iso_items.update_one(
+        {"id": iso_id}, {"$set": {"manual_price": round(body.value, 2)}}
+    )
+
+    discogs_id = iso.get("discogs_id")
+    if discogs_id:
+        now = datetime.now(timezone.utc).isoformat()
+        existing = await db.community_valuations.find_one({"release_id": discogs_id})
+        if existing:
+            contributions = existing.get("contributions", [])
+            contributions = [c for c in contributions if c["user_id"] != user["id"]]
+            contributions.append({"user_id": user["id"], "value": round(body.value, 2), "at": now})
+            avg = _trimmed_mean([c["value"] for c in contributions])
+            await db.community_valuations.update_one(
+                {"release_id": discogs_id},
+                {"$set": {
+                    "contributions": contributions,
+                    "average_value": round(avg, 2),
+                    "contribution_count": len(contributions),
+                    "updated_at": now,
+                }}
+            )
+        else:
+            await db.community_valuations.insert_one({
+                "release_id": discogs_id,
+                "contributions": [{"user_id": user["id"], "value": round(body.value, 2), "at": now}],
+                "average_value": round(body.value, 2),
+                "contribution_count": 1,
+                "created_at": now,
+                "updated_at": now,
+            })
+
+    result = await _recalculate_dream_value(user["id"])
+    return {"message": "Value saved", "dream_value": result}
+
 # ===================== HIDDEN GEMS =====================
 
 @router.get("/valuation/hidden-gems")

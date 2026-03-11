@@ -32,6 +32,7 @@ import AlbumArt from '../components/AlbumArt';
 import { VariantTag } from '../components/PostCards';
 import SEOHead from '../components/SEOHead';
 import BackToTop from '../components/BackToTop';
+import ValuationAssistantModal from '../components/ValuationAssistantModal';
 
 // Counting animation hook
 const useCountUp = (target, duration = 1400, enabled = true) => {
@@ -61,7 +62,7 @@ const HoneycombIcon = ({ className }) => (
 );
 
 // Treasury Header — Premium Collection & Dream Value Dashboard
-const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamLoading, collectionTab, onTabChange, valuedCount, totalCount, onRefresh, refreshing }) => {
+const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamLoading, collectionTab, onTabChange, valuedCount, totalCount, onRefresh, refreshing, onPendingClick }) => {
   const animCollection = useCountUp(collectionValue, 1600, true);
   const animDream = useCountUp(dreamValue, 1600, true);
 
@@ -135,7 +136,11 @@ const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamL
                 </p>
               )}
               <p className="text-[10px] text-stone-400 mt-0.5">
-                {dreamPendingCount > 0 ? `(+${dreamPendingCount} pending)` : 'if only...'}
+                {dreamPendingCount > 0 ? (
+                  <button onClick={e => { e.stopPropagation(); onPendingClick?.(); }} className="underline decoration-dotted cursor-pointer hover:text-amber-600 transition-colors" data-testid="treasury-pending-btn">
+                    (+{dreamPendingCount} pending)
+                  </button>
+                ) : 'if only...'}
               </p>
             </div>
           </button>
@@ -203,7 +208,21 @@ const CollectionPage = () => {
   // Multi-select mode
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
+  const [valuationModalOpen, setValuationModalOpen] = useState(false);
   const navigate = useNavigate();
+
+  // Auto-open valuation modal if ?filter=pending_value
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('filter') === 'pending_value') {
+      setCollectionTab('wishlist');
+      setValuationModalOpen(true);
+      // Clean the URL param
+      params.delete('filter');
+      const newUrl = params.toString() ? `?${params.toString()}` : window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, []);
 
   // Trigger counting animation when switching to dreaming tab
   const handleTabChange = (val) => {
@@ -532,6 +551,7 @@ const CollectionPage = () => {
             totalCount={collectionValue?.total_count}
             onRefresh={handleRefreshValues}
             refreshing={refreshing}
+            onPendingClick={() => setValuationModalOpen(true)}
           />
         )}
 
@@ -714,6 +734,7 @@ const CollectionPage = () => {
             countKey={countKey}
             subtractMsg={dreamSubtractMsg}
             pendingCount={dreamlistValue?.pending_count || 0}
+            onPendingClick={() => setValuationModalOpen(true)}
           />
           <p className="text-sm text-muted-foreground mt-9 mb-5 px-4 leading-relaxed" data-testid="dreamlist-helper-text">These are your dream records. If you want to actively search for a record on this list, move it to Actively Seeking.</p>
 
@@ -763,12 +784,20 @@ const CollectionPage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <ValuationAssistantModal
+        open={valuationModalOpen}
+        onClose={() => setValuationModalOpen(false)}
+        onValuesUpdated={(dv) => {
+          setDreamlistValue(dv);
+          setCountKey(k => k + 1);
+        }}
+      />
       <BackToTop />
     </div>
   );
 };
 
-const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg, pendingCount }) => {
+const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg, pendingCount, onPendingClick }) => {
   const animatedValue = useCountUp(totalValue, 1400, true);
   // Reset count animation on key change (tab switch)
   const [localKey, setLocalKey] = useState(countKey);
@@ -801,7 +830,7 @@ const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg, pending
               ${displayValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
             {pendingCount > 0 && (
-              <span className="text-sm font-normal text-stone-400 ml-1" data-testid="dream-pending-count">(+{pendingCount} pending)</span>
+              <button onClick={onPendingClick} className="text-sm font-normal text-stone-400 ml-1 underline decoration-dotted cursor-pointer hover:text-amber-600 transition-colors" data-testid="dream-pending-count">(+{pendingCount} pending)</button>
             )}
             ...{' '}
             <span className="text-base font-light text-stone-400 font-serif italic">(Value of Dream Records)</span>
@@ -1030,6 +1059,9 @@ const WishlistCard = ({ item, onPromote, onAddToCollection, onDelete }) => (
             style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', fontSize: '18px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
             data-testid={`median-value-${item.id}`}>
             ${Math.round(item.median_value)}
+            {item.value_source && item.value_source !== 'discogs' && (
+              <span className="text-[8px] font-normal ml-0.5 opacity-60">{item.value_source === 'community' ? 'c' : 'm'}</span>
+            )}
           </div>
         ) : (
           <div className="absolute top-2 right-2 px-2.5 py-1 rounded-full font-black z-[5]"

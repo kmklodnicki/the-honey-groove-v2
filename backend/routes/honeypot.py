@@ -119,7 +119,7 @@ async def get_my_isos(user: Dict = Depends(require_auth)):
 
 @router.get("/iso/dreamlist")
 async def get_my_dreamlist(user: Dict = Depends(require_auth)):
-    """Return all Dream List (WISHLIST) items for the current user, enriched with median Discogs values."""
+    """Return all Dream List (WISHLIST) items for the current user, enriched with 3-tier values."""
     isos = await db.iso_items.find(
         {"user_id": user["id"], "status": "WISHLIST"}, {"_id": 0}
     ).sort("created_at", -1).to_list(500)
@@ -127,14 +127,28 @@ async def get_my_dreamlist(user: Dict = Depends(require_auth)):
     # Batch-fetch median values for all discogs_ids
     discogs_ids = [i["discogs_id"] for i in isos if i.get("discogs_id")]
     value_map = {}
+    community_map = {}
     if discogs_ids:
         values = await db.collection_values.find(
             {"release_id": {"$in": discogs_ids}}, {"_id": 0, "release_id": 1, "median_value": 1}
         ).to_list(len(discogs_ids))
         value_map = {v["release_id"]: v.get("median_value") for v in values if v.get("median_value")}
+        # Community valuations for items missing Discogs data
+        missing = [d for d in discogs_ids if d not in value_map]
+        if missing:
+            cvs = await db.community_valuations.find(
+                {"release_id": {"$in": missing}}, {"_id": 0, "release_id": 1, "average_value": 1}
+            ).to_list(len(missing))
+            community_map = {c["release_id"]: c.get("average_value") for c in cvs if c.get("average_value")}
 
     for item in isos:
-        item["median_value"] = value_map.get(item.get("discogs_id"))
+        did = item.get("discogs_id")
+        discogs_val = value_map.get(did)
+        community_val = community_map.get(did)
+        manual_val = item.get("manual_price")
+        # Set resolved median_value using 3-tier priority
+        item["median_value"] = discogs_val or community_val or (manual_val if manual_val and manual_val > 0 else None)
+        item["value_source"] = "discogs" if discogs_val else ("community" if community_val else ("manual" if manual_val and manual_val > 0 else "pending"))
 
     return isos
 
