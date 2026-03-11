@@ -224,6 +224,16 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - Honey Gold border (#DAA520), cream background (#FFFDF5), 3-second duration
   - Files: RarityBadge.js, VariantReleasePage.js (passes albumName/variantName)
   - Tested: PASS (self-tested, toast shown with correct album+variant content)
+- **BLOCK 425: Alert Engine** (March 2026) — COMPLETED
+  - Backend: POST/GET/DELETE /api/listing-alerts for alert subscriptions
+  - Duplicate prevention: returns "Already subscribed" for same discogs_id
+  - Honeypot create_listing: matches alerts by discogs_id, sends in-app + email notification
+  - One-time trigger: alerts marked FULFILLED after notification sent
+  - Email: branded template with album art, direct listing link
+  - Frontend: onNotifySubscribe callback on RarityCard saves alert via API
+  - 👑 Crown emoji for katieintheafterglow (founder) in feed posts and profile page
+  - Files: notifications.py, honeypot.py, emails.py, RarityBadge.js, VariantReleasePage.js, HivePage.js, ProfilePage.js
+  - Tested: PASS (100% - testing agent iteration_187, 8/8 features verified)
 - **BLOCK 457: Daily Prompt Image Restoration** (March 2026) — COMPLETED
   - Added crossOrigin='anonymous' to AlbumArt and DailyPrompt img tags
   - Added proxy fallback: onError fires proxyImageUrl() via /api/image-proxy
