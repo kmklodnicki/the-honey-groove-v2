@@ -246,9 +246,9 @@ const Navbar = () => {
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0" data-testid="mobile-user-menu">
+                <button className="relative h-11 w-11 flex items-center justify-center rounded-full -mr-1" data-testid="mobile-user-menu" style={{ zIndex: 10 }}>
                   <BeeAvatar user={user} className="h-8 w-8" />
-                </Button>
+                </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount style={{ zIndex: 2147483647, position: 'fixed' }}>
                 <div className="flex items-center gap-2 p-2">
