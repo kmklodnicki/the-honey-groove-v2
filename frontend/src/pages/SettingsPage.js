@@ -713,6 +713,21 @@ const SettingsPage = () => {
                 <CheckCircle2 className="w-4 h-4" />
                 <span className="font-medium">Verified Golden Hive Member</span>
               </div>
+            ) : !stripeStatus?.stripe_connected ? (
+              <div className="space-y-3" data-testid="golden-id-stripe-gate">
+                <div className="rounded-lg border border-amber-200/60 bg-amber-50/50 p-3">
+                  <p className="text-xs text-[#8A6B4A] leading-relaxed">to apply for Golden ID and start selling in the Honeypot, you must first set up your Stripe payout account.</p>
+                </div>
+                <Button
+                  onClick={handleStripeConnect}
+                  disabled={stripeConnecting}
+                  className="rounded-full text-xs bg-honey text-vinyl-black hover:bg-honey-amber gap-1.5"
+                  data-testid="golden-id-connect-stripe-btn"
+                >
+                  {stripeConnecting ? <Loader2 className="w-3 h-3 animate-spin" /> : <CreditCard className="w-3 h-3" />}
+                  Connect Stripe to Continue
+                </Button>
+              </div>
             ) : verificationStatus?.status === 'PENDING' ? (
               <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2" data-testid="verification-pending">
                 <Loader2 className="w-4 h-4 animate-spin" />
