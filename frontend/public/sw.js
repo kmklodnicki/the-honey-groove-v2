@@ -1,11 +1,27 @@
-/* Service Worker — HoneyGroove Asset Cache */
+/* Service Worker — HoneyGroove Performance Cache */
 /* eslint-disable no-restricted-globals */
 
-const CACHE_NAME = 'honeygroove-img-v1';
-const IMG_CACHE_MAX = 80;
+const STATIC_CACHE = 'honeygroove-static-v2';
+const IMG_CACHE = 'honeygroove-img-v2';
+const IMG_CACHE_MAX = 150;
+
+// Static assets to pre-cache on install for instant second-visit loads
+const PRECACHE_ASSETS = [
+  '/',
+  '/index.html',
+  '/vinyl-placeholder.svg',
+  '/manifest.json',
+];
 
 // Force activation: skip waiting + claim clients immediately
 self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(STATIC_CACHE).then((cache) =>
+      cache.addAll(PRECACHE_ASSETS).catch(() => {
+        // Non-critical: continue even if some assets fail
+      })
+    )
+  );
   self.skipWaiting();
 });
 
@@ -14,46 +30,92 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys
-          .filter((k) => k !== CACHE_NAME)
+          .filter((k) => k !== STATIC_CACHE && k !== IMG_CACHE)
           .map((k) => caches.delete(k))
       )
     ).then(() => self.clients.claim())
   );
 });
 
-// Cache image responses on the fly
+// Cache strategy: images use cache-first, static assets use stale-while-revalidate
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Only cache image requests (proxy, discogs, files/serve)
+  if (request.method !== 'GET') return;
+
+  // ─── Image requests: Cache-first with LRU eviction ───
   const isImage =
     url.pathname.includes('/api/image-proxy') ||
     url.pathname.includes('/api/files/serve/') ||
     url.hostname.includes('discogs.com') ||
     /\.(jpe?g|png|webp|gif|svg)(\?|$)/i.test(url.pathname);
 
-  if (!isImage || request.method !== 'GET') return;
+  if (isImage) {
+    event.respondWith(
+      caches.open(IMG_CACHE).then(async (cache) => {
+        const cached = await cache.match(request);
+        if (cached) return cached;
 
-  event.respondWith(
-    caches.open(CACHE_NAME).then(async (cache) => {
-      const cached = await cache.match(request);
-      if (cached) return cached;
-
-      try {
-        const response = await fetch(request);
-        if (response.ok) {
-          // Trim cache if over limit
-          const keys = await cache.keys();
-          if (keys.length >= IMG_CACHE_MAX) {
-            await cache.delete(keys[0]);
+        try {
+          const response = await fetch(request);
+          if (response.ok) {
+            const keys = await cache.keys();
+            if (keys.length >= IMG_CACHE_MAX) {
+              // Evict oldest 10 entries at once to reduce overhead
+              const toEvict = keys.slice(0, 10);
+              await Promise.all(toEvict.map((k) => cache.delete(k)));
+            }
+            cache.put(request, response.clone());
           }
-          cache.put(request, response.clone());
+          return response;
+        } catch {
+          return new Response('', { status: 503 });
         }
-        return response;
-      } catch {
-        return new Response('', { status: 503 });
-      }
-    })
-  );
+      })
+    );
+    return;
+  }
+
+  // ─── Static assets (CSS, JS, fonts): Stale-while-revalidate ───
+  const isStatic =
+    /\.(css|js|woff2?|ttf|eot)(\?|$)/i.test(url.pathname) ||
+    url.hostname.includes('fonts.googleapis.com') ||
+    url.hostname.includes('fonts.gstatic.com') ||
+    url.hostname.includes('cdnjs.cloudflare.com');
+
+  if (isStatic) {
+    event.respondWith(
+      caches.open(STATIC_CACHE).then(async (cache) => {
+        const cached = await cache.match(request);
+        const fetchPromise = fetch(request).then((response) => {
+          if (response.ok) {
+            cache.put(request, response.clone());
+          }
+          return response;
+        }).catch(() => cached || new Response('', { status: 503 }));
+
+        return cached || fetchPromise;
+      })
+    );
+    return;
+  }
+});
+
+// ─── Message handler for prefetch requests from the main thread ───
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'PREFETCH_IMAGES') {
+    const urls = event.data.urls || [];
+    caches.open(IMG_CACHE).then((cache) => {
+      urls.forEach((url) => {
+        cache.match(url).then((cached) => {
+          if (!cached) {
+            fetch(url, { mode: 'cors', credentials: 'omit' })
+              .then((resp) => { if (resp.ok) cache.put(url, resp); })
+              .catch(() => {}); // Non-critical
+          }
+        });
+      });
+    });
+  }
 });

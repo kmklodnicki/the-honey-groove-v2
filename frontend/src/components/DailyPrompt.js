@@ -12,6 +12,7 @@ import { trackEvent } from '../utils/analytics';
 import RecordSearchResult from './RecordSearchResult';
 import AlbumArt from './AlbumArt';
 import { resolveImageUrl, proxyImageUrl } from '../utils/imageUrl';
+import { prefetchImages } from '../utils/imagePrefetch';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Link } from 'react-router-dom';
 import PromptArchiveDrawer from './PromptArchiveDrawer';
@@ -55,20 +56,27 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
       const r = await axios.get(`${API}/prompts/${prompt.id}/responses`, { headers: { Authorization: `Bearer ${token}` } });
       setResponses(r.data);
       setCarouselIdx(0);
-      // Preload the first response's image for LCP
-      if (r.data.length > 0 && r.data[0].cover_url) {
-        const link = document.createElement('link');
-        link.rel = 'preload';
-        link.as = 'image';
-        link.href = r.data[0].cover_url;
-        link.setAttribute('fetchpriority', 'high');
-        document.head.appendChild(link);
-      }
+      // BLOCK 444: Prefetch current + next 3 slides' images
+      const urls = r.data
+        .slice(0, 4)
+        .map(resp => resp.cover_url ? resolveImageUrl(resp.cover_url) : null)
+        .filter(Boolean);
+      prefetchImages(urls);
     } catch { /* ignore */ }
     finally { setLoadingResponses(false); }
   }, [API, token, prompt, hasBuzzedIn]);
 
   useEffect(() => { fetchResponses(); }, [fetchResponses]);
+
+  // BLOCK 444: Rolling buffer — prefetch 2 slides ahead as user navigates
+  useEffect(() => {
+    if (responses.length === 0) return;
+    const ahead = [carouselIdx + 1, carouselIdx + 2]
+      .filter(i => i < responses.length)
+      .map(i => responses[i]?.cover_url ? resolveImageUrl(responses[i].cover_url) : null)
+      .filter(Boolean);
+    if (ahead.length > 0) prefetchImages(ahead);
+  }, [carouselIdx, responses]);
 
   if (loading) return (
     <Card className="my-4 p-5 border-orange-200/60 overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,179,0,0.08), rgba(255,160,0,0.04))' }}>

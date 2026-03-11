@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense, lazy } from "react";
 import "@/App.css";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
@@ -34,43 +34,45 @@ const ScrollToTop = () => {
   return null;
 };
 
-// Pages
+// Pages — critical path (eager)
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/LoginPage";
 import JoinPage from "./pages/JoinPage";
-import BetaSignupPage from "./pages/BetaSignupPage";
 import HivePage from "./pages/HivePage";
-import ExplorePage from "./pages/ExplorePage";
-import CollectionPage from "./pages/CollectionPage";
-import AddRecordPage from "./pages/AddRecordPage";
-import ProfilePage from "./pages/ProfilePage";
-import RecordDetailPage from "./pages/RecordDetailPage";
-import SettingsPage from "./pages/SettingsPage";
-import CreateHaulPage from "./pages/CreateHaulPage";
-import ISOPage from "./pages/ISOPage";
-import TradesPage from "./pages/TradesPage";
-import AdminDisputesPage from "./pages/AdminDisputesPage";
-import AdminPage from "./pages/AdminPage";
-import MessagesPage from "./pages/MessagesPage";
-import FAQPage from "./pages/FAQPage";
-import AboutPage from "./pages/AboutPage";
-import TermsPage from "./pages/TermsPage";
-import PrivacyPage from "./pages/PrivacyPage";
-import VerifyEmailPage from "./pages/VerifyEmailPage";
-import ExploreSeeAllPage from "./pages/ExploreSeeAllPage";
-import WaxReportPage from "./pages/WaxReportPage";
-import WaxReportHistory from "./pages/WaxReportHistory";
-import WeeklyReportPage from "./pages/WeeklyReportPage";
-import StripeConnectReturnPage from "./pages/StripeConnectReturnPage";
-import StripeConnectRefreshPage from "./pages/StripeConnectRefreshPage";
-import OrdersPage from "./pages/OrdersPage";
-import ConfirmEmailChangePage from "./pages/ConfirmEmailChangePage";
-import WelcomeHivePage from "./pages/WelcomeHivePage";
-import EssentialsPage from "./pages/EssentialsPage";
-import VinylVariantPage from "./pages/VinylVariantPage";
-import VariantReleasePage from "./pages/VariantReleasePage";
-import SearchPage from "./pages/SearchPage";
-import CheckoutSuccessPage from "./pages/CheckoutSuccessPage";
+
+// Pages — below-fold (lazy loaded)
+const BetaSignupPage = lazy(() => import("./pages/BetaSignupPage"));
+const ExplorePage = lazy(() => import("./pages/ExplorePage"));
+const CollectionPage = lazy(() => import("./pages/CollectionPage"));
+const AddRecordPage = lazy(() => import("./pages/AddRecordPage"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const RecordDetailPage = lazy(() => import("./pages/RecordDetailPage"));
+const SettingsPage = lazy(() => import("./pages/SettingsPage"));
+const CreateHaulPage = lazy(() => import("./pages/CreateHaulPage"));
+const ISOPage = lazy(() => import("./pages/ISOPage"));
+const TradesPage = lazy(() => import("./pages/TradesPage"));
+const AdminDisputesPage = lazy(() => import("./pages/AdminDisputesPage"));
+const AdminPage = lazy(() => import("./pages/AdminPage"));
+const MessagesPage = lazy(() => import("./pages/MessagesPage"));
+const FAQPage = lazy(() => import("./pages/FAQPage"));
+const AboutPage = lazy(() => import("./pages/AboutPage"));
+const TermsPage = lazy(() => import("./pages/TermsPage"));
+const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
+const VerifyEmailPage = lazy(() => import("./pages/VerifyEmailPage"));
+const ExploreSeeAllPage = lazy(() => import("./pages/ExploreSeeAllPage"));
+const WaxReportPage = lazy(() => import("./pages/WaxReportPage"));
+const WaxReportHistory = lazy(() => import("./pages/WaxReportHistory"));
+const WeeklyReportPage = lazy(() => import("./pages/WeeklyReportPage"));
+const StripeConnectReturnPage = lazy(() => import("./pages/StripeConnectReturnPage"));
+const StripeConnectRefreshPage = lazy(() => import("./pages/StripeConnectRefreshPage"));
+const OrdersPage = lazy(() => import("./pages/OrdersPage"));
+const ConfirmEmailChangePage = lazy(() => import("./pages/ConfirmEmailChangePage"));
+const WelcomeHivePage = lazy(() => import("./pages/WelcomeHivePage"));
+const EssentialsPage = lazy(() => import("./pages/EssentialsPage"));
+const VinylVariantPage = lazy(() => import("./pages/VinylVariantPage"));
+const VariantReleasePage = lazy(() => import("./pages/VariantReleasePage"));
+const SearchPage = lazy(() => import("./pages/SearchPage"));
+const CheckoutSuccessPage = lazy(() => import("./pages/CheckoutSuccessPage"));
 
 // Auth guards — loading is ALWAYS false. No gates.
 // If user exists (from JWT decode or login), render children.
@@ -141,6 +143,7 @@ function AppContent() {
   }, []);
 
   return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="w-8 h-8 border-3 border-amber-300 border-t-amber-600 rounded-full animate-spin" /></div>}>
     <Routes>
       {/* Public routes */}
       <Route path="/" element={<LandingWrapper />} />
@@ -196,6 +199,7 @@ function AppContent() {
       {/* Catch all */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </Suspense>
   );
 }
 

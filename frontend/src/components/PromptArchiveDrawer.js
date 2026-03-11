@@ -6,6 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '
 import { Loader2, Disc, Clock } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { resolveImageUrl } from '../utils/imageUrl';
+import { prefetchImages } from '../utils/imagePrefetch';
 
 const MiniCard = ({ prompt, onNavigate }) => {
   const feat = prompt.featured;
@@ -91,7 +92,6 @@ const MiniCard = ({ prompt, onNavigate }) => {
               {/* 40px album cover */}
               <div
                 className="shrink-0 w-10 h-10 rounded-md overflow-hidden"
-                style={{ background: '#FFB800' }}
                 data-testid="mini-card-artwork"
               >
                 {feat.cover_url ? (
@@ -103,7 +103,7 @@ const MiniCard = ({ prompt, onNavigate }) => {
                     draggable={false}
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
+                  <div className="w-full h-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(255,184,0,0.15), rgba(218,165,32,0.1))' }}>
                     <Disc className="w-5 h-5 text-amber-900/20" />
                   </div>
                 )}
@@ -141,7 +141,15 @@ const PromptArchiveDrawer = ({ open, onOpenChange }) => {
     if (!open || !token) return;
     setLoading(true);
     axios.get(`${API}/prompts/archive`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => setPrompts(r.data))
+      .then(r => {
+        setPrompts(r.data);
+        // BLOCK 448: Prefetch archive card images to prevent redundant proxy requests
+        const urls = r.data
+          .slice(0, 6)
+          .map(p => p.featured?.cover_url ? resolveImageUrl(p.featured.cover_url) : null)
+          .filter(Boolean);
+        prefetchImages(urls);
+      })
       .catch(() => setPrompts([]))
       .finally(() => setLoading(false));
   }, [open, token, API]);
@@ -164,8 +172,27 @@ const PromptArchiveDrawer = ({ open, onOpenChange }) => {
         </SheetHeader>
 
         {loading ? (
-          <div className="flex items-center justify-center py-12" data-testid="prompt-archive-loading">
-            <Loader2 className="w-6 h-6 animate-spin text-amber-500" />
+          <div className="flex flex-col gap-6" data-testid="prompt-archive-loading">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="rounded-xl border border-amber-200/30 bg-white/40 overflow-hidden p-3.5 animate-pulse">
+                <div className="h-2 w-16 rounded-full bg-amber-200/40 mb-2" />
+                <div className="h-4 w-4/5 rounded-full bg-amber-200/30 mb-1.5" />
+                <div className="h-3 w-1/3 rounded-full bg-amber-200/20 mb-3" />
+                <div className="rounded-lg bg-amber-50/60 p-2.5">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <div className="w-4 h-4 rounded-full bg-amber-200/40" />
+                    <div className="h-2.5 w-16 rounded-full bg-amber-200/30" />
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-10 h-10 rounded-md bg-amber-200/30" />
+                    <div className="flex-1 space-y-1.5">
+                      <div className="h-3 w-3/4 rounded-full bg-amber-200/30" />
+                      <div className="h-2.5 w-1/2 rounded-full bg-amber-200/20" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : prompts.length === 0 ? (
           <div className="text-center py-12 text-stone-400" data-testid="prompt-archive-empty">

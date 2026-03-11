@@ -6,9 +6,9 @@ import hashlib
 
 router = APIRouter()
 
-# In-memory LRU cache for proxied images (max ~50 entries)
+# In-memory LRU cache for proxied images (max ~200 entries)
 _cache = {}
-_MAX_CACHE = 50
+_MAX_CACHE = 200
 
 CORS_HEADERS = {
     "Access-Control-Allow-Origin": "*",
@@ -40,7 +40,7 @@ async def proxy_image(url: str = Query(..., description="External image URL to p
         return Response(
             content=data,
             media_type=content_type,
-            headers={**CORS_HEADERS, "Cache-Control": "public, max-age=86400"},
+            headers={**CORS_HEADERS, "Cache-Control": "public, max-age=604800, stale-while-revalidate=86400"},
         )
 
     try:
@@ -59,7 +59,7 @@ async def proxy_image(url: str = Query(..., description="External image URL to p
             return Response(
                 content=data,
                 media_type=content_type,
-                headers={**CORS_HEADERS, "Cache-Control": "public, max-age=86400"},
+                headers={**CORS_HEADERS, "Cache-Control": "public, max-age=604800, stale-while-revalidate=86400"},
             )
     except HTTPException:
         raise

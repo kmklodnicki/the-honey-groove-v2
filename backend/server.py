@@ -127,6 +127,18 @@ async def startup_event():
     await db.records.create_index([("title", 1)])
     await db.posts.create_index([("caption", "text"), ("content", "text")])
     await db.listings.create_index([("artist", 1), ("album", 1)])
+
+    # ── BLOCK 447: Warp Speed Indexes ──
+    # Compound index for the filtered marketplace query (status + is_test_listing + sort)
+    await db.listings.create_index([("status", 1), ("is_test_listing", 1), ("created_at", -1)])
+    # Feed: post_type + created_at for filtered/sorted queries
+    await db.posts.create_index([("post_type", 1), ("created_at", -1)])
+    # Listing alerts: fast lookup by release/variant
+    await db.listing_alerts.create_index([("release_id", 1), ("status", 1)])
+    # Discogs ID on listings for ISO matching
+    await db.listings.create_index("discogs_id")
+    # Prompt responses: fast fetch by prompt_id sorted
+    await db.prompt_responses.create_index([("prompt_id", 1), ("created_at", -1)])
     # Daily prompts indexes
     await db.prompts.create_index("scheduled_date")
     await db.prompts.create_index("id", unique=True)
