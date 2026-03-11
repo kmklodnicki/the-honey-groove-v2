@@ -194,6 +194,22 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - Removed old '---' placeholder and muted card opacity
   - Files: CollectionPage.js (WishlistCard), App.css (variant-pill-responsive)
   - Tested: PASS (100% - testing agent iteration_184, 9/9 features verified)
+- **BLOCK 446: Smart Rarity Engine** (March 2026) — COMPLETED
+  - Backend: calculate_rarity util (Grail/Ultra Rare/Rare/Uncommon/Common/Obscure thresholds)
+  - Obscure exception: have<25 AND want<10 prevents unpopular records from appearing valuable
+  - POST /api/records/enrich-rarity fetches Discogs community data and computes rarity
+  - RecordResponse includes community_have, community_want, rarity_label
+  - RarityBadge component: color-coded (purple/gold Grail, orange Ultra Rare, red Rare, blue Uncommon, gray Common, dark Obscure)
+  - Auto-enrichment on collection load for records missing rarity data
+  - Files: utils/rarity.py, models.py, collection.py, RarityBadge.js, CollectionPage.js
+  - Tested: PASS (100% - testing agent iteration_185, all thresholds verified)
+- **BLOCK 449: Now Spinning Mobile Rescue** (March 2026) — COMPLETED
+  - Modal body: max-h-[80vh] overflow-y-auto for mobile keyboard scrolling
+  - Post button: sticky bottom-0 z-10, always visible above keyboard
+  - Loading state: "Spinning your record..." with animated spinner during submission
+  - Tracklist fetch: 8-second AbortController timeout prevents blocking post submission
+  - Files: ComposerBar.js
+  - Tested: PASS (100% - testing agent iteration_185, full flow verified)
 
 ### Layout & Design Features
 - Golden Vault Layout (ProfilePage unified dashboard)
