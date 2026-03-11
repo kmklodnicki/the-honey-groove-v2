@@ -461,6 +461,8 @@ async def list_users(
             "is_admin": u.get("is_admin", False),
             "created_at": u.get("created_at"),
             "title_label": u.get("title_label"),
+            "golden_hive": u.get("golden_hive", False),
+            "golden_hive_status": u.get("golden_hive_status"),
         }
         for u in users
     ]

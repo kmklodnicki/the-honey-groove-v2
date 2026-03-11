@@ -1313,6 +1313,9 @@ const UserManagementSection = ({ API, headers }) => {
                 <div className="flex items-center gap-2 min-w-0">
                   <img src={resolveImageUrl(u.avatar_url)} alt="" className="w-7 h-7 rounded-full shrink-0" />
                   <Link to={`/profile/${u.username}`} className="text-sm font-medium truncate hover:underline" style={{ color: '#C8861A' }} data-testid={`admin-user-link-${u.username}`}>@{u.username}</Link>
+                  {u.golden_hive && <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">Verified</span>}
+                  {!u.golden_hive && u.golden_hive_status === 'PAID_PENDING_UPLOAD' && <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-100 text-amber-700 border border-amber-200">Paid</span>}
+                  {!u.golden_hive && u.golden_hive_status === 'pending' && <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-100 text-blue-700 border border-blue-200">ID Review</span>}
                 </div>
                 <span className="text-xs text-muted-foreground break-all">{u.email}</span>
                 <span className="text-xs text-muted-foreground">{fmtDate(u.created_at)}</span>

@@ -994,6 +994,18 @@ async def stripe_webhook(request: Request):
                                 purchase_url=listing_url,
                             )
                             await send_email_fire_and_forget(buyer["email"], tpl_b["subject"], tpl_b["html"])
+
+            # Handle Golden Hive verification payments
+            golden_txn = await db.golden_hive_payments.find_one({"session_id": event.session_id}, {"_id": 0})
+            if golden_txn and golden_txn.get("payment_status") != "PAID":
+                await db.golden_hive_payments.update_one(
+                    {"session_id": event.session_id},
+                    {"$set": {"payment_status": "PAID", "paid_at": now}}
+                )
+                await db.users.update_one(
+                    {"id": golden_txn["user_id"]},
+                    {"$set": {"golden_hive_status": "PAID_PENDING_UPLOAD", "golden_hive_payment_at": now}}
+                )
     except Exception as e:
         logging.error(f"Webhook error: {e}")
     return {"received": True}
@@ -1007,11 +1019,15 @@ GOLDEN_HIVE_PRICE_CENTS = 999  # $9.99
 @router.get("/golden-hive/status")
 async def golden_hive_status(user: Dict = Depends(require_auth)):
     """Return the current user's Golden Hive ID verification status."""
-    u = await db.users.find_one({"id": user["id"]}, {"_id": 0, "golden_hive_status": 1, "golden_hive_verified": 1, "golden_hive_verified_at": 1})
+    u = await db.users.find_one({"id": user["id"]}, {"_id": 0, "golden_hive_status": 1, "golden_hive_verified": 1, "golden_hive_verified_at": 1, "golden_hive": 1, "golden_hive_payment_at": 1})
+    # Check for approved via verification system
+    if u.get("golden_hive"):
+        return {"golden_hive_verified": True, "golden_hive_status": "APPROVED", "golden_hive_verified_at": u.get("golden_hive_verified_at")}
     return {
         "golden_hive_verified": u.get("golden_hive_verified", False),
-        "golden_hive_status": u.get("golden_hive_status"),  # pending / approved / rejected / None
+        "golden_hive_status": u.get("golden_hive_status"),
         "golden_hive_verified_at": u.get("golden_hive_verified_at"),
+        "golden_hive_payment_at": u.get("golden_hive_payment_at"),
     }
 
 
@@ -1094,14 +1110,14 @@ async def golden_hive_verify_payment(session_id: str, user: Dict = Depends(requi
         {"session_id": session_id},
         {"$set": {"payment_status": "PAID", "stripe_payment_id": session.payment_intent, "paid_at": now}}
     )
-    # Set user to pending verification
+    # Set user to paid-pending-upload (ID upload required next)
     await db.users.update_one({"id": user["id"]}, {"$set": {
-        "golden_hive_status": "pending",
+        "golden_hive_status": "PAID_PENDING_UPLOAD",
         "golden_hive_payment_id": session.payment_intent,
         "golden_hive_payment_at": now,
     }})
 
-    return {"status": "pending", "message": "Payment confirmed. Your Golden Hive ID is pending admin review."}
+    return {"status": "PAID_PENDING_UPLOAD", "message": "Payment confirmed. Please upload your ID to complete verification."}
 
 
 

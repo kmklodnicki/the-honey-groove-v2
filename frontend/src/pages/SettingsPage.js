@@ -48,6 +48,8 @@ const SettingsPage = () => {
   const [newEmail, setNewEmail] = useState('');
   const [emailSaving, setEmailSaving] = useState(false);
   const [verificationStatus, setVerificationStatus] = useState(null);
+  const [goldenStatus, setGoldenStatus] = useState(null);
+  const [goldenCheckoutLoading, setGoldenCheckoutLoading] = useState(false);
   const [verifyUploading, setVerifyUploading] = useState(false);
   const verifyInputRef = useRef(null);
   const [bugReportOpen, setBugReportOpen] = useState(false);
@@ -64,6 +66,9 @@ const SettingsPage = () => {
       .finally(() => setStripeLoading(false));
     axios.get(`${API}/verification/status`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => setVerificationStatus(r.data))
+      .catch(() => {});
+    axios.get(`${API}/golden-hive/status`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => setGoldenStatus(r.data))
       .catch(() => {});
   }, [API, token]);
 
@@ -173,6 +178,21 @@ const SettingsPage = () => {
       toast.error(msg);
     } finally {
       setStripeConnecting(false);
+    }
+  };
+
+
+  const handleGoldenCheckout = async () => {
+    setGoldenCheckoutLoading(true);
+    try {
+      const resp = await axios.post(`${API}/golden-hive/checkout`, { origin_url: window.location.origin }, { headers: { Authorization: `Bearer ${token}` } });
+      if (resp.data.checkout_url) {
+        window.location.href = resp.data.checkout_url;
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'could not start payment. try again.');
+    } finally {
+      setGoldenCheckoutLoading(false);
     }
   };
 
@@ -708,52 +728,80 @@ const SettingsPage = () => {
           {/* Golden Hive Verification */}
           <div className="border-t border-honey/20 pt-4">
             <Label className="text-sm font-medium text-amber-800 mb-2 block">Golden Hive Verification</Label>
-            {verificationStatus?.golden_hive ? (
-              <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2" data-testid="golden-hive-verified">
-                <CheckCircle2 className="w-4 h-4" />
-                <span className="font-medium">Verified Golden Hive Member</span>
-              </div>
-            ) : !stripeStatus?.stripe_connected ? (
-              <div className="space-y-3" data-testid="golden-id-stripe-gate">
-                <div className="rounded-lg border border-amber-200/60 bg-amber-50/50 p-3">
-                  <p className="text-xs text-[#8A6B4A] leading-relaxed">to apply for Golden ID and start selling in the Honeypot, you must first set up your Stripe payout account.</p>
+            {(() => {
+              const gStatus = goldenStatus?.golden_hive_status;
+              const isVerified = goldenStatus?.golden_hive_verified || verificationStatus?.golden_hive;
+
+              if (isVerified || gStatus === 'APPROVED') return (
+                <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2" data-testid="golden-hive-verified">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span className="font-medium">Verified Golden Hive Member</span>
                 </div>
-                <Button
-                  onClick={handleStripeConnect}
-                  disabled={stripeConnecting}
-                  className="rounded-full text-xs bg-honey text-vinyl-black hover:bg-honey-amber gap-1.5"
-                  data-testid="golden-id-connect-stripe-btn"
-                >
-                  {stripeConnecting ? <Loader2 className="w-3 h-3 animate-spin" /> : <CreditCard className="w-3 h-3" />}
-                  Connect Stripe to Continue
-                </Button>
-              </div>
-            ) : verificationStatus?.status === 'PENDING' ? (
-              <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2" data-testid="verification-pending">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Verification under review</span>
-              </div>
-            ) : verificationStatus?.status === 'DENIED' ? (
-              <div className="space-y-2">
-                <p className="text-sm text-red-600">Your previous verification was not approved. Please resubmit with a clearer photo.</p>
-                <Button onClick={() => verifyInputRef.current?.click()} disabled={verifyUploading}
-                  variant="outline" className="rounded-full text-xs border-honey/50" data-testid="resubmit-verification-btn">
-                  {verifyUploading ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Shield className="w-3 h-3 mr-1" />}
-                  Resubmit ID Photo
-                </Button>
-                <input ref={verifyInputRef} type="file" accept="image/*" onChange={handleVerificationUpload} className="hidden" />
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <p className="text-xs text-muted-foreground">Upload a government-issued ID to become a verified Golden Hive member. Your ID will be securely processed and reviewed by an admin.</p>
-                <Button onClick={() => verifyInputRef.current?.click()} disabled={verifyUploading}
-                  variant="outline" className="rounded-full text-xs border-honey/50" data-testid="submit-verification-btn">
-                  {verifyUploading ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Shield className="w-3 h-3 mr-1" />}
-                  Upload ID Photo
-                </Button>
-                <input ref={verifyInputRef} type="file" accept="image/*" onChange={handleVerificationUpload} className="hidden" />
-              </div>
-            )}
+              );
+              if (!stripeStatus?.stripe_connected) return (
+                <div className="space-y-3" data-testid="golden-id-stripe-gate">
+                  <div className="rounded-lg border border-amber-200/60 bg-amber-50/50 p-3">
+                    <p className="text-xs text-[#8A6B4A] leading-relaxed">to apply for Golden ID and start selling in the Honeypot, you must first set up your Stripe payout account.</p>
+                  </div>
+                  <Button onClick={handleStripeConnect} disabled={stripeConnecting}
+                    className="rounded-full text-xs bg-honey text-vinyl-black hover:bg-honey-amber gap-1.5" data-testid="golden-id-connect-stripe-btn">
+                    {stripeConnecting ? <Loader2 className="w-3 h-3 animate-spin" /> : <CreditCard className="w-3 h-3" />}
+                    Connect Stripe to Continue
+                  </Button>
+                </div>
+              );
+              if (!gStatus) return (
+                <div className="space-y-3" data-testid="golden-id-payment-cta">
+                  <div className="rounded-lg border border-[#C8861A]/20 bg-gradient-to-r from-amber-50/60 to-yellow-50/60 p-4">
+                    <p className="text-sm font-semibold text-[#8A6B4A] mb-1.5">Get Your Golden ID</p>
+                    <ul className="text-xs text-[#8A6B4A]/80 space-y-1 mb-3">
+                      <li className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-[#C8861A]" /> Sell records in the Honeypot marketplace</li>
+                      <li className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-[#C8861A]" /> Verified trust badge on your profile</li>
+                      <li className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-[#C8861A]" /> Priority visibility in discovery</li>
+                    </ul>
+                    <p className="text-[11px] text-muted-foreground">One-time verification fee</p>
+                  </div>
+                  <Button onClick={handleGoldenCheckout} disabled={goldenCheckoutLoading}
+                    className="rounded-full text-xs bg-honey text-vinyl-black hover:bg-honey-amber gap-1.5" data-testid="golden-id-pay-btn">
+                    {goldenCheckoutLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Shield className="w-3 h-3" />}
+                    Get Golden ID &middot; $9.99
+                  </Button>
+                </div>
+              );
+              if (gStatus === 'PAID_PENDING_UPLOAD') return (
+                <div className="space-y-3" data-testid="golden-id-upload-section">
+                  <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50/50 border border-emerald-200/50 rounded-lg px-3 py-2">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span className="font-medium">Payment confirmed!</span>
+                  </div>
+                  <p className="text-xs text-[#8A6B4A]">Upload a government-issued ID (driver's license, passport, or ID card) to complete your Golden Hive verification.</p>
+                  <Button onClick={() => verifyInputRef.current?.click()} disabled={verifyUploading}
+                    variant="outline" className="rounded-full text-xs border-honey/50 gap-1.5" data-testid="submit-verification-btn">
+                    {verifyUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Shield className="w-3 h-3" />}
+                    Upload ID Photo
+                  </Button>
+                  <input ref={verifyInputRef} type="file" accept="image/*" onChange={handleVerificationUpload} className="hidden" />
+                </div>
+              );
+              if (gStatus === 'pending' || verificationStatus?.status === 'PENDING') return (
+                <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2" data-testid="verification-pending">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>ID uploaded &middot; verification under review</span>
+                </div>
+              );
+              if (gStatus === 'rejected' || verificationStatus?.status === 'DENIED') return (
+                <div className="space-y-2">
+                  <p className="text-sm text-red-600">Your previous verification was not approved. Please resubmit with a clearer photo.</p>
+                  <Button onClick={() => verifyInputRef.current?.click()} disabled={verifyUploading}
+                    variant="outline" className="rounded-full text-xs border-honey/50 gap-1.5" data-testid="resubmit-verification-btn">
+                    {verifyUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Shield className="w-3 h-3" />}
+                    Resubmit ID Photo
+                  </Button>
+                  <input ref={verifyInputRef} type="file" accept="image/*" onChange={handleVerificationUpload} className="hidden" />
+                </div>
+              );
+              return null;
+            })()}
           </div>
 
           <div className="border-t border-honey/20 pt-4">

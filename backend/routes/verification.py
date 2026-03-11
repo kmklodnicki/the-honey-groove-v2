@@ -38,17 +38,19 @@ async def submit_verification(
     user: Dict = Depends(require_auth)
 ):
     """User submits an ID photo for Golden Hive verification."""
+    # Check if user has paid the verification fee
+    u = await db.users.find_one({"id": user["id"]}, {"_id": 0, "golden_hive": 1, "golden_hive_status": 1})
+    if u and u.get("golden_hive"):
+        raise HTTPException(status_code=400, detail="You are already Golden Hive verified")
+    if not u or u.get("golden_hive_status") != "PAID_PENDING_UPLOAD":
+        raise HTTPException(status_code=403, detail="Please complete the Golden ID verification payment first")
+
     # Check for existing pending request
     existing = await db.verification_requests.find_one(
         {"user_id": user["id"], "status": "PENDING"}, {"_id": 0}
     )
     if existing:
         raise HTTPException(status_code=400, detail="You already have a pending verification request")
-
-    # Check if already verified
-    u = await db.users.find_one({"id": user["id"]}, {"_id": 0, "golden_hive": 1})
-    if u and u.get("golden_hive"):
-        raise HTTPException(status_code=400, detail="You are already Golden Hive verified")
 
     # Read and validate image
     contents = await id_photo.read()
@@ -94,6 +96,9 @@ async def submit_verification(
         "admin_notes": None,
     }
     await db.verification_requests.insert_one(doc)
+
+    # Update user status from PAID_PENDING_UPLOAD to pending (admin review)
+    await db.users.update_one({"id": user["id"]}, {"$set": {"golden_hive_status": "pending"}})
 
     return {
         "id": request_id,
