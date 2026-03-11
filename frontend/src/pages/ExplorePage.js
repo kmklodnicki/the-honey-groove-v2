@@ -65,6 +65,18 @@ const ExplorePage = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  // Re-fetch "Your Kinda People" on every page focus/navigation to ensure followed users are excluded
+  useEffect(() => {
+    const refetchKinda = () => {
+      if (token) {
+        axios.get(`${API}/discover/my-kinda-people`, { headers: { Authorization: `Bearer ${token}` } })
+          .then(r => setMyKindaPeople(r.data)).catch(() => {});
+      }
+    };
+    window.addEventListener('focus', refetchKinda);
+    return () => window.removeEventListener('focus', refetchKinda);
+  }, [API, token]);
+
   const openTrendingModal = (record) => {
     openVariantModal({
       artist: record.artist,

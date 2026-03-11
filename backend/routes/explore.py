@@ -1024,7 +1024,7 @@ async def my_kinda_people(user: Dict = Depends(require_auth)):
 
     # Get users the current user already follows
     following_ids = set()
-    async for f in db.follows.find({"follower_id": my_id}, {"_id": 0, "following_id": 1}):
+    async for f in db.followers.find({"follower_id": my_id}, {"_id": 0, "following_id": 1}):
         following_ids.add(f["following_id"])
 
     # Get all other users who have records (exclude self, blocked, and followed)
