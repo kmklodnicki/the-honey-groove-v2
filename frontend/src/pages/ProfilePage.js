@@ -46,6 +46,7 @@ const ProfilePage = () => {
   const [trades, setTrades] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showStripeDisconnect, setShowStripeDisconnect] = useState(false);
 
   // SWR: Cache profile and records for instant back-navigation (BLOCK 450)
   const { data: swrProfile, isLoading: swrProfileLoading, mutate: mutateProfile } = useAPI(`/users/${username}`);
@@ -632,9 +633,9 @@ const ProfilePage = () => {
                     <span className="inline-flex items-center justify-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-full text-[10px] sm:text-[11px] font-medium border border-green-200 text-green-600 bg-green-50 whitespace-nowrap" data-testid="stripe-connected-badge">
                       <CreditCard className="w-3 h-3 shrink-0" /> Stripe Connected
                       <button
-                        onClick={(e) => { e.stopPropagation(); e.preventDefault(); /* disconnect handled in settings */ }}
+                        onClick={(e) => { e.stopPropagation(); e.preventDefault(); setShowStripeDisconnect(true); }}
                         className="ml-0.5 p-0.5 rounded-full hover:bg-green-100 transition-colors min-w-[20px] min-h-[20px] inline-flex items-center justify-center"
-                        title="Manage in Settings"
+                        title="Disconnect Stripe"
                         data-testid="stripe-disconnect-icon"
                       >
                         <Unplug className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-green-400 hover:text-green-600" />
@@ -1075,7 +1076,7 @@ const ProfilePage = () => {
         {/* ISO Tab */}
         <TabsContent value="iso">
           {isos.length === 0 ? (
-            <EmptyState icon={Search} title="No ISOs yet" sub={isOwnProfile ? 'Post an ISO from The Hive to start searching!' : `@${username} isn't searching for anything right now`} />
+            <EmptyState icon={Search} title="No ISOs yet" sub={isOwnProfile ? 'These are records that you are actively searching for to purchase.' : `@${username} isn't searching for anything right now`} />
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {isos.map(iso => (
@@ -1470,6 +1471,45 @@ const ProfilePage = () => {
             </Button>
             <Button onClick={handleDeleteSpin} className="flex-1 rounded-full text-white" style={{ background: 'linear-gradient(135deg, #EF4444, #DC2626)' }} data-testid="confirm-delete-spin">
               Delete
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* BLOCK 527: Stripe Disconnect Confirmation Modal */}
+      <Dialog open={showStripeDisconnect} onOpenChange={setShowStripeDisconnect}>
+        <DialogContent className="sm:max-w-sm" data-testid="stripe-disconnect-modal">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-center text-lg">Are you sure?</DialogTitle>
+            <DialogDescription className="text-center text-sm text-muted-foreground mt-1">
+              A valid Stripe connection is required to buy and sell on The Honey Groove. You can reconnect at any time.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-2 pt-3">
+            <Button
+              onClick={() => setShowStripeDisconnect(false)}
+              className="flex-1 rounded-full font-bold"
+              style={{ background: '#FFBF00', color: '#1A1A1A', border: '1.5px solid #DAA520' }}
+              data-testid="stripe-disconnect-cancel"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="outline"
+              className="flex-1 rounded-full font-medium text-stone-500 border-stone-300 hover:bg-stone-100"
+              data-testid="stripe-disconnect-confirm"
+              onClick={async () => {
+                try {
+                  await axios.post(`${API}/stripe/disconnect`, {}, { headers: { Authorization: `Bearer ${token}` } });
+                  toast.success('Stripe disconnected.');
+                  setShowStripeDisconnect(false);
+                  window.location.reload();
+                } catch (err) {
+                  toast.error('Failed to disconnect: ' + (err.response?.data?.detail || err.message));
+                }
+              }}
+            >
+              Disconnect
             </Button>
           </div>
         </DialogContent>
