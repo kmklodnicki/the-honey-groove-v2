@@ -160,6 +160,16 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - data-testid='back-to-top-btn', z-index 100003, mobile bottom offset 80px
   - Files: CollectionPage.js, BackToTop.js
   - Tested: PASS (100% - testing agent iteration_182)
+- **BLOCK 432: Smart Track Selection** (March 2026) — COMPLETED
+  - Replaced static "Track (optional)" text input with dynamic searchable dropdown in Now Spinning modal
+  - On record selection, fetches tracklist from Discogs API (/api/discogs/release/{discogs_id})
+  - Dropdown shows track positions (A1, B1...), titles, and durations with search filtering
+  - Cream background (#FFFDF5), gold border, music icon — matches existing UI theme
+  - Fallback: plain text input when record has no discogs_id
+  - Loading state shown while fetching tracklist
+  - Clear (X) button, click-outside-to-close, keyboard searchable
+  - Files: ComposerBar.js
+  - Tested: PASS (100% - testing agent iteration_183, 12/12 features verified)
 
 ### Layout & Design Features
 - Golden Vault Layout (ProfilePage unified dashboard)
