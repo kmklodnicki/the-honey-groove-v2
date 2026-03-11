@@ -154,6 +154,12 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - Files: PostCards.js
   - Tested: PASS
   - Tested: PASS (visual verification)
+- **BLOCK 418: Scroll-to-Top FAB** (March 2026) — COMPLETED
+  - Cleaned up duplicate inline FAB implementation, using reusable BackToTop component
+  - BackToTop component: threshold=400px, glass-morphism style, responsive positioning
+  - data-testid='back-to-top-btn', z-index 100003, mobile bottom offset 80px
+  - Files: CollectionPage.js, BackToTop.js
+  - Tested: PASS (100% - testing agent iteration_182)
 
 ### Layout & Design Features
 - Golden Vault Layout (ProfilePage unified dashboard)
@@ -182,5 +188,6 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
 - Streaming links (search URL placeholders, not real API integration)
 
 ## Test Accounts
+- User: test@example.com / test123 (username: testuser1)
 - User: test@test.com / test123 (username: testuser)
-- Admin: admin / admin_password
+- Admin: admin@thehoneygroove.com / admin_password
