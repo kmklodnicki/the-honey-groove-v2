@@ -318,6 +318,22 @@ The HoneyGroove is a premium social platform for vinyl collectors built with Rea
   - Selective hydration: fetchPriority="high" on profile avatar
   - Files: useAPI.js (new hook), App.js, ProfilePage.js, ExplorePage.js, Navbar.js
   - Tested: PASS (iteration_191, 100% backend + frontend)
+- **BLOCK 453: Discogs OAuth 1.0a Integration** (March 2026) — COMPLETED
+  - Backend: Full OAuth 1.0a flow (request token → authorize → callback → access token)
+  - Backend: Imposter protection — blocks duplicate Discogs accounts, flags for admin review
+  - Backend: Identity lock — discogs_username pulled from API and stored with oauth_verified flag
+  - Backend: Manual connect-token endpoint deprecated (returns 400)
+  - Backend: Admin imposter-flags endpoint for review
+  - Frontend: OAuth-only connect flow, manual username input removed
+  - Frontend: Verified/Re-verify badges on Discogs status
+  - Tested: PASS (iteration_192, 100% backend + frontend)
+- **BLOCK 455: Discogs Security Migration Modal** (March 2026) — COMPLETED
+  - Backend: needs_discogs_migration computed in /auth/me for users with token-based connections
+  - Backend: POST /discogs/dismiss-migration to skip modal with persistent profile banner
+  - Frontend: DiscogsSecurityModal with Security Update headline, Reconnect Now (gold) + Connect Later (ghost)
+  - Frontend: Auto-triggers on login when needs_discogs_migration is true
+  - Frontend: Profile reconnect warning banner for dismissed users
+  - Tested: PASS (iteration_192, 100% backend + frontend)
 
 ## Backlog (Prioritized)
 
