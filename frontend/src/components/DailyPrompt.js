@@ -108,7 +108,12 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
               <div className="flex items-center justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-amber-500" /></div>
             ) : responses.length > 0 && currentResp ? (
               <div className="relative" data-testid="prompt-carousel">
-                <div className="flex items-center gap-3 transition-all duration-300">
+                <Link
+                  to={currentResp.post_id ? `/hive?post=${currentResp.post_id}` : '#'}
+                  className={`flex items-center gap-3 transition-all duration-300 rounded-lg p-2 -m-2 ${currentResp.post_id ? 'hover:bg-amber-100/40 cursor-pointer' : ''}`}
+                  onClick={e => { if (!currentResp.post_id) e.preventDefault(); }}
+                  data-testid="prompt-response-link"
+                >
                   {/* Album art */}
                   <div className="relative shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-vinyl-black">
                     {currentResp.cover_url ? <AlbumArt src={currentResp.cover_url} alt={`${currentResp.record_artist || ''} ${currentResp.record_title || ''} vinyl record`} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>}
@@ -131,7 +136,7 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
                     <p className="text-xs text-muted-foreground truncate">{currentResp.record_artist}</p>
                     {currentResp.caption && <p className="text-xs text-stone-600 mt-1 italic line-clamp-2">{currentResp.caption}</p>}
                   </div>
-                </div>
+                </Link>
                 {/* Navigation arrows */}
                 {responses.length > 1 && (
                   <div className="flex items-center justify-between mt-3">

@@ -267,7 +267,7 @@ async def get_prompt_responses(prompt_id: str, user: Dict = Depends(require_auth
         {"_id": 0}
     ).sort("created_at", -1).to_list(100)
 
-    # Enrich with user data
+    # Enrich with user data and linked post_id
     for r in responses:
         u = await db.users.find_one({"id": r["user_id"]}, {"_id": 0, "username": 1, "display_name": 1, "avatar_url": 1, "founding_member": 1})
         if u:
@@ -281,6 +281,13 @@ async def get_prompt_responses(prompt_id: str, user: Dict = Depends(require_auth
             r["color_variant"] = rec.get("color_variant") if rec else None
         else:
             r["color_variant"] = None
+        # Find the linked Hive post for deep-linking
+        if not r.get("post_id"):
+            linked_post = await db.posts.find_one(
+                {"user_id": r["user_id"], "post_type": "DAILY_PROMPT", "prompt_text": r.get("prompt_text")},
+                {"_id": 0, "id": 1}
+            )
+            r["post_id"] = linked_post["id"] if linked_post else None
 
     return responses
 
