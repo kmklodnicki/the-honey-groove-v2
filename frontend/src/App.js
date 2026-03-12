@@ -8,8 +8,9 @@ import VariantModal from "./components/VariantModal";
 import { Toaster } from "./components/ui/sonner";
 import { HelmetProvider } from "react-helmet-async";
 import { SWRConfig } from "swr";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Shield, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
+import axios from "axios";
 import Navbar from "./components/Navbar";
 import DiscogsSecurityModal from "./components/DiscogsSecurityModal";
 
@@ -103,26 +104,36 @@ const AppLayout = ({ children }) => {
   const location = useLocation();
   const [showMigration, setShowMigration] = useState(false);
 
-  // BLOCK 576: Show high-priority toast for missing Discogs OAuth (replaces popup/banner)
-  const toastShownRef = React.useRef(false);
+  // BLOCK 583: Golden Glassy Banner for missing Discogs OAuth
   const needsDiscogs = user && !user.discogs_oauth_verified && user.discogs_migration_dismissed;
-  useEffect(() => {
-    if (needsDiscogs && !toastShownRef.current) {
-      toastShownRef.current = true;
-      // Delay to let page render first
-      const t = setTimeout(() => {
-        toast('Action Required: Connect Discogs to unlock your Golden Shield.', {
-          duration: 12000,
-          action: {
-            label: 'Connect Now',
-            onClick: () => navigate('/settings'),
-          },
-          style: { background: '#FFFBEB', border: '1px solid rgba(218,165,32,0.3)', color: '#7A5A1A' },
-        });
-      }, 2000);
-      return () => clearTimeout(t);
+  const [dismissedOAuth, setDismissedOAuth] = useState(false);
+  const [oauthLoading, setOAuthLoading] = useState(false);
+
+  // BLOCK 583: User-initiated OAuth launch — must be direct onClick, not auto-popup
+  const handleOAuthClick = async () => {
+    setOAuthLoading(true);
+    try {
+      const origin = window.location.origin;
+      // Save oauth_state to localStorage so app remembers user on return
+      localStorage.setItem('honeygroove_oauth_pending', JSON.stringify({ user_id: user?.id, ts: Date.now() }));
+      const resp = await axios.get(`${API}/discogs/oauth/start?frontend_origin=${origin}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      // Direct navigation (user-initiated) — browsers won't block this
+      window.location.href = resp.data.auth_url;
+    } catch {
+      toast.error('Could not start Discogs connection. Try again.');
+      setOAuthLoading(false);
     }
-  }, [needsDiscogs, navigate]);
+  };
+
+  // BLOCK 583: On return from OAuth, check localStorage and trigger Gold Shield
+  useEffect(() => {
+    const pending = localStorage.getItem('honeygroove_oauth_pending');
+    if (pending && user?.discogs_oauth_verified) {
+      localStorage.removeItem('honeygroove_oauth_pending');
+    }
+  }, [user]);
 
   // BLOCK 492: Mount migration modal immediately after session loads
   // Trigger: user.needs_discogs_migration (computed from has_seen_security_migration === false)
@@ -138,6 +149,34 @@ const AppLayout = ({ children }) => {
   return (
     <div className="min-h-screen relative" style={{ background: 'transparent', overflow: 'visible' }}>
       {user && <Navbar />}
+      {/* BLOCK 583: Golden Glassy Banner — Secure Connection Required */}
+      {needsDiscogs && !dismissedOAuth && (
+        <div className="sticky top-0 z-50 w-full px-4 py-2.5 flex items-center justify-center gap-3"
+          style={{
+            background: 'rgba(252,248,232,0.85)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            borderBottom: '1px solid rgba(218,165,32,0.2)',
+          }}
+          data-testid="oauth-glassy-banner"
+        >
+          <Shield className="w-4 h-4 text-amber-600 shrink-0" />
+          <span className="text-sm text-amber-800 font-medium">Secure Connection Required: Tap here to verify your Discogs identity.</span>
+          <button
+            onClick={handleOAuthClick}
+            disabled={oauthLoading}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all hover:scale-105 disabled:opacity-60"
+            style={{ background: 'linear-gradient(135deg, #FFD700, #F4B521)', color: '#1A1A1A', boxShadow: '0 0 16px rgba(255,215,0,0.25)' }}
+            data-testid="oauth-banner-connect"
+          >
+            {oauthLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Shield className="w-3.5 h-3.5" />}
+            Connect Discogs
+          </button>
+          <button onClick={() => setDismissedOAuth(true)} className="text-amber-600/40 hover:text-amber-800 transition-colors ml-1" data-testid="oauth-banner-dismiss">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
       {user && !isHome && !hasInlineBack && (
         <button
           onClick={() => navigate(-1)}

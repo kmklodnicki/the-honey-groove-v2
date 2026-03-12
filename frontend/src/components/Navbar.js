@@ -14,6 +14,8 @@ import {
 } from '../components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog';
 import { Home, Search, User, LogOut, Settings, Library, ShoppingBag, ArrowRightLeft, Bell, Check, MessageCircle, Globe, HelpCircle, Package, AlertTriangle, Sparkles, Loader2 } from 'lucide-react';
+import VerifiedShield from './VerifiedShield';
+const KATIE_ID = '4072aaa7-1171-4cd2-9c8f-20dfca8fdc58';
 import { formatDistanceToNow } from 'date-fns';
 import ReportModal from './ReportModal';
 import { resolveImageUrl } from '../utils/imageUrl';
@@ -172,7 +174,12 @@ const Navbar = () => {
                   <div className="flex items-center gap-2 p-2">
                     <BeeAvatar user={user} className="h-8 w-8" />
                     <div className="flex flex-col">
-                      <p className="text-sm font-medium">@{user.username}</p>
+                      <p className="text-sm font-medium flex items-center gap-1">
+                        @{user.username}
+                        {(user.golden_hive_verified || user.is_admin || user.id === KATIE_ID) && (
+                          <VerifiedShield size={14} isFounder={user.is_admin || user.id === KATIE_ID} />
+                        )}
+                      </p>
                       <p className="text-xs text-muted-foreground">{user.email}</p>
                     </div>
                   </div>
@@ -392,7 +399,12 @@ const MobileProfileMenu = ({ user, onLogout }) => {
             <div className="flex items-center gap-2 p-3 border-b border-honey/10">
               <BeeAvatar user={user} className="h-8 w-8" />
               <div className="flex flex-col min-w-0">
-                <p className="text-sm font-medium truncate">@{user.username}</p>
+                <p className="text-sm font-medium truncate flex items-center gap-1">
+                  @{user.username}
+                  {(user.golden_hive_verified || user.is_admin || user.id === KATIE_ID) && (
+                    <VerifiedShield size={14} isFounder={user.is_admin || user.id === KATIE_ID} />
+                  )}
+                </p>
                 <p className="text-xs text-muted-foreground truncate">{user.email}</p>
               </div>
             </div>
