@@ -93,6 +93,14 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
       axios.post(`${API}/valuation/priority-relink`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       }).catch(() => {});
+      // BLOCK 573: Re-check verification status after OAuth — triggers Gold Shield
+      axios.get(`${API}/user/profile`, {
+        headers: { Authorization: `Bearer ${token}` }
+      }).then((resp) => {
+        if (resp.data?.golden_hive_verified) {
+          toast.success('Golden Hive verified!');
+        }
+      }).catch(() => {});
     } else if (discogsParam === 'error') {
       toast.error('Failed to connect Discogs: ' + (params.get('message') || 'Unknown error'));
       window.history.replaceState({}, '', window.location.pathname);
@@ -210,10 +218,10 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
         <CardContent>
           {!status?.connected ? (
             <Button onClick={handleConnect}
-              className="rounded-full gap-2 w-full sm:w-auto font-bold text-sm transition-all hover:shadow-lg"
-              style={{ background: '#FFBF00', color: '#1A1A1A', border: '1.5px solid #DAA520' }}
-              onMouseEnter={e => { e.currentTarget.style.background = '#E5AB00'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = '#FFBF00'; }}
+              className="rounded-full gap-2 w-full sm:w-auto font-bold text-sm transition-all hover:shadow-lg animate-pulse-subtle"
+              style={{ background: 'linear-gradient(135deg, #FFD700, #F4B521)', color: '#1A1A1A', border: '1.5px solid #DAA520', boxShadow: '0 0 20px rgba(255,215,0,0.3)' }}
+              onMouseEnter={e => { e.currentTarget.style.background = '#E5AB00'; e.currentTarget.style.boxShadow = '0 0 28px rgba(255,215,0,0.5)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #FFD700, #F4B521)'; e.currentTarget.style.boxShadow = '0 0 20px rgba(255,215,0,0.3)'; }}
               data-testid="discogs-connect-btn">
               <ExternalLink className="w-4 h-4" />
               Connect to Discogs

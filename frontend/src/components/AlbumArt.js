@@ -149,7 +149,7 @@ const AlbumArt = ({
             }
           }}
           onError={(e) => {
-            // BLOCK 572: Cascade fallback — proxy → original format → error (never browser broken icon)
+            // BLOCK 574: Cascade fallback — internal proxy (fast) → WebP fallback → original → error
             if (!e.target.dataset.proxied && resolvedSrc) {
               e.target.dataset.proxied = '1';
               e.target.src = bustCache(proxyImageUrl(src));
@@ -162,7 +162,7 @@ const AlbumArt = ({
           }}
           draggable={false}
           decoding={priority ? 'sync' : 'auto'}
-          loading={priority ? 'eager' : 'lazy'}
+          loading="eager"
           {...(priority ? { fetchPriority: 'high' } : {})}
         />
       ) : null}
