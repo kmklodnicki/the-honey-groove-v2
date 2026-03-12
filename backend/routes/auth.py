@@ -166,11 +166,18 @@ async def login(credentials: UserLogin, request: Request):
     from services.rate_limiter import rate_limiter, get_client_ip
     rate_limiter.check(f"login:{get_client_ip(request)}", max_requests=15, window_seconds=300)
 
-    user = await db.users.find_one({"email": credentials.email}, {"_id": 0})
-    if not user or not verify_password(credentials.password, user["password_hash"]):
+    email = credentials.email.strip().lower()
+    password = credentials.password.strip()
+    user = await db.users.find_one({"email": email}, {"_id": 0})
+    if not user:
+        # Fallback: case-insensitive regex match for legacy accounts
+        user = await db.users.find_one(
+            {"email": {"$regex": f"^{email}$", "$options": "i"}},
+            {"_id": 0}
+        )
+    if not user or not verify_password(password, user["password_hash"]):
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
-    # Check email verification — skip, users have full access immediately
     token = create_token(user["id"])
     return TokenResponse(access_token=token, user=await _build_user_response(user))
 
