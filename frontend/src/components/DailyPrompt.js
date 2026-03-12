@@ -169,10 +169,10 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
                     data-testid="prompt-album-art-container"
                   >
                     {currentResp.cover_url ? (
-                      carouselIdx === 0 ? (
-                        /* Priority: Direct <img> — no AlbumArt state machine, no blur layer, zero delay */
+                      carouselIdx < 3 ? (
+                        /* Priority: Direct <img> for first 3 slides — no AlbumArt state machine, zero delay */
                         <img
-                          src={resolveImageUrl(currentResp.cover_url)}
+                          src={currentResp.proxy_cover_url ? `${API.replace('/api', '')}${currentResp.proxy_cover_url}` : resolveImageUrl(currentResp.cover_url)}
                           alt={`${currentResp.record_artist || ''} ${currentResp.record_title || ''} vinyl record`}
                           className="w-full h-full object-cover"
                           crossOrigin="anonymous"
@@ -188,7 +188,7 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
                           }}
                         />
                       ) : (
-                        <AlbumArt src={currentResp.cover_url} alt={`${currentResp.record_artist || ''} ${currentResp.record_title || ''} vinyl record`} className="w-full h-full object-cover" blurDataUrl={currentResp.blur_data_url} thumbSrc={currentResp.thumb_url} />
+                        <AlbumArt src={currentResp.proxy_cover_url ? `${API.replace('/api', '')}${currentResp.proxy_cover_url}` : currentResp.cover_url} alt={`${currentResp.record_artist || ''} ${currentResp.record_title || ''} vinyl record`} className="w-full h-full object-cover" blurDataUrl={currentResp.blur_data_url} thumbSrc={currentResp.thumb_url} />
                       )
                     ) : <div className="w-full h-full flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>}
                     {currentResp.color_variant && (

@@ -212,6 +212,15 @@ async def startup_event():
     except Exception as e:
         logger.warning(f"Storage initialization skipped: {e}")
 
+    # OAuth Configuration Verification Log
+    from database import DISCOGS_CONSUMER_KEY, DISCOGS_CONSUMER_SECRET
+    oauth_key_ok = bool(DISCOGS_CONSUMER_KEY)
+    oauth_secret_ok = bool(DISCOGS_CONSUMER_SECRET)
+    if oauth_key_ok and oauth_secret_ok:
+        logger.info(f"Discogs OAuth configured: KEY={DISCOGS_CONSUMER_KEY[:4]}... SECRET=****")
+    else:
+        logger.error(f"Discogs OAuth MISSING: KEY_present={oauth_key_ok}, SECRET_present={oauth_secret_ok}")
+
     logger.info("HoneyGroove API started")
     # Start background variant backfill
     asyncio.create_task(_backfill_color_variants())

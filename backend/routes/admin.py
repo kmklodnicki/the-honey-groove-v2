@@ -667,3 +667,47 @@ async def scrub_unofficial_metadata(user: Dict = Depends(require_admin)):
         "newly_unflagged": unflagged,
         "errors": errors[:50],
     }
+
+
+# ─── OAuth Diagnostic ───
+
+@router.post("/admin/oauth-status")
+async def oauth_status(user: Dict = Depends(require_admin)):
+    """Diagnostic endpoint: verify Discogs OAuth env vars are loaded and test the handshake."""
+    from database import DISCOGS_CONSUMER_KEY, DISCOGS_CONSUMER_SECRET, DISCOGS_REQUEST_TOKEN_URL, DISCOGS_USER_AGENT
+
+    key_present = bool(DISCOGS_CONSUMER_KEY)
+    secret_present = bool(DISCOGS_CONSUMER_SECRET)
+    key_preview = f"{DISCOGS_CONSUMER_KEY[:4]}...{DISCOGS_CONSUMER_KEY[-4:]}" if key_present and len(DISCOGS_CONSUMER_KEY) > 8 else ("SET" if key_present else "MISSING")
+    secret_preview = f"{DISCOGS_CONSUMER_SECRET[:4]}...{DISCOGS_CONSUMER_SECRET[-4:]}" if secret_present and len(DISCOGS_CONSUMER_SECRET) > 8 else ("SET" if secret_present else "MISSING")
+
+    result = {
+        "consumer_key_status": key_preview,
+        "consumer_secret_status": secret_preview,
+        "both_configured": key_present and secret_present,
+        "handshake_test": None,
+    }
+
+    if key_present and secret_present:
+        try:
+            from requests_oauthlib import OAuth1Session
+            oauth = OAuth1Session(
+                client_key=DISCOGS_CONSUMER_KEY,
+                client_secret=DISCOGS_CONSUMER_SECRET,
+                callback_uri="https://thehoneygroove.com/api/discogs/oauth/callback",
+                signature_method="HMAC-SHA1",
+            )
+            response = oauth.fetch_request_token(
+                DISCOGS_REQUEST_TOKEN_URL,
+                headers={"User-Agent": DISCOGS_USER_AGENT},
+            )
+            token = response.get("oauth_token", "")
+            result["handshake_test"] = f"SUCCESS — request_token={token[:8]}..."
+        except Exception as e:
+            err = str(e)
+            if hasattr(e, "response") and e.response is not None:
+                err = f"HTTP {e.response.status_code}: {e.response.text[:200]}"
+            result["handshake_test"] = f"FAILED — {err}"
+
+    return result
+

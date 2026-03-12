@@ -500,6 +500,18 @@ async def get_prompt_responses(prompt_id: str, user: Dict = Depends(require_auth
                         r["thumb_url"] = cache_doc.get("thumb_url")
                         r["dominant_color"] = cache_doc.get("dominant_color")
 
+        # Image proxying: rewrite external cover URLs to route through our image proxy
+        # This ensures carousel images are served from our cache, not directly from Discogs
+        if r.get("cover_url"):
+            original = r["cover_url"]
+            if original.startswith("http://") or original.startswith("https://"):
+                from urllib.parse import quote
+                r["proxy_cover_url"] = f"/api/image-proxy?url={quote(original, safe='')}"
+            else:
+                r["proxy_cover_url"] = original
+        else:
+            r["proxy_cover_url"] = None
+
     return responses
 
 @router.post("/prompts/export-card")
