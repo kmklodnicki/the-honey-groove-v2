@@ -81,13 +81,12 @@ const GoldenHiveShield = () => {
         onClick={() => isTouchDevice && setOpen(o => !o)}
         data-testid="golden-hive-badge"
       >
-        {/* BLOCK 559: Prominent Gold Shield — 28px, multi-stop metallic gradient, embossed */}
-        <svg className="shrink-0" width="28" height="28" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.2))' }}>
+        {/* BLOCK 566: Gold Shield Final Form — 32px, 3-stop gold chrome gradient, soft glow */}
+        <svg className="shrink-0" width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.2)) drop-shadow(0 0 8px rgba(253,185,49,0.4))' }}>
           <defs>
             <linearGradient id="goldShieldLg" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#FFE066"/>
-              <stop offset="30%" stopColor="#FFD700"/>
-              <stop offset="60%" stopColor="#DAA520"/>
+              <stop offset="0%" stopColor="#FFD700"/>
+              <stop offset="50%" stopColor="#FDB931"/>
               <stop offset="100%" stopColor="#B8860B"/>
             </linearGradient>
           </defs>
@@ -589,8 +588,8 @@ const ProfilePage = () => {
             {/* Row 3: Display Name & Username (BLOCK 544) */}
             <div style={{ minWidth: 0 }}>
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="font-heading text-xl lg:text-2xl break-words" style={{ flexShrink: 1, minWidth: 0 }} data-testid="profile-username">@{profile.username}{profile.username === 'katieintheafterglow' && <span className="ml-1" title="Founder">👑</span>}</h1>
-                {profile.title_label && profile.username !== 'katieintheafterglow' && <TitleBadge label={profile.title_label} />}
+                <h1 className="font-heading text-xl lg:text-2xl break-words" style={{ flexShrink: 1, minWidth: 0 }} data-testid="profile-username">@{profile.username}{profile.is_admin && <span className="ml-1" title="Founder">👑</span>}</h1>
+                {profile.title_label && !profile.is_admin && <TitleBadge label={profile.title_label} />}
               </div>
               {profile.bio && <p className="text-sm text-muted-foreground mt-1"><MentionText text={profile.bio} /></p>}
               {profile.setup && (
@@ -609,7 +608,7 @@ const ProfilePage = () => {
                   {profile.favorite_genre}
                 </span>
               )}
-              {profile.founding_member && profile.username !== 'katieintheafterglow' && (
+              {profile.founding_member && !profile.is_admin && (
                 <div className="mt-1 inline-block" data-testid="founding-badge">
                   <span className="italic text-xs" style={{ color: '#C8861A', fontFamily: '"DM Serif Display", serif' }}>founding member</span>
                 </div>

@@ -168,17 +168,35 @@ async def startup_event():
     await db.bingo_marks.create_index([("user_id", 1), ("card_id", 1)], unique=True)
     await db.bingo_squares.create_index("id", unique=True)
 
-    # BLOCK 511: Admin Override — ensure @katieintheafterglow is always Golden Hive Verified + admin
-    await db.users.update_one(
-        {"username": "katieintheafterglow"},
-        {"$set": {
-            "golden_hive_verified": True,
-            "golden_hive": True,
-            "golden_hive_status": "APPROVED",
-            "is_admin": True,
-        }}
+    # BLOCK 569: Admin Override — tie to user identity (email), not username
+    # This ensures status persists through username changes
+    katie_user = await db.users.find_one(
+        {"email": "katie@thehoneygroove.com"},
+        {"_id": 0, "id": 1}
     )
-    logger.info("BLOCK 511: Admin override applied for @katieintheafterglow")
+    if katie_user:
+        await db.users.update_one(
+            {"id": katie_user["id"]},
+            {"$set": {
+                "golden_hive_verified": True,
+                "golden_hive": True,
+                "golden_hive_status": "APPROVED",
+                "is_admin": True,
+            }}
+        )
+        logger.info(f"BLOCK 569: Admin override applied for user {katie_user['id']} (katie)")
+    else:
+        # Fallback: try legacy username match for first-time migration
+        await db.users.update_one(
+            {"username": "katieintheafterglow"},
+            {"$set": {
+                "golden_hive_verified": True,
+                "golden_hive": True,
+                "golden_hive_status": "APPROVED",
+                "is_admin": True,
+            }}
+        )
+        logger.info("BLOCK 569: Admin override applied via legacy username fallback")
 
     # Verification + payout indexes
     await db.verification_requests.create_index("user_id")

@@ -214,10 +214,9 @@ async def update_me(update_data: UserUpdate, user: Dict = Depends(require_auth))
 
 @router.post("/debug/reset-migration")
 async def debug_reset_migration(user: Dict = Depends(require_auth)):
-    """BLOCK 491: Dev-only tool to reset migration flags so the modal re-triggers.
-    Only allowed for @katie or in non-production environments."""
-    allowed_users = ["katieintheafterglow"]
-    if user.get("username") not in allowed_users:
+    """BLOCK 491/569: Dev-only tool to reset migration flags so the modal re-triggers.
+    Only allowed for admin users (tied to is_admin flag, not username)."""
+    if not user.get("is_admin"):
         raise HTTPException(status_code=403, detail="Debug tool restricted to authorized users")
 
     await db.users.update_one(

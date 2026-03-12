@@ -30,7 +30,7 @@ import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog';
 import { toast } from 'sonner';
 import DiscogsImport from '../components/DiscogsImport';
 import { usePageTitle } from '../hooks/usePageTitle';
-import AlbumArt from '../components/AlbumArt';
+import AlbumArt, { prefetchArt } from '../components/AlbumArt';
 import { VariantTag } from '../components/PostCards';
 import SEOHead from '../components/SEOHead';
 import BackToTop from '../components/BackToTop';
@@ -508,6 +508,10 @@ const CollectionPage = () => {
     }
   };
 
+  // BLOCK 567: Predictive prefetch refs — moved to top, useEffect is after sortedAndFilteredRecords
+  const gridRef = useRef(null);
+  const prefetchedRef = useRef(new Set());
+
   // Duplicate detection
   const handleCheckDuplicates = async () => {
     setDupeLoading(true);
@@ -764,6 +768,33 @@ const CollectionPage = () => {
     return filtered;
   }, [records, searchQuery, sortBy, spins, valueMap]);
 
+  // BLOCK 567: Predictive prefetch — observe grid rows, prefetch 2 rows ahead
+  useEffect(() => {
+    if (!gridRef.current || !sortedAndFilteredRecords?.length) return;
+    const cols = window.innerWidth >= 1280 ? 5 : window.innerWidth >= 1024 ? 4 : window.innerWidth >= 768 ? 3 : 2;
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const idx = Number(entry.target.dataset.rowIdx);
+        if (isNaN(idx)) return;
+        const startIdx = (idx + 2) * cols;
+        const endIdx = Math.min(startIdx + cols * 2, sortedAndFilteredRecords.length);
+        const urls = [];
+        for (let i = startIdx; i < endIdx; i++) {
+          const url = sortedAndFilteredRecords[i]?.cover_url;
+          if (url && !prefetchedRef.current.has(url)) {
+            urls.push(url);
+            prefetchedRef.current.add(url);
+          }
+        }
+        if (urls.length) prefetchArt(urls);
+      });
+    }, { rootMargin: '200px 0px' });
+    const sentinels = gridRef.current.querySelectorAll('[data-row-sentinel]');
+    sentinels.forEach(s => observer.observe(s));
+    return () => observer.disconnect();
+  }, [sortedAndFilteredRecords]);
+
   if (loading) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-8 pt-16 md:pt-24">
@@ -962,23 +993,26 @@ const CollectionPage = () => {
               <p className="text-muted-foreground">No records match your search</p>
             </Card>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {sortedAndFilteredRecords.map(record => (
-                <RecordCard 
-                  key={record.id} 
-                  record={record}
-                  onSpin={handleLogSpin}
-                  onDelete={handleDeleteRecord}
-                  onMoveToWishlist={requestMoveToDreaming}
-                  onMoveToISO={requestMoveToHunt}
-                  isSpinning={spinningRecordId === record.id}
-                  value={valueMap[record.id]}
-                  selectMode={selectMode}
-                  isSelected={selectedIds.has(record.id)}
-                  onToggleSelect={toggleSelect}
-                  blurData={record.cover_url ? blurMap[record.cover_url] : null}
-                  isFading={fadingIds.has(record.id)}
-                />
+            <div ref={gridRef} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4" data-testid="collection-grid">
+              {sortedAndFilteredRecords.map((record, idx) => (
+                <React.Fragment key={record.id}>
+                  {idx % 5 === 0 && <div data-row-sentinel="true" data-row-idx={Math.floor(idx / 5)} className="col-span-full h-0" />}
+                  <RecordCard 
+                    record={record}
+                    onSpin={handleLogSpin}
+                    onDelete={handleDeleteRecord}
+                    onMoveToWishlist={requestMoveToDreaming}
+                    onMoveToISO={requestMoveToHunt}
+                    isSpinning={spinningRecordId === record.id}
+                    value={valueMap[record.id]}
+                    selectMode={selectMode}
+                    isSelected={selectedIds.has(record.id)}
+                    onToggleSelect={toggleSelect}
+                    blurData={record.cover_url ? blurMap[record.cover_url] : null}
+                    isFading={fadingIds.has(record.id)}
+                    priority={idx < 12}
+                  />
+                </React.Fragment>
               ))}
             </div>
           )}
@@ -1213,7 +1247,7 @@ const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg, pending
   );
 };
 
-const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, isSpinning, value, selectMode, isSelected, onToggleSelect, blurData, isFading }) => {
+const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, isSpinning, value, selectMode, isSelected, onToggleSelect, blurData, isFading, priority }) => {
   return (
     <Card 
       className={`relative group border-honey/20 overflow-hidden hover:shadow-honey transition-all duration-300 hover:-translate-y-1 ${isSelected ? 'ring-2 ring-honey shadow-honey' : ''} ${selectMode ? 'cursor-pointer' : ''} ${isFading ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}
@@ -1238,6 +1272,7 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
               className={`w-full h-full object-cover ${isSpinning ? 'animate-spin-slow' : ''}`}
               blurDataUrl={blurData?.blur_data_url}
               thumbSrc={blurData?.thumb_url}
+              priority={priority}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">

@@ -60,14 +60,10 @@ async def _get_platform_fee_percent() -> float:
 
 
 def _can_see_test_listings(user: Optional[Dict]) -> bool:
-    """Return True if user is admin or the founder @katieintheafterglow."""
+    """BLOCK 569: Return True if user is admin — tied to is_admin flag, not username."""
     if not user:
         return False
-    if user.get("is_admin"):
-        return True
-    if (user.get("username") or "").lower() == "katieintheafterglow":
-        return True
-    return False
+    return bool(user.get("is_admin"))
 
 
 @router.get("/platform-fee")
