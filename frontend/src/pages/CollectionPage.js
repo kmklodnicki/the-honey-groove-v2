@@ -1032,10 +1032,10 @@ const CollectionPage = () => {
               <p className="text-muted-foreground">No records match your search</p>
             </Card>
           ) : (
-            <div ref={gridRef} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-stretch">
+            <div ref={gridRef} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4" style={{ gridAutoRows: '1fr' }}>
               {sortedAndFilteredRecords.map((record, idx) => (
-                <div key={record.id || idx} className="flex h-full w-full">
                   <RecordCard
+                    key={record.id || idx}
                     record={record}
                     onSpin={handleLogSpin}
                     onDelete={handleDeleteRecord}
@@ -1050,7 +1050,6 @@ const CollectionPage = () => {
                     isFading={fadingIds.has(record.id)}
                     priority={idx < 12}
                   />
-                </div>
               ))}
             </div>
           )}
@@ -1346,7 +1345,7 @@ const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg, pending
 const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, isSpinning, value, selectMode, isSelected, onToggleSelect, blurData, isFading, priority }) => {
   return (
     <Card 
-      className={`relative group border-honey/20 overflow-hidden hover:shadow-honey transition-all duration-300 hover:-translate-y-1 flex flex-col h-full ${isSelected ? 'ring-2 ring-honey shadow-honey' : ''} ${selectMode ? 'cursor-pointer' : ''} ${isFading ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}
+      className={`relative group border-honey/20 overflow-hidden hover:shadow-honey transition-all duration-300 hover:-translate-y-1 flex flex-col w-full h-full ${isSelected ? 'ring-2 ring-honey shadow-honey' : ''} ${selectMode ? 'cursor-pointer' : ''} ${isFading ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}
       style={{ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', background: 'rgba(255,255,255,0.75)' }}
       data-testid={`record-card-${record.id}`}
       onClick={selectMode ? () => onToggleSelect(record.id) : undefined}

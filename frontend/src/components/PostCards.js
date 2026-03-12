@@ -304,54 +304,76 @@ const LiveEqualizer = () => (
 // NOW_SPINNING card body
 const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
   const record = post.record;
+  const [lightboxOpen, setLightboxOpen] = React.useState(false);
   if (!record) return null;
   const variantText = post.color_variant || record.color_variant || post.pressing_variant || record.pressing_notes;
   return (
     <AlbumLink record={record} onAlbumClick={onAlbumClick}>
       <div data-testid="now-spinning-card">
-        {/* User-uploaded photo displayed prominently */}
-        {post.photo_url && (
-          <div className="mb-3 rounded-xl overflow-hidden border border-stone-200/60" data-testid="user-photo">
-            <img src={post.photo_url} alt="User photo" className="w-full max-h-64 object-cover" loading="lazy" />
-          </div>
-        )}
-        <div className="flex gap-4 items-start">
-          {record.cover_url ? (
-            <div className="shrink-0" style={{ overflow: 'visible' }}>
-              <AlbumWithVinyl>
-                <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-24 h-24 rounded-[10px] object-cover shadow-md album-art-hover relative z-[6]" priority={imgPriority} isUnofficial={record.is_unofficial} />
-                {post.honeypot_rating && (
-                  <div className="absolute top-1 right-4 z-[7] px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
-                    style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
-                    data-testid="feed-rating-pill">
-                    {post.honeypot_rating}
-                  </div>
-                )}
-              </AlbumWithVinyl>
-              <StreamingLinks artist={record.artist} album={record.title} showEqualizer />
+        <div className="flex justify-between items-start gap-3">
+          {/* Left: album art + metadata */}
+          <div className={`${post.photo_url ? 'flex-1 mr-2' : 'w-full'} min-w-0`}>
+            <div className="flex gap-4 items-start">
+              {record.cover_url ? (
+                <div className="shrink-0" style={{ overflow: 'visible' }}>
+                  <AlbumWithVinyl>
+                    <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-24 h-24 rounded-[10px] object-cover shadow-md album-art-hover relative z-[6]" priority={imgPriority} isUnofficial={record.is_unofficial} />
+                    {post.honeypot_rating && (
+                      <div className="absolute top-1 right-4 z-[7] px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
+                        style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
+                        data-testid="feed-rating-pill">
+                        {post.honeypot_rating}
+                      </div>
+                    )}
+                  </AlbumWithVinyl>
+                  <StreamingLinks artist={record.artist} album={record.title} showEqualizer />
+                </div>
+              ) : (
+                <div className="w-24 h-24 rounded-lg bg-vinyl-black flex items-center justify-center shrink-0">
+                  <Disc className="w-10 h-10 text-honey animate-spin" style={{ animationDuration: '3s' }} />
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="font-heading text-lg leading-tight">{record.title}</p>
+                <p className="text-sm text-muted-foreground">{record.artist}</p>
+                <div className="flex flex-wrap gap-1 mt-1" data-testid="card-meta-pills">
+                  {variantText && <VariantTag variant={variantText} linkTo={variantLink(record)} />}
+                  {(record.edition_number || post.edition_number) && <EditionTag number={record.edition_number || post.edition_number} />}
+                  {!variantText && record.format && record.format !== 'Vinyl' && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border border-stone-200 text-stone-500 bg-stone-50" data-testid="format-pill">
+                      <Disc className="w-2.5 h-2.5" /> {record.format}
+                    </span>
+                  )}
+                  {record.is_unofficial && <UnofficialPill variant="inline" />}
+                </div>
+                {post.track && <p className="text-xs text-honey-amber mt-1">Track: {post.track}</p>}
+                {post.caption && <p className="text-sm mt-2"><MentionText text={post.caption} /></p>}
+              </div>
             </div>
-          ) : (
-            <div className="w-24 h-24 rounded-lg bg-vinyl-black flex items-center justify-center">
-              <Disc className="w-10 h-10 text-honey animate-spin" style={{ animationDuration: '3s' }} />
+          </div>
+
+          {/* Right: user-uploaded photo */}
+          {post.photo_url && (
+            <div className="shrink-0">
+              <img
+                src={post.photo_url}
+                alt="User photo"
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity border border-stone-200/60 shadow-sm"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLightboxOpen(true); }}
+                loading="lazy"
+                data-testid="user-photo-thumb"
+              />
             </div>
           )}
-          <div className="flex-1 min-w-0">
-            <p className="font-heading text-lg leading-tight">{record.title}</p>
-            <p className="text-sm text-muted-foreground">{record.artist}</p>
-            <div className="flex flex-wrap gap-1 mt-1" data-testid="card-meta-pills">
-              {variantText && <VariantTag variant={variantText} linkTo={variantLink(record)} />}
-              {(record.edition_number || post.edition_number) && <EditionTag number={record.edition_number || post.edition_number} />}
-              {!variantText && record.format && record.format !== 'Vinyl' && (
-                <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border border-stone-200 text-stone-500 bg-stone-50" data-testid="format-pill">
-                  <Disc className="w-2.5 h-2.5" /> {record.format}
-                </span>
-              )}
-              {record.is_unofficial && <UnofficialPill variant="inline" />}
-            </div>
-            {post.track && <p className="text-xs text-honey-amber mt-1">Track: {post.track}</p>}
-            {post.caption && <p className="text-sm mt-2"><MentionText text={post.caption} /></p>}
-          </div>
         </div>
+        {post.photo_url && (
+          <PhotoLightbox
+            photos={[{ url: post.photo_url }]}
+            initialIndex={0}
+            open={lightboxOpen}
+            onClose={() => setLightboxOpen(false)}
+          />
+        )}
       </div>
     </AlbumLink>
   );
@@ -360,7 +382,9 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
 // NEW_HAUL card body — handles both manual hauls and auto-bundled collection adds
 const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
   const [expanded, setExpanded] = React.useState(false);
+  const [lightboxOpen, setLightboxOpen] = React.useState(false);
   const bundle = post.bundle_records;
+  const photoUrl = post.image_url || (post.haul && post.haul.image_url);
   
   // Auto-bundle flow: stacked album art grid
   if (bundle && bundle.length > 0) {
@@ -368,43 +392,56 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
     const extra = bundle.length - 4;
     return (
       <div data-testid="haul-bundle-card">
-        {/* User-uploaded haul photo */}
-        {post.image_url && (
-          <div className="mb-3 rounded-xl overflow-hidden border border-stone-200/60" data-testid="user-photo">
-            <img src={post.image_url} alt="Haul photo" className="w-full max-h-64 object-cover" loading="lazy" />
-          </div>
-        )}
-        {post.caption && <p className="text-sm mb-3"><MentionText text={post.caption} /></p>}
-        <div className="grid grid-cols-4 gap-1.5">
-          {shown.map((item, idx) => (
-            <AlbumLink key={idx} record={item} onAlbumClick={onAlbumClick}>
-              <div className="relative group/cover">
-                <AlbumArt src={item.cover_url} alt={`${item.artist} - ${item.title}`} 
-                  className="w-full aspect-square rounded-lg object-cover border border-stone-200/60" isUnofficial={item.is_unofficial} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-lg opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-end p-1.5">
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-medium text-white truncate">{item.title}</p>
-                    <p className="text-[9px] text-white/70 truncate">{item.artist}</p>
+        <div className="flex justify-between items-start gap-3">
+          <div className={`${photoUrl ? 'flex-1 mr-2' : 'w-full'} min-w-0`}>
+            {post.caption && <p className="text-sm mb-3"><MentionText text={post.caption} /></p>}
+            <div className="grid grid-cols-4 gap-1.5">
+              {shown.map((item, idx) => (
+                <AlbumLink key={idx} record={item} onAlbumClick={onAlbumClick}>
+                  <div className="relative group/cover">
+                    <AlbumArt src={item.cover_url} alt={`${item.artist} - ${item.title}`} 
+                      className="w-full aspect-square rounded-lg object-cover border border-stone-200/60" isUnofficial={item.is_unofficial} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-lg opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-end p-1.5">
+                      <div className="min-w-0">
+                        <p className="text-[10px] font-medium text-white truncate">{item.title}</p>
+                        <p className="text-[9px] text-white/70 truncate">{item.artist}</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </AlbumLink>
-          ))}
-          {!expanded && extra > 0 && (
-            <button
-              onClick={(e) => { e.stopPropagation(); setExpanded(true); }}
-              className="aspect-square rounded-lg flex items-center justify-center text-sm font-bold"
-              style={{ background: 'rgba(232,168,32,0.12)', color: '#996012', border: '1px dashed rgba(200,134,26,0.3)' }}
-              data-testid="haul-bundle-expand"
-            >
-              +{extra} more
-            </button>
+                </AlbumLink>
+              ))}
+              {!expanded && extra > 0 && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); setExpanded(true); }}
+                  className="aspect-square rounded-lg flex items-center justify-center text-sm font-bold"
+                  style={{ background: 'rgba(232,168,32,0.12)', color: '#996012', border: '1px dashed rgba(200,134,26,0.3)' }}
+                  data-testid="haul-bundle-expand"
+                >
+                  +{extra} more
+                </button>
+              )}
+            </div>
+            {expanded && bundle.length > 4 && (
+              <button onClick={() => setExpanded(false)} className="text-xs text-muted-foreground mt-2 hover:underline" data-testid="haul-bundle-collapse">
+                Show less
+              </button>
+            )}
+          </div>
+          {photoUrl && (
+            <div className="shrink-0">
+              <img
+                src={photoUrl}
+                alt="Haul photo"
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity border border-stone-200/60 shadow-sm"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLightboxOpen(true); }}
+                loading="lazy"
+                data-testid="user-photo-thumb"
+              />
+            </div>
           )}
         </div>
-        {expanded && bundle.length > 4 && (
-          <button onClick={() => setExpanded(false)} className="text-xs text-muted-foreground mt-2 hover:underline" data-testid="haul-bundle-collapse">
-            Show less
-          </button>
+        {photoUrl && (
+          <PhotoLightbox photos={[{ url: photoUrl }]} initialIndex={0} open={lightboxOpen} onClose={() => setLightboxOpen(false)} />
         )}
       </div>
     );
@@ -416,29 +453,42 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
   const items = haul.items || [];
   return (
     <div data-testid="new-haul-card">
-      {/* User-uploaded haul photo */}
-      {(post.image_url || haul.image_url) && (
-        <div className="mb-3 rounded-xl overflow-hidden border border-stone-200/60" data-testid="user-photo">
-          <img src={post.image_url || haul.image_url} alt="Haul photo" className="w-full max-h-64 object-cover" loading="lazy" />
+      <div className="flex justify-between items-start gap-3">
+        <div className={`${photoUrl ? 'flex-1 mr-2' : 'w-full'} min-w-0`}>
+          {haul.store_name && <p className="text-sm text-amber-700 font-medium mb-2">Found at {haul.store_name}</p>}
+          {post.caption && <p className="text-sm mb-3"><MentionText text={post.caption} /></p>}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {items.slice(0, 6).map((item, idx) => (
+              <AlbumLink key={idx} record={item} onAlbumClick={onAlbumClick}>
+                <div className="flex items-center gap-2 bg-amber-50 rounded-lg p-2">
+                  <AlbumArt src={item.cover_url} alt={`${item.artist} ${item.title}${item.color_variant ? ` ${item.color_variant}` : ''} vinyl record`} className="w-10 h-10 rounded object-cover" isUnofficial={item.is_unofficial} />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium truncate">{item.title}</p>
+                    <p className="text-xs text-muted-foreground truncate">{item.artist}</p>
+                    <VariantTag variant={item.color_variant} linkTo={item.discogs_id ? `/variant/${item.discogs_id}` : undefined} />
+                  </div>
+                </div>
+              </AlbumLink>
+            ))}
+          </div>
+          {items.length > 6 && <p className="text-xs text-muted-foreground mt-2">+ {items.length - 6} more records</p>}
         </div>
-      )}
-      {haul.store_name && <p className="text-sm text-amber-700 font-medium mb-2">Found at {haul.store_name}</p>}
-      {post.caption && <p className="text-sm mb-3"><MentionText text={post.caption} /></p>}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        {items.slice(0, 6).map((item, idx) => (
-          <AlbumLink key={idx} record={item} onAlbumClick={onAlbumClick}>
-            <div className="flex items-center gap-2 bg-amber-50 rounded-lg p-2">
-              <AlbumArt src={item.cover_url} alt={`${item.artist} ${item.title}${item.color_variant ? ` ${item.color_variant}` : ''} vinyl record`} className="w-10 h-10 rounded object-cover" isUnofficial={item.is_unofficial} />
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-medium truncate">{item.title}</p>
-                <p className="text-xs text-muted-foreground truncate">{item.artist}</p>
-                <VariantTag variant={item.color_variant} linkTo={item.discogs_id ? `/variant/${item.discogs_id}` : undefined} />
-              </div>
-            </div>
-          </AlbumLink>
-        ))}
+        {photoUrl && (
+          <div className="shrink-0">
+            <img
+              src={photoUrl}
+              alt="Haul photo"
+              className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity border border-stone-200/60 shadow-sm"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLightboxOpen(true); }}
+              loading="lazy"
+              data-testid="user-photo-thumb"
+            />
+          </div>
+        )}
       </div>
-      {items.length > 6 && <p className="text-xs text-muted-foreground mt-2">+ {items.length - 6} more records</p>}
+      {photoUrl && (
+        <PhotoLightbox photos={[{ url: photoUrl }]} initialIndex={0} open={lightboxOpen} onClose={() => setLightboxOpen(false)} />
+      )}
     </div>
   );
 };
