@@ -1,33 +1,68 @@
 <analysis>**original_problem_statement:**
-The user is iteratively building **The HoneyGroove**, a premium social platform for vinyl collectors. The development process is driven by a series of user-provided BLOCK instructions that detail new features, UI/UX enhancements, and bug fixes.
+The user is iteratively building **The HoneyGroove**, a premium social platform for vinyl collectors. The development process is driven by a series of user-provided BLOCK and DIRECTIVE instructions.
 
-The most recent set of  instructions focused on resolving critical production issues and standardizing the app's visual identity. Key tasks included:
-*   **BLOCK 583 & 576:** Fixing the Discogs OAuth authentication flow, which was being blocked by browsers. This required replacing automatic pop-ups with a user-initiated banner.
-*   **BLOCK 584, 581, & 577:** Globally implementing a Gold Shield SVG icon for all verified users. This involved creating a reusable React component and methodically replacing all legacy placeholder emojis (e.g., 👑, ✅) across the entire application, including the feed, profile pages, user menus, and search results.
-*   **BLOCK 575 & 578:** Adding pagination to the notifications tray with a View More button.
-*   **BLOCK 569:** A critical backend fix to tie a user's verification status to their unique User ID instead of their username, resolving an issue where a user changing their handle would lose their verified status.
+The most recent set of instructions focused on resolving UI/UX bugs, enhancing user choice, and implementing a robust system for handling unofficial (bootleg) releases.
+*   **BLOCK 583 (Fix):** The Discogs OAuth connection banner was hidden behind the main navigation bar. The fix required adjusting the z-index and implementing a layout shift to push the navbar down when the banner is active.
+*   **Request:** The user requested to remove a redundant add missing values button from the collection page.
+*   **BLOCK 585 & 587:** The OAuth banner's functionality was expanded. The copy was made friendlier, and options were added for the user to Skip for now (hiding the banner for 24 hours via ) or permanently decline the import (setting a  flag in the user's profile).
+*   **BLOCK 592 & Composite Directives (v2.5.2, v2.5.3, v2.6.5, v2.6.6):** A comprehensive feature set was built to handle unofficial releases:
+    *   **Backend Tagging:** Records synced from Discogs are automatically flagged as  if their metadata contains Unofficial Release. This check was also extended to In Search Of (ISO) posts.
+    *   **UI Implementation:** A global, reusable  component was created and injected universally into the main  component, ensuring it appears on every record view (collection, feed, search, etc.) if the flag is true. A legal disclaimer was also added to relevant pages.
+    *   **Compliance Flow:** When listing an unofficial record for sale, users must now acknowledge a tiered compliance checkbox. Auto-market pricing is also disabled for these items.
+*   **UI Fixes:** The ISO post type was corrected to display a clear ISO pill instead of the previous Grail Find label. The unofficial tagging logic was later corrected to use strict matching and a data backfill was performed to fix incorrect tags.
+*   **Final Directives:** The last requests involved relocating the  to a new, consistent position and running a global database scrub to ensure all existing records are correctly tagged.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The HoneyGroove is a robust full-stack application (React/TypeScript, FastAPI, MongoDB). The latest session focused heavily on production hardening and UI consistency.
+The HoneyGroove is a feature-rich full-stack application (React/TypeScript, FastAPI, MongoDB). The most recent work session focused on UI polish, user experience enhancements, and implementing a major feature for marketplace integrity.
 
-*   **Global Verification System:** A reusable  React component now serves as the single source of truth for displaying a user's verified status. This metallic gold shield SVG has been injected across the feed, profiles, search results, and navigation menus, providing a consistent and professional look. It includes a tooltip that appears on hover.
-*   **Repaired OAuth Flow:** The Discogs connection process is now stable. A prominent Golden Glassy Banner appears at the top of the app if a user's token is missing, and the OAuth flow is only triggered by a direct user click, successfully bypassing browser pop-up blockers.
-*   **Paginated Notifications:** The user notification tray now features a View More button that fetches and appends older notifications, supporting infinite scroll-style loading. The backend has been updated to support this.
-*   **Stable Founder Identity:** The application's founder, 'katie', now has her admin and verified status hard-coded on the backend against her unique User ID. This permanently solves an issue where changing her username would cause her to lose her site privileges and verification badge.
-*   **Instant Art Image Loading:** A high-performance image pipeline is in place. It features shimmer skeleton loaders, priority pre-loading for above-the-fold content, and predictive fetching for images further down the page using an .
-*   **Value Recovery Engine:** A complete full-stack feature that allows users to find market values for previously unvalued records in their collection, with UI progress tracking and integration into a Weekly Wax summary email.
+*   **Corrected OAuth Banner:** The Discogs OAuth banner now correctly appears above the main navigation bar, pushing the page content down. It includes user-friendly copy and logic to be skipped temporarily (24hr  flag) or dismissed permanently (backend  flag).
+*   **Universal Unofficial Tagging System:**
+    *   A robust backend mechanism automatically flags records and ISO posts as  by checking Discogs metadata for the exact string Unofficial Release.
+    *   A global  component now includes a universal  prop, which renders a steel-gray Unofficial pill in the bottom-left corner of the image. This pill is now present across every view in the application where album art is shown.
+    *   A legal Safe Harbor disclaimer is displayed on pages featuring unofficial items.
+    *   The marketplace flow is updated to handle these items: auto-pricing is disabled, and a mandatory compliance checkbox is shown to sellers.
+*   **Correct Post Labeling:** In Search Of posts are now clearly marked with a rose-colored ISO pill in the feed.
+*   **Stable Core Features:** The global Gold Shield verification system, paginated notifications, and Instant Art image loading pipeline remain active and stable.
 
 **Last working item**:
-    - Last item agent was working: The agent finished implementing  and . This involved replacing the previously implemented OAuth toast with a more effective Golden Glassy Banner and injecting the global  component into the main navigation bar's user menu and mobile menu.
-    - Status: USER VERIFICATION PENDING
-    - Agent Testing Done: Y
-    - Which testing method agent to use? NA
+    - Last item agent was working: The agent received a two-part directive: 1) Relocate the Unofficial pill from the bottom-left to the top-right corner () with a backdrop blur. 2) Perform a one-time Global Metadata Scrub to re-fetch Discogs data for every record in the database and ensure the  flag is correctly set on all bootlegs like Merry Swiftmas.
+    - Status: NOT STARTED
+    - Agent Testing Done: N
+    - Which testing method agent to use? backend testing agent (for the metadata scrub script) and frontend testing agent (for the UI pill relocation).
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  There are no known bugs or recurring issues. All pending work is feature development or long-standing tasks.
+  - Issue 1:  (P0) Relocate the Unofficial pill to the top-right corner of album art.
+  - Issue 2:  (P0) Create and run a one-time Global Metadata Scrub script.
+  
+  Issues Detail:
+  - Issue 1: Relocate the Unofficial pill
+     - Attempted fixes: None. This is a new request.
+     - Next debug checklist: 
+       - Edit .
+       - Change the CSS classes for the  container from  to  (or ).
+       - Add a  class for the visual polish.
+     - Why fix this issue and what will be achieved with the fix? To match the user's latest design specification for UI consistency.
+     - Status:  NOT STARTED
+     - Is recurring issue? N
+     - Should Test frontend/backend/both after fix? Frontend
+     - Blocked on other issue: None.
+  - Issue 2: Global Metadata Scrub
+     - Attempted fixes: None. This is a new request.
+     - Next debug checklist: 
+       - Create a new, temporary backend API endpoint (e.g., ).
+       - The endpoint logic should iterate through all documents in the  collection.
+       - For each record, call the  service using its .
+       - Check the returned  for the string Unofficial Release.
+       - Update the record's  flag in the database if necessary.
+       - The script should be executable via a single  command.
+     - Why fix this issue and what will be achieved with the fix? To ensure data integrity and guarantee that all unofficial releases imported *before* the new logic was in place are correctly tagged and displayed with the Unofficial pill.
+     - Status:  NOT STARTED
+     - Is recurring issue? N
+     - Should Test frontend/backend/both after fix? Backend
+     - Blocked on other issue: None.
 
 **In progress Task List**:
   - Task 1: Complete Streaming Service Integration (P1, from BLOCK 254)
@@ -51,16 +86,16 @@ The HoneyGroove is a robust full-stack application (React/TypeScript, FastAPI, M
     - Enhance search filters to be powered by the backend.
 
 **Completed work in this session**
-- **Global Verification Shield (BLOCKs 577, 581, 584):** Created and integrated a universal  component across the Feed, Profile, Search Results, and User Menus, replacing all inconsistent emoji styles.
-- **OAuth Flow Repair (BLOCKs 573, 576, 583):** Replaced automatic popups with a user-initiated Golden Glassy Banner to fix browser blocking issues.
-- **Notification Pagination (BLOCKs 575, 578):** Added a View More button with full pagination logic and loading states to the notification tray.
-- **Founder Identity Fix (BLOCK 569):** Migrated admin/verification status from being tied to a username to a permanent User ID, with a backend override for the founder.
-- **Instant Art Image Pipeline (BLOCKs 565, 567, 572, 574):** Implemented a high-performance image loading system with shimmer skeletons, priority preloading, and predictive fetching.
-- **Mobile Tooltip UX Fix (BLOCK 563):** Separated tooltip triggers ( icon) from action buttons to improve mobile usability.
-- **Tooltip Clipping Fix (BLOCK 561):** Converted tooltips to use React Portals, preventing them from being cut off by parent container styles.
-- **UI De-clutter (BLOCK 555):** Removed individual Value This buttons from record cards, centralizing the valuation action.
-- **Value Recovery Engine (BLOCK 476):** Implemented the full-stack feature for valuing user collections.
-- **Profile & Collection UI Overhaul (BLOCKs 541-545):** Restructured the profile header for better usability and applied a glassmorphism effect to the collection stats header.
+- **OAuth Banner Fix (BLOCK 583):** Resolved a critical z-index bug preventing the OAuth banner from being visible. The banner now correctly pushes the main navbar down.
+- **Enhanced OAuth Banner Logic (BLOCKs 585 & 587):** Implemented new banner copy, a Skip for now option (hiding it for 24 hours), and a permanent  state tracked on the user's profile.
+- **Universal Unofficial Release System (BLOCK 592 & Directives):**
+    - Implemented backend logic to automatically flag unofficial records () during Discogs sync and ISO creation.
+    - Created and globally injected an  into the base  component, ensuring it appears on all record views.
+    - Added a legal disclaimer and tiered seller compliance checkboxes to the listing flow for unofficial items.
+- **Data Integrity Fixes:** Corrected the unofficial detection logic to use a strict string match and performed a backfill to tag existing bootlegs and remove false positives.
+- **UI Polish:**
+    - Removed a redundant Add missing values button from the collection page.
+    - Corrected In Search Of posts to show a clear ISO pill instead of Grail Find.
 
 **Earlier issues found/mentioned but not fixed**
    - **Issue 1: Incomplete Service Worker Caching (BLOCK 321).**
@@ -74,33 +109,30 @@ The HoneyGroove is a robust full-stack application (React/TypeScript, FastAPI, M
   - None.
 
 **Code Architecture**
-
+isUnofficial
 
 **Key Technical Concepts**
-- **Global Componentization:** The creation of  to standardize a UI element across multiple, disparate parts of the app, ensuring visual consistency and easier maintenance.
-- **User-Initiated Events for Popups:** A critical pattern change for OAuth, moving from an automatic trigger to a user-clicked banner to comply with modern browser security policies against unsolicited pop-ups.
-- **Image Performance Optimization:** A multi-pronged approach (, , , ) to solve the core UX problem of slow image loading.
-- **State-Driven UI:** The app's interface heavily relies on user state flags like , , and  to conditionally render components, styles, and entire features.
-- **Backend Pagination:** Adding  and  parameters to API endpoints to enable load more functionality on the frontend without fetching the entire dataset at once.
-- **React Portals:** Used to solve z-index and overflow clipping issues with tooltips by rendering them at the top level of the DOM ().
+- **Dynamic CSS Variables for Layout:** Using JavaScript to set a CSS variable () to dynamically adjust the  position of the fixed , pushing it down only when the banner is active.
+- **User Intent State Machine:** Implemented a simple state machine on the user model (: PENDING, LATER, DECLINED, CONNECTED) to control UI visibility for the OAuth banner, providing more nuanced user choice.
+- **Universal Component Props:** Refactoring a UI element (the Unofficial pill) into a base component () and enforcing its display via a prop () passed from all parent components. This centralized the logic and ensured sitewide consistency.
+- **Data Backfilling/Scrubbing:** The need to run a one-time script to update the entire database with new data derived from an external API (re-checking all records against Discogs for the Unofficial Release tag).
+- **Strict Data Matching:** Correcting logic from a fuzzy/broad match to a strict, exact string match () to improve data accuracy.
 
 **key DB schema**
-  - **:** No schema changes, but logic now heavily relies on the  and  boolean flags. The  flag is now programmatically enforced for a specific user ID ().
-  - ** (New Collection):** Stores the state of collection valuation jobs. Columns: , , , , , .
-  - **:** The backing query was updated to support pagination via .
+  - **:** Added  (Enum: 'PENDING', 'LATER', 'DECLINED', 'CONNECTED').
+  - **:** Added .
+  - **:** Added  and .
+  - **:** Added .
 
 **changes in tech stack**
   - None.
 
 **All files of reference**
-- ****: The new global component for the verification badge.
-- ****: Contains the Instant Art logic () and the Value Recovery UI.
-- ****: The core of the Instant Art image rendering pipeline.
-- ****: Home of the new user-initiated OAuth banner.
-- ****: Contains the paginated notification tray and  integration.
-- ****: Contains the hard-coded admin override for 'katie'.
-- ****: Updated with pagination logic.
-- ** & **: Core of the Value Recovery Engine.
+- ****: The most critical frontend component, now containing the universal logic for the Unofficial pill overlay.
+- ****: Contains the logic for the conditional OAuth banner and the CSS variable that pushes the navbar down.
+- ****: Contains the full marketplace listing flow, including the new compliance checkbox for unofficial items.
+- ****: The core Discogs sync service, updated with strict matching logic for unofficial releases.
+- ****: Defines the application's data structures, updated to include  and  flags.
 
 **Areas that need refactoring**:
 - ** Decomposition:** This file remains very large and could be broken down into smaller, more manageable child components (e.g., , ).
@@ -108,46 +140,46 @@ The HoneyGroove is a robust full-stack application (React/TypeScript, FastAPI, M
 - **Refactor Notification Body:** Notification message bodies are pre-formatted strings on the backend. They should be refactored to send structured data, allowing the frontend to render them with rich components like .
 
 **key api endpoints**
-- ****: Modified to accept  and  query parameters for pagination.
-- ****: Starts the Value Recovery Engine for the logged-in user.
-- ****: Gets the status of the current or last recovery run.
+- ****: (New) Updates the user's preference for Discogs import, controlling banner visibility.
+- ****: Modified to validate  and store the  status on new listings.
+- ****: Modified to check Discogs for Unofficial Release status when an ISO post is created and store the result.
+- ****: Modified to return the  status for a given record variant.
 
 **Critical Info for New Agent**
-- **The Gold Shield is Global:** The user wants the  component used *everywhere* a username appears for a verified user. If you encounter any old emoji placeholders (👑, ✅) or text-based badges, they must be replaced with the  component.
-- **Katie's ID is the Source of Truth:** The founder, '@katie', has changed her username in the past. To prevent issues, all admin and verification logic *must* reference her unique user ID () or primary email (), not her display name.
-- **OAuth is User-Initiated ONLY:** Do not implement any automatic pop-ups for authentication. All external auth flows must be triggered by a direct  event from a banner or button to avoid being blocked by browsers.
-- **Prioritize  Instructions:** User requests are delivered in numbered s and are the highest priority. Always address the latest s first.
+- **The next task is a two-parter:** 1) Move the  in  to the top-right. 2) Create and run a backend script to perform a Global Metadata Scrub, ensuring all existing records in the DB have the correct  flag.
+- **Universal Pill Logic:** The  is now managed globally by  via the  prop. Do not add one-off pill components; instead, ensure the prop is passed correctly.
+- **OAuth Banner State:** The visibility of the main OAuth banner is controlled by the  field in the  collection and a  key () for temporary skips.
 
 **documents and test reports created in this job**
-  - /app/test_reports/iteration_43.json through /app/test_reports/iteration_58.json
-  - /app/memory/PRD.md was updated after each feature completion.
+  - /app/test_reports/iteration_6.json
+  - /app/test_reports/iteration_7.json
 
 **Last 10 User Messages and any pending HUMAN messages**
-10. **Request (BLOCK 565):** Implement the Silk Image Fix with shimmer skeletons and no broken icons. (DONE)
-9.  **Request (BLOCKs 566, 569, 570):** Finalize the Gold Shield design and link verification status to the permanent User ID. (DONE)
-8.  **Request (BLOCKs 571, 572):** Force-refresh the UI for user 'katie', hard-code her admin status, and fix image fallbacks. (DONE)
-7.  **Request (BLOCKs 573, 574):** Implement an OAuth force-trigger and an image pre-fetch bypass. (DONE)
-6.  **User Feedback:** The Gold Shield was still not appearing correctly, showing old emojis instead. (ADDRESSED)
-5.  **Request (BLOCKs 575, 576, 577, 578):** Add notification pagination, fix the OAuth popup with a toast-based trigger, hard-code the Gold Shield SVG, and style the View More button. (DONE)
-4.  **Request (BLOCK 581):** A global verification sync, injecting the Gold Shield into all feed items. (DONE)
-3.  **User Feedback:** Reported that the OAuth popup was still being blocked in production and the shield was missing in places. (ADDRESSED)
-2.  **Request (BLOCK 583, 584):** Whitelist the production OAuth callback, replace the trigger with a golden banner, and globally inject the shield. (DONE)
-1.  **Request (BLOCK 583, 584) - duplicate:** A repeated request for the final OAuth and shield fixes. (Awaiting User Verification)
+10. **Request (Directive v2.6.5):** Inject the Unofficial pill universally into the  component to cover all views.
+9.  **User Confirmation:** continue
+8.  **User Message:** The agent should now pass the  prop through the  AlbumArt usages and the .
+7.  **User Message:** The agent should now remove the duplicate overlay pills from , , , , and  since  handles it universally.
+6.  **User Message (Directive v2.6.6):** A confirmation of the Omnipresent Pill directive, ensuring the pill is visible in all specified views by making it a core property of the album art.
+5.  **User Message:** The agent should now update  pages and  to pass the  prop.
+4.  **User Message:** The agent should now update , , and .
+3.  **User Message:** The agent should now update the remaining critical user-facing views like , , etc.
+2.  **User Message:** The agent should handle the remaining  mini-grid records.
+1.  **Request (Directive + Fix):** 1) Relocate the Unofficial pill to the top-right corner. 2) Perform a Global Metadata Scrub to fix records like Merry Swiftmas by re-fetching all Discogs metadata.
 
 **Project Health Check:**
-- **Broken:** No. The application is stable and all recent critical fixes have been implemented.
-- **Mocked:** The streaming service integration (Spotify/Apple Music links) is still mocked.
-- **In-Progress:** None.
+- **Broken:** No.
+- **Mocked:** The streaming service integration (Spotify/Apple Music) is still mocked, awaiting user input.
+- **In-Progress:** The final user request to relocate the Unofficial pill and run a database scrub is in progress.
 
 **3rd Party Integrations**
 - **Stripe Connect:** **(Active)** Used for seller payouts and Golden Hive status.
-- **Discogs API:** **(Active & Repaired)** Uses a secure OAuth 1.0a flow triggered by a user-initiated banner.
+- **Discogs API:** **(Active & Repaired)** Uses a secure OAuth 1.0a flow; integral for record data and unofficial status detection.
 - **Resend:** **(Active)** Used for platform emails.
 - **Socket.IO:** **(Active)** Used for real-time feed updates.
-- **Spotify API:** **(Paused)** Awaiting a user-provided callback URL for the developer dashboard.
+- **Spotify API:** **(Paused)** Awaiting a user-provided callback URL.
 
 **Testing status**
-  - Testing agent used after significant changes: YES. The testing agent was used consistently after each group of  implementations, and its feedback was used to fix bugs.
+  - Testing agent used after significant changes: YES. The testing agent was used after implementing the OAuth banner and unofficial release features. It successfully found and fixed two minor bugs related to URL parameter passing.
   - Troubleshoot agent used after agent stuck in loop: NO
   - Test files created: []
   - Known regressions: None.
@@ -157,5 +189,5 @@ The HoneyGroove is a robust full-stack application (React/TypeScript, FastAPI, M
 - **Standard User:**  (Password: ).
 
 **What agent forgot to execute**
-- **Full Service Worker Caching (BLOCK 321):** The original request to pre-cache the dynamic Daily Prompt image during the service worker  phase remains unimplemented.
-- **Clarification on Secret Search Feature:** The agent has not yet proactively asked the user for more details on this long-pending future task.</analysis>
+- The long-standing task to fully implement **Service Worker Caching (BLOCK 321)** on  remains pending.
+- The agent has not yet proactively asked the user for details on the **Secret Search Feature.**</analysis>

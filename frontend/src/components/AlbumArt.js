@@ -168,7 +168,7 @@ const AlbumArt = ({
           {...(priority ? { fetchPriority: 'high' } : {})}
         />
       ) : null}
-      {isUnofficial && <UnofficialPill variant="overlay" className="!top-auto !bottom-1.5 !left-1.5 !right-auto" />}
+      {isUnofficial && <UnofficialPill variant="overlay" className="!top-auto !bottom-10 !left-2 !right-auto" />}
     </div>
   );
 };

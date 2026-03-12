@@ -23,11 +23,11 @@ const UnofficialPill = ({ variant = 'overlay', className = '' }) => {
 
   return (
     <div
-      className={`absolute top-2 right-2 z-[6] text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${className}`}
+      className={`absolute top-2 right-2 z-[6] text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full backdrop-blur-sm ${className}`}
       style={{
-        background: 'rgba(74,74,74,0.9)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
+        background: 'rgba(74,74,74,0.85)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
         color: '#fff',
         letterSpacing: '0.6px',
         boxShadow: '0 2px 8px rgba(0,0,0,0.2)',

@@ -594,3 +594,76 @@ async def admin_golden_hive_reject(user_id: str, user: Dict = Depends(require_ad
     logger.info(f"Admin @{user.get('username')} rejected Golden Hive for user {user_id}")
     return {"message": f"Golden Hive ID rejected for @{target.get('username')}"}
 
+
+
+# ─── Global Metadata Scrub ───
+
+@router.post("/admin/scrub-unofficial-metadata")
+async def scrub_unofficial_metadata(user: Dict = Depends(require_admin)):
+    """One-time scrub: re-fetch Discogs metadata for every record with a discogs_id
+    and correct the is_unofficial flag based on format_descriptions."""
+    from database import get_discogs_release
+    import time
+
+    cursor = db.records.find(
+        {"discogs_id": {"$exists": True, "$ne": None}},
+        {"_id": 0, "id": 1, "discogs_id": 1, "is_unofficial": 1, "title": 1, "artist": 1}
+    )
+    records = await cursor.to_list(length=None)
+    total = len(records)
+    updated = 0
+    flagged = []
+    unflagged = []
+    errors = []
+
+    # Batch with 1s delay every 25 records to respect Discogs rate limits
+    for i, rec in enumerate(records):
+        discogs_id = rec.get("discogs_id")
+        if not discogs_id:
+            continue
+
+        try:
+            release_data = get_discogs_release(int(discogs_id))
+            if not release_data:
+                errors.append({"id": rec["id"], "discogs_id": discogs_id, "reason": "no data returned"})
+                continue
+
+            format_descs = release_data.get("format_descriptions", [])
+            should_be_unofficial = "Unofficial Release" in format_descs
+            current_flag = rec.get("is_unofficial", False)
+
+            if should_be_unofficial != current_flag:
+                await db.records.update_one(
+                    {"id": rec["id"]},
+                    {"$set": {"is_unofficial": should_be_unofficial}}
+                )
+                updated += 1
+                entry = {
+                    "id": rec["id"],
+                    "discogs_id": discogs_id,
+                    "artist": rec.get("artist", ""),
+                    "title": rec.get("title", ""),
+                    "was": current_flag,
+                    "now": should_be_unofficial,
+                }
+                if should_be_unofficial:
+                    flagged.append(entry)
+                else:
+                    unflagged.append(entry)
+
+        except Exception as e:
+            errors.append({"id": rec["id"], "discogs_id": discogs_id, "reason": str(e)})
+
+        # Rate limit: pause 1s every 25 records
+        if (i + 1) % 25 == 0:
+            await asyncio.sleep(1)
+
+    logger.info(f"Metadata scrub complete: {total} scanned, {updated} updated, {len(errors)} errors")
+
+    return {
+        "total_scanned": total,
+        "total_updated": updated,
+        "newly_flagged_unofficial": flagged,
+        "newly_unflagged": unflagged,
+        "errors": errors[:50],
+    }
