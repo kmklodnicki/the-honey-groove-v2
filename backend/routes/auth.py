@@ -172,11 +172,15 @@ async def login(credentials: UserLogin, request: Request):
     identifier = credentials.email.strip().lower()
     password = credentials.password  # Never strip passwords — hash must match exactly
 
+    logger.info(f"LOGIN ATTEMPT: identifier='{identifier}' password_type={type(password).__name__} password_len={len(password)}")
+
     # Try exact email match first
+    lookup_method = "exact_email"
     user = await db.users.find_one({"email": identifier}, {"_id": 0})
 
     # Fallback: case-insensitive email match (escaped for regex safety)
     if not user:
+        lookup_method = "regex_email"
         escaped = _re.escape(identifier)
         user = await db.users.find_one(
             {"email": {"$regex": f"^{escaped}$", "$options": "i"}},
@@ -185,23 +189,29 @@ async def login(credentials: UserLogin, request: Request):
 
     # Fallback: username match (allows login by username)
     if not user:
+        lookup_method = "exact_username"
         user = await db.users.find_one({"username": identifier}, {"_id": 0})
         if not user:
+            lookup_method = "regex_username"
             user = await db.users.find_one(
                 {"username": {"$regex": f"^{_re.escape(identifier)}$", "$options": "i"}},
                 {"_id": 0}
             )
 
     if not user:
-        logger.warning(f"Login failed: no user found for identifier '{identifier}'")
+        logger.warning(f"LOGIN FAIL [user_not_found]: identifier='{identifier}' tried_methods=exact_email,regex_email,exact_username,regex_username")
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
-    if not verify_password(password, user.get("password_hash", "")):
-        logger.warning(f"Login failed: wrong password for user '{user.get('username')}' (email: {user.get('email')})")
+    # Deep bcrypt diagnostic logging
+    stored_hash = user.get("password_hash", "")
+    logger.info(f"LOGIN VERIFY: user='{user.get('username')}' found_via={lookup_method} hash_type={type(stored_hash).__name__} hash_len={len(stored_hash)} hash_prefix={stored_hash[:7]} password_type={type(password).__name__} password_len={len(password)}")
+
+    if not verify_password(password, stored_hash):
+        logger.warning(f"LOGIN FAIL [wrong_password]: user='{user.get('username')}' email='{user.get('email')}' hash_prefix={stored_hash[:7]} hash_len={len(stored_hash)}")
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
     token = create_token(user["id"])
-    logger.info(f"Login success: user '{user.get('username')}' (email: {user.get('email')})")
+    logger.info(f"LOGIN SUCCESS: user='{user.get('username')}' email='{user.get('email')}' found_via={lookup_method}")
     return TokenResponse(access_token=token, user=await _build_user_response(user))
 
 @router.post("/admin/login-diagnostic")
