@@ -59,15 +59,14 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - Spotify/Apple Music integration — waiting for callback URL
 
 ## Recently Completed (2026-03-12)
-- **Merry Swiftmas Hijack Fix:** Added `setData(null)` state reset in VinylVariantPage & VariantReleasePage useEffect to prevent data ghosting between navigations
-- **OAuth /undefined Redirect Fix:** Root cause was key mismatch — backend returned `authorization_url` but frontend expected `auth_url`. Now returns both. Frontend guards against null auth_url with error toast.
-- **Variant API is_unofficial enrichment:** `/api/vinyl/release/{id}` now returns `is_unofficial` by cross-referencing Discogs format_descriptions + internal records
-- **Unofficial disclaimer text:** Changed "The Hive" → "The Honey Groove"
-- **Sticky Navbar:** Changed from `position: fixed` to `position: sticky; top: 0; z-[1000]`. OAuth banner is relative, scrolls away while navbar sticks.
-- **v2.7.2:** Interactive Value Recovery Toast, Disclaimer Padding (mb-10), Test Data Purge endpoint
-- OAuth Configuration Fix: admin diagnostic endpoint, startup log, handshake test
-- Daily Prompts Image Proxy: persistent storage cache, proxy_cover_url, loading="eager" first 3 slides
-- Image proxy User-Agent fix (Discogs CDN blocks bot agents)
+- **v2.8.3 Emergency:** Pill restored to Top-Right (top-2 right-2), AlbumArt safety-net formatText fallback, Route key wrappers (prevents Taylor Swift ghosting), Mini-Groove z-[2000], smooth scroll 80px offset
+- **Merry Swiftmas Hijack Fix:** setData(null) + route key={params} for full re-mount
+- **OAuth /undefined Fix:** key mismatch (authorization_url → auth_url), frontend guard
+- **Variant API is_unofficial:** /vinyl/release/{id} now returns is_unofficial
+- Unofficial disclaimer: "The Hive" → "The Honey Groove"
+- Sticky Navbar (fixed → sticky top-0 z-[1000])
+- **v2.7.2:** Interactive Value Recovery Toast, Disclaimer Padding, Test Data Purge
+- OAuth diagnostic endpoint, Daily Prompts Image Proxy, User-Agent fix
 
 ## Backlog
 - P1: Service Worker pre-caching (BLOCK 321)
