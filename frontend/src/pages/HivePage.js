@@ -9,6 +9,7 @@ import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Skeleton } from '../components/ui/skeleton';
 import { Heart, MessageCircle, Share2, Disc, Send, ChevronDown, ChevronUp, MoreVertical, Trash2, Play, Plus, Loader2, Pin, Reply, ArrowUp, Sparkles } from 'lucide-react';
+import VerifiedShield from '../components/VerifiedShield';
 import {
   Dialog,
   DialogContent,
@@ -244,15 +245,9 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
               <Link to={`/profile/${post.user?.username}`} className="font-medium hover:underline">
                 @{post.user?.username}
               </Link>
-              {post.user?.founding_member && (
-                post.user?.username === 'katieintheafterglow'
-                  ? <span title="Founder of the Honey Groove" className="inline-block ml-1 cursor-help" style={{ fontSize: '13px' }}>👑</span>
-                  : <span title="founding member of the Honey Groove" className="inline-block ml-1 cursor-help" style={{ color: '#C8861A', fontSize: '12px' }}>🍯</span>
-              )}
-              {post.user?.golden_hive_verified && (
-                <span title="Golden Hive ID — Verified Collector" className="inline-flex items-center gap-0.5 ml-0.5 text-amber-600 cursor-help" data-testid="hive-golden-badge">
-                  <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                </span>
+              {/* BLOCK 581: Gold Shield in feed — for verified users and founder */}
+              {(post.user?.golden_hive_verified || post.user?.is_admin) && (
+                <VerifiedShield size={18} isFounder={post.user?.is_admin} className="ml-0.5" />
               )}
               {post.user?.title_label && <TitleBadge label={post.user.title_label} />}
               <PostTypeBadge type={post.post_type} mood={post.mood} />
