@@ -77,6 +77,8 @@ const VinylVariantPage = lazy(() => import("./pages/VinylVariantPage"));
 const VariantReleasePage = lazy(() => import("./pages/VariantReleasePage"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
 const CheckoutSuccessPage = lazy(() => import("./pages/CheckoutSuccessPage"));
+const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
+const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 
 // Auth guards — loading is ALWAYS false. No gates.
 // If user exists (from JWT decode or login), render children.
@@ -278,6 +280,8 @@ function AppContent() {
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/confirm-email-change" element={<ConfirmEmailChangePage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/stripe/connect/return" element={<StripeConnectReturnPage />} />
       <Route path="/stripe/connect/refresh" element={<StripeConnectRefreshPage />} />
 

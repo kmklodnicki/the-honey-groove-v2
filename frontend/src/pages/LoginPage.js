@@ -142,11 +142,18 @@ const LoginPage = () => {
             </Button>
           </form>
 
-          <div className="mt-6 text-center text-sm">
-            <span className="text-muted-foreground">Need an account? </span>
-            <Link to="/beta" className="text-honey-amber hover:underline font-medium" data-testid="login-waitlist-link">
-              Join the waitlist
-            </Link>
+          <div className="mt-6 text-center text-sm space-y-2">
+            <div>
+              <Link to="/forgot-password" className="text-honey-amber hover:underline font-medium" data-testid="login-forgot-link">
+                Forgot password?
+              </Link>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Need an account? </span>
+              <Link to="/beta" className="text-honey-amber hover:underline font-medium" data-testid="login-waitlist-link">
+                Join the waitlist
+              </Link>
+            </div>
           </div>
         </CardContent>
       </Card>

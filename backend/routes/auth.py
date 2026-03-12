@@ -254,6 +254,100 @@ async def login_diagnostic(data: dict, user: Dict = Depends(require_auth)):
     return result
 
 
+# ============== PASSWORD RESET ==============
+
+@router.post("/auth/forgot-password")
+async def forgot_password(data: dict):
+    """Send a password reset link to the user's email."""
+    from services.rate_limiter import rate_limiter
+    identifier = (data.get("email") or "").strip().lower()
+    if not identifier:
+        raise HTTPException(status_code=400, detail="Email or username is required")
+
+    rate_limiter.check(f"forgot:{identifier}", max_requests=3, window_seconds=600)
+
+    import re as _re
+    # Look up user by email or username (same 4-step as login)
+    user = await db.users.find_one({"email": identifier}, {"_id": 0})
+    if not user:
+        user = await db.users.find_one(
+            {"email": {"$regex": f"^{_re.escape(identifier)}$", "$options": "i"}}, {"_id": 0}
+        )
+    if not user:
+        user = await db.users.find_one({"username": identifier}, {"_id": 0})
+        if not user:
+            user = await db.users.find_one(
+                {"username": {"$regex": f"^{_re.escape(identifier)}$", "$options": "i"}}, {"_id": 0}
+            )
+
+    # Always return success (don't reveal whether email exists)
+    if not user:
+        logger.info(f"Forgot password: no user for '{identifier}' — returning silent OK")
+        return {"status": "ok", "message": "If an account exists, a reset link has been sent."}
+
+    token = str(uuid.uuid4())
+    now = datetime.now(timezone.utc).isoformat()
+    await db.password_resets.delete_many({"user_id": user["id"]})
+    await db.password_resets.insert_one({
+        "user_id": user["id"],
+        "token": token,
+        "created_at": now,
+    })
+
+    reset_url = f"{FRONTEND_URL}/reset-password?token={token}"
+    from templates.base import wrap_email
+    body = f"""
+    <p style="font-size:16px;color:#2A1A06;line-height:1.6;">
+      Hi <strong>{user.get('username', '')}</strong>, we received a request to reset your password.
+    </p>
+    <div style="text-align:center;margin:28px 0;">
+      <a href="{reset_url}" style="display:inline-block;padding:14px 32px;background:#E8A820;color:#2A1A06;text-decoration:none;border-radius:999px;font-weight:600;font-size:16px;">
+        Reset My Password
+      </a>
+    </div>
+    <p style="font-size:13px;color:#8A6B4A;text-align:center;">
+      This link expires in 1 hour. If you didn't request this, you can safely ignore this email.
+    </p>
+    """
+    html = wrap_email(body)
+    from services.email_service import send_email_fire_and_forget
+    await send_email_fire_and_forget(user["email"], "Reset your Honey Groove password", html)
+    logger.info(f"Password reset email sent to {user['email']} for user {user.get('username')}")
+
+    return {"status": "ok", "message": "If an account exists, a reset link has been sent."}
+
+
+@router.post("/auth/reset-password")
+async def reset_password(data: dict):
+    """Reset password using a valid token."""
+    token = (data.get("token") or "").strip()
+    new_password = data.get("password") or ""
+
+    if not token:
+        raise HTTPException(status_code=400, detail="Reset token is required")
+    if len(new_password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+
+    doc = await db.password_resets.find_one({"token": token}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset link.")
+
+    created = datetime.fromisoformat(doc["created_at"])
+    if datetime.now(timezone.utc) - created > timedelta(hours=1):
+        await db.password_resets.delete_one({"token": token})
+        raise HTTPException(status_code=400, detail="This reset link has expired. Please request a new one.")
+
+    new_hash = hash_password(new_password)
+    await db.users.update_one({"id": doc["user_id"]}, {"$set": {"password_hash": new_hash}})
+    await db.password_resets.delete_many({"user_id": doc["user_id"]})
+
+    user = await db.users.find_one({"id": doc["user_id"]}, {"_id": 0, "username": 1, "email": 1})
+    logger.info(f"Password reset completed for user '{user.get('username')}' ({user.get('email')})")
+
+    return {"status": "ok", "message": "Password reset successfully. You can now log in."}
+
+
+
 @router.get("/auth/me", response_model=UserResponse)
 async def get_me(user: Dict = Depends(require_auth)):
     return await _build_user_response(user)
