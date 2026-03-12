@@ -10,32 +10,35 @@ Premium social platform for vinyl collectors. Features include collection manage
 
 ## What's Been Implemented
 
+### BLOCK 565: Silk Image Fix (Completed Mar 12, 2026)
+- Removed text overlay from AlbumArt loading/error states
+- Replaced yellow shimmer with diagonal silk light-sweep animation (silk-shimmer CSS)
+- Smooth 0.4s fade-in transition for loaded images
+- Charcoal vinyl Disc icon placeholder (#4A4A4A, 35% opacity) on error — no broken image icon
+
+### BLOCK 563: Mobile Tooltip Trigger Fix (Completed Mar 12, 2026)
+- InfoBubble component — dedicated ⓘ icon trigger separated from action buttons
+- 44x44px invisible touch target for thumb-friendly tapping
+- Action buttons (Refresh, Recover Values) fire immediately without tooltip interference
+
+### BLOCKs 559/561: Golden Hive Shield + Portal Tooltips (Completed Mar 12, 2026)
+- GoldenHiveShield: 28px multi-stop metallic gold gradient, 3D embossed drop-shadow
+- All tooltips use React Portal (document.body) with z-index 9999
+- Smart collision detection — flips above/below based on viewport space
+
 ### BLOCKs 550, 553, 555, 556: Tooltip & Card Cleanup (Completed Mar 12, 2026)
-- **550**: Refresh tooltip: "Quick Sync: Refresh current market prices." / Recover tooltip: "Deep Search: Use the Recovery Engine to find prices for all unvalued or $0 records in your collection at once."
-- **553**: MobileTooltip component — tap-to-open, tap-outside-to-close, z-index 999, X close button on mobile
-- **555**: Removed "Value This" and "Set Value" buttons from record/wishlist cards. Replaced with "Pending" badge with tooltip directing to Recover Values
-- **556**: Recover Values is now the sole manual trigger for deep collection valuation. Retains secondary glassy style
+- Refresh/Recover tooltips with descriptive copy
+- "Value This" buttons removed from cards → "Pending" badge
+- Recover Values is sole manual deep-sync trigger
 
 ### BLOCKs 541-545: Profile & Treasury Overhaul (Completed Mar 12, 2026)
-- **541**: Follow/Message buttons relocated to left identity cluster next to avatar
-- **542**: Right column streamlined to Control Panel — Taste Match, Stripe, Golden Hive only
-- **543**: Country flag emoji next to location text
-- **544**: Identity cluster vertical flow: Report/Block → Follow/Message → Username → Location+Flag
-- **545**: TreasuryHeader glassmorphism — frosted cream glass, backdrop-blur(12px), soft shadow
+- Follow/Message relocated to left identity cluster
+- Right column streamlined to Control Panel
+- Country flag, identity cluster spacing, glassmorphism Treasury
 
 ### BLOCK 476: Value Recovery Engine (Completed Mar 12, 2026)
-- OAuth-aware Discogs market data fetcher
-- Background recovery pipeline with endpoints: POST /api/valuation/recovery/start, GET /api/valuation/recovery/status
-- Weekly Wax email collection value section + top gem
-- Frontend "Recover Values" button + live progress badge
-- Nightly scheduled recovery at 3 AM UTC
-
-### Profile Layout (BLOCKs 530-542)
-- Tab order: Collection | For Sale | Dream List | ISO | Trades
-- "For Sale" tab, "Live Trades" tab, Blocked Users management
-
-### Earlier Work
-- Security/Auth (BLOCKs 480-527), Golden Hive ID (BLOCKs 509-523), Activity/Valuation (BLOCKs 483-520)
+- OAuth-aware Discogs market data, background recovery pipeline
+- Recovery endpoints, Weekly Wax email integration, nightly scheduler
 
 ## Prioritized Backlog
 
@@ -58,7 +61,8 @@ Premium social platform for vinyl collectors. Features include collection manage
 - Katie: katieintheafterglow (golden_hive_verified + is_admin)
 
 ## Key Files
-- Frontend: /app/frontend/src/pages/CollectionPage.js (MobileTooltip, TreasuryHeader, RecordCard, WishlistCard)
-- Frontend: /app/frontend/src/pages/ProfilePage.js (Identity cluster, Control Panel)
+- Frontend: /app/frontend/src/components/AlbumArt.js (BLOCK 565)
+- Frontend: /app/frontend/src/index.css (silk-shimmer CSS)
+- Frontend: /app/frontend/src/pages/CollectionPage.js (InfoBubble, TreasuryHeader)
+- Frontend: /app/frontend/src/pages/ProfilePage.js (GoldenHiveShield, identity cluster)
 - Backend: /app/backend/services/value_recovery.py (Recovery Engine)
-- Backend: /app/backend/routes/valuation.py (recovery endpoints)
