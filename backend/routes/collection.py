@@ -1070,7 +1070,7 @@ async def discogs_oauth_start(request: Request, user: Dict = Depends(require_aut
         
         authorization_url = f"{DISCOGS_AUTHORIZE_URL}?oauth_token={oauth_token}"
         
-        return {"authorization_url": authorization_url}
+        return {"auth_url": authorization_url, "authorization_url": authorization_url}
     
     except Exception as e:
         # BLOCK 481: Log the full Discogs error response

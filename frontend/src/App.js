@@ -139,9 +139,16 @@ const AppLayout = ({ children }) => {
       const resp = await axios.get(`${API}/discogs/oauth/start?frontend_origin=${origin}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      window.location.href = resp.data.auth_url;
-    } catch {
-      toast.error('Could not start Discogs connection. Try again.');
+      const authUrl = resp.data?.auth_url;
+      if (!authUrl) {
+        toast.error('Discogs OAuth is not configured. Contact support.');
+        setOAuthLoading(false);
+        return;
+      }
+      window.location.href = authUrl;
+    } catch (err) {
+      const msg = err?.response?.data?.detail || 'Could not start Discogs connection. Try again.';
+      toast.error(msg);
       setOAuthLoading(false);
     }
   };

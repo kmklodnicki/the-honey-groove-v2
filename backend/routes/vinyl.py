@@ -405,6 +405,10 @@ async def get_variant_by_release_id(release_id: int, force_refresh: bool = False
     format_raw = discogs_data.get("format")
     fmt = format_raw[0] if isinstance(format_raw, list) and format_raw else (format_raw or "Vinyl")
 
+    # Detect unofficial from Discogs format descriptions
+    format_descriptions = discogs_data.get("format_descriptions", [])
+    is_unofficial = "Unofficial Release" in format_descriptions
+
     # Variant-specific community stats from Discogs
     discogs_have = discogs_data.get("community_have", 0)
     discogs_want = discogs_data.get("community_want", 0)
@@ -434,8 +438,12 @@ async def get_variant_by_release_id(release_id: int, force_refresh: bool = False
     # Internal owners of this exact pressing
     records = await db.records.find(
         {"discogs_id": release_id},
-        {"_id": 0, "id": 1, "user_id": 1}
+        {"_id": 0, "id": 1, "user_id": 1, "is_unofficial": 1}
     ).to_list(200)
+
+    # Also check internal records for unofficial flag
+    if not is_unofficial:
+        is_unofficial = any(r.get("is_unofficial") for r in records)
 
     owner_ids = list(set(r.get("user_id") for r in records if r.get("user_id")))
     owners = []
@@ -465,6 +473,7 @@ async def get_variant_by_release_id(release_id: int, force_refresh: bool = False
             "barcode": barcode,
             "pressing_country": country,
             "discogs_id": release_id,
+            "is_unofficial": is_unofficial,
         },
         "scarcity": {
             **rarity,

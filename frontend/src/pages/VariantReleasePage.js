@@ -34,6 +34,7 @@ export default function VariantReleasePage() {
   const [resyncing, setResyncing] = useState(false);
 
   useEffect(() => {
+    setData(null);  // Clear previous variant data to prevent "ghosting"
     setLoading(true);
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
     axios.get(`${API}/vinyl/release/${releaseId}`, { headers })

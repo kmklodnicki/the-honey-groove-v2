@@ -42,6 +42,7 @@ export default function VinylVariantPage() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    setData(null);  // Clear previous variant data to prevent "ghosting"
     setLoading(true);
     setError(null);
     axios.get(`${API}/vinyl/${artist}/${album}/${variant}`)
