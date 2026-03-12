@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, RefreshCw, Heart, ArrowRight, ShoppingBag, Cloud, Sparkles, CheckSquare, Square, ListChecks, AlertTriangle, Copy, Loader2 } from 'lucide-react';
+import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, RefreshCw, Heart, ArrowRight, ShoppingBag, Cloud, Sparkles, CheckSquare, Square, ListChecks, AlertTriangle, Copy, Loader2, X } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -64,6 +64,56 @@ const HoneycombIcon = ({ className }) => (
     <path d="M12 16L17.5 19.5V22L12 24L6.5 22V19.5L12 16Z" opacity="0.4" />
   </svg>
 );
+
+// BLOCK 553: Mobile-friendly tooltip — tap-to-open, tap-outside-to-close
+const MobileTooltip = ({ children, text, side = 'top', testId }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const isTouchDevice = typeof window !== 'undefined' && 'ontouchstart' in window;
+
+  useEffect(() => {
+    if (!open) return;
+    const handleClickOutside = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative inline-flex"
+      onMouseEnter={() => !isTouchDevice && setOpen(true)}
+      onMouseLeave={() => !isTouchDevice && setOpen(false)}
+      onClick={() => isTouchDevice && setOpen(o => !o)}
+    >
+      {children}
+      {open && (
+        <div
+          className={`absolute z-[999] px-3 py-2 rounded-lg text-[11px] leading-relaxed max-w-[220px] whitespace-normal pointer-events-auto ${
+            side === 'top' ? 'bottom-full left-1/2 -translate-x-1/2 mb-2' : 'top-full left-1/2 -translate-x-1/2 mt-2'
+          }`}
+          style={{ background: '#1A1A1A', color: '#fff', boxShadow: '0 4px 16px rgba(0,0,0,0.2)' }}
+          data-testid={testId}
+        >
+          {isTouchDevice && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setOpen(false); }}
+              className="absolute top-1 right-1 p-0.5 rounded-full hover:bg-white/20 transition-colors sm:hidden"
+              data-testid={`${testId}-close`}
+            >
+              <X className="w-3 h-3" />
+            </button>
+          )}
+          {text}
+        </div>
+      )}
+    </div>
+  );
+};
 
 // Treasury Header — Premium Collection & Dream Value Dashboard
 const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamLoading, collectionTab, onTabChange, valuedCount, totalCount, onRefresh, refreshing, onPendingClick, onOpenWizard, recoveryStatus, onStartRecovery }) => {
@@ -178,39 +228,43 @@ const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamL
           </button>
         </div>
 
-        {/* Refresh & Recovery buttons */}
+        {/* Refresh & Recovery buttons — BLOCK 550/553/556 */}
         <div className="flex justify-center items-center gap-3 mt-3">
-          <button
-            onClick={onRefresh}
-            disabled={refreshing}
-            className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 disabled:opacity-50 active:scale-95"
-            style={{
-              background: 'linear-gradient(135deg, rgba(218,165,32,0.25), rgba(200,134,26,0.15))',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-              border: '1.5px solid rgba(218,165,32,0.4)',
-              boxShadow: '0 2px 8px rgba(218,165,32,0.15), inset 0 1px 0 rgba(255,255,255,0.3)',
-            }}
-            data-testid="treasury-refresh-btn"
-            aria-label="Refresh collection values"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 text-[#C8861A] ${refreshing ? 'animate-spin' : ''}`} />
-          </button>
-          {/* BLOCK 476: Value Recovery trigger */}
-          {totalCount > 0 && valuedCount != null && totalCount > valuedCount && (!recoveryStatus || recoveryStatus.status !== 'in_progress') && (
+          <MobileTooltip text="Quick Sync: Refresh current market prices." side="bottom" testId="refresh-tooltip">
             <button
-              onClick={onStartRecovery}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-semibold transition-all hover:scale-105 active:scale-95"
+              onClick={onRefresh}
+              disabled={refreshing}
+              className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 disabled:opacity-50 active:scale-95"
               style={{
-                background: 'linear-gradient(135deg, rgba(218,165,32,0.3), rgba(200,134,26,0.2))',
-                color: '#7A5A1A',
-                border: '1px solid rgba(218,165,32,0.4)',
+                background: 'linear-gradient(135deg, rgba(218,165,32,0.25), rgba(200,134,26,0.15))',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                border: '1.5px solid rgba(218,165,32,0.4)',
+                boxShadow: '0 2px 8px rgba(218,165,32,0.15), inset 0 1px 0 rgba(255,255,255,0.3)',
               }}
-              data-testid="start-recovery-btn"
+              data-testid="treasury-refresh-btn"
+              aria-label="Quick Sync: Refresh current market prices"
             >
-              <Sparkles className="w-3 h-3" />
-              Recover Values
+              <RefreshCw className={`w-3.5 h-3.5 text-[#C8861A] ${refreshing ? 'animate-spin' : ''}`} />
             </button>
+          </MobileTooltip>
+          {/* BLOCK 556: Recover Values — sole manual trigger for deep collection valuation */}
+          {totalCount > 0 && valuedCount != null && totalCount > valuedCount && (!recoveryStatus || recoveryStatus.status !== 'in_progress') && (
+            <MobileTooltip text="Deep Search: Use the Recovery Engine to find prices for all unvalued or $0 records in your collection at once." side="bottom" testId="recover-tooltip">
+              <button
+                onClick={onStartRecovery}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-semibold transition-all hover:scale-105 active:scale-95"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(218,165,32,0.3), rgba(200,134,26,0.2))',
+                  color: '#7A5A1A',
+                  border: '1px solid rgba(218,165,32,0.4)',
+                }}
+                data-testid="start-recovery-btn"
+              >
+                <Sparkles className="w-3 h-3" />
+                Recover Values
+              </button>
+            </MobileTooltip>
           )}
         </div>
       </div>
@@ -886,7 +940,6 @@ const CollectionPage = () => {
                   selectMode={selectMode}
                   isSelected={selectedIds.has(record.id)}
                   onToggleSelect={toggleSelect}
-                  onValueThis={handleValueThis}
                   blurData={record.cover_url ? blurMap[record.cover_url] : null}
                   isFading={fadingIds.has(record.id)}
                 />
@@ -917,7 +970,7 @@ const CollectionPage = () => {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {wishlistItems.map(item => (
-                <WishlistCard key={item.id} item={item} onPromote={handleWishlistToISO} onAddToCollection={handleWishlistToCollection} onDelete={handleDeleteWishlistItem} onValueThis={handleValueThis} />
+                <WishlistCard key={item.id} item={item} onPromote={handleWishlistToISO} onAddToCollection={handleWishlistToCollection} onDelete={handleDeleteWishlistItem} />
               ))}
             </div>
           )}
@@ -1124,7 +1177,7 @@ const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg, pending
   );
 };
 
-const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, isSpinning, value, selectMode, isSelected, onToggleSelect, onValueThis, blurData, isFading }) => {
+const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, isSpinning, value, selectMode, isSelected, onToggleSelect, blurData, isFading }) => {
   return (
     <Card 
       className={`relative group border-honey/20 overflow-hidden hover:shadow-honey transition-all duration-300 hover:-translate-y-1 ${isSelected ? 'ring-2 ring-honey shadow-honey' : ''} ${selectMode ? 'cursor-pointer' : ''} ${isFading ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}
@@ -1230,21 +1283,14 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
               <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 3a2.83 2.83 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
               ${record.custom_valuation.toFixed(0)}
             </div>
-          ) : record.discogs_id && onValueThis ? (
-            <button
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onValueThis(record); }}
-              className="absolute top-2 right-2 px-2.5 py-1 rounded-full text-[11px] font-bold z-[5] transition-all hover:scale-105"
-              style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#C8861A', border: '2px solid #DAA520', boxShadow: '0 4px 16px 0 rgba(0,0,0,0.08)' }}
-              data-testid={`value-this-btn-${record.id}`}
-            >
-              Value This
-            </button>
           ) : record.discogs_id ? (
-            <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs z-[5] opacity-40 cursor-default"
-              style={{ background: 'rgba(255, 191, 0, 0.4)', color: '#000' }}
-              data-testid={`record-value-none-${record.id}`}>
-              –
-            </div>
+            <MobileTooltip text="Valuation Pending — use Recover Values in the header to find prices for all unvalued records." side="bottom" testId={`pending-tooltip-${record.id}`}>
+              <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-medium z-[5] cursor-default"
+                style={{ background: 'rgba(218,165,32,0.12)', color: '#7A5A1A', border: '1px solid rgba(218,165,32,0.2)' }}
+                data-testid={`record-value-pending-${record.id}`}>
+                Pending
+              </div>
+            </MobileTooltip>
           ) : null}
         </div>
       </Link>
@@ -1325,7 +1371,7 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
 };
 
 
-const WishlistCard = ({ item, onPromote, onAddToCollection, onDelete, onValueThis }) => (
+const WishlistCard = ({ item, onPromote, onAddToCollection, onDelete }) => (
   <Card className="relative group overflow-hidden border-honey/20 hover:shadow-honey transition-all duration-300 hover:-translate-y-1" style={{ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', background: 'rgba(255,255,255,0.75)' }} data-testid={`wishlist-card-${item.id}`}>
     <Link to={item.discogs_id ? `/variant/${item.discogs_id}` : '#'} className="block">
       <div className="relative aspect-square bg-stone-100">
@@ -1381,16 +1427,15 @@ const WishlistCard = ({ item, onPromote, onAddToCollection, onDelete, onValueThi
               <span className="text-[8px] font-normal ml-0.5 opacity-60">{item.value_source === 'community' ? 'c' : 'm'}</span>
             )}
           </div>
-        ) : onValueThis ? (
-          <button
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onValueThis({ id: item.id, discogs_id: item.discogs_id, album: item.album, title: item.album, artist: item.artist, cover_url: item.cover_url }); }}
-            className="absolute top-2 right-2 px-2.5 py-1 rounded-full text-[11px] font-bold z-[5] transition-all hover:scale-105"
-            style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#C8861A', border: '2px solid #DAA520', boxShadow: '0 4px 16px 0 rgba(0,0,0,0.08)' }}
-            data-testid={`set-value-btn-${item.id}`}
-          >
-            Set Value
-          </button>
-        ) : null}
+        ) : (
+          <MobileTooltip text="Valuation Pending — use Recover Values in the header to find prices for all unvalued records." side="bottom" testId={`pending-tooltip-wish-${item.id}`}>
+            <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-medium z-[5] cursor-default"
+              style={{ background: 'rgba(218,165,32,0.12)', color: '#7A5A1A', border: '1px solid rgba(218,165,32,0.2)' }}
+              data-testid={`wishlist-value-pending-${item.id}`}>
+              Pending
+            </div>
+          </MobileTooltip>
+        )}
       </div>
     </Link>
     <div className="p-3">
