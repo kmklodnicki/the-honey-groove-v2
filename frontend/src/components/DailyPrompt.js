@@ -14,12 +14,12 @@ import AlbumArt from './AlbumArt';
 import { resolveImageUrl, proxyImageUrl } from '../utils/imageUrl';
 import { prefetchImages } from '../utils/imagePrefetch';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import PromptArchiveDrawer from './PromptArchiveDrawer';
 
 // ─── Daily Prompt Card (top of Hive feed) ───
 
-export const DailyPromptCard = ({ records, onPostCreated }) => {
+export const DailyPromptCard = ({ records, onPostCreated, fetchPrompt }) => {
   const { user, token, API } = useAuth();
   const [prompt, setPrompt] = useState(null);
   const [hasBuzzedIn, setHasBuzzedIn] = useState(false);
@@ -34,26 +34,19 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
   const [loadingResponses, setLoadingResponses] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
 
-  const fetchPrompt = useCallback(async () => {
-    try {
-      const r = await axios.get(`${API}/prompts/today`, { headers: { Authorization: `Bearer ${token}` } });
-      setPrompt(r.data.prompt);
-      setHasBuzzedIn(r.data.has_buzzed_in);
-      setBuzzResponse(r.data.response);
-      setStreak(r.data.streak);
-      setBuzzCount(r.data.buzz_count || 0);
-      // BLOCK 321: Send Daily Prompt image to service worker for aggressive pre-cache
-      const promptImg = r.data.prompt?.image_url;
-      if (promptImg && navigator.serviceWorker?.controller) {
-        const resolved = resolveImageUrl(promptImg);
-        navigator.serviceWorker.controller.postMessage({
-          type: 'PREFETCH_DAILY_PROMPT',
-          urls: [resolved],
-        });
+  const [searchParams] = useSearchParams();
+  const highlightId = searchParams.get('highlight');
+useEffect(() => {
+    if (highlightId && responses.length > 0) {
+      // Find where the post is in the array
+      const targetIndex = responses.findIndex(r => String(r.id) === String(highlightId));
+      
+      if (targetIndex !== -1) {
+        // Jump the carousel to that specific slide index
+        setCarouselIdx(targetIndex);
       }
-    } catch { /* ignore */ }
-    finally { setLoading(false); }
-  }, [API, token]);
+    }
+  }, [highlightId, responses]);
 
   useEffect(() => { fetchPrompt(); }, [fetchPrompt]);
 

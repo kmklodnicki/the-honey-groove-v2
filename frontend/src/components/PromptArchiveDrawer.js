@@ -37,16 +37,9 @@ const MiniCard = ({ prompt, onNavigate }) => {
   return (
     <div
       onClick={handleClick}
-      className={`rounded-xl border border-amber-200/40 bg-white/60 overflow-hidden transition-all duration-200 hover:border-amber-300/70 hover:shadow-sm hover:-translate-y-0.5 relative ${navigating ? 'opacity-60 pointer-events-none' : ''}`}
-      style={{ cursor: 'pointer' }}
-      data-testid={`prompt-mini-card-${prompt.id}`}
+      className="border border-honey/20 rounded-xl overflow-hidden cursor-pointer hover:shadow-md transition-all group"
+      data-testid={`archive-mini-card-${prompt.id}`}
     >
-      {navigating && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/40 rounded-xl" data-testid="mini-card-loading">
-          <Loader2 className="w-5 h-5 animate-spin text-amber-500" />
-        </div>
-      )}
-      {/* DAILY PROMPT label */}
       <div className="px-3.5 pt-3">
         <span
           className="text-[9px] font-semibold tracking-[0.2em] uppercase"
@@ -56,7 +49,6 @@ const MiniCard = ({ prompt, onNavigate }) => {
           Daily Prompt
         </span>
       </div>
-
       {/* Prompt text */}
       <div className="px-3.5 pt-1 pb-2">
         <p className="text-[13px] font-medium text-vinyl-black italic leading-snug">

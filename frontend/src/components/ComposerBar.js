@@ -84,7 +84,10 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const [noteImageUrl, setNoteImageUrl] = useState('');
   const [noteUploading, setNoteUploading] = useState(false);
   const noteFileRef = useRef(null);
-
+  // Dedicated photo state for Spinning/Haul
+  const [postPhoto, setPostPhoto] = useState(null);
+  const [postPhotoPreview, setPostPhotoPreview] = useState(null);
+  const postPhotoInputRef = useRef(null);
   // Randomizer
   const [randRecord, setRandRecord] = useState(null);
   const [randCaption, setRandCaption] = useState('');
@@ -102,10 +105,19 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     setNoteText(''); setNoteRecordId(''); setNoteShowRecordPicker(false); setNoteImageUrl(''); setNoteUploading(false);
     setRandRecord(null); setRandCaption(''); setRandLoading(false); setRandAnimating(false);
   };
+  const handlePhotoSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPostPhoto(file);
+      setPostPhotoPreview(URL.createObjectURL(file));
+    }
+  };
 
-  const openModal = (type) => { resetAll(); setActiveModal(type); };
-  const closeModal = () => { setActiveModal(null); resetAll(); };
-
+  const clearPostPhoto = () => {
+    setPostPhoto(null);
+    setPostPhotoPreview(null);
+    if (postPhotoInputRef.current) postPhotoInputRef.current.value = '';
+  };
   const haulSearchTimer = useRef(null);
   const isoSearchTimer = useRef(null);
 
@@ -697,6 +709,40 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               </div>
             )}
             <MentionTextarea placeholder="I just got..." value={haulCaption} onChange={setHaulCaption} className="border-honey/50 resize-none" rows={2} data-testid="haul-caption-input" />
+            {/* Photo Upload Section */}
+            <div className="mt-2 mb-4 px-1">
+              <input 
+                type="file" 
+                ref={postPhotoInputRef} 
+                className="hidden" 
+                accept="image/*" 
+                onChange={handlePhotoSelect} 
+            />
+  
+            {!postPhotoPreview ? (
+              <button 
+                type="button"
+                onClick={() => postPhotoInputRef.current.click()}
+                className="flex items-center gap-2 text-stone-500 hover:text-amber-600 transition text-sm font-medium border border-dashed border-stone-300 rounded-lg p-3 w-full justify-center"
+              >
+                <ImagePlus size={18} />
+                Add a photo of your haul (Optional)
+              </button>
+            ) : (
+              <div className="relative w-full aspect-video group">
+                <img 
+        src={postPhotoPreview} 
+        className="w-full h-full object-cover rounded-xl border border-stone-200 shadow-sm" 
+      />
+      <button 
+        onClick={clearPostPhoto}
+        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 shadow-md hover:bg-red-600 transition"
+      >
+        <X size={14} />
+      </button>
+    </div>
+  )}
+</div>
             <Button onClick={submitNewHaul} disabled={submitting || haulItems.length === 0 || !haulCaption.trim()} className="w-full bg-amber-100 text-amber-800 hover:bg-amber-200 rounded-full" data-testid="haul-submit-btn">
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Package className="w-4 h-4 mr-2" />}
               Post Haul ({haulItems.length} record{haulItems.length !== 1 ? 's' : ''})
@@ -829,9 +875,9 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                 )}
               </>
             )}
-          </div>
-        </DialogContent>
-      </Dialog>
+          </div> 
+    </DialogContent> {/* <--- Add this */}
+  </Dialog>
 
       {/* ═══ A Note Modal ═══ */}
       <Dialog open={activeModal === 'NOTE'} onOpenChange={(open) => !open && closeModal()}>

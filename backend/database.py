@@ -14,7 +14,7 @@ import requests
 from datetime import datetime, timezone, timedelta
 
 ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 
 # MongoDB
 mongo_url = os.environ['MONGO_URL']

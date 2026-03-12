@@ -330,6 +330,7 @@ const ProfilePage = () => {
   }, [activeTab, API, username, spins.length, isos.length, trades.length, dreamingItems.length, userListings.length]);
 
   const handleFollow = async () => {
+    if (followLoading) return; // <--- ADD THIS GATEKEEPER LINE
     setFollowLoading(true);
     try {
       if (isFollowing || followRequestPending) {

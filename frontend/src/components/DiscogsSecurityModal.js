@@ -62,15 +62,15 @@ const DiscogsSecurityModal = ({ open, onClose }) => {
               <Shield className="w-5 h-5 text-amber-400" />
             </div>
             <h2 className="text-xl font-bold text-white" style={{ fontFamily: '"DM Serif Display", serif' }}>
-              Import Your Collection
+              Secure Library Import
             </h2>
           </div>
         </div>
 
         <div className="px-6 pb-6 space-y-5">
           <p className="text-sm text-stone-600 leading-relaxed">
-            Connect your Discogs account to sync your vinyl library instantly.
-            Your records, grades, and notes will be imported securely via official OAuth.
+            To protect your library, we implemented a new secure safety feature to verify your identity.
+            Connect your Discogs account via official OAuth to ensure your collection data remains private and uniquely yours.
           </p>
 
           <div className="rounded-xl p-4" style={{ background: '#FFFDF5', border: '1px solid rgba(200,134,26,0.2)' }}>
@@ -106,24 +106,20 @@ const DiscogsSecurityModal = ({ open, onClose }) => {
             </Button>
             <Button
               variant="ghost"
-              onClick={handleLater}
               className="w-full h-10 rounded-full text-sm text-stone-500 hover:text-stone-700"
+              onClick={async () => {
+                await handleLater();
+                onClose();
+              }}
               data-testid="connect-later-btn"
             >
-              Maybe Later
+              Connect Later
             </Button>
-            <button
-              onClick={handleDecline}
-              className="text-xs text-stone-400 hover:text-stone-500 transition-colors text-center pb-1"
-              data-testid="connect-decline-btn"
-            >
-              Proceed without Discogs
-            </button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
-  );
-};
+        </DialogContent>
+      </Dialog>
+    );
+  };
 
 export default DiscogsSecurityModal;

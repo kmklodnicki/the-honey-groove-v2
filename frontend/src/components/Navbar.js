@@ -540,7 +540,7 @@ const NotificationBell = () => {
     fetchCount();
     const interval = setInterval(fetchCount, 15000);
     return () => clearInterval(interval);
-  }, [fetchCount]);
+  }, []);
 
   useEffect(() => { if (open) fetchNotifications(); }, [open, fetchNotifications]);
 

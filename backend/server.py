@@ -49,8 +49,10 @@ for r in [auth_router, hive_router, collection_router, honeypot_router,
 
 app.add_middleware(
     CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=[
+        "https://thehoneygroove.com"
+        "http://localhost:3000"
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],

@@ -59,7 +59,12 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - Spotify/Apple Music integration — waiting for callback URL
 
 ## Recently Completed (2026-03-12)
-- **Composite v2.8.9 — Marketplace Insulation:** Replaced Discogs "Lowest Price" with "The Honeypot Price" card on VinylVariantPage and VariantReleasePage. Shows internal marketplace price or "List Yours" CTA. Fixed TrendingDown runtime error.
+- **JSX Syntax Fixes:** Fixed build-breaking errors in DiscogsSecurityModal.js (unclosed Button/div), PromptArchiveDrawer.js (broken span attributes), CollectionPage.js (React.Fragment instead of RecordCard, duplicate TabsContent, orphan code block)
+- **Composite v2.9.5 — Smart De-Duplication:** Prioritize hydrated (real image) records, merge spins from deleted duplicates, removed 'review' badge. New endpoints: GET /api/records/duplicates (with is_hydrated, total_spins), DELETE /api/records/duplicates/clean (with spins_merged)
+- **Composite v2.9.5 — Deep Asset Hydration:** POST /api/records/hard-refresh-images endpoint + "Fix Images" button in collection toolbar
+- **Composite v2.9.5 — Terminology Lock:** All "Honey Market" → "The Honeypot Price" across VinylVariantPage.js and VariantReleasePage.js
+- **Composite v2.9.5 — Spin Now Alignment:** RecordCard flex-col layout with flex-grow text area (min-height 80px) pushing Spin Now to bottom
+- **Composite v2.8.9 — Marketplace Insulation:** Replaced Discogs "Lowest Price" with "The Honeypot Price" card on VinylVariantPage and VariantReleasePage
 - **Zero-Scroll Now Spinning Modal:** Restructured modal to flex layout (max-h-90vh), compact 3-col mood grid (px-2 py-1.5), sticky footer submit button anchored outside scroll area. Verified on desktop and mobile.
 - **Advanced Price Hunting (v2.8.9):** Web scraper service (backend/services/scraper.py) for eBay/Google Shopping as Discogs fallback. Caching in MongoDB scraper_cache collection.
 - **Instant Image Hydration (v2.8.9):** /api/collection/add now fetches valid image URL before adding record. Placeholder Sweep admin endpoint created.

@@ -160,7 +160,8 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
   };
 
   if (loading) {
-    return compact ? null : (
+    if (status?.migration_complete) return null; // Temporarily ignore the dismissal flag
+return (
       <Card className="border-honey/30">
         <CardContent className="py-6">
           <div className="flex items-center gap-3 text-muted-foreground">

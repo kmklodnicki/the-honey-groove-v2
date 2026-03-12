@@ -1034,11 +1034,10 @@ const CollectionPage = () => {
               <p className="text-muted-foreground">No records match your search</p>
             </Card>
           ) : (
-            <div ref={gridRef} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4" data-testid="collection-grid">
+            <div ref={gridRef} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-stretch">
               {sortedAndFilteredRecords.map((record, idx) => (
-                <React.Fragment key={record.id}>
-                  {idx % 5 === 0 && <div data-row-sentinel="true" data-row-idx={Math.floor(idx / 5)} className="col-span-full h-0" />}
-                  <RecordCard 
+                <div key={record.id || idx} className="flex h-full w-full">
+                  <RecordCard
                     record={record}
                     onSpin={handleLogSpin}
                     onDelete={handleDeleteRecord}
@@ -1053,12 +1052,11 @@ const CollectionPage = () => {
                     isFading={fadingIds.has(record.id)}
                     priority={idx < 12}
                   />
-                </React.Fragment>
+                </div>
               ))}
             </div>
           )}
-        </TabsContent>
-
+          </TabsContent>
         {/* ====== DREAMING TAB ====== */}
         <TabsContent value="wishlist">
           {/* "If only I had..." Wishlist Value Header */}
