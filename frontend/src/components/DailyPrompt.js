@@ -201,9 +201,9 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
                   {/* Response content */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <Link to={`/profile/${currentResp.username}`} className="text-xs font-bold text-vinyl-black hover:text-honey-amber transition" data-testid="carousel-username">
+                      <span onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.location.href = `/profile/${currentResp.username}`; }} className="text-xs font-bold text-vinyl-black hover:text-honey-amber transition cursor-pointer" data-testid="carousel-username">
                         @{currentResp.username}
-                      </Link>
+                      </span>
                       {currentResp.username?.toLowerCase() === 'katieintheafterglow' && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-honey/20 text-amber-700 font-bold">Founder</span>}
                     </div>
                     <p className="text-sm font-medium truncate">{currentResp.record_title}</p>

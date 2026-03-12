@@ -50,9 +50,17 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - `POST /api/composer/iso` (auto-detects unofficial from Discogs)
 - `GET /api/vinyl/{artist}/{album}/{variant}` (returns is_unofficial)
 - `POST /api/admin/scrub-unofficial-metadata` (admin-only, re-checks all records against Discogs)
+- `POST /api/admin/oauth-status` (admin-only, verifies Discogs OAuth keys + handshake)
+- `GET /api/image-proxy?url=` (persistent cache: memory → object store → upstream, CORS-safe)
+- `GET /api/prompts/{id}/responses` (returns proxy_cover_url for carousel image proxying)
 
 ## Blocked
 - Spotify/Apple Music integration — waiting for callback URL
+
+## Recently Completed (2026-03-12)
+- OAuth Configuration Fix: admin diagnostic endpoint, startup log, handshake test
+- Daily Prompts Image Proxy: persistent storage cache, proxy_cover_url, loading="eager" first 3 slides
+- Image proxy User-Agent fix (Discogs CDN blocks bot agents)
 
 ## Backlog
 - P1: Service Worker pre-caching (BLOCK 321)
