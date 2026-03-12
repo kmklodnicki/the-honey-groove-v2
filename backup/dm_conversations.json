@@ -1,0 +1,75 @@
+[
+  {
+    "_id": "69a93e891abc8abf8cb1016e",
+    "id": "5c6e55e2-accb-483b-9efd-1e1f3fe126db",
+    "participant_ids": [
+      "9221572c-1d80-4274-8393-77f0b2fdffc4",
+      "ab6844ce-f9b5-42e1-aa4b-718d6acd0bde"
+    ],
+    "participants": {},
+    "context": {
+      "type": "iso",
+      "record_name": "Mazzy Star \u2014 So Tonight That I Might See",
+      "action_text": "I have this"
+    },
+    "last_message": "Test message from Playwright",
+    "last_message_at": "2026-03-05T08:31:08.386918+00:00",
+    "created_at": "2026-03-05T08:27:53.894460+00:00"
+  },
+  {
+    "_id": "69af5abb3c16f083f2ff1ca5",
+    "id": "11897e3f-92fc-4aec-ab11-c3ea8e40ea4f",
+    "participant_ids": [
+      "2193e1a5-c396-4f20-8b41-d6b4415c4adb",
+      "9a4ffe5e-1fcc-480b-84e5-396e3e9ea089"
+    ],
+    "participants": {},
+    "context": null,
+    "status": "active",
+    "last_message": "Hello message request!",
+    "last_message_at": "2026-03-09T23:41:47.929980+00:00",
+    "created_at": "2026-03-09T23:41:47.929980+00:00"
+  },
+  {
+    "_id": "69af5abd3c16f083f2ff1cae",
+    "id": "752f9e0e-7903-4c53-9a68-02faad31ec27",
+    "participant_ids": [
+      "84ff784a-c586-4915-b0b0-453b1279ddd9",
+      "ae2c3916-7e62-4057-8eb9-abbb33380ba4"
+    ],
+    "participants": {},
+    "context": null,
+    "status": "declined",
+    "last_message": "Hello message to decline!",
+    "last_message_at": "2026-03-09T23:41:49.227327+00:00",
+    "created_at": "2026-03-09T23:41:49.227327+00:00"
+  },
+  {
+    "_id": "69af5adc87c9a5843cce1d7e",
+    "id": "106d98c1-a9ed-4bea-86a1-135cca882e30",
+    "participant_ids": [
+      "3e1285a1-9333-4e29-9baf-3dd1a397cf5d",
+      "6aa1ffb4-5b01-4f17-b319-ff96ed24c5e0"
+    ],
+    "participants": {},
+    "context": null,
+    "status": "active",
+    "last_message": "Hello message request!",
+    "last_message_at": "2026-03-09T23:42:20.859247+00:00",
+    "created_at": "2026-03-09T23:42:20.859247+00:00"
+  },
+  {
+    "_id": "69af5ade87c9a5843cce1d87",
+    "id": "1b0d387b-7f89-4e71-81d3-d990dc271668",
+    "participant_ids": [
+      "432d11f2-e206-4d4d-b077-668ad1a05324",
+      "e4891c76-00e6-4389-a3ff-c2483df5e23e"
+    ],
+    "participants": {},
+    "context": null,
+    "status": "declined",
+    "last_message": "Hello message to decline!",
+    "last_message_at": "2026-03-09T23:42:22.114088+00:00",
+    "created_at": "2026-03-09T23:42:22.114088+00:00"
+  }
+]

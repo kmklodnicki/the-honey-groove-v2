@@ -1,0 +1,727 @@
+[
+  {
+    "_id": "69afd322c63b07199d22b8e4",
+    "discogs_id": 32784891,
+    "user_id": null,
+    "fetched_at": "2026-03-10T08:15:30.314407+00:00",
+    "result": {
+      "album": "Viva Verrell",
+      "artist": "Ted Heath And His Music",
+      "master_id": 1782611,
+      "total_variants": 1,
+      "owned_count": 0,
+      "completion_pct": 0,
+      "variants": [
+        {
+          "name": "Standard Black Vinyl",
+          "owned": false,
+          "release_ids": [
+            9883572
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "_id": "69afd339c63b07199d22b90e",
+    "discogs_id": 30984958,
+    "user_id": null,
+    "fetched_at": "2026-03-10T08:15:53.450704+00:00",
+    "result": {
+      "album": "Brat",
+      "artist": "Charli XCX",
+      "master_id": 3505440,
+      "total_variants": 23,
+      "owned_count": 0,
+      "completion_pct": 0,
+      "variants": [
+        {
+          "name": "360_Brat",
+          "owned": false,
+          "release_ids": [
+            30895959
+          ]
+        },
+        {
+          "name": "Black & White Galaxy",
+          "owned": false,
+          "release_ids": [
+            31998347
+          ]
+        },
+        {
+          "name": "Black & White Marble",
+          "owned": false,
+          "release_ids": [
+            30895656
+          ]
+        },
+        {
+          "name": "Black Ice Glitter",
+          "owned": false,
+          "release_ids": [
+            32992746,
+            30891144
+          ]
+        },
+        {
+          "name": "Black Translucent",
+          "owned": false,
+          "release_ids": [
+            32032082,
+            30984958,
+            30900081,
+            34476715,
+            30954394
+          ]
+        },
+        {
+          "name": "Blue",
+          "owned": false,
+          "release_ids": [
+            30924528
+          ]
+        },
+        {
+          "name": "Clear",
+          "owned": false,
+          "release_ids": [
+            36264112
+          ]
+        },
+        {
+          "name": "Clear W/ Black & White Splatter [Sympathy Splatter]",
+          "owned": false,
+          "release_ids": [
+            32067675
+          ]
+        },
+        {
+          "name": "Clear W/ Powder Fill",
+          "owned": false,
+          "release_ids": [
+            33384737
+          ]
+        },
+        {
+          "name": "Clear With Black Swirl [Smoky Black Marble]",
+          "owned": false,
+          "release_ids": [
+            30898326
+          ]
+        },
+        {
+          "name": "Clear With Gray Marble",
+          "owned": false,
+          "release_ids": [
+            30900474
+          ]
+        },
+        {
+          "name": "Clear With Pink Splatter",
+          "owned": false,
+          "release_ids": [
+            30865719,
+            30985003,
+            32561391
+          ]
+        },
+        {
+          "name": "Diary Entry Edition",
+          "owned": false,
+          "release_ids": [
+            30911376
+          ]
+        },
+        {
+          "name": "Green",
+          "owned": false,
+          "release_ids": [
+            30898854
+          ]
+        },
+        {
+          "name": "Green & Black Swirl [Dark Brat Opaque Swirl]",
+          "owned": false,
+          "release_ids": [
+            34514908
+          ]
+        },
+        {
+          "name": "Green Translucent [Brat Green]",
+          "owned": false,
+          "release_ids": [
+            33129744,
+            33277026,
+            34047790
+          ]
+        },
+        {
+          "name": "Obi, White",
+          "owned": false,
+          "release_ids": [
+            32104038,
+            31943833,
+            32450592,
+            32014187,
+            34949381
+          ]
+        },
+        {
+          "name": "Orange Swirl Translucent",
+          "owned": false,
+          "release_ids": [
+            30912861,
+            30907941
+          ]
+        },
+        {
+          "name": "Pink Black Splatter",
+          "owned": false,
+          "release_ids": [
+            30901749,
+            30895530
+          ]
+        },
+        {
+          "name": "Red",
+          "owned": false,
+          "release_ids": [
+            30930126
+          ]
+        },
+        {
+          "name": "White Translucent [Milky Clear]",
+          "owned": false,
+          "release_ids": [
+            32013392
+          ]
+        },
+        {
+          "name": "Yellow Neon Translucent [Highlighter Yellow]",
+          "owned": false,
+          "release_ids": [
+            31965911,
+            32014145,
+            32416455
+          ]
+        },
+        {
+          "name": "Yellow/Blue Half/Half",
+          "owned": false,
+          "release_ids": [
+            31789415
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "_id": "69b0c0869e796f2e4b6127c5",
+    "user_id": "1fbe1408-96e3-4ee4-b8b8-77fc6fd25bdc",
+    "discogs_id": 23310752,
+    "fetched_at": "2026-03-11T01:08:22.722871+00:00",
+    "result": {
+      "album": "Igor",
+      "artist": "Tyler, The Creator",
+      "master_id": 1591877,
+      "total_variants": 4,
+      "owned_count": 3,
+      "completion_pct": 75,
+      "variants": [
+        {
+          "name": "Mint",
+          "owned": true,
+          "release_ids": [
+            14219559
+          ]
+        },
+        {
+          "name": "Red",
+          "owned": true,
+          "release_ids": [
+            23310752
+          ]
+        },
+        {
+          "name": "Standard Black Vinyl",
+          "owned": true,
+          "release_ids": [
+            14210644,
+            36391507,
+            14215683,
+            32817726,
+            28537294,
+            14176877,
+            35415577,
+            22765403,
+            32292255
+          ]
+        },
+        {
+          "name": "Picture Disc",
+          "owned": false,
+          "release_ids": [
+            14189503
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "_id": "69b24e6ce2a79743bae12a10",
+    "discogs_id": 14401235,
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "fetched_at": "2026-03-12T19:50:30.197627+00:00",
+    "result": {
+      "album": "Lover",
+      "artist": "Taylor Swift",
+      "master_id": 1594805,
+      "total_variants": 3,
+      "owned_count": 2,
+      "completion_pct": 67,
+      "variants": [
+        {
+          "name": "Pink Opaque",
+          "owned": true,
+          "release_ids": [
+            15831860,
+            14401235,
+            25106521,
+            30681973,
+            25451974,
+            29361631,
+            35500219
+          ]
+        },
+        {
+          "name": "Pink [Baby Pink]",
+          "owned": true,
+          "release_ids": [
+            14408244
+          ]
+        },
+        {
+          "name": "Standard Black Vinyl",
+          "owned": false,
+          "release_ids": [
+            29051002
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "_id": "69b24e9ee2a79743bae12d09",
+    "discogs_id": 28714732,
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "fetched_at": "2026-03-12T05:26:54.137988+00:00",
+    "result": {
+      "album": "1989 (Taylor's Version)",
+      "artist": "Taylor Swift",
+      "master_id": 3287971,
+      "total_variants": 7,
+      "owned_count": 0,
+      "completion_pct": 0,
+      "variants": [
+        {
+          "name": "Blue [Crystal Skies Blue], Mpo Pressing",
+          "owned": false,
+          "release_ids": [
+            28745716,
+            28638091
+          ]
+        },
+        {
+          "name": "Green [Aquamarine Green]",
+          "owned": false,
+          "release_ids": [
+            28714738
+          ]
+        },
+        {
+          "name": "Pink [Rose Garden Pink]",
+          "owned": false,
+          "release_ids": [
+            28714732
+          ]
+        },
+        {
+          "name": "Tangerine, Mpo Pressing",
+          "owned": false,
+          "release_ids": [
+            28638304
+          ]
+        },
+        {
+          "name": "Tangerine, Optimal Media Gmbh Pressing",
+          "owned": false,
+          "release_ids": [
+            28714936
+          ]
+        },
+        {
+          "name": "Tangerine, Vantiva Pressing",
+          "owned": false,
+          "release_ids": [
+            32371629
+          ]
+        },
+        {
+          "name": "Yellow [Sunrise Boulevard Yellow]",
+          "owned": false,
+          "release_ids": [
+            28714750
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "_id": "69b252d6e2a79743bae14c05",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "discogs_id": 27971034,
+    "fetched_at": "2026-03-12T05:44:54.823420+00:00",
+    "result": {
+      "album": "Beautiful Eyes",
+      "artist": "Taylor Swift",
+      "master_id": 1173860,
+      "total_variants": 4,
+      "owned_count": 1,
+      "completion_pct": 25,
+      "variants": [
+        {
+          "name": "Random Colors",
+          "owned": true,
+          "release_ids": [
+            27971034
+          ]
+        },
+        {
+          "name": "Green",
+          "owned": false,
+          "release_ids": [
+            28413937
+          ]
+        },
+        {
+          "name": "Orange Marbled",
+          "owned": false,
+          "release_ids": [
+            31129535
+          ]
+        },
+        {
+          "name": "Pink",
+          "owned": false,
+          "release_ids": [
+            30707606
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "_id": "69b25344e2a79743bae150b6",
+    "discogs_id": 1982896,
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "fetched_at": "2026-03-12T05:46:44.916171+00:00",
+    "result": {
+      "album": "Pizzicato V In The Audrey Hepburn Complex",
+      "artist": "Pizzicato Five",
+      "master_id": 512291,
+      "total_variants": 1,
+      "owned_count": 1,
+      "completion_pct": 100,
+      "variants": [
+        {
+          "name": "Standard Black Vinyl",
+          "owned": true,
+          "release_ids": [
+            4228480,
+            1982896,
+            29867707,
+            4206073
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "_id": "69b2540de2a79743bae1540c",
+    "discogs_id": 2555127,
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "fetched_at": "2026-03-12T05:50:05.244778+00:00",
+    "result": {
+      "album": "Speak Now",
+      "artist": "Taylor Swift",
+      "master_id": 288143,
+      "total_variants": 6,
+      "owned_count": 1,
+      "completion_pct": 17,
+      "variants": [
+        {
+          "name": "Standard Black Vinyl",
+          "owned": true,
+          "release_ids": [
+            2555127,
+            9375044
+          ]
+        },
+        {
+          "name": "180 Gram",
+          "owned": false,
+          "release_ids": [
+            36723484,
+            31349344
+          ]
+        },
+        {
+          "name": "Clear Smoke",
+          "owned": false,
+          "release_ids": [
+            12830843,
+            12839653
+          ]
+        },
+        {
+          "name": "Gold",
+          "owned": false,
+          "release_ids": [
+            30729236
+          ]
+        },
+        {
+          "name": "Mpo Pressing",
+          "owned": false,
+          "release_ids": [
+            34050055
+          ]
+        },
+        {
+          "name": "Vantiva Pressing",
+          "owned": false,
+          "release_ids": [
+            32941590
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "_id": "69b3101049c59f882fbac7ee",
+    "discogs_id": 14408244,
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "fetched_at": "2026-03-12T19:12:16.862032+00:00",
+    "result": {
+      "album": "Lover",
+      "artist": "Taylor Swift",
+      "master_id": 1594805,
+      "total_variants": 3,
+      "owned_count": 2,
+      "completion_pct": 67,
+      "variants": [
+        {
+          "name": "Pink Opaque",
+          "owned": true,
+          "release_ids": [
+            15831860,
+            14401235,
+            25106521,
+            30681973,
+            25451974,
+            29361631,
+            35500219
+          ]
+        },
+        {
+          "name": "Pink [Baby Pink]",
+          "owned": true,
+          "release_ids": [
+            14408244
+          ]
+        },
+        {
+          "name": "Standard Black Vinyl",
+          "owned": false,
+          "release_ids": [
+            29051002
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "_id": "69b315ab49c59f882fbaff1c",
+    "discogs_id": 30135023,
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "fetched_at": "2026-03-12T19:36:11.978328+00:00",
+    "result": {
+      "album": "Deeper Well",
+      "artist": "Kacey Musgraves",
+      "master_id": 3425747,
+      "total_variants": 8,
+      "owned_count": 5,
+      "completion_pct": 62,
+      "variants": [
+        {
+          "name": "Brown Translucent W/ Gold Splatter [\"Tortoise Shell'], 180G",
+          "owned": true,
+          "release_ids": [
+            30109691
+          ]
+        },
+        {
+          "name": "Cardinal",
+          "owned": true,
+          "release_ids": [
+            30105227
+          ]
+        },
+        {
+          "name": "Clear W/ White Splatter [\"Spilled Milk\"]",
+          "owned": true,
+          "release_ids": [
+            30099581
+          ]
+        },
+        {
+          "name": "Cream Transparent, Alternate Cover",
+          "owned": true,
+          "release_ids": [
+            30104402,
+            30052420
+          ]
+        },
+        {
+          "name": "Quilted",
+          "owned": true,
+          "release_ids": [
+            30135023
+          ]
+        },
+        {
+          "name": "Clear Four Color Splatter W/ Green Liquid Fill",
+          "owned": false,
+          "release_ids": [
+            34827524,
+            30104510
+          ]
+        },
+        {
+          "name": "Green Opaque / Clear Split [Green/Clear]",
+          "owned": false,
+          "release_ids": [
+            30107204
+          ]
+        },
+        {
+          "name": "Red Opaque / Translucent Split [Half Opaque / Half Transparent Red], \u201cCrimson Clover\u201d, 180G",
+          "owned": false,
+          "release_ids": [
+            30300812,
+            30103523
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "_id": "69b316e549c59f882fbb0c8a",
+    "discogs_id": 3433715,
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "fetched_at": "2026-03-12T19:41:25.279464+00:00",
+    "result": {
+      "album": "Born To Die",
+      "artist": "Lana Del Rey",
+      "master_id": 403952,
+      "total_variants": 10,
+      "owned_count": 1,
+      "completion_pct": 10,
+      "variants": [
+        {
+          "name": "United Record Pressing",
+          "owned": true,
+          "release_ids": [
+            3433715
+          ]
+        },
+        {
+          "name": "Blue",
+          "owned": false,
+          "release_ids": [
+            11033372
+          ]
+        },
+        {
+          "name": "Gz Media Pressing",
+          "owned": false,
+          "release_ids": [
+            34738116
+          ]
+        },
+        {
+          "name": "Memphis Record Pressing",
+          "owned": false,
+          "release_ids": [
+            34407406,
+            16005081
+          ]
+        },
+        {
+          "name": "Optimal Media Gmbh Pressing",
+          "owned": false,
+          "release_ids": [
+            28034796
+          ]
+        },
+        {
+          "name": "Picture Disc",
+          "owned": false,
+          "release_ids": [
+            5105700,
+            27048663
+          ]
+        },
+        {
+          "name": "Rainbo Pressing",
+          "owned": false,
+          "release_ids": [
+            9226390
+          ]
+        },
+        {
+          "name": "Red Opaque",
+          "owned": false,
+          "release_ids": [
+            14762950,
+            32866671
+          ]
+        },
+        {
+          "name": "Slipcase",
+          "owned": false,
+          "release_ids": [
+            12379459
+          ]
+        },
+        {
+          "name": "Standard Black Vinyl",
+          "owned": false,
+          "release_ids": [
+            3354383,
+            3365659,
+            24556220,
+            10119503,
+            21030196,
+            35873974,
+            33474911,
+            12916217,
+            13988532,
+            23716469
+          ]
+        }
+      ]
+    }
+  }
+]

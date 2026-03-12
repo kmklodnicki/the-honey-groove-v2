@@ -1,0 +1,122 @@
+[
+  {
+    "_id": "69b16cc5e6d3994a5d1c5a56",
+    "release_id": 99999999,
+    "contributions": [
+      {
+        "user_id": "8e1f78c8-ca46-4d47-911a-36419401ef37",
+        "value": 75.0,
+        "at": "2026-03-11T13:23:17.785492+00:00"
+      }
+    ],
+    "average_value": 75.0,
+    "contribution_count": 1,
+    "created_at": "2026-03-11T13:23:17.785492+00:00",
+    "updated_at": "2026-03-11T13:23:17.785492+00:00"
+  },
+  {
+    "_id": "69b1769d3137d84cd9c3370c",
+    "release_id": 999999,
+    "contributions": [
+      {
+        "user_id": "baa53931-2831-4a99-9ffb-f31be0672784",
+        "value": 50.0,
+        "at": "2026-03-11T14:13:05.446480+00:00"
+      }
+    ],
+    "average_value": 50.0,
+    "contribution_count": 1,
+    "created_at": "2026-03-11T14:05:17.700365+00:00",
+    "updated_at": "2026-03-11T14:13:05.446480+00:00"
+  },
+  {
+    "_id": "69b178bde4ed17686eceb8dc",
+    "release_id": 888888,
+    "contributions": [
+      {
+        "user_id": "baa53931-2831-4a99-9ffb-f31be0672784",
+        "value": 35.5,
+        "at": "2026-03-11T14:14:21.627318+00:00"
+      }
+    ],
+    "average_value": 35.5,
+    "contribution_count": 1,
+    "created_at": "2026-03-11T14:14:21.627318+00:00",
+    "updated_at": "2026-03-11T14:14:21.627318+00:00"
+  },
+  {
+    "_id": "69b17fbb2ca4cb7077c28041",
+    "release_id": 99999,
+    "contributions": [
+      {
+        "user_id": "baa53931-2831-4a99-9ffb-f31be0672784",
+        "value": 35.5,
+        "at": "2026-03-11T14:44:11.419771+00:00"
+      }
+    ],
+    "average_value": 35.5,
+    "contribution_count": 1,
+    "created_at": "2026-03-11T14:44:11.419771+00:00",
+    "updated_at": "2026-03-11T14:44:11.419771+00:00"
+  },
+  {
+    "_id": "69b17fbc2ca4cb7077c28044",
+    "release_id": 987654,
+    "contributions": [
+      {
+        "user_id": "baa53931-2831-4a99-9ffb-f31be0672784",
+        "value": 42.0,
+        "at": "2026-03-11T14:44:12.617311+00:00"
+      }
+    ],
+    "average_value": 42.0,
+    "contribution_count": 1,
+    "created_at": "2026-03-11T14:44:12.617311+00:00",
+    "updated_at": "2026-03-11T14:44:12.617311+00:00"
+  },
+  {
+    "_id": "69b17fbe2ca4cb7077c28046",
+    "release_id": 555666,
+    "contributions": [
+      {
+        "user_id": "baa53931-2831-4a99-9ffb-f31be0672784",
+        "value": 75.0,
+        "at": "2026-03-11T14:44:14.042556+00:00"
+      }
+    ],
+    "average_value": 75.0,
+    "contribution_count": 1,
+    "created_at": "2026-03-11T14:44:14.042556+00:00",
+    "updated_at": "2026-03-11T14:44:14.042556+00:00"
+  },
+  {
+    "_id": "69b182ac2d740d3b8ad56908",
+    "release_id": 27866379,
+    "contributions": [
+      {
+        "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+        "value": 35.0,
+        "at": "2026-03-11T14:56:47.538742+00:00"
+      }
+    ],
+    "average_value": 35.0,
+    "contribution_count": 1,
+    "created_at": "2026-03-11T14:56:44.640969+00:00",
+    "updated_at": "2026-03-11T14:56:47.538742+00:00"
+  },
+  {
+    "_id": "69b182b22d740d3b8ad56909",
+    "release_id": 29122699,
+    "contributions": [
+      {
+        "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+        "value": 25.0,
+        "at": "2026-03-11T14:56:50.274266+00:00"
+      }
+    ],
+    "average_value": 25.0,
+    "contribution_count": 1,
+    "created_at": "2026-03-11T14:56:50.274266+00:00",
+    "updated_at": "2026-03-11T14:56:50.274266+00:00"
+  }
+]

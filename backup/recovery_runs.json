@@ -1,0 +1,22 @@
+[
+  {
+    "_id": "69b2045570c38014463e4def",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "failed": 0,
+    "last_run_at": "2026-03-12T03:00:01.459220+00:00",
+    "recovered": 1,
+    "total": 143,
+    "using_oauth": true,
+    "valued": 143
+  },
+  {
+    "_id": "69b2080470c38014463e6317",
+    "user_id": "eeb66a35-319c-48c3-acea-af7bb89a5751",
+    "failed": 1,
+    "last_run_at": "2026-03-12T00:25:40.863745+00:00",
+    "recovered": 0,
+    "total": 1,
+    "using_oauth": false,
+    "valued": 0
+  }
+]

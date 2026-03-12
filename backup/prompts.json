@@ -1,0 +1,642 @@
+[
+  {
+    "_id": "69a9c4a2c25eac476e610dc7",
+    "id": "19abbe50-fb14-4c07-8431-468a1da63ff3",
+    "text": "the record you'd save in a fire",
+    "scheduled_date": "2026-03-05T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713278+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610dc8",
+    "id": "794bbd43-668b-4fef-bb0b-031865c8df02",
+    "text": "last record you bought without listening first",
+    "scheduled_date": "2026-03-06T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713287+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610dc9",
+    "id": "26c04322-ce3a-44c6-8065-69455464c4b4",
+    "text": "the album that got you into vinyl",
+    "scheduled_date": "2026-03-07T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713299+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610dca",
+    "id": "1b7e43a2-5a24-414d-bfcd-8bf2af2baa18",
+    "text": "a record everyone sleeps on",
+    "scheduled_date": "2026-03-08T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713312+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610dcb",
+    "id": "40014932-3f52-4f6e-b644-3a4adf3eae43",
+    "text": "what's on right now, no context",
+    "scheduled_date": "2026-03-09T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713318+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610dcc",
+    "id": "ae66b260-31a2-45ac-bebb-09ae5c653248",
+    "text": "the record that defined a specific year of your life",
+    "scheduled_date": "2026-03-10T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713325+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610dcd",
+    "id": "583b4c34-aef6-4794-b615-23bce9f6e3d4",
+    "text": "a record you own but never play",
+    "scheduled_date": "2026-03-11T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713333+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610dce",
+    "id": "ac120347-06ee-4b2b-be8c-beec410f6206",
+    "text": "the one that started it all",
+    "scheduled_date": "2026-03-12T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713339+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610dcf",
+    "id": "01de4700-eb94-47d3-b590-3dc59a57a145",
+    "text": "something you'd trade everything for",
+    "scheduled_date": "2026-03-13T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713345+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610dd0",
+    "id": "f99b2dbf-4457-4359-809c-78d4f91dcc98",
+    "text": "the record you know every word to",
+    "scheduled_date": "2026-03-14T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713351+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610dd1",
+    "id": "f21ebbed-f464-43ba-85ad-cadbcee74bb6",
+    "text": "a find that still doesn't feel real",
+    "scheduled_date": "2026-03-15T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713356+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610dd2",
+    "id": "8dea9766-a31a-48a0-af28-bcde6e2b6a62",
+    "text": "what you put on when you need to feel something",
+    "scheduled_date": "2026-03-16T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713361+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610dd3",
+    "id": "527660e6-0d00-49a8-92c5-6e884cb07432",
+    "text": "a record you bought for the cover art",
+    "scheduled_date": "2026-03-17T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713366+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610dd4",
+    "id": "1408d789-a216-4d77-b207-06fc8287b399",
+    "text": "the one that broke your heart",
+    "scheduled_date": "2026-03-18T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713372+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610dd5",
+    "id": "ab2d00f0-e685-46dd-96a3-7f786571ea01",
+    "text": "your most played record of all time",
+    "scheduled_date": "2026-03-19T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713377+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610dd6",
+    "id": "2df8d0e6-ad20-4198-b754-dc70ac39bf58",
+    "text": "a record that reminds you of someone",
+    "scheduled_date": "2026-03-20T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713381+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610dd7",
+    "id": "50336fa6-c347-4a63-96df-8803cb4c0aed",
+    "text": "something you'd never trade, no matter what",
+    "scheduled_date": "2026-03-21T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713386+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610dd8",
+    "id": "25a56d1b-d217-470c-abce-2cae0b79d939",
+    "text": "the record that made you a collector",
+    "scheduled_date": "2026-03-22T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713392+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610dd9",
+    "id": "af370e26-07a2-4051-b30e-4ee2357b7816",
+    "text": "your most valuable record right now",
+    "scheduled_date": "2026-03-23T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713411+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610dda",
+    "id": "cbee7752-4a54-4abf-81a5-f9d67c095fd6",
+    "text": "a pressing you're still hunting",
+    "scheduled_date": "2026-03-24T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713416+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610ddb",
+    "id": "f6fc7767-0b5b-4db3-b288-7b3fdddd9f02",
+    "text": "the record that sounds best on a rainy day",
+    "scheduled_date": "2026-03-25T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713421+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610ddc",
+    "id": "c7f36080-025f-4021-8526-b08b82c4067b",
+    "text": "a record you discovered through a friend",
+    "scheduled_date": "2026-03-26T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713427+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610ddd",
+    "id": "1ced912e-588c-4732-8405-e5522bffb2f0",
+    "text": "the album you play when you want to dance alone",
+    "scheduled_date": "2026-03-27T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713432+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610dde",
+    "id": "dffdaa9c-1390-4d43-ad42-28c72b7491a9",
+    "text": "a record that takes you back to high school",
+    "scheduled_date": "2026-03-28T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713437+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610ddf",
+    "id": "c418571a-8122-452b-854c-364fdacd2a4a",
+    "text": "the one that made you cry in public",
+    "scheduled_date": "2026-03-29T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713443+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610de0",
+    "id": "4ad91dbd-8af7-4dc4-8da0-10959d10c41a",
+    "text": "a record you bought twice",
+    "scheduled_date": "2026-03-30T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713448+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610de1",
+    "id": "45679483-c957-4865-ba12-2416ced16ec4",
+    "text": "the album you'd play for someone who doesn't get vinyl",
+    "scheduled_date": "2026-03-31T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713453+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610de2",
+    "id": "3f13b95d-b31f-4988-a820-8110c165bc9d",
+    "text": "a record that changed how you listen to music",
+    "scheduled_date": "2026-04-01T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713459+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610de3",
+    "id": "da73e8b6-6ffa-426f-adc2-bda1b667e245",
+    "text": "the one you spin to clear your head",
+    "scheduled_date": "2026-04-02T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713464+00:00"
+  },
+  {
+    "_id": "69a9c4a2c25eac476e610de4",
+    "id": "1cab86bc-8752-40be-aab2-d35978051e44",
+    "text": "a record that deserves more love than it gets",
+    "scheduled_date": "2026-04-03T00:00:00+00:00",
+    "active": true,
+    "created_at": "2026-03-05T18:00:02.713468+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e72",
+    "id": "35f3aadd-a768-4720-a079-382b38fc6d52",
+    "text": "the record you play when you need to remember who you are",
+    "scheduled_date": "2026-03-07T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e73",
+    "id": "8fcd7357-43cd-440f-a10a-4c691a801fbd",
+    "text": "a b-side or deep cut that deserves to be a single",
+    "scheduled_date": "2026-03-08T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e74",
+    "id": "7aa8a42b-b342-4fa0-9c44-42ec8a5ed6a3",
+    "text": "the album you played on repeat during a breakup",
+    "scheduled_date": "2026-03-09T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e75",
+    "id": "d922fe37-5947-4446-991b-ebaf54f0e6e4",
+    "text": "a record that sounds different every time you play it",
+    "scheduled_date": "2026-03-10T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e76",
+    "id": "50f5e649-d547-446a-bc68-dc242d76b0f6",
+    "text": "your go-to record for Sunday mornings",
+    "scheduled_date": "2026-03-11T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e77",
+    "id": "321aebc9-f4a1-4850-bb39-cf45d28be2e5",
+    "text": "the one that makes you want to learn an instrument",
+    "scheduled_date": "2026-03-12T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e78",
+    "id": "4eb92d6d-5198-4060-b9bc-6498b4d05768",
+    "text": "your favorite album opener of all time",
+    "scheduled_date": "2026-03-13T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e79",
+    "id": "209ed987-9e1d-4be6-8406-1c82ffe43a64",
+    "text": "a record you wish you could hear for the first time again",
+    "scheduled_date": "2026-03-14T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e7a",
+    "id": "910cc3bd-a27f-4296-a9e9-6f8ebafa96f2",
+    "text": "the album you'd choose for a long road trip",
+    "scheduled_date": "2026-03-15T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e7b",
+    "id": "0a6ddcd2-85f4-4893-b7fa-ab8cba128dae",
+    "text": "a live album that's better than the studio version",
+    "scheduled_date": "2026-03-16T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e7c",
+    "id": "fa5c55a5-0a13-4cbe-ac79-ce4c11ea3000",
+    "text": "the record you'd bring to a desert island",
+    "scheduled_date": "2026-03-17T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e7d",
+    "id": "9cb5d22f-dc97-4fef-a619-1f3639e52831",
+    "text": "an album that changed your taste completely",
+    "scheduled_date": "2026-03-18T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e7e",
+    "id": "25d6fa8c-878d-4b44-9ec2-ca69bd81c1ef",
+    "text": "the record you always recommend to new collectors",
+    "scheduled_date": "2026-03-19T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e7f",
+    "id": "0d9de877-ef79-4671-935f-62eba3215c12",
+    "text": "a record you inherited or were gifted",
+    "scheduled_date": "2026-03-20T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e80",
+    "id": "39088cd3-2861-4bb5-842b-cbfa1f3ee25c",
+    "text": "the one you spin when you're celebrating",
+    "scheduled_date": "2026-03-21T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e81",
+    "id": "1b471b74-bc61-4150-b0e7-7e78332f669f",
+    "text": "your favorite closer or final track on an album",
+    "scheduled_date": "2026-03-22T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e82",
+    "id": "35cdf759-e227-470a-bbb6-33f82d7c7d6e",
+    "text": "a record that introduced you to a new genre",
+    "scheduled_date": "2026-03-23T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e83",
+    "id": "d36204a5-12fe-435b-a674-7e38756629fb",
+    "text": "the one you'd play at your own funeral",
+    "scheduled_date": "2026-03-24T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e84",
+    "id": "4605dcb1-7c2a-4832-a847-4138af3184a8",
+    "text": "a record that's better in the winter",
+    "scheduled_date": "2026-03-25T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e85",
+    "id": "a07d03cb-c134-4004-88cd-b2ec56e9c69e",
+    "text": "the first record you ever bought with your own money",
+    "scheduled_date": "2026-03-26T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e86",
+    "id": "ec4b1b07-5d1d-42f2-81a0-1128952f646d",
+    "text": "an album where every single track is perfect",
+    "scheduled_date": "2026-03-27T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e87",
+    "id": "b6b8d7b0-36b0-4b81-850c-23e2814adc7c",
+    "text": "the one that got away. the record you almost bought but didn't",
+    "scheduled_date": "2026-03-28T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e88",
+    "id": "c0d25925-c0f9-4fd6-8342-6d8bce7e2eb6",
+    "text": "your favorite pressing or variant you own",
+    "scheduled_date": "2026-03-29T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e89",
+    "id": "8dc25683-a9b1-4aa2-b510-750b4b5068da",
+    "text": "a record that surprised you. you didn't expect to love it",
+    "scheduled_date": "2026-03-30T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e8a",
+    "id": "6134e9a6-1c23-4a30-8bf4-f55127a780c9",
+    "text": "the one you put on when company comes over",
+    "scheduled_date": "2026-03-31T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e8b",
+    "id": "9ed13b56-2e8c-47ee-98ef-1510eb52752d",
+    "text": "a record that feels like falling in love",
+    "scheduled_date": "2026-04-01T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e8c",
+    "id": "79319cba-084a-4227-a7dc-0a85e799a804",
+    "text": "the album you'd give a 10/10 with zero hesitation",
+    "scheduled_date": "2026-04-02T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e8d",
+    "id": "5e1d625d-82c1-4c0f-85c5-e3a4aff617df",
+    "text": "the record that makes your neighbors complain",
+    "scheduled_date": "2026-04-03T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e8e",
+    "id": "a8c3a9d6-e506-43cc-9774-9e89ec7671fa",
+    "text": "a criminally underrated album from the last five years",
+    "scheduled_date": "2026-04-04T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e8f",
+    "id": "1773d546-97c8-499a-9a99-4087143efa46",
+    "text": "the one that sounds best at 2am",
+    "scheduled_date": "2026-04-05T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e90",
+    "id": "c4ba9c01-bec0-40c1-87e1-3c2f009b0552",
+    "text": "a record you regret selling or trading",
+    "scheduled_date": "2026-04-06T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e91",
+    "id": "9319c4b0-bd2b-425d-9370-f388f2104ebd",
+    "text": "the album you've owned the longest",
+    "scheduled_date": "2026-04-07T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e92",
+    "id": "5e216519-42e3-48ae-bee7-df87bf9aa813",
+    "text": "a record that makes you feel invincible",
+    "scheduled_date": "2026-04-08T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e93",
+    "id": "fdde039c-cdf3-4f09-9c60-a48f693d4dce",
+    "text": "the one you bought because someone on the internet convinced you",
+    "scheduled_date": "2026-04-09T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e94",
+    "id": "e4a3e7e3-1337-4347-a388-18add3c6a62c",
+    "text": "a record that reminds you of a specific place",
+    "scheduled_date": "2026-04-10T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e95",
+    "id": "73c1fa5e-6ecb-439e-a7e4-dc140ffb4bab",
+    "text": "the album that got better with age",
+    "scheduled_date": "2026-04-11T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e96",
+    "id": "72824d1a-2537-4a8f-aa6c-f3e16e55b7e5",
+    "text": "a record you'd play for aliens to explain humanity",
+    "scheduled_date": "2026-04-12T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e97",
+    "id": "3e159fe5-adfd-43ad-b558-b05c3d5abd07",
+    "text": "the one that makes you drive faster",
+    "scheduled_date": "2026-04-13T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e98",
+    "id": "22c1876b-c1fc-4a6a-a9af-4dd96360e2f5",
+    "text": "your most recent purchase. do you love it or regret it?",
+    "scheduled_date": "2026-04-14T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e99",
+    "id": "279991eb-b926-4fa0-9cea-54252e310093",
+    "text": "a record that's perfect for cooking dinner to",
+    "scheduled_date": "2026-04-15T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e9a",
+    "id": "43b73acd-62ba-42c0-99ac-473276ef26bb",
+    "text": "the album you played the day you moved into your current place",
+    "scheduled_date": "2026-04-16T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e9b",
+    "id": "01839f79-3f4c-4383-8202-d1025cca598d",
+    "text": "a record that makes you nostalgic for something you never experienced",
+    "scheduled_date": "2026-04-17T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e9c",
+    "id": "0347ff74-169c-4ee0-b7de-3b5b76257761",
+    "text": "your favorite album artwork of anything you own",
+    "scheduled_date": "2026-04-18T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e9d",
+    "id": "0e4d9ec1-d709-4fad-a928-986234c2cacf",
+    "text": "a record you had to hunt for. the chase was part of it",
+    "scheduled_date": "2026-04-19T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e9e",
+    "id": "36a55c49-dceb-46a8-8cdd-16d40e97d65e",
+    "text": "the one you spin when you're angry",
+    "scheduled_date": "2026-04-20T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3e9f",
+    "id": "2348f8d7-c388-4afa-8f3f-abc773318541",
+    "text": "an album that makes you proud of your collection",
+    "scheduled_date": "2026-04-21T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3ea0",
+    "id": "e4ac2493-63b3-4bdb-ab29-94cec1a289b0",
+    "text": "a record that changed how you think about production",
+    "scheduled_date": "2026-04-22T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3ea1",
+    "id": "20e47c11-9ecb-4238-9a7a-0013a26e578d",
+    "text": "the one everyone loves that you secretly don't get",
+    "scheduled_date": "2026-04-23T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3ea2",
+    "id": "11401271-472e-4950-a0ca-f128f1d7984f",
+    "text": "a record you'd play for your younger self",
+    "scheduled_date": "2026-04-24T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  },
+  {
+    "_id": "69ab0cc21212604dec4d3ea3",
+    "id": "a9d6edf7-3a31-467c-8b5e-e942306818e1",
+    "text": "the album that made you finally understand the hype",
+    "scheduled_date": "2026-04-25T17:20:02.315224+00:00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00"
+  }
+]

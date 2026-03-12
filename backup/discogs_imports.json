@@ -1,0 +1,86 @@
+[
+  {
+    "_id": "69a911e73163a210812209c5",
+    "user_id": "9221572c-1d80-4274-8393-77f0b2fdffc4",
+    "completed_at": "2026-03-05T22:37:57.523401+00:00",
+    "discogs_username": "katieintheafterglow",
+    "imported": 0,
+    "skipped": 143,
+    "total": 143,
+    "errors": 0,
+    "sample_covers": []
+  },
+  {
+    "_id": "69ab70b86907a321df2ccf53",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "completed_at": "2026-03-11T03:14:02.387060+00:00",
+    "discogs_username": "katieintheafterglow",
+    "errors": 0,
+    "imported": 143,
+    "sample_covers": [
+      {
+        "title": "Pink Pony Club",
+        "artist": "Chappell Roan",
+        "cover_url": "https://i.discogs.com/1lIoN90TJ6tb2HIZeWx8rPEUPVaYrceQCdJWYx7ABGM/rs:fit/g:sm/q:90/h:600/w:591/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMxNzg1/Njc0LTE3MjY5NjA1/MTUtOTIyNi5wbmc.jpeg"
+      },
+      {
+        "title": "Guess",
+        "artist": "Charli XCX, Billie Eilish",
+        "cover_url": "https://i.discogs.com/srbHf2EY2PzPa9pjanUseItV9E8StyjedMbV2CKnlMY/rs:fit/g:sm/q:90/h:595/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMzNjQ2/MDM4LTE3NDUyNzY2/MTUtMTM2Mi5qcGVn.jpeg"
+      },
+      {
+        "title": "Brat",
+        "artist": "Charli XCX",
+        "cover_url": "https://i.discogs.com/LvN0PHoKP186pgKeboIOLI_GVblmYxnux_HhiwiG-48/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMwOTg0/OTU4LTE3NDkyMjE5/MTEtNzA5Ni5qcGVn.jpeg"
+      },
+      {
+        "title": "Valentine",
+        "artist": "Laufey (2)",
+        "cover_url": "https://i.discogs.com/iH_3owMNnqMiyLo-xjrUFaprm-J7aw65B7kOgTvjbTk/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMzNjUx/NzMyLTE3NDQ1Njg5/ODUtODI0NC5qcGVn.jpeg"
+      },
+      {
+        "title": "Suddenly/Honeybee",
+        "artist": "B\u00d8RNS",
+        "cover_url": "https://i.discogs.com/9LzX9i0dpprrLEzu03Jv0yV8qMpGnTIFQ7QqtRCk1uw/rs:fit/g:sm/q:90/h:600/w:593/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMzNzYy/NTc5LTE3NzI2NDc0/MzYtNzU0Ny5qcGVn.jpeg"
+      },
+      {
+        "title": "Reputation",
+        "artist": "Taylor Swift",
+        "cover_url": "https://i.discogs.com/OZiVXOktigzIJtNgWS9KGrPbpcpBIeYrEL3WcmCsf3Y/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTExMjU2/MTc1LTE1MTMzNzc4/OTktODYyNC5qcGVn.jpeg"
+      },
+      {
+        "title": "Taylor Swift",
+        "artist": "Taylor Swift",
+        "cover_url": "https://i.discogs.com/P3NDdPQzsd3YP3Hjq0FoOulklX7wlsLmID7VeEIocFw/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTg0Nzg0/MTgtMTY1ODEzMTAz/NC00MDcxLmpwZWc.jpeg"
+      },
+      {
+        "title": "Fearless (Platinum Edition)",
+        "artist": "Taylor Swift",
+        "cover_url": "https://i.discogs.com/nQOm_libAIdOPScWqmrhCYniKWVn5AmcbRE3N0bpgao/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTg0Nzgz/NjUtMTQ2MjM5NzEz/Ny04NTI2LmpwZWc.jpeg"
+      },
+      {
+        "title": "Speak Now",
+        "artist": "Taylor Swift",
+        "cover_url": "https://i.discogs.com/87sf0MZNnCbWMcZaWZYr75spHg3f8hmzXAXKOvA2Ke0/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI1NTUx/MjctMTY3NzE2MzIx/OC03NTQ5LmpwZWc.jpeg"
+      },
+      {
+        "title": "Red",
+        "artist": "Taylor Swift",
+        "cover_url": "https://i.discogs.com/oHn0PWyII_BipJYCwfZbOHYIcIUJZ41WMhXSgl7cadQ/rs:fit/g:sm/q:90/h:600/w:593/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTkzNTk5/MzktMTYzMjc2NTI1/NC00MDczLmpwZWc.jpeg"
+      },
+      {
+        "title": "143",
+        "artist": "Katy Perry",
+        "cover_url": "https://i.discogs.com/bB89KO6aib1j6Rm5ZnEIKJoBf_l2tT9BLlfLVwQAtnU/rs:fit/g:sm/q:90/h:597/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMxNzkz/NjQ1LTE3MjY5Njk3/OTQtMTEzNS5qcGVn.jpeg"
+      },
+      {
+        "title": "Woman's World",
+        "artist": "Katy Perry",
+        "cover_url": "https://i.discogs.com/w7l_KujWQCib4Y8-kI4njHe8mmqTiaTpDV-HBoMEc9s/rs:fit/g:sm/q:90/h:598/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMxMjEz/NjkwLTE3MjA5NzI3/MDEtMzQzMi5qcGVn.jpeg"
+      }
+    ],
+    "skipped": 0,
+    "total": 143,
+    "skipped_records": []
+  }
+]

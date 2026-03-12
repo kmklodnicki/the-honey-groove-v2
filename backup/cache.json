@@ -1,0 +1,379 @@
+[
+  {
+    "_id": "69ab4e026907a321df2ca10a",
+    "key": "trending_in_collections_cache",
+    "data": [
+      {
+        "discogs_id": 4570366,
+        "artist": "Daft Punk",
+        "title": "Random Access Memories",
+        "year": "2013",
+        "cover_url": "https://i.discogs.com/IR6_z_1KUErO-OORqXG2_MJhqWxsaPxYRi-hOLLdHic/rs:fit/g:sm/q:90/h:592/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTQ1NzAz/NjYtMTc0OTM3MjMx/Ny0xODg1LmpwZWc.jpeg",
+        "format": [
+          "Vinyl",
+          "LP",
+          "Album",
+          "Stereo"
+        ],
+        "have": 79469,
+        "want": 29610
+      },
+      {
+        "discogs_id": 3975953,
+        "artist": "Kendrick Lamar",
+        "title": "Good Kid, M.A.A.D City",
+        "year": "2012",
+        "cover_url": "https://i.discogs.com/m8eUFdh6Dmu3VIwfNJUNI8Eht0dZfJyB9ycEYgatQdY/rs:fit/g:sm/q:90/h:588/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTM5NzU5/NTMtMTU3MDQwNDc5/NS01Njk0LmpwZWc.jpeg",
+        "format": [
+          "Vinyl",
+          "LP",
+          "Album",
+          "Deluxe Edition"
+        ],
+        "have": 73139,
+        "want": 22511
+      },
+      {
+        "discogs_id": 9287809,
+        "artist": "Pink Floyd",
+        "title": "The Dark Side Of The Moon",
+        "year": "2016",
+        "cover_url": "https://i.discogs.com/1fwskTLM6cfxbdNmBDJ8expl6wab0tEgxvuloLIqKh8/rs:fit/g:sm/q:90/h:596/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTkyODc4/MDktMTQ3OTc1MzIz/Ni05NjE3LmpwZWc.jpeg",
+        "format": [
+          "Vinyl",
+          "LP",
+          "Album",
+          "Reissue",
+          "Remastered",
+          "Stereo"
+        ],
+        "have": 72247,
+        "want": 8966
+      },
+      {
+        "discogs_id": 11256175,
+        "artist": "Taylor Swift",
+        "title": "Reputation",
+        "year": "2017",
+        "cover_url": "https://i.discogs.com/OZiVXOktigzIJtNgWS9KGrPbpcpBIeYrEL3WcmCsf3Y/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTExMjU2/MTc1LTE1MTMzNzc4/OTktODYyNC5qcGVn.jpeg",
+        "format": [
+          "Vinyl",
+          "LP",
+          "Album",
+          "Picture Disc"
+        ],
+        "have": 68564,
+        "want": 12325
+      },
+      {
+        "discogs_id": 7097051,
+        "artist": "Nirvana",
+        "title": "Nevermind",
+        "year": "2015",
+        "cover_url": "https://i.discogs.com/uCeQtLv9OSNjC5_AjarCojZNepI9vqcnYeqsImnzXyg/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTcwOTcw/NTEtMTU1NjQ0NDE4/MC03NTA1LmpwZWc.jpeg",
+        "format": [
+          "Vinyl",
+          "LP",
+          "Album",
+          "Reissue",
+          "Repress"
+        ],
+        "have": 68444,
+        "want": 11718
+      },
+      {
+        "discogs_id": 14215683,
+        "artist": "Tyler, The Creator",
+        "title": "Igor",
+        "year": "2019",
+        "cover_url": "https://i.discogs.com/_xo94Vv8X5amfpirg4wncr-BnboID1TjXWEMUEy8OAU/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE0MjE1/NjgzLTE3MzE3MDc3/NDgtMTk0Ni5qcGVn.jpeg",
+        "format": [
+          "Vinyl",
+          "LP",
+          "Album"
+        ],
+        "have": 65138,
+        "want": 9852
+      },
+      {
+        "discogs_id": 2911293,
+        "artist": "Michael Jackson",
+        "title": "Thriller",
+        "year": "1982",
+        "cover_url": "https://i.discogs.com/OQRwID3TvI5bMrPxrDgtFRftYhjZlkQ1FPE81xPOY5I/rs:fit/g:sm/q:90/h:602/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI5MTEy/OTMtMTU5NDI0NTgx/Mi03OTMxLmpwZWc.jpeg",
+        "format": [
+          "Vinyl",
+          "LP",
+          "Album",
+          "Stereo"
+        ],
+        "have": 63342,
+        "want": 16076
+      },
+      {
+        "discogs_id": 526351,
+        "artist": "Fleetwood Mac",
+        "title": "Rumours",
+        "year": "1977",
+        "cover_url": "https://i.discogs.com/X2kgbJ7rhk0HNH39Nep8tTD_Fly6pmHk2KR_Lptjk88/rs:fit/g:sm/q:90/h:599/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTUyNjM1/MS0xMjkyMjkzNjg1/LmpwZWc.jpeg",
+        "format": [
+          "Vinyl",
+          "LP",
+          "Album"
+        ],
+        "have": 62394,
+        "want": 17308
+      },
+      {
+        "discogs_id": 1343227,
+        "artist": "Bruce Springsteen",
+        "title": "Born In The U.S.A.",
+        "year": "1984",
+        "cover_url": "https://i.discogs.com/fltQHhVK5EGabzwAqAJupEJqZ6RpDhZ1wLZVJoQtrkE/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTEzNDMy/MjctMTM2NTM3MzYw/OC0xMDEwLmpwZWc.jpeg",
+        "format": [
+          "Vinyl",
+          "LP",
+          "Album",
+          "Stereo"
+        ],
+        "have": 61467,
+        "want": 6575
+      },
+      {
+        "discogs_id": 4904158,
+        "artist": "Arctic Monkeys",
+        "title": "AM",
+        "year": "2013",
+        "cover_url": "https://i.discogs.com/MohCZfatquytAhecVgsR1eyVULp-kPT7ricg83wi0WE/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTQ5MDQx/NTgtMTM3ODk5NDA1/My03MjEyLmpwZWc.jpeg",
+        "format": [
+          "Vinyl",
+          "LP",
+          "Album"
+        ],
+        "have": 55111,
+        "want": 11722
+      },
+      {
+        "discogs_id": 14401235,
+        "artist": "Taylor Swift",
+        "title": "Lover",
+        "year": "2019",
+        "cover_url": "https://i.discogs.com/AtDFDg1_gZyjv16Ysg_boeOi-5prd9ISFDVizTGfGY4/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE0NDAx/MjM1LTE2ODI0NjY5/ODMtOTU5NC5qcGVn.jpeg",
+        "format": [
+          "Vinyl",
+          "LP",
+          "Vinyl",
+          "LP",
+          "All Media",
+          "Album"
+        ],
+        "have": 51315,
+        "want": 5042
+      },
+      {
+        "discogs_id": 367104,
+        "artist": "Pink Floyd",
+        "title": "The Dark Side Of The Moon",
+        "year": "1973",
+        "cover_url": "https://i.discogs.com/mMxJHZMv_EUMgDso6PMI1HKsHHntkdG2ULQ2KW-1vHc/rs:fit/g:sm/q:90/h:576/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTM2NzEw/NC0xNDcyNTcyOTMx/LTUxMDQuanBlZw.jpeg",
+        "format": [
+          "Vinyl",
+          "LP",
+          "Album"
+        ],
+        "have": 48540,
+        "want": 14052
+      }
+    ],
+    "expires_at": "2026-03-13T19:08:34.837791+00:00",
+    "updated_at": "2026-03-12T19:08:34.837791+00:00"
+  },
+  {
+    "_id": "69b07d9bc9271361c596afb6",
+    "key": "crown_jewels_cache",
+    "data": [
+      {
+        "discogs_id": 14062834,
+        "artist": "Lana Del Rey",
+        "title": "Norman Fucking Rockwell!",
+        "cover_url": "https://i.discogs.com/FSCjBY62KpULt1KqzFiNG4IT9hYy2YT7QSYKhv90XxM/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE0MDYy/ODM0LTE2NzU3MjQ0/OTYtOTg3OS5qcGVn.jpeg",
+        "variant": "LP, Album",
+        "year": 2019,
+        "have": 3026,
+        "want": 4854,
+        "owner_count": 1,
+        "estimated_value": 176.67,
+        "low_value": 67.95,
+        "high_value": 258.21,
+        "elite_score": 0.9038488034093739
+      },
+      {
+        "discogs_id": 14567169,
+        "artist": "Ariana Grande",
+        "title": "Sweetener",
+        "cover_url": "https://i.discogs.com/JVSAUHFnRPRyz7-rHNBe_DjLMKiEhvL8QzMtJO8shdM/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE0NTY3/MTY5LTE2MzA3ODE4/ODctMjg5NS5wbmc.jpeg",
+        "variant": "LP, Album, Reissue, Stereo",
+        "year": 2019,
+        "have": 10794,
+        "want": 6037,
+        "owner_count": 1,
+        "estimated_value": 202.02,
+        "low_value": 77.7,
+        "high_value": 295.26,
+        "elite_score": 0.8808240957470299
+      },
+      {
+        "discogs_id": 32416968,
+        "artist": "Noah Kahan",
+        "title": "Town Hall (Stick Season Collaborations)",
+        "cover_url": "https://i.discogs.com/MtJ7sC0Vt44Ynl-Ej_Ma-Fr6rLJsYnOlCXMe647LkTU/rs:fit/g:sm/q:90/h:563/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMyNDE2/OTY4LTE3MzMwMjQy/MTItMTQ3Ny5qcGVn.jpeg",
+        "variant": "LP, Record Store Day, Compilation",
+        "year": 2024,
+        "have": 6971,
+        "want": 2022,
+        "owner_count": 1,
+        "estimated_value": 157.95,
+        "low_value": 60.75,
+        "high_value": 230.85,
+        "elite_score": 0.8139602495474066
+      },
+      {
+        "discogs_id": 34450309,
+        "artist": "Sabrina Carpenter",
+        "title": "Short N' Sweet (Deluxe)",
+        "cover_url": "https://i.discogs.com/AfPNwozoLrSvw0k7vuPALFI5UGbzG4yh5BEvlxCmoKs/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTM0NDUw/MzA5LTE3NTM3Mzc5/MTEtMTMxMi5qcGVn.jpeg",
+        "variant": "LP, Album, Deluxe Edition, Limited Edition, Numbered, Picture Disc, Reissue",
+        "year": 2025,
+        "have": 3779,
+        "want": 1407,
+        "owner_count": 1,
+        "estimated_value": 113.74,
+        "low_value": 43.75,
+        "high_value": 166.24,
+        "elite_score": 0.7397830699844568
+      },
+      {
+        "discogs_id": 33349256,
+        "artist": "Lady Gaga",
+        "title": "Mayhem",
+        "cover_url": "https://i.discogs.com/W8JNsFDrNqWqsJyuUOAynzX0zVr0_BLtwr6lGIeIgpk/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMzMzQ5/MjU2LTE3NDE0NzQ3/MzYtNzAyNC5qcGVn.jpeg",
+        "variant": "Album",
+        "year": 2025,
+        "have": 1206,
+        "want": 233,
+        "owner_count": 1,
+        "estimated_value": 97.47,
+        "low_value": 37.49,
+        "high_value": 142.45,
+        "elite_score": 0.727923117833907
+      },
+      {
+        "discogs_id": 33551193,
+        "artist": "Ariana Grande",
+        "title": "Eternal Sunshine Deluxe: Brighter Days Ahead",
+        "cover_url": "https://i.discogs.com/GIMBV3TlIDhyPkXB7mWItrGxGNloQDFNc7qhNplgqaw/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMzNTUx/MTkzLTE3NDMyODMz/NzItMjY4OS5qcGVn.jpeg",
+        "variant": "Album, Deluxe Edition",
+        "year": 2025,
+        "have": 1459,
+        "want": 228,
+        "owner_count": 1,
+        "estimated_value": 90.7,
+        "low_value": 34.88,
+        "high_value": 132.56,
+        "elite_score": 0.7083739933075268
+      },
+      {
+        "discogs_id": 28648444,
+        "artist": "Katy Perry",
+        "title": "Teenage Dream",
+        "cover_url": "https://i.discogs.com/Ph9l6J_5oUyqMlI8f5LN3s1pLPLMWz-Pmz5y_zocBRw/rs:fit/g:sm/q:90/h:600/w:598/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI4NjQ4/NDQ0LTE2OTgyNjQ5/OTYtMzgzNi5qcGVn.jpeg",
+        "variant": "LP, Album, Limited Edition, Reissue",
+        "year": 2023,
+        "have": 3574,
+        "want": 1358,
+        "owner_count": 1,
+        "estimated_value": 93.72,
+        "low_value": 36.05,
+        "high_value": 136.98,
+        "elite_score": 0.6924969130948904
+      },
+      {
+        "discogs_id": 33671085,
+        "artist": "Gracie Abrams",
+        "title": "The Secret Of Us (Live From Radio City Music Hall)",
+        "cover_url": "https://i.discogs.com/5k1_Vcm6wjnyuRkqoCWYE5iz_gxW4LLbkRWJpBjI0Uc/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMzNjcx/MDg1LTE3NDU2Mjcx/NDUtMzA2Mi5qcGVn.jpeg",
+        "variant": "LP, Record Store Day, Tour Recording",
+        "year": 2025,
+        "have": 5902,
+        "want": 2776,
+        "owner_count": 1,
+        "estimated_value": 103.43,
+        "low_value": 39.78,
+        "high_value": 151.17,
+        "elite_score": 0.6908258792615989
+      },
+      {
+        "discogs_id": 33539847,
+        "artist": "Ariana Grande",
+        "title": "Eternal Sunshine Deluxe: Brighter Days Ahead",
+        "cover_url": "https://i.discogs.com/TVh2TAvP9EXVZICRgGo92Zeuu2rO7f8v6PKbHq5udXo/rs:fit/g:sm/q:90/h:599/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMzNTM5/ODQ3LTE3NDM0OTky/OTgtNTU4Ni5wbmc.jpeg",
+        "variant": "LP, Album, Deluxe Edition",
+        "year": 2025,
+        "have": 4556,
+        "want": 1387,
+        "owner_count": 1,
+        "estimated_value": 92.77,
+        "low_value": 35.68,
+        "high_value": 135.59,
+        "elite_score": 0.6793034578553282
+      },
+      {
+        "discogs_id": 20691136,
+        "artist": "Lana Del Rey",
+        "title": "Blue Banisters",
+        "cover_url": "https://i.discogs.com/jShT_Qxsu_MnoSFPLt9zTwACGl5YYIMz3naGTp1rpZU/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTIwNjkx/MTM2LTE2NTAxMjc2/MjAtNzE1Ny5qcGVn.jpeg",
+        "variant": "LP, Album, Limited Edition",
+        "year": 2021,
+        "have": 5177,
+        "want": 2929,
+        "owner_count": 1,
+        "estimated_value": 90.62,
+        "low_value": 34.85,
+        "high_value": 132.45,
+        "elite_score": 0.6671257789152945
+      },
+      {
+        "discogs_id": 31878166,
+        "artist": "Lana Del Rey",
+        "title": "Tristeza De Verano",
+        "cover_url": "https://i.discogs.com/qbnR7h_yvwpFdWaEb5IHHAqz1Ichrx3u6g8t2th1QEg/rs:fit/g:sm/q:90/h:600/w:594/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMxODc4/MTY2LTE3Mjc3NjA3/OTktMjY4OS5qcGVn.jpeg",
+        "variant": "LP, Unofficial Release",
+        "year": 2024,
+        "have": 135,
+        "want": 33,
+        "owner_count": 1,
+        "estimated_value": 51.28,
+        "low_value": 19.72,
+        "high_value": 74.95,
+        "elite_score": 0.6254276000444794
+      },
+      {
+        "discogs_id": 32075106,
+        "artist": "Taylor Swift",
+        "title": "The Eras Tour (Taylor's Version) Act 2",
+        "cover_url": "https://i.discogs.com/WeRmOESvyzvo8Es80YC4k_nhRaNOZ2ArzI6PMCk0lxc/rs:fit/g:sm/q:90/h:600/w:586/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMyMDc1/MTA2LTE3MzI0NjYy/MTAtMTU5Ni5qcGVn.jpeg",
+        "variant": "LP, Album, Limited Edition, Unofficial Release",
+        "year": 2024,
+        "have": 598,
+        "want": 321,
+        "owner_count": 1,
+        "estimated_value": 52.32,
+        "low_value": 20.12,
+        "high_value": 76.46,
+        "elite_score": 0.6228896474888613
+      }
+    ],
+    "expires_at": "2026-03-12T21:10:18.483889+00:00",
+    "updated_at": "2026-03-11T21:10:18.483889+00:00"
+  }
+]

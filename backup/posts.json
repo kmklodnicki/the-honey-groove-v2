@@ -1,0 +1,1131 @@
+[
+  {
+    "_id": "69ad9c84a3ba45b447f789b5",
+    "id": "b4a4ba46-32fa-4d0e-96b0-402ec52703ff",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NOW_SPINNING",
+    "caption": null,
+    "record_id": "80b7eeb2-a7ae-49c8-a661-996658d3fc95",
+    "track": null,
+    "mood": "Upbeat Vibes",
+    "created_at": "2026-03-08T15:57:56.881727+00:00"
+  },
+  {
+    "_id": "69aedad36fec14476db8f110",
+    "id": "f3284327-aa38-4314-a76e-ce4e8c8ae2fa",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "NOTE",
+    "caption": "TEST_NewFeature_Note_67587534",
+    "record_id": null,
+    "image_url": null,
+    "created_at": "2026-03-09T14:36:03.290548+00:00",
+    "is_new_feature": false
+  },
+  {
+    "_id": "69af1e668493c17a41f8d231",
+    "id": "e6bc0128-5841-43bb-a38a-983e7b2aaa0a",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "ISO",
+    "caption": "Looking for this record",
+    "iso_id": "6efda5f0-bdb4-4461-9a57-7e6676717ff7",
+    "created_at": "2026-03-09T19:24:22.581918+00:00",
+    "iso_status": "FOUND"
+  },
+  {
+    "_id": "69af1e678493c17a41f8d234",
+    "id": "c0ee8348-43fe-4f2b-a3b6-57952dc3df8a",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "ISO",
+    "caption": null,
+    "iso_id": "af5556b1-b91a-424a-a999-b33650d38eaf",
+    "created_at": "2026-03-09T19:24:23.199342+00:00",
+    "iso_status": "FOUND"
+  },
+  {
+    "_id": "69af1e688493c17a41f8d237",
+    "id": "0a875418-74ed-42f1-bbac-9101e998cf4d",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "ADDED_TO_COLLECTION",
+    "caption": "Added TEST_Wishlist_Album_44f0ad9c by TEST_Wishlist_Artist_44378705 to their collection",
+    "record_id": "4e23d056-247e-4c92-8cb5-cec88667c826",
+    "created_at": "2026-03-09T19:24:24.223605+00:00"
+  },
+  {
+    "_id": "69af1e688493c17a41f8d23a",
+    "id": "0828e628-986d-4b8c-8e0a-3ab90839ae9c",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "ADDED_TO_COLLECTION",
+    "caption": "Added TEST_ISO_Album_75d8417d by TEST_ISO_Artist_145d8038 to their collection",
+    "record_id": "6aceba48-2d5a-4d6a-a9cd-838ec9f32ec5",
+    "created_at": "2026-03-09T19:24:24.913162+00:00"
+  },
+  {
+    "_id": "69af1e6a8493c17a41f8d23f",
+    "id": "4bc354e2-0dcc-4e81-b4a6-92f21fa1f2d4",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "ISO",
+    "caption": null,
+    "iso_id": "afe9f41d-9490-41d0-8ea3-96fc5771eed9",
+    "created_at": "2026-03-09T19:24:26.293436+00:00",
+    "iso_status": "FOUND"
+  },
+  {
+    "_id": "69af1e6b8493c17a41f8d242",
+    "id": "a0c65b32-22e7-4efc-bd94-45e1019fb75d",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "ISO",
+    "caption": null,
+    "iso_id": "2ff24120-7edb-49a4-9cd3-5271b179157d",
+    "created_at": "2026-03-09T19:24:27.023632+00:00",
+    "iso_status": "FOUND"
+  },
+  {
+    "_id": "69af1e7b8493c17a41f8d245",
+    "id": "1de834fc-1e07-4198-8861-9ccb2afb3873",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "ISO",
+    "caption": null,
+    "iso_id": "3d7c0934-41f7-4acc-aa17-c028119a5eaa",
+    "created_at": "2026-03-09T19:24:43.469742+00:00",
+    "iso_status": "FOUND"
+  },
+  {
+    "_id": "69af1e943dde4d5160fdfb46",
+    "id": "f4945427-a1be-4c07-9aad-280e1f003bdb",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "ISO",
+    "caption": "Looking for this record",
+    "iso_id": "24d7c94b-756a-420e-8ca3-d03aa0280d1b",
+    "created_at": "2026-03-09T19:25:08.425365+00:00",
+    "iso_status": "FOUND"
+  },
+  {
+    "_id": "69af1e953dde4d5160fdfb49",
+    "id": "4d5758a3-12b1-45a2-a879-4b92180e3d6a",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "ISO",
+    "caption": null,
+    "iso_id": "d77c4ceb-e93c-4500-8a7c-7cab0e7e272a",
+    "created_at": "2026-03-09T19:25:09.235923+00:00",
+    "iso_status": "FOUND"
+  },
+  {
+    "_id": "69af1e963dde4d5160fdfb4c",
+    "id": "ba0a845d-eefb-466f-8f83-ebe1582ebbf0",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "ADDED_TO_COLLECTION",
+    "caption": "Added TEST_Wishlist_Album_f15b4c07 by TEST_Wishlist_Artist_c44276a8 to their collection",
+    "record_id": "00f4c6e5-0d6d-4921-ba03-0e61d916d204",
+    "created_at": "2026-03-09T19:25:10.220299+00:00"
+  },
+  {
+    "_id": "69af1e963dde4d5160fdfb4f",
+    "id": "79b12448-5f7c-4bf8-b203-5919cbf4dadf",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "ADDED_TO_COLLECTION",
+    "caption": "Added TEST_ISO_Album_98e5ba8e by TEST_ISO_Artist_a374f172 to their collection",
+    "record_id": "1271c2da-6d4b-4692-a112-b8a3860f1bd5",
+    "created_at": "2026-03-09T19:25:10.826087+00:00"
+  },
+  {
+    "_id": "69af1e983dde4d5160fdfb54",
+    "id": "8280d16a-7dfd-4170-af30-a18d0cae1c6d",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "ISO",
+    "caption": null,
+    "iso_id": "1fa100fc-44e0-4034-9d44-be770b137150",
+    "created_at": "2026-03-09T19:25:12.104355+00:00",
+    "iso_status": "FOUND"
+  },
+  {
+    "_id": "69af1e983dde4d5160fdfb57",
+    "id": "0a30e79b-adab-4f45-bcd1-db0b4748e53b",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "ISO",
+    "caption": null,
+    "iso_id": "c6106898-fe91-4da0-abb6-d2cc7b216765",
+    "created_at": "2026-03-09T19:25:12.725441+00:00",
+    "iso_status": "FOUND"
+  },
+  {
+    "_id": "69af1ef33dde4d5160fdfb5a",
+    "id": "6006f06c-123d-4927-bb0a-57c79ebfa58e",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "ISO",
+    "caption": null,
+    "iso_id": "3ac62e9d-9ce4-49a9-ac76-1e63206cb537",
+    "created_at": "2026-03-09T19:26:43.982680+00:00",
+    "iso_status": "FOUND"
+  },
+  {
+    "_id": "69af29a3625893aa30f8ed3f",
+    "id": "66a8b878-82d8-4fe0-b9f4-c48c8952a7b2",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "ADDED_TO_COLLECTION",
+    "caption": "Added TEST_Wishlist Album by TEST_Wishlist Artist to their collection",
+    "record_id": "f2881bf2-2995-4a0a-a594-17fa14134c6b",
+    "created_at": "2026-03-09T20:12:19.681297+00:00"
+  },
+  {
+    "_id": "69af29bd20283cf358076dd3",
+    "id": "11acaf44-5244-488f-a565-8b9883d1b5bc",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "ADDED_TO_COLLECTION",
+    "caption": "Added TEST_Wishlist Album by TEST_Wishlist Artist to their collection",
+    "record_id": "01eb9167-cb80-43ee-948e-c85a0791b4b1",
+    "created_at": "2026-03-09T20:12:45.819831+00:00"
+  },
+  {
+    "_id": "69af2c9d8b8e9524e91f1fd8",
+    "id": "8f5bac25-4fd2-4439-b241-fd10a5392a8a",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "ISO",
+    "caption": null,
+    "iso_id": "4d0e87c4-9562-4208-bd13-a002a51354d1",
+    "created_at": "2026-03-09T20:25:01.448802+00:00"
+  },
+  {
+    "_id": "69af2e418b8e9524e91f1fda",
+    "id": "d1d6014c-eecd-4559-9b43-13da25998a6f",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "NOW_SPINNING",
+    "caption": "Spinning TEST_Source_Album_ab141319 by TEST_Source_2d23acd0",
+    "record_id": "e88160b2-1292-43c2-8496-8b806e104b04",
+    "created_at": "2026-03-09T20:32:01.318926+00:00"
+  },
+  {
+    "_id": "69af2ec08b8e9524e91f1fdc",
+    "id": "89f88c96-3089-4ea1-8614-e3d62014dcf2",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "NOW_SPINNING",
+    "caption": "Spinning TEST_Source_Album_ab141319 by TEST_Source_2d23acd0",
+    "record_id": "e88160b2-1292-43c2-8496-8b806e104b04",
+    "created_at": "2026-03-09T20:34:08.341973+00:00"
+  },
+  {
+    "_id": "69af2fd88b8e9524e91f1fde",
+    "id": "26ef3b7c-4ad6-4cd2-a5f1-1a6c7c7c398a",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "ADDED_TO_COLLECTION",
+    "caption": "Added Taylor Swift by Taylor Swift to their collection",
+    "record_id": "a35affd2-c9be-46bf-b2f6-6442c469181b",
+    "created_at": "2026-03-09T20:38:48.108352+00:00"
+  },
+  {
+    "_id": "69af3b0350d148c6c78fbc4f",
+    "id": "405d63a7-c361-4ab9-bf3e-7fc850fa04fb",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "ADDED_TO_COLLECTION",
+    "caption": "Added TEST_Block37_Record_SeekUpgrade_1773091587 by TEST_Block37_Artist to their collection",
+    "record_id": "81766210-dcd7-4d38-9bd3-57fbfafb0f40",
+    "created_at": "2026-03-09T21:26:27.855703+00:00"
+  },
+  {
+    "_id": "69af3b0450d148c6c78fbc52",
+    "id": "caff5baf-987f-416f-b4fb-f0ca10a28b3b",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "ADDED_TO_COLLECTION",
+    "caption": "Added TEST_Block37_Record_Wishlist_1773091588 by TEST_Block37_Artist to their collection",
+    "record_id": "f003b6d1-c915-404d-8941-6a30730d74d3",
+    "created_at": "2026-03-09T21:26:28.509748+00:00"
+  },
+  {
+    "_id": "69af3b0550d148c6c78fbc55",
+    "id": "40298999-dc60-47eb-b7b7-ebd896a44a68",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "ADDED_TO_COLLECTION",
+    "caption": "Added TEST_Block37_Record_Bulk1_1773091589 by TEST_Block37_Artist to their collection",
+    "record_id": "7dc0f0bf-604a-4582-9f89-344535eed341",
+    "created_at": "2026-03-09T21:26:29.058968+00:00"
+  },
+  {
+    "_id": "69af3b0550d148c6c78fbc57",
+    "id": "1ffbac6b-97a4-451e-9f19-82513e6370b2",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "ADDED_TO_COLLECTION",
+    "caption": "Added TEST_Block37_Record_Bulk2_1773091589 by TEST_Block37_Artist to their collection",
+    "record_id": "175ed2b1-c143-43d5-bd97-c8a869a94832",
+    "created_at": "2026-03-09T21:26:29.109422+00:00"
+  },
+  {
+    "_id": "69af3b0550d148c6c78fbc5b",
+    "id": "7f205826-4087-4304-9969-42ff539c3757",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "ADDED_TO_COLLECTION",
+    "caption": "Added TEST_Block37_Record_BulkHunt1_1773091589 by TEST_Block37_Artist to their collection",
+    "record_id": "cf2acc4c-33dd-423e-a500-36c5cd18c67d",
+    "created_at": "2026-03-09T21:26:29.755589+00:00"
+  },
+  {
+    "_id": "69af3b0550d148c6c78fbc5d",
+    "id": "462b86e3-b042-40f5-abdc-cd57ba1a6fcc",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "ADDED_TO_COLLECTION",
+    "caption": "Added TEST_Block37_Record_BulkHunt2_1773091589 by TEST_Block37_Artist to their collection",
+    "record_id": "cf23792d-613e-44b3-8bf3-012d11f899fa",
+    "created_at": "2026-03-09T21:26:29.812124+00:00"
+  },
+  {
+    "_id": "69af5ea821704eb2cf06b747",
+    "id": "72d08274-8abb-4b95-b049-99437a656bd5",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NOW_SPINNING",
+    "caption": null,
+    "record_id": "80b7eeb2-a7ae-49c8-a661-996658d3fc95",
+    "track": null,
+    "mood": null,
+    "created_at": "2026-03-09T23:58:32.791915+00:00"
+  },
+  {
+    "_id": "69af6038f93e930c1362cce4",
+    "id": "792b1478-2d1d-426d-ba9d-94e0c4e2e664",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NOW_SPINNING",
+    "caption": null,
+    "record_id": "e4d81df8-93e1-4b5e-8370-f043059916f2",
+    "track": null,
+    "mood": null,
+    "created_at": "2026-03-10T00:05:12.379835+00:00"
+  },
+  {
+    "_id": "69af6214d6e19d36ddcdb649",
+    "id": "2d48f81b-44ee-4ef9-a087-9057bac39259",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NOW_SPINNING",
+    "caption": null,
+    "record_id": "038afc7b-6e0e-4c11-9382-182f069f72ed",
+    "track": null,
+    "mood": null,
+    "created_at": "2026-03-10T00:13:08.290193+00:00"
+  },
+  {
+    "_id": "69af670544be1656e8a0ebeb",
+    "id": "33256837-ea55-4e8d-b33d-63e730de9f0c",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NOW_SPINNING",
+    "caption": null,
+    "record_id": "e140bda9-3fd3-4b8e-8be9-6e4a72b8dc79",
+    "track": null,
+    "mood": null,
+    "color_variant": null,
+    "created_at": "2026-03-10T00:34:13.421998+00:00"
+  },
+  {
+    "_id": "69afbd102e7592b13be74217",
+    "id": "3270a7ef-a4f7-47fe-8051-928efc549dbb",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "ADDED_TO_COLLECTION",
+    "caption": "Added Lover = \u604b\u4eba by Taylor Swift, Taylor Swift to their collection",
+    "record_id": "b536e4e3-bd2a-4959-bb40-ee73e8ad18de",
+    "color_variant": "Pink Opaque",
+    "created_at": "2026-03-10T06:41:20.690889+00:00"
+  },
+  {
+    "_id": "69afd2dadd16f530e4024233",
+    "id": "d3e9fb37-0de5-4104-b7c0-aacdfd07328c",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "ADDED_TO_COLLECTION",
+    "caption": "Added Deeper Into The Well by Kacey Musgraves to their collection",
+    "record_id": "ae57c543-40c6-47ac-a4df-db6ab5a0fbca",
+    "color_variant": "Clear Four Color Splatter W/ Green Liquid Fill",
+    "created_at": "2026-03-10T08:14:18.215013+00:00"
+  },
+  {
+    "_id": "69b03fbf2e0af2e349437a38",
+    "id": "483a97c2-bac8-4f77-9fd9-50b27b27e54c",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NOW_SPINNING",
+    "caption": null,
+    "record_id": "3a3d1145-08e7-4d11-8813-c2a5c823d771",
+    "track": null,
+    "mood": null,
+    "color_variant": "Blue Translucent",
+    "created_at": "2026-03-10T15:58:55.164223+00:00"
+  },
+  {
+    "_id": "69b03fc42e0af2e349437a3a",
+    "id": "01efc394-23f8-4e99-8e81-889d79d18338",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NOW_SPINNING",
+    "caption": null,
+    "record_id": "b536e4e3-bd2a-4959-bb40-ee73e8ad18de",
+    "track": null,
+    "mood": null,
+    "color_variant": "Pink Opaque",
+    "created_at": "2026-03-10T15:59:00.710287+00:00"
+  },
+  {
+    "_id": "69b042b5f867bd86cce8cfb7",
+    "id": "29f032c5-fa7f-42f3-ad4e-6108c2a68fe5",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "RANDOMIZER",
+    "caption": null,
+    "record_id": "ec187fb6-44ac-427d-960f-7f0574412a74",
+    "color_variant": "Clear EcoRecord",
+    "created_at": "2026-03-10T16:11:33.383492+00:00"
+  },
+  {
+    "_id": "69b0719d4d896a7e3c7ad0c1",
+    "id": "932cb793-d839-49b7-a557-0654ca30e887",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NOW_SPINNING",
+    "caption": "Spinning Deeper Well by Kacey Musgraves",
+    "record_id": "c3918208-6177-4a91-bba5-459badd82007",
+    "created_at": "2026-03-10T19:31:41.228305+00:00"
+  },
+  {
+    "_id": "69b080106e22604a3d6074bf",
+    "id": "0d1ca91b-bdda-4a86-bdcf-f44288a4cfa1",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "ADDED_TO_COLLECTION",
+    "caption": "Added Folklore: The Long Pond Studio Sessions by Taylor Swift to their collection",
+    "record_id": "827dbb63-be23-41a1-8102-0db3a686e43b",
+    "color_variant": "Grey",
+    "created_at": "2026-03-10T20:33:20.479743+00:00"
+  },
+  {
+    "_id": "69b0bbf2c508236a314873e4",
+    "id": "d33359c7-d10f-4eb8-9e2d-1b5788f478e5",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "ADDED_TO_COLLECTION",
+    "caption": "Added Lover by Taylor Swift to their collection",
+    "record_id": "1e892dbe-d09c-446a-bfca-b86595d09ba7",
+    "color_variant": "Blue Translucent",
+    "created_at": "2026-03-11T00:48:50.025123+00:00"
+  },
+  {
+    "_id": "69b0bbfcc508236a314873e6",
+    "id": "ff9894d9-943a-4927-a18d-96e4e90c61bd",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "ADDED_TO_COLLECTION",
+    "caption": "Added Lover by Taylor Swift to their collection",
+    "record_id": "2348e1b6-7ed0-4c56-b982-3d50ea50f215",
+    "color_variant": "Blue Translucent",
+    "created_at": "2026-03-11T00:49:00.498404+00:00"
+  },
+  {
+    "_id": "69b0d0d0443164fa7c0c0f7e",
+    "id": "639fd41b-805f-4051-a361-4d42b2d35399",
+    "user_id": "54c4f7dc-f221-4dba-892a-5f4c5f334fc0",
+    "post_type": "NEW_HAUL",
+    "is_auto_bundle": true,
+    "caption": "Fresh sealed copy from the record store",
+    "bundle_records": [
+      {
+        "record_id": "52246f5e-7b5e-4efa-8b85-45f41ad5693e",
+        "title": "Rumours",
+        "artist": "Fleetwood Mac",
+        "cover_url": "https://i.discogs.com/vF2RH5lFgYsLLcpZQu6dF7bWEXBwbN5qJKwB7mKmA5Y/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE4MDgy/OTctMTMzMTg3OTA1/MC5qcGVn.jpeg",
+        "color_variant": null
+      },
+      {
+        "record_id": "5ff2225a-87fc-4726-a4f5-562cc3857d7c",
+        "title": "Abbey Road",
+        "artist": "The Beatles",
+        "cover_url": "https://i.discogs.com/kAv-QQdHwJU-J0aXJSx96CuHU5PrA9QGS_cOqZMFJ2I/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI1NzMw/MDAtMTQ4NjI0MTMy/Mi02MTI5LmpwZWc.jpeg",
+        "color_variant": null
+      },
+      {
+        "record_id": "d2f819ef-3b61-40fa-b837-d049a6255a8b",
+        "title": "Kind of Blue",
+        "artist": "Miles Davis",
+        "cover_url": "https://i.discogs.com/u-8Ws3Z1Lk5BIpwR5XzY2Sd-29-XZA4eYHpz0MvhOZE/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTM3MDM4/NC0xMzQ3MzY2MDkx/LTcyMjkuanBlZw.jpeg",
+        "color_variant": null
+      },
+      {
+        "record_id": "de862eba-d955-4dbe-98c8-d5b02eca27c3",
+        "title": "TEST_SingleBundle_1773195591.804077",
+        "artist": "Test Artist Bundle",
+        "cover_url": null,
+        "color_variant": null
+      },
+      {
+        "record_id": "cceb5546-f70a-40b1-b716-e03c1ed4109f",
+        "title": "TEST_Bundle_1773195592.503265_0",
+        "artist": "Bundle Artist 0",
+        "cover_url": null,
+        "color_variant": null
+      },
+      {
+        "record_id": "bc29a2ac-91e4-4939-8e7f-6104c7db3cd0",
+        "title": "TEST_Bundle_1773195592.503265_1",
+        "artist": "Bundle Artist 1",
+        "cover_url": null,
+        "color_variant": null
+      },
+      {
+        "record_id": "221d13da-c3b0-4175-9d78-3cbc1b6c2bf8",
+        "title": "TEST_Bundle_1773195592.503265_2",
+        "artist": "Bundle Artist 2",
+        "cover_url": null,
+        "color_variant": null
+      },
+      {
+        "record_id": "c4bfb262-26b4-49c1-ae66-d5b22d950b43",
+        "title": "TEST_CaptionTest_1773195594.919042",
+        "artist": "Caption Test Artist",
+        "cover_url": null,
+        "color_variant": null
+      },
+      {
+        "record_id": "2620957b-830a-4c8b-8e50-390585ba4c73",
+        "title": "TEST_SingleBundle_1773195704.742353",
+        "artist": "Test Artist Bundle",
+        "cover_url": null,
+        "color_variant": null
+      },
+      {
+        "record_id": "8968fa57-747d-4f05-902e-3fcb574ed46b",
+        "title": "TEST_Bundle_1773195705.360128_0",
+        "artist": "Bundle Artist 0",
+        "cover_url": null,
+        "color_variant": null
+      },
+      {
+        "record_id": "641b2266-e10f-4430-bd29-320ba218498c",
+        "title": "TEST_Bundle_1773195705.360128_1",
+        "artist": "Bundle Artist 1",
+        "cover_url": null,
+        "color_variant": null
+      },
+      {
+        "record_id": "1d218134-d74f-46ac-87a5-407f43448450",
+        "title": "TEST_Bundle_1773195705.360128_2",
+        "artist": "Bundle Artist 2",
+        "cover_url": null,
+        "color_variant": null
+      },
+      {
+        "record_id": "a5baa72a-749a-434a-a6f5-aca1d4cfbb13",
+        "title": "TEST_CaptionTest_1773195707.739963",
+        "artist": "Caption Test Artist",
+        "cover_url": null,
+        "color_variant": null
+      }
+    ],
+    "created_at": "2026-03-11T02:17:52.319469+00:00"
+  },
+  {
+    "_id": "69b0d798692fcf4318cf6f29",
+    "id": "6df89a85-8b7b-4447-9b42-2d078ecd3c91",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "username": "katieintheafterglow",
+    "post_type": "DAILY_PROMPT",
+    "prompt_text": "a record that sounds different every time you play it",
+    "record_id": "2348e1b6-7ed0-4c56-b982-3d50ea50f215",
+    "record_title": "Lover",
+    "record_artist": "Taylor Swift",
+    "cover_url": "https://i.discogs.com/cdZMT23kEQJvU5S-gcFYZ4vZ8k08V2dCsoI_iXZ8jBk/rs:fit/g:sm/q:90/h:600/w:599/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE0NDAx/MjM1LTE2ODI0NjY5/ODMtOTU5NC5qcGVn.jpeg",
+    "caption": "this one",
+    "created_at": "2026-03-11T02:46:48.374152+00:00"
+  },
+  {
+    "_id": "69b0ddfaea2f220f47c54177",
+    "id": "97af156f-87fb-4eba-8074-79455f981cac",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "record_added",
+    "content": "Imported 143 records from Discogs",
+    "record_id": null,
+    "haul_id": null,
+    "created_at": "2026-03-11T03:14:02.393940+00:00"
+  },
+  {
+    "_id": "69b167a028112251c94dba1a",
+    "id": "cac8481a-3b7d-4390-aa82-45a33c9840db",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "username": "katieintheafterglow",
+    "post_type": "DAILY_PROMPT",
+    "prompt_text": "your go-to record for Sunday mornings",
+    "record_id": "70163dd5-8c7f-4881-9985-7b725c657378",
+    "record_title": "Lover",
+    "record_artist": "Taylor Swift",
+    "cover_url": "https://i.discogs.com/9h_z7LVKMpBWQDNyofKqJelpVCGirMaodD9upC3VDSA/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE0NDA4/MjQ0LTE3NjA0NjE2/NjItMzUxMC5qcGVn.jpeg",
+    "caption": "lover",
+    "created_at": "2026-03-11T13:01:20.338919+00:00"
+  },
+  {
+    "_id": "69b1904f4dd34c138edf3ab2",
+    "id": "5469fa0e-7716-4d92-8d71-67064338efd2",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "RANDOMIZER",
+    "caption": "love",
+    "record_id": "f3595ee5-a6b6-4b9f-9c7d-9f54b2899533",
+    "color_variant": "Blue",
+    "created_at": "2026-03-11T15:54:55.719326+00:00"
+  },
+  {
+    "_id": "69b1a1721503fd485ea0ac62",
+    "id": "9dc6b6c8-7b91-476c-a88e-ca16c11a6f88",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NOW_SPINNING",
+    "caption": "lovinggg",
+    "record_id": "0766154f-0c6f-4123-ae35-c3fb4af25d0a",
+    "track": null,
+    "mood": null,
+    "spin_id": "3b6c8f8d-f600-4a3a-80ce-318b95859ef4",
+    "color_variant": "Quilted",
+    "created_at": "2026-03-11T17:08:02.868523+00:00"
+  },
+  {
+    "_id": "69b1b15f2d56ac9d283344ac",
+    "id": "1fe4f0dc-d135-41ea-a68c-2f1e0577eb06",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NOW_SPINNING",
+    "caption": "q",
+    "record_id": "1e892dbe-d09c-446a-bfca-b86595d09ba7",
+    "track": null,
+    "mood": null,
+    "spin_id": "82e2f070-3bdc-4e52-a30b-3837e7102221",
+    "color_variant": "Blue Translucent",
+    "created_at": "2026-03-11T18:15:59.244063+00:00"
+  },
+  {
+    "_id": "69b1b16a2d56ac9d283344ad",
+    "id": "603fa196-dd8b-4de2-ad19-48b6685a0645",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "RANDOMIZER",
+    "caption": "yes",
+    "record_id": "4775f7f3-5388-4e56-9654-094c6202e2bc",
+    "color_variant": "Green [Lime Green]",
+    "created_at": "2026-03-11T18:16:10.737814+00:00"
+  },
+  {
+    "_id": "69b1bce48a680d9eeedf0e18",
+    "id": "29d6deae-6d2d-4e67-aefd-31fc56fd41b2",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NOW_SPINNING",
+    "caption": "my song",
+    "record_id": "1e892dbe-d09c-446a-bfca-b86595d09ba7",
+    "track": "D15 \u2014 Afterglow",
+    "mood": null,
+    "spin_id": "7166f396-346d-4b32-bade-e6a2054013e8",
+    "color_variant": "Blue Translucent",
+    "created_at": "2026-03-11T19:05:08.964992+00:00"
+  },
+  {
+    "_id": "69b1c63040fcacc5f43ce32f",
+    "id": "1b7dec9b-4363-4101-9ece-fa62772baa6e",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NOW_SPINNING",
+    "caption": "yes",
+    "record_id": "1e892dbe-d09c-446a-bfca-b86595d09ba7",
+    "track": "A1 \u2014 I Forgot That You Existed",
+    "mood": "Upbeat Vibes",
+    "spin_id": "b64b04b9-fab1-4fcb-a70c-b84249c46c88",
+    "color_variant": "Blue Translucent",
+    "created_at": "2026-03-11T19:44:48.685417+00:00"
+  },
+  {
+    "_id": "69b1c65a40fcacc5f43ce330",
+    "id": "5a493558-3e56-4d6a-a940-77d1a688a09c",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "RANDOMIZER",
+    "caption": "thats that me espresso",
+    "record_id": "e140bda9-3fd3-4b8e-8be9-6e4a72b8dc79",
+    "color_variant": "Brown [Chocolate Brown]",
+    "created_at": "2026-03-11T19:45:30.810963+00:00"
+  },
+  {
+    "_id": "69b1d6ab8dd9848c07e6e7b2",
+    "id": "b5429595-7df3-49fe-834c-ae12dd8f2e8a",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "post_type": "listing_sale",
+    "content": "Just listed Penny Test Record by Test Artist for sale on the Honeypot",
+    "record_title": "Penny Test Record",
+    "record_artist": "Test Artist",
+    "cover_url": "https://example.com/test.jpg",
+    "listing_id": "a448de35-c8f2-4b26-87c0-a8367ea009bf",
+    "created_at": "2026-03-11T20:55:07.802811+00:00",
+    "is_pinned": false
+  },
+  {
+    "_id": "69b1f9e52935fdf6551e3f9b",
+    "id": "5ffc3b53-0a40-4c94-a35b-b7e906fcc035",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NOW_SPINNING",
+    "caption": "Spinning Folklore: The Long Pond Studio Sessions by Taylor Swift",
+    "record_id": "2efb8bc3-151d-4eed-a206-dbd0b660bc7c",
+    "created_at": "2026-03-11T23:25:25.768486+00:00"
+  },
+  {
+    "_id": "69b1f9e72935fdf6551e3f9d",
+    "id": "00a27ddd-8cbf-47f8-a1dd-34ab7ad529ce",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NOW_SPINNING",
+    "caption": "Spinning Lover by Taylor Swift",
+    "record_id": "1e892dbe-d09c-446a-bfca-b86595d09ba7",
+    "created_at": "2026-03-11T23:25:27.861522+00:00"
+  },
+  {
+    "_id": "69b1f9ea2935fdf6551e3f9f",
+    "id": "5bbaf42b-5885-496a-abc6-c4dc00ff23b4",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NOW_SPINNING",
+    "caption": "Spinning Folklore: The Long Pond Studio Sessions by Taylor Swift",
+    "record_id": "827dbb63-be23-41a1-8102-0db3a686e43b",
+    "created_at": "2026-03-11T23:25:30.072213+00:00"
+  },
+  {
+    "_id": "69b20568e2012b12d9081918",
+    "id": "ac741556-94c4-4e0c-b3a0-0f9c95739239",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NEW_HAUL",
+    "is_auto_bundle": true,
+    "caption": "Added Pizzicato V In The Audrey Hepburn Complex by Pizzicato V* to their collection",
+    "bundle_records": [
+      {
+        "record_id": "db89a10e-c019-43de-a1df-51f7fe128aec",
+        "title": "Pizzicato V In The Audrey Hepburn Complex",
+        "artist": "Pizzicato V*",
+        "cover_url": "https://i.discogs.com/F4bZOLLVZlE5jSaIJ2FUUhgXT_9is1oYMn5C3On4lQA/rs:fit/g:sm/q:90/h:427/w:422/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE5ODI4/OTYtMTI1NjYwMTEz/MS5qcGVn.jpeg",
+        "color_variant": null
+      }
+    ],
+    "created_at": "2026-03-12T00:14:32.869145+00:00"
+  },
+  {
+    "_id": "69b2219ada9dedcaa6270901",
+    "id": "566577f7-bd06-49f3-a841-2ea521b5dd6b",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "ISO",
+    "caption": "test",
+    "iso_id": "274b11cf-9fd2-462b-8fb6-1366dd6e82a7",
+    "intent": "dreaming",
+    "created_at": "2026-03-12T02:14:50.537684+00:00"
+  },
+  {
+    "_id": "69b22234da9dedcaa6270904",
+    "id": "c337d74b-42d4-46e8-9a54-0377c7d9c43c",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NEW_HAUL",
+    "caption": "red",
+    "image_url": null,
+    "haul_id": "5133404e-24b9-44af-811e-a8114cd1853e",
+    "created_at": "2026-03-12T02:17:24.799411+00:00"
+  },
+  {
+    "_id": "69b22387778bb37b8699a11c",
+    "id": "3dea163b-f6f8-4ffd-a43e-f9c792a898f1",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "listing_sale",
+    "content": "Just listed TEST_Unofficial_Album_Success by TEST_Unofficial_Artist for sale on the Honeypot",
+    "record_title": "TEST_Unofficial_Album_Success",
+    "record_artist": "TEST_Unofficial_Artist",
+    "cover_url": "https://example.com/photo1.jpg",
+    "listing_id": "4abd32c1-b716-420b-8cf0-8d85ae06dbd2",
+    "created_at": "2026-03-12T02:23:03.829362+00:00",
+    "is_pinned": false
+  },
+  {
+    "_id": "69b22388778bb37b8699a11e",
+    "id": "bd96d037-a01a-4b45-b254-3bac58911747",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "listing_sale",
+    "content": "Just listed TEST_Official_Album by TEST_Official_Artist for sale on the Honeypot",
+    "record_title": "TEST_Official_Album",
+    "record_artist": "TEST_Official_Artist",
+    "cover_url": "https://example.com/photo1.jpg",
+    "listing_id": "5a85f13d-1723-490a-89dd-72765fed4081",
+    "created_at": "2026-03-12T02:23:04.121319+00:00",
+    "is_pinned": false
+  },
+  {
+    "_id": "69b226afabf65ac975b158be",
+    "id": "ddbe534c-1ceb-4cbc-a41c-e8400d4d249c",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NEW_HAUL",
+    "caption": "q",
+    "image_url": null,
+    "haul_id": "1f157d12-fd70-498e-8723-c1f71b6a3da7",
+    "created_at": "2026-03-12T02:36:31.944294+00:00"
+  },
+  {
+    "_id": "69b227b0abf65ac975b158c0",
+    "id": "f86b5a03-7a44-433d-a2d2-559d706981d8",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "ISO",
+    "caption": null,
+    "iso_id": "338c0b69-0ba4-4605-9d38-6d7e5448bd18",
+    "intent": "BUY",
+    "created_at": "2026-03-12T02:40:48.486417+00:00"
+  },
+  {
+    "_id": "69b22848d3b8e9c26c613ae6",
+    "id": "162e46d3-ddb9-455b-b83a-c6dcd36198a2",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "ISO",
+    "caption": "ISO this bootleg - been hunting forever",
+    "iso_id": "d51993ec-889d-4920-b0dd-6293a45e0532",
+    "intent": "seeking",
+    "created_at": "2026-03-12T02:43:20.595395+00:00"
+  },
+  {
+    "_id": "69b228ced3b8e9c26c613ae8",
+    "id": "d1fb6171-a650-477c-83f8-d113825433d6",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NEW_HAUL",
+    "is_auto_bundle": true,
+    "caption": "Added Merry Swiftmas (A Taylor Swift Holiday Collection) by Taylor Swift to their collection",
+    "bundle_records": [
+      {
+        "record_id": "0da5e07e-96a9-4fab-a33b-fba8110bd2fb",
+        "title": "Merry Swiftmas (A Taylor Swift Holiday Collection)",
+        "artist": "Taylor Swift",
+        "cover_url": "https://i.discogs.com/wI5gimf7SLD6AGQvAxY1cSYt0zWZwcFPLQcDE-TvYJo/rs:fit/g:sm/q:90/h:603/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMyNDQy/MTc3LTE3MzMwMDQz/NzgtOTcwNC5qcGVn.jpeg",
+        "color_variant": "Red w/ White Splatter"
+      }
+    ],
+    "created_at": "2026-03-12T02:45:34.010074+00:00"
+  },
+  {
+    "_id": "69b234c4369249580bf07482",
+    "id": "f66c9658-44fe-4dab-b0cb-e656f1bac7d6",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NEW_HAUL",
+    "caption": "a",
+    "image_url": null,
+    "haul_id": "6c264b70-5b87-4b02-b830-7898689b18d9",
+    "created_at": "2026-03-12T03:36:36.842928+00:00"
+  },
+  {
+    "_id": "69b236fb369249580bf07484",
+    "id": "8db61222-561f-425f-9f77-68886bf2d609",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NEW_HAUL",
+    "is_auto_bundle": true,
+    "caption": "Added Pizzicato V In The Audrey Hepburn Complex by Pizzicato V* to their collection",
+    "bundle_records": [
+      {
+        "record_id": "585a45b4-c3b7-49ad-92b8-5608d6f86b65",
+        "title": "Pizzicato V In The Audrey Hepburn Complex",
+        "artist": "Pizzicato V*",
+        "cover_url": "https://i.discogs.com/F4bZOLLVZlE5jSaIJ2FUUhgXT_9is1oYMn5C3On4lQA/rs:fit/g:sm/q:90/h:427/w:422/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE5ODI4/OTYtMTI1NjYwMTEz/MS5qcGVn.jpeg",
+        "color_variant": null
+      }
+    ],
+    "created_at": "2026-03-12T03:46:03.240144+00:00"
+  },
+  {
+    "_id": "69b241343fa41611bd8d5826",
+    "id": "d3305618-f067-41ec-8d5d-b77ba8edcdca",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NEW_HAUL",
+    "caption": "yes",
+    "image_url": null,
+    "haul_id": "7ebb7ac6-6f26-4374-b9cf-3d0509dace28",
+    "created_at": "2026-03-12T04:29:40.973643+00:00"
+  },
+  {
+    "_id": "69b241d083a6d0eb8e33dffa",
+    "id": "0bc73361-1263-447a-9842-ceb46abb10d1",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NEW_HAUL",
+    "caption": "test",
+    "image_url": null,
+    "haul_id": "55714ba4-22a7-49ef-b2cd-9242a1263eef",
+    "created_at": "2026-03-12T04:32:16.002068+00:00"
+  },
+  {
+    "_id": "69b241dede9a5af37a6dab50",
+    "id": "593a4ff2-c992-4a24-99dd-774aafcbb1a3",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NOW_SPINNING",
+    "caption": "yes",
+    "record_id": "578ad973-76f6-411e-b12b-846026e296a3",
+    "track": "A1 \u2014 Beautiful Eyes",
+    "mood": null,
+    "spin_id": "1dbfd1fe-bcc2-40ca-8346-b26f69384010",
+    "color_variant": null,
+    "created_at": "2026-03-12T04:32:30.849496+00:00"
+  },
+  {
+    "_id": "69b2422119da9679dc1cd9bf",
+    "id": "1c8f27fb-de80-41c0-bc48-c0d02d7dca8a",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "username": "katieintheafterglow",
+    "post_type": "DAILY_PROMPT",
+    "prompt_text": "the one that makes you want to learn an instrument",
+    "record_id": "3c40fc1a-88d2-40e7-b115-a43e48c479ed",
+    "record_title": "Did You Know That There's A Tunnel Under Ocean Blvd",
+    "record_artist": "Lana Del Rey",
+    "cover_url": "https://i.discogs.com/lQPcmH-RJw7DgSGwBUZID9lXVdWMUeq6doH9SGMdXyk/rs:fit/g:sm/q:90/h:597/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTE1/MTEyLTE2Nzk3NjIw/OTctNTAxNC5qcGVn.jpeg",
+    "caption": "the piano tho",
+    "created_at": "2026-03-12T04:33:37.893092+00:00"
+  },
+  {
+    "_id": "69b24348124dc29a5bd269e8",
+    "id": "96b24bba-f625-4315-9965-b1a714de7bff",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NEW_HAUL",
+    "is_auto_bundle": true,
+    "caption": "Added Sinatra S Sinatra by Frank Sinatra to their collection",
+    "bundle_records": [
+      {
+        "record_id": "5b41c215-9c50-4469-8695-680df154e146",
+        "title": "Sinatra S Sinatra",
+        "artist": "Frank Sinatra",
+        "cover_url": null,
+        "color_variant": "Gatefold"
+      }
+    ],
+    "created_at": "2026-03-12T04:38:32.935396+00:00"
+  },
+  {
+    "_id": "69b2467231f84d4a86788fbc",
+    "id": "66a13891-76a1-4871-a7ee-f6a8925a6218",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NEW_HAUL",
+    "is_auto_bundle": true,
+    "caption": "Added Disney 100 by Various to their collection",
+    "bundle_records": [
+      {
+        "record_id": "d48d640d-51bc-4b1a-9d1e-a7a74b6860e0",
+        "title": "Disney 100",
+        "artist": "Various",
+        "cover_url": null,
+        "color_variant": "Silver",
+        "discogs_id": null,
+        "is_unofficial": false
+      }
+    ],
+    "created_at": "2026-03-12T04:52:02.394092+00:00"
+  },
+  {
+    "_id": "69b24a30164cc3869bbb59c2",
+    "id": "ebb96b6c-9132-4f90-8954-854cf392168f",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NEW_HAUL",
+    "is_auto_bundle": true,
+    "caption": "Added Walt Disney World Band by Walt Disney World Band to their collection",
+    "bundle_records": [
+      {
+        "record_id": "0b6edcc7-e17a-4bd9-b0de-1ed3b47b3aa3",
+        "title": "Walt Disney World Band",
+        "artist": "Walt Disney World Band",
+        "cover_url": null,
+        "color_variant": "Standard Black Vinyl",
+        "discogs_id": null,
+        "is_unofficial": false
+      }
+    ],
+    "created_at": "2026-03-12T05:08:00.089879+00:00"
+  },
+  {
+    "_id": "69b24e1985081974dcd747fa",
+    "id": "b4f9e48c-b19d-4b47-80e1-34f40fe552eb",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NEW_HAUL",
+    "is_auto_bundle": true,
+    "caption": "Added Lover by Taylor Swift to their collection",
+    "bundle_records": [
+      {
+        "record_id": "a981f0f1-5c70-41b4-9275-2c702c21591f",
+        "title": "Lover",
+        "artist": "Taylor Swift",
+        "cover_url": "https://i.discogs.com/AtDFDg1_gZyjv16Ysg_boeOi-5prd9ISFDVizTGfGY4/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE0NDAx/MjM1LTE2ODI0NjY5/ODMtOTU5NC5qcGVn.jpeg",
+        "color_variant": "Blue Translucent",
+        "discogs_id": 14401235,
+        "is_unofficial": false
+      }
+    ],
+    "created_at": "2026-03-12T05:24:41.264141+00:00"
+  },
+  {
+    "_id": "69b253318cdaf560921a7f66",
+    "id": "9e292503-e589-46b7-9733-9e4c6a8bf9e4",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NOW_SPINNING",
+    "caption": "Spinning Pizzicato V In The Audrey Hepburn Complex by Pizzicato V*",
+    "record_id": "585a45b4-c3b7-49ad-92b8-5608d6f86b65",
+    "created_at": "2026-03-12T05:46:25.898934+00:00"
+  },
+  {
+    "_id": "69b3125d7a0c759e5f7f7a30",
+    "id": "8b061048-d912-4efa-9512-78de4345d9e9",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NEW_HAUL",
+    "caption": "yes",
+    "image_url": null,
+    "haul_id": "5e7a2304-d79e-4b3d-938e-091d9d29504b",
+    "created_at": "2026-03-12T19:22:05.248389+00:00"
+  },
+  {
+    "_id": "69b315a5649d5329f0f25a7c",
+    "id": "a2f10b1e-c679-4d34-8f62-91aa0a7b3329",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NOW_SPINNING",
+    "caption": "me",
+    "record_id": "a59c1666-1b00-4670-8d89-f9864a2a12f3",
+    "track": null,
+    "mood": "Party Mode",
+    "photo_url": "https://thehoneygroove.com/api/files/serve/honeygroove/uploads/4072aaa7-1171-4cd2-9c8f-20dfca8fdc58/278929b7-9973-4a89-9b04-860fc2331b6d.jpg",
+    "spin_id": "235c6740-092d-4087-b61d-a4a3dfc60818",
+    "color_variant": "Clear w/ White Splatter [\"Spilled Milk\"]",
+    "created_at": "2026-03-12T19:36:05.661212+00:00"
+  },
+  {
+    "_id": "69b315dcc2f4acf404cca2a2",
+    "id": "e71effa3-7224-4d13-b09b-a69ad0ad7952",
+    "user_id": "baa53931-2831-4a99-9ffb-f31be0672784",
+    "post_type": "NOW_SPINNING",
+    "caption": "Testing photo upload for now spinning!",
+    "record_id": "b1cf67cf-2f73-4d9b-b3bd-078e232378a8",
+    "track": "Test Track",
+    "mood": "Late Night",
+    "photo_url": "https://thehoneygroove.com/api/files/serve/honeygroove/uploads/baa53931-2831-4a99-9ffb-f31be0672784/506763b8-e7f7-401c-8cd0-752b11157cbd.jpg",
+    "spin_id": "8b12ba5c-6ff1-465f-a6b7-124f3dc07f0e",
+    "color_variant": "United Record Pressing",
+    "created_at": "2026-03-12T19:37:00.351855+00:00"
+  },
+  {
+    "_id": "69b315ddc2f4acf404cca2a6",
+    "id": "28376e95-30fa-4347-9612-fb54ed2258d5",
+    "user_id": "baa53931-2831-4a99-9ffb-f31be0672784",
+    "post_type": "NEW_HAUL",
+    "caption": "Testing photo upload for haul!",
+    "image_url": "https://thehoneygroove.com/api/files/serve/honeygroove/uploads/baa53931-2831-4a99-9ffb-f31be0672784/ce5bdccb-0980-48d0-b80d-85d7f8412a93.jpg",
+    "haul_id": "ebe80a8c-5078-4a8d-9068-e1bb59e657ed",
+    "created_at": "2026-03-12T19:37:01.268696+00:00"
+  },
+  {
+    "_id": "69b315dec2f4acf404cca2a8",
+    "id": "dc340c3e-b804-44c2-8608-97b17789c667",
+    "user_id": "baa53931-2831-4a99-9ffb-f31be0672784",
+    "post_type": "NOW_SPINNING",
+    "caption": "Model validation test",
+    "record_id": "be23d850-eb57-47d7-88fa-49ad0a729c20",
+    "track": "Side A Track 1",
+    "mood": "Golden Hour",
+    "photo_url": "https://example.com/test-photo.jpg",
+    "spin_id": "ec0a3170-e348-4468-b924-e6399c28e4ed",
+    "color_variant": null,
+    "created_at": "2026-03-12T19:37:02.521178+00:00"
+  },
+  {
+    "_id": "69b31643c2f4acf404cca2ac",
+    "id": "fee82e70-fe31-45c9-8cf9-796f4fec2784",
+    "user_id": "baa53931-2831-4a99-9ffb-f31be0672784",
+    "post_type": "NOW_SPINNING",
+    "caption": "Testing photo upload for now spinning!",
+    "record_id": "be23d850-eb57-47d7-88fa-49ad0a729c20",
+    "track": "Test Track",
+    "mood": "Late Night",
+    "photo_url": "https://thehoneygroove.com/api/files/serve/honeygroove/uploads/baa53931-2831-4a99-9ffb-f31be0672784/d0043c15-d364-47e4-bc5d-d36304c9e99e.jpg",
+    "spin_id": "88224e09-801d-4edb-b91a-24093e8d3279",
+    "color_variant": null,
+    "created_at": "2026-03-12T19:38:43.842849+00:00"
+  },
+  {
+    "_id": "69b31644c2f4acf404cca2b0",
+    "id": "569f3895-4769-42fd-ad48-0edb0efc38db",
+    "user_id": "baa53931-2831-4a99-9ffb-f31be0672784",
+    "post_type": "NEW_HAUL",
+    "caption": "Testing photo upload for haul!",
+    "image_url": "https://thehoneygroove.com/api/files/serve/honeygroove/uploads/baa53931-2831-4a99-9ffb-f31be0672784/85febc15-b0e3-4bf1-a6b4-8d2dfb5c9de8.jpg",
+    "haul_id": "bb8fafba-a5c1-4286-86d2-0a8e2e059aba",
+    "created_at": "2026-03-12T19:38:44.572305+00:00"
+  },
+  {
+    "_id": "69b31645c2f4acf404cca2b2",
+    "id": "934edbb2-879d-444e-9a4b-5c9b74469b53",
+    "user_id": "baa53931-2831-4a99-9ffb-f31be0672784",
+    "post_type": "NOW_SPINNING",
+    "caption": "Model validation test",
+    "record_id": "df9b48cc-e61f-4d23-8932-f03042e89207",
+    "track": "Side A Track 1",
+    "mood": "Golden Hour",
+    "photo_url": "https://example.com/test-photo.jpg",
+    "spin_id": "c7f22e21-209c-4ef4-9d91-dd87cd8a4e14",
+    "color_variant": null,
+    "created_at": "2026-03-12T19:38:45.688829+00:00"
+  },
+  {
+    "_id": "69b317c4c2f4acf404cca2b5",
+    "id": "f42f8999-fe58-4eb0-9b8a-ad1e4a3d3de8",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NOW_SPINNING",
+    "caption": "yes",
+    "record_id": "a981f0f1-5c70-41b4-9275-2c702c21591f",
+    "track": null,
+    "mood": "Road Trip",
+    "photo_url": "https://thehoneygroove.com/api/files/serve/honeygroove/uploads/4072aaa7-1171-4cd2-9c8f-20dfca8fdc58/e47ca586-0c91-406f-b154-e346576d24aa.jpg",
+    "spin_id": "daf56f89-83fb-4268-b624-f8f97d731d7f",
+    "color_variant": "Blue Translucent",
+    "created_at": "2026-03-12T19:45:08.071975+00:00"
+  },
+  {
+    "_id": "69b318ffc2f4acf404cca2b8",
+    "id": "5cb6330d-90a4-4a1e-bf70-c07499a3adba",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NOW_SPINNING",
+    "caption": "test",
+    "record_id": "a981f0f1-5c70-41b4-9275-2c702c21591f",
+    "track": "A1 \u2014 I Forgot That You Existed",
+    "mood": "Upbeat Vibes",
+    "photo_url": "https://thehoneygroove.com/api/files/serve/honeygroove/uploads/4072aaa7-1171-4cd2-9c8f-20dfca8fdc58/a8638cb5-9206-4f5b-be81-06b52f8e2027.jpg",
+    "spin_id": "28f268b6-b1b3-45b0-a938-19c155d2bdf6",
+    "color_variant": "Blue Translucent",
+    "created_at": "2026-03-12T19:50:23.733719+00:00"
+  },
+  {
+    "_id": "69b31a02c2f4acf404cca2bc",
+    "id": "f967edd9-d52b-4842-979c-6b48d277f8bf",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NEW_HAUL",
+    "caption": "lover",
+    "image_url": "https://thehoneygroove.com/api/files/serve/honeygroove/uploads/4072aaa7-1171-4cd2-9c8f-20dfca8fdc58/68c648c3-68c1-4054-b4e4-d0722089885b.jpg",
+    "haul_id": "46143c87-699b-4e3b-8a28-29517627bbd1",
+    "created_at": "2026-03-12T19:54:42.608939+00:00"
+  },
+  {
+    "_id": "69b31a1bc2f4acf404cca2bf",
+    "id": "b4027630-e94c-4736-b52c-7e142ebd8eb4",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NOW_SPINNING",
+    "caption": "me",
+    "record_id": "2539eb3f-32a3-42f3-b6fb-eef0758f70b6",
+    "track": "A1 \u2014 I Forgot That You Existed",
+    "mood": "Party Mode",
+    "photo_url": "https://thehoneygroove.com/api/files/serve/honeygroove/uploads/4072aaa7-1171-4cd2-9c8f-20dfca8fdc58/bd76e17a-cc21-451d-b74b-d9f746b0c4b1.jpg",
+    "spin_id": "6ed91f6e-160b-4d57-9ac9-411e9000449f",
+    "color_variant": null,
+    "created_at": "2026-03-12T19:55:07.105651+00:00"
+  },
+  {
+    "_id": "69b3228bcbfb86051824893c",
+    "id": "ae1cb24e-7e1a-4050-bb0b-3cfc8d9e6ed1",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NOTE",
+    "caption": "this vinyl!",
+    "record_id": null,
+    "image_url": "https://thehoneygroove.com/api/files/serve/honeygroove/uploads/4072aaa7-1171-4cd2-9c8f-20dfca8fdc58/3713ebf5-387e-4434-9723-3e28a9628bfe.jpg",
+    "created_at": "2026-03-12T20:31:07.324208+00:00"
+  },
+  {
+    "_id": "69b324d395aefa3ad466a114",
+    "id": "62830251-06d7-47f2-a248-112c0be7535a",
+    "user_id": "baa53931-2831-4a99-9ffb-f31be0672784",
+    "post_type": "NOTE",
+    "caption": "Testing *bold words* and /italic words/ with https://thehoneygroove.com/path/page and @katieintheafterglow",
+    "record_id": null,
+    "image_url": null,
+    "created_at": "2026-03-12T20:40:51.184830+00:00",
+    "mentions": [
+      "katieintheafterglow"
+    ],
+    "content": "Testing *bold words* and /italic words/ with https://thehoneygroove.com/path/page and @katieintheafterglow"
+  },
+  {
+    "_id": "69b3259c95aefa3ad466a116",
+    "id": "b3a7bbd9-5b32-47cc-a439-3bf680697f17",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "post_type": "NOTE",
+    "caption": "Check this out: *bold text here* and /italic text here/ plus a link https://thehoneygroove.com/vinyl and @testuser1 shoutout",
+    "record_id": null,
+    "image_url": null,
+    "created_at": "2026-03-12T20:44:12.655208+00:00",
+    "mentions": [
+      "testuser1"
+    ]
+  }
+]

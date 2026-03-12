@@ -1,0 +1,775 @@
+[
+  {
+    "_id": "69a9c9512e031f7b3188046b",
+    "email": "test@test.com",
+    "subscribed": true,
+    "source": "landing_page",
+    "subscribed_at": "2026-03-05T18:20:01.173733+00:00"
+  },
+  {
+    "_id": "69a9c9d204b849edcd86cfa7",
+    "email": "test@example.com",
+    "subscribed": true,
+    "source": "landing_page",
+    "subscribed_at": "2026-03-05T18:22:10.325075+00:00"
+  },
+  {
+    "_id": "69a9ca4683dd2cd104334f67",
+    "email": "testuser_landing@example.com",
+    "subscribed": true,
+    "source": "landing_page",
+    "subscribed_at": "2026-03-05T18:24:06.149592+00:00",
+    "updated_at": "2026-03-05T18:24:52.749679+00:00"
+  },
+  {
+    "_id": "69a9ca4683dd2cd104334f68",
+    "email": "duplicate_test@example.com",
+    "subscribed": true,
+    "source": "in_app",
+    "subscribed_at": "2026-03-05T18:24:06.524011+00:00",
+    "updated_at": "2026-03-05T18:24:53.287567+00:00"
+  },
+  {
+    "_id": "69a9ca657629d40894259f4d",
+    "email": "health_check@test.com",
+    "subscribed": true,
+    "source": "test",
+    "subscribed_at": "2026-03-05T18:24:37.966317+00:00",
+    "updated_at": "2026-03-05T18:24:58.277064+00:00"
+  },
+  {
+    "_id": "69a9ca928e688709f2068dde",
+    "email": "playwright_test_123@example.com",
+    "subscribed": true,
+    "source": "landing_page",
+    "subscribed_at": "2026-03-05T18:25:22.863427+00:00"
+  },
+  {
+    "_id": "69ac6736b79a9ef64d09241a",
+    "email": "test_buyer_cancel_223bebc5@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-07T17:58:14.639568+00:00"
+  },
+  {
+    "_id": "69ac6737b79a9ef64d09241c",
+    "email": "cancel_seller_86c97c9a@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-07T17:58:15.385622+00:00"
+  },
+  {
+    "_id": "69ac6737b79a9ef64d09241e",
+    "email": "cancel_buyer_9c955c9c@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-07T17:58:15.735511+00:00"
+  },
+  {
+    "_id": "69ac91cc7150e53895679344",
+    "email": "TEST_no_country_8e36a9fa@honey.io",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-07T20:59:56.650657+00:00"
+  },
+  {
+    "_id": "69ac91cd7150e53895679346",
+    "email": "TEST_country2_8639cac7@honey.io",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-07T20:59:57.248793+00:00"
+  },
+  {
+    "_id": "69ac91cf7150e5389567934a",
+    "email": "TEST_gb_buyer_f2b2c7a2@honey.io",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-07T20:59:58.824038+00:00"
+  },
+  {
+    "_id": "69ac91d07150e5389567934e",
+    "email": "TEST_ca_buyer_3097cb33@honey.io",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-07T21:00:00.022810+00:00"
+  },
+  {
+    "_id": "69ac92e27150e53895679350",
+    "email": "TEST_no_country_bb9764f2@honey.io",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-07T21:04:34.623856+00:00"
+  },
+  {
+    "_id": "69ac92e37150e53895679352",
+    "email": "TEST_country2_3fded9ca@honey.io",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-07T21:04:35.231175+00:00"
+  },
+  {
+    "_id": "69ac92e47150e53895679356",
+    "email": "TEST_gb_buyer_b028e181@honey.io",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-07T21:04:36.283061+00:00"
+  },
+  {
+    "_id": "69ac92e57150e5389567935a",
+    "email": "TEST_ca_buyer_2c02c630@honey.io",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-07T21:04:37.486929+00:00"
+  },
+  {
+    "_id": "69ae43671e71b0fdd0200ec7",
+    "email": "test_block3@example.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-09T03:49:59.461247+00:00"
+  },
+  {
+    "_id": "69af0a7076a7665ba18ed5e8",
+    "email": "TEST_feeduser_3f8eead6@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-09T17:59:12.101538+00:00"
+  },
+  {
+    "_id": "69af0a7076a7665ba18ed5ea",
+    "email": "TEST_feeduser_7d99f77b@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-09T17:59:12.473655+00:00"
+  },
+  {
+    "_id": "69af0aa22058f8c965c98353",
+    "email": "TEST_feeduser_5c43c8bb@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-09T18:00:02.104905+00:00"
+  },
+  {
+    "_id": "69af0aa22058f8c965c98355",
+    "email": "TEST_feeduser_3ad6bca7@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-09T18:00:02.460715+00:00"
+  },
+  {
+    "_id": "69af0abc2058f8c965c98358",
+    "email": "test_feed_a123@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-09T18:00:27.857291+00:00"
+  },
+  {
+    "_id": "69af0abc2058f8c965c9835a",
+    "email": "test_feed_b456@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-09T18:00:28.287060+00:00"
+  },
+  {
+    "_id": "69af0ad62058f8c965c9835d",
+    "email": "feed_verify_777@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-09T18:00:54.430048+00:00"
+  },
+  {
+    "_id": "69af0aec2058f8c965c98360",
+    "email": "feedverify888@gmail.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-09T18:01:16.619413+00:00"
+  },
+  {
+    "_id": "69af0b79e602e846ae47cdd8",
+    "email": "feeduser26ea28d5@gmail.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-09T18:03:37.514347+00:00"
+  },
+  {
+    "_id": "69af0b7ae602e846ae47cdda",
+    "email": "feeduser272b1a4a@gmail.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-09T18:03:37.855142+00:00"
+  },
+  {
+    "_id": "69af553b41c2ea3061ae06fc",
+    "email": "testblock1_yzmk7lif@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-09T23:18:18.886842+00:00"
+  },
+  {
+    "_id": "69af553b41c2ea3061ae06fe",
+    "email": "testblock2_2u49x3eu@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-09T23:18:19.174394+00:00"
+  },
+  {
+    "_id": "69af557f41c2ea3061ae0700",
+    "email": "testblock1_f79qfpiq@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-09T23:19:27.647898+00:00"
+  },
+  {
+    "_id": "69af558041c2ea3061ae0702",
+    "email": "testblock2_qlvus0yy@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-09T23:19:27.958325+00:00"
+  },
+  {
+    "_id": "69af5b2d87c9a5843cce1d95",
+    "email": "ui_test_7fef1acb@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-09T23:43:41.048900+00:00"
+  },
+  {
+    "_id": "69af5b4787c9a5843cce1d97",
+    "email": "settings_test_b7d87082@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-09T23:44:06.833430+00:00"
+  },
+  {
+    "_id": "69af5b6087c9a5843cce1d99",
+    "email": "settings_test_c987434e@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-09T23:44:31.872124+00:00"
+  },
+  {
+    "_id": "69af5db521704eb2cf06b738",
+    "email": "TEST_MENTION_user1_5589b8a8@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-09T23:54:28.837276+00:00"
+  },
+  {
+    "_id": "69af5db521704eb2cf06b73a",
+    "email": "TEST_MENTION_user2_1bb9716f@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-09T23:54:29.647638+00:00"
+  },
+  {
+    "_id": "69af5db721704eb2cf06b745",
+    "email": "TEST_MENTION_searchtest_663e509c@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-09T23:54:31.553353+00:00"
+  },
+  {
+    "_id": "69af607738b88b42f571a6c5",
+    "email": "TEST_VARIANT_main_db549850@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:06:15.363717+00:00"
+  },
+  {
+    "_id": "69af607838b88b42f571a6c7",
+    "email": "TEST_COLOR_VARIANT_734813a1@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:06:16.209483+00:00"
+  },
+  {
+    "_id": "69af607938b88b42f571a6c9",
+    "email": "TEST_FEED_VARIANT_a35069fc@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:06:16.936552+00:00"
+  },
+  {
+    "_id": "69af607938b88b42f571a6cb",
+    "email": "TEST_DISCOGS_STATUS_8063d3b6@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:06:17.692656+00:00"
+  },
+  {
+    "_id": "69af607e38b88b42f571a6cd",
+    "email": "test_debug_123@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:06:22.602654+00:00"
+  },
+  {
+    "_id": "69af60b8e4f999ecac30dec1",
+    "email": "TEST_VARIANT_main_ee7aa26f@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:07:19.840502+00:00"
+  },
+  {
+    "_id": "69af60b8e4f999ecac30dec3",
+    "email": "TEST_VARIANT_blocked_user_ee7aa26f@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:07:20.305105+00:00"
+  },
+  {
+    "_id": "69af60b8e4f999ecac30dec5",
+    "email": "TEST_COLOR_VAR_f5edc21e@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:07:20.643788+00:00"
+  },
+  {
+    "_id": "69af60bae4f999ecac30decb",
+    "email": "TEST_FEED_VAR_63fb18c2@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:07:22.010445+00:00"
+  },
+  {
+    "_id": "69af60bbe4f999ecac30ded1",
+    "email": "TEST_DISCOGS_413ba9e3@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:07:23.166189+00:00"
+  },
+  {
+    "_id": "69af60daa10bd9334e25f986",
+    "email": "TEST_VARIANT_main_b48b8cd8@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:07:54.751280+00:00"
+  },
+  {
+    "_id": "69af60e4195009a227c589cc",
+    "email": "TEST_VARIANT_main_ba6bcad5@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:08:04.598894+00:00"
+  },
+  {
+    "_id": "69af60e5195009a227c589ce",
+    "email": "TEST_VARIANT_blocked_user_ba6bcad5@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:08:05.071938+00:00"
+  },
+  {
+    "_id": "69af60e6195009a227c589d0",
+    "email": "TEST_COLOR_VAR_d10a6e3c@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:08:06.233836+00:00"
+  },
+  {
+    "_id": "69af60e7195009a227c589d6",
+    "email": "TEST_FEED_VAR_f3fe88a9@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:08:07.568786+00:00"
+  },
+  {
+    "_id": "69af60e8195009a227c589dc",
+    "email": "TEST_DISCOGS_e954a556@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:08:08.749089+00:00"
+  },
+  {
+    "_id": "69af610fd6e19d36ddcdb632",
+    "email": "TEST_VARIANT_main_45a1dd0c@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:08:47.660410+00:00"
+  },
+  {
+    "_id": "69af6110d6e19d36ddcdb634",
+    "email": "TEST_VARIANT_blocked_user_45a1dd0c@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:08:48.132808+00:00"
+  },
+  {
+    "_id": "69af6111d6e19d36ddcdb637",
+    "email": "TEST_COLOR_VAR_f19d127b@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:08:49.488695+00:00"
+  },
+  {
+    "_id": "69af6113d6e19d36ddcdb63d",
+    "email": "TEST_FEED_VAR_26200a41@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:08:50.823008+00:00"
+  },
+  {
+    "_id": "69af6114d6e19d36ddcdb643",
+    "email": "TEST_DISCOGS_739e9b08@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:08:52.018175+00:00"
+  },
+  {
+    "_id": "69af6119d6e19d36ddcdb645",
+    "email": "TEST_VARIANT_main_e102e249@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:08:57.127339+00:00"
+  },
+  {
+    "_id": "69af6119d6e19d36ddcdb647",
+    "email": "TEST_VARIANT_blocked_user_e102e249@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:08:57.589927+00:00"
+  },
+  {
+    "_id": "69af63873275a83231fd9f6b",
+    "email": "test_edit_listing_8f89b3c6@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:19:18.901187+00:00"
+  },
+  {
+    "_id": "69af63873275a83231fd9f6f",
+    "email": "test_other_fdd00e1d@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:19:19.585683+00:00"
+  },
+  {
+    "_id": "69af66ba44be1656e8a0ebe1",
+    "email": "test_colorvar_f8e16713@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T00:32:57.868548+00:00"
+  },
+  {
+    "_id": "69af6d55b6a51fcf4248e406",
+    "email": "feedtest@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T01:01:08.978272+00:00"
+  },
+  {
+    "_id": "69afa3963be07b7890526d12",
+    "email": "testactions@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T04:52:37.990508+00:00"
+  },
+  {
+    "_id": "69afa42eb472a68797eb2fbc",
+    "email": "test_variant_actions_07a59ef0@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T04:55:10.375693+00:00"
+  },
+  {
+    "_id": "69afa42fb472a68797eb2fbe",
+    "email": "test_variant_actions_1030bd6f@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T04:55:11.015895+00:00"
+  },
+  {
+    "_id": "69afa430b472a68797eb2fc1",
+    "email": "test_variant_actions_aa8f0602@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T04:55:11.991263+00:00"
+  },
+  {
+    "_id": "69afa431b472a68797eb2fc4",
+    "email": "test_variant_actions_48c54560@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T04:55:12.833462+00:00"
+  },
+  {
+    "_id": "69afa431b472a68797eb2fc8",
+    "email": "test_variant_actions_23a374cd@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T04:55:13.758119+00:00"
+  },
+  {
+    "_id": "69afa627b472a68797eb2fcd",
+    "email": "tastetest@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T05:03:35.059490+00:00"
+  },
+  {
+    "_id": "69afbaec35d17dd9627abc7b",
+    "email": "demo@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T06:32:12.374010+00:00"
+  },
+  {
+    "_id": "69b04f5020fb55782c4c7fb6",
+    "email": "golden_test@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T17:05:20.180636+00:00"
+  },
+  {
+    "_id": "69b058ec6ddf2e87d844ad87",
+    "email": "clean@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-10T17:46:20.139209+00:00"
+  },
+  {
+    "_id": "69b0cd86e028e0877bd94043",
+    "email": "testuser1@honey.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T02:03:50.654440+00:00"
+  },
+  {
+    "_id": "69b0ce36e028e0877bd94045",
+    "email": "fresh@honeygroove.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T02:06:45.790201+00:00"
+  },
+  {
+    "_id": "69b0ce8d41de63a489083aac",
+    "email": "test@honeygroove.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T02:08:13.348123+00:00"
+  },
+  {
+    "_id": "69b0d4ed535ae7baca97f84e",
+    "email": "testfeed@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T02:35:25.315408+00:00"
+  },
+  {
+    "_id": "69b0d4fc535ae7baca97f850",
+    "email": "testfeed2@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T02:35:40.414758+00:00"
+  },
+  {
+    "_id": "69b0d52e535ae7baca97f852",
+    "email": "testfeed3@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T02:36:30.731153+00:00"
+  },
+  {
+    "_id": "69b0d797692fcf4318cf6f27",
+    "email": "synctest@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T02:46:47.689915+00:00"
+  },
+  {
+    "_id": "69b0d848bfa4831fe30d8a45",
+    "email": "discoveryA@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T02:49:44.297807+00:00"
+  },
+  {
+    "_id": "69b0d848bfa4831fe30d8a47",
+    "email": "discoveryB@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T02:49:44.692226+00:00"
+  },
+  {
+    "_id": "69b0de15ea2f220f47c54179",
+    "email": "pricetest@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T03:14:29.461836+00:00"
+  },
+  {
+    "_id": "69b0df6b26bc921e9962c30a",
+    "email": "fta@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T03:20:11.507618+00:00"
+  },
+  {
+    "_id": "69b0df6c26bc921e9962c30c",
+    "email": "ftb@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T03:20:12.021026+00:00"
+  },
+  {
+    "_id": "69b0dfda743e201868ff3937",
+    "email": "test_user_a_0f70d4da@testreciprocal.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T03:22:02.144961+00:00"
+  },
+  {
+    "_id": "69b0dfda743e201868ff3939",
+    "email": "test_user_c_e3382a20@testfollowback.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T03:22:02.499122+00:00"
+  },
+  {
+    "_id": "69b0dfe2743e201868ff393b",
+    "email": "testrecp001@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T03:22:10.073652+00:00"
+  },
+  {
+    "_id": "69b0e0cb345e9d7b2dbe1292",
+    "email": "checkouttest@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T03:26:03.557215+00:00"
+  },
+  {
+    "_id": "69b0e0cc345e9d7b2dbe1296",
+    "email": "buyertest@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T03:26:04.222361+00:00"
+  },
+  {
+    "_id": "69b0e175345e9d7b2dbe1298",
+    "email": "dropdowntest@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T03:28:53.312787+00:00"
+  },
+  {
+    "_id": "69b0e20e345e9d7b2dbe129a",
+    "email": "adminview@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T03:31:26.518129+00:00"
+  },
+  {
+    "_id": "69b0e24f345e9d7b2dbe129c",
+    "email": "menufinal@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T03:32:31.132420+00:00"
+  },
+  {
+    "_id": "69b0e2e2345e9d7b2dbe129e",
+    "email": "adminlink@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T03:34:58.020886+00:00"
+  },
+  {
+    "_id": "69b0e371345e9d7b2dbe12a0",
+    "email": "goldentest@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T03:37:20.836575+00:00"
+  },
+  {
+    "_id": "69b0e4b07c62d6fa5202f808",
+    "email": "goldenflow@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T03:42:40.302947+00:00"
+  },
+  {
+    "_id": "69b0e6ff7c62d6fa5202f80a",
+    "email": "mobiletest@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T03:52:31.322262+00:00"
+  },
+  {
+    "_id": "69b0ebbecef82708f2e0038b",
+    "email": "test@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T04:12:46.354094+00:00"
+  },
+  {
+    "_id": "69b16f91036bf2e238185e57",
+    "email": "user2@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T13:35:13.096376+00:00"
+  },
+  {
+    "_id": "69b17399c626ebaf180ad8c4",
+    "email": "test@example.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-11T13:52:25.362375+00:00"
+  },
+  {
+    "_id": "69b202c32444808539dcd6cd",
+    "email": "test_recovery@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-12T00:03:14.761631+00:00"
+  },
+  {
+    "_id": "69b2032b2444808539dcd6cf",
+    "email": "test_recovery_block476@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-12T00:04:59.465850+00:00"
+  },
+  {
+    "_id": "69b20357e2012b12d908190c",
+    "email": "test_recovery_1773273942@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-12T00:05:43.121900+00:00"
+  },
+  {
+    "_id": "69b20357e2012b12d908190e",
+    "email": "test_recovery_1773273943@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-12T00:05:43.540651+00:00"
+  },
+  {
+    "_id": "69b20358e2012b12d9081910",
+    "email": "test_recovery_1773273944@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-12T00:05:44.492054+00:00"
+  },
+  {
+    "_id": "69b20359e2012b12d9081912",
+    "email": "test_recovery_1773273945@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-12T00:05:45.449459+00:00"
+  },
+  {
+    "_id": "69b2035be2012b12d9081914",
+    "email": "test_recovery_1773273946@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-12T00:05:46.915737+00:00"
+  },
+  {
+    "_id": "69b2035be2012b12d9081916",
+    "email": "test_colval_1773273947@test.com",
+    "subscribed": true,
+    "source": "registration",
+    "subscribed_at": "2026-03-12T00:05:47.365673+00:00"
+  }
+]

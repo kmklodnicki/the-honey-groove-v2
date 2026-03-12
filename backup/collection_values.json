@@ -1,0 +1,1397 @@
+[
+  {
+    "_id": "69a94d07bb69b80544a9642c",
+    "release_id": 30455813,
+    "high_value": 61.75,
+    "last_updated": "2026-03-12T00:07:54.105630+00:00",
+    "low_value": 16.25,
+    "median_value": 42.25,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d07bb69b80544a96430",
+    "release_id": 249504,
+    "high_value": 2.57,
+    "last_updated": "2026-03-05T09:29:43.881233+00:00",
+    "low_value": 0.68,
+    "median_value": 1.76
+  },
+  {
+    "_id": "69a94d08bb69b80544a96432",
+    "release_id": 31957001,
+    "high_value": 90.25,
+    "last_updated": "2026-03-12T00:07:55.492943+00:00",
+    "low_value": 23.75,
+    "median_value": 61.75,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d0abb69b80544a96434",
+    "release_id": 526351,
+    "high_value": 38.0,
+    "last_updated": "2026-03-05T09:29:46.329636+00:00",
+    "low_value": 10.0,
+    "median_value": 26.0
+  },
+  {
+    "_id": "69a94d0bbb69b80544a96436",
+    "release_id": 33651732,
+    "high_value": 82.85,
+    "last_updated": "2026-03-12T00:07:56.859159+00:00",
+    "low_value": 21.8,
+    "median_value": 56.69,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d0cbb69b80544a9643a",
+    "release_id": 31878166,
+    "high_value": 74.95,
+    "last_updated": "2026-03-12T00:07:58.236486+00:00",
+    "low_value": 19.72,
+    "median_value": 51.28,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d0ebb69b80544a9643c",
+    "release_id": 32672280,
+    "high_value": 19.0,
+    "last_updated": "2026-03-05T09:29:50.131006+00:00",
+    "low_value": 5.0,
+    "median_value": 13.0
+  },
+  {
+    "_id": "69a94d0fbb69b80544a9643e",
+    "release_id": 5799966,
+    "high_value": 220.93,
+    "last_updated": "2026-03-11T22:50:34.989396+00:00",
+    "low_value": 58.14,
+    "median_value": 151.16
+  },
+  {
+    "_id": "69a94d10bb69b80544a96440",
+    "release_id": 30363680,
+    "high_value": 60.9,
+    "last_updated": "2026-03-12T00:07:59.650880+00:00",
+    "low_value": 16.03,
+    "median_value": 41.67,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d12bb69b80544a96442",
+    "release_id": 27925026,
+    "high_value": 77.01,
+    "last_updated": "2026-03-12T00:08:01.033666+00:00",
+    "low_value": 20.27,
+    "median_value": 52.69,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d13bb69b80544a96444",
+    "release_id": 16084515,
+    "high_value": 33.24,
+    "last_updated": "2026-03-11T22:50:37.520833+00:00",
+    "low_value": 8.75,
+    "median_value": 22.74
+  },
+  {
+    "_id": "69a94d14bb69b80544a96446",
+    "release_id": 28494883,
+    "high_value": 47.46,
+    "last_updated": "2026-03-12T00:08:02.827318+00:00",
+    "low_value": 12.49,
+    "median_value": 32.47,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d16bb69b80544a9644a",
+    "release_id": 29370406,
+    "high_value": 48.97,
+    "last_updated": "2026-03-12T00:08:04.210149+00:00",
+    "low_value": 12.89,
+    "median_value": 33.51,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d17bb69b80544a9644c",
+    "release_id": 27597354,
+    "high_value": 49.7,
+    "last_updated": "2026-03-12T00:08:05.660472+00:00",
+    "low_value": 13.08,
+    "median_value": 34.0,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d18bb69b80544a9644e",
+    "release_id": 32840235,
+    "high_value": 28.5,
+    "last_updated": "2026-03-12T00:08:07.187330+00:00",
+    "low_value": 7.5,
+    "median_value": 19.5,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d1abb69b80544a96450",
+    "release_id": 14408244,
+    "high_value": 57.08,
+    "last_updated": "2026-03-12T19:12:43.794361+00:00",
+    "low_value": 15.02,
+    "median_value": 39.05
+  },
+  {
+    "_id": "69a94d1bbb69b80544a96452",
+    "release_id": 28514359,
+    "high_value": 70.69,
+    "last_updated": "2026-03-12T00:08:08.769423+00:00",
+    "low_value": 18.6,
+    "median_value": 48.36,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d1cbb69b80544a96454",
+    "release_id": 31553083,
+    "high_value": 56.9,
+    "last_updated": "2026-03-12T00:08:10.178038+00:00",
+    "low_value": 14.97,
+    "median_value": 38.94,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d1ebb69b80544a96456",
+    "release_id": 32796732,
+    "high_value": 97.81,
+    "last_updated": "2026-03-12T00:08:11.803598+00:00",
+    "low_value": 25.74,
+    "median_value": 66.93,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d1fbb69b80544a96458",
+    "release_id": 23285822,
+    "high_value": 47.49,
+    "last_updated": "2026-03-11T22:50:53.424212+00:00",
+    "low_value": 12.5,
+    "median_value": 32.49
+  },
+  {
+    "_id": "69a94d20bb69b80544a9645c",
+    "release_id": 999999,
+    "high_value": 9.5,
+    "last_updated": "2026-03-05T09:30:08.718558+00:00",
+    "low_value": 2.5,
+    "median_value": 6.5
+  },
+  {
+    "_id": "69a94d23bb69b80544a96779",
+    "release_id": 33348674,
+    "high_value": 115.06,
+    "last_updated": "2026-03-12T00:08:13.179344+00:00",
+    "low_value": 30.28,
+    "median_value": 78.73,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d24bb69b80544a968cd",
+    "release_id": 9359939,
+    "high_value": 50.53,
+    "last_updated": "2026-03-11T22:50:57.346202+00:00",
+    "low_value": 13.3,
+    "median_value": 34.57
+  },
+  {
+    "_id": "69a94d26bb69b80544a968d7",
+    "release_id": 30052420,
+    "high_value": 36.44,
+    "last_updated": "2026-03-12T00:08:14.683479+00:00",
+    "low_value": 9.59,
+    "median_value": 24.93,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d27bb69b80544a968d9",
+    "release_id": 32803917,
+    "high_value": 42.67,
+    "last_updated": "2026-03-12T00:08:16.047570+00:00",
+    "low_value": 11.23,
+    "median_value": 29.2,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d28bb69b80544a968db",
+    "release_id": 33531981,
+    "high_value": 61.36,
+    "last_updated": "2026-03-12T00:08:17.465917+00:00",
+    "low_value": 16.15,
+    "median_value": 41.98,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d2abb69b80544a96995",
+    "release_id": 28930639,
+    "high_value": 32.08,
+    "last_updated": "2026-03-12T00:08:18.898003+00:00",
+    "low_value": 8.44,
+    "median_value": 21.95,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d2bbb69b80544a9699c",
+    "release_id": 28855378,
+    "high_value": 76.22,
+    "last_updated": "2026-03-12T00:08:20.290140+00:00",
+    "low_value": 20.06,
+    "median_value": 52.15,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d2cbb69b80544a9699e",
+    "release_id": 33152598,
+    "high_value": 71.25,
+    "last_updated": "2026-03-12T00:08:21.688292+00:00",
+    "low_value": 18.75,
+    "median_value": 48.75,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d2dbb69b80544a969a0",
+    "release_id": 26174048,
+    "high_value": 55.19,
+    "last_updated": "2026-03-11T22:51:09.293286+00:00",
+    "low_value": 14.52,
+    "median_value": 37.76
+  },
+  {
+    "_id": "69a94d2fbb69b80544a969a2",
+    "release_id": 27897450,
+    "high_value": 37.99,
+    "last_updated": "2026-03-12T00:08:23.139976+00:00",
+    "low_value": 10.0,
+    "median_value": 25.99,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d30bb69b80544a969a4",
+    "release_id": 33136755,
+    "high_value": 118.75,
+    "last_updated": "2026-03-12T00:08:25.959029+00:00",
+    "low_value": 31.25,
+    "median_value": 81.25,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d31bb69b80544a969ab",
+    "release_id": 29187700,
+    "high_value": 123.5,
+    "last_updated": "2026-03-12T00:08:24.569934+00:00",
+    "low_value": 32.5,
+    "median_value": 84.5,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d33bb69b80544a969ad",
+    "release_id": 15040115,
+    "high_value": 53.89,
+    "last_updated": "2026-03-11T22:51:20.442430+00:00",
+    "low_value": 14.18,
+    "median_value": 36.87
+  },
+  {
+    "_id": "69a94d34bb69b80544a969b1",
+    "release_id": 31213690,
+    "high_value": 33.13,
+    "last_updated": "2026-03-12T00:08:27.323322+00:00",
+    "low_value": 8.72,
+    "median_value": 22.67,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d36bb69b80544a969b3",
+    "release_id": 9287809,
+    "high_value": 55.35,
+    "last_updated": "2026-03-05T09:30:30.160173+00:00",
+    "low_value": 14.57,
+    "median_value": 37.87
+  },
+  {
+    "_id": "69a94d37bb69b80544a969b5",
+    "release_id": 26517635,
+    "high_value": 59.01,
+    "last_updated": "2026-03-11T22:50:24.545665+00:00",
+    "low_value": 15.53,
+    "median_value": 40.38
+  },
+  {
+    "_id": "69a94d38bb69b80544a969b7",
+    "release_id": 33349256,
+    "high_value": 142.45,
+    "last_updated": "2026-03-12T00:08:28.724088+00:00",
+    "low_value": 37.49,
+    "median_value": 97.47,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d3abb69b80544a969b9",
+    "release_id": 33662601,
+    "high_value": 76.0,
+    "last_updated": "2026-03-12T00:08:30.151914+00:00",
+    "low_value": 20.0,
+    "median_value": 52.0,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d3bbb69b80544a969bb",
+    "release_id": 30105227,
+    "high_value": 79.8,
+    "last_updated": "2026-03-12T00:08:32.939415+00:00",
+    "low_value": 21.0,
+    "median_value": 54.6,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d3cbb69b80544a969bd",
+    "release_id": 28955275,
+    "high_value": 118.75,
+    "last_updated": "2026-03-12T00:08:31.546301+00:00",
+    "low_value": 31.25,
+    "median_value": 81.25,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d3ebb69b80544a969c1",
+    "release_id": 20686477,
+    "high_value": 50.8,
+    "last_updated": "2026-03-11T22:50:29.708503+00:00",
+    "low_value": 13.37,
+    "median_value": 34.76
+  },
+  {
+    "_id": "69a94d41bb69b80544a96a86",
+    "release_id": 30136976,
+    "high_value": 53.02,
+    "last_updated": "2026-03-12T00:08:34.340614+00:00",
+    "low_value": 13.95,
+    "median_value": 36.28,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d42bb69b80544a96a88",
+    "release_id": 33666705,
+    "high_value": 38.66,
+    "last_updated": "2026-03-12T00:08:35.892195+00:00",
+    "low_value": 10.17,
+    "median_value": 26.45,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d43bb69b80544a96a8a",
+    "release_id": 32428182,
+    "high_value": 95.0,
+    "last_updated": "2026-03-12T00:08:37.303084+00:00",
+    "low_value": 25.0,
+    "median_value": 65.0,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d44bb69b80544a96a8c",
+    "release_id": 8478365,
+    "high_value": 37.04,
+    "last_updated": "2026-03-11T22:50:33.683179+00:00",
+    "low_value": 9.75,
+    "median_value": 25.34
+  },
+  {
+    "_id": "69a94d46bb69b80544a96a8e",
+    "release_id": 22932128,
+    "high_value": 34.39,
+    "last_updated": "2026-03-11T22:50:36.263297+00:00",
+    "low_value": 9.05,
+    "median_value": 23.53
+  },
+  {
+    "_id": "69a94d47bb69b80544a96a90",
+    "release_id": 30936744,
+    "high_value": 77.03,
+    "last_updated": "2026-03-12T00:08:38.685876+00:00",
+    "low_value": 20.27,
+    "median_value": 52.7,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d48bb69b80544a96a94",
+    "release_id": 26515112,
+    "high_value": 96.28,
+    "last_updated": "2026-03-11T22:50:41.619331+00:00",
+    "low_value": 25.34,
+    "median_value": 65.88
+  },
+  {
+    "_id": "69a94d4abb69b80544a96a96",
+    "release_id": 32074923,
+    "high_value": 76.46,
+    "last_updated": "2026-03-12T00:08:40.102397+00:00",
+    "low_value": 20.12,
+    "median_value": 52.32,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d4bbb69b80544a96a98",
+    "release_id": 32839854,
+    "high_value": 28.5,
+    "last_updated": "2026-03-12T00:08:41.480276+00:00",
+    "low_value": 7.5,
+    "median_value": 19.5,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d4cbb69b80544a96a9a",
+    "release_id": 33331896,
+    "high_value": 71.8,
+    "last_updated": "2026-03-12T00:08:42.847468+00:00",
+    "low_value": 18.9,
+    "median_value": 49.13,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d4ebb69b80544a96a9c",
+    "release_id": 15838394,
+    "high_value": 25.71,
+    "last_updated": "2026-03-11T22:50:52.134142+00:00",
+    "low_value": 6.76,
+    "median_value": 17.59
+  },
+  {
+    "_id": "69a94d4fbb69b80544a96a9e",
+    "release_id": 30444731,
+    "high_value": 38.5,
+    "last_updated": "2026-03-12T00:08:44.259031+00:00",
+    "low_value": 10.13,
+    "median_value": 26.34,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d50bb69b80544a96aa5",
+    "release_id": 20691136,
+    "high_value": 132.45,
+    "last_updated": "2026-03-11T22:50:55.989675+00:00",
+    "low_value": 34.85,
+    "median_value": 90.62
+  },
+  {
+    "_id": "69a94d52bb69b80544a96aa9",
+    "release_id": 27343557,
+    "high_value": 38.44,
+    "last_updated": "2026-03-12T00:08:45.655054+00:00",
+    "low_value": 10.12,
+    "median_value": 26.3,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d53bb69b80544a96aab",
+    "release_id": 20939464,
+    "high_value": 70.61,
+    "last_updated": "2026-03-11T22:51:01.355508+00:00",
+    "low_value": 18.58,
+    "median_value": 48.31
+  },
+  {
+    "_id": "69a94d54bb69b80544a96aad",
+    "release_id": 32416968,
+    "high_value": 230.85,
+    "last_updated": "2026-03-12T00:08:47.061801+00:00",
+    "low_value": 60.75,
+    "median_value": 157.95,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d56bb69b80544a96aaf",
+    "release_id": 31785674,
+    "high_value": 43.08,
+    "last_updated": "2026-03-12T00:08:48.432142+00:00",
+    "low_value": 11.34,
+    "median_value": 29.48,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d57bb69b80544a96ab1",
+    "release_id": 8478418,
+    "high_value": 104.5,
+    "last_updated": "2026-03-12T19:12:46.115818+00:00",
+    "low_value": 27.5,
+    "median_value": 71.5
+  },
+  {
+    "_id": "69a94d58bb69b80544a96ab3",
+    "release_id": 14401235,
+    "high_value": 52.05,
+    "last_updated": "2026-03-11T22:51:05.404174+00:00",
+    "low_value": 13.7,
+    "median_value": 35.61
+  },
+  {
+    "_id": "69a94d5abb69b80544a96ab5",
+    "release_id": 34389205,
+    "high_value": 22.09,
+    "last_updated": "2026-03-12T00:08:51.237755+00:00",
+    "low_value": 5.81,
+    "median_value": 15.11,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d5bbb69b80544a96ab7",
+    "release_id": 32365269,
+    "high_value": 94.05,
+    "last_updated": "2026-03-12T00:08:49.804839+00:00",
+    "low_value": 24.75,
+    "median_value": 64.35,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d5cbb69b80544a96abb",
+    "release_id": 30439640,
+    "high_value": 44.19,
+    "last_updated": "2026-03-12T00:08:52.636111+00:00",
+    "low_value": 11.63,
+    "median_value": 30.23,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d5dbb69b80544a96abd",
+    "release_id": 27059931,
+    "high_value": 68.43,
+    "last_updated": "2026-03-12T00:08:54.019095+00:00",
+    "low_value": 18.01,
+    "median_value": 46.82,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d5fbb69b80544a96ac4",
+    "release_id": 29002459,
+    "high_value": 56.3,
+    "last_updated": "2026-03-12T00:08:55.436872+00:00",
+    "low_value": 14.81,
+    "median_value": 38.52,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d60bb69b80544a96ac6",
+    "release_id": 34396894,
+    "high_value": 25.06,
+    "last_updated": "2026-03-12T00:08:56.882811+00:00",
+    "low_value": 6.6,
+    "median_value": 17.15,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d61bb69b80544a96ac8",
+    "release_id": 26664161,
+    "high_value": 61.75,
+    "last_updated": "2026-03-12T00:08:58.267435+00:00",
+    "low_value": 16.25,
+    "median_value": 42.25,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d63bb69b80544a96aca",
+    "release_id": 32922855,
+    "high_value": 71.8,
+    "last_updated": "2026-03-12T00:08:59.666222+00:00",
+    "low_value": 18.9,
+    "median_value": 49.13,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d64bb69b80544a96acc",
+    "release_id": 18720490,
+    "high_value": 33.49,
+    "last_updated": "2026-03-11T22:51:11.840526+00:00",
+    "low_value": 8.81,
+    "median_value": 22.91
+  },
+  {
+    "_id": "69a94d66bb69b80544a96ad0",
+    "release_id": 28714732,
+    "high_value": 48.6,
+    "last_updated": "2026-03-12T00:09:01.085721+00:00",
+    "low_value": 12.79,
+    "median_value": 33.26,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d67bb69b80544a96ad2",
+    "release_id": 30135023,
+    "high_value": 121.51,
+    "last_updated": "2026-03-12T00:09:02.502073+00:00",
+    "low_value": 31.98,
+    "median_value": 83.14,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d68bb69b80544a96ad4",
+    "release_id": 14062834,
+    "high_value": 258.21,
+    "last_updated": "2026-03-11T22:51:18.831276+00:00",
+    "low_value": 67.95,
+    "median_value": 176.67
+  },
+  {
+    "_id": "69a94d6abb69b80544a96ad6",
+    "release_id": 3433715,
+    "high_value": 46.94,
+    "last_updated": "2026-03-11T22:43:31.168642+00:00",
+    "low_value": 12.35,
+    "median_value": 32.11
+  },
+  {
+    "_id": "69a94d6bbb69b80544a96ad8",
+    "release_id": 24521972,
+    "high_value": 80.84,
+    "last_updated": "2026-03-11T22:51:22.090457+00:00",
+    "low_value": 21.27,
+    "median_value": 55.31
+  },
+  {
+    "_id": "69a94d6cbb69b80544a96ada",
+    "release_id": 2555127,
+    "high_value": 66.17,
+    "last_updated": "2026-03-11T22:51:23.787412+00:00",
+    "low_value": 17.41,
+    "median_value": 45.27
+  },
+  {
+    "_id": "69a94d6ebb69b80544a96ae1",
+    "release_id": 30984958,
+    "high_value": 52.25,
+    "last_updated": "2026-03-12T00:09:03.881042+00:00",
+    "low_value": 13.75,
+    "median_value": 35.75,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d6fbb69b80544a96ae3",
+    "release_id": 33338111,
+    "high_value": 87.27,
+    "last_updated": "2026-03-11T22:51:22.368831+00:00",
+    "low_value": 22.97,
+    "median_value": 59.71
+  },
+  {
+    "_id": "69a94d70bb69b80544a96ae7",
+    "release_id": 14567169,
+    "high_value": 295.26,
+    "last_updated": "2026-03-11T22:50:23.230462+00:00",
+    "low_value": 77.7,
+    "median_value": 202.02
+  },
+  {
+    "_id": "69a94d71bb69b80544a96ae9",
+    "release_id": 33539847,
+    "high_value": 135.59,
+    "last_updated": "2026-03-12T00:09:05.265642+00:00",
+    "low_value": 35.68,
+    "median_value": 92.77,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d73bb69b80544a96aeb",
+    "release_id": 32637195,
+    "high_value": 58.99,
+    "last_updated": "2026-03-12T00:09:06.656400+00:00",
+    "low_value": 15.52,
+    "median_value": 40.36,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d76bb69b80544a96aed",
+    "release_id": 31919887,
+    "high_value": 28.49,
+    "last_updated": "2026-03-12T00:09:08.059840+00:00",
+    "low_value": 7.5,
+    "median_value": 19.49,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d78bb69b80544a96aef",
+    "release_id": 33762579,
+    "high_value": 64.46,
+    "last_updated": "2026-03-12T00:09:09.426759+00:00",
+    "low_value": 16.96,
+    "median_value": 44.1,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d79bb69b80544a96af1",
+    "release_id": 15247638,
+    "high_value": 47.5,
+    "last_updated": "2026-03-11T22:50:31.024314+00:00",
+    "low_value": 12.5,
+    "median_value": 32.5
+  },
+  {
+    "_id": "69a94d7abb69b80544a96af5",
+    "release_id": 29110042,
+    "high_value": 49.81,
+    "last_updated": "2026-03-12T00:09:10.810044+00:00",
+    "low_value": 13.11,
+    "median_value": 34.08,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d7cbb69b80544a96af7",
+    "release_id": 17886490,
+    "high_value": 40.77,
+    "last_updated": "2026-03-11T22:50:32.321096+00:00",
+    "low_value": 10.73,
+    "median_value": 27.9
+  },
+  {
+    "_id": "69a94d7dbb69b80544a96afe",
+    "release_id": 31668506,
+    "high_value": 27.73,
+    "last_updated": "2026-03-12T00:09:12.167109+00:00",
+    "low_value": 7.3,
+    "median_value": 18.97,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d7ebb69b80544a96b00",
+    "release_id": 27685665,
+    "high_value": 50.71,
+    "last_updated": "2026-03-12T00:09:13.556834+00:00",
+    "low_value": 13.34,
+    "median_value": 34.7,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d80bb69b80544a96b02",
+    "release_id": 26452262,
+    "high_value": 61.75,
+    "last_updated": "2026-03-11T22:50:40.148848+00:00",
+    "low_value": 16.25,
+    "median_value": 42.25
+  },
+  {
+    "_id": "69a94d81bb69b80544a96b04",
+    "release_id": 14567209,
+    "high_value": 193.31,
+    "last_updated": "2026-03-11T22:50:43.037547+00:00",
+    "low_value": 50.87,
+    "median_value": 132.27
+  },
+  {
+    "_id": "69a94d82bb69b80544a96b06",
+    "release_id": 19994413,
+    "high_value": 33.14,
+    "last_updated": "2026-03-11T22:50:44.310856+00:00",
+    "low_value": 8.72,
+    "median_value": 22.67
+  },
+  {
+    "_id": "69a94d84bb69b80544a96b0a",
+    "release_id": 22668080,
+    "high_value": 90.96,
+    "last_updated": "2026-03-11T22:50:45.647562+00:00",
+    "low_value": 23.94,
+    "median_value": 62.23
+  },
+  {
+    "_id": "69a94d85bb69b80544a96b0c",
+    "release_id": 5801778,
+    "high_value": 49.26,
+    "last_updated": "2026-03-11T22:50:46.971613+00:00",
+    "low_value": 12.96,
+    "median_value": 33.7
+  },
+  {
+    "_id": "69a94d86bb69b80544a96b0e",
+    "release_id": 33066291,
+    "high_value": 68.48,
+    "last_updated": "2026-03-12T00:09:16.329843+00:00",
+    "low_value": 18.02,
+    "median_value": 46.85,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d88bb69b80544a96b10",
+    "release_id": 30892851,
+    "high_value": 41.97,
+    "last_updated": "2026-03-12T00:09:14.966637+00:00",
+    "low_value": 11.04,
+    "median_value": 28.71,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d89bb69b80544a96b12",
+    "release_id": 32535360,
+    "high_value": 35.29,
+    "last_updated": "2026-03-12T00:09:20.637338+00:00",
+    "low_value": 9.29,
+    "median_value": 24.15,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d8abb69b80544a96b14",
+    "release_id": 9269057,
+    "high_value": 38.65,
+    "last_updated": "2026-03-05T09:31:54.603330+00:00",
+    "low_value": 10.17,
+    "median_value": 26.45
+  },
+  {
+    "_id": "69a94d8bbb69b80544a96b16",
+    "release_id": 7532352,
+    "high_value": 53.95,
+    "last_updated": "2026-03-11T22:50:54.714853+00:00",
+    "low_value": 14.2,
+    "median_value": 36.91
+  },
+  {
+    "_id": "69a94d8dbb69b80544a96b1d",
+    "release_id": 31882048,
+    "high_value": 124.42,
+    "last_updated": "2026-03-12T00:09:17.843523+00:00",
+    "low_value": 32.74,
+    "median_value": 85.13,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d8ebb69b80544a96b21",
+    "release_id": 32442177,
+    "high_value": 140.81,
+    "last_updated": "2026-03-12T00:09:19.258482+00:00",
+    "low_value": 37.06,
+    "median_value": 96.35,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d8fbb69b80544a96b23",
+    "release_id": 13900109,
+    "high_value": 224.15,
+    "last_updated": "2026-03-11T22:51:02.652067+00:00",
+    "low_value": 58.99,
+    "median_value": 153.37
+  },
+  {
+    "_id": "69a94d91bb69b80544a96b25",
+    "release_id": 14063950,
+    "high_value": 61.73,
+    "last_updated": "2026-03-11T22:51:04.062069+00:00",
+    "low_value": 16.25,
+    "median_value": 42.24
+  },
+  {
+    "_id": "69a94d92bb69b80544a96b27",
+    "release_id": 30104402,
+    "high_value": 60.76,
+    "last_updated": "2026-03-12T00:09:22.017716+00:00",
+    "low_value": 15.99,
+    "median_value": 41.57,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d93bb69b80544a96b29",
+    "release_id": 21794644,
+    "high_value": 51.92,
+    "last_updated": "2026-03-11T22:51:06.704699+00:00",
+    "low_value": 13.66,
+    "median_value": 35.52
+  },
+  {
+    "_id": "69a94d95bb69b80544a96b2b",
+    "release_id": 33477461,
+    "high_value": 91.41,
+    "last_updated": "2026-03-12T00:09:23.392670+00:00",
+    "low_value": 24.05,
+    "median_value": 62.54,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d96bb69b80544a96b2d",
+    "release_id": 33551193,
+    "high_value": 132.56,
+    "last_updated": "2026-03-12T00:09:24.781011+00:00",
+    "low_value": 34.88,
+    "median_value": 90.7,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d97bb69b80544a96b2f",
+    "release_id": 20188507,
+    "high_value": 16.56,
+    "last_updated": "2026-03-11T22:51:08.018931+00:00",
+    "low_value": 4.36,
+    "median_value": 11.33
+  },
+  {
+    "_id": "69a94d99bb69b80544a96b33",
+    "release_id": 32075106,
+    "high_value": 76.46,
+    "last_updated": "2026-03-12T00:09:26.168589+00:00",
+    "low_value": 20.12,
+    "median_value": 52.32,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94d9abb69b80544a96b35",
+    "release_id": 26090860,
+    "high_value": 564.86,
+    "last_updated": "2026-03-11T22:51:16.166101+00:00",
+    "low_value": 148.65,
+    "median_value": 386.49
+  },
+  {
+    "_id": "69a94d9bbb69b80544a96b37",
+    "release_id": 20188525,
+    "high_value": 30.4,
+    "last_updated": "2026-03-11T22:51:14.412171+00:00",
+    "low_value": 8.0,
+    "median_value": 20.8
+  },
+  {
+    "_id": "69a94d9dbb69b80544a96b39",
+    "release_id": 26809709,
+    "high_value": 332.5,
+    "last_updated": "2026-03-11T22:51:11.025528+00:00",
+    "low_value": 87.5,
+    "median_value": 227.5
+  },
+  {
+    "_id": "69a94d9ebb69b80544a96b3b",
+    "release_id": 11256175,
+    "high_value": 193.31,
+    "last_updated": "2026-03-12T19:12:42.755044+00:00",
+    "low_value": 50.87,
+    "median_value": 132.27
+  },
+  {
+    "_id": "69a94da0bb69b80544a96b3d",
+    "release_id": 7221618,
+    "high_value": 40.76,
+    "last_updated": "2026-03-11T22:51:17.495606+00:00",
+    "low_value": 10.73,
+    "median_value": 27.89
+  },
+  {
+    "_id": "69a94da1bb69b80544a96b3f",
+    "release_id": 31558525,
+    "high_value": 58.55,
+    "last_updated": "2026-03-12T00:09:27.573202+00:00",
+    "low_value": 15.41,
+    "median_value": 40.06,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94da2bb69b80544a96b43",
+    "release_id": 32565630,
+    "high_value": 192.57,
+    "last_updated": "2026-03-12T00:09:28.957879+00:00",
+    "low_value": 50.68,
+    "median_value": 131.76,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94da4bb69b80544a96b45",
+    "release_id": 34450309,
+    "high_value": 166.24,
+    "last_updated": "2026-03-12T00:09:30.360261+00:00",
+    "low_value": 43.75,
+    "median_value": 113.74,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94da5bb69b80544a96b47",
+    "release_id": 10753418,
+    "high_value": 38.92,
+    "last_updated": "2026-03-11T22:50:25.821473+00:00",
+    "low_value": 10.24,
+    "median_value": 26.63
+  },
+  {
+    "_id": "69a94da6bb69b80544a96b49",
+    "release_id": 9366411,
+    "high_value": 43.01,
+    "last_updated": "2026-03-11T22:50:27.109890+00:00",
+    "low_value": 11.32,
+    "median_value": 29.43
+  },
+  {
+    "_id": "69a94da8bb69b80544a96b4b",
+    "release_id": 24890252,
+    "high_value": 44.13,
+    "last_updated": "2026-03-11T22:50:28.415788+00:00",
+    "low_value": 11.61,
+    "median_value": 30.19
+  },
+  {
+    "_id": "69a94da9bb69b80544a96b4d",
+    "release_id": 28514194,
+    "high_value": 21.87,
+    "last_updated": "2026-03-12T00:09:31.756568+00:00",
+    "low_value": 5.76,
+    "median_value": 14.97,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94daabb69b80544a96b4f",
+    "release_id": 27945363,
+    "high_value": 93.33,
+    "last_updated": "2026-03-12T00:09:33.131654+00:00",
+    "low_value": 24.56,
+    "median_value": 63.86,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94dabbb69b80544a96b51",
+    "release_id": 33670557,
+    "high_value": 51.3,
+    "last_updated": "2026-03-12T00:09:34.511070+00:00",
+    "low_value": 13.5,
+    "median_value": 35.1,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94dadbb69b80544a96b55",
+    "release_id": 28982686,
+    "high_value": 72.05,
+    "last_updated": "2026-03-12T00:09:35.936690+00:00",
+    "low_value": 18.96,
+    "median_value": 49.29,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94daebb69b80544a96b57",
+    "release_id": 18893731,
+    "high_value": 37.23,
+    "last_updated": "2026-03-11T22:50:38.857858+00:00",
+    "low_value": 9.8,
+    "median_value": 25.47
+  },
+  {
+    "_id": "69a94dafbb69b80544a96b59",
+    "release_id": 32591784,
+    "high_value": 27.94,
+    "last_updated": "2026-03-12T00:09:37.293833+00:00",
+    "low_value": 7.35,
+    "median_value": 19.12,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94db1bb69b80544a96b5b",
+    "release_id": 33671085,
+    "high_value": 151.17,
+    "last_updated": "2026-03-12T00:09:38.687342+00:00",
+    "low_value": 39.78,
+    "median_value": 103.43,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94db2bb69b80544a96b5d",
+    "release_id": 31538098,
+    "high_value": 28.11,
+    "last_updated": "2026-03-12T00:09:40.087097+00:00",
+    "low_value": 7.4,
+    "median_value": 19.24,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94db3bb69b80544a96b5f",
+    "release_id": 4604340,
+    "high_value": 24.14,
+    "last_updated": "2026-03-11T22:50:48.247330+00:00",
+    "low_value": 6.35,
+    "median_value": 16.51
+  },
+  {
+    "_id": "69a94db4bb69b80544a96b61",
+    "release_id": 14456758,
+    "high_value": 41.87,
+    "last_updated": "2026-03-11T22:50:49.538515+00:00",
+    "low_value": 11.02,
+    "median_value": 28.65
+  },
+  {
+    "_id": "69a94db6bb69b80544a96b65",
+    "release_id": 20950468,
+    "high_value": 77.31,
+    "last_updated": "2026-03-11T22:50:58.744570+00:00",
+    "low_value": 20.35,
+    "median_value": 52.9
+  },
+  {
+    "_id": "69a94db7bb69b80544a96b67",
+    "release_id": 26523590,
+    "high_value": 72.91,
+    "last_updated": "2026-03-11T22:51:00.030675+00:00",
+    "low_value": 19.19,
+    "median_value": 49.88
+  },
+  {
+    "_id": "69a94db8bb69b80544a96b69",
+    "release_id": 33566151,
+    "high_value": 71.25,
+    "last_updated": "2026-03-12T00:09:41.475949+00:00",
+    "low_value": 18.75,
+    "median_value": 48.75,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94dbabb69b80544a96b6b",
+    "release_id": 31556044,
+    "high_value": 47.48,
+    "last_updated": "2026-03-12T00:09:42.874869+00:00",
+    "low_value": 12.49,
+    "median_value": 32.49,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94dbbbb69b80544a96b6d",
+    "release_id": 33646038,
+    "high_value": 42.35,
+    "last_updated": "2026-03-12T00:09:44.345449+00:00",
+    "low_value": 11.15,
+    "median_value": 28.98,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94dbcbb69b80544a96b6f",
+    "release_id": 32020955,
+    "high_value": 65.55,
+    "last_updated": "2026-03-12T00:09:45.881505+00:00",
+    "low_value": 17.25,
+    "median_value": 44.85,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94dbebb69b80544a96b71",
+    "release_id": 16502241,
+    "high_value": 232.75,
+    "last_updated": "2026-03-11T22:51:10.571569+00:00",
+    "low_value": 61.25,
+    "median_value": 159.25
+  },
+  {
+    "_id": "69a94dbfbb69b80544a96b73",
+    "release_id": 33656802,
+    "high_value": 43.63,
+    "last_updated": "2026-03-12T00:09:47.305929+00:00",
+    "low_value": 11.48,
+    "median_value": 29.85,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94dc0bb69b80544a96b77",
+    "release_id": 32929767,
+    "high_value": 34.0,
+    "last_updated": "2026-03-12T00:09:48.684290+00:00",
+    "low_value": 8.95,
+    "median_value": 23.26,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94dc2bb69b80544a96b79",
+    "release_id": 23071724,
+    "high_value": 108.16,
+    "last_updated": "2026-03-11T22:51:13.122431+00:00",
+    "low_value": 28.46,
+    "median_value": 74.0
+  },
+  {
+    "_id": "69a94dc3bb69b80544a96b7b",
+    "release_id": 31793645,
+    "high_value": 71.25,
+    "last_updated": "2026-03-12T00:09:50.167946+00:00",
+    "low_value": 18.75,
+    "median_value": 48.75,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94dc4bb69b80544a96b7d",
+    "release_id": 31093745,
+    "high_value": 76.09,
+    "last_updated": "2026-03-12T00:09:51.581301+00:00",
+    "low_value": 20.02,
+    "median_value": 52.06,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94dc5bb69b80544a96b7f",
+    "release_id": 33339386,
+    "high_value": 53.19,
+    "last_updated": "2026-03-12T00:09:52.966386+00:00",
+    "low_value": 14.0,
+    "median_value": 36.39,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94dc7bb69b80544a96b81",
+    "release_id": 30109691,
+    "high_value": 47.5,
+    "last_updated": "2026-03-12T00:09:54.361357+00:00",
+    "low_value": 12.5,
+    "median_value": 32.5,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a94dc8bb69b80544a96b83",
+    "release_id": 28648444,
+    "high_value": 136.98,
+    "last_updated": "2026-03-12T00:09:55.840559+00:00",
+    "low_value": 36.05,
+    "median_value": 93.72,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69a9c540f46c86f595222bea",
+    "release_id": 218293,
+    "high_value": 8.28,
+    "last_updated": "2026-03-05T18:02:40.925712+00:00",
+    "low_value": 2.18,
+    "median_value": 5.67
+  },
+  {
+    "_id": "69aa367fc9d621aa8411bdee",
+    "release_id": 7426074,
+    "high_value": 77.98,
+    "last_updated": "2026-03-06T02:05:51.434605+00:00",
+    "low_value": 20.52,
+    "median_value": 53.35
+  },
+  {
+    "_id": "69ab72c26907a321df2cd40e",
+    "release_id": 36082807,
+    "high_value": 57.0,
+    "last_updated": "2026-03-07T00:35:14.265572+00:00",
+    "low_value": 15.0,
+    "median_value": 39.0
+  },
+  {
+    "_id": "69b038a6c70ea4dc88adb42d",
+    "release_id": 11292749,
+    "high_value": 2565.0,
+    "last_updated": "2026-03-10T15:28:38.187700+00:00",
+    "low_value": 675.0,
+    "median_value": 1755.0
+  },
+  {
+    "_id": "69b039dac70ea4dc88adb5c4",
+    "release_id": 250640,
+    "high_value": 59.69,
+    "last_updated": "2026-03-10T15:33:46.980864+00:00",
+    "low_value": 15.71,
+    "median_value": 40.84
+  },
+  {
+    "_id": "69b03d27c70ea4dc88adc5cc",
+    "release_id": 244944,
+    "high_value": 5.39,
+    "last_updated": "2026-03-10T15:47:51.362735+00:00",
+    "low_value": 1.42,
+    "median_value": 3.69
+  },
+  {
+    "_id": "69b0497cc70ea4dc88ae17c1",
+    "release_id": 34827524,
+    "high_value": 183.67,
+    "last_updated": "2026-03-10T16:40:28.191647+00:00",
+    "low_value": 48.33,
+    "median_value": 125.67
+  },
+  {
+    "_id": "69b04992c70ea4dc88ae186a",
+    "release_id": 15831860,
+    "high_value": 103.79,
+    "last_updated": "2026-03-11T22:50:50.825358+00:00",
+    "low_value": 27.31,
+    "median_value": 71.01
+  },
+  {
+    "_id": "69b0635066148caa782c9b07",
+    "release_id": 14215683,
+    "median_value": 25.8,
+    "updated_at": "2026-03-10T18:30:40.348277",
+    "high_value": 37.71,
+    "last_updated": "2026-03-10T18:34:54.297520+00:00",
+    "low_value": 9.92
+  },
+  {
+    "_id": "69b0635066148caa782c9b09",
+    "release_id": 14219559,
+    "median_value": 165.75,
+    "updated_at": "2026-03-10T18:30:40.356088",
+    "high_value": 242.25,
+    "last_updated": "2026-03-10T18:34:55.629271+00:00",
+    "low_value": 63.75
+  },
+  {
+    "_id": "69b0635066148caa782c9b0b",
+    "release_id": 23310752,
+    "median_value": 28.75,
+    "updated_at": "2026-03-10T18:30:40.356758"
+  },
+  {
+    "_id": "69b17fbba9dc6b64b1735171",
+    "release_id": 99999,
+    "last_updated": "2026-03-11T14:44:11.419771+00:00",
+    "median_value": 35.5,
+    "source": "community"
+  },
+  {
+    "_id": "69b17fbca9dc6b64b173518f",
+    "release_id": 987654,
+    "last_updated": "2026-03-11T14:44:12.617311+00:00",
+    "median_value": 42.0,
+    "source": "community"
+  },
+  {
+    "_id": "69b17fbea9dc6b64b17351b9",
+    "release_id": 555666,
+    "last_updated": "2026-03-11T14:44:14.042556+00:00",
+    "median_value": 75.0,
+    "source": "community"
+  },
+  {
+    "_id": "69b182aca9dc6b64b1735b1c",
+    "release_id": 27866379,
+    "last_updated": "2026-03-11T14:56:47.538742+00:00",
+    "median_value": 35.0,
+    "source": "community"
+  },
+  {
+    "_id": "69b182b2a9dc6b64b1735b32",
+    "release_id": 29122699,
+    "last_updated": "2026-03-11T14:56:50.274266+00:00",
+    "median_value": 25.0,
+    "source": "community"
+  },
+  {
+    "_id": "69b1cc53e8460b77697b1e94",
+    "release_id": 11897505,
+    "low_value": 632.5,
+    "median_value": 1644.5,
+    "source": "direct_fetch"
+  },
+  {
+    "_id": "69b2057170c38014463e55c1",
+    "release_id": 1982896,
+    "high_value": 38.11,
+    "last_updated": "2026-03-12T00:14:41.980963+00:00",
+    "low_value": 10.03,
+    "median_value": 26.08,
+    "source": "oauth_recovery"
+  },
+  {
+    "_id": "69b2224b62ac196eb652d584",
+    "release_id": 27971034,
+    "low_value": 37.37,
+    "median_value": 97.17,
+    "source": "oauth_recovery",
+    "high_value": 142.01,
+    "last_updated": "2026-03-12T03:00:00.257831+00:00"
+  },
+  {
+    "_id": "69b2225862ac196eb652d787",
+    "release_id": 4083204,
+    "high_value": 44.19,
+    "last_updated": "2026-03-12T02:18:00.294788+00:00",
+    "low_value": 11.63,
+    "median_value": 30.23
+  }
+]

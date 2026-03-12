@@ -1,0 +1,43 @@
+[
+  {
+    "_id": "69b20597e2012b12d908191a",
+    "id": "71223d03-03c8-464a-adb2-e2e3da6b2eb8",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "type": "NEW_FOLLOWER",
+    "title": "New follower",
+    "body": "@testrecovery started following you",
+    "data": {
+      "follower_username": "testrecovery"
+    },
+    "read": true,
+    "created_at": "2026-03-12T00:15:19.023264+00:00"
+  },
+  {
+    "_id": "69b324d395aefa3ad466a115",
+    "id": "4b0e479d-789a-4a83-b3ea-7ccc20197769",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "type": "MENTION",
+    "title": "You were mentioned",
+    "body": "@testuser1 mentioned you in a post",
+    "data": {
+      "post_id": "62830251-06d7-47f2-a248-112c0be7535a",
+      "from_username": "testuser1"
+    },
+    "read": false,
+    "created_at": "2026-03-12T20:40:51.186670+00:00"
+  },
+  {
+    "_id": "69b3259c95aefa3ad466a117",
+    "id": "5f274169-c0fd-4e89-bfc9-e068f65b0edc",
+    "user_id": "baa53931-2831-4a99-9ffb-f31be0672784",
+    "type": "MENTION",
+    "title": "You were mentioned",
+    "body": "@katieintheafterglow mentioned you in a post",
+    "data": {
+      "post_id": "b3a7bbd9-5b32-47cc-a439-3bf680697f17",
+      "from_username": "katieintheafterglow"
+    },
+    "read": false,
+    "created_at": "2026-03-12T20:44:12.656991+00:00"
+  }
+]

@@ -1,0 +1,13 @@
+[
+  {
+    "_id": "69b3102a49c59f882fbac9cc",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "auth_type": "oauth",
+    "connected_at": "2026-03-12T19:12:42.479124+00:00",
+    "discogs_id": 18379968,
+    "discogs_username": "katieintheafterglow",
+    "oauth_token": "HXHLjUSpYUVojVdOCwIhmobNGqvJMahfovaohiQJ",
+    "oauth_token_secret": "qIDCVuPbQjeOTGWWTKNFwimlnUUTcjdnBijsHWJh",
+    "oauth_verified": true
+  }
+]

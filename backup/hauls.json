@@ -1,0 +1,306 @@
+[
+  {
+    "_id": "69ac9c4c24d344f529c44558",
+    "id": "5134d7ed-7293-4dfd-a756-819736fae031",
+    "user_id": "7d195b8b-269b-4229-91d5-418b1a50de2a",
+    "store_name": null,
+    "title": "New Haul",
+    "description": "Just picked up this classic!",
+    "image_url": null,
+    "items": [
+      {
+        "discogs_id": null,
+        "title": "Abbey Road",
+        "artist": "The Beatles",
+        "cover_url": "https://i.discogs.com/oZNAE9MZg-1HMqKLTbTr4hBAh7c0Pz8UmKFMI0QWqUg/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTEzMjU1/NjUtMTYzMDM2MDI5/My00ODExLmpwZWc.jpeg",
+        "year": null,
+        "notes": null,
+        "record_id": "e8dfc65f-983d-4ec5-bf6d-5ac11088102f"
+      }
+    ],
+    "purchased_at": "2026-03-07T21:44:44.025133+00:00",
+    "created_at": "2026-03-07T21:44:44.025133+00:00"
+  },
+  {
+    "_id": "69ac9c8124d344f529c4455e",
+    "id": "ea155a82-a7aa-4fe5-8af4-fc69722f081a",
+    "user_id": "f92249ae-161f-48ec-bae0-9d2895f32f31",
+    "store_name": null,
+    "title": "New Haul",
+    "description": "Another haul!",
+    "image_url": null,
+    "items": [
+      {
+        "discogs_id": null,
+        "title": "Random Access Memories",
+        "artist": "Daft Punk",
+        "cover_url": null,
+        "year": null,
+        "notes": null,
+        "record_id": "bdb06482-5d4d-4740-ac41-7441e1601c6e"
+      }
+    ],
+    "purchased_at": "2026-03-07T21:45:37.426046+00:00",
+    "created_at": "2026-03-07T21:45:37.426046+00:00"
+  },
+  {
+    "_id": "69b175112d0bd2ad800ff9cd",
+    "id": "431a8995-5d94-483c-a29b-44b6d2d5f894",
+    "user_id": "baa53931-2831-4a99-9ffb-f31be0672784",
+    "store_name": "TEST_WebSocket_Store",
+    "title": "TEST_WebSocket_Store",
+    "description": "TEST_WebSocket_Haul_ce2fcf94",
+    "image_url": null,
+    "items": [
+      {
+        "discogs_id": null,
+        "title": "Test Album 1",
+        "artist": "Test Artist 1",
+        "cover_url": null,
+        "year": 2024,
+        "notes": null,
+        "record_id": "fc206ec3-0efa-4363-91fb-59a86d5f588b"
+      }
+    ],
+    "purchased_at": "2026-03-11T13:58:41.690968+00:00",
+    "created_at": "2026-03-11T13:58:41.690968+00:00"
+  },
+  {
+    "_id": "69b175142d0bd2ad800ff9d6",
+    "id": "b8c042a3-f799-4547-b535-ff159d44d0b1",
+    "user_id": "baa53931-2831-4a99-9ffb-f31be0672784",
+    "store_name": "TEST_HaulStore",
+    "title": "TEST_HaulStore",
+    "description": "TEST_HaulEmit_d9c83918",
+    "image_url": null,
+    "items": [
+      {
+        "discogs_id": null,
+        "title": "Test",
+        "artist": "Test",
+        "cover_url": null,
+        "year": 2024,
+        "notes": null,
+        "record_id": "95028855-f129-45ab-a0be-e232a192ff11"
+      }
+    ],
+    "purchased_at": "2026-03-11T13:58:44.610530+00:00",
+    "created_at": "2026-03-11T13:58:44.610530+00:00"
+  },
+  {
+    "_id": "69b22234da9dedcaa6270903",
+    "id": "5133404e-24b9-44af-811e-a8114cd1853e",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "store_name": "red",
+    "title": "red",
+    "description": "red",
+    "image_url": null,
+    "items": [
+      {
+        "discogs_id": 4083204,
+        "title": "Red",
+        "artist": "Taylor Swift",
+        "cover_url": "https://i.discogs.com/4OLvrBXA4qVYYX8i159IQ-YTXMz7C0u3tcO8FsRKMSI/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTQwODMy/MDQtMTc1ODQ4MzA1/OS03ODU2LmpwZWc.jpeg",
+        "year": 2012,
+        "notes": null,
+        "record_id": "f4834242-b800-4e9c-ad98-507771f640bb"
+      }
+    ],
+    "purchased_at": "2026-03-12T02:17:24.799411+00:00",
+    "created_at": "2026-03-12T02:17:24.799411+00:00"
+  },
+  {
+    "_id": "69b226afabf65ac975b158bd",
+    "id": "1f157d12-fd70-498e-8723-c1f71b6a3da7",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "store_name": "beautiful eyes",
+    "title": "beautiful eyes",
+    "description": "q",
+    "image_url": null,
+    "items": [
+      {
+        "discogs_id": 27971034,
+        "title": "Beautiful Eyes",
+        "artist": "Taylor Swift",
+        "cover_url": "https://i.discogs.com/eRCVmjnA8PG2NRBcRErMDgpVs0DXf_lmU9XjEn3oUbY/rs:fit/g:sm/q:90/h:372/w:359/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI3OTcx/MDM0LTE2OTIwMjEz/NTItNjM5My5qcGVn.jpeg",
+        "year": 2023,
+        "notes": null,
+        "record_id": "f3be39f2-e802-4d37-a949-7b5e8460edcd"
+      }
+    ],
+    "purchased_at": "2026-03-12T02:36:31.944294+00:00",
+    "created_at": "2026-03-12T02:36:31.944294+00:00"
+  },
+  {
+    "_id": "69b234c4369249580bf07481",
+    "id": "6c264b70-5b87-4b02-b830-7898689b18d9",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "store_name": "new",
+    "title": "new",
+    "description": "a",
+    "image_url": null,
+    "items": [
+      {
+        "discogs_id": 9359939,
+        "title": "Red",
+        "artist": "Taylor Swift",
+        "cover_url": "https://i.discogs.com/IOOziHqu7dJMQ2iw3uxokcNFNNGaV_DQSJTynQMyUF8/rs:fit/g:sm/q:90/h:606/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTkzNTk5/MzktMTYzMjc2NTI1/NC00MDczLmpwZWc.jpeg",
+        "year": 2016,
+        "notes": null,
+        "record_id": "8155fd55-4dac-4faa-bfa6-695a8b08a901"
+      }
+    ],
+    "purchased_at": "2026-03-12T03:36:36.842928+00:00",
+    "created_at": "2026-03-12T03:36:36.842928+00:00"
+  },
+  {
+    "_id": "69b241343fa41611bd8d5825",
+    "id": "7ebb7ac6-6f26-4374-b9cf-3d0509dace28",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "store_name": null,
+    "title": "New Haul",
+    "description": "yes",
+    "image_url": null,
+    "items": [
+      {
+        "discogs_id": 4083204,
+        "title": "Red",
+        "artist": "Taylor Swift",
+        "cover_url": "https://i.discogs.com/4OLvrBXA4qVYYX8i159IQ-YTXMz7C0u3tcO8FsRKMSI/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTQwODMy/MDQtMTc1ODQ4MzA1/OS03ODU2LmpwZWc.jpeg",
+        "year": 2012,
+        "notes": null,
+        "record_id": "1ed68426-511a-4234-8dc9-7728a0920fac"
+      },
+      {
+        "discogs_id": 2555127,
+        "title": "Speak Now",
+        "artist": "Taylor Swift",
+        "cover_url": "https://i.discogs.com/87sf0MZNnCbWMcZaWZYr75spHg3f8hmzXAXKOvA2Ke0/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI1NTUx/MjctMTY3NzE2MzIx/OC03NTQ5LmpwZWc.jpeg",
+        "year": 2010,
+        "notes": null,
+        "record_id": "14c36255-f89e-4c09-b4df-c9a412b22052"
+      },
+      {
+        "discogs_id": 14401235,
+        "title": "Lover",
+        "artist": "Taylor Swift",
+        "cover_url": "https://i.discogs.com/AtDFDg1_gZyjv16Ysg_boeOi-5prd9ISFDVizTGfGY4/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE0NDAx/MjM1LTE2ODI0NjY5/ODMtOTU5NC5qcGVn.jpeg",
+        "year": 2019,
+        "notes": null,
+        "record_id": "ac099a76-fd73-4622-b043-d8dcc232c3ed"
+      }
+    ],
+    "purchased_at": "2026-03-12T04:29:40.973643+00:00",
+    "created_at": "2026-03-12T04:29:40.973643+00:00"
+  },
+  {
+    "_id": "69b241d083a6d0eb8e33dff9",
+    "id": "55714ba4-22a7-49ef-b2cd-9242a1263eef",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "store_name": "store",
+    "title": "store",
+    "description": "test",
+    "image_url": null,
+    "items": [
+      {
+        "discogs_id": 27971034,
+        "title": "Beautiful Eyes",
+        "artist": "Taylor Swift",
+        "cover_url": "https://i.discogs.com/eRCVmjnA8PG2NRBcRErMDgpVs0DXf_lmU9XjEn3oUbY/rs:fit/g:sm/q:90/h:372/w:359/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI3OTcx/MDM0LTE2OTIwMjEz/NTItNjM5My5qcGVn.jpeg",
+        "year": 2023,
+        "notes": null,
+        "record_id": "578ad973-76f6-411e-b12b-846026e296a3"
+      }
+    ],
+    "purchased_at": "2026-03-12T04:32:16.002068+00:00",
+    "created_at": "2026-03-12T04:32:16.002068+00:00"
+  },
+  {
+    "_id": "69b3125d7a0c759e5f7f7a2f",
+    "id": "5e7a2304-d79e-4b3d-938e-091d9d29504b",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "store_name": null,
+    "title": "New Haul",
+    "description": "yes",
+    "image_url": null,
+    "items": [
+      {
+        "discogs_id": 30099581,
+        "title": "Deeper Well",
+        "artist": "Kacey Musgraves",
+        "cover_url": "https://i.discogs.com/D4D8-lsynxfVe0lBoloEg1jcS5IwnQU7pPyqg8A3Zqg/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMwMDk5/NTgxLTE3MTA0NjA0/MzEtMjAyNi5qcGVn.jpeg",
+        "year": 2024,
+        "notes": null,
+        "record_id": "a59c1666-1b00-4670-8d89-f9864a2a12f3"
+      }
+    ],
+    "purchased_at": "2026-03-12T19:22:05.248389+00:00",
+    "created_at": "2026-03-12T19:22:05.248389+00:00"
+  },
+  {
+    "_id": "69b315ddc2f4acf404cca2a5",
+    "id": "ebe80a8c-5078-4a8d-9068-e1bb59e657ed",
+    "user_id": "baa53931-2831-4a99-9ffb-f31be0672784",
+    "store_name": "Test Vinyl Store",
+    "title": "Test Vinyl Store",
+    "description": "Testing photo upload for haul!",
+    "image_url": "https://thehoneygroove.com/api/files/serve/honeygroove/uploads/baa53931-2831-4a99-9ffb-f31be0672784/ce5bdccb-0980-48d0-b80d-85d7f8412a93.jpg",
+    "items": [
+      {
+        "discogs_id": 12345,
+        "title": "Test Album",
+        "artist": "Test Artist",
+        "cover_url": null,
+        "year": null,
+        "notes": null,
+        "record_id": "be23d850-eb57-47d7-88fa-49ad0a729c20"
+      }
+    ],
+    "purchased_at": "2026-03-12T19:37:01.268696+00:00",
+    "created_at": "2026-03-12T19:37:01.268696+00:00"
+  },
+  {
+    "_id": "69b31644c2f4acf404cca2af",
+    "id": "bb8fafba-a5c1-4286-86d2-0a8e2e059aba",
+    "user_id": "baa53931-2831-4a99-9ffb-f31be0672784",
+    "store_name": "Test Vinyl Store",
+    "title": "Test Vinyl Store",
+    "description": "Testing photo upload for haul!",
+    "image_url": "https://thehoneygroove.com/api/files/serve/honeygroove/uploads/baa53931-2831-4a99-9ffb-f31be0672784/85febc15-b0e3-4bf1-a6b4-8d2dfb5c9de8.jpg",
+    "items": [
+      {
+        "discogs_id": 12345,
+        "title": "Test Album",
+        "artist": "Test Artist",
+        "cover_url": null,
+        "year": null,
+        "notes": null,
+        "record_id": "df9b48cc-e61f-4d23-8932-f03042e89207"
+      }
+    ],
+    "purchased_at": "2026-03-12T19:38:44.572305+00:00",
+    "created_at": "2026-03-12T19:38:44.572305+00:00"
+  },
+  {
+    "_id": "69b31a02c2f4acf404cca2bb",
+    "id": "46143c87-699b-4e3b-8a28-29517627bbd1",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "store_name": null,
+    "title": "New Haul",
+    "description": "lover",
+    "image_url": "https://thehoneygroove.com/api/files/serve/honeygroove/uploads/4072aaa7-1171-4cd2-9c8f-20dfca8fdc58/68c648c3-68c1-4054-b4e4-d0722089885b.jpg",
+    "items": [
+      {
+        "discogs_id": 14401235,
+        "title": "Lover",
+        "artist": "Taylor Swift",
+        "cover_url": "https://i.discogs.com/AtDFDg1_gZyjv16Ysg_boeOi-5prd9ISFDVizTGfGY4/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE0NDAx/MjM1LTE2ODI0NjY5/ODMtOTU5NC5qcGVn.jpeg",
+        "year": 2019,
+        "notes": null,
+        "record_id": "2539eb3f-32a3-42f3-b6fb-eef0758f70b6"
+      }
+    ],
+    "purchased_at": "2026-03-12T19:54:42.608939+00:00",
+    "created_at": "2026-03-12T19:54:42.608939+00:00"
+  }
+]
