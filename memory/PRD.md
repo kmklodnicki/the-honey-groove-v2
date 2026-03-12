@@ -19,46 +19,45 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors. Featu
 - User-initiated "Golden Glassy Banner" for Discogs connection
 - Fixed z-index (`z-[200000]`) above navbar (`z-[100000]`)
 - CSS variable `--oauth-banner-h` dynamically pushes navbar down
-- Honey-gold gradient for high-priority alert appearance
-- Friendly copy: "Want to import your collection? Connect your Discogs account to sync your library instantly."
+- Honey-gold gradient, friendly copy
 - "Skip for now" link — hides banner for 24h via localStorage
-- X dismiss also hides banner
 - `discogs_import_intent` field: PENDING | LATER | DECLINED | CONNECTED
-  - LATER: shows banner
-  - DECLINED/CONNECTED: permanently hides banner
-- DiscogsSecurityModal with 3 options: Connect Discogs / Maybe Later / Proceed without Discogs
-- Golden Hive verification independent of Discogs — skipping doesn't affect trust
+- DiscogsSecurityModal with 3 options: Connect / Maybe Later / Proceed Without
+- Golden Hive verification independent of Discogs
+
+### Unofficial Record Compliance — BLOCK 592, v2.5.2, v2.5.3
+- **Auto-tagging**: Discogs sync detects "Unofficial Release" → sets `is_unofficial: true`
+- **"Unofficial" Pill**: Steel gray (#4A4A4A) pill badge — overlay on album art + inline in metadata
+- **Deployed across**: Collection grid, Feed (NowSpinning, Haul, AddedToCollection), Record Detail, Listing Modal, HoneypotCards
+- **Tiered Compliance Checkbox**: Gold Hive members see status-protecting message; Standard members see trust-building message
+- **Legal Disclaimer**: "NOTICE: This release is identified as 'Unofficial'..." on all unofficial pages
+- **Pricing Restriction**: Auto-market values disabled for unofficial items; manual price only
+- **Backend enforcement**: `unofficial_acknowledged=true` required before listing unofficial items
 
 ### Collection & Valuation
 - Full collection management with Discogs import/sync
 - Value Recovery Engine (batch valuation)
-- "Add Missing Values" button removed (2026-03-12)
+- "Add Missing Values" button removed
 - Dream List feature
 
 ### Feed & Social
-- Daily Prompt system
-- Post types: Now Spinning, Haul, ISO, Note, Randomizer
-- Real-time feed via Socket.IO
-- Paginated notifications with "View More"
+- Daily Prompt, post types, real-time feed, paginated notifications
 
 ### Image Pipeline ("Instant Art")
-- Shimmer skeleton loaders
-- Priority preloading, predictive fetching via IntersectionObserver
+- Shimmer skeleton loaders, priority preloading, predictive fetching
 
 ### Other Features
-- Weekly Wax email reports
-- Stripe Connect for seller payouts
-- Golden Hive membership system
-- Collector Bingo, Mood Board
+- Weekly Wax email, Stripe Connect, Golden Hive membership, Collector Bingo, Mood Board
 
 ## Key API Endpoints
-- `POST /api/discogs/update-import-intent` — Update discogs_import_intent (PENDING/LATER/DECLINED/CONNECTED)
-- `GET /api/notifications` — Paginated (skip, limit params)
-- `POST /api/valuation/start` — Start Value Recovery Engine
-- `GET /api/valuation/status` — Recovery run status
+- `POST /api/discogs/update-import-intent` — Update intent (PENDING/LATER/DECLINED/CONNECTED)
+- `POST /api/listings` — Now accepts `is_unofficial` and `unofficial_acknowledged`
+- `GET /api/records` — Now includes `is_unofficial` in response
+- `GET /api/notifications` — Paginated
+- `POST /api/valuation/start` — Value Recovery Engine
 
 ## Known Issues
-- Service Worker caching incomplete (BLOCK 321) — only on-demand, not pre-cached on install
+- Service Worker caching incomplete (BLOCK 321)
 
 ## Blocked
 - Spotify/Apple Music integration — waiting for user's callback URL
@@ -78,4 +77,4 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors. Featu
 
 ## Credentials
 - Admin: `kmklodnicki@gmail.com` / `admin_password` (User ID: `4072aaa7-1171-4cd2-9c8f-20dfca8fdc58`)
-- Test: `test@example.com` / `testuser1`
+- Test unofficial record: `cdd4fe7d-5cf1-4e40-b2f9-faec1600545c` (Pink Pony Club by Chappell Roan)
