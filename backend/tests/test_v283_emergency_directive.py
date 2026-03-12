@@ -7,7 +7,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://vinyl-vault-22.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://daily-prompt-share.preview.emergentagent.com')
 
 # Admin credentials
 ADMIN_EMAIL = "kmklodnicki@gmail.com"

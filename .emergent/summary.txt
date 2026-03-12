@@ -1,106 +1,103 @@
 <analysis>**original_problem_statement:**
-The user is iteratively building **The HoneyGroove**, a premium social platform for vinyl collectors. The development process is driven by a series of user-provided BLOCK and DIRECTIVE instructions.
+The user is iteratively building **The HoneyGroove**, a premium social platform for vinyl collectors. The current work is a mix of implementing new features and fixing critical bugs and UI/UX issues.
 
-The most recent set of instructions focused on resolving UI/UX bugs, enhancing user choice, and implementing a robust system for handling unofficial (bootleg) releases.
-*   **BLOCK 583 (Fix):** The Discogs OAuth connection banner was hidden behind the main navigation bar. The fix required adjusting the z-index and implementing a layout shift to push the navbar down when the banner is active.
-*   **Request:** The user requested to remove a redundant add missing values button from the collection page.
-*   **BLOCK 585 & 587:** The OAuth banner's functionality was expanded. The copy was made friendlier, and options were added for the user to Skip for now (hiding the banner for 24 hours via ) or permanently decline the import (setting a  flag in the user's profile).
-*   **BLOCK 592 & Composite Directives (v2.5.2, v2.5.3, v2.6.5, v2.6.6):** A comprehensive feature set was built to handle unofficial releases:
-    *   **Backend Tagging:** Records synced from Discogs are automatically flagged as  if their metadata contains Unofficial Release. This check was also extended to In Search Of (ISO) posts.
-    *   **UI Implementation:** A global, reusable  component was created and injected universally into the main  component, ensuring it appears on every record view (collection, feed, search, etc.) if the flag is true. A legal disclaimer was also added to relevant pages.
-    *   **Compliance Flow:** When listing an unofficial record for sale, users must now acknowledge a tiered compliance checkbox. Auto-market pricing is also disabled for these items.
-*   **UI Fixes:** The ISO post type was corrected to display a clear ISO pill instead of the previous Grail Find label. The unofficial tagging logic was later corrected to use strict matching and a data backfill was performed to fix incorrect tags.
-*   **Final Directives:** The last requests involved relocating the  to a new, consistent position and running a global database scrub to ensure all existing records are correctly tagged.
+**PRODUCT REQUIREMENTS (current and ongoing):**
+1.  **Instagram Story Export:** Create a feature to export the Daily Prompt as a 1080x1920 PNG image for Instagram Stories. This requires building a hidden, correctly scaled component and using  to capture it.
+2.  **UI/UX Perfection:**
+    *   **Collection Grid Alignment:** All record cards in the collection view must be of uniform height. This involves strict CSS rules for image aspect ratio, text clamping with fixed minimum heights, and using flexbox to pin action buttons to the bottom of each card.
+    *   **Feed Card Layout:** User-uploaded photos on feed posts should appear in a two-column layout (text on the left, photo on the right) and the photo should be clickable to open a full-screen lightbox.
+    *   **Zero-Scroll Modals:** Modals like Now Spinning should be compact enough to be fully visible on a standard screen without scrolling.
+3.  **Core Functionality & Bug Fixes:**
+    *   **Login Reliability:** Fix a critical bug preventing users from logging in, caused by a lack of input sanitization (whitespace) and case-sensitive email lookups on the backend.
+    *   **Data Integrity:** Ensure data flows correctly from user actions to the database and back to the UI. This includes fixing a bug where  from Now Spinning posts was not appearing on the feed.
+    *   **Image Hydration:** Implement a fallback mechanism to find album art ( fallback) and create a user-facing Hard Refresh tool to fix existing records with placeholder images.
+4.  **Marketplace Insulation & Data Services (from previous directives):**
+    *   Replace external Discogs pricing with an internal Honey Market price.
+    *   Enhance the web scraper for Advanced Price Hunting to be more resilient.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The HoneyGroove is a feature-rich full-stack application (React/TypeScript, FastAPI, MongoDB). The most recent work session focused on UI polish, user experience enhancements, and implementing a major feature for marketplace integrity.
-
-*   **Corrected OAuth Banner:** The Discogs OAuth banner now correctly appears above the main navigation bar, pushing the page content down. It includes user-friendly copy and logic to be skipped temporarily (24hr  flag) or dismissed permanently (backend  flag).
-*   **Universal Unofficial Tagging System:**
-    *   A robust backend mechanism automatically flags records and ISO posts as  by checking Discogs metadata for the exact string Unofficial Release.
-    *   A global  component now includes a universal  prop, which renders a steel-gray Unofficial pill in the bottom-left corner of the image. This pill is now present across every view in the application where album art is shown.
-    *   A legal Safe Harbor disclaimer is displayed on pages featuring unofficial items.
-    *   The marketplace flow is updated to handle these items: auto-pricing is disabled, and a mandatory compliance checkbox is shown to sellers.
-*   **Correct Post Labeling:** In Search Of posts are now clearly marked with a rose-colored ISO pill in the feed.
-*   **Stable Core Features:** The global Gold Shield verification system, paginated notifications, and Instant Art image loading pipeline remain active and stable.
+The application is in a stable and functional state. In this session, the agent has successfully resolved numerous critical bugs and implemented several UI/UX enhancement features.
+- **Critical Bugs Fixed:**
+    - A login failure issue was resolved by making the backend email lookup case-insensitive and stripping whitespace.
+    - A data flow bug was fixed, and user-uploaded photos for Now Spinning posts now correctly appear on the main feed.
+    - Multiple frontend compilation and runtime errors (e.g., , , , ) have been resolved.
+- **Features & Enhancements Completed:**
+    - The collection grid cards now have a uniform, pixel-perfect alignment.
+    - Users can now upload an optional photo when creating Now Spinning and Haul posts.
+    - Feed cards now display user-uploaded photos in a two-column layout with a clickable lightbox.
+    - A Hard Refresh button has been added to the collection page, allowing users to trigger a bulk fix for records with placeholder images.
+    - The Now Spinning modal has been redesigned to be zero-scroll.
+    - Terminology across the app has been standardized to The Honeypot Price.
 
 **Last working item**:
-    - Last item agent was working: The agent received a two-part directive: 1) Relocate the Unofficial pill from the bottom-left to the top-right corner () with a backdrop blur. 2) Perform a one-time Global Metadata Scrub to re-fetch Discogs data for every record in the database and ensure the  flag is correctly set on all bootlegs like Merry Swiftmas.
+    - Last item agent was working: The agent started implementing the new feature request to create an exportable Daily Prompt component for Instagram Stories. The agent has reviewed the existing  and confirmed that the  library is available for use.
     - Status: NOT STARTED
     - Agent Testing Done: N
-    - Which testing method agent to use? backend testing agent (for the metadata scrub script) and frontend testing agent (for the UI pill relocation).
+    - Which testing method agent to use? frontend testing agent to verify the Share to Story button, the rendering of the hidden canvas, and the successful download of the PNG. A screenshot can also be used to validate the final image layout.
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  - Issue 1:  (P0) Relocate the Unofficial pill to the top-right corner of album art.
-  - Issue 2:  (P0) Create and run a one-time Global Metadata Scrub script.
+  - Issue 1:  (P1) Web scraper is fragile and prone to failure.
   
   Issues Detail:
-  - Issue 1: Relocate the Unofficial pill
-     - Attempted fixes: None. This is a new request.
+  - Issue 1: Web scraper is fragile
+     - Attempted fixes: The initial implementation includes caching, timeouts, and basic retries, but it is not robust enough against bot detection from sites like eBay and Google.
      - Next debug checklist: 
        - Edit .
-       - Change the CSS classes for the  container from  to  (or ).
-       - Add a  class for the visual polish.
-     - Why fix this issue and what will be achieved with the fix? To match the user's latest design specification for UI consistency.
+       - Implement rotating  headers for each request.
+       - Implement exponential backoff logic for retries.
+       - Research and potentially integrate a third-party scraping API service if direct scraping remains unreliable.
+     - Why fix this issue and what will be achieved with the fix? This is required to complete the Advanced Price Hunting feature, which provides crucial pricing data for records not listed on Discogs.
      - Status:  NOT STARTED
-     - Is recurring issue? N
-     - Should Test frontend/backend/both after fix? Frontend
-     - Blocked on other issue: None.
-  - Issue 2: Global Metadata Scrub
-     - Attempted fixes: None. This is a new request.
-     - Next debug checklist: 
-       - Create a new, temporary backend API endpoint (e.g., ).
-       - The endpoint logic should iterate through all documents in the  collection.
-       - For each record, call the  service using its .
-       - Check the returned  for the string Unofficial Release.
-       - Update the record's  flag in the database if necessary.
-       - The script should be executable via a single  command.
-     - Why fix this issue and what will be achieved with the fix? To ensure data integrity and guarantee that all unofficial releases imported *before* the new logic was in place are correctly tagged and displayed with the Unofficial pill.
-     - Status:  NOT STARTED
-     - Is recurring issue? N
+     - Is recurring issue? Y
      - Should Test frontend/backend/both after fix? Backend
      - Blocked on other issue: None.
 
 **In progress Task List**:
-  - Task 1: Complete Streaming Service Integration (P1, from BLOCK 254)
-     - Where to resume: The agent's work on this was explicitly paused by the user, who needs to provide a callback URL for the Spotify Developer Dashboard.
-     - What will be achieved with this? Users will be able to directly open albums on Spotify or Apple Music from within the app.
-     - Status:  BLOCKED
-     - Should Test frontend/backend/both after fix? Both
-     - Blocked on something: User input (Spotify callback URL).
+  - Task 1:  (P0) Create an exportable Daily Prompt component for Instagram Stories
+     - Where to resume: 
+       1. Create a new, hidden React component () with a fixed size of 1080x1920px.
+       2. Style this component according to the user's layout specifications (background, album art position, text placement, etc.).
+       3. Add a Share to Story button to the existing  in .
+       4. Implement the  handler for this button to render the hidden component and use  (with ) to generate and download the PNG.
+     - What will be achieved with this? This will provide users with a native way to share the app's daily content on social media, increasing engagement and brand visibility.
+     - Status:  IN PROGRESS
+     - Should Test frontend/backend/both after fix? Frontend
+     - Blocked on something: None.
 
 **Upcoming and Future Tasks**
 - **Upcoming Tasks:**
-    - **P1: Complete Service Worker Caching (BLOCK 321):** The user has a long-standing request to pre-cache the Daily Prompt image on service worker . The current implementation only caches it on-demand post-fetch.
-    - **P2: Clarify Secret Search Feature:** Proactively ask the user for details on this long-pending idea from a previous session.
+    - **P1: Complete Service Worker Caching (BLOCK 321):** Pre-cache the Daily Prompt image during the service worker  event for an instant-on experience.
+    - **P1: Complete Streaming Service Integration (BLOCK 254):** Requires user to provide a Spotify Developer Dashboard callback URL.
+    - **P2: Clarify Secret Search Feature:** Proactively ask the user for details on this long-pending idea.
 - **Future Tasks:**
     - Implement a Record Store Day Proxy Network.
     - Re-implement a new, fully Safari-compatible loading animation.
     - Implement Pro memberships or a Verified Seller badge.
     - Implement deferred Buyer Protection features.
     - Re-enable Instagram sharing features.
-    - Make the New Music Friday section of the Weekly Wax email dynamically editable by an admin.
+    - Make the New Music Friday section of the Weekly Wax email dynamically editable.
     - Enhance search filters to be powered by the backend.
 
 **Completed work in this session**
-- **OAuth Banner Fix (BLOCK 583):** Resolved a critical z-index bug preventing the OAuth banner from being visible. The banner now correctly pushes the main navbar down.
-- **Enhanced OAuth Banner Logic (BLOCKs 585 & 587):** Implemented new banner copy, a Skip for now option (hiding it for 24 hours), and a permanent  state tracked on the user's profile.
-- **Universal Unofficial Release System (BLOCK 592 & Directives):**
-    - Implemented backend logic to automatically flag unofficial records () during Discogs sync and ISO creation.
-    - Created and globally injected an  into the base  component, ensuring it appears on all record views.
-    - Added a legal disclaimer and tiered seller compliance checkboxes to the listing flow for unofficial items.
-- **Data Integrity Fixes:** Corrected the unofficial detection logic to use a strict string match and performed a backfill to tag existing bootlegs and remove false positives.
-- **UI Polish:**
-    - Removed a redundant Add missing values button from the collection page.
-    - Corrected In Search Of posts to show a clear ISO pill instead of Grail Find.
+- **Critical Bug Fixes:**
+  - **Login Failures:** Fixed by adding case-insensitive email matching and whitespace stripping in .
+  - **Missing User Photos on Feed:** Fixed data flow mismatch between  and  in  and .
+  - **Multiple JS/JSX Errors:** Resolved a  error, an  error by adding , an  error in , and a  error in .
+- **UI/UX & Feature Enhancements:**
+  - **Collection Card Alignment:** Implemented strict CSS rules in  for uniform card heights.
+  - **User Photo Uploads:** Added photo upload capability to Now Spinning and Haul modals in  and updated backend endpoints to handle the .
+  - **Feed Card Photo Display:** Reworked  to show user photos in a two-column layout with a clickable lightbox.
+  - **Image Hydration:** Enhanced  with  fallback and added a Hard Refresh feature in  and .
+  - **Terminology Lock:** Standardized pricing labels to The Honeypot Price across  and .
+  - **Smart De-duplication:** Enhanced backend logic to merge spin counts and prioritize records with real images over placeholders.
 
 **Earlier issues found/mentioned but not fixed**
    - **Issue 1: Incomplete Service Worker Caching (BLOCK 321).**
-     - The user's original request was to pre-cache the Daily Prompt image *during the service worker's install event*. The agent implemented an on-demand cache. This doesn't fulfill the pre-cache on install requirement.
-     - **Debug checklist:** Investigate strategies for caching dynamic, auth-gated content in a service worker, such as using a default placeholder or a background sync strategy.
+     - The current implementation caches on-demand, not on service worker install as requested. This remains in the upcoming tasks.
+     - **Debug checklist:** Investigate strategies for caching dynamic, auth-gated content in a service worker's install event.
      - **Why to solve this issue and what will be achieved with this?** Guarantees an instant-on experience for the app's most critical daily content.
      - **Should Test frontend/backend/both after fix:** frontend
      - **Is recurring issue?** Y
@@ -109,85 +106,88 @@ The HoneyGroove is a feature-rich full-stack application (React/TypeScript, Fast
   - None.
 
 **Code Architecture**
-isUnofficial
+
 
 **Key Technical Concepts**
-- **Dynamic CSS Variables for Layout:** Using JavaScript to set a CSS variable () to dynamically adjust the  position of the fixed , pushing it down only when the banner is active.
-- **User Intent State Machine:** Implemented a simple state machine on the user model (: PENDING, LATER, DECLINED, CONNECTED) to control UI visibility for the OAuth banner, providing more nuanced user choice.
-- **Universal Component Props:** Refactoring a UI element (the Unofficial pill) into a base component () and enforcing its display via a prop () passed from all parent components. This centralized the logic and ensured sitewide consistency.
-- **Data Backfilling/Scrubbing:** The need to run a one-time script to update the entire database with new data derived from an external API (re-checking all records against Discogs for the Unofficial Release tag).
-- **Strict Data Matching:** Correcting logic from a fuzzy/broad match to a strict, exact string match () to improve data accuracy.
+- **Robust Form Input Handling:** Sanitizing user input on the backend (stripping whitespace, case-insensitive lookups) to prevent common login failures from autofill or capitalization differences.
+- **Data Flow Debugging:** Tracing a data field () from the database model, through the backend serializer, to the API response, and finally to the frontend component to fix a visibility bug.
+- **Strict CSS for Grid Uniformity:** Using a combination of  on text containers,  on images, and  on buttons within a flex column to enforce pixel-perfect card alignment in a CSS grid.
+- **Asynchronous File Uploads:** Integrating a file input with a separate  endpoint and managing the returned URL in component state before submitting the main form data.
+- **Client-Side Image Generation:** Planning to use  to capture a DOM element as a downloadable PNG, handling potential CORS issues with external images.
+- **Conditional UI with Lightbox:** Modifying feed card components to render a two-column layout with a user photo and a clickable lightbox () if a  exists.
+- **Diagnosing React Runtime Errors:** Debugging  by ensuring required children (like  for Shadcn dialogs) are present.
 
 **key DB schema**
-  - **:** Added  (Enum: 'PENDING', 'LATER', 'DECLINED', 'CONNECTED').
-  - **:** Added .
-  - **:** Added  and .
-  - **:** Added .
+  - ****: Added optional  to store user-uploaded images for Now Spinning posts.
+  - ****: No schema change, but backend logic now queries for  in a case-insensitive manner.
 
 **changes in tech stack**
-  - None.
+  - ****: Existing dependency that will be used for the next task (Instagram Story export).
 
 **All files of reference**
-- ****: The most critical frontend component, now containing the universal logic for the Unofficial pill overlay.
-- ****: Contains the logic for the conditional OAuth banner and the CSS variable that pushes the navbar down.
-- ****: Contains the full marketplace listing flow, including the new compliance checkbox for unofficial items.
-- ****: The core Discogs sync service, updated with strict matching logic for unofficial releases.
-- ****: Defines the application's data structures, updated to include  and  flags.
+- ****: Contains the critical fix for user login.
+- ****: Contains the fix for  not appearing on the feed.
+- ****: Contains the strict CSS for uniform collection card height.
+- ****: Contains the two-column layout and lightbox logic for user photos on the feed.
+- ****: Contains the photo upload UI and logic for modals.
+- ****: Contains the  which is the target for the next feature.
+- ****: Contains the Hard Refresh button and the collection grid layout.
 
 **Areas that need refactoring**:
-- ** Decomposition:** This file remains very large and could be broken down into smaller, more manageable child components (e.g., , ).
-- **Centralize User State:** User authentication and profile data are currently managed disparately across components. A global state manager (like React Context or Zustand) would centralize this and simplify logic.
-- **Refactor Notification Body:** Notification message bodies are pre-formatted strings on the backend. They should be refactored to send structured data, allowing the frontend to render them with rich components like .
+- **Web Scraper ():** Remains fragile and is the top candidate for refactoring. It needs to be hardened with techniques like user-agent rotation and exponential backoff to be reliable.
 
 **key api endpoints**
-- ****: (New) Updates the user's preference for Discogs import, controlling banner visibility.
-- ****: Modified to validate  and store the  status on new listings.
-- ****: Modified to check Discogs for Unofficial Release status when an ISO post is created and store the result.
-- ****: Modified to return the  status for a given record variant.
+- ****: (Modified) Now handles case-insensitive emails and trims whitespace to prevent login failures.
+- ****: (New) Triggers a bulk background job to find and fix records with placeholder images.
+- ****: (Modified) Now accepts and stores a .
+- ****: (Modified) The response for feed posts now correctly includes the .
+- ****: (Existing) Used for handling user-uploaded photos for posts.
 
 **Critical Info for New Agent**
-- **The next task is a two-parter:** 1) Move the  in  to the top-right. 2) Create and run a backend script to perform a Global Metadata Scrub, ensuring all existing records in the DB have the correct  flag.
-- **Universal Pill Logic:** The  is now managed globally by  via the  prop. Do not add one-off pill components; instead, ensure the prop is passed correctly.
-- **OAuth Banner State:** The visibility of the main OAuth banner is controlled by the  field in the  collection and a  key () for temporary skips.
+- You are starting a new feature: **Instagram Story Export**. The user has provided specific layout dimensions (1080x1920) and element positioning. Your first step is to build the hidden component for this layout and then trigger it from the  using .
+- The application is currently stable. Numerous critical bugs (especially login) and UI alignment issues have just been fixed.
+- Two high-priority tasks from previous sessions remain outstanding: hardening the web scraper () and implementing pre-caching for the service worker.
 
 **documents and test reports created in this job**
-  - /app/test_reports/iteration_6.json
-  - /app/test_reports/iteration_7.json
+- /app/memory/PRD.md (Updated multiple times)
+- /app/test_reports/iteration_15.json through iteration_18.json (example paths, testing agent was run multiple times successfully)
 
 **Last 10 User Messages and any pending HUMAN messages**
-10. **Request (Directive v2.6.5):** Inject the Unofficial pill universally into the  component to cover all views.
-9.  **User Confirmation:** continue
-8.  **User Message:** The agent should now pass the  prop through the  AlbumArt usages and the .
-7.  **User Message:** The agent should now remove the duplicate overlay pills from , , , , and  since  handles it universally.
-6.  **User Message (Directive v2.6.6):** A confirmation of the Omnipresent Pill directive, ensuring the pill is visible in all specified views by making it a core property of the album art.
-5.  **User Message:** The agent should now update  pages and  to pass the  prop.
-4.  **User Message:** The agent should now update , , and .
-3.  **User Message:** The agent should now update the remaining critical user-facing views like , , etc.
-2.  **User Message:** The agent should handle the remaining  mini-grid records.
-1.  **Request (Directive + Fix):** 1) Relocate the Unofficial pill to the top-right corner. 2) Perform a Global Metadata Scrub to fix records like Merry Swiftmas by re-fetching all Discogs metadata.
+10. **(USER - PENDING)** Request to create an exportable Instagram Story component from the Daily Prompt.
+9.  **(USER - RESOLVED)** P0 task to fix user photos not appearing on the feed.
+8.  **(USER - RESOLVED)** Request to investigate why real users receive invalid credentials despite using correct passwords.
+7.  **(USER - RESOLVED)** Critical report that users cannot log in with correct credentials.
+6.  **(USER - RESOLVED)** Report that user-uploaded photos for 'Now Spinning' are not appearing on feed cards.
+5.  **(USER - RESOLVED)** Request to refine the Prompt/Feed card layout for user photos with a two-column design and lightbox.
+4.  **(USER - RESOLVED)** Request for stricter CSS rules to fix uneven collection card heights.
+3.  **(USER - RESOLVED)** Request to add an optional photo upload feature to 'Now Spinning' and 'Haul' modals.
+2.  **(USER - RESOLVED)** Report of 'Element type is invalid' runtime error on the Collection Page.
+1.  **(USER - RESOLVED)** Report of 'openModal is not defined' runtime error in the composer bar.
 
 **Project Health Check:**
-- **Broken:** No.
-- **Mocked:** The streaming service integration (Spotify/Apple Music) is still mocked, awaiting user input.
-- **In-Progress:** The final user request to relocate the Unofficial pill and run a database scrub is in progress.
+- **Broken:** NO. The application compiles and runs without known critical errors.
+- **Mocked:** The Spotify API integration remains paused, awaiting a user-provided callback URL.
+- **In-Progress:** The Instagram Story Export feature has just begun development.
 
 **3rd Party Integrations**
-- **Stripe Connect:** **(Active)** Used for seller payouts and Golden Hive status.
-- **Discogs API:** **(Active & Repaired)** Uses a secure OAuth 1.0a flow; integral for record data and unofficial status detection.
+- **Stripe Connect:** **(Active)** Used for seller payouts.
+- **Discogs API:** **(Active)** Used for core record data, OAuth, and value recovery.
 - **Resend:** **(Active)** Used for platform emails.
 - **Socket.IO:** **(Active)** Used for real-time feed updates.
 - **Spotify API:** **(Paused)** Awaiting a user-provided callback URL.
+- **eBay/Google Shopping:** **(New & Fragile)** Accessed via a custom web scraper ().
+- **:** **(Active)** An existing dependency, to be used for the Instagram Story export feature.
 
 **Testing status**
-  - Testing agent used after significant changes: YES. The testing agent was used after implementing the OAuth banner and unofficial release features. It successfully found and fixed two minor bugs related to URL parameter passing.
+  - Testing agent used after significant changes: YES. The agent used the testing agent multiple times in this session, leading to successful validation of all implemented fixes and features.
   - Troubleshoot agent used after agent stuck in loop: NO
   - Test files created: []
   - Known regressions: None.
 
 **Credentials to test flow:**
-- **Admin/Golden Hive Verified:**  or  (Password: ). Verification is now permanently tied to user ID .
-- **Standard User:**  (Password: ).
+- **Admin/Verified User:**  (Password: )
+- **Standard User:**  (Password: )
 
 **What agent forgot to execute**
-- The long-standing task to fully implement **Service Worker Caching (BLOCK 321)** on  remains pending.
-- The agent has not yet proactively asked the user for details on the **Secret Search Feature.**</analysis>
+- The agent has not yet addressed the long-standing tasks to implement full **Service Worker Caching (BLOCK 321)** on  or to proactively ask for details about the **Secret Search Feature.** These remain in the upcoming/future tasks list.
+- The task to improve the robustness of the web scraper also remains pending.</analysis>
