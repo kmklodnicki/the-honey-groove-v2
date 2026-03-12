@@ -5,6 +5,7 @@ import AlbumArt from './AlbumArt';
 import { resolveImageUrl } from '../utils/imageUrl';
 import PhotoLightbox from './PhotoLightbox';
 import MentionText from './MentionText';
+import UnofficialPill from './UnofficialPill';
 
 // Streaming deep links — Spotify & Apple Music search
 // Icon-only streaming links — monochromatic at rest, brand colors on hover, ~20px elegant icons
@@ -319,6 +320,7 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
                   {post.honeypot_rating}
                 </div>
               )}
+              {record.is_unofficial && <UnofficialPill variant="overlay" className="!top-auto !bottom-1 !right-1 z-[7]" />}
             </AlbumWithVinyl>
             <StreamingLinks artist={record.artist} album={record.title} showEqualizer />
           </div>
@@ -338,6 +340,7 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
                 <Disc className="w-2.5 h-2.5" /> {record.format}
               </span>
             )}
+            {record.is_unofficial && <UnofficialPill variant="inline" />}
           </div>
           {post.track && <p className="text-xs text-honey-amber mt-1">Track: {post.track}</p>}
           {post.caption && <p className="text-sm mt-2"><MentionText text={post.caption} /></p>}
@@ -365,6 +368,7 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
               <div className="relative group/cover">
                 <AlbumArt src={item.cover_url} alt={`${item.artist} - ${item.title}`} 
                   className="w-full aspect-square rounded-lg object-cover border border-stone-200/60" />
+                {item.is_unofficial && <UnofficialPill variant="overlay" className="!top-1 !right-1 !text-[7px] !px-1.5" />}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-lg opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-end p-1.5">
                   <div className="min-w-0">
                     <p className="text-[10px] font-medium text-white truncate">{item.title}</p>
@@ -486,6 +490,7 @@ const AddedToCollectionCard = ({ post, onAlbumClick, imgPriority }) => {
           <div className="flex flex-wrap gap-1 mt-1" data-testid="card-meta-pills">
             {variantText && <VariantTag variant={variantText} linkTo={variantLink(record)} />}
             {(record.edition_number || post.edition_number) && <EditionTag number={record.edition_number || post.edition_number} />}
+            {record.is_unofficial && <UnofficialPill variant="inline" />}
           </div>
         </div>
       </div>

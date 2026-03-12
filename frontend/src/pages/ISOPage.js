@@ -166,6 +166,10 @@ const ISOPage = () => {
   const [listShippingCost, setListShippingCost] = useState('6.00');
   const [payoutEstimate, setPayoutEstimate] = useState(null);
   const [pulseData, setPulseData] = useState(null);
+  const [unofficialAcked, setUnofficialAcked] = useState(false);
+
+  // BLOCK 592: Auto-detect unofficial from selected release
+  const isUnofficial = selectedRelease?.is_unofficial || false;
 
   const fetchData = useCallback(async () => {
     try {
@@ -201,13 +205,14 @@ const ISOPage = () => {
       const discogs_id = searchParams.get('discogs_id') || '';
       const cover_url = searchParams.get('cover_url') || '';
       const year = searchParams.get('year') || '';
+      const is_unofficial = searchParams.get('is_unofficial') === 'true';
       setActiveTab('shop');
       setShowCreate('listing');
       setListArtist(artist);
       setListAlbum(album);
       setListType(createType === 'trade' ? 'TRADE' : 'BUY_NOW');
       if (discogs_id) {
-        setSelectedRelease({ discogs_id: parseInt(discogs_id), artist, title: album, cover_url, year: year ? parseInt(year) : null });
+        setSelectedRelease({ discogs_id: parseInt(discogs_id), artist, title: album, cover_url, year: year ? parseInt(year) : null, is_unofficial });
       }
       setSearchParams({}, { replace: true });
     }
@@ -259,6 +264,7 @@ const ISOPage = () => {
     setShowInsurancePrompt(false); setInsuranceChoice(null);
     setInternationalShipping(false);
     setListIntlShippingCost('');
+    setUnofficialAcked(false);
     setListShippingCost('6.00'); setPayoutEstimate(null); setPulseData(null);
   };
 
@@ -356,6 +362,12 @@ const ISOPage = () => {
     if (listPhotos.length === 0) { toast.error('at least 1 photo is required.'); return; }
     if (!listCondition) { toast.error('condition is required.'); return; }
 
+    // BLOCK 592 / v2.5.3: Unofficial compliance check
+    if (isUnofficial && !unofficialAcked) {
+      toast.error('You must acknowledge the unofficial release terms before listing.');
+      return;
+    }
+
     // Show insurance prompt for items over $75 (only if not yet shown)
     const priceVal = parseFloat(listPrice);
     if (listType !== 'TRADE' && priceVal > 75 && insuranceChoice === null && !showInsurancePrompt) {
@@ -383,6 +395,8 @@ const ISOPage = () => {
         insured: insuranceChoice,
         international_shipping: internationalShipping,
         international_shipping_cost: internationalShipping && listIntlShippingCost ? parseFloat(listIntlShippingCost) : null,
+        is_unofficial: isUnofficial,
+        unofficial_acknowledged: isUnofficial ? unofficialAcked : false,
       }, { headers: { Authorization: `Bearer ${token}` }});
       toast.success('listing posted.');
       closeModal(); fetchData();
@@ -955,7 +969,7 @@ const ISOPage = () => {
                         heads up: processing fees may exceed this price. you might receive $0 after fees.
                       </p>
                     )}
-                    {pricingAssist && pricingAssist.low !== null && (
+                    {pricingAssist && pricingAssist.low !== null && !isUnofficial && (
                       <p className="text-[11px] text-muted-foreground pl-1" data-testid="pricing-assist-hint">
                         recent sales: ${pricingAssist.low?.toFixed(2)} · ${pricingAssist.high?.toFixed(2)} on Discogs
                         {pulseData?.confident && parseFloat(listPrice) >= pulseData.hot_low && parseFloat(listPrice) <= pulseData.hot_high && (
@@ -963,7 +977,12 @@ const ISOPage = () => {
                         )}
                       </p>
                     )}
-                    {pulseData?.confident && (
+                    {isUnofficial && (
+                      <p className="text-[11px] text-stone-400 pl-1 italic" data-testid="unofficial-manual-price-notice">
+                        Auto-pricing disabled for unofficial releases. Enter price manually.
+                      </p>
+                    )}
+                    {pulseData?.confident && !isUnofficial && (
                       <p className="text-[11px] text-amber-600 pl-1" data-testid="pulse-suggest">
                         Honey Pulse Suggests: ${pulseData.hot_low?.toFixed(2)} - ${pulseData.hot_high?.toFixed(2)}
                       </p>
@@ -1077,7 +1096,30 @@ const ISOPage = () => {
                   </div>
                 )}
 
-                <Button onClick={submitListing} disabled={submitting || listPhotos.length === 0 || (manualMode && (!listArtist || !listAlbum)) || (!manualMode && !selectedRelease) || (sellerStats && sellerStats.completed_transactions < 3 && parseFloat(listPrice) > 150)}
+                {/* BLOCK 592 / v2.5.3: Unofficial Release Compliance Checkbox */}
+                {isUnofficial && (
+                  <div className="rounded-xl p-4 space-y-2.5" style={{ background: 'rgba(74,74,74,0.05)', border: '1px solid rgba(74,74,74,0.15)' }} data-testid="unofficial-compliance">
+                    <div className="flex items-start gap-1.5">
+                      <span className="inline-flex items-center text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full shrink-0" style={{ background: '#4A4A4A', color: '#fff' }}>Unofficial</span>
+                      <p className="text-xs text-stone-500">This release is flagged as unofficial. You must acknowledge the terms below.</p>
+                    </div>
+                    <label className="flex items-start gap-2.5 cursor-pointer group" data-testid="unofficial-ack-checkbox">
+                      <input
+                        type="checkbox"
+                        checked={unofficialAcked}
+                        onChange={e => setUnofficialAcked(e.target.checked)}
+                        className="mt-0.5 w-4 h-4 accent-amber-600 rounded"
+                      />
+                      <span className="text-xs leading-relaxed text-stone-600">
+                        {user?.golden_hive_verified
+                          ? 'I confirm this is an unofficial pressing and have described its condition accurately to protect my Golden Hive status.'
+                          : 'I confirm this is an unofficial pressing and have described its condition accurately. I understand that transparency on unofficial items is a requirement for maintaining account standing and working toward Golden Hive verification.'}
+                      </span>
+                    </label>
+                  </div>
+                )}
+
+                <Button onClick={submitListing} disabled={submitting || listPhotos.length === 0 || (manualMode && (!listArtist || !listAlbum)) || (!manualMode && !selectedRelease) || (sellerStats && sellerStats.completed_transactions < 3 && parseFloat(listPrice) > 150) || (isUnofficial && !unofficialAcked)}
                   className="w-full bg-honey text-vinyl-black hover:bg-honey-amber rounded-full" data-testid="list-form-submit">
                   {submitting ? (<><Loader2 className="w-4 h-4 animate-spin mr-2" />{uploadingPhotos ? 'Uploading photos...' : 'Posting...'}</>) : (<><Tag className="w-4 h-4 mr-2" />{listType === 'TRADE' ? 'List for Trade' : `List for $${listPrice || '0'}`}</>)}
                 </Button>

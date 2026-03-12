@@ -38,6 +38,7 @@ import ValuationAssistantModal from '../components/ValuationAssistantModal';
 import ValuationWizard from '../components/ValuationWizard';
 import { useBlurPlaceholders } from '../hooks/useBlurPlaceholders';
 import { RarityBadge } from '../components/RarityBadge';
+import UnofficialPill from '../components/UnofficialPill';
 
 // Counting animation hook
 const useCountUp = (target, duration = 1400, enabled = true) => {
@@ -1352,6 +1353,11 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
               Pending
             </div>
           ) : null}
+
+          {/* BLOCK 592: Unofficial Release Pill */}
+          {record.is_unofficial && (
+            <UnofficialPill variant="overlay" className={value > 0 || (record.custom_valuation && record.custom_valuation > 0) ? '!top-10' : ''} />
+          )}
         </div>
       </Link>
 

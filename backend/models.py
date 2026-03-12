@@ -106,6 +106,7 @@ class RecordResponse(BaseModel):
     community_have: Optional[int] = None
     community_want: Optional[int] = None
     rarity_label: Optional[str] = None
+    is_unofficial: Optional[bool] = False
 
 class DiscogsSearchResult(BaseModel):
     discogs_id: int
@@ -324,6 +325,8 @@ class ListingCreate(BaseModel):
     insured: Optional[bool] = None
     international_shipping: Optional[bool] = False
     international_shipping_cost: Optional[float] = None
+    is_unofficial: Optional[bool] = False
+    unofficial_acknowledged: Optional[bool] = False
 
 class ListingResponse(BaseModel):
     id: str
@@ -345,6 +348,7 @@ class ListingResponse(BaseModel):
     international_shipping: Optional[bool] = False
     international_shipping_cost: Optional[float] = None
     offplatform_flagged: Optional[bool] = None
+    is_unofficial: Optional[bool] = False
     is_test_listing: Optional[bool] = False
     status: str = "ACTIVE"
     created_at: str

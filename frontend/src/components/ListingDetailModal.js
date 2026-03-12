@@ -19,6 +19,8 @@ import ReportModal from './ReportModal';
 import { GradeLabel } from './GradeLabel';
 import { GRADE_OPTIONS } from '../utils/grading';
 import SEOHead from './SEOHead';
+import UnofficialPill from './UnofficialPill';
+import UnofficialDisclaimer from './UnofficialDisclaimer';
 
 const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, onProposeTrade }) => {
   const { token, API, user: currentUser } = useAuth();
@@ -466,6 +468,9 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                         {[listing.pressing_notes, listing.year && `${listing.year} pressing`].filter(Boolean).join(' \u00b7 ')}
                       </p>
                     )}
+                    {listing.is_unofficial && (
+                      <div className="mt-2"><UnofficialPill variant="inline" /></div>
+                    )}
                   </div>
 
                   {/* Edit button for owner */}
@@ -538,8 +543,8 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                     )}
                   </div>
 
-                  {/* Honey Pulse */}
-                  {pulseData?.confident && listing.price && (
+                  {/* Honey Pulse — disabled for unofficial releases */}
+                  {pulseData?.confident && listing.price && !listing.is_unofficial && (
                     <div className="mx-6 mt-2 mb-1 bg-amber-50/70 border border-amber-200/60 rounded-xl p-3" data-testid="honey-pulse-module">
                       <div className="flex items-center gap-1.5 mb-1.5">
                         <Flame className="w-4 h-4 text-orange-500" />
@@ -746,6 +751,13 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                       >
                         <Flag className="w-3 h-3" /> Report Listing
                       </button>
+                    </div>
+                  )}
+
+                  {/* BLOCK 592 / v2.5.3: Unofficial Release Legal Disclaimer */}
+                  {listing.is_unofficial && (
+                    <div className="px-6 py-2">
+                      <UnofficialDisclaimer />
                     </div>
                   )}
 

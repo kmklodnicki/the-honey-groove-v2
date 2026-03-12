@@ -339,6 +339,17 @@ async def create_listing(data: ListingCreate, user: Dict = Depends(require_auth)
     now = datetime.now(timezone.utc).isoformat()
     listing_id = str(uuid.uuid4())
 
+    # BLOCK 592: Auto-detect unofficial status from the linked record
+    is_unofficial = data.is_unofficial or False
+    if data.record_id and not is_unofficial:
+        record = await db.records.find_one({"id": data.record_id}, {"_id": 0, "is_unofficial": 1})
+        if record and record.get("is_unofficial"):
+            is_unofficial = True
+
+    # Unofficial compliance: seller must acknowledge before listing
+    if is_unofficial and not data.unofficial_acknowledged:
+        raise HTTPException(status_code=400, detail="You must acknowledge the unofficial release compliance terms before listing this item.")
+
     # Off-platform payment detection — fuzzy scan description
     offplatform_flagged = False
     offplatform_keywords_found = []
@@ -366,6 +377,7 @@ async def create_listing(data: ListingCreate, user: Dict = Depends(require_auth)
         "insured": data.insured,
         "international_shipping": data.international_shipping or False,
         "international_shipping_cost": data.international_shipping_cost if (data.international_shipping) else None,
+        "is_unofficial": is_unofficial,
         "offplatform_flagged": offplatform_flagged,
         "is_test_listing": False,
         "status": "ACTIVE",

@@ -16,6 +16,8 @@ import { PostTypeBadge } from '../components/PostCards';
 import SEOHead from '../components/SEOHead';
 import { RarityCard } from '../components/RarityBadge';
 import VariantCompletion from '../components/VariantCompletion';
+import UnofficialPill from '../components/UnofficialPill';
+import UnofficialDisclaimer from '../components/UnofficialDisclaimer';
 
 const RecordDetailPage = () => {
   usePageTitle('Record Details');
@@ -144,7 +146,7 @@ const RecordDetailPage = () => {
       <div className="flex flex-col md:flex-row gap-8 mb-10" data-testid="record-hero">
         {/* Album art */}
         <div className="shrink-0">
-          <div className="w-full md:w-80 aspect-square rounded-2xl overflow-hidden bg-honey/10 shadow-lg shadow-black/5">
+          <div className="relative w-full md:w-80 aspect-square rounded-2xl overflow-hidden bg-honey/10 shadow-lg shadow-black/5">
             {record.cover_url ? (
               <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${record.color_variant ? ` ${record.color_variant}` : ''} vinyl record`} className="w-full h-full object-cover" data-testid="record-cover" />
             ) : (
@@ -152,6 +154,7 @@ const RecordDetailPage = () => {
                 <Disc className="w-20 h-20 text-honey/30" />
               </div>
             )}
+            {record.is_unofficial && <UnofficialPill variant="overlay" />}
           </div>
         </div>
 
@@ -181,6 +184,7 @@ const RecordDetailPage = () => {
                 <Disc className="w-3.5 h-3.5" /> {record.format}
               </span>
             )}
+            {record.is_unofficial && <UnofficialPill variant="inline" />}
           </div>
 
           {/* Spin button */}
@@ -212,6 +216,9 @@ const RecordDetailPage = () => {
           )}
         </div>
       </div>
+
+      {/* BLOCK 592 / v2.5.3: Unofficial Release Legal Disclaimer */}
+      {record.is_unofficial && <UnofficialDisclaimer />}
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8" data-testid="stats-grid">
@@ -259,7 +266,7 @@ const RecordDetailPage = () => {
           <Button
             variant="outline"
             className="flex-1 h-11 gap-2 border-amber-400 text-amber-700 hover:bg-amber-50 hover:border-amber-500"
-            onClick={() => navigate(`/honeypot?create=sale&artist=${encodeURIComponent(record.artist)}&album=${encodeURIComponent(record.title)}&discogs_id=${record.discogs_id || ''}&cover_url=${encodeURIComponent(record.cover_url || '')}&year=${record.year || ''}`)}
+            onClick={() => navigate(`/honeypot?create=sale&artist=${encodeURIComponent(record.artist)}&album=${encodeURIComponent(record.title)}&discogs_id=${record.discogs_id || ''}&cover_url=${encodeURIComponent(record.cover_url || '')}&year=${record.year || ''}&is_unofficial=${record.is_unofficial ? 'true' : ''}`)}
             data-testid="list-for-sale-btn"
           >
             <ShoppingBag className="w-4 h-4" />
@@ -269,7 +276,7 @@ const RecordDetailPage = () => {
             variant="outline"
             className="flex-1 h-11 gap-2 border-stone-300 text-stone-700 hover:bg-stone-50 hover:border-stone-400"
             style={{ background: 'rgba(255,246,230,0.5)' }}
-            onClick={() => navigate(`/honeypot?create=trade&artist=${encodeURIComponent(record.artist)}&album=${encodeURIComponent(record.title)}&discogs_id=${record.discogs_id || ''}&cover_url=${encodeURIComponent(record.cover_url || '')}&year=${record.year || ''}`)}
+            onClick={() => navigate(`/honeypot?create=trade&artist=${encodeURIComponent(record.artist)}&album=${encodeURIComponent(record.title)}&discogs_id=${record.discogs_id || ''}&cover_url=${encodeURIComponent(record.cover_url || '')}&year=${record.year || ''}&is_unofficial=${record.is_unofficial ? 'true' : ''}`)}
             data-testid="offer-to-trade-btn"
           >
             <ArrowRightLeft className="w-4 h-4" />
