@@ -82,6 +82,7 @@ async def _build_user_response(user: dict) -> UserResponse:
         discogs_oauth_verified=user.get("discogs_oauth_verified", False),
         needs_discogs_migration=_check_needs_migration(user),
         discogs_migration_dismissed=user.get("discogs_migration_dismissed", False),
+        discogs_import_intent=user.get("discogs_import_intent", "PENDING"),
     )
 
 # ============== AUTH ROUTES ==============

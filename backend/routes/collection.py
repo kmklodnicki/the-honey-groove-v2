@@ -1258,6 +1258,24 @@ async def dismiss_discogs_migration(user: Dict = Depends(require_auth)):
     return {"dismissed": True}
 
 
+@router.post("/discogs/update-import-intent")
+async def update_discogs_import_intent(body: dict, user: Dict = Depends(require_auth)):
+    """BLOCK 587: Update the user's discogs_import_intent preference.
+    Valid values: PENDING, LATER, DECLINED, CONNECTED."""
+    intent = body.get("intent", "").upper()
+    if intent not in ("PENDING", "LATER", "DECLINED", "CONNECTED"):
+        raise HTTPException(status_code=400, detail="Invalid intent value")
+    update = {"discogs_import_intent": intent}
+    if intent == "DECLINED":
+        update["discogs_migration_dismissed"] = True
+        update["has_seen_security_migration"] = True
+    elif intent == "LATER":
+        update["has_seen_security_migration"] = True
+        update["discogs_migration_dismissed"] = True
+    await db.users.update_one({"id": user["id"]}, {"$set": update})
+    return {"intent": intent}
+
+
 @router.get("/discogs/imposter-flags")
 async def get_imposter_flags(user: Dict = Depends(require_auth)):
     """Admin-only: view accounts flagged for imposter protection."""

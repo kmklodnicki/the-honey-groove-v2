@@ -1,0 +1,92 @@
+{
+  "summary": "BLOCK 585/587 OAuth Banner Relaxation and Conditional Banner Logic - All tests PASS. Backend API endpoint POST /api/discogs/update-import-intent works for PENDING/LATER/DECLINED/CONNECTED values. Frontend OAuth banner correctly shows when intent=LATER and discogs_oauth_verified=false. Banner has 'Connect Discogs' button, 'Skip for now' link, and X dismiss button. Banner z-index (200000) is above navbar (100000). Skip for now sets localStorage key and hides banner. Banner is permanently hidden when intent=DECLINED or CONNECTED.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "HivePage Console",
+        "issues": ["503 errors for some image proxy requests (Discogs rate limiting - not a bug)", "React warning about nested <a> tags in DailyPromptCard (non-blocking)"]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_discogs_import_intent.py",
+    "/app/test_reports/pytest/block_585_587_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "BLOCK 585/587 ✅ - App.js: Banner shows when intentShowsBanner() returns true (LATER intent && !oauth_verified)",
+    "BLOCK 585/587 ✅ - App.js: isSkippedRecently() checks localStorage 'honeygroove_discogs_skip_ts' with 24h window",
+    "BLOCK 585/587 ✅ - App.js: Banner has data-testid='oauth-glassy-banner' at z-index 200000",
+    "BLOCK 585/587 ✅ - App.js: Banner copy matches requirement: 'Want to import your collection? Connect your Discogs account to sync your library instantly.'",
+    "BLOCK 585/587 ✅ - App.js: CSS variable --oauth-banner-h set to 49px when banner shows, 0px when hidden",
+    "BLOCK 585/587 ✅ - Navbar.js: Uses top: var(--oauth-banner-h, 0px) for offset",
+    "BLOCK 585/587 ✅ - DiscogsSecurityModal.js: Has 3 buttons (Connect Discogs, Maybe Later, Proceed without Discogs)",
+    "BLOCK 585/587 ✅ - collection.py: POST /api/discogs/update-import-intent accepts PENDING/LATER/DECLINED/CONNECTED",
+    "BLOCK 585/587 ✅ - models.py: UserResponse includes discogs_import_intent field with default 'PENDING'",
+    "BLOCK 585/587 ✅ - auth.py: _build_user_response includes discogs_import_intent from user document"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_discogs_import_intent.py"
+  ],
+  "success_rate": {
+    "backend": "100% (11/11 tests passed)",
+    "frontend": "100%"
+  },
+  "test_credentials": {
+    "admin_email": "kmklodnicki@gmail.com",
+    "admin_password": "admin_password",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "User intent has been reset to LATER. OAuth banner should be visible on login. localStorage key 'honeygroove_discogs_skip_ts' controls 24h skip. Test user is admin with discogs_oauth_verified=false. The DiscogsSecurityModal appears when needs_discogs_migration is true (controlled by has_seen_security_migration flag).",
+  "verified_features": {
+    "oauth_banner_visibility": {
+      "status": "PASS",
+      "description": "Banner shows when discogs_import_intent=LATER and discogs_oauth_verified=false"
+    },
+    "oauth_banner_copy": {
+      "status": "PASS",
+      "description": "Banner displays correct copy text"
+    },
+    "oauth_banner_elements": {
+      "status": "PASS",
+      "description": "Banner has Connect Discogs button, Skip for now link, X dismiss button"
+    },
+    "oauth_banner_z_index": {
+      "status": "PASS",
+      "description": "Banner z-index (200000) is above navbar (100000)"
+    },
+    "skip_for_now_functionality": {
+      "status": "PASS",
+      "description": "Clicking Skip for now hides banner and sets localStorage flag"
+    },
+    "navbar_snap_back": {
+      "status": "PASS",
+      "description": "When banner hides, CSS variable --oauth-banner-h becomes 0px"
+    },
+    "api_update_intent": {
+      "status": "PASS",
+      "description": "POST /api/discogs/update-import-intent accepts PENDING/LATER/DECLINED/CONNECTED"
+    },
+    "declined_permanent_hide": {
+      "status": "PASS",
+      "description": "When intent is DECLINED, banner is permanently hidden"
+    },
+    "connected_permanent_hide": {
+      "status": "PASS",
+      "description": "When intent is CONNECTED, banner is permanently hidden"
+    },
+    "discogs_security_modal_buttons": {
+      "status": "PASS",
+      "description": "DiscogsSecurityModal has 3 buttons: Connect Discogs, Maybe Later, Proceed without Discogs"
+    }
+  }
+}

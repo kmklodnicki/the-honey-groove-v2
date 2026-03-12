@@ -99,16 +99,36 @@ const AdminRoute = ({ children }) => {
 
 // App Layout with Navbar
 const AppLayout = ({ children }) => {
-  const { user, token, API } = useAuth();
+  const { user, token, API, updateUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [showMigration, setShowMigration] = useState(false);
 
-  // BLOCK 583: Golden Glassy Banner for missing Discogs OAuth
-  const needsDiscogs = user && !user.discogs_oauth_verified && user.discogs_migration_dismissed;
-  const [dismissedOAuth, setDismissedOAuth] = useState(false);
+  // BLOCK 585/587: Conditional banner logic based on discogs_import_intent
   const [oauthLoading, setOAuthLoading] = useState(false);
-  const showOAuthBanner = needsDiscogs && !dismissedOAuth;
+
+  // BLOCK 587: Banner shows only for LATER intent (or legacy PENDING users who dismissed migration)
+  const intentShowsBanner = () => {
+    if (!user || user.discogs_oauth_verified) return false;
+    const intent = user.discogs_import_intent || 'PENDING';
+    if (intent === 'DECLINED' || intent === 'CONNECTED') return false;
+    if (intent === 'LATER') return true;
+    // Legacy: PENDING users who already dismissed migration modal → treat as LATER
+    if (intent === 'PENDING' && user.discogs_migration_dismissed) return true;
+    return false;
+  };
+
+  // BLOCK 585: 24h skip via localStorage
+  const isSkippedRecently = () => {
+    try {
+      const ts = localStorage.getItem('honeygroove_discogs_skip_ts');
+      if (!ts) return false;
+      return Date.now() - parseInt(ts, 10) < 24 * 60 * 60 * 1000;
+    } catch { return false; }
+  };
+
+  const [skippedLocal, setSkippedLocal] = useState(isSkippedRecently);
+  const showOAuthBanner = intentShowsBanner() && !skippedLocal;
 
   // BLOCK 583 FIX: Set CSS variable to push Navbar down when banner is active
   useEffect(() => {
@@ -125,17 +145,21 @@ const AppLayout = ({ children }) => {
     setOAuthLoading(true);
     try {
       const origin = window.location.origin;
-      // Save oauth_state to localStorage so app remembers user on return
       localStorage.setItem('honeygroove_oauth_pending', JSON.stringify({ user_id: user?.id, ts: Date.now() }));
       const resp = await axios.get(`${API}/discogs/oauth/start?frontend_origin=${origin}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      // Direct navigation (user-initiated) — browsers won't block this
       window.location.href = resp.data.auth_url;
     } catch {
       toast.error('Could not start Discogs connection. Try again.');
       setOAuthLoading(false);
     }
+  };
+
+  // BLOCK 585: "Skip for now" — hides banner for 24 hours via localStorage
+  const handleSkipBanner = () => {
+    localStorage.setItem('honeygroove_discogs_skip_ts', Date.now().toString());
+    setSkippedLocal(true);
   };
 
   // BLOCK 583: On return from OAuth, check localStorage and trigger Gold Shield
@@ -160,9 +184,9 @@ const AppLayout = ({ children }) => {
   return (
     <div className="min-h-screen relative" style={{ background: 'transparent', overflow: 'visible' }}>
       {user && <Navbar />}
-      {/* BLOCK 583: Golden Glassy Banner — Secure Connection Required */}
+      {/* BLOCK 585/587: Golden Glassy Banner — Discogs Import */}
       {showOAuthBanner && (
-        <div className="fixed top-0 left-0 right-0 z-[200000] w-full px-4 py-2.5 flex items-center justify-center gap-3"
+        <div className="fixed top-0 left-0 right-0 z-[200000] w-full px-4 py-2.5 flex items-center justify-center gap-3 flex-wrap"
           style={{
             background: 'linear-gradient(135deg, rgba(255,223,107,0.92) 0%, rgba(244,181,33,0.90) 50%, rgba(218,165,32,0.88) 100%)',
             backdropFilter: 'blur(16px)',
@@ -173,7 +197,7 @@ const AppLayout = ({ children }) => {
           data-testid="oauth-glassy-banner"
         >
           <Shield className="w-4 h-4 text-amber-900 shrink-0" />
-          <span className="text-sm text-amber-900 font-semibold">Secure Connection Required — Verify your Discogs identity</span>
+          <span className="text-sm text-amber-900 font-medium">Want to import your collection? Connect your Discogs account to sync your library instantly.</span>
           <button
             onClick={handleOAuthClick}
             disabled={oauthLoading}
@@ -184,7 +208,14 @@ const AppLayout = ({ children }) => {
             {oauthLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Shield className="w-3.5 h-3.5" />}
             Connect Discogs
           </button>
-          <button onClick={() => setDismissedOAuth(true)} className="text-amber-900/50 hover:text-amber-900 transition-colors ml-1" data-testid="oauth-banner-dismiss">
+          <button
+            onClick={handleSkipBanner}
+            className="text-xs text-amber-900/60 hover:text-amber-900 transition-colors underline underline-offset-2"
+            data-testid="oauth-banner-skip"
+          >
+            Skip for now
+          </button>
+          <button onClick={handleSkipBanner} className="text-amber-900/50 hover:text-amber-900 transition-colors ml-1" data-testid="oauth-banner-dismiss">
             <X className="w-4 h-4" />
           </button>
         </div>

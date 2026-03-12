@@ -48,6 +48,7 @@ class UserResponse(BaseModel):
     discogs_oauth_verified: bool = False
     needs_discogs_migration: bool = False
     discogs_migration_dismissed: bool = False
+    discogs_import_intent: str = "PENDING"  # PENDING | LATER | DECLINED | CONNECTED
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None

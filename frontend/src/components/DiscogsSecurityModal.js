@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Shield, ExternalLink } from 'lucide-react';
 import { Dialog, DialogContent } from './ui/dialog';
 import { Button } from './ui/button';
@@ -6,37 +6,49 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 
 /**
- * BLOCK 455 + 462: Discogs Security Migration Modal (one-and-done)
- * Shows ONCE when user has old token-based Discogs connection.
- * Either button sets has_seen_security_migration = true — never shows again.
+ * BLOCK 587: Discogs Security / Import Intent Modal
+ * 3-option modal:
+ *   Connect Now  → intent = CONNECTED, launches OAuth
+ *   Maybe Later  → intent = LATER, shows banner
+ *   Proceed Without → intent = DECLINED, kills banner permanently
  */
 const DiscogsSecurityModal = ({ open, onClose }) => {
-  const { token, API } = useAuth();
+  const { token, API, updateUser } = useAuth();
+  const [loading, setLoading] = useState(false);
 
-  const markSeen = async () => {
+  const setIntent = async (intent) => {
     try {
-      await axios.post(`${API}/discogs/dismiss-migration`, {}, {
+      await axios.post(`${API}/discogs/update-import-intent`, { intent }, {
         headers: { Authorization: `Bearer ${token}` }
       });
     } catch { /* ignore */ }
   };
 
-  const handleReconnect = async () => {
-    await markSeen();
+  const handleConnect = async () => {
+    setLoading(true);
+    await setIntent('CONNECTED');
     try {
-      // BLOCK 480: Pass window.location.origin for dynamic callback URL
       const origin = encodeURIComponent(window.location.origin);
+      localStorage.setItem('honeygroove_oauth_pending', JSON.stringify({ user_id: null, ts: Date.now() }));
       const resp = await axios.get(`${API}/discogs/oauth/start?frontend_origin=${origin}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      window.location.href = resp.data.authorization_url;
+      window.location.href = resp.data.authorization_url || resp.data.auth_url;
     } catch {
-      window.location.href = '/collection';
+      setLoading(false);
+      onClose();
     }
   };
 
   const handleLater = async () => {
-    await markSeen();
+    await setIntent('LATER');
+    updateUser({ discogs_import_intent: 'LATER', discogs_migration_dismissed: true });
+    onClose();
+  };
+
+  const handleDecline = async () => {
+    await setIntent('DECLINED');
+    updateUser({ discogs_import_intent: 'DECLINED', discogs_migration_dismissed: true });
     onClose();
   };
 
@@ -50,56 +62,63 @@ const DiscogsSecurityModal = ({ open, onClose }) => {
               <Shield className="w-5 h-5 text-amber-400" />
             </div>
             <h2 className="text-xl font-bold text-white" style={{ fontFamily: '"DM Serif Display", serif' }}>
-              The Honey Groove
+              Import Your Collection
             </h2>
           </div>
         </div>
 
         <div className="px-6 pb-6 space-y-5">
           <p className="text-sm text-stone-600 leading-relaxed">
-            We've made some security updates to keep The Honey Groove safe. To connect your collection,
-            you must now sign in through our secure Discogs flow. If you previously connected, your
-            account has been safely disconnected for verification.
+            Connect your Discogs account to sync your vinyl library instantly.
+            Your records, grades, and notes will be imported securely via official OAuth.
           </p>
 
           <div className="rounded-xl p-4" style={{ background: '#FFFDF5', border: '1px solid rgba(200,134,26,0.2)' }}>
-            <p className="text-xs text-stone-500 mb-1">What changed?</p>
+            <p className="text-xs text-stone-500 mb-1">What you get</p>
             <ul className="text-xs text-stone-600 space-y-1">
               <li className="flex items-start gap-2">
                 <span className="mt-0.5 w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
-                Your Discogs identity is now verified via official OAuth login
+                Your full Discogs collection imported in seconds
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-0.5 w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
-                No one can impersonate your collection
+                Verified identity — no one can impersonate your collection
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-0.5 w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
-                Your imported records remain safe
+                Automatic collection value tracking
               </li>
             </ul>
           </div>
 
           <div className="flex flex-col gap-2.5 pt-1">
             <Button
-              onClick={handleReconnect}
-              className="w-full h-11 rounded-full text-sm font-bold gap-2 transition-all hover:shadow-lg"
+              onClick={handleConnect}
+              disabled={loading}
+              className="w-full h-11 rounded-full text-sm font-bold gap-2 transition-all hover:shadow-lg disabled:opacity-60"
               style={{ background: '#FFBF00', color: '#1A1A1A', border: '1.5px solid #DAA520' }}
               onMouseEnter={e => { e.currentTarget.style.background = '#E5AB00'; }}
               onMouseLeave={e => { e.currentTarget.style.background = '#FFBF00'; }}
               data-testid="reconnect-now-btn"
             >
               <ExternalLink className="w-4 h-4" />
-              Reconnect Now
+              {loading ? 'Connecting...' : 'Connect Discogs'}
             </Button>
             <Button
               variant="ghost"
               onClick={handleLater}
-              className="w-full h-10 rounded-full text-sm text-stone-400 hover:text-stone-600"
+              className="w-full h-10 rounded-full text-sm text-stone-500 hover:text-stone-700"
               data-testid="connect-later-btn"
             >
-              Connect Later
+              Maybe Later
             </Button>
+            <button
+              onClick={handleDecline}
+              className="text-xs text-stone-400 hover:text-stone-500 transition-colors text-center pb-1"
+              data-testid="connect-decline-btn"
+            >
+              Proceed without Discogs
+            </button>
           </div>
         </div>
       </DialogContent>
