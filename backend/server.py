@@ -244,7 +244,8 @@ async def startup_event():
     else:
         logger.error(f"Discogs OAuth MISSING: KEY_present={oauth_key_ok}, SECRET_present={oauth_secret_ok}")
 
-    logger.info("HoneyGroove API started")
+    logger.info(f"HoneyGroove API started | DB: {db.name} | Users: {await db.users.count_documents({})} | CORS origins: {cors_origins}")
+    logger.info(f"Routes: {[r.path for r in app.routes if hasattr(r, 'path')]}")
     # Start background variant backfill
     asyncio.create_task(_backfill_color_variants())
     # BLOCK 476: Start nightly value recovery scheduler
