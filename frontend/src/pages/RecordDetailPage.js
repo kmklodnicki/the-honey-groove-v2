@@ -217,7 +217,7 @@ const RecordDetailPage = () => {
       </div>
 
       {/* BLOCK 592 / v2.5.3: Unofficial Release Legal Disclaimer */}
-      {record.is_unofficial && <UnofficialDisclaimer />}
+      {record.is_unofficial && <div className="mb-10"><UnofficialDisclaimer /></div>}
 
       {/* Stats grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8" data-testid="stats-grid">

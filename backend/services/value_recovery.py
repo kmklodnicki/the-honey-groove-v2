@@ -152,9 +152,14 @@ async def run_value_recovery(user_id: str):
 
     recovered = 0
     failed = 0
+    recovered_details = []  # Track per-record recovery for interactive toast
 
     for did in stale_ids:
         try:
+            # Get old value before recovery
+            old_doc = await db.collection_values.find_one({"release_id": did}, {"_id": 0, "median_value": 1})
+            old_value = old_doc.get("median_value", 0) if old_doc else 0
+
             data = await _fetch_market_value(did, oauth_token, oauth_token_secret)
             if data:
                 await db.collection_values.update_one(
@@ -170,6 +175,21 @@ async def run_value_recovery(user_id: str):
                     upsert=True,
                 )
                 recovered += 1
+
+                # Get record title/artist for the detail
+                rec_doc = await db.records.find_one(
+                    {"discogs_id": did, "user_id": user_id},
+                    {"_id": 0, "title": 1, "artist": 1, "id": 1}
+                )
+                if rec_doc:
+                    recovered_details.append({
+                        "record_id": rec_doc.get("id"),
+                        "title": rec_doc.get("title", "Unknown"),
+                        "artist": rec_doc.get("artist", "Unknown"),
+                        "old_value": round(old_value, 2),
+                        "new_value": data["median_value"],
+                        "increase": round(data["median_value"] - old_value, 2),
+                    })
             else:
                 failed += 1
         except Exception as e:
@@ -183,9 +203,13 @@ async def run_value_recovery(user_id: str):
 
         await asyncio.sleep(BATCH_PAUSE_SECS)
 
+    total_increase = round(sum(d["increase"] for d in recovered_details), 2)
+
     recovery_progress[user_id]["status"] = "completed"
     recovery_progress[user_id]["completed_at"] = datetime.now(timezone.utc).isoformat()
-    logger.info(f"Value Recovery [{user_id}]: complete — {recovered} recovered, {failed} failed, {already_valued} already fresh")
+    recovery_progress[user_id]["recovered_details"] = recovered_details[:50]  # Cap at 50 for payload size
+    recovery_progress[user_id]["total_increase"] = total_increase
+    logger.info(f"Value Recovery [{user_id}]: complete — {recovered} recovered, {failed} failed, {already_valued} already fresh, +${total_increase}")
 
     # Persist summary to DB for historical tracking
     await db.recovery_runs.update_one(

@@ -711,3 +711,77 @@ async def oauth_status(user: Dict = Depends(require_admin)):
 
     return result
 
+
+
+# ─── Test Data Purge ───
+
+@router.post("/admin/purge-test-data")
+async def purge_test_data(user: Dict = Depends(require_admin)):
+    """Production cleanup: remove all test listings, trades, and their related notifications/feed items.
+    Identifies test data by: test accounts (@test.com, @example.com), or 'test'/'demo' in descriptions."""
+    import re
+
+    # 1. Identify test user IDs
+    test_patterns = [
+        {"email": {"$regex": r"@test\.com$", "$options": "i"}},
+        {"email": {"$regex": r"@example\.com$", "$options": "i"}},
+        {"email": {"$regex": r"test", "$options": "i"}},
+        {"username": {"$regex": r"^test", "$options": "i"}},
+    ]
+    test_users = await db.users.find(
+        {"$or": test_patterns},
+        {"_id": 0, "id": 1, "email": 1, "username": 1}
+    ).to_list(1000)
+    test_user_ids = [u["id"] for u in test_users]
+
+    # Never purge the known admin/founder accounts
+    protected_ids = {"4072aaa7-1171-4cd2-9c8f-20dfca8fdc58"}
+    test_user_ids = [uid for uid in test_user_ids if uid not in protected_ids]
+
+    purge_report = {
+        "test_users_found": [{"id": u["id"], "email": u["email"], "username": u["username"]} for u in test_users if u["id"] not in protected_ids],
+        "listings_deleted": 0,
+        "trade_requests_deleted": 0,
+        "notifications_deleted": 0,
+        "posts_deleted": 0,
+    }
+
+    if not test_user_ids:
+        purge_report["message"] = "No test accounts found to purge."
+        return purge_report
+
+    # 2. Delete listings from test users
+    listing_result = await db.listings.delete_many({"user_id": {"$in": test_user_ids}})
+    purge_report["listings_deleted"] = listing_result.deleted_count
+
+    # Also delete listings with 'test' in description
+    test_desc_result = await db.listings.delete_many({
+        "description": {"$regex": r"\btest\b", "$options": "i"},
+        "user_id": {"$nin": list(protected_ids)},
+    })
+    purge_report["listings_deleted"] += test_desc_result.deleted_count
+
+    # 3. Delete trade requests involving test users
+    trade_result = await db.trade_requests.delete_many({
+        "$or": [
+            {"sender_id": {"$in": test_user_ids}},
+            {"receiver_id": {"$in": test_user_ids}},
+        ]
+    })
+    purge_report["trade_requests_deleted"] = trade_result.deleted_count
+
+    # 4. Clean up notifications from/to test users
+    notif_result = await db.notifications.delete_many({
+        "$or": [
+            {"user_id": {"$in": test_user_ids}},
+            {"from_user_id": {"$in": test_user_ids}},
+        ]
+    })
+    purge_report["notifications_deleted"] = notif_result.deleted_count
+
+    # 5. Remove feed posts from test users
+    post_result = await db.posts.delete_many({"user_id": {"$in": test_user_ids}})
+    purge_report["posts_deleted"] = post_result.deleted_count
+
+    logger.info(f"Test data purge by @{user.get('username')}: {purge_report}")
+    return purge_report

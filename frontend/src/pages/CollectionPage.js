@@ -348,6 +348,8 @@ const CollectionPage = () => {
   const [fadingIds, setFadingIds] = useState(new Set());
   // BLOCK 476: Value Recovery Engine state
   const [recoveryStatus, setRecoveryStatus] = useState(null);
+  const [recoveryModalOpen, setRecoveryModalOpen] = useState(false);
+  const [recoveryDetails, setRecoveryDetails] = useState(null);
   // (BackToTop component handles scroll-to-top)
   const navigate = useNavigate();
 
@@ -440,7 +442,24 @@ const CollectionPage = () => {
           if (statusResp.data.status === 'completed') {
             clearInterval(pollInterval);
             fetchData(); // Refresh values
-            toast.success(`Recovery complete — ${statusResp.data.recovered || 0} new records valued`);
+            const details = statusResp.data.recovered_details || [];
+            const totalIncrease = statusResp.data.total_increase || 0;
+            const recoveredCount = statusResp.data.recovered || 0;
+            if (details.length > 0) {
+              setRecoveryDetails({ items: details, totalIncrease, recovered: recoveredCount });
+              toast.success(
+                <span
+                  className="cursor-pointer underline-offset-2 hover:underline"
+                  onClick={() => setRecoveryModalOpen(true)}
+                  data-testid="recovery-toast-interactive"
+                >
+                  Recovery complete — {recoveredCount} valued (+${totalIncrease.toFixed(0)}). <strong>View details &rarr;</strong>
+                </span>,
+                { duration: 8000 }
+              );
+            } else {
+              toast.success(`Recovery complete — ${recoveredCount} new records valued`);
+            }
           }
         } catch {
           clearInterval(pollInterval);
@@ -1166,6 +1185,59 @@ const CollectionPage = () => {
               <p className="text-sm font-semibold">No Duplicates Found</p>
               <p className="text-xs text-muted-foreground mt-1">Your collection is already clean!</p>
               <Button onClick={() => setDupeModalOpen(false)} className="mt-4 rounded-full" variant="outline" data-testid="dupe-close-btn">Close</Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Recovery Results Modal */}
+      <Dialog open={recoveryModalOpen} onOpenChange={setRecoveryModalOpen}>
+        <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-y-auto">
+          <DialogTitle className="font-heading text-xl flex items-center gap-2">
+            <Sparkles className="w-5 h-5" style={{ color: '#DAA520' }} />
+            Value Recovery Results
+          </DialogTitle>
+          {recoveryDetails && (
+            <div className="space-y-4 pt-2">
+              {/* Big Win number */}
+              <div className="text-center rounded-xl p-4" style={{ background: 'linear-gradient(135deg, rgba(255,215,0,0.12), rgba(218,165,32,0.08))' }} data-testid="recovery-big-win">
+                <p className="text-[10px] uppercase tracking-widest text-amber-600/70 font-medium mb-1">Total Value Increase</p>
+                <p className="font-serif text-3xl font-bold" style={{ color: '#1A1A1A' }}>
+                  +${recoveryDetails.totalIncrease.toFixed(2)}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">{recoveryDetails.recovered} records recovered</p>
+              </div>
+
+              {/* Per-record breakdown */}
+              <div className="space-y-2" data-testid="recovery-details-list">
+                {recoveryDetails.items.map((item, i) => (
+                  <div key={i} className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg" style={{ background: 'rgba(252,248,232,0.6)', border: '1px solid rgba(218,165,32,0.12)' }}>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium truncate">{item.title}</p>
+                      <p className="text-xs text-muted-foreground truncate">{item.artist}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <div className="flex items-center gap-1.5 text-xs">
+                        <span className="text-stone-400">${item.old_value.toFixed(0)}</span>
+                        <ArrowRight className="w-3 h-3 text-amber-500" />
+                        <span className="font-bold" style={{ color: '#1A1A1A' }}>${item.new_value.toFixed(0)}</span>
+                      </div>
+                      {item.increase > 0 && (
+                        <p className="text-[10px] font-semibold text-emerald-600 mt-0.5">+${item.increase.toFixed(2)}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <Button
+                onClick={() => setRecoveryModalOpen(false)}
+                className="w-full rounded-full font-semibold"
+                style={{ background: '#DAA520', color: '#fff' }}
+                data-testid="recovery-modal-close"
+              >
+                Done
+              </Button>
             </div>
           )}
         </DialogContent>
