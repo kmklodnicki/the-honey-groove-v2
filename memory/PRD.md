@@ -45,6 +45,8 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - Shimmer skeleton loaders, priority preloading, predictive fetching
 
 ## Key API Endpoints
+- `POST /api/auth/login` (accepts email OR username, case-insensitive, no password stripping)
+- `POST /api/admin/login-diagnostic` (admin-only: debug login for any identifier)
 - `POST /api/discogs/update-import-intent`
 - `POST /api/listings` (is_unofficial, unofficial_acknowledged)
 - `POST /api/composer/iso` (auto-detects unofficial from Discogs)
@@ -59,6 +61,7 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - Spotify/Apple Music integration — waiting for callback URL
 
 ## Recently Completed (2026-03-12)
+- **P0 Login Fix v2 (Comprehensive):** Removed dangerous `password.strip()`, added username-based login (4-step lookup: exact email → regex email → exact username → regex username), fixed regex injection (re.escape), email normalization on registration, detailed server-side login logging, admin login-diagnostic endpoint, frontend updated to accept "Email or Username". All 15 tests passed.
 - **Uniform Collection Cards:** Fixed RecordCard — `line-clamp-2` title in `min-h-[2.5rem]`, `line-clamp-1` artist in `min-h-[1.25rem]`, fixed badge row, `mt-auto` Spin Now button. Perfect horizontal alignment across grid.
 - **Photo Upload in Modals:** Now Spinning and Haul modals have "Add a photo" Camera button, thumbnail preview, upload to `/api/upload`, photo_url/image_url sent with post.
 - **Feed Photo Display:** NowSpinningCard and NewHaulCard show user-uploaded photos prominently above album metadata. Falls back to standard album cover if no photo.
@@ -93,5 +96,7 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - P3: Record Store Day Proxy, Safari animation, Pro memberships, backend search filters, Instagram sharing, dynamic New Music Friday
 
 ## Credentials
-- Admin: `kmklodnicki@gmail.com` / `admin_password` (UID: `4072aaa7-1171-4cd2-9c8f-20dfca8fdc58`)
+- Admin: `kmklodnicki@gmail.com` / username: `katieintheafterglow` / `admin_password` (UID: `4072aaa7-1171-4cd2-9c8f-20dfca8fdc58`)
+- Test user: `test@example.com` / username: `testuser1` / `test123`
+- NOTE: `katie@thehoneygroove.com` does NOT exist in the database
 - Unofficial records: Sirens [24521972], Tristeza De Verano [31878166], Sleepless Nights [31882048], A Night In Paris [31957001], Merry Swiftmas [32442177], Shiny Things [33531981], Beautiful Eyes [27971034]
