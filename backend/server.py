@@ -171,26 +171,39 @@ async def startup_event():
     await db.bingo_squares.create_index("id", unique=True)
 
     # BLOCK 569/571: Admin Override — tied to user identity (email + user ID), not username
-    # BLOCK 571: Hard-coded fallback ensures Gold Shield renders regardless of propagation delays
     ADMIN_USER_ID = "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58"
-    ADMIN_EMAILS = ["kmklodnicki@gmail.com", "katie@thehoneygroove.com"]
+    ADMIN_EMAIL = "kmklodnicki@gmail.com"
+    ADMIN_USERNAME = "katie"
     admin_set = {"golden_hive_verified": True, "golden_hive": True, "golden_hive_status": "APPROVED", "is_admin": True}
 
-    # Primary: match by known user ID (survives username + email changes)
-    result = await db.users.update_one({"id": ADMIN_USER_ID}, {"$set": admin_set})
-    if result.modified_count or result.matched_count:
-        logger.info(f"BLOCK 571: Admin override applied for user ID {ADMIN_USER_ID}")
+    # Check if admin exists at all
+    admin_user = await db.users.find_one({"$or": [{"id": ADMIN_USER_ID}, {"email": ADMIN_EMAIL}]})
+    if not admin_user:
+        # Fresh database — seed the master admin
+        logger.info("Fresh database detected — seeding master admin account")
+        admin_hash = hash_password("HoneyGroove2026!")
+        now = datetime.now(timezone.utc).isoformat()
+        await db.users.insert_one({
+            "id": ADMIN_USER_ID,
+            "email": ADMIN_EMAIL,
+            "username": ADMIN_USERNAME,
+            "password_hash": admin_hash,
+            "avatar_url": "https://api.dicebear.com/7.x/miniavs/svg?seed=katie",
+            "bio": None, "setup": None, "location": None, "favorite_genre": None,
+            "onboarding_completed": False,
+            "founding_member": True,
+            "is_admin": True,
+            "golden_hive_verified": True, "golden_hive": True, "golden_hive_status": "APPROVED",
+            "created_at": now,
+        })
+        logger.info(f"Master admin seeded: {ADMIN_EMAIL} / username: {ADMIN_USERNAME}")
     else:
-        # Fallback: match by known emails
-        for email in ADMIN_EMAILS:
-            r = await db.users.update_one({"email": email}, {"$set": admin_set})
-            if r.matched_count:
-                logger.info(f"BLOCK 571: Admin override applied via email {email}")
-                break
-        else:
-            # Last resort: legacy username match
-            await db.users.update_one({"username": "katieintheafterglow"}, {"$set": admin_set})
-            logger.info("BLOCK 571: Admin override applied via legacy username fallback")
+        # Ensure admin flags + correct username
+        await db.users.update_one(
+            {"$or": [{"id": ADMIN_USER_ID}, {"email": ADMIN_EMAIL}]},
+            {"$set": {**admin_set, "username": ADMIN_USERNAME}}
+        )
+        logger.info(f"Admin override applied for {ADMIN_EMAIL} / username: {ADMIN_USERNAME}")
 
     # Verification + payout indexes
     await db.verification_requests.create_index("user_id")
