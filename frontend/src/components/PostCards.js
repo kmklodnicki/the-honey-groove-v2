@@ -129,7 +129,7 @@ const PostTypeBadge = ({ type, mood }) => {
   const config = {
     NOW_SPINNING: { label: 'Now Spinning', icon: Disc },
     NEW_HAUL: { label: 'New Haul', icon: Package },
-    ISO: { label: 'Grail Find', icon: Gem },
+    ISO: { label: 'ISO', icon: Gem },
     ADDED_TO_COLLECTION: { label: 'Added', icon: Plus },
     WEEKLY_WRAP: { label: 'Weekly Wrap', icon: Music },
     VINYL_MOOD: { label: 'Vinyl Mood', icon: Moon },
