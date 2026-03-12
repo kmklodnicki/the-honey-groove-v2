@@ -66,7 +66,7 @@ const HoneycombIcon = ({ className }) => (
 );
 
 // Treasury Header — Premium Collection & Dream Value Dashboard
-const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamLoading, collectionTab, onTabChange, valuedCount, totalCount, onRefresh, refreshing, onPendingClick, onOpenWizard }) => {
+const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamLoading, collectionTab, onTabChange, valuedCount, totalCount, onRefresh, refreshing, onPendingClick, onOpenWizard, recoveryStatus, onStartRecovery }) => {
   const animCollection = useCountUp(collectionValue, 1600, true);
   const animDream = useCountUp(dreamValue, 1600, true);
 
@@ -125,6 +125,17 @@ const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamL
             </div>
           </button>
 
+          {/* BLOCK 476: Value Recovery Progress */}
+          {recoveryStatus && recoveryStatus.status === 'in_progress' && (
+            <div className="absolute top-2 right-3 flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-medium"
+              style={{ background: 'rgba(218,165,32,0.15)', color: '#7A5A1A', border: '1px solid rgba(218,165,32,0.25)' }}
+              data-testid="recovery-progress-badge"
+            >
+              <Loader2 className="w-3 h-3 animate-spin" />
+              Recovering {recoveryStatus.valued}/{recoveryStatus.total}
+            </div>
+          )}
+
           {/* Divider */}
           <div className="hidden sm:flex flex-col items-center justify-center px-3">
             <div className="w-px h-10 bg-gradient-to-b from-transparent via-[#DAA520]/30 to-transparent" />
@@ -168,8 +179,8 @@ const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamL
           </button>
         </div>
 
-        {/* Refresh pull-tab — bottom-centered circular gold glass button */}
-        <div className="flex justify-center mt-3">
+        {/* Refresh & Recovery buttons */}
+        <div className="flex justify-center items-center gap-3 mt-3">
           <button
             onClick={onRefresh}
             disabled={refreshing}
@@ -186,6 +197,22 @@ const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamL
           >
             <RefreshCw className={`w-3.5 h-3.5 text-[#C8861A] ${refreshing ? 'animate-spin' : ''}`} />
           </button>
+          {/* BLOCK 476: Value Recovery trigger */}
+          {totalCount > 0 && valuedCount != null && totalCount > valuedCount && (!recoveryStatus || recoveryStatus.status !== 'in_progress') && (
+            <button
+              onClick={onStartRecovery}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-semibold transition-all hover:scale-105 active:scale-95"
+              style={{
+                background: 'linear-gradient(135deg, rgba(218,165,32,0.3), rgba(200,134,26,0.2))',
+                color: '#7A5A1A',
+                border: '1px solid rgba(218,165,32,0.4)',
+              }}
+              data-testid="start-recovery-btn"
+            >
+              <Sparkles className="w-3 h-3" />
+              Recover Values
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -239,6 +266,8 @@ const CollectionPage = () => {
   const [dupeCleaning, setDupeCleaning] = useState(false);
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
   const [fadingIds, setFadingIds] = useState(new Set());
+  // BLOCK 476: Value Recovery Engine state
+  const [recoveryStatus, setRecoveryStatus] = useState(null);
   // (BackToTop component handles scroll-to-top)
   const navigate = useNavigate();
 
@@ -315,6 +344,40 @@ const CollectionPage = () => {
     } catch { toast.error('could not refresh values. try again.'); }
     finally { setRefreshing(false); }
   };
+
+  // BLOCK 476: Value Recovery Engine
+  const handleStartRecovery = async () => {
+    try {
+      const headers = { Authorization: `Bearer ${token}` };
+      const resp = await axios.post(`${API}/valuation/recovery/start`, {}, { headers });
+      setRecoveryStatus(resp.data);
+      toast.success('Value Recovery Engine started');
+      // Poll for progress
+      const pollInterval = setInterval(async () => {
+        try {
+          const statusResp = await axios.get(`${API}/valuation/recovery/status`, { headers });
+          setRecoveryStatus(statusResp.data);
+          if (statusResp.data.status === 'completed') {
+            clearInterval(pollInterval);
+            fetchData(); // Refresh values
+            toast.success(`Recovery complete — ${statusResp.data.recovered || 0} new records valued`);
+          }
+        } catch {
+          clearInterval(pollInterval);
+        }
+      }, 3000);
+    } catch {
+      toast.error('could not start value recovery.');
+    }
+  };
+
+  // BLOCK 476: Fetch recovery status on mount
+  useEffect(() => {
+    if (!token) return;
+    axios.get(`${API}/valuation/recovery/status`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => { if (r.data.status !== 'idle') setRecoveryStatus(r.data); })
+      .catch(() => {});
+  }, [API, token]);
 
   // Open the ValuationAssistantModal focused on a specific record
   const handleValueThis = (record) => {
@@ -664,6 +727,8 @@ const CollectionPage = () => {
             refreshing={refreshing}
             onPendingClick={() => { setValuationFocusItem(null); setValuationModalOpen(true); }}
             onOpenWizard={() => setWizardOpen(true)}
+            recoveryStatus={recoveryStatus}
+            onStartRecovery={handleStartRecovery}
           />
         )}
 

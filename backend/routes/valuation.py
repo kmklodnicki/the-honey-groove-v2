@@ -1134,3 +1134,28 @@ async def get_pulse(discogs_id: int, user: Dict = Depends(require_auth)):
         {"release_id": discogs_id}, {"$set": pulse_doc}, upsert=True
     )
     return pulse_doc
+
+
+# ===================== BLOCK 476: VALUE RECOVERY ENGINE =====================
+
+@router.post("/valuation/recovery/start")
+async def start_value_recovery(user: Dict = Depends(require_auth)):
+    """Trigger the Value Recovery Engine for the current user's collection.
+    Uses OAuth tokens when available for higher rate limits."""
+    from services.value_recovery import run_value_recovery, recovery_progress
+
+    # Check if already running
+    progress = recovery_progress.get(user["id"])
+    if progress and progress.get("status") == "in_progress":
+        return progress
+
+    # Fire background task
+    asyncio.create_task(run_value_recovery(user["id"]))
+    return {"status": "started", "message": "Value Recovery Engine started"}
+
+
+@router.get("/valuation/recovery/status")
+async def get_value_recovery_status(user: Dict = Depends(require_auth)):
+    """Get the current or last Value Recovery status."""
+    from services.value_recovery import get_recovery_status
+    return await get_recovery_status(user["id"])

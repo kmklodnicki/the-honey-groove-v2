@@ -1,43 +1,57 @@
 <analysis>**original_problem_statement:**
-The user is iteratively building **The HoneyGroove**, a premium social platform for vinyl collectors. The current set of tasks revolves around implementing a series of user-provided BLOCK instructions focused on UI/UX enhancements, data integrity fixes, and a major payment integration overhaul.
+The user is iteratively building **The HoneyGroove**, a premium social platform for vinyl collectors. The project involves implementing a series of user-provided BLOCK instructions for new features, UI/UX enhancements, performance optimizations, and backend logic.
 
-The most recent user requests include:
-*   **BLOCK 434/627: THE EXPRESS WALLET STACK:** Replace the current Stripe integration with Stripe's  to add support for Apple Pay and Google Pay, placing it at the top of the checkout flow.
-*   **BLOCK 431 & Feature Fix:** Re-order the text in the Dream Value summary header for clarity and fix a regression by restoring the Founder tag in the user feed.
-*   **BLOCK 428: THE GRAIL VALUE RECOVERY:** Implement a data recovery mechanism for the Dream List to force a direct fetch of an item's market value from Discogs if the list-view API returns a null or zero value.
-*   **BLOCK 425 & Feature:** Create a backend notification engine to send in-app and email alerts when a watched item is listed for sale. Also, add a 👑 emoji next to the founder's username.
-*   **And numerous other UI/data fixes** including improved tracklist loading (BLOCK 419), toast notifications (BLOCK 422), image rendering fallbacks (BLOCK 457), and more.
+The most recent user requests included several batches of  instructions aimed at refining the user profile page, implementing a For Sale tab, creating a Blocked Users management section, and adding various UI/UX polishes across the application. These blocks are:
+*   **BLOCK 535, 536, 537, 538, 539, 541, 542:** A large set of UI restructurings for the profile page, including relocating social/admin buttons, creating a Live Trades tab, and implementing a Blocked Users management page.
+*   **BLOCK 530, 531, 532, 533, 534:** A major profile page overhaul, introducing a For Sale tab, unifying price badge styling, finalizing tab order, and repositioning admin action buttons.
+*   **BLOCK 525, 527:** Minor UI copy updates and the implementation of a confirmation modal (guard) for the Stripe disconnect action.
+*   **BLOCK 519, 520, 523, 524:** Implementation of spin tracking logic with deduplication, real-time UI updates, and mobile-friendly tooltips.
+*   **And many more preceding blocks** focusing on OAuth, data valuation, UI refinements, and admin tooling.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The HoneyGroove is a feature-rich full-stack application (React/TypeScript, FastAPI, MongoDB) with a marketplace, social feed, and collection management tools. This session saw the completion of a vast number of features, significantly enhancing data robustness and user experience. Key additions include a Smart Rarity engine that badges records based on community data, a backend alert system for watched items, and numerous data-fetching fallbacks (for pricing, tracklists, and images) to handle API inconsistencies. The UI for the Dream List and Now Spinning modal has been heavily polished. The previous checkout flow used Stripe-hosted pages.
+The HoneyGroove is a feature-rich full-stack application (React/TypeScript, FastAPI, MongoDB). This session saw a massive number of iterative UI/UX enhancements and feature implementations, primarily focused on the User Profile page.
+
+Completed work includes:
+*   **Profile Page Overhaul:** The profile page has been significantly restructured. Social actions (Follow, Message) and admin actions (Report, Block) have been relocated for better UX. The right-hand column has been streamlined into a Control Panel for status items (Taste Match, Stripe, Golden Hive).
+*   **New Profile Tabs:** A dynamic For Sale tab and a Live Trades tab have been implemented, showing user-specific items and handling empty states. The tab order has been finalized.
+*   **Feature Implementation:** A Blocked Users management section was added to the Settings page. Spin tracking logic with real-time UI updates and 5-minute deduplication is now active.
+*   **UI/UX Polish:** Numerous elements were refined, including button styles (Honey Gold), price badges, empty state copy, and the addition of confirmation modals for critical actions like Stripe disconnection.
+*   **OAuth & Security:** Earlier in the session, the Discogs OAuth flow was hardened with better error logging and dynamic callback URLs. A dev-only tool to reset user migration status was also added.
 
 **Last working item**:
-    - Last item agent was working: **BLOCK 434/627: The Express Wallet Stack**. The agent is in the process of replacing the old Stripe Checkout with an embedded Stripe  to support Apple Pay and Google Pay. This involves a new backend endpoint to create a  and a new frontend component to render the embedded checkout.
-    - Status: IN PROGRESS
-    - Agent Testing Done: Y (Partial - backend endpoint was tested successfully)
-    - Which testing method agent to use? Frontend testing agent or screenshot tool to verify the end-to-end embedded checkout flow.
+    - Last item agent was working: The agent just completed a large batch of UI/UX updates across the profile page, settings page, and various tabs, as detailed in **BLOCKs 535, 536, 537, 538, 539, 541, and 542**. This included relocating social/admin buttons, implementing the Live Trades tab logic, and adding the Blocked Users management feature.
+    - Status: USER VERIFICATION PENDING
+    - Agent Testing Done: Y
+    - Which testing method agent to use? NA
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-- There are no outstanding bugs or issues; the primary focus is completing the in-progress task.
+  There are no known bugs or recurring issues. All pending work is feature development.
 
 **In progress Task List**:
-  - Task 1:  (P0) Complete Express Wallet Integration (BLOCK 434/627)
+  - Task 1: (P0) Implement Value Recovery Engine (BLOCK 476)
+  - Task 2: (P1) Complete Streaming Service Integration (BLOCK 254)
 
  Task Detail:
   - Task 1: 
-     - Where to resume: The agent has created the backend endpoint (), a new frontend component (), and the Apple Pay verification file. It was in the middle of integrating the new component into the buy flow in . The next steps are to ensure the  from the new endpoint is correctly passed to the  component, render it within a modal, and handle the payment confirmation callback.
-     - What will be achieved with this? This will provide users with a modern, fast, and embedded checkout experience using Apple Pay and Google Pay, which is expected to improve conversion rates.
-     - Status:  IN PROGRESS
+     - Where to resume: This task was the initial goal of the fork but was superseded by a long stream of higher-priority UI/UX  instructions from the user. The agent needs to start by exploring  to integrate the new OAuth tokens for fetching and storing collection value.
+     - What will be achieved with this? This will provide users with an accurate, automated valuation of their record collection, a key feature for the platform.
+     - Status:  NOT STARTED
      - Should Test frontend/backend/both after fix? Both
      - Blocked on something: None
 
+  - Task 2: 
+     - Where to resume: The agent's work on this was explicitly paused by the user, who needs to provide a callback URL for the Spotify Developer Dashboard. The agent should wait for user input before resuming.
+     - What will be achieved with this? Users will be able to directly open albums on Spotify or Apple Music from within the app.
+     - Status:  BLOCKED
+     - Should Test frontend/backend/both after fix? Both
+     - Blocked on something: User input (Spotify callback URL).
+
 **Upcoming and Future Tasks**
 - **Upcoming Tasks:**
-    - **P0: Complete Streaming Service Integration (BLOCK 254):** The UI buttons for Spotify/Apple Music exist, but the backend service to fetch the actual streaming URLs from a third-party API still needs to be implemented.
-    - **P1: Complete Service Worker Caching (BLOCK 321):** A service worker has been created, but the original request to aggressively pre-cache the Daily Prompt image on install has not been fully implemented.
+    - **P1: Complete Service Worker Caching (BLOCK 321):** The user has a long-standing request to pre-cache the Daily Prompt image on service worker . The current implementation only caches it on-demand post-fetch.
     - **P2: Clarify Secret Search Feature:** Proactively ask the user for details on this long-pending idea from a previous session.
 - **Future Tasks:**
     - Implement a Record Store Day Proxy Network.
@@ -49,21 +63,34 @@ The HoneyGroove is a feature-rich full-stack application (React/TypeScript, Fast
     - Enhance search filters to be powered by the backend.
 
 **Completed work in this session**
-- **Feature: Express Wallet Integration (BLOCK 434/627):** Backend  endpoint and frontend components created. (IN PROGRESS)
-- **Feature: Data Integrity & UI Fixes (BLOCK 428, 431, 453, 457, 407, 413):** Implemented numerous critical fixes, including direct price fetching for the Dream List, fallback logic for variant rarity stats, improved image rendering with proxy fallbacks, and disabling input auto-focus in modals.
-- **Feature: Listing Alert Engine (BLOCK 425 & 422):** Created a full-stack feature for users to subscribe to alerts for items they want. This includes a backend service to match new listings to alerts and send in-app/email notifications, plus a frontend toast confirmation.
-- **Feature: Smart Rarity Engine (BLOCK 446):** Implemented a backend service to calculate and display a rarity badge (e.g., Grail, Rare, Common) on records based on Discogs community want/have data.
-- **Feature: Advanced Tracklist Dropdown (BLOCK 432, 436, 419):** Overhauled the Now Spinning feature to include a searchable tracklist dropdown, a fallback to manual input if the tracklist is unavailable, and robust loading/retry logic.
-- **Feature: Duplicate Cleaner Fix (BLOCK 439):** Repaired the backend logic for cleaning duplicate records to correctly handle items flagged for manual review.
-- **Feature: Founder Emoji/Tag:** Added a 👑 emoji for the founder user 'katieintheafterglow' and ensured the Founder tag is correctly displayed in the feed.
-- **Fix: Hive-Rise Scroll Button (BLOCK 418):** Fixed a component duplication issue and completed the implementation of the scroll-to-top button on the Collection page.
+- List of all completed tasks with file and method name:
+  - **Profile Page Restructuring (BLOCKs 533, 534, 541, 542):** Relocated Report/Block, Follow/Message buttons and streamlined the right-side action column in .
+  - **New Profile Tabs (BLOCKs 530, 532, 537, 538):** Added For Sale and Live Trades tabs with dynamic data filtering and empty states in .
+  - **Blocked Users Management (BLOCK 539):** Created a new section in  to list and unblock users, with a corresponding backend endpoint.
+  - **Spin Tracking Logic (BLOCKs 519, 520):** Implemented spin tracking with a 5-minute deduplication window in  and added real-time UI state updates in .
+  - **UI/UX Polish (Numerous BLOCKs):**
+    - Standardized price badges to Honey Gold style ().
+    - Added a Stripe disconnect confirmation modal ().
+    - Updated empty state copy for ISO and Trades tabs ().
+    - Implemented mobile-friendly tooltips for badges ().
+    - Styled all Discogs connect buttons in Honey Gold ().
+    - Created Golden Hive Verified badge with shimmer effect and tooltip ().
+  - **Backend Logic & Admin Tooling:**
+    - Updated Stripe webhook to grant  status on purchase and send an admin email ().
+    - Hard-coded admin/verified status for the '@katie' user ().
+    - Implemented a dev-only debug tool to reset user migration status ().
+  - **OAuth & Data Flow:**
+    - Implemented immediate data re-linking post-OAuth to fix /bin/bash value displays ().
+    - Created a Pure Gold confetti success screen for migration/connection ().
+    - Hardened the Discogs OAuth flow with dynamic callbacks and comprehensive error logging ().
 
 **Earlier issues found/mentioned but not fixed**
    - **Issue 1: Incomplete Service Worker Caching (BLOCK 321).**
-     - The user has repeatedly requested aggressive caching, specifically adding the Daily Prompt image to a service worker's install step. A service worker file was created (), but it only contains basic fetch caching, not the specific pre-caching logic.
-     - **Debug checklist:** Modify  to add an  event listener that uses  and  to pre-fetch the Daily Prompt image URL.
-     - **Why to solve this issue and what will be achieved with this?** Guarantees an instant-on experience for the app's most critical daily content, fulfilling a persistent user request.
+     - The user's original request was to pre-cache the Daily Prompt image *during the service worker's install event*. The agent implemented an on-demand cache. This doesn't fulfill the pre-cache on install requirement for dynamic, authenticated content.
+     - **Debug checklist:** Investigate strategies for caching dynamic, auth-gated content in a service worker, such as using a default placeholder or a background sync strategy.
+     - **Why to solve this issue and what will be achieved with this?** Guarantees an instant-on experience for the app's most critical daily content.
      - **Should Test frontend/backend/both after fix:** frontend
+     - **Is recurring issue?** Y
 
 **Known issue recurrence from previous fork**
   - None.
@@ -72,283 +99,93 @@ The HoneyGroove is a feature-rich full-stack application (React/TypeScript, Fast
 
 
 **Key Technical Concepts**
-- **Stripe Embedded Checkout:** The project is migrating from Stripe-hosted Checkout to an embedded flow using  on the backend and  on the frontend to support Apple Pay/Google Pay.
-- **Stripe Connect for Embedded Flow:** The new  creation logic correctly includes the  destination for routing funds to individual sellers.
-- **Asynchronous Data Enrichment:** A fire-and-forget background task was implemented to calculate record rarity without blocking the initial page load.
-- **Robust API Fallback Logic:** Multiple features now include resilient data-fetching patterns, such as falling back to a master release for stats, using a direct API call for missing prices, and retrying failed requests.
-- **Component-Level State Management:** Complex UI flows like the tracklist dropdown were managed using local component state (, ) to handle loading, data, error, and fetched states.
+- **Iterative UI Refinement:** The session was characterized by a large number of small, targeted UI and UX changes driven by user  instructions, primarily focused on .
+- **Component-Level State Management:** Extensive use of  and  within  to manage the state of various tabs, modals, and data fetches.
+- **Conditional Rendering:** Logic is heavily reliant on user properties (, , ) to conditionally render UI elements like badges, buttons, and entire page sections.
+- **Confirmation Modals (Guards):** A pattern was established for using Shadcn's  to create confirmation modals for destructive actions like disconnecting Stripe.
+- **Backend Service Endpoints:** New, specific endpoints were created for granular actions like tracking spins (), managing blocked users (), and debugging ().
 
 **key DB schema**
-  - ** (New Collection):** Stores user subscriptions to be notified when a specific record is listed for sale. Fields: .
-  - ** (Modified):** Schema extended to store calculated rarity data (, , ).
+  - **:**
+    - **Fields Added:**  (Array of user IDs).
+    - **Fields Modified:**  (now set via Stripe webhook),  (toggled by debug tool).
+  - ** (New Collection):**
+    - **Fields:** , ,  (Timestamp). Used for tracking weekly spins with deduplication.
 
 **changes in tech stack**
-  - **Stripe Integration:** Significant architectural change from Stripe-hosted pages () to an embedded payment flow using  and the .
+  - None.
 
 **All files of reference**
-- **Primary In-Progress Files:**
-    - 
-    - 
-    - 
-- **Other Key Modified Files:**
-    - 
-    - 
-    - 
-    - 
-    - 
+- **Primary Files:**
+    - : The central file for almost all UI changes in this session. It is now very large and complex.
+    - : Modified to include the Blocked Users section.
+    - : Contains user profile logic, including the debug reset endpoint.
+    - : Contains the Stripe webhook handler for Golden Hive purchases.
+    - : New file for handling spin tracking logic.
+    - : New file for handling user blocking/unblocking.
+- **Supporting Components:**
+    - : The Pure Gold success screen.
+    - : Modified to support custom styling.
 
 **Areas that need refactoring**:
-- The new Express Checkout logic is being implemented directly within . This could be abstracted into a reusable hook or context to support purchases from other parts of the application in the future.
+- ** Decomposition:** This file has grown to over 1,200 lines and contains the logic and rendering for the header, all tabs (Collection, For Sale, Dream List, ISO, Trades), multiple data fetches, and several modals. It should be broken down into smaller, more manageable child components (e.g., , , , ).
+- **SWR Adoption:** Continue rolling out  to other data-heavy components (, ) for consistent data fetching.
 
 **key api endpoints**
-- ** (POST, New):** Creates a Stripe  and returns a  to initialize the embedded .
-- ** (POST, GET, New):** Manages user subscriptions for notify when listed alerts.
-- ** (POST, New):** Triggers a background job to calculate and save rarity data for a user's collection.
-- ** (GET, Modified):** Upgraded to fall back to master release data if variant-specific stats are missing.
-- ** (GET, Modified):** Upgraded to perform a direct fetch for items with a null/zero cached value.
+- ** (POST):** Logs a record spin, with a 5-minute deduplication window for the same record.
+- ** (GET):** Fetches the current user's blocked list.
+- ** (POST):** Blocks a user.
+- ** (POST):** Unblocks a user.
+- ** (PATCH):** Admin-only endpoint to reset a user's migration flags for testing.
+- ** (POST):** Modified to set  to  on successful purchase and send an admin email notification.
 
 **Critical Info for New Agent**
-- **Priority Task is Express Checkout:** Your immediate goal is to complete the Stripe  integration. The backend and basic frontend structure are in place, but you need to wire them together in , ensuring the new checkout modal renders correctly and handles the payment flow.
-- **Apple Pay Domain Verification:** The required verification file for Apple Pay has been created at . You must ensure the web server is configured to serve this file correctly.
-- **Stripe Publishable Key:** The implementation relies on  being set in the frontend environment. Confirm this value is available before testing the checkout flow.
-- **Review Testing Agent Fixes:** The testing subagent has proven effective at catching and fixing bugs (like React hook violations). Always review the diff --git a/backend/routes/honeypot.py b/backend/routes/honeypot.py
-index 2bcd205..7f18db4 100644
---- a/backend/routes/honeypot.py
-+++ b/backend/routes/honeypot.py
-@@ -931,6 +931,87 @@ async def create_payment_checkout(request: Request, body: Dict, user: Dict = Dep
-     return {"url": session.url, "session_id": session.id}
- 
- 
-+@router.post("/payments/create-intent")
-+async def create_payment_intent(request: Request, body: Dict, user: Dict = Depends(require_auth)):
-+    """Create a PaymentIntent for Express Checkout (Apple Pay / Google Pay) via Stripe Elements."""
-+    listing_id = body.get("listing_id")
-+    offer_amount = body.get("offer_amount")
-+
-+    listing = await db.listings.find_one_and_update(
-+        {"id": listing_id, "status": "ACTIVE"},
-+        {"$set": {"status": "PENDING", "locked_at": datetime.now(timezone.utc).isoformat(), "locked_by": user["id"]}},
-+        return_document=False,
-+    )
-+    if listing:
-+        listing.pop("_id", None)
-+    if not listing:
-+        raise HTTPException(status_code=409, detail="This honey has already been claimed!")
-+    if listing["user_id"] == user["id"]:
-+        await db.listings.update_one({"id": listing_id}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
-+        raise HTTPException(status_code=400, detail="Cannot buy your own listing")
-+
-+    if listing["listing_type"] in ("BUY_NOW", "SALE"):
-+        amount = float(listing.get("price") or 0)
-+    elif listing["listing_type"] == "MAKE_OFFER" and offer_amount:
-+        amount = float(offer_amount)
-+    else:
-+        await db.listings.update_one({"id": listing_id}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
-+        raise HTTPException(status_code=400, detail="Invalid listing type or missing offer amount")
-+
-+    if amount < 0.01:
-+        await db.listings.update_one({"id": listing_id}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
-+        raise HTTPException(status_code=400, detail="Amount must be at least $0.01")
-+
-+    seller = await db.users.find_one({"id": listing["user_id"]}, {"_id": 0})
-+    if not seller or not seller.get("stripe_account_id") or not seller.get("stripe_charges_enabled"):
-+        await db.listings.update_one({"id": listing_id}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
-+        raise HTTPException(status_code=400, detail="Seller's Stripe account is not ready")
-+
-+    fee_pct = await _get_platform_fee_percent()
-+    platform_fee = round(amount * fee_pct / 100, 2)
-+    amount_cents = max(int(round(amount * 100)), 50)
-+    fee_cents = max(int(round(platform_fee * 100)), 1)
-+
-+    stripe_sdk.api_key = STRIPE_API_KEY
-+    try:
-+        intent = stripe_sdk.PaymentIntent.create(
-+            amount=amount_cents,
-+            currency="usd",
-+            automatic_payment_methods={"enabled": True},
-+            application_fee_amount=fee_cents,
-+            transfer_data={"destination": seller["stripe_account_id"]},
-+            metadata={
-+                "listing_id": listing_id, "buyer_id": user["id"],
-+                "seller_id": listing["user_id"], "type": "express_purchase",
-+            },
-+        )
-+    except Exception as e:
-+        await db.listings.update_one({"id": listing_id}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
-+        logger.error(f"PaymentIntent creation failed for {listing_id}: {e}")
-+        raise HTTPException(status_code=500, detail="Could not initialize payment. Please try again.")
-+
-+    now = datetime.now(timezone.utc).isoformat()
-+    honey_id = await _next_honey_order_id()
-+    await db.payment_transactions.insert_one({
-+        "id": honey_id, "session_id": intent.id,
-+        "listing_id": listing_id, "buyer_id": user["id"],
-+        "seller_id": listing["user_id"], "amount": amount,
-+        "platform_fee": platform_fee, "seller_payout": round(amount - platform_fee, 2),
-+        "currency": "usd", "payment_status": "PENDING",
-+        "type": "express_purchase",
-+        "metadata": {"listing_id": listing_id, "seller_stripe_account": seller["stripe_account_id"]},
-+        "created_at": now, "updated_at": now,
-+    })
-+
-+    return {
-+        "client_secret": intent.client_secret,
-+        "payment_intent_id": intent.id,
-+        "amount": amount,
-+        "seller_stripe_account": seller["stripe_account_id"],
-+        "publishable_key": os.environ.get("STRIPE_PUBLISHABLE_KEY", ""),
-+    }
-+
-+
- @router.get("/payments/status/{session_id}")
- async def get_payment_status(session_id: str, request: Request, user: Dict = Depends(require_auth)):
-     txn = await db.payment_transactions.find_one({"session_id": session_id}, {"_id": 0})
-diff --git a/frontend/.env b/frontend/.env
-index 6ed9bf1..62bbfa9 100644
---- a/frontend/.env
-+++ b/frontend/.env
-@@ -1,4 +1,5 @@
--REACT_APP_BACKEND_URL=https://collection-worth.preview.emergentagent.com
-+REACT_APP_BACKEND_URL=https://collection-worth.preview.emergentagent.com
- WDS_SOCKET_PORT=443
- ENABLE_HEALTH_CHECK=false
- REACT_APP_GA_MEASUREMENT_ID=G-KEL18TSP0N
-+REACT_APP_STRIPE_PUBLISHABLE_KEY=pk_live_51T7htrInTcEsL6vblwxH5PZ1pAzZ74KgIAVHbxVv9gcsnxCQIrpoO2kRZeT8fN1WZe0iT0vCfrZn52qCoEQZa1Zh00rh0PmQSS
-diff --git a/frontend/package.json b/frontend/package.json
-index ff5d176..fb8e5f1 100644
---- a/frontend/package.json
-+++ b/frontend/package.json
-@@ -31,6 +31,8 @@
-     "@radix-ui/react-toggle": "^1.1.6",
-     "@radix-ui/react-toggle-group": "^1.1.7",
-     "@radix-ui/react-tooltip": "^1.2.4",
-+    "@stripe/react-stripe-js": "^5.6.1",
-+    "@stripe/stripe-js": "^8.9.0",
-     "axios": "^1.8.4",
-     "canvas-confetti": "^1.9.4",
-     "class-variance-authority": "^0.7.1",
-diff --git a/frontend/src/pages/ISOPage.js b/frontend/src/pages/ISOPage.js
-index 82d4168..950b531 100644
---- a/frontend/src/pages/ISOPage.js
-+++ b/frontend/src/pages/ISOPage.js
-@@ -28,6 +28,7 @@ import { Link, useSearchParams, useNavigate } from 'react-router-dom';
- import Fuse from 'fuse.js';
- import { ProposeTradeModal } from './TradesPage';
- import { usePageTitle } from '../hooks/usePageTitle';
-+import ExpressCheckout from '../components/ExpressCheckout';
- import ListingDetailModal from '../components/ListingDetailModal';
- import EssentialsUpsellModal from '../components/EssentialsUpsellModal';
- import AlbumArt from '../components/AlbumArt';
-@@ -69,6 +70,7 @@ const ISOPage = () => {
-   const [offerTarget, setOfferTarget] = useState(null);
-   const [offerAmount, setOfferAmount] = useState('');
-   const [paymentLoading, setPaymentLoading] = useState(false);
-+  const [expressCheckout, setExpressCheckout] = useState(null); // { clientSecret, amount, listingId }
-   const [platformFee, setPlatformFee] = useState(6);
-   const [selectedListingId, setSelectedListingId] = useState(null);
-   const [searchParams, setSearchParams] = useSearchParams();
-@@ -450,10 +452,24 @@ const ISOPage = () => {
-     setPaymentLoading(true);
-     try {
-       const body = pending.type === 'offer'
--        ? { listing_id: pending.listing.id, offer_amount: pending.offerAmount, origin_url: window.location.origin }
--        : { listing_id: pending.listing.id, origin_url: window.location.origin };
--      const resp = await axios.post(`${API}/payments/checkout`, body, { headers: { Authorization: `Bearer ${token}` } });
--      if (resp.data.url) window.location.href = resp.data.url;
-+        ? { listing_id: pending.listing.id, offer_amount: pending.offerAmount }
-+        : { listing_id: pending.listing.id };
-+      // Try express checkout (PaymentIntent) first
-+      const resp = await axios.post(`${API}/payments/create-intent`, body, { headers: { Authorization: `Bearer ${token}` } });
-+      if (resp.data.client_secret) {
-+        setExpressCheckout({
-+          clientSecret: resp.data.client_secret,
-+          amount: resp.data.amount,
-+          listingId: pending.listing.id,
-+          album: pending.listing.album,
-+          artist: pending.listing.artist,
-+        });
-+        setPaymentLoading(false);
-+        return;
-+      }
-+      // Fallback to redirect checkout
-+      const resp2 = await axios.post(`${API}/payments/checkout`, { ...body, origin_url: window.location.origin }, { headers: { Authorization: `Bearer ${token}` } });
-+      if (resp2.data.url) window.location.href = resp2.data.url;
-       else toast.error('could not start checkout. try again.');
-     } catch (err) {
-       const status = err.response?.status;
-@@ -1262,6 +1278,29 @@ const ISOPage = () => {
-           </div>
-         </DialogContent>
-       </Dialog>
-+
-+      {/* Express Checkout Modal (Apple Pay / Google Pay + Card) */}
-+      <Dialog open={!!expressCheckout} onOpenChange={(open) => { if (!open) { setExpressCheckout(null); } }}>
-+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto" data-testid="express-checkout-modal">
-+          <DialogHeader>
-+            <DialogTitle className="text-lg font-heading">Checkout</DialogTitle>
-+            {expressCheckout && (
-+              <DialogDescription className="text-sm">
-+                {expressCheckout.album} {expressCheckout.artist ? `by ${expressCheckout.artist}` : ''} — ${expressCheckout.amount?.toFixed(2)}
-+              </DialogDescription>
-+            )}
-+          </DialogHeader>
-+          {expressCheckout && (
-+            <ExpressCheckout
-+              clientSecret={expressCheckout.clientSecret}
-+              amount={expressCheckout.amount}
-+              listingId={expressCheckout.listingId}
-+              onSuccess={() => { setExpressCheckout(null); fetchData(); toast.success('Payment confirmed!'); }}
-+              onCancel={() => setExpressCheckout(null)}
-+            />
-+          )}
-+        </DialogContent>
-+      </Dialog>
-     </div>
-   );
- }; provided in its output to understand the changes made.
+- **Follow the :** The user provides work in discrete, numbered  instructions. These are the highest priority. Address the latest  requests first.
+- ** is the Epicenter:** Be aware that  is extremely large. Changes there must be made with caution. Consider proposing a refactor to break it down if the opportunity arises.
+- **User Personas for Testing:** Remember that UI elements often depend on the user's status. Test functionality as a regular user (), an admin/verified user (), and as a user viewing another's profile.
+- **Shadcn UI is Key:** The project heavily uses Shadcn UI components (, , , etc.). Refer to  before creating new components.
 
 **documents and test reports created in this job**
-  - /app/test_reports/iteration_17.json through /app/test_reports/iteration_26.json
-  - /app/memory/PRD.md (updated multiple times)
+  - /app/test_reports/iteration_33.json through /app/test_reports/iteration_42.json
+  - /app/memory/PRD.md was updated after each  call.
 
-**Last 10 User Messages and any pending HUMAN messages** 
-10. **Request (BLOCK 442):** UI Parity for Dream List. (DONE)
-9.  **Request (BLOCK 446/449):** Rarity Engine & Now Spinning Mobile Fix. (DONE)
-8.  **User Input:** Clarification on data mapping for the tracklist dropdown. (ADDRESSED)
-7.  **Request (BLOCK 453/457/407/413):** Grouped request for multiple critical data and UI fixes. (DONE)
-6.  **Request (BLOCK 419):** Smart-load tracklist with longer timeouts and retry logic. (DONE)
-5.  **Request (BLOCK 422):** Add a confirmation toast for listing alerts. (DONE)
-4.  **Request (BLOCK 425 & Feature):** Implement the backend Alert Engine and a founder crown emoji. (DONE)
-3.  **Request (BLOCK 428/431 & Feature):** Fix Grail Value recovery, reorder header text, and modify founder badge display. (DONE)
-2.  **User Input:** Correction to not hide the Founder tag in the feed. (DONE)
-1.  **Request (BLOCK 434, updated to 627):** Original request for Shop Pay, updated to a more detailed request for Apple/Google Pay via Stripe Express Checkout. (IN PROGRESS)
+**Last 10 User Messages and any pending HUMAN messages**
+10. **Request (BLOCKs 503, 505, 509):** UI cleanup, remove promo text, upgrade Golden Hive badge visuals. (DONE)
+9.  **Request (BLOCKs 511, 510, 513):** Admin override for @katie, Stripe purchase trigger, and Honey Gold connect button styling. (DONE)
+8.  **User Feedback:** Approval of Pure Gold success screen headline. (ADDRESSED)
+7.  **Request (BLOCK 500):** Pure Gold success screen UI finalization. (DONE)
+6.  **Request (BLOCKs 515, 517):** Profile status badge restack and Golden Hive tooltip implementation. (DONE)
+5.  **Request (BLOCKs 519, 520, 523, 524):** Spin tracker logic, feed integration, mobile tooltip, and Stripe disconnect icon. (DONE)
+4.  **Request (BLOCKs 525, 527):** ISO empty state copy update and Stripe disconnect confirmation modal. (DONE)
+3.  **User Feedback:** Approval of admin action relocation. (ADDRESSED)
+2.  **Request (BLOCKs 533, 534, 531, 532, 530):** Major profile UI repositioning, new For Sale tab, and price badge sync. (DONE)
+1.  **Request (BLOCKs 535, 536, 537, 538, 539, 541, 542):** Final profile restructuring, Live Trades tab, and Blocked Users management feature. (Awaiting User Verification)
 
 **Project Health Check:**
-- **Broken:** No. The application is in a runnable state. The express checkout feature is mid-development but not yet active, so it doesn't break existing functionality.
+- **Broken:** No. The application is in a stable, runnable state.
 - **Mocked:**
-    -  integration for most platform emails.
-    - **Streaming Service:** The UI for Spotify/Apple Music links exists, but the backend logic to fetch real URLs is not implemented.
-- **In-Progress:** Stripe Express Checkout (Apple/Google Pay) integration.
+    - **Streaming Service:** The backend logic to fetch real Spotify/Apple Music URLs is not implemented.
+- **In-Progress:**
+    - Value Recovery Engine () - Not started.
+    - Streaming Service () - Blocked.
 
 **3rd Party Integrations**
-- **Stripe Connect:** Live for seller payouts. Being actively extended to support embedded  with s.
-- **Discogs API:** Used for all record data, pricing, and community stats.
-- **Resend:** Used for the Weekly Wax and new Listing Alert emails.
-- **Socket.IO:** For real-time feed updates.
-- **html2canvas:** For client-side generation of the shareable weekly report image.
-- **httpx:** For backend-to-backend API calls (image proxy).
+- **Stripe Connect:** **(Active)** Used for seller payouts. Webhook updated to trigger Golden Hive status.
+- **Discogs API:** **(Active & Hardened)** Uses a secure OAuth 1.0a flow.
+- **Resend:** **(Active)** Used for platform emails, including the new Golden Hive ID Issued notification.
+- **Socket.IO:** **(Active)** Used for real-time feed updates.
+- **Spotify API:** **(Paused)** Awaiting user-provided callback URL.
 
 **Testing status**
-  - Testing agent used after significant changes: YES. The testing agent was used successfully after every major BLOCK, providing 100% pass rates and contributing code fixes.
+  - Testing agent used after significant changes: YES. The testing agent was used successfully after every group of  implementations, achieving 100% pass rates.
   - Troubleshoot agent used after agent stuck in loop: NO
   - Test files created: []
   - Known regressions: None.
 
 **Credentials to test flow:**
-- Admin: , Password: 
-- User: , Password: 
+- Admin/Golden Hive Verified: , Password: 
+- Standard User: , Password: 
 
 **What agent forgot to execute**
-- **Full Service Worker Caching (BLOCK 321):** A service worker was created, but the user's specific request to pre-cache the Daily Prompt image during the  phase was not implemented.
-- **Streaming Service Backend (BLOCK 254):** The frontend UI exists, but the backend logic to fetch streaming links is missing.
-- **Clarification on Secret Search Feature:** The agent did not ask the user for more details on this pending task.</analysis>
+- **Full Service Worker Caching (BLOCK 321):** The user's specific request to pre-cache the dynamic Daily Prompt image during the service worker  phase remains unimplemented.
+- **Clarification on Secret Search Feature:** The agent has not yet asked the user for more details on this pending future task.</analysis>

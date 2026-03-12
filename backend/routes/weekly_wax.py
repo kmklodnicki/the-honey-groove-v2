@@ -276,6 +276,13 @@ def _build_weekly_wax_html(data: dict) -> str:
     most_wanted = data.get("most_wanted_variant") or "collectors are building their Dream Lists now"
     collectors = data.get("collectors", [])
 
+    # BLOCK 476: Collection value data
+    collection_value = data.get("collection_value", {})
+    total_value = collection_value.get("total_value", 0)
+    valued_count = collection_value.get("valued_count", 0)
+    total_count = collection_value.get("total_count", 0)
+    top_gem = data.get("top_gem")
+
     # Collector recommendations section
     collector_html = ""
     if collectors:
@@ -312,7 +319,37 @@ def _build_weekly_wax_html(data: dict) -> str:
     <strong style="{STRONG}">{last_spin}</strong></p>
 
     <p style="{STAT}">Keep the wax spinning.</p>
+"""
 
+    # BLOCK 476: Insert collection value section if user has valued records
+    if total_value > 0:
+        value_section = f"""
+    {DIVIDER}
+
+    <h2 style="{SEC_HEAD}">your collection value</h2>
+
+    <p style="{STAT}">Your collection is currently valued at:</p>
+
+    <p style="font-family:'Playfair Display',Georgia,serif;font-weight:700;color:#C8861A;font-size:28px;margin:8px 0 16px 0;">${total_value:,.0f}</p>
+
+    <p style="{STAT}">
+    &bull; records valued: <strong style="{STRONG}">{valued_count}</strong> of {total_count}<br>"""
+
+        if top_gem:
+            value_section += f"""    &bull; most valuable: <strong style="{STRONG}">{top_gem.get('artist', '')} — {top_gem.get('title', '')}</strong> (${top_gem.get('median_value', 0):,.0f})<br>"""
+
+        unvalued = total_count - valued_count
+        if unvalued > 0:
+            value_section += f"""    &bull; <span style="{AMBER}">{unvalued} record{'s' if unvalued != 1 else ''} pending valuation</span>"""
+
+        value_section += f"""
+    </p>
+
+    <p style="{STAT}">Connect your Discogs to recover more value automatically.</p>
+"""
+        body += value_section
+
+    body += f"""
     {DIVIDER}
 
     <h2 style="{SEC_HEAD}">the hive is buzzing</h2>
@@ -463,6 +500,41 @@ async def send_weekly_wax():
                     "collectors": collectors,
                 }
 
+                # BLOCK 476: Fetch collection value for email
+                try:
+                    records = await db.records.find(
+                        {"user_id": u["id"], "discogs_id": {"$ne": None}},
+                        {"_id": 0, "discogs_id": 1},
+                    ).to_list(5000)
+                    discogs_ids = list({r["discogs_id"] for r in records if r.get("discogs_id")})
+                    total_records = await db.records.count_documents({"user_id": u["id"]})
+                    if discogs_ids:
+                        values = await db.collection_values.find(
+                            {"release_id": {"$in": discogs_ids}}, {"_id": 0}
+                        ).to_list(5000)
+                        val_total = sum(v["median_value"] for v in values if v.get("median_value"))
+                        val_count = len([v for v in values if v.get("median_value")])
+                        data["collection_value"] = {
+                            "total_value": round(val_total, 2),
+                            "valued_count": val_count,
+                            "total_count": total_records,
+                        }
+                        # Top gem
+                        val_map = {v["release_id"]: v for v in values}
+                        best = None
+                        best_val = 0
+                        for r in records:
+                            v = val_map.get(r.get("discogs_id"))
+                            if v and v.get("median_value", 0) > best_val:
+                                best_val = v["median_value"]
+                                rec = await db.records.find_one({"user_id": u["id"], "discogs_id": r["discogs_id"]}, {"_id": 0, "title": 1, "artist": 1})
+                                if rec:
+                                    best = {"title": rec.get("title", ""), "artist": rec.get("artist", ""), "median_value": best_val}
+                        if best:
+                            data["top_gem"] = best
+                except Exception as e:
+                    logger.warning(f"Weekly Wax: collection value fetch failed for {u['id']}: {e}")
+
                 html = _build_weekly_wax_html(data)
                 subject = "your first weekly wax is here."
 
@@ -537,6 +609,25 @@ async def send_test_weekly_wax(user: Dict = Depends(require_auth)):
         "most_wanted_variant": community.get("most_wanted_variant"),
         "collectors": collectors,
     }
+
+    # BLOCK 476: Include collection value in test email
+    records = await db.records.find(
+        {"user_id": user["id"], "discogs_id": {"$ne": None}},
+        {"_id": 0, "discogs_id": 1},
+    ).to_list(5000)
+    discogs_ids = list({r["discogs_id"] for r in records if r.get("discogs_id")})
+    total_records = await db.records.count_documents({"user_id": user["id"]})
+    if discogs_ids:
+        values = await db.collection_values.find(
+            {"release_id": {"$in": discogs_ids}}, {"_id": 0}
+        ).to_list(5000)
+        val_total = sum(v["median_value"] for v in values if v.get("median_value"))
+        val_count = len([v for v in values if v.get("median_value")])
+        data["collection_value"] = {
+            "total_value": round(val_total, 2),
+            "valued_count": val_count,
+            "total_count": total_records,
+        }
 
     html = _build_weekly_wax_html(data)
     success = await send_email(user["email"], "your first weekly wax is here.", html)

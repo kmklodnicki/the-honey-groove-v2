@@ -184,6 +184,7 @@ async def startup_event():
     await db.verification_requests.create_index("user_id")
     await db.verification_requests.create_index("status")
     await db.pulse_data.create_index("release_id", unique=True)
+    await db.recovery_runs.create_index("user_id", unique=True)
     await db.reports.create_index("reporter_user_id")
     await db.reports.create_index([("status", 1), ("target_type", 1)])
 
@@ -204,6 +205,9 @@ async def startup_event():
     logger.info("HoneyGroove API started")
     # Start background variant backfill
     asyncio.create_task(_backfill_color_variants())
+    # BLOCK 476: Start nightly value recovery scheduler
+    from services.value_recovery import schedule_nightly_recovery
+    asyncio.create_task(schedule_nightly_recovery())
 
 
 async def _schedule_hold_auto_reversal():

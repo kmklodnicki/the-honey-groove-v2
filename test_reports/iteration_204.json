@@ -1,0 +1,67 @@
+{
+  "summary": "BLOCK 476 Value Recovery Engine tested successfully. All backend endpoints working (POST /api/valuation/recovery/start, GET /api/valuation/recovery/status). Frontend TreasuryHeader shows 'Recover Values' button when unvalued records exist. Recovery triggers correctly with toast confirmation. Nightly scheduler registered in server.py startup.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_block476_value_recovery.py",
+    "/app/test_reports/pytest/block476_value_recovery_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "BLOCK 476 ✅ - POST /api/valuation/recovery/start endpoint exists and returns 200",
+    "BLOCK 476 ✅ - GET /api/valuation/recovery/status endpoint exists and returns correct structure",
+    "BLOCK 476 ✅ - Recovery endpoints require authentication (401 for unauthenticated)",
+    "BLOCK 476 ✅ - Recovery status contains all expected fields: status, total, valued, recovered, failed",
+    "BLOCK 476 ✅ - Recovery handles empty collections gracefully (status=completed/idle)",
+    "BLOCK 476 ✅ - Double start recovery returns current progress without error",
+    "BLOCK 476 ✅ - schedule_nightly_recovery() registered in server.py startup (line 208-210)",
+    "BLOCK 476 ✅ - TreasuryHeader shows 'Recover Values' button with data-testid='start-recovery-btn'",
+    "BLOCK 476 ✅ - Button click triggers recovery with toast: 'Value Recovery Engine started'",
+    "BLOCK 476 ✅ - Weekly Wax email includes collection_value section (lines 279-284, 505-536)",
+    "BLOCK 476 ✅ - Collection value endpoint returns total_count and valued_count for frontend"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_block476_value_recovery.py"
+  ],
+  "success_rate": {
+    "backend": "100% (11 passed, 1 skipped)",
+    "frontend": "100%"
+  },
+  "test_credentials": {
+    "test_email": "test@example.com",
+    "test_password": "test123"
+  },
+  "seed_data_creation": "Multiple test_recovery_* users created during testing",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "BLOCK 476 Value Recovery Engine fully verified. Backend tests in /app/backend/tests/test_block476_value_recovery.py. Recovery endpoints: POST /api/valuation/recovery/start (triggers background recovery), GET /api/valuation/recovery/status (returns {status, total, valued, recovered, failed}). Frontend shows 'Recover Values' button in TreasuryHeader when totalCount > valuedCount. Recovery progress badge (data-testid='recovery-progress-badge') appears during active recovery.",
+  "verified_features": {
+    "backend_endpoints": {
+      "recovery_start": "PASS - POST /api/valuation/recovery/start returns 200",
+      "recovery_status": "PASS - GET /api/valuation/recovery/status returns correct structure",
+      "auth_required": "PASS - Both endpoints return 401 without auth",
+      "empty_collection": "PASS - Handles users with no records gracefully"
+    },
+    "frontend_ui": {
+      "treasury_header": "PASS - TreasuryHeader visible with data-testid='treasury-header'",
+      "recover_values_button": "PASS - Button with data-testid='start-recovery-btn' visible",
+      "button_click_triggers_recovery": "PASS - Toast shows 'Value Recovery Engine started'",
+      "add_missing_values_button": "PASS - Button with data-testid='add-missing-values-btn' visible"
+    },
+    "weekly_wax_integration": {
+      "collection_value_in_email": "PASS - Lines 279-284: collection_value, total_value, top_gem",
+      "email_template_includes_value": "PASS - Lines 325-351: Conditional section when total_value > 0"
+    },
+    "nightly_scheduler": {
+      "server_registration": "PASS - server.py lines 208-210 registers schedule_nightly_recovery()",
+      "scheduler_function": "PASS - value_recovery.py has async def schedule_nightly_recovery"
+    }
+  }
+}
