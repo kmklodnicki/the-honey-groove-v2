@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import { Card } from '../components/ui/card';
 import AlbumArt from '../components/AlbumArt';
+import UnofficialPill from '../components/UnofficialPill';
+import UnofficialDisclaimer from '../components/UnofficialDisclaimer';
 import SEOHead from '../components/SEOHead';
 import { RarityCard } from '../components/RarityBadge';
 import { useAuth } from '../context/AuthContext';
@@ -98,7 +100,7 @@ export default function VariantReleasePage() {
         <div className="w-full md:w-72 shrink-0">
           <div className="relative aspect-square overflow-hidden bg-stone-200 rounded-2xl shadow-lg shadow-black/5">
             {ov.cover_url ? (
-              <AlbumArt src={ov.cover_url} alt={`${ov.artist} ${ov.album} ${ov.variant} vinyl`} className="w-full h-full object-cover" isUnofficial={ov.is_unofficial} />
+              <AlbumArt src={ov.cover_url} alt={`${ov.artist} ${ov.album} ${ov.variant} vinyl`} className="w-full h-full object-cover" isUnofficial={ov.is_unofficial} formatText={ov.format || ''} />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <Disc className="w-16 h-16 text-honey/30" />
@@ -125,7 +127,10 @@ export default function VariantReleasePage() {
 
         <div className="flex-1 min-w-0">
           <p className="text-sm text-honey-amber font-medium uppercase tracking-wider mb-1">{ov.variant} Pressing</p>
-          <h1 className="text-3xl sm:text-4xl font-heading font-bold leading-tight mb-1" data-testid="variant-title">{ov.album}</h1>
+          <div className="flex items-center gap-3 flex-wrap mb-1">
+            <h1 className="text-3xl sm:text-4xl font-heading font-bold leading-tight" data-testid="variant-title">{ov.album}</h1>
+            {ov.is_unofficial && <UnofficialPill variant="inline" className="!text-[11px] !px-2.5 !py-1" />}
+          </div>
           <p className="text-lg text-muted-foreground mb-4" data-testid="variant-artist">{ov.artist}</p>
 
           {/* Meta tags */}
@@ -172,6 +177,13 @@ export default function VariantReleasePage() {
           </div>
         </div>
       </section>
+
+      {/* Unofficial Release Disclaimer */}
+      {ov.is_unofficial && (
+        <section className="mb-10" data-testid="unofficial-section">
+          <UnofficialDisclaimer />
+        </section>
+      )}
 
       {/* Global Variant Scarcity */}
       {scarcity?.tier && (

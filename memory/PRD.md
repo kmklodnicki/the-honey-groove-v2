@@ -59,7 +59,10 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - Spotify/Apple Music integration — waiting for callback URL
 
 ## Recently Completed (2026-03-12)
-- **v2.8.3 Emergency:** Pill restored to Top-Right (top-2 right-2), AlbumArt safety-net formatText fallback, Route key wrappers (prevents Taylor Swift ghosting), Mini-Groove z-[2000], smooth scroll 80px offset
+- **Interactive Hauls:** Bundle records now include discogs_id + is_unofficial; haul cards clickable → variant popup
+- **Smart Flag:** detect_unofficial() checks format_descriptions, notes, format text for "Unofficial/Bootleg/Counterfeit" keywords
+- **VariantReleasePage:** Added UnofficialDisclaimer section, inline pill, formatText prop
+- **v2.8.3 Emergency:** Pill at Top-Right, AlbumArt safety-net formatText fallback, Route key wrappers, Mini-Groove z-[2000], smooth scroll 80px offset
 - **Merry Swiftmas Hijack Fix:** setData(null) + route key={params} for full re-mount
 - **OAuth /undefined Fix:** key mismatch (authorization_url → auth_url), frontend guard
 - **Variant API is_unofficial:** /vinyl/release/{id} now returns is_unofficial
