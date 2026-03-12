@@ -183,14 +183,11 @@ const AppLayout = ({ children }) => {
   
   return (
     <div className="min-h-screen relative" style={{ background: 'transparent', overflow: 'visible' }}>
-      {user && <Navbar />}
-      {/* BLOCK 585/587: Golden Glassy Banner — Discogs Import */}
+      {/* BLOCK 585/587: Golden Glassy Banner — Discogs Import (relative: pushes navbar + content down) */}
       {showOAuthBanner && (
-        <div className="fixed top-0 left-0 right-0 z-[200000] w-full px-4 py-2.5 flex items-center justify-center gap-3 flex-wrap"
+        <div className="relative w-full px-4 py-2.5 flex items-center justify-center gap-3 flex-wrap z-[200000]"
           style={{
-            background: 'linear-gradient(135deg, rgba(255,223,107,0.92) 0%, rgba(244,181,33,0.90) 50%, rgba(218,165,32,0.88) 100%)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
+            background: 'linear-gradient(135deg, rgba(255,223,107,0.95) 0%, rgba(244,181,33,0.93) 50%, rgba(218,165,32,0.91) 100%)',
             borderBottom: '1px solid rgba(184,134,11,0.3)',
             boxShadow: '0 2px 12px rgba(218,165,32,0.25)',
           }}
@@ -220,6 +217,7 @@ const AppLayout = ({ children }) => {
           </button>
         </div>
       )}
+      {user && <Navbar />}
       {user && !isHome && !hasInlineBack && (
         <button
           onClick={() => navigate(-1)}
