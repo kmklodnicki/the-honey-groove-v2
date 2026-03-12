@@ -17,13 +17,16 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors. Featu
 
 ### OAuth Flow (Discogs)
 - User-initiated "Golden Glassy Banner" for Discogs connection
+- Fixed z-index (`z-[200000]`) to render above navbar (`z-[100000]`)
+- CSS variable `--oauth-banner-h` dynamically pushes navbar down when banner active
+- Honey-gold gradient for high-priority alert appearance
+- Dismiss (X) removes banner and resets layout offset
 - No auto-popups (browser compliance)
-- Banner shows when `discogs_oauth_verified=false` and `discogs_migration_dismissed=true`
 
 ### Collection & Valuation
 - Full collection management with Discogs import/sync
 - Value Recovery Engine (batch valuation)
-- "Add Missing Values" button REMOVED (2026-03-12)
+- "Add Missing Values" button removed (2026-03-12)
 - Dream List feature
 
 ### Feed & Social
@@ -43,14 +46,12 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors. Featu
 - Collector Bingo, Mood Board
 
 ## Known Issues
-- OAuth banner hidden behind fixed navbar (z-index conflict: navbar z-100000 vs banner z-50)
 - Service Worker caching incomplete (BLOCK 321) — only on-demand, not pre-cached on install
 
 ## Blocked
 - Spotify/Apple Music integration — waiting for user's callback URL
 
 ## Backlog (Prioritized)
-- P1: Fix OAuth banner positioning
 - P1: Service Worker pre-caching (BLOCK 321)
 - P2: "Secret Search Feature" (needs user clarification)
 - P2: ProfilePage decomposition

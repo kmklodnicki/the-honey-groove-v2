@@ -108,6 +108,17 @@ const AppLayout = ({ children }) => {
   const needsDiscogs = user && !user.discogs_oauth_verified && user.discogs_migration_dismissed;
   const [dismissedOAuth, setDismissedOAuth] = useState(false);
   const [oauthLoading, setOAuthLoading] = useState(false);
+  const showOAuthBanner = needsDiscogs && !dismissedOAuth;
+
+  // BLOCK 583 FIX: Set CSS variable to push Navbar down when banner is active
+  useEffect(() => {
+    if (showOAuthBanner) {
+      document.documentElement.style.setProperty('--oauth-banner-h', '49px');
+    } else {
+      document.documentElement.style.setProperty('--oauth-banner-h', '0px');
+    }
+    return () => document.documentElement.style.setProperty('--oauth-banner-h', '0px');
+  }, [showOAuthBanner]);
 
   // BLOCK 583: User-initiated OAuth launch — must be direct onClick, not auto-popup
   const handleOAuthClick = async () => {
@@ -150,29 +161,30 @@ const AppLayout = ({ children }) => {
     <div className="min-h-screen relative" style={{ background: 'transparent', overflow: 'visible' }}>
       {user && <Navbar />}
       {/* BLOCK 583: Golden Glassy Banner — Secure Connection Required */}
-      {needsDiscogs && !dismissedOAuth && (
-        <div className="sticky top-0 z-50 w-full px-4 py-2.5 flex items-center justify-center gap-3"
+      {showOAuthBanner && (
+        <div className="fixed top-0 left-0 right-0 z-[200000] w-full px-4 py-2.5 flex items-center justify-center gap-3"
           style={{
-            background: 'rgba(252,248,232,0.85)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            borderBottom: '1px solid rgba(218,165,32,0.2)',
+            background: 'linear-gradient(135deg, rgba(255,223,107,0.92) 0%, rgba(244,181,33,0.90) 50%, rgba(218,165,32,0.88) 100%)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            borderBottom: '1px solid rgba(184,134,11,0.3)',
+            boxShadow: '0 2px 12px rgba(218,165,32,0.25)',
           }}
           data-testid="oauth-glassy-banner"
         >
-          <Shield className="w-4 h-4 text-amber-600 shrink-0" />
-          <span className="text-sm text-amber-800 font-medium">Secure Connection Required: Tap here to verify your Discogs identity.</span>
+          <Shield className="w-4 h-4 text-amber-900 shrink-0" />
+          <span className="text-sm text-amber-900 font-semibold">Secure Connection Required — Verify your Discogs identity</span>
           <button
             onClick={handleOAuthClick}
             disabled={oauthLoading}
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all hover:scale-105 disabled:opacity-60"
-            style={{ background: 'linear-gradient(135deg, #FFD700, #F4B521)', color: '#1A1A1A', boxShadow: '0 0 16px rgba(255,215,0,0.25)' }}
+            style={{ background: '#1A1A1A', color: '#FFD700', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}
             data-testid="oauth-banner-connect"
           >
             {oauthLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Shield className="w-3.5 h-3.5" />}
             Connect Discogs
           </button>
-          <button onClick={() => setDismissedOAuth(true)} className="text-amber-600/40 hover:text-amber-800 transition-colors ml-1" data-testid="oauth-banner-dismiss">
+          <button onClick={() => setDismissedOAuth(true)} className="text-amber-900/50 hover:text-amber-900 transition-colors ml-1" data-testid="oauth-banner-dismiss">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -180,7 +192,8 @@ const AppLayout = ({ children }) => {
       {user && !isHome && !hasInlineBack && (
         <button
           onClick={() => navigate(-1)}
-          className="fixed z-40 flex items-center justify-center w-8 h-8 rounded-full text-stone-400/70 hover:text-stone-600 hover:bg-stone-200/40 transition-all top-[56px] md:top-[94px] left-3 md:left-5"
+          className="fixed z-40 flex items-center justify-center w-8 h-8 rounded-full text-stone-400/70 hover:text-stone-600 hover:bg-stone-200/40 transition-all left-3 md:left-5"
+          style={{ top: `calc(var(--oauth-banner-h, 0px) + 56px)` }}
           data-testid="global-back-btn"
           aria-label="Go back"
         >
