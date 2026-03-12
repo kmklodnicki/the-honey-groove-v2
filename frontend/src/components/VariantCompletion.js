@@ -18,7 +18,8 @@ import axios from 'axios';
 import { toast } from 'sonner';
 import DuplicateConfirmationModal from './DuplicateConfirmationModal';
 
-const API = process.env.REACT_APP_BACKEND_URL + '/api';
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
+const API = `${BACKEND_URL}/api`;
 
 const ProgressBar = ({ pct }) => (
   <div className="w-full h-3 bg-stone-200/60 rounded-full overflow-hidden" data-testid="completion-progress-bar">

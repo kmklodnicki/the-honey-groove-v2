@@ -12,7 +12,8 @@ import { useVariantModal } from '../context/VariantModalContext';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 
-const API = process.env.REACT_APP_BACKEND_URL + '/api';
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
+const API = `${BACKEND_URL}/api`;
 
 function slugify(text) {
   return (text || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');

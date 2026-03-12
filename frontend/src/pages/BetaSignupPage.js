@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Loader2 } from 'lucide-react';
 import { trackEvent } from '../utils/analytics';
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = process.env.REACT_APP_BACKEND_URL || window.location.origin;
 
 const FEATURE_OPTIONS = [
   'Tracking my collection',

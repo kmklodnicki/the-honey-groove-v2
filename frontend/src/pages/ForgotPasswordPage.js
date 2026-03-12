@@ -8,7 +8,7 @@ import { ArrowLeft, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 
-const API = process.env.REACT_APP_BACKEND_URL;
+const API = process.env.REACT_APP_BACKEND_URL || window.location.origin;
 
 const ForgotPasswordPage = () => {
   const [identifier, setIdentifier] = useState('');

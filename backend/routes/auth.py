@@ -172,7 +172,9 @@ async def login(credentials: UserLogin, request: Request):
     identifier = credentials.email.strip().lower()
     password = credentials.password  # Never strip passwords — hash must match exactly
 
-    logger.info(f"LOGIN ATTEMPT: identifier='{identifier}' password_type={type(password).__name__} password_len={len(password)}")
+    # DEBUG: Log DB connection info
+    user_count = await db.users.count_documents({})
+    logger.info(f"LOGIN DEBUG: identifier='{identifier}' total_users_in_db={user_count} db_name={db.name}")
 
     # Try exact email match first
     lookup_method = "exact_email"

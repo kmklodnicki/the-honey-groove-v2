@@ -7,7 +7,8 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import DuplicateConfirmationModal from './DuplicateConfirmationModal';
 
-const API = process.env.REACT_APP_BACKEND_URL + '/api';
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
+const API = `${BACKEND_URL}/api`;
 
 export default function VariantActions({ variant }) {
   const { user, token } = useAuth();
