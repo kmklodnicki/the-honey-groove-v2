@@ -47,13 +47,22 @@ for r in [auth_router, hive_router, collection_router, honeypot_router,
           weekly_wax_router, image_proxy_router]:
     app.include_router(r, prefix="/api")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
+cors_env = os.environ.get("CORS_ORIGINS", "")
+if cors_env == "*":
+    cors_origins = ["*"]
+elif cors_env:
+    cors_origins = [o.strip().rstrip("/") for o in cors_env.split(",") if o.strip()]
+else:
+    cors_origins = [
         "https://thehoneygroove.com",
+        "https://www.thehoneygroove.com",
         "https://daily-prompt-share.preview.emergentagent.com",
         "http://localhost:3000",
-    ],
+    ]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
