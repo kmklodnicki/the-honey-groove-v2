@@ -10,18 +10,18 @@ Premium social platform for vinyl collectors. Features include collection manage
 
 ## What's Been Implemented
 
-### BLOCKs 575-578: Notifications + OAuth Toast + Gold Shield (Completed Mar 12, 2026)
-- **575/578**: Notification pagination — backend `skip`/`limit` params, frontend "View More" glassy button, Loader2 spinner, "You're all caught up!" empty state
-- **576**: OAuth popup → high-priority sonner toast with "Connect Now" action (2s delay, navigates to /settings)
-- **577**: Removed all emoji fallbacks (👑, ✅). Founder SVG shield inline (18px, 3-stop gradient). GoldenHiveShield 34px. Katie user ID hard-coded bypass.
+### BLOCK 581: Global Verification Sync (Completed Mar 12, 2026)
+- Universal `VerifiedShield` component at `/components/VerifiedShield.js`
+- Integrated in Feed (18px), Listings (16px), Profile (34px, 18px founder inline)
+- Portal tooltip on hover/tap with z-index 9999 — "Golden Hive ID" or "Founder" text
+- All emoji fallbacks (👑, 🍯, ✅ checkmark) removed from feed/listing username areas
 
+### BLOCKs 575-578: Notifications + OAuth Toast + Gold Shield (Completed Mar 12, 2026)
 ### BLOCKs 573-574: OAuth Force-Trigger + Image Pre-Fetch (Completed Mar 12, 2026)
 ### BLOCKs 571-572: Force Refresh + Instant Failsafe (Completed Mar 12, 2026)
-### BLOCKs 566-570: Instant Art Pipeline + Identity Sync (Completed Mar 12, 2026)
-### BLOCKs 563-565: Mobile Tooltip Fix + Silk Image (Completed Mar 12, 2026)
-### BLOCKs 559/561: Portal Tooltips (Completed Mar 12, 2026)
-### BLOCKs 550-556: Tooltip & Card Cleanup (Completed Mar 12, 2026)
-### BLOCKs 541-545: Profile & Treasury Overhaul (Completed Mar 12, 2026)
+### BLOCKs 566-570: Instant Art + Identity Sync (Completed Mar 12, 2026)
+### BLOCKs 563-565: Mobile Tooltip + Silk Image (Completed Mar 12, 2026)
+### BLOCKs 541-556: Profile/Treasury/Tooltip Overhaul (Completed Mar 12, 2026)
 ### BLOCK 476: Value Recovery Engine (Completed Mar 12, 2026)
 
 ## Prioritized Backlog
@@ -39,14 +39,10 @@ Premium social platform for vinyl collectors. Features include collection manage
 - Pro memberships, Buyer Protection, Instagram sharing
 - Backend search filters, Admin-editable "New Music Friday"
 
-## Test Credentials
-- User: test_recovery@test.com / test123
-- Katie: kmklodnicki@gmail.com (user ID: 4072aaa7-1171-4cd2-9c8f-20dfca8fdc58)
-
 ## Key Files
-- Frontend: /app/frontend/src/components/Navbar.js (BLOCK 575/578 notification pagination)
-- Frontend: /app/frontend/src/App.js (BLOCK 576 toast)
-- Frontend: /app/frontend/src/pages/ProfilePage.js (BLOCK 577 Gold Shield)
-- Frontend: /app/frontend/src/components/AlbumArt.js (BLOCKs 565-574)
-- Backend: /app/backend/routes/notifications.py (BLOCK 575 skip/limit)
-- Backend: /app/backend/server.py (BLOCK 571 admin override by user ID)
+- /app/frontend/src/components/VerifiedShield.js (BLOCK 581 — universal component)
+- /app/frontend/src/pages/HivePage.js (feed integration)
+- /app/frontend/src/components/ListingDetailModal.js (listing integration)
+- /app/frontend/src/pages/ProfilePage.js (profile integration)
+- /app/frontend/src/components/AlbumArt.js (instant art pipeline)
+- /app/backend/services/value_recovery.py (recovery engine)
