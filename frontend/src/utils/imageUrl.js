@@ -16,7 +16,7 @@ const enforceHttps = (url) => {
  * Build a proxy URL for an image to bypass CORS/regional blocks.
  */
 export function proxyImageUrl(src) {
-  if (!src) return null;
+  if (!src || typeof src !== 'string') return null;
   return `${API}/image-proxy?url=${encodeURIComponent(enforceHttps(src))}`;
 }
 
@@ -28,6 +28,9 @@ export function proxyImageUrl(src) {
  */
 export function resolveImageUrl(src) {
   if (!src) return null;
+  // Type safety: handle objects (e.g. {url: "..."}) and non-strings gracefully
+  if (typeof src === 'object') return resolveImageUrl(src.url || src.src || null);
+  if (typeof src !== 'string') return null;
 
   // Case 2: Old URL containing our serve path but pointing to a different domain
   const serveIdx = src.indexOf(SERVE_PATH);

@@ -368,7 +368,7 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
         </div>
         {post.photo_url && (
           <PhotoLightbox
-            photos={[{ url: post.photo_url }]}
+            photos={[post.photo_url]}
             initialIndex={0}
             open={lightboxOpen}
             onClose={() => setLightboxOpen(false)}
@@ -441,7 +441,7 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
           )}
         </div>
         {photoUrl && (
-          <PhotoLightbox photos={[{ url: photoUrl }]} initialIndex={0} open={lightboxOpen} onClose={() => setLightboxOpen(false)} />
+          <PhotoLightbox photos={[photoUrl]} initialIndex={0} open={lightboxOpen} onClose={() => setLightboxOpen(false)} />
         )}
       </div>
     );
@@ -487,7 +487,7 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
         )}
       </div>
       {photoUrl && (
-        <PhotoLightbox photos={[{ url: photoUrl }]} initialIndex={0} open={lightboxOpen} onClose={() => setLightboxOpen(false)} />
+        <PhotoLightbox photos={[photoUrl]} initialIndex={0} open={lightboxOpen} onClose={() => setLightboxOpen(false)} />
       )}
     </div>
   );
