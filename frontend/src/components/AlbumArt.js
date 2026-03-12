@@ -4,15 +4,23 @@ import { resolveImageUrl, proxyImageUrl } from '../utils/imageUrl';
 
 const FALLBACK = '/vinyl-placeholder.svg';
 const ART_CACHE_NAME = 'honeygroove-album-art-v1';
+// BLOCK 571: Cache-bust version — forces fresh asset downloads
+const ASSET_VERSION = '2.3.9';
 
 // BLOCK 567: Request WebP variant when possible
 const toWebP = (url) => {
   if (!url) return url;
-  // Discogs CDN supports format param
   if (url.includes('discogs') && !url.includes('.webp')) {
     return url.replace(/\.(jpe?g|png)$/i, '.webp');
   }
   return url;
+};
+
+// BLOCK 571: Append cache-bust version to image URLs
+const bustCache = (url) => {
+  if (!url) return url;
+  const sep = url.includes('?') ? '&' : '?';
+  return `${url}${sep}v=${ASSET_VERSION}`;
 };
 
 // BLOCK 567: Blob caching via CacheStorage API
@@ -50,6 +58,8 @@ const AlbumArt = ({
   const webpSrc = toWebP(resolvedSrc);
   const [status, setStatus] = useState(resolvedSrc ? 'loading' : 'error');
   const [displaySrc, setDisplaySrc] = useState(null);
+  // BLOCK 572: Track whether thumb has been shown as instant preview
+  const [showThumb, setShowThumb] = useState(false);
   const blurSrc = blurDataUrl || thumbSrc || null;
   const imgRef = useRef(null);
 
@@ -57,8 +67,8 @@ const AlbumArt = ({
     const resolved = resolveImageUrl(src);
     if (!resolved) { setStatus('error'); return; }
     setStatus('loading');
+    setShowThumb(false);
 
-    // BLOCK 567: Try CacheStorage first for 0ms render on back-navigation
     let cancelled = false;
     const webp = toWebP(resolved);
     getCachedArt(webp || resolved).then((cached) => {
@@ -67,41 +77,53 @@ const AlbumArt = ({
         setDisplaySrc(cached);
         setStatus('loaded');
       } else {
-        setDisplaySrc(webp || resolved);
+        setDisplaySrc(bustCache(webp || resolved));
       }
     });
-    return () => { cancelled = true; };
+
+    // BLOCK 572: If hi-res hasn't loaded in 50ms, show the thumb instantly
+    const thumbTimer = setTimeout(() => {
+      if (!cancelled) setShowThumb(true);
+    }, 50);
+
+    return () => { cancelled = true; clearTimeout(thumbTimer); };
   }, [src]);
 
+  // BLOCK 572: 8s timeout → show shimmer indefinitely (not broken icon)
   useEffect(() => {
     if (status !== 'loading') return;
-    const t = setTimeout(() => setStatus(s => s === 'loading' ? 'error' : s), 8000);
+    const t = setTimeout(() => setStatus(s => s === 'loading' ? 'shimmer' : s), 8000);
     return () => clearTimeout(t);
   }, [status]);
 
+  // BLOCK 572: "shimmer" state = image failed but we show glass shimmer, not broken icon
+  const isLoading = status === 'loading' || status === 'shimmer';
+
   return (
-    // BLOCK 568: Zero-jitter — locked aspect-square is set by parent, overflow hidden
     <div className={`relative overflow-hidden ${className}`} style={style} {...props}>
-      {/* BLOCK 565: Glassy shimmer skeleton while loading */}
-      {status === 'loading' && (
-        blurSrc ? (
-          <div className="absolute inset-0">
-            <img
-              src={blurSrc}
-              alt=""
-              aria-hidden="true"
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{ filter: 'blur(20px)', transform: 'scale(1.2)' }}
-              draggable={false}
-            />
+      {/* Loading state: shimmer + optional thumb preview */}
+      {isLoading && (
+        <>
+          {/* BLOCK 572: Show thumb instantly after 50ms for immediate visibility */}
+          {showThumb && blurSrc ? (
+            <div className="absolute inset-0">
+              <img
+                src={blurSrc}
+                alt=""
+                aria-hidden="true"
+                className="absolute inset-0 w-full h-full object-cover"
+                style={{ filter: 'blur(20px)', transform: 'scale(1.2)' }}
+                draggable={false}
+              />
+              <div className="absolute inset-0 silk-shimmer" />
+            </div>
+          ) : (
             <div className="absolute inset-0 silk-shimmer" />
-          </div>
-        ) : (
-          <div className="absolute inset-0 silk-shimmer" />
-        )
+          )}
+        </>
       )}
 
-      {/* BLOCK 565: Error state — charcoal vinyl icon */}
+      {/* Error state: charcoal vinyl icon — BLOCK 572: never show browser broken icon */}
       {status === 'error' ? (
         <div
           className="w-full h-full flex items-center justify-center honey-fade-in"
@@ -109,18 +131,16 @@ const AlbumArt = ({
         >
           <Disc className="w-10 h-10" style={{ color: '#4A4A4A', opacity: 0.35 }} />
         </div>
-      ) : (
-        /* BLOCK 565/567: Smooth 0.4s fade-in, priority loading for above-the-fold */
+      ) : status !== 'shimmer' ? (
         <img
           ref={imgRef}
-          src={displaySrc || (!resolvedSrc ? FALLBACK : webpSrc || resolvedSrc)}
+          src={displaySrc || (!resolvedSrc ? FALLBACK : bustCache(webpSrc || resolvedSrc))}
           alt={alt}
           className={`w-full h-full object-cover transition-opacity ease-in-out ${status === 'loaded' ? 'opacity-100' : 'opacity-0'}`}
           style={{ transitionDuration: '0.4s' }}
           crossOrigin="anonymous"
           onLoad={async (e) => {
             setStatus('loaded');
-            // BLOCK 567: Cache the loaded image for instant back-nav
             if (webpSrc && 'caches' in window) {
               try {
                 const resp = await fetch(e.target.src, { mode: 'cors' });
@@ -129,13 +149,13 @@ const AlbumArt = ({
             }
           }}
           onError={(e) => {
+            // BLOCK 572: Cascade fallback — proxy → original format → error (never browser broken icon)
             if (!e.target.dataset.proxied && resolvedSrc) {
               e.target.dataset.proxied = '1';
-              e.target.src = proxyImageUrl(src);
+              e.target.src = bustCache(proxyImageUrl(src));
             } else if (!e.target.dataset.webpFailed && webpSrc !== resolvedSrc) {
-              // Fall back from WebP to original format
               e.target.dataset.webpFailed = '1';
-              e.target.src = resolvedSrc;
+              e.target.src = bustCache(resolvedSrc);
             } else {
               setStatus('error');
             }
@@ -145,12 +165,12 @@ const AlbumArt = ({
           loading={priority ? 'eager' : 'lazy'}
           {...(priority ? { fetchPriority: 'high' } : {})}
         />
-      )}
+      ) : null}
     </div>
   );
 };
 
-// BLOCK 567: Predictive prefetch — call from parent to preload URLs 2 rows ahead
+// BLOCK 567: Predictive prefetch
 export const prefetchArt = (urls) => {
   if (!urls?.length) return;
   urls.forEach((url) => {
@@ -160,10 +180,9 @@ export const prefetchArt = (urls) => {
     const link = document.createElement('link');
     link.rel = 'prefetch';
     link.as = 'image';
-    link.href = webp || resolved;
+    link.href = bustCache(webp || resolved);
     link.crossOrigin = 'anonymous';
     document.head.appendChild(link);
-    // Cleanup after 30s
     setTimeout(() => link.remove(), 30000);
   });
 };
