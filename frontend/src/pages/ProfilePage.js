@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -33,6 +33,103 @@ import { EmptyState } from '../components/EmptyState';
 import WaxReportPin from '../components/WaxReportPin';
 import BackToTop from '../components/BackToTop';
 import { useAPI } from '../hooks/useAPI';
+import ReactDOM from 'react-dom';
+
+// BLOCK 559/561: Golden Hive Shield — prominent badge with portal tooltip
+const GoldenHiveShield = () => {
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+  const triggerRef = useRef(null);
+  const tooltipRef = useRef(null);
+  const isTouchDevice = typeof window !== 'undefined' && 'ontouchstart' in window;
+
+  useEffect(() => {
+    if (!open || !triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const tipW = 240;
+    let left = rect.left + rect.width / 2 - tipW / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - tipW - 8));
+    // Smart flip: prefer above, flip below if no space
+    const top = rect.top > 80 ? rect.top - 8 : rect.bottom + 8;
+    setPos({ top, left, above: rect.top > 80 });
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const dismiss = (e) => {
+      if (triggerRef.current?.contains(e.target)) return;
+      if (tooltipRef.current?.contains(e.target)) return;
+      setOpen(false);
+    };
+    document.addEventListener('mousedown', dismiss);
+    document.addEventListener('touchstart', dismiss);
+    return () => {
+      document.removeEventListener('mousedown', dismiss);
+      document.removeEventListener('touchstart', dismiss);
+    };
+  }, [open]);
+
+  return (
+    <>
+      <button
+        ref={triggerRef}
+        type="button"
+        className="mt-1 inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-full border golden-shimmer cursor-default focus:outline-none w-full transition-transform hover:scale-[1.02]"
+        style={{ borderColor: 'rgba(218,165,32,0.5)', background: 'rgba(255,215,0,0.06)' }}
+        onMouseEnter={() => !isTouchDevice && setOpen(true)}
+        onMouseLeave={() => !isTouchDevice && setOpen(false)}
+        onClick={() => isTouchDevice && setOpen(o => !o)}
+        data-testid="golden-hive-badge"
+      >
+        {/* BLOCK 559: Prominent Gold Shield — 28px, multi-stop metallic gradient, embossed */}
+        <svg className="shrink-0" width="28" height="28" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.2))' }}>
+          <defs>
+            <linearGradient id="goldShieldLg" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#FFE066"/>
+              <stop offset="30%" stopColor="#FFD700"/>
+              <stop offset="60%" stopColor="#DAA520"/>
+              <stop offset="100%" stopColor="#B8860B"/>
+            </linearGradient>
+          </defs>
+          <path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" fill="url(#goldShieldLg)" stroke="#8B6914" strokeWidth="0.5"/>
+          <path d="M9.5 12l2 2 3.5-4" stroke="#1A1A1A" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+        </svg>
+        <span className="text-sm font-bold" style={{ letterSpacing: '-0.01em', color: '#2C2C2C' }}>
+          Golden Hive Verified
+        </span>
+      </button>
+      {open && ReactDOM.createPortal(
+        <div
+          ref={tooltipRef}
+          className="fixed px-3.5 py-2.5 rounded-lg max-w-[240px] whitespace-normal pointer-events-auto animate-in fade-in-0 zoom-in-95 duration-150"
+          style={{
+            ...(pos.above ? { bottom: `${window.innerHeight - pos.top}px` } : { top: pos.top }),
+            left: pos.left,
+            zIndex: 9999,
+            background: '#1A1A1A',
+            color: '#fff',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
+            borderRadius: '10px',
+          }}
+          data-testid="golden-hive-tooltip"
+        >
+          {isTouchDevice && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setOpen(false); }}
+              className="absolute top-1.5 right-1.5 p-0.5 rounded-full hover:bg-white/20 transition-colors sm:hidden"
+              data-testid="golden-hive-tooltip-close"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          )}
+          <p className="font-bold text-xs mb-1">Golden Hive ID</p>
+          <p className="text-[11px] leading-relaxed opacity-90">This user has been officially ID verified. They are a trusted member of The Honey Groove community.</p>
+        </div>,
+        document.body
+      )}
+    </>
+  );
+};
 
 const ProfilePage = () => {
   usePageTitle('Profile');
@@ -682,38 +779,9 @@ const ProfilePage = () => {
                 )}
               </>
             )}
-            {/* BLOCK 515/517/523: Golden Hive Verified badge — with tooltip + mobile touch */}
+            {/* BLOCK 559/561: Golden Hive Verified — Prominent Gold Shield with portal tooltip */}
             {profile.golden_hive_verified && (
-              <TooltipProvider delayDuration={200}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      type="button"
-                      className="mt-0.5 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full border border-amber-500/60 golden-shimmer cursor-default focus:outline-none w-full"
-                      onClick={(e) => e.preventDefault()}
-                      data-testid="golden-hive-badge"
-                    >
-                      <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none">
-                        <defs>
-                          <linearGradient id="goldShieldR" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stopColor="#FFD700"/>
-                            <stop offset="100%" stopColor="#B8860B"/>
-                          </linearGradient>
-                        </defs>
-                        <path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" fill="url(#goldShieldR)" stroke="#8B6914" strokeWidth="0.5"/>
-                        <path d="M9.5 12l2 2 3.5-4" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-                      </svg>
-                      <span className="text-xs font-bold" style={{ letterSpacing: '-0.01em', color: '#2C2C2C' }}>
-                        Golden Hive Verified
-                      </span>
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="max-w-[220px] px-3 py-2.5" style={{ background: '#1A1A1A', color: '#fff', borderRadius: '8px' }}>
-                    <p className="font-bold text-xs mb-1">Golden Hive ID</p>
-                    <p className="text-[11px] leading-relaxed opacity-90">This user has been officially ID verified. They are a trusted member of The Honey Groove community.</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <GoldenHiveShield />
             )}
           </div>
         </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -65,38 +66,72 @@ const HoneycombIcon = ({ className }) => (
   </svg>
 );
 
-// BLOCK 553: Mobile-friendly tooltip — tap-to-open, tap-outside-to-close
+// BLOCK 553/561: Mobile-friendly portal tooltip — tap-to-open, tap-outside-to-close, collision-aware
 const MobileTooltip = ({ children, text, side = 'top', testId }) => {
   const [open, setOpen] = useState(false);
-  const ref = useRef(null);
+  const [pos, setPos] = useState({ top: 0, left: 0, flip: false });
+  const triggerRef = useRef(null);
+  const tooltipRef = useRef(null);
   const isTouchDevice = typeof window !== 'undefined' && 'ontouchstart' in window;
 
+  // Position calculation + collision detection
+  useEffect(() => {
+    if (!open || !triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    const tipW = 220;
+    let left = rect.left + rect.width / 2 - tipW / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - tipW - 8));
+
+    // Smart flip: if near bottom, show above; if near top, show below
+    const preferTop = side === 'top';
+    const spaceAbove = rect.top;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const flip = preferTop ? spaceAbove < 60 : spaceBelow < 60;
+    const top = flip
+      ? (preferTop ? rect.bottom + 8 : rect.top - 8)
+      : (preferTop ? rect.top - 8 : rect.bottom + 8);
+
+    setPos({ top, left, flip });
+  }, [open, side]);
+
+  // Click-outside dismiss
   useEffect(() => {
     if (!open) return;
-    const handleClickOutside = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    const dismiss = (e) => {
+      if (triggerRef.current?.contains(e.target)) return;
+      if (tooltipRef.current?.contains(e.target)) return;
+      setOpen(false);
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('touchstart', handleClickOutside);
+    document.addEventListener('mousedown', dismiss);
+    document.addEventListener('touchstart', dismiss);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
+      document.removeEventListener('mousedown', dismiss);
+      document.removeEventListener('touchstart', dismiss);
     };
   }, [open]);
 
   return (
-    <div ref={ref} className="relative inline-flex"
+    <div ref={triggerRef} className="relative inline-flex"
       onMouseEnter={() => !isTouchDevice && setOpen(true)}
       onMouseLeave={() => !isTouchDevice && setOpen(false)}
       onClick={() => isTouchDevice && setOpen(o => !o)}
     >
       {children}
-      {open && (
+      {open && ReactDOM.createPortal(
         <div
-          className={`absolute z-[999] px-3 py-2 rounded-lg text-[11px] leading-relaxed max-w-[220px] whitespace-normal pointer-events-auto ${
-            side === 'top' ? 'bottom-full left-1/2 -translate-x-1/2 mb-2' : 'top-full left-1/2 -translate-x-1/2 mt-2'
-          }`}
-          style={{ background: '#1A1A1A', color: '#fff', boxShadow: '0 4px 16px rgba(0,0,0,0.2)' }}
+          ref={tooltipRef}
+          className="fixed px-3 py-2 rounded-lg text-[11px] leading-relaxed max-w-[220px] whitespace-normal pointer-events-auto animate-in fade-in-0 zoom-in-95 duration-150"
+          style={{
+            top: pos.flip && side === 'top' ? pos.top : undefined,
+            bottom: !pos.flip && side === 'top' ? `${window.innerHeight - pos.top}px` : undefined,
+            ...(pos.flip && side !== 'top' ? { bottom: `${window.innerHeight - pos.top}px` } : {}),
+            ...(!pos.flip && side !== 'top' ? { top: pos.top } : {}),
+            left: pos.left,
+            zIndex: 9999,
+            background: '#1A1A1A',
+            color: '#fff',
+            boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
+          }}
           data-testid={testId}
         >
           {isTouchDevice && (
@@ -109,7 +144,8 @@ const MobileTooltip = ({ children, text, side = 'top', testId }) => {
             </button>
           )}
           {text}
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
