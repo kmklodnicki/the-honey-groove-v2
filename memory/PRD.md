@@ -100,8 +100,7 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - P3: Record Store Day Proxy, Safari animation, Pro memberships, backend search filters, Instagram sharing, dynamic New Music Friday
 
 ## Credentials
-- Admin (original): `kmklodnicki@gmail.com` / username: `katieintheafterglow` / `admin_password` (UID: `4072aaa7-1171-4cd2-9c8f-20dfca8fdc58`)
-- Admin (new): `katie@thehoneygroove.com` / username: `katie` / `password123` (admin, founder)
+- Master Admin: `kmklodnicki@gmail.com` / username: `katie` / `password123` (UID: `4072aaa7-1171-4cd2-9c8f-20dfca8fdc58`)
 - Test user: `test@example.com` / username: `testuser1` / `test123`
 - Debug user: `testuser_debug@test.com` / username: `testuser_debug` / `testpass`
 - Unofficial records: Sirens [24521972], Tristeza De Verano [31878166], Sleepless Nights [31882048], A Night In Paris [31957001], Merry Swiftmas [32442177], Shiny Things [33531981], Beautiful Eyes [27971034]
