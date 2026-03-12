@@ -63,6 +63,7 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 ## Recently Completed (2026-03-12)
 - **P0 Login Fix v2 (Comprehensive):** Removed dangerous `password.strip()`, added username-based login (4-step lookup: exact email → regex email → exact username → regex username), fixed regex injection (re.escape), email normalization on registration, detailed server-side login logging, admin login-diagnostic endpoint, frontend updated to accept "Email or Username". All 15 tests passed.
 - **PhotoLightbox TypeError Fix:** Fixed `src.indexOf is not a function` crash in `resolveImageUrl` by adding type-safety guards (handles objects, null, non-strings). Fixed PostCards.js passing `{url: "..."}` objects instead of string URLs to PhotoLightbox.
+- **Custom Markdown Parser:** MentionText now supports `*bold*` and `/italic/` formatting alongside @mentions and URL auto-linking. URLs with slashes are not broken (URLs are extracted first, formatting applied only to plain text fragments).
 - **Uniform Collection Cards:** Fixed RecordCard — `line-clamp-2` title in `min-h-[2.5rem]`, `line-clamp-1` artist in `min-h-[1.25rem]`, fixed badge row, `mt-auto` Spin Now button. Perfect horizontal alignment across grid.
 - **Photo Upload in Modals:** Now Spinning and Haul modals have "Add a photo" Camera button, thumbnail preview, upload to `/api/upload`, photo_url/image_url sent with post.
 - **Feed Photo Display:** NowSpinningCard and NewHaulCard show user-uploaded photos prominently above album metadata. Falls back to standard album cover if no photo.

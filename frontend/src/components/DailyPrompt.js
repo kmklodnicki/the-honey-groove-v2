@@ -6,6 +6,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Textarea } from './ui/textarea';
+import MentionText from './MentionText';
 import { Loader2, Disc, Share2, Send, Download, Search, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
@@ -216,7 +217,7 @@ useEffect(() => {
                     </div>
                     <p className="text-sm font-medium truncate">{currentResp.record_title}</p>
                     <p className="text-xs text-muted-foreground truncate">{currentResp.record_artist}</p>
-                    {currentResp.caption && <p className="text-xs text-stone-600 mt-1 italic line-clamp-2">{currentResp.caption}</p>}
+                    {currentResp.caption && <p className="text-xs text-stone-600 mt-1 italic line-clamp-2"><MentionText text={currentResp.caption} /></p>}
                   </div>
                 </Link>
                 {/* Navigation arrows */}

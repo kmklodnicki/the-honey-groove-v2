@@ -606,7 +606,7 @@ const VinylMoodCard = ({ post, onAlbumClick, imgPriority }) => {
           </div>
         </AlbumLink>
       )}
-      {post.caption && <p className="text-sm mt-2">{post.caption}</p>}
+      {post.caption && <p className="text-sm mt-2"><MentionText text={post.caption} /></p>}
     </div>
   );
 };
@@ -640,7 +640,7 @@ const DailyPromptPostCard = ({ post, imgPriority }) => (
         </div>
       </div>
     </div>
-    {post.caption && <p className="text-sm mt-3">{post.caption}</p>}
+    {post.caption && <p className="text-sm mt-3"><MentionText text={post.caption} /></p>}
   </div>
 );
 
