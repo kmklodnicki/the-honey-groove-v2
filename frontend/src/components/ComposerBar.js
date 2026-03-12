@@ -11,7 +11,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '../components/ui/select';
-import { Disc, Package, Search, Loader2, X, Feather, ImagePlus, Tag, Shuffle, ChevronDown, Music, RefreshCw } from 'lucide-react';
+import { Disc, Package, Search, Loader2, X, Feather, ImagePlus, Tag, Shuffle, ChevronDown, Music, RefreshCw, Camera } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import AlbumArt from './AlbumArt';
@@ -106,6 +106,8 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     setIsoDiscogsQuery(''); setIsoDiscogsResults([]); setIsoSelectedRelease(null); setIsoManualMode(false); setIsoIntent(null);
     setNoteText(''); setNoteRecordId(''); setNoteShowRecordPicker(false); setNoteImageUrl(''); setNoteUploading(false);
     setRandRecord(null); setRandCaption(''); setRandLoading(false); setRandAnimating(false);
+    setPostPhoto(null); setPostPhotoPreview(null);
+    if (postPhotoInputRef.current) postPhotoInputRef.current.value = '';
   };
   const handlePhotoSelect = (e) => {
     const file = e.target.files[0];
@@ -310,16 +312,30 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     finally { setSubmitting(false); }
   };
 
+  // Upload photo helper
+  const uploadPostPhoto = async () => {
+    if (!postPhoto) return null;
+    const formData = new FormData();
+    formData.append('file', postPhoto);
+    const res = await axios.post(`${API}/upload`, formData, {
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data.url;
+  };
+
   // Submit handlers
   const submitNowSpinning = async () => {
     if (!spinRecordId) { toast.error('select a record first.'); return; }
     setSubmitting(true);
     try {
+      let photoUrl = null;
+      if (postPhoto) photoUrl = await uploadPostPhoto();
       await axios.post(`${API}/composer/now-spinning`, {
         record_id: spinRecordId,
         track: spinTrack || null,
         caption: spinCaption || null,
         mood: spinMood || null,
+        photo_url: photoUrl,
       }, { headers: { Authorization: `Bearer ${token}` }});
       toast.success('now spinning posted.');
       trackEvent('now_spinning_posted');
@@ -332,8 +348,11 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     if (haulItems.length === 0) { toast.error('add at least one record.'); return; }
     setSubmitting(true);
     try {
+      let photoUrl = null;
+      if (postPhoto) photoUrl = await uploadPostPhoto();
       await axios.post(`${API}/composer/new-haul`, {
         store_name: haulStoreName || null, caption: haulCaption || null, items: haulItems,
+        image_url: photoUrl,
       }, { headers: { Authorization: `Bearer ${token}` }});
       toast.success('haul posted.');
       trackEvent('haul_posted');
@@ -654,6 +673,25 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                 className="resize-none"
                 style={{ borderColor: 'rgba(200,134,26,0.5)' }}
                 rows={2} data-testid="spin-caption-input" />
+
+              {/* Photo upload */}
+              <input type="file" accept="image/*" ref={postPhotoInputRef} onChange={handlePhotoSelect} className="hidden" data-testid="spin-photo-input" />
+              {postPhotoPreview ? (
+                <div className="relative inline-block rounded-lg overflow-hidden border border-honey/30" data-testid="spin-photo-preview">
+                  <img src={postPhotoPreview} alt="Upload preview" className="h-20 w-20 object-cover" />
+                  <button onClick={clearPostPhoto} className="absolute top-0.5 right-0.5 bg-black/60 text-white rounded-full p-0.5" data-testid="spin-photo-remove">
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => postPhotoInputRef.current?.click()}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-dashed border-honey/40 text-stone-500 hover:text-stone-700 hover:border-honey/60 transition-colors"
+                  data-testid="spin-photo-upload-btn"
+                >
+                  <Camera className="w-3.5 h-3.5" /> Add a photo
+                </button>
+              )}
             </div>
           </div>
 

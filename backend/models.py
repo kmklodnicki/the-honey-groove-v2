@@ -273,6 +273,7 @@ class NowSpinningCreate(BaseModel):
     track: Optional[str] = None
     caption: Optional[str] = None
     mood: Optional[str] = None
+    photo_url: Optional[str] = None
 
 class NewHaulCreate(BaseModel):
     store_name: Optional[str] = None

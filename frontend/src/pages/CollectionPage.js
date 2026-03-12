@@ -1462,22 +1462,26 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
         </div>
       </Link>
 
-      <div className="p-3 flex flex-col flex-grow">
-        <div className="flex-grow min-h-0">
+      <div className="p-3 flex flex-col flex-grow gap-1">
+        <div className="min-h-[2.5rem]">
           <Link to={`/record/${record.id}`} className="block">
-            <h4 className="font-medium text-sm line-clamp-1 hover:text-honey-amber transition-colors" data-testid={`record-title-${record.id}`}>
+            <h4 className="font-medium text-sm line-clamp-2 hover:text-honey-amber transition-colors leading-tight" data-testid={`record-title-${record.id}`}>
               {record.title}
             </h4>
-            <p className="text-xs text-muted-foreground line-clamp-1" data-testid={`record-artist-${record.id}`}>{record.artist}</p>
           </Link>
-          {record.rarity_label && (
-            <div className="mt-1">
-              <RarityBadge label={record.rarity_label} size="sm" />
-            </div>
+        </div>
+        <div className="min-h-[1.25rem]">
+          <p className="text-xs text-muted-foreground line-clamp-1" data-testid={`record-artist-${record.id}`}>{record.artist}</p>
+        </div>
+        <div className="min-h-[1.25rem]">
+          {record.rarity_label ? (
+            <RarityBadge label={record.rarity_label} size="sm" />
+          ) : (
+            <span className="invisible text-xs">-</span>
           )}
         </div>
 
-        <div className="flex items-center gap-1 mt-auto pt-2">
+        <div className="flex items-center gap-1 mt-auto pt-1">
           <Button
             variant="ghost"
             size="sm"

@@ -530,6 +530,7 @@ async def composer_now_spinning(data: NowSpinningCreate, user: Dict = Depends(re
         "record_id": data.record_id,
         "track": data.track,
         "mood": data.mood,
+        "photo_url": data.photo_url,
         "spin_id": spin_id,
         "color_variant": record.get("color_variant") or record.get("pressing_notes"),
         "created_at": now

@@ -308,41 +308,49 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
   const variantText = post.color_variant || record.color_variant || post.pressing_variant || record.pressing_notes;
   return (
     <AlbumLink record={record} onAlbumClick={onAlbumClick}>
-      <div className="flex gap-4 items-start" data-testid="now-spinning-card">
-        {record.cover_url ? (
-          <div className="shrink-0" style={{ overflow: 'visible' }}>
-            <AlbumWithVinyl>
-              <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-24 h-24 rounded-[10px] object-cover shadow-md album-art-hover relative z-[6]" priority={imgPriority} isUnofficial={record.is_unofficial} />
-              {post.honeypot_rating && (
-                <div className="absolute top-1 right-4 z-[7] px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
-                  style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
-                  data-testid="feed-rating-pill">
-                  {post.honeypot_rating}
-                </div>
-              )}
-            </AlbumWithVinyl>
-            <StreamingLinks artist={record.artist} album={record.title} showEqualizer />
-          </div>
-        ) : (
-          <div className="w-24 h-24 rounded-lg bg-vinyl-black flex items-center justify-center">
-            <Disc className="w-10 h-10 text-honey animate-spin" style={{ animationDuration: '3s' }} />
+      <div data-testid="now-spinning-card">
+        {/* User-uploaded photo displayed prominently */}
+        {post.photo_url && (
+          <div className="mb-3 rounded-xl overflow-hidden border border-stone-200/60" data-testid="user-photo">
+            <img src={post.photo_url} alt="User photo" className="w-full max-h-64 object-cover" loading="lazy" />
           </div>
         )}
-        <div className="flex-1 min-w-0">
-          <p className="font-heading text-lg leading-tight">{record.title}</p>
-          <p className="text-sm text-muted-foreground">{record.artist}</p>
-          <div className="flex flex-wrap gap-1 mt-1" data-testid="card-meta-pills">
-            {variantText && <VariantTag variant={variantText} linkTo={variantLink(record)} />}
-            {(record.edition_number || post.edition_number) && <EditionTag number={record.edition_number || post.edition_number} />}
-            {!variantText && record.format && record.format !== 'Vinyl' && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border border-stone-200 text-stone-500 bg-stone-50" data-testid="format-pill">
-                <Disc className="w-2.5 h-2.5" /> {record.format}
-              </span>
-            )}
-            {record.is_unofficial && <UnofficialPill variant="inline" />}
+        <div className="flex gap-4 items-start">
+          {record.cover_url ? (
+            <div className="shrink-0" style={{ overflow: 'visible' }}>
+              <AlbumWithVinyl>
+                <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-24 h-24 rounded-[10px] object-cover shadow-md album-art-hover relative z-[6]" priority={imgPriority} isUnofficial={record.is_unofficial} />
+                {post.honeypot_rating && (
+                  <div className="absolute top-1 right-4 z-[7] px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
+                    style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
+                    data-testid="feed-rating-pill">
+                    {post.honeypot_rating}
+                  </div>
+                )}
+              </AlbumWithVinyl>
+              <StreamingLinks artist={record.artist} album={record.title} showEqualizer />
+            </div>
+          ) : (
+            <div className="w-24 h-24 rounded-lg bg-vinyl-black flex items-center justify-center">
+              <Disc className="w-10 h-10 text-honey animate-spin" style={{ animationDuration: '3s' }} />
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="font-heading text-lg leading-tight">{record.title}</p>
+            <p className="text-sm text-muted-foreground">{record.artist}</p>
+            <div className="flex flex-wrap gap-1 mt-1" data-testid="card-meta-pills">
+              {variantText && <VariantTag variant={variantText} linkTo={variantLink(record)} />}
+              {(record.edition_number || post.edition_number) && <EditionTag number={record.edition_number || post.edition_number} />}
+              {!variantText && record.format && record.format !== 'Vinyl' && (
+                <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border border-stone-200 text-stone-500 bg-stone-50" data-testid="format-pill">
+                  <Disc className="w-2.5 h-2.5" /> {record.format}
+                </span>
+              )}
+              {record.is_unofficial && <UnofficialPill variant="inline" />}
+            </div>
+            {post.track && <p className="text-xs text-honey-amber mt-1">Track: {post.track}</p>}
+            {post.caption && <p className="text-sm mt-2"><MentionText text={post.caption} /></p>}
           </div>
-          {post.track && <p className="text-xs text-honey-amber mt-1">Track: {post.track}</p>}
-          {post.caption && <p className="text-sm mt-2"><MentionText text={post.caption} /></p>}
         </div>
       </div>
     </AlbumLink>
@@ -360,6 +368,12 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
     const extra = bundle.length - 4;
     return (
       <div data-testid="haul-bundle-card">
+        {/* User-uploaded haul photo */}
+        {post.image_url && (
+          <div className="mb-3 rounded-xl overflow-hidden border border-stone-200/60" data-testid="user-photo">
+            <img src={post.image_url} alt="Haul photo" className="w-full max-h-64 object-cover" loading="lazy" />
+          </div>
+        )}
         {post.caption && <p className="text-sm mb-3"><MentionText text={post.caption} /></p>}
         <div className="grid grid-cols-4 gap-1.5">
           {shown.map((item, idx) => (
@@ -402,6 +416,12 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
   const items = haul.items || [];
   return (
     <div data-testid="new-haul-card">
+      {/* User-uploaded haul photo */}
+      {(post.image_url || haul.image_url) && (
+        <div className="mb-3 rounded-xl overflow-hidden border border-stone-200/60" data-testid="user-photo">
+          <img src={post.image_url || haul.image_url} alt="Haul photo" className="w-full max-h-64 object-cover" loading="lazy" />
+        </div>
+      )}
       {haul.store_name && <p className="text-sm text-amber-700 font-medium mb-2">Found at {haul.store_name}</p>}
       {post.caption && <p className="text-sm mb-3"><MentionText text={post.caption} /></p>}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
