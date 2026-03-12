@@ -192,16 +192,6 @@ const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamL
               {valuedCount != null && (
                 <div>
                   <p className="text-[10px] text-stone-400 mt-0.5">{valuedCount} of {totalCount} records valued</p>
-                  {totalCount - valuedCount > 0 && onOpenWizard && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); onOpenWizard(); }}
-                      className="mt-1 text-[10px] font-semibold px-2.5 py-1 rounded-full transition-all hover:scale-105"
-                      style={{ background: 'rgba(255,215,0,0.2)', color: '#7A5A1A', border: '1px solid rgba(218,165,32,0.3)' }}
-                      data-testid="add-missing-values-btn"
-                    >
-                      Add Missing Values
-                    </button>
-                  )}
                 </div>
               )}
             </div>

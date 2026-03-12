@@ -1,48 +1,68 @@
-# The HoneyGroove - Product Requirements Document
+# The HoneyGroove — Product Requirements Document
 
 ## Original Problem Statement
-Premium social platform for vinyl collectors. Features include collection management, marketplace, Discogs integration, community feed, trading, and valuation tools.
+Build **The HoneyGroove**, a premium social platform for vinyl collectors. Features include collection tracking, social feed, trading, Discogs integration, and community engagement tools.
 
 ## Core Architecture
-- **Frontend:** React + TypeScript, SWR caching, Shadcn/UI
-- **Backend:** FastAPI (Python), MongoDB (Motor async driver)
-- **Integrations:** Stripe Connect, Discogs OAuth 1.0a, Resend email, Socket.IO real-time
+- **Frontend:** React (JavaScript), Shadcn UI, TailwindCSS
+- **Backend:** FastAPI (Python), MongoDB
+- **Integrations:** Stripe Connect, Discogs OAuth, Resend (email), Socket.IO (real-time)
 
 ## What's Been Implemented
 
-### BLOCK 581: Global Verification Sync (Completed Mar 12, 2026)
-- Universal `VerifiedShield` component at `/components/VerifiedShield.js`
-- Integrated in Feed (18px), Listings (16px), Profile (34px, 18px founder inline)
-- Portal tooltip on hover/tap with z-index 9999 — "Golden Hive ID" or "Founder" text
-- All emoji fallbacks (👑, 🍯, ✅ checkmark) removed from feed/listing username areas
+### Global Verification System
+- `VerifiedShield.js` component — gold shield SVG with portal tooltip
+- Integrated across Feed, Profile, Search, Navbar menus
+- Founder identity tied to User ID `4072aaa7-1171-4cd2-9c8f-20dfca8fdc58`
 
-### BLOCKs 575-578: Notifications + OAuth Toast + Gold Shield (Completed Mar 12, 2026)
-### BLOCKs 573-574: OAuth Force-Trigger + Image Pre-Fetch (Completed Mar 12, 2026)
-### BLOCKs 571-572: Force Refresh + Instant Failsafe (Completed Mar 12, 2026)
-### BLOCKs 566-570: Instant Art + Identity Sync (Completed Mar 12, 2026)
-### BLOCKs 563-565: Mobile Tooltip + Silk Image (Completed Mar 12, 2026)
-### BLOCKs 541-556: Profile/Treasury/Tooltip Overhaul (Completed Mar 12, 2026)
-### BLOCK 476: Value Recovery Engine (Completed Mar 12, 2026)
+### OAuth Flow (Discogs)
+- User-initiated "Golden Glassy Banner" for Discogs connection
+- No auto-popups (browser compliance)
+- Banner shows when `discogs_oauth_verified=false` and `discogs_migration_dismissed=true`
 
-## Prioritized Backlog
+### Collection & Valuation
+- Full collection management with Discogs import/sync
+- Value Recovery Engine (batch valuation)
+- "Add Missing Values" button REMOVED (2026-03-12)
+- Dream List feature
 
-### P1 - Blocked
-- **BLOCK 254: Streaming Service** - Spotify/Apple Music (awaiting callback URL)
+### Feed & Social
+- Daily Prompt system
+- Post types: Now Spinning, Haul, ISO, Note, Randomizer
+- Real-time feed via Socket.IO
+- Paginated notifications with "View More"
 
-### P2 - Upcoming
-- Service Worker Daily Prompt pre-cache (BLOCK 321)
-- SWR rollout to remaining pages
-- ProfilePage.js decomposition (1660+ lines)
+### Image Pipeline ("Instant Art")
+- Shimmer skeleton loaders
+- Priority preloading, predictive fetching via IntersectionObserver
 
-### P3 - Future/Backlog
-- Record Store Day Proxy Network, Safari loading animation
-- Pro memberships, Buyer Protection, Instagram sharing
-- Backend search filters, Admin-editable "New Music Friday"
+### Other Features
+- Weekly Wax email reports
+- Stripe Connect for seller payouts
+- Golden Hive membership system
+- Collector Bingo, Mood Board
 
-## Key Files
-- /app/frontend/src/components/VerifiedShield.js (BLOCK 581 — universal component)
-- /app/frontend/src/pages/HivePage.js (feed integration)
-- /app/frontend/src/components/ListingDetailModal.js (listing integration)
-- /app/frontend/src/pages/ProfilePage.js (profile integration)
-- /app/frontend/src/components/AlbumArt.js (instant art pipeline)
-- /app/backend/services/value_recovery.py (recovery engine)
+## Known Issues
+- OAuth banner hidden behind fixed navbar (z-index conflict: navbar z-100000 vs banner z-50)
+- Service Worker caching incomplete (BLOCK 321) — only on-demand, not pre-cached on install
+
+## Blocked
+- Spotify/Apple Music integration — waiting for user's callback URL
+
+## Backlog (Prioritized)
+- P1: Fix OAuth banner positioning
+- P1: Service Worker pre-caching (BLOCK 321)
+- P2: "Secret Search Feature" (needs user clarification)
+- P2: ProfilePage decomposition
+- P2: Centralize user state (Context/Zustand)
+- P3: Record Store Day Proxy Network
+- P3: Safari-compatible loading animation
+- P3: "Pro" memberships / "Verified Seller" badge
+- P3: Buyer Protection features
+- P3: Re-enable Instagram sharing
+- P3: Dynamic "New Music Friday" admin editing
+- P3: Backend-powered search filters
+
+## Credentials
+- Admin: `kmklodnicki@gmail.com` / `admin_password` (User ID: `4072aaa7-1171-4cd2-9c8f-20dfca8fdc58`)
+- Test: `test@example.com` / `testuser1`
