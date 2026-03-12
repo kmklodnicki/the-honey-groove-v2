@@ -59,7 +59,12 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - Spotify/Apple Music integration — waiting for callback URL
 
 ## Recently Completed (2026-03-12)
-- **v2.7.2:** Interactive Value Recovery Toast (clickable → modal with per-record old/new values + total increase), Disclaimer Padding (40px mb-10), Test Data Purge endpoint
+- **Merry Swiftmas Hijack Fix:** Added `setData(null)` state reset in VinylVariantPage & VariantReleasePage useEffect to prevent data ghosting between navigations
+- **OAuth /undefined Redirect Fix:** Root cause was key mismatch — backend returned `authorization_url` but frontend expected `auth_url`. Now returns both. Frontend guards against null auth_url with error toast.
+- **Variant API is_unofficial enrichment:** `/api/vinyl/release/{id}` now returns `is_unofficial` by cross-referencing Discogs format_descriptions + internal records
+- **Unofficial disclaimer text:** Changed "The Hive" → "The Honey Groove"
+- **Sticky Navbar:** Changed from `position: fixed` to `position: sticky; top: 0; z-[1000]`. OAuth banner is relative, scrolls away while navbar sticks.
+- **v2.7.2:** Interactive Value Recovery Toast, Disclaimer Padding (mb-10), Test Data Purge endpoint
 - OAuth Configuration Fix: admin diagnostic endpoint, startup log, handshake test
 - Daily Prompts Image Proxy: persistent storage cache, proxy_cover_url, loading="eager" first 3 slides
 - Image proxy User-Agent fix (Discogs CDN blocks bot agents)
