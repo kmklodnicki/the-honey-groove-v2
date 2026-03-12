@@ -59,6 +59,11 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - Spotify/Apple Music integration — waiting for callback URL
 
 ## Recently Completed (2026-03-12)
+- **Composite v2.8.9 — Marketplace Insulation:** Replaced Discogs "Lowest Price" with "The Honeypot Price" card on VinylVariantPage and VariantReleasePage. Shows internal marketplace price or "List Yours" CTA. Fixed TrendingDown runtime error.
+- **Zero-Scroll Now Spinning Modal:** Restructured modal to flex layout (max-h-90vh), compact 3-col mood grid (px-2 py-1.5), sticky footer submit button anchored outside scroll area. Verified on desktop and mobile.
+- **Advanced Price Hunting (v2.8.9):** Web scraper service (backend/services/scraper.py) for eBay/Google Shopping as Discogs fallback. Caching in MongoDB scraper_cache collection.
+- **Instant Image Hydration (v2.8.9):** /api/collection/add now fetches valid image URL before adding record. Placeholder Sweep admin endpoint created.
+- **Detailed Value Toasts (v2.8.9):** Interactive toast opens modal with price source details (Discogs/eBay/Google).
 - **Interactive Hauls:** Bundle records now include discogs_id + is_unofficial; haul cards clickable → variant popup
 - **Smart Flag:** detect_unofficial() checks format_descriptions, notes, format text for "Unofficial/Bootleg/Counterfeit" keywords
 - **VariantReleasePage:** Added UnofficialDisclaimer section, inline pill, formatText prop
@@ -72,9 +77,12 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - OAuth diagnostic endpoint, Daily Prompts Image Proxy, User-Agent fix
 
 ## Backlog
+- P1: Harden web scraper (user-agent rotation, exponential backoff) — fragile but functional
 - P1: Service Worker pre-caching (BLOCK 321)
+- P1: Spotify integration — awaiting callback URL (BLOCK 254)
+- P2: "Secret Search Feature" — needs clarification from user
 - P2: ProfilePage decomposition, centralized user state
-- P3: Record Store Day Proxy, Safari animation, Pro memberships, backend search filters
+- P3: Record Store Day Proxy, Safari animation, Pro memberships, backend search filters, Instagram sharing, dynamic New Music Friday
 
 ## Credentials
 - Admin: `kmklodnicki@gmail.com` / `admin_password` (UID: `4072aaa7-1171-4cd2-9c8f-20dfca8fdc58`)
