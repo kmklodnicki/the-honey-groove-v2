@@ -37,6 +37,8 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const { token, API, user } = useAuth();
   const isAdmin = user?.is_admin === true;
   const [activeModal, setActiveModal] = useState(null);
+  const openModal = (key) => { resetAll(); setActiveModal(key); };
+  const closeModal = () => setActiveModal(null);
   const [submitting, setSubmitting] = useState(false);
 
   // Now Spinning (merged with mood)
