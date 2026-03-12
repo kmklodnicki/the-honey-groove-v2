@@ -1264,6 +1264,7 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
               blurDataUrl={blurData?.blur_data_url}
               thumbSrc={blurData?.thumb_url}
               priority={priority}
+              isUnofficial={record.is_unofficial}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
@@ -1353,11 +1354,6 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
               Pending
             </div>
           ) : null}
-
-          {/* BLOCK 592: Unofficial Release Pill */}
-          {record.is_unofficial && (
-            <UnofficialPill variant="overlay" className={value > 0 || (record.custom_valuation && record.custom_valuation > 0) ? '!top-10' : ''} />
-          )}
         </div>
       </Link>
 

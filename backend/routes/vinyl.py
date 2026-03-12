@@ -220,6 +220,13 @@ async def get_variant_page(artist_slug: str, album_slug: str, variant_slug: str)
     else:
         fmt = format_raw or canonical_record.get("format") or "Vinyl"
 
+    # BLOCK 592: Detect unofficial from Discogs format descriptions
+    format_descriptions = discogs_data.get("format_descriptions", [])
+    is_unofficial = "Unofficial Release" in format_descriptions
+    # Also check internal records
+    if not is_unofficial:
+        is_unofficial = any(r.get("is_unofficial") for r in records)
+
     # Unique owners
     owner_ids = list(set(r.get("user_id") for r in records if r.get("user_id")))
     owners_count = len(owner_ids)
@@ -306,6 +313,7 @@ async def get_variant_page(artist_slug: str, album_slug: str, variant_slug: str)
             "barcode": barcode,
             "pressing_country": country,
             "discogs_id": discogs_id,
+            "is_unofficial": is_unofficial,
             "notes": notes[:300] if notes else None,
         },
         "rarity": rarity,

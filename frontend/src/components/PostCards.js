@@ -312,7 +312,7 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
         {record.cover_url ? (
           <div className="shrink-0" style={{ overflow: 'visible' }}>
             <AlbumWithVinyl>
-              <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-24 h-24 rounded-[10px] object-cover shadow-md album-art-hover relative z-[6]" priority={imgPriority} />
+              <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-24 h-24 rounded-[10px] object-cover shadow-md album-art-hover relative z-[6]" priority={imgPriority} isUnofficial={record.is_unofficial} />
               {post.honeypot_rating && (
                 <div className="absolute top-1 right-4 z-[7] px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
                   style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
@@ -320,7 +320,6 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
                   {post.honeypot_rating}
                 </div>
               )}
-              {record.is_unofficial && <UnofficialPill variant="overlay" className="!top-auto !bottom-1 !right-1 z-[7]" />}
             </AlbumWithVinyl>
             <StreamingLinks artist={record.artist} album={record.title} showEqualizer />
           </div>
@@ -367,8 +366,7 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
             <AlbumLink key={idx} record={item} onAlbumClick={onAlbumClick}>
               <div className="relative group/cover">
                 <AlbumArt src={item.cover_url} alt={`${item.artist} - ${item.title}`} 
-                  className="w-full aspect-square rounded-lg object-cover border border-stone-200/60" />
-                {item.is_unofficial && <UnofficialPill variant="overlay" className="!top-1 !right-1 !text-[7px] !px-1.5" />}
+                  className="w-full aspect-square rounded-lg object-cover border border-stone-200/60" isUnofficial={item.is_unofficial} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-lg opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-end p-1.5">
                   <div className="min-w-0">
                     <p className="text-[10px] font-medium text-white truncate">{item.title}</p>
@@ -450,11 +448,10 @@ const ISOCard = ({ post, onAlbumClick }) => {
         <div className="flex items-start gap-3">
           <div className="relative shrink-0">
             {iso.cover_url ? (
-              <AlbumArt src={iso.cover_url} alt={`${iso.artist} ${iso.album}${iso.pressing_notes ? ` ${iso.pressing_notes}` : ''} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow-sm" />
+              <AlbumArt src={iso.cover_url} alt={`${iso.artist} ${iso.album}${iso.pressing_notes ? ` ${iso.pressing_notes}` : ''} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow-sm" isUnofficial={iso.is_unofficial} />
             ) : (
               <div className="w-14 h-14 rounded-lg bg-[#C8861A]/10 flex items-center justify-center"><Search className="w-5 h-5 text-[#C8861A]/50" /></div>
             )}
-            {iso.is_unofficial && <UnofficialPill variant="overlay" className="!top-0.5 !right-0.5 !text-[7px] !px-1 !py-0" />}
           </div>
           <div className="flex-1 min-w-0">
             <div className="min-w-0 pr-24">
@@ -490,7 +487,7 @@ const AddedToCollectionCard = ({ post, onAlbumClick, imgPriority }) => {
       <div className="flex gap-3 items-center" data-testid="added-card">
         <div className="shrink-0 pr-2">
           <AlbumWithVinyl preset="small">
-            <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-16 h-16 rounded-[10px] object-cover shadow relative z-[6]" priority={imgPriority} />
+            <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-16 h-16 rounded-[10px] object-cover shadow relative z-[6]" priority={imgPriority} isUnofficial={record.is_unofficial} />
           </AlbumWithVinyl>
         </div>
         <div className="min-w-0">

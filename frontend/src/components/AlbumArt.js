@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Disc } from 'lucide-react';
 import { resolveImageUrl, proxyImageUrl } from '../utils/imageUrl';
+import UnofficialPill from './UnofficialPill';
 
 const FALLBACK = '/vinyl-placeholder.svg';
 const ART_CACHE_NAME = 'honeygroove-album-art-v1';
@@ -52,6 +53,7 @@ const AlbumArt = ({
   blurDataUrl,
   thumbSrc,
   priority = false,
+  isUnofficial = false,
   ...props
 }) => {
   const resolvedSrc = resolveImageUrl(src);
@@ -166,6 +168,7 @@ const AlbumArt = ({
           {...(priority ? { fetchPriority: 'high' } : {})}
         />
       ) : null}
+      {isUnofficial && <UnofficialPill variant="overlay" className="!top-auto !bottom-1.5 !left-1.5 !right-auto" />}
     </div>
   );
 };

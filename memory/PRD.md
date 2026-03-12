@@ -15,49 +15,47 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - Founder identity tied to User ID `4072aaa7-1171-4cd2-9c8f-20dfca8fdc58`
 
 ### OAuth Flow (Discogs) — BLOCKs 583, 585, 587
-- Golden Glassy Banner at z-[200000], CSS variable `--oauth-banner-h` pushes navbar
+- Relative-positioned Golden Glassy Banner (pushes navbar + content down)
 - `discogs_import_intent`: PENDING | LATER | DECLINED | CONNECTED
 - "Skip for now" 24h localStorage hide
-- DiscogsSecurityModal: Connect / Maybe Later / Proceed Without
 
-### Unofficial Record Compliance — BLOCK 592, v2.5.2, v2.5.3 + Metadata Re-Mapping
-- **Strict auto-tagging**: Discogs sync checks for exact `"Unofficial Release"` in `format.descriptions[]`
-- **"Unofficial" Pill**: Steel gray (#4A4A4A) overlay + inline across Collection, Feed, Record Detail, Listing Modal, HoneypotCards
-- **Tiered Compliance Checkbox**: Gold Hive vs Standard member messaging before listing unofficial items
-- **Legal Disclaimer**: On all unofficial record/listing pages
+### Unofficial Record Compliance — BLOCK 592, v2.5.2, v2.5.3, v2.6.5
+- **Universal AlbumArt injection**: `isUnofficial` prop on `AlbumArt.js` → pill in bottom-left corner everywhere
+- **Strict auto-tagging**: Discogs `format.descriptions[]` checked for exact `"Unofficial Release"`
+- **ISO posts**: Backend fetches Discogs release on ISO creation, auto-tags unofficial
+- **Variant Page**: "UNOFFICIAL" badge next to title + Safe Harbor disclaimer
+- **Tiered Compliance Checkbox**: Gold Hive vs Standard member messaging before listing
+- **Legal Disclaimer**: On all unofficial record/listing/variant pages
 - **Pricing Restriction**: Auto-market values disabled for unofficial items
-- **Backend enforcement**: `unofficial_acknowledged=true` required
-- **Metadata Re-Mapping**: Pink Pony Club cleared (official reissue). 5 actual bootlegs tagged: Sirens, Tristeza De Verano, Sleepless Nights, A Night In Paris, Merry Swiftmas
-- **Enhanced Discogs release API**: Returns `format_descriptions` for better unofficial detection
+- **Backend enforcement**: `unofficial_acknowledged=true` required for listing
+- **Tagged records**: Sirens, Tristeza De Verano, Sleepless Nights, A Night In Paris, Merry Swiftmas
 
 ### Collection & Valuation
 - Full collection management with Discogs import/sync
-- Value Recovery Engine (batch valuation)
-- Dream List feature
+- Value Recovery Engine, Dream List
 
 ### Feed & Social
-- Daily Prompt, post types, real-time feed, paginated notifications
+- Daily Prompt, post types (Now Spinning, Haul, ISO, Note, Randomizer)
+- ISO pill label fixed (shows "ISO" not "Grail Find")
+- Real-time feed via Socket.IO, paginated notifications
 
 ### Image Pipeline ("Instant Art")
 - Shimmer skeleton loaders, priority preloading, predictive fetching
 
-### Other Features
-- Weekly Wax email, Stripe Connect, Golden Hive membership, Collector Bingo, Mood Board
-
-## Known Issues
-- Service Worker caching incomplete (BLOCK 321)
-- Beautiful Eyes not in collection (will auto-tag when imported)
+## Key API Endpoints
+- `POST /api/discogs/update-import-intent`
+- `POST /api/listings` (is_unofficial, unofficial_acknowledged)
+- `POST /api/composer/iso` (auto-detects unofficial from Discogs)
+- `GET /api/vinyl/{artist}/{album}/{variant}` (returns is_unofficial)
 
 ## Blocked
 - Spotify/Apple Music integration — waiting for callback URL
 
 ## Backlog
 - P1: Service Worker pre-caching (BLOCK 321)
-- P2: "Secret Search Feature" (needs clarification)
-- P2: ProfilePage decomposition
-- P2: Centralize user state
-- P3: Record Store Day Proxy, Safari animation, Pro memberships, Buyer Protection, Instagram sharing, admin email editing, backend search filters
+- P2: ProfilePage decomposition, centralized user state
+- P3: Record Store Day Proxy, Safari animation, Pro memberships, backend search filters
 
 ## Credentials
 - Admin: `kmklodnicki@gmail.com` / `admin_password` (UID: `4072aaa7-1171-4cd2-9c8f-20dfca8fdc58`)
-- Unofficial test records: Sirens [24521972], Tristeza De Verano [31878166], Sleepless Nights [31882048], A Night In Paris [31957001], Merry Swiftmas [32442177]
+- Unofficial records: Sirens [24521972], Tristeza De Verano [31878166], Sleepless Nights [31882048], A Night In Paris [31957001], Merry Swiftmas [32442177]

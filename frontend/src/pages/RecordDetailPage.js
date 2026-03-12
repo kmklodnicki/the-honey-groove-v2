@@ -148,13 +148,12 @@ const RecordDetailPage = () => {
         <div className="shrink-0">
           <div className="relative w-full md:w-80 aspect-square rounded-2xl overflow-hidden bg-honey/10 shadow-lg shadow-black/5">
             {record.cover_url ? (
-              <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${record.color_variant ? ` ${record.color_variant}` : ''} vinyl record`} className="w-full h-full object-cover" data-testid="record-cover" />
+              <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${record.color_variant ? ` ${record.color_variant}` : ''} vinyl record`} className="w-full h-full object-cover" data-testid="record-cover" isUnofficial={record.is_unofficial} />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <Disc className="w-20 h-20 text-honey/30" />
               </div>
             )}
-            {record.is_unofficial && <UnofficialPill variant="overlay" />}
           </div>
         </div>
 
