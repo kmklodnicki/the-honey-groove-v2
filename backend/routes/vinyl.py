@@ -19,6 +19,33 @@ import re
 import json
 import html as html_mod
 
+# ── Smart Flag: detect unofficial via format descriptions, notes, and format text ──
+UNOFFICIAL_KEYWORDS = re.compile(r'\b(unofficial|bootleg|counterfeit)\b', re.IGNORECASE)
+
+def detect_unofficial(discogs_data: dict, db_records: list = None) -> bool:
+    """Check if a release is unofficial via multiple signals."""
+    # Signal 1: Exact match in format_descriptions (strongest)
+    format_descriptions = discogs_data.get("format_descriptions", [])
+    if "Unofficial Release" in format_descriptions:
+        return True
+    # Signal 2: Keyword search in format_descriptions text
+    if any(UNOFFICIAL_KEYWORDS.search(desc) for desc in format_descriptions):
+        return True
+    # Signal 3: Keyword search in notes
+    notes = discogs_data.get("notes", "")
+    if notes and UNOFFICIAL_KEYWORDS.search(notes):
+        return True
+    # Signal 4: Keyword search in format text
+    fmt = discogs_data.get("format")
+    fmt_str = fmt[0] if isinstance(fmt, list) and fmt else (fmt or "")
+    if fmt_str and UNOFFICIAL_KEYWORDS.search(fmt_str):
+        return True
+    # Signal 5: Check internal records
+    if db_records and any(r.get("is_unofficial") for r in db_records):
+        return True
+    return False
+
+
 router = APIRouter(prefix="/vinyl")
 
 SITE_NAME = "The Honey Groove"
@@ -220,12 +247,8 @@ async def get_variant_page(artist_slug: str, album_slug: str, variant_slug: str)
     else:
         fmt = format_raw or canonical_record.get("format") or "Vinyl"
 
-    # BLOCK 592: Detect unofficial from Discogs format descriptions
-    format_descriptions = discogs_data.get("format_descriptions", [])
-    is_unofficial = "Unofficial Release" in format_descriptions
-    # Also check internal records
-    if not is_unofficial:
-        is_unofficial = any(r.get("is_unofficial") for r in records)
+    # BLOCK 592 + v2.8.3: Detect unofficial via Smart Flag (format, notes, keywords)
+    is_unofficial = detect_unofficial(discogs_data, records)
 
     # Unique owners
     owner_ids = list(set(r.get("user_id") for r in records if r.get("user_id")))
@@ -405,9 +428,8 @@ async def get_variant_by_release_id(release_id: int, force_refresh: bool = False
     format_raw = discogs_data.get("format")
     fmt = format_raw[0] if isinstance(format_raw, list) and format_raw else (format_raw or "Vinyl")
 
-    # Detect unofficial from Discogs format descriptions
-    format_descriptions = discogs_data.get("format_descriptions", [])
-    is_unofficial = "Unofficial Release" in format_descriptions
+    # Detect unofficial via Smart Flag (format, notes, keywords)
+    is_unofficial = detect_unofficial(discogs_data)
 
     # Variant-specific community stats from Discogs
     discogs_have = discogs_data.get("community_have", 0)
@@ -441,9 +463,9 @@ async def get_variant_by_release_id(release_id: int, force_refresh: bool = False
         {"_id": 0, "id": 1, "user_id": 1, "is_unofficial": 1}
     ).to_list(200)
 
-    # Also check internal records for unofficial flag
+    # Smart Flag: also check internal records
     if not is_unofficial:
-        is_unofficial = any(r.get("is_unofficial") for r in records)
+        is_unofficial = detect_unofficial({}, records)
 
     owner_ids = list(set(r.get("user_id") for r in records if r.get("user_id")))
     owners = []

@@ -134,7 +134,7 @@ export default function VinylVariantPage() {
               style={{ borderRadius: '14px', boxShadow: '0 12px 28px rgba(0,0,0,0.12)' }}
             >
               {ov.cover_url ? (
-                <AlbumArt src={ov.cover_url} alt={`${ov.artist} ${ov.album} ${ov.variant} vinyl record`} className="w-full h-full object-cover" isUnofficial={ov.is_unofficial} />
+                <AlbumArt src={ov.cover_url} alt={`${ov.artist} ${ov.album} ${ov.variant} vinyl record`} className="w-full h-full object-cover" isUnofficial={ov.is_unofficial} formatText={ov.format || ''} />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <Disc className="w-16 h-16 text-honey/40" />

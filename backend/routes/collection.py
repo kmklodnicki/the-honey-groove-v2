@@ -81,6 +81,8 @@ async def add_record(record_data: RecordCreate, user: Dict = Depends(require_aut
         "artist": record_data.artist,
         "cover_url": record_data.cover_url,
         "color_variant": record_data.color_variant,
+        "discogs_id": record_data.discogs_id,
+        "is_unofficial": record_doc.get("is_unofficial", False),
     }
     
     if existing_bundle:

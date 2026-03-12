@@ -629,7 +629,16 @@ async def scrub_unofficial_metadata(user: Dict = Depends(require_admin)):
                 continue
 
             format_descs = release_data.get("format_descriptions", [])
+            # Smart Flag: check format_descriptions, notes, and format text
+            import re as _re
+            _unofficial_kw = _re.compile(r'\b(unofficial|bootleg|counterfeit)\b', _re.IGNORECASE)
             should_be_unofficial = "Unofficial Release" in format_descs
+            if not should_be_unofficial:
+                should_be_unofficial = any(_unofficial_kw.search(d) for d in format_descs)
+            if not should_be_unofficial:
+                notes = release_data.get("notes", "")
+                if notes and _unofficial_kw.search(notes):
+                    should_be_unofficial = True
             current_flag = rec.get("is_unofficial", False)
 
             if should_be_unofficial != current_flag:
