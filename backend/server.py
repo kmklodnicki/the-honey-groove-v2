@@ -50,9 +50,11 @@ for r in [auth_router, hive_router, collection_router, honeypot_router,
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://thehoneygroove.com"
-        "http://localhost:3000"
+        "https://thehoneygroove.com",
+        "https://daily-prompt-share.preview.emergentagent.com",
+        "http://localhost:3000",
     ],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],
