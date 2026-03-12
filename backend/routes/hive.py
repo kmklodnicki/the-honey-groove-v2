@@ -631,6 +631,14 @@ async def composer_iso(data: ISOPostCreate, user: Dict = Depends(require_auth)):
     # Create ISO item — route status based on intent
     is_dreaming = data.intent == "dreaming"
     iso_id = str(uuid.uuid4())
+
+    # BLOCK 592: Check Discogs for "Unofficial Release" format
+    is_unofficial = False
+    if data.discogs_id:
+        release_info = get_discogs_release(data.discogs_id)
+        if release_info:
+            is_unofficial = "Unofficial Release" in release_info.get("format_descriptions", [])
+
     iso_doc = {
         "id": iso_id,
         "user_id": user["id"],
@@ -644,6 +652,7 @@ async def composer_iso(data: ISOPostCreate, user: Dict = Depends(require_auth)):
         "tags": data.tags or [],
         "target_price_min": data.target_price_min,
         "target_price_max": data.target_price_max,
+        "is_unofficial": is_unofficial,
         "status": "WISHLIST" if is_dreaming else "OPEN",
         "priority": "LOW" if is_dreaming else "MED",
         "created_at": now

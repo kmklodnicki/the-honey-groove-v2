@@ -448,11 +448,14 @@ const ISOCard = ({ post, onAlbumClick }) => {
           </span>
         )}
         <div className="flex items-start gap-3">
-          {iso.cover_url ? (
-            <AlbumArt src={iso.cover_url} alt={`${iso.artist} ${iso.album}${iso.pressing_notes ? ` ${iso.pressing_notes}` : ''} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow-sm shrink-0" />
-          ) : (
-            <div className="w-14 h-14 rounded-lg bg-[#C8861A]/10 flex items-center justify-center shrink-0"><Search className="w-5 h-5 text-[#C8861A]/50" /></div>
-          )}
+          <div className="relative shrink-0">
+            {iso.cover_url ? (
+              <AlbumArt src={iso.cover_url} alt={`${iso.artist} ${iso.album}${iso.pressing_notes ? ` ${iso.pressing_notes}` : ''} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow-sm" />
+            ) : (
+              <div className="w-14 h-14 rounded-lg bg-[#C8861A]/10 flex items-center justify-center"><Search className="w-5 h-5 text-[#C8861A]/50" /></div>
+            )}
+            {iso.is_unofficial && <UnofficialPill variant="overlay" className="!top-0.5 !right-0.5 !text-[7px] !px-1 !py-0" />}
+          </div>
           <div className="flex-1 min-w-0">
             <div className="min-w-0 pr-24">
               <p className="font-heading text-lg truncate">{iso.album}</p>
@@ -463,9 +466,15 @@ const ISOCard = ({ post, onAlbumClick }) => {
             {(iso.target_price_min || iso.target_price_max) && (
               <p className="text-xs text-[#8A6B4A] mt-0.5">Budget: {iso.target_price_min ? `$${iso.target_price_min}` : '?'} – {iso.target_price_max ? `$${iso.target_price_max}` : '?'}</p>
             )}
+            {iso.is_unofficial && <UnofficialPill variant="inline" className="mt-1.5" />}
           </div>
         </div>
         {post.caption && <p className="text-sm mt-3"><MentionText text={post.caption} /></p>}
+        {iso.is_unofficial && (
+          <div className="mt-3 px-3 py-2 rounded-lg text-[11px] leading-relaxed" style={{ background: 'rgba(74,74,74,0.05)', border: '1px solid rgba(74,74,74,0.1)', color: '#6B6B6B' }} data-testid="unofficial-disclaimer">
+            <span className="font-semibold text-stone-500">NOTICE:</span> This release is identified as &lsquo;Unofficial.&rsquo; The Hive facilitates the secondary market trade of these items for archival and collection purposes.
+          </div>
+        )}
       </div>
     </AlbumLink>
   );
