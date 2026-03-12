@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="14" skipped="0" tests="15" time="2.182" timestamp="2026-03-12T20:33:30.331495+00:00" hostname="agent-env-46400ae7-39b9-4fa4-90c6-6996479d03ba"><testcase classname="backend.tests.test_login_auth.TestLoginByEmail" name="test_login_exact_email_match" time="0.190"><failure message="AssertionError: Expected 200, got 429: {&quot;detail&quot;:&quot;Too many attempts. Please try again in a few minutes.&quot;}&#10;assert 429 == 200&#10; +  where 429 = &lt;Response [429]&gt;.status_code">self = &lt;test_login_auth.TestLoginByEmail object at 0xfe61786313d0&gt;
+
+    def test_login_exact_email_match(self):
+        """Login with exact email (kmklodnicki@gmail.com / admin_password)"""
+        response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": ADMIN_USER["email"],
+            "password": ADMIN_USER["password"]
+        })
+        print(f"Login by exact email: status={response.status_code}")
+&gt;       assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+E       AssertionError: Expected 200, got 429: {"detail":"Too many attempts. Please try again in a few minutes."}
+E       assert 429 == 200
+E        +  where 429 = &lt;Response [429]&gt;.status_code
+
+backend/tests/test_login_auth.py:36: AssertionError</failure></testcase><testcase classname="backend.tests.test_login_auth.TestLoginByEmail" name="test_login_test_user_email" time="0.134"><failure message="AssertionError: Expected 200, got 429: {&quot;detail&quot;:&quot;Too many attempts. Please try again in a few minutes.&quot;}&#10;assert 429 == 200&#10; +  where 429 = &lt;Response [429]&gt;.status_code">self = &lt;test_login_auth.TestLoginByEmail object at 0xfe6178632190&gt;
+
+    def test_login_test_user_email(self):
+        """Login with test user email (test@example.com / test123)"""
+        response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": TEST_USER["email"],
+            "password": TEST_USER["password"]
+        })
+        print(f"Login by test user email: status={response.status_code}")
+&gt;       assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+E       AssertionError: Expected 200, got 429: {"detail":"Too many attempts. Please try again in a few minutes."}
+E       assert 429 == 200
+E        +  where 429 = &lt;Response [429]&gt;.status_code
+
+backend/tests/test_login_auth.py:52: AssertionError</failure></testcase><testcase classname="backend.tests.test_login_auth.TestLoginByUsername" name="test_login_exact_username" time="0.124"><failure message="AssertionError: Expected 200, got 429: {&quot;detail&quot;:&quot;Too many attempts. Please try again in a few minutes.&quot;}&#10;assert 429 == 200&#10; +  where 429 = &lt;Response [429]&gt;.status_code">self = &lt;test_login_auth.TestLoginByUsername object at 0xfe6178632a10&gt;
+
+    def test_login_exact_username(self):
+        """Login with exact username (katieintheafterglow / admin_password)"""
+        response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": ADMIN_USER["username"],  # Using username in email field
+            "password": ADMIN_USER["password"]
+        })
+        print(f"Login by exact username: status={response.status_code}")
+&gt;       assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+E       AssertionError: Expected 200, got 429: {"detail":"Too many attempts. Please try again in a few minutes."}
+E       assert 429 == 200
+E        +  where 429 = &lt;Response [429]&gt;.status_code
+
+backend/tests/test_login_auth.py:70: AssertionError</failure></testcase><testcase classname="backend.tests.test_login_auth.TestLoginByUsername" name="test_login_test_user_username" time="0.117"><failure message="AssertionError: Expected 200, got 429: {&quot;detail&quot;:&quot;Too many attempts. Please try again in a few minutes.&quot;}&#10;assert 429 == 200&#10; +  where 429 = &lt;Response [429]&gt;.status_code">self = &lt;test_login_auth.TestLoginByUsername object at 0xfe6178633050&gt;
+
+    def test_login_test_user_username(self):
+        """Login with test user username (testuser1 / test123)"""
+        response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": TEST_USER["username"],
+            "password": TEST_USER["password"]
+        })
+        print(f"Login by test user username: status={response.status_code}")
+&gt;       assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+E       AssertionError: Expected 200, got 429: {"detail":"Too many attempts. Please try again in a few minutes."}
+E       assert 429 == 200
+E        +  where 429 = &lt;Response [429]&gt;.status_code
+
+backend/tests/test_login_auth.py:85: AssertionError</failure></testcase><testcase classname="backend.tests.test_login_auth.TestLoginCaseInsensitive" name="test_login_email_mixed_case" time="0.152"><failure message="AssertionError: Expected 200, got 429: {&quot;detail&quot;:&quot;Too many attempts. Please try again in a few minutes.&quot;}&#10;assert 429 == 200&#10; +  where 429 = &lt;Response [429]&gt;.status_code">self = &lt;test_login_auth.TestLoginCaseInsensitive object at 0xfe6178633790&gt;
+
+    def test_login_email_mixed_case(self):
+        """Login with mixed case email (Kmklodnicki@Gmail.com / admin_password)"""
+        mixed_email = "Kmklodnicki@Gmail.com"
+        response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": mixed_email,
+            "password": ADMIN_USER["password"]
+        })
+        print(f"Login by mixed case email: status={response.status_code}")
+&gt;       assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+E       AssertionError: Expected 200, got 429: {"detail":"Too many attempts. Please try again in a few minutes."}
+E       assert 429 == 200
+E        +  where 429 = &lt;Response [429]&gt;.status_code
+
+backend/tests/test_login_auth.py:104: AssertionError</failure></testcase><testcase classname="backend.tests.test_login_auth.TestLoginCaseInsensitive" name="test_login_username_case_insensitive" time="0.105"><failure message="AssertionError: Expected 200, got 429: {&quot;detail&quot;:&quot;Too many attempts. Please try again in a few minutes.&quot;}&#10;assert 429 == 200&#10; +  where 429 = &lt;Response [429]&gt;.status_code">self = &lt;test_login_auth.TestLoginCaseInsensitive object at 0xfe6178633dd0&gt;
+
+    def test_login_username_case_insensitive(self):
+        """Login with different case username (KATIEINTHEAFTERGLOW)"""
+        upper_username = ADMIN_USER["username"].upper()
+        response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": upper_username,
+            "password": ADMIN_USER["password"]
+        })
+        print(f"Login by uppercase username: status={response.status_code}")
+&gt;       assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+E       AssertionError: Expected 200, got 429: {"detail":"Too many attempts. Please try again in a few minutes."}
+E       assert 429 == 200
+E        +  where 429 = &lt;Response [429]&gt;.status_code
+
+backend/tests/test_login_auth.py:118: AssertionError</failure></testcase><testcase classname="backend.tests.test_login_auth.TestLoginWhitespace" name="test_login_email_with_whitespace" time="0.164"><failure message="AssertionError: Expected 200, got 429: {&quot;detail&quot;:&quot;Too many attempts. Please try again in a few minutes.&quot;}&#10;assert 429 == 200&#10; +  where 429 = &lt;Response [429]&gt;.status_code">self = &lt;test_login_auth.TestLoginWhitespace object at 0xfe61786446d0&gt;
+
+    def test_login_email_with_whitespace(self):
+        """Login with whitespace around email (  kmklodnicki@gmail.com  / admin_password)"""
+        whitespace_email = "  kmklodnicki@gmail.com  "
+        response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": whitespace_email,
+            "password": ADMIN_USER["password"]
+        })
+        print(f"Login by email with whitespace: status={response.status_code}")
+&gt;       assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+E       AssertionError: Expected 200, got 429: {"detail":"Too many attempts. Please try again in a few minutes."}
+E       assert 429 == 200
+E        +  where 429 = &lt;Response [429]&gt;.status_code
+
+backend/tests/test_login_auth.py:136: AssertionError</failure></testcase><testcase classname="backend.tests.test_login_auth.TestLoginNegativeCases" name="test_login_wrong_password" time="0.144"><failure message="AssertionError: Expected 401, got 429: {&quot;detail&quot;:&quot;Too many attempts. Please try again in a few minutes.&quot;}&#10;assert 429 == 401&#10; +  where 429 = &lt;Response [429]&gt;.status_code">self = &lt;test_login_auth.TestLoginNegativeCases object at 0xfe6178644ed0&gt;
+
+    def test_login_wrong_password(self):
+        """Login with wrong password returns 401"""
+        response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": ADMIN_USER["email"],
+            "password": "wrong"
+        })
+        print(f"Login wrong password: status={response.status_code}")
+&gt;       assert response.status_code == 401, f"Expected 401, got {response.status_code}: {response.text}"
+E       AssertionError: Expected 401, got 429: {"detail":"Too many attempts. Please try again in a few minutes."}
+E       assert 429 == 401
+E        +  where 429 = &lt;Response [429]&gt;.status_code
+
+backend/tests/test_login_auth.py:153: AssertionError</failure></testcase><testcase classname="backend.tests.test_login_auth.TestLoginNegativeCases" name="test_login_nonexistent_user" time="0.144"><failure message="AssertionError: Expected 401, got 429: {&quot;detail&quot;:&quot;Too many attempts. Please try again in a few minutes.&quot;}&#10;assert 429 == 401&#10; +  where 429 = &lt;Response [429]&gt;.status_code">self = &lt;test_login_auth.TestLoginNegativeCases object at 0xfe6178645510&gt;
+
+    def test_login_nonexistent_user(self):
+        """Login with non-existent user returns 401"""
+        response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "katie@thehoneygroove.com",  # This email does NOT exist
+            "password": ADMIN_USER["password"]
+        })
+        print(f"Login non-existent user: status={response.status_code}")
+&gt;       assert response.status_code == 401, f"Expected 401, got {response.status_code}: {response.text}"
+E       AssertionError: Expected 401, got 429: {"detail":"Too many attempts. Please try again in a few minutes."}
+E       assert 429 == 401
+E        +  where 429 = &lt;Response [429]&gt;.status_code
+
+backend/tests/test_login_auth.py:163: AssertionError</failure></testcase><testcase classname="backend.tests.test_login_auth.TestLoginNegativeCases" name="test_login_nonexistent_email_and_username" time="0.134"><failure message="AssertionError: Expected 401, got 429: {&quot;detail&quot;:&quot;Too many attempts. Please try again in a few minutes.&quot;}&#10;assert 429 == 401&#10; +  where 429 = &lt;Response [429]&gt;.status_code">self = &lt;test_login_auth.TestLoginNegativeCases object at 0xfe6178645310&gt;
+
+    def test_login_nonexistent_email_and_username(self):
+        """Login with completely non-existent credentials"""
+        response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": "doesnotexist@fake.com",
+            "password": "anypassword"
+        })
+        print(f"Login completely non-existent: status={response.status_code}")
+&gt;       assert response.status_code == 401, f"Expected 401, got {response.status_code}: {response.text}"
+E       AssertionError: Expected 401, got 429: {"detail":"Too many attempts. Please try again in a few minutes."}
+E       assert 429 == 401
+E        +  where 429 = &lt;Response [429]&gt;.status_code
+
+backend/tests/test_login_auth.py:173: AssertionError</failure></testcase><testcase classname="backend.tests.test_login_auth.TestAuthMeEndpoint" name="test_auth_me_with_username_login_token" time="0.155"><failure message="AssertionError: Login failed: {&quot;detail&quot;:&quot;Too many attempts. Please try again in a few minutes.&quot;}&#10;assert 429 == 200&#10; +  where 429 = &lt;Response [429]&gt;.status_code">self = &lt;test_login_auth.TestAuthMeEndpoint object at 0xfe6178645890&gt;
+
+    def test_auth_me_with_username_login_token(self):
+        """Auth/me works with token from username login"""
+        # First login by username
+        login_resp = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": ADMIN_USER["username"],
+            "password": ADMIN_USER["password"]
+        })
+&gt;       assert login_resp.status_code == 200, f"Login failed: {login_resp.text}"
+E       AssertionError: Login failed: {"detail":"Too many attempts. Please try again in a few minutes."}
+E       assert 429 == 200
+E        +  where 429 = &lt;Response [429]&gt;.status_code
+
+backend/tests/test_login_auth.py:187: AssertionError</failure></testcase><testcase classname="backend.tests.test_login_auth.TestAuthMeEndpoint" name="test_auth_me_with_email_login_token" time="0.105"><failure message="AssertionError: Login failed: {&quot;detail&quot;:&quot;Too many attempts. Please try again in a few minutes.&quot;}&#10;assert 429 == 200&#10; +  where 429 = &lt;Response [429]&gt;.status_code">self = &lt;test_login_auth.TestAuthMeEndpoint object at 0xfe6178645bd0&gt;
+
+    def test_auth_me_with_email_login_token(self):
+        """Auth/me works with token from email login"""
+        # Login by email
+        login_resp = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": TEST_USER["email"],
+            "password": TEST_USER["password"]
+        })
+&gt;       assert login_resp.status_code == 200, f"Login failed: {login_resp.text}"
+E       AssertionError: Login failed: {"detail":"Too many attempts. Please try again in a few minutes."}
+E       assert 429 == 200
+E        +  where 429 = &lt;Response [429]&gt;.status_code
+
+backend/tests/test_login_auth.py:210: AssertionError</failure></testcase><testcase classname="backend.tests.test_login_auth.TestRegistrationEmailNormalization" name="test_registration_email_lowercase" time="0.115"><failure message="assert 429 == 200&#10; +  where 429 = &lt;Response [429]&gt;.status_code">self = &lt;test_login_auth.TestRegistrationEmailNormalization object at 0xfe6178646110&gt;
+
+    def test_registration_email_lowercase(self):
+        """Registration normalizes email - check existing user's email is lowercase"""
+        # Login to check the stored email format
+        response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": ADMIN_USER["email"],
+            "password": ADMIN_USER["password"]
+        })
+&gt;       assert response.status_code == 200
+E       assert 429 == 200
+E        +  where 429 = &lt;Response [429]&gt;.status_code
+
+backend/tests/test_login_auth.py:236: AssertionError</failure></testcase><testcase classname="backend.tests.test_login_auth.TestAdminLoginDiagnostic" name="test_admin_login_diagnostic_requires_auth" time="0.122" /><testcase classname="backend.tests.test_login_auth.TestAdminLoginDiagnostic" name="test_admin_login_diagnostic_works" time="0.130"><failure message="AssertionError: Login failed: {&quot;detail&quot;:&quot;Too many attempts. Please try again in a few minutes.&quot;}&#10;assert 429 == 200&#10; +  where 429 = &lt;Response [429]&gt;.status_code">self = &lt;test_login_auth.TestAdminLoginDiagnostic object at 0xfe6178646f10&gt;
+
+    def test_admin_login_diagnostic_works(self):
+        """Login diagnostic works for admin users"""
+        # First login as admin
+        login_resp = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": ADMIN_USER["email"],
+            "password": ADMIN_USER["password"]
+        })
+&gt;       assert login_resp.status_code == 200, f"Login failed: {login_resp.text}"
+E       AssertionError: Login failed: {"detail":"Too many attempts. Please try again in a few minutes."}
+E       assert 429 == 200
+E        +  where 429 = &lt;Response [429]&gt;.status_code
+
+backend/tests/test_login_auth.py:264: AssertionError</failure></testcase></testsuite></testsuites>

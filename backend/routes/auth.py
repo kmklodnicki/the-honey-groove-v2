@@ -89,8 +89,10 @@ async def _build_user_response(user: dict) -> UserResponse:
 
 @router.post("/auth/register", response_model=TokenResponse)
 async def register(user_data: UserCreate):
-    # Check if email exists
-    existing_email = await db.users.find_one({"email": user_data.email})
+    normalized_email = user_data.email.strip().lower()
+    
+    # Check if email exists (case-insensitive)
+    existing_email = await db.users.find_one({"email": normalized_email})
     if existing_email:
         raise HTTPException(status_code=400, detail="Email already registered")
     
@@ -109,7 +111,7 @@ async def register(user_data: UserCreate):
     
     user_doc = {
         "id": user_id,
-        "email": user_data.email,
+        "email": normalized_email,
         "username": user_data.username.lower(),
         "password_hash": hash_password(user_data.password),
         "avatar_url": f"https://api.dicebear.com/7.x/miniavs/svg?seed={user_data.username}",
@@ -132,7 +134,7 @@ async def register(user_data: UserCreate):
 
     # Auto-subscribe new user to the Weekly Wax Report
     await db.newsletter_subscribers.insert_one({
-        "email": user_data.email,
+        "email": normalized_email,
         "subscribed": True,
         "source": "registration",
         "subscribed_at": now,
@@ -144,7 +146,7 @@ async def register(user_data: UserCreate):
         access_token=token,
         user=UserResponse(
             id=user_id,
-            email=user_data.email,
+            email=normalized_email,
             username=user_data.username.lower(),
             avatar_url=user_doc["avatar_url"],
             bio=None,
@@ -163,23 +165,84 @@ async def register(user_data: UserCreate):
 
 @router.post("/auth/login", response_model=TokenResponse)
 async def login(credentials: UserLogin, request: Request):
+    import re as _re
     from services.rate_limiter import rate_limiter, get_client_ip
     rate_limiter.check(f"login:{get_client_ip(request)}", max_requests=15, window_seconds=300)
 
-    email = credentials.email.strip().lower()
-    password = credentials.password.strip()
-    user = await db.users.find_one({"email": email}, {"_id": 0})
+    identifier = credentials.email.strip().lower()
+    password = credentials.password  # Never strip passwords — hash must match exactly
+
+    # Try exact email match first
+    user = await db.users.find_one({"email": identifier}, {"_id": 0})
+
+    # Fallback: case-insensitive email match (escaped for regex safety)
     if not user:
-        # Fallback: case-insensitive regex match for legacy accounts
+        escaped = _re.escape(identifier)
         user = await db.users.find_one(
-            {"email": {"$regex": f"^{email}$", "$options": "i"}},
+            {"email": {"$regex": f"^{escaped}$", "$options": "i"}},
             {"_id": 0}
         )
-    if not user or not verify_password(password, user["password_hash"]):
+
+    # Fallback: username match (allows login by username)
+    if not user:
+        user = await db.users.find_one({"username": identifier}, {"_id": 0})
+        if not user:
+            user = await db.users.find_one(
+                {"username": {"$regex": f"^{_re.escape(identifier)}$", "$options": "i"}},
+                {"_id": 0}
+            )
+
+    if not user:
+        logger.warning(f"Login failed: no user found for identifier '{identifier}'")
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    if not verify_password(password, user.get("password_hash", "")):
+        logger.warning(f"Login failed: wrong password for user '{user.get('username')}' (email: {user.get('email')})")
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
     token = create_token(user["id"])
+    logger.info(f"Login success: user '{user.get('username')}' (email: {user.get('email')})")
     return TokenResponse(access_token=token, user=await _build_user_response(user))
+
+@router.post("/admin/login-diagnostic")
+async def login_diagnostic(data: dict, user: Dict = Depends(require_auth)):
+    """Admin-only: diagnose login issues for a given identifier."""
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin only")
+    import re as _re
+    identifier = data.get("identifier", "").strip().lower()
+    result = {"identifier": identifier, "checks": []}
+
+    # Check 1: exact email match
+    u = await db.users.find_one({"email": identifier}, {"_id": 0, "id": 1, "email": 1, "username": 1, "password_hash": 1})
+    result["checks"].append({"method": "exact_email", "found": u is not None, "email": u.get("email") if u else None})
+
+    # Check 2: regex email match
+    if not u:
+        escaped = _re.escape(identifier)
+        u = await db.users.find_one({"email": {"$regex": f"^{escaped}$", "$options": "i"}}, {"_id": 0, "id": 1, "email": 1, "username": 1, "password_hash": 1})
+        result["checks"].append({"method": "regex_email", "found": u is not None, "email": u.get("email") if u else None})
+
+    # Check 3: username match
+    if not u:
+        u = await db.users.find_one({"username": identifier}, {"_id": 0, "id": 1, "email": 1, "username": 1, "password_hash": 1})
+        result["checks"].append({"method": "username", "found": u is not None, "username": u.get("username") if u else None})
+
+    if u:
+        result["user_found"] = True
+        result["email"] = u.get("email")
+        result["username"] = u.get("username")
+        result["hash_prefix"] = u.get("password_hash", "")[:7]
+        result["hash_length"] = len(u.get("password_hash", ""))
+        # Verify test password if provided
+        test_pw = data.get("test_password")
+        if test_pw:
+            result["password_match"] = verify_password(test_pw, u.get("password_hash", ""))
+    else:
+        result["user_found"] = False
+
+    return result
+
 
 @router.get("/auth/me", response_model=UserResponse)
 async def get_me(user: Dict = Depends(require_auth)):

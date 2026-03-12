@@ -10,7 +10,7 @@ class UserCreate(BaseModel):
     username: str = Field(min_length=3, max_length=30)
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    email: str  # Accepts email OR username
     password: str
 
 class UserResponse(BaseModel):
