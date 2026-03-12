@@ -110,7 +110,8 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
   useEffect(() => {
     if (highlighted && cardRef.current) {
       setTimeout(() => {
-        cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const y = cardRef.current.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({ top: y, behavior: 'smooth' });
       }, 300);
     }
     if (autoOpenComments && comments.length === 0) {

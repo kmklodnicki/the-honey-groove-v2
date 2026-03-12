@@ -161,7 +161,7 @@ const PromptArchiveDrawer = ({ open, onOpenChange }) => {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="overflow-y-auto bg-[#FAF6EE]" data-testid="prompt-archive-drawer">
+      <SheetContent side="right" className="overflow-y-auto bg-[#FAF6EE] z-[2000]" style={{ zIndex: 2000 }} data-testid="prompt-archive-drawer">
         <SheetHeader className="mb-5">
           <SheetTitle className="font-heading text-xl text-vinyl-black" data-testid="prompt-archive-title">
             The Mini-Groove

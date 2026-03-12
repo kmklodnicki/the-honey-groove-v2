@@ -97,6 +97,16 @@ const AdminRoute = ({ children }) => {
   return children;
 };
 
+// Route key wrappers — force full re-mount when URL params change (prevents "ghosting")
+const VinylVariantPageWrapper = () => {
+  const { artist, album, variant } = useParams();
+  return <VinylVariantPage key={`${artist}/${album}/${variant}`} />;
+};
+const VariantReleasePageWrapper = () => {
+  const { releaseId } = useParams();
+  return <VariantReleasePage key={releaseId} />;
+};
+
 // App Layout with Navbar
 const AppLayout = ({ children }) => {
   const { user, token, API, updateUser } = useAuth();
@@ -271,9 +281,9 @@ function AppContent() {
       <Route path="/stripe/connect/return" element={<StripeConnectReturnPage />} />
       <Route path="/stripe/connect/refresh" element={<StripeConnectRefreshPage />} />
 
-      {/* Public vinyl variant SEO pages */}
-      <Route path="/vinyl/:artist/:album/:variant" element={<AppLayout><VinylVariantPage /></AppLayout>} />
-      <Route path="/variant/:releaseId" element={<AppLayout><VariantReleasePage /></AppLayout>} />
+      {/* Public vinyl variant SEO pages — key forces full re-mount on URL change */}
+      <Route path="/vinyl/:artist/:album/:variant" element={<AppLayout><VinylVariantPageWrapper /></AppLayout>} />
+      <Route path="/variant/:releaseId" element={<AppLayout><VariantReleasePageWrapper /></AppLayout>} />
 
       {/* Full search page */}
       <Route path="/search" element={<AppLayout><SearchPage /></AppLayout>} />

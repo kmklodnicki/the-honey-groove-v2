@@ -54,6 +54,7 @@ const AlbumArt = ({
   thumbSrc,
   priority = false,
   isUnofficial = false,
+  formatText = '',
   ...props
 }) => {
   const resolvedSrc = resolveImageUrl(src);
@@ -168,7 +169,8 @@ const AlbumArt = ({
           {...(priority ? { fetchPriority: 'high' } : {})}
         />
       ) : null}
-      {isUnofficial && <UnofficialPill variant="overlay" className="!top-auto !bottom-10 !left-2 !right-auto" />}
+      {isUnofficial && <UnofficialPill variant="overlay" />}
+      {!isUnofficial && formatText && /unofficial/i.test(formatText) && <UnofficialPill variant="overlay" />}
     </div>
   );
 };
