@@ -1346,7 +1346,7 @@ const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg, pending
 const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, isSpinning, value, selectMode, isSelected, onToggleSelect, blurData, isFading, priority }) => {
   return (
     <Card 
-      className={`relative group border-honey/20 overflow-hidden hover:shadow-honey transition-all duration-300 hover:-translate-y-1 flex flex-col ${isSelected ? 'ring-2 ring-honey shadow-honey' : ''} ${selectMode ? 'cursor-pointer' : ''} ${isFading ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}
+      className={`relative group border-honey/20 overflow-hidden hover:shadow-honey transition-all duration-300 hover:-translate-y-1 flex flex-col h-full ${isSelected ? 'ring-2 ring-honey shadow-honey' : ''} ${selectMode ? 'cursor-pointer' : ''} ${isFading ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}
       style={{ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', background: 'rgba(255,255,255,0.75)' }}
       data-testid={`record-card-${record.id}`}
       onClick={selectMode ? () => onToggleSelect(record.id) : undefined}
@@ -1463,79 +1463,57 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
       </Link>
 
       <div className="p-3 flex flex-col flex-grow">
-        <div className="flex items-start justify-between gap-2 flex-grow" style={{ minHeight: '80px' }}>
-          <Link to={`/record/${record.id}`} className="flex-1 min-w-0 flex flex-col justify-between h-full">
-            <div>
-              <h4 className="font-medium text-sm truncate hover:text-honey-amber transition-colors">
-                {record.title}
-              </h4>
-              <p className="text-xs text-muted-foreground truncate">{record.artist}</p>
-            </div>
-            <div>
-              {record.rarity_label && (
-                <div className="mt-1">
-                  <RarityBadge label={record.rarity_label} size="sm" />
-                </div>
-              )}
-              {record.color_variant && (
-                record.discogs_id ? (
-                  <Link to={`/variant/${record.discogs_id}`} onClick={e => e.stopPropagation()} className="text-[11px] text-honey-amber font-medium truncate mt-0.5 block hover:underline cursor-pointer transition-transform duration-150 hover:scale-105 origin-left" data-testid={`variant-label-${record.id}`}>
-                    {record.color_variant}
-                  </Link>
-                ) : (
-                  <p className="text-[11px] text-honey-amber font-medium truncate mt-0.5" data-testid={`variant-label-${record.id}`}>
-                    {record.color_variant}
-                  </p>
-                )
-              )}
-            </div>
+        <div className="flex-grow min-h-0">
+          <Link to={`/record/${record.id}`} className="block">
+            <h4 className="font-medium text-sm line-clamp-1 hover:text-honey-amber transition-colors" data-testid={`record-title-${record.id}`}>
+              {record.title}
+            </h4>
+            <p className="text-xs text-muted-foreground line-clamp-1" data-testid={`record-artist-${record.id}`}>{record.artist}</p>
           </Link>
-          
+          {record.rarity_label && (
+            <div className="mt-1">
+              <RarityBadge label={record.rarity_label} size="sm" />
+            </div>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1 mt-auto pt-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={(e) => {
+              e.preventDefault();
+              onSpin(record);
+            }}
+            disabled={isSpinning}
+            className="flex-1 h-8 text-xs gap-1 bg-honey/10 hover:bg-honey/30"
+            data-testid={`spin-now-${record.id}`}
+          >
+            <Play className="w-3 h-3" />
+            {isSpinning ? 'Spinning...' : 'Spin Now'}
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
                 <MoreVertical className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => onSpin(record)} data-testid={`spin-btn-${record.id}`}>
-                <Play className="w-4 h-4 mr-2" />
-                Log Spin
+                <Play className="w-4 h-4 mr-2" /> Log Spin
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onMoveToWishlist(record.id)} data-testid={`wishlist-btn-${record.id}`}>
-                <Heart className="w-4 h-4 mr-2" />
-                Move to Dream Items
+                <Heart className="w-4 h-4 mr-2" /> Move to Dream Items
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onMoveToISO(record.id)} data-testid={`iso-btn-${record.id}`}>
-                <ArrowRight className="w-4 h-4 mr-2" />
-                Move to Actively Seeking
+                <ArrowRight className="w-4 h-4 mr-2" /> Move to Actively Seeking
               </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => onDelete(record.id)} 
-                className="text-red-600"
-                data-testid={`delete-btn-${record.id}`}
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Remove Completely
+              <DropdownMenuItem onClick={() => onDelete(record.id)} className="text-red-600" data-testid={`delete-btn-${record.id}`}>
+                <Trash2 className="w-4 h-4 mr-2" /> Remove Completely
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-
-        {/* Quick spin button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={(e) => {
-            e.preventDefault();
-            onSpin(record);
-          }}
-          disabled={isSpinning}
-          className="w-full mt-2 h-8 text-xs gap-1 bg-honey/10 hover:bg-honey/30"
-        >
-          <Play className="w-3 h-3" />
-          {isSpinning ? 'Spinning...' : 'Spin Now'}
-        </Button>
       </div>
     </Card>
   );

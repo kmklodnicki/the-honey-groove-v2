@@ -277,6 +277,29 @@ def get_discogs_release(release_id: int) -> Optional[Dict]:
                 if ident.get("type") == "Barcode" and ident.get("value"):
                     barcode = ident["value"].strip()
                     break
+            # Image resolution: release images > master_id images > thumb
+            cover_url = None
+            thumb_url = data.get("thumb")
+            if data.get("images"):
+                cover_url = data["images"][0].get("uri")
+                thumb_url = data["images"][0].get("uri150") or thumb_url
+            # Fallback: fetch master_id image if release has none
+            if not cover_url and data.get("master_id"):
+                try:
+                    master_resp = requests.get(
+                        f"{DISCOGS_API_BASE}/masters/{data['master_id']}",
+                        params=params, headers=headers, timeout=10
+                    )
+                    if master_resp.status_code == 200:
+                        master_data = master_resp.json()
+                        if master_data.get("images"):
+                            cover_url = master_data["images"][0].get("uri")
+                            thumb_url = master_data["images"][0].get("uri150") or thumb_url
+                except Exception as me:
+                    logger.warning(f"Master image fallback failed for master_id={data.get('master_id')}: {me}")
+            # Last resort: use thumb as cover
+            if not cover_url and thumb_url:
+                cover_url = thumb_url
             return {
                 "discogs_id": data.get("id"),
                 "master_id": data.get("master_id"),
@@ -285,8 +308,8 @@ def get_discogs_release(release_id: int) -> Optional[Dict]:
                 "year": data.get("year"),
                 "genre": data.get("genres", []),
                 "style": data.get("styles", []),
-                "cover_url": data.get("images", [{}])[0].get("uri") if data.get("images") else None,
-                "thumb_url": data.get("images", [{}])[0].get("uri150") if data.get("images") else data.get("thumb"),
+                "cover_url": cover_url,
+                "thumb_url": thumb_url,
                 "tracklist": [{"position": t.get("position"), "title": t.get("title"), "duration": t.get("duration")} for t in data.get("tracklist", [])],
                 "format": [f.get("name", "") for f in data.get("formats", [])],
                 "format_descriptions": [desc for f in data.get("formats", []) for desc in f.get("descriptions", [])],
