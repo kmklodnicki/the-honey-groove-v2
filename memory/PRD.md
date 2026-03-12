@@ -59,6 +59,9 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - Spotify/Apple Music integration — waiting for callback URL
 
 ## Recently Completed (2026-03-12)
+- **Uniform Collection Cards:** Fixed RecordCard — `line-clamp-2` title in `min-h-[2.5rem]`, `line-clamp-1` artist in `min-h-[1.25rem]`, fixed badge row, `mt-auto` Spin Now button. Perfect horizontal alignment across grid.
+- **Photo Upload in Modals:** Now Spinning and Haul modals have "Add a photo" Camera button, thumbnail preview, upload to `/api/upload`, photo_url/image_url sent with post.
+- **Feed Photo Display:** NowSpinningCard and NewHaulCard show user-uploaded photos prominently above album metadata. Falls back to standard album cover if no photo.
 - **JSX Syntax Fixes:** Fixed build-breaking errors in DiscogsSecurityModal.js (unclosed Button/div), PromptArchiveDrawer.js (broken span attributes), CollectionPage.js (React.Fragment instead of RecordCard, duplicate TabsContent, orphan code block)
 - **Composite v2.9.5 — Smart De-Duplication:** Prioritize hydrated (real image) records, merge spins from deleted duplicates, removed 'review' badge. New endpoints: GET /api/records/duplicates (with is_hydrated, total_spins), DELETE /api/records/duplicates/clean (with spins_merged)
 - **Composite v2.9.5 — Deep Asset Hydration:** POST /api/records/hard-refresh-images endpoint + "Fix Images" button in collection toolbar
