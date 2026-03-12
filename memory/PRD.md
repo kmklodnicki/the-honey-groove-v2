@@ -10,35 +10,26 @@ Premium social platform for vinyl collectors. Features include collection manage
 
 ## What's Been Implemented
 
+### BLOCKs 566-570: Instant Art Pipeline + Identity Sync (Completed Mar 12, 2026)
+- **567**: Priority preloading (first 12 eager+high), IntersectionObserver prefetch 2 rows ahead, CacheStorage blob caching, WebP conversion for Discogs URLs
+- **568**: Dual-stream loading, silk-shimmer instant render, zero-jitter locked dimensions
+- **566/570**: Gold Shield 32x32px, 3-stop chrome gradient (#FFD700→#FDB931→#B8860B), soft glow, renders via `golden_hive_verified` flag
+- **569**: Admin override tied to email/user ID (not username). Updated server.py, honeypot.py, auth.py, and ProfilePage.js
+
 ### BLOCK 565: Silk Image Fix (Completed Mar 12, 2026)
-- Removed text overlay from AlbumArt loading/error states
-- Replaced yellow shimmer with diagonal silk light-sweep animation (silk-shimmer CSS)
-- Smooth 0.4s fade-in transition for loaded images
-- Charcoal vinyl Disc icon placeholder (#4A4A4A, 35% opacity) on error — no broken image icon
+- Diagonal silk light-sweep shimmer, 0.4s fade-in, charcoal Disc error placeholder
 
 ### BLOCK 563: Mobile Tooltip Trigger Fix (Completed Mar 12, 2026)
-- InfoBubble component — dedicated ⓘ icon trigger separated from action buttons
-- 44x44px invisible touch target for thumb-friendly tapping
-- Action buttons (Refresh, Recover Values) fire immediately without tooltip interference
+- InfoBubble with 44x44px touch target, separated from action buttons
 
-### BLOCKs 559/561: Golden Hive Shield + Portal Tooltips (Completed Mar 12, 2026)
-- GoldenHiveShield: 28px multi-stop metallic gold gradient, 3D embossed drop-shadow
-- All tooltips use React Portal (document.body) with z-index 9999
-- Smart collision detection — flips above/below based on viewport space
+### BLOCKs 559/561: Portal Tooltips (Completed Mar 12, 2026)
+- React Portal z-index 9999, collision detection
 
-### BLOCKs 550, 553, 555, 556: Tooltip & Card Cleanup (Completed Mar 12, 2026)
-- Refresh/Recover tooltips with descriptive copy
-- "Value This" buttons removed from cards → "Pending" badge
-- Recover Values is sole manual deep-sync trigger
+### BLOCKs 550-556: Tooltip & Card Cleanup (Completed Mar 12, 2026)
 
 ### BLOCKs 541-545: Profile & Treasury Overhaul (Completed Mar 12, 2026)
-- Follow/Message relocated to left identity cluster
-- Right column streamlined to Control Panel
-- Country flag, identity cluster spacing, glassmorphism Treasury
 
 ### BLOCK 476: Value Recovery Engine (Completed Mar 12, 2026)
-- OAuth-aware Discogs market data, background recovery pipeline
-- Recovery endpoints, Weekly Wax email integration, nightly scheduler
 
 ## Prioritized Backlog
 
@@ -48,7 +39,7 @@ Premium social platform for vinyl collectors. Features include collection manage
 ### P2 - Upcoming
 - Service Worker Daily Prompt pre-cache (BLOCK 321)
 - SWR rollout to remaining pages
-- ProfilePage.js decomposition (1500+ lines)
+- ProfilePage.js decomposition (1600+ lines)
 
 ### P3 - Future/Backlog
 - Record Store Day Proxy Network, Safari loading animation
@@ -58,11 +49,13 @@ Premium social platform for vinyl collectors. Features include collection manage
 
 ## Test Credentials
 - User: test_recovery@test.com / test123
-- Katie: katieintheafterglow (golden_hive_verified + is_admin)
+- Katie: katie@thehoneygroove.com (golden_hive_verified + is_admin, via email lookup)
 
 ## Key Files
-- Frontend: /app/frontend/src/components/AlbumArt.js (BLOCK 565)
-- Frontend: /app/frontend/src/index.css (silk-shimmer CSS)
-- Frontend: /app/frontend/src/pages/CollectionPage.js (InfoBubble, TreasuryHeader)
-- Frontend: /app/frontend/src/pages/ProfilePage.js (GoldenHiveShield, identity cluster)
-- Backend: /app/backend/services/value_recovery.py (Recovery Engine)
+- Frontend: /app/frontend/src/components/AlbumArt.js (BLOCKs 565-568)
+- Frontend: /app/frontend/src/pages/CollectionPage.js (BLOCK 567 IntersectionObserver)
+- Frontend: /app/frontend/src/pages/ProfilePage.js (BLOCKs 566/569/570)
+- Backend: /app/backend/server.py (BLOCK 569 admin override)
+- Backend: /app/backend/routes/honeypot.py (BLOCK 569 is_admin)
+- Backend: /app/backend/routes/auth.py (BLOCK 569 debug-reset)
+- Backend: /app/backend/services/value_recovery.py (BLOCK 476)
