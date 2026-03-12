@@ -74,20 +74,19 @@ const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamL
     <div
       className="relative rounded-2xl overflow-hidden mb-5"
       style={{
-        background: 'rgba(255, 255, 255, 0.01)',
-        backdropFilter: 'blur(60px) saturate(210%)',
-        WebkitBackdropFilter: 'blur(60px) saturate(210%)',
-        border: '1px solid rgba(255, 255, 255, 0.12)',
+        background: 'rgba(252, 248, 232, 0.5)',
+        backdropFilter: 'blur(12px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+        border: '1px solid rgba(255, 255, 255, 0.6)',
+        boxShadow: '0 8px 32px rgba(200,134,26,0.06), 0 1px 2px rgba(0,0,0,0.03)',
       }}
       data-testid="treasury-header"
     >
-      {/* Ambient Hive Glow — permanent honey sunset trapped behind the glass */}
+      {/* Ambient Hive Glow — BLOCK 545: softened for frosted glass feel */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'linear-gradient(90deg, #FFD700 0%, #FF8C00 50%, #8B4513 100%)',
-          filter: 'blur(80px)',
-          opacity: 0.4,
+          background: 'linear-gradient(135deg, rgba(255,215,0,0.08) 0%, rgba(218,165,32,0.06) 50%, rgba(200,134,26,0.04) 100%)',
         }}
         aria-hidden="true"
       />
@@ -136,13 +135,13 @@ const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamL
             </div>
           )}
 
-          {/* Divider */}
+          {/* Divider — BLOCK 545: deeper gold for frosted glass contrast */}
           <div className="hidden sm:flex flex-col items-center justify-center px-3">
-            <div className="w-px h-10 bg-gradient-to-b from-transparent via-[#DAA520]/30 to-transparent" />
-            <span className="text-[9px] font-bold uppercase tracking-wider text-[#DAA520]/50 my-1">vs</span>
-            <div className="w-px h-10 bg-gradient-to-b from-transparent via-[#DAA520]/30 to-transparent" />
+            <div className="w-px h-10 bg-gradient-to-b from-transparent via-[#C8861A]/25 to-transparent" />
+            <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: '#B8860B' }}>vs</span>
+            <div className="w-px h-10 bg-gradient-to-b from-transparent via-[#C8861A]/25 to-transparent" />
           </div>
-          <div className="sm:hidden h-px mx-4 bg-gradient-to-r from-transparent via-[#DAA520]/20 to-transparent" />
+          <div className="sm:hidden h-px mx-4 bg-gradient-to-r from-transparent via-[#C8861A]/20 to-transparent" />
 
           {/* Dream Value */}
           <button

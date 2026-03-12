@@ -436,29 +436,63 @@ const ProfilePage = () => {
         </div>
 
         <div className="p-6 pt-3 lg:grid lg:grid-cols-[1fr_1.5fr_1fr] lg:gap-0">
-          {/* LEFT: Identity */}
+          {/* LEFT: Identity Cluster (BLOCK 541/543/544) */}
           <div className="flex flex-col sm:flex-row lg:flex-col items-start gap-4 lg:pr-6 lg:border-r" style={{ borderColor: 'rgba(200,134,26,0.15)' }}>
-            <Avatar className="h-20 w-20 lg:h-24 lg:w-24 border-4 border-honey/30">
-              {profile.avatar_url && <AvatarImage src={resolveImageUrl(profile.avatar_url)} fetchPriority="high" />}
-              <AvatarFallback className="bg-honey-soft text-vinyl-black text-3xl font-heading">
-                {firstLetter}
-              </AvatarFallback>
-            </Avatar>
-            {/* BLOCK 533: Report/Block icons — horizontal row beside profile photo */}
-            {!isOwnProfile && (
-              <div className="flex gap-2 items-start pt-1" data-testid="admin-action-icons">
-                <button onClick={() => setReportSellerOpen(true)} className="p-1 rounded-full text-stone-400/50 hover:text-red-500 transition-colors" data-testid="report-seller-btn" title="Report">
-                  <Flag className="w-3.5 h-3.5" />
-                </button>
-                <button onClick={() => isBlocked ? handleUnblock() : setShowBlockConfirm(true)} disabled={blockLoading}
-                  className={`p-1 rounded-full transition-colors ${isBlocked ? 'text-red-500 hover:text-stone-600' : 'text-stone-400/50 hover:text-red-500'}`} data-testid="block-btn" title={isBlocked ? 'Unblock' : 'Block'}>
-                  {blockLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : isBlocked ? <ShieldCheck className="w-3.5 h-3.5" /> : <ShieldOff className="w-3.5 h-3.5" />}
-                </button>
+            {/* Row: Avatar + Action Cluster */}
+            <div className="flex items-start gap-4">
+              <Avatar className="h-20 w-20 lg:h-24 lg:w-24 border-4 border-honey/30 shrink-0">
+                {profile.avatar_url && <AvatarImage src={resolveImageUrl(profile.avatar_url)} fetchPriority="high" />}
+                <AvatarFallback className="bg-honey-soft text-vinyl-black text-3xl font-heading">
+                  {firstLetter}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col gap-2 pt-1">
+                {/* Row 1: Report & Block icons (BLOCK 533/544) */}
+                {!isOwnProfile && (
+                  <div className="flex gap-2 items-center" data-testid="admin-action-icons">
+                    <button onClick={() => setReportSellerOpen(true)} className="p-1 rounded-full text-stone-400/50 hover:text-red-500 transition-colors" data-testid="report-seller-btn" title="Report">
+                      <Flag className="w-3.5 h-3.5" />
+                    </button>
+                    <button onClick={() => isBlocked ? handleUnblock() : setShowBlockConfirm(true)} disabled={blockLoading}
+                      className={`p-1 rounded-full transition-colors ${isBlocked ? 'text-red-500 hover:text-stone-600' : 'text-stone-400/50 hover:text-red-500'}`} data-testid="block-btn" title={isBlocked ? 'Unblock' : 'Block'}>
+                      {blockLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : isBlocked ? <ShieldCheck className="w-3.5 h-3.5" /> : <ShieldOff className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                )}
+                {/* Row 2: Follow + Message buttons (BLOCK 541) */}
+                {!isOwnProfile && token && (
+                  <div className="flex gap-2 items-center" data-testid="profile-social-actions">
+                    <Button
+                      size="sm"
+                      onClick={handleFollow}
+                      disabled={followLoading}
+                      className={`rounded-full h-8 px-3 text-xs ${
+                        isFollowing ? 'bg-white border border-vinyl-black/30 text-vinyl-black hover:bg-red-50 hover:text-red-600' :
+                        followRequestPending ? 'bg-white border border-amber-400 text-amber-700 hover:bg-red-50 hover:text-red-600' :
+                        followsMe && !isFollowing ? 'bg-honey text-vinyl-black hover:bg-honey-amber shadow-[0_0_12px_rgba(244,185,66,0.4)] animate-[honeyPulse_2s_ease-in-out_infinite]' :
+                        'bg-honey text-vinyl-black hover:bg-honey-amber'
+                      }`}
+                      data-testid="follow-btn"
+                    >
+                      {followLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> :
+                        isFollowing ? <><UserMinus className="w-3.5 h-3.5 mr-1" />Following</> :
+                        followRequestPending ? <><Loader2 className="w-3.5 h-3.5 mr-1" />Requested</> :
+                        profile?.is_private ? <><Lock className="w-3.5 h-3.5 mr-1" />Request</> :
+                        followsMe ? <><UserPlus className="w-3.5 h-3.5 mr-1" />Follow Back</> :
+                        <><UserPlus className="w-3.5 h-3.5 mr-1" />Follow</>
+                      }
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => navigate(`/messages?to=${profile.id}`)} className="rounded-full h-8 px-3 text-xs border-vinyl-black/30" data-testid="profile-message-btn">
+                      <MessageCircle className="w-3.5 h-3.5 mr-1" /> Message
+                    </Button>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+            {/* Row 3: Display Name & Username (BLOCK 544) */}
             <div style={{ minWidth: 0 }}>
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="font-heading text-xl lg:text-2xl break-words" style={{ flexShrink: 1, minWidth: 0 }} data-testid="profile-username">@{profile.username}{profile.username === 'katieintheafterglow' && <span className="ml-1" title="Founder">👑</span>}{profile.country && <span className="ml-1.5" data-testid="profile-country-flag">{countryFlag(profile.country)}</span>}</h1>
+                <h1 className="font-heading text-xl lg:text-2xl break-words" style={{ flexShrink: 1, minWidth: 0 }} data-testid="profile-username">@{profile.username}{profile.username === 'katieintheafterglow' && <span className="ml-1" title="Founder">👑</span>}</h1>
                 {profile.title_label && profile.username !== 'katieintheafterglow' && <TitleBadge label={profile.title_label} />}
               </div>
               {profile.bio && <p className="text-sm text-muted-foreground mt-1"><MentionText text={profile.bio} /></p>}
@@ -467,9 +501,10 @@ const ProfilePage = () => {
                   <Disc className="w-3 h-3" /> {profile.setup}
                 </p>
               )}
+              {/* Row 4: Location + Country Flag (BLOCK 543/544) */}
               {(profile.location || profile.city || profile.region) && (
                 <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                  <MapPin className="w-3 h-3" /> {profile.location || `${profile.city || ''}${profile.region ? `, ${profile.region}` : ''}`}
+                  <MapPin className="w-3 h-3" /> {profile.location || `${profile.city || ''}${profile.region ? `, ${profile.region}` : ''}`}{profile.country && <span className="ml-1.5" data-testid="profile-country-flag">{countryFlag(profile.country)}</span>}
                 </p>
               )}
               {profile.favorite_genre && (
@@ -591,45 +626,19 @@ const ProfilePage = () => {
             )}
           </div>
 
-          {/* RIGHT: Actions */}
-          <div className="mt-6 lg:mt-0 lg:pl-6 lg:border-l flex flex-col gap-2.5 justify-center" style={{ borderColor: 'rgba(200,134,26,0.15)' }}>
-            {!isOwnProfile && token && (
-              <>
-                <Button
-                  size="sm"
-                  onClick={handleFollow}
-                  disabled={followLoading}
-                  className={`rounded-full w-full ${
-                    isFollowing ? 'bg-white border border-vinyl-black/30 text-vinyl-black hover:bg-red-50 hover:text-red-600' :
-                    followRequestPending ? 'bg-white border border-amber-400 text-amber-700 hover:bg-red-50 hover:text-red-600' :
-                    followsMe && !isFollowing ? 'bg-honey text-vinyl-black hover:bg-honey-amber shadow-[0_0_12px_rgba(244,185,66,0.4)] animate-[honeyPulse_2s_ease-in-out_infinite]' :
-                    'bg-honey text-vinyl-black hover:bg-honey-amber'
-                  }`}
-                  data-testid="follow-btn"
-                >
-                  {followLoading ? <Loader2 className="w-4 h-4 animate-spin" /> :
-                    isFollowing ? <><UserMinus className="w-4 h-4 mr-1" />Following</> :
-                    followRequestPending ? <><Loader2 className="w-4 h-4 mr-1" />Requested</> :
-                    profile?.is_private ? <><Lock className="w-4 h-4 mr-1" />Request to Follow</> :
-                    followsMe ? <><UserPlus className="w-4 h-4 mr-1" />Follow Back</> :
-                    <><UserPlus className="w-4 h-4 mr-1" />Follow</>
-                  }
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => navigate(`/messages?to=${profile.id}`)} className="rounded-full w-full border-vinyl-black/30" data-testid="profile-message-btn">
-                  <MessageCircle className="w-4 h-4 mr-1" /> Message
-                </Button>
-                {/* Taste Match Pill */}
-                {tasteMatch && !tasteLoading && (
-                  <button onClick={() => setCommonGroundOpen(true)}
-                    className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all hover:scale-105"
-                    style={{ background: 'linear-gradient(135deg, #FFD700 0%, #FDB931 100%)', color: '#3E2723', border: '1px solid rgba(253,185,49,0.3)', boxShadow: '0 2px 10px rgba(253,185,49,0.25)' }}
-                    data-testid="taste-match-pill">
-                    <Sparkles className="w-3.5 h-3.5" style={{ color: '#C8861A' }} />
-                    {tasteMatch.score}% Taste Match
-                  </button>
-                )}
-              </>
+          {/* RIGHT: Control Panel (BLOCK 542) — Taste Match, Stripe, Golden Hive */}
+          <div className="mt-6 lg:mt-0 lg:pl-6 lg:border-l flex flex-col gap-2.5 justify-center items-stretch" style={{ borderColor: 'rgba(200,134,26,0.15)' }} data-testid="profile-control-panel">
+            {/* Taste Match — other user only */}
+            {!isOwnProfile && token && tasteMatch && !tasteLoading && (
+              <button onClick={() => setCommonGroundOpen(true)}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all hover:scale-105 w-full"
+                style={{ background: 'linear-gradient(135deg, #FFD700 0%, #FDB931 100%)', color: '#3E2723', border: '1px solid rgba(253,185,49,0.3)', boxShadow: '0 2px 10px rgba(253,185,49,0.25)' }}
+                data-testid="taste-match-pill">
+                <Sparkles className="w-3.5 h-3.5" style={{ color: '#C8861A' }} />
+                {tasteMatch.score}% Taste Match
+              </button>
             )}
+            {/* Own profile controls */}
             {isOwnProfile && (
               <>
                 <Link to="/settings">
@@ -637,10 +646,10 @@ const ProfilePage = () => {
                     <Edit className="w-3 h-3" /> Edit Profile
                   </Button>
                 </Link>
-                {/* Stripe — secondary style, BLOCK 524: disconnect icon + mobile scaling */}
+                {/* Stripe — BLOCK 524: disconnect icon + mobile scaling */}
                 {stripeStatus && (
                   stripeStatus.stripe_connected ? (
-                    <span className="inline-flex items-center justify-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-full text-[10px] sm:text-[11px] font-medium border border-green-200 text-green-600 bg-green-50 whitespace-nowrap" data-testid="stripe-connected-badge">
+                    <span className="inline-flex items-center justify-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-full text-[10px] sm:text-[11px] font-medium border border-green-200 text-green-600 bg-green-50 whitespace-nowrap w-full" data-testid="stripe-connected-badge">
                       <CreditCard className="w-3 h-3 shrink-0" /> Stripe Connected
                       <button
                         onClick={(e) => { e.stopPropagation(); e.preventDefault(); setShowStripeDisconnect(true); }}
@@ -673,14 +682,14 @@ const ProfilePage = () => {
                 )}
               </>
             )}
-            {/* BLOCK 515/517/523: Golden Hive Verified badge — right column, with tooltip + mobile touch */}
+            {/* BLOCK 515/517/523: Golden Hive Verified badge — with tooltip + mobile touch */}
             {profile.golden_hive_verified && (
               <TooltipProvider delayDuration={200}>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
                       type="button"
-                      className="mt-0.5 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full border border-amber-500/60 golden-shimmer cursor-default focus:outline-none"
+                      className="mt-0.5 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full border border-amber-500/60 golden-shimmer cursor-default focus:outline-none w-full"
                       onClick={(e) => e.preventDefault()}
                       data-testid="golden-hive-badge"
                     >
