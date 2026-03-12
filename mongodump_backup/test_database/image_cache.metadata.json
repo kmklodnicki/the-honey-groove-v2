@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"},{"v":{"$numberInt":"2"},"key":{"release_id":{"$numberInt":"1"}},"name":"release_id_1","unique":true}],"uuid":"5b2787ecbcfd40d6a381837df8a006c3","collectionName":"image_cache","type":"collection"}

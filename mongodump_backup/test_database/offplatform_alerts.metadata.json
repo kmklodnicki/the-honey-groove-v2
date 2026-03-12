@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"b228f9682caa47939b91ca6cad222235","collectionName":"offplatform_alerts","type":"collection"}

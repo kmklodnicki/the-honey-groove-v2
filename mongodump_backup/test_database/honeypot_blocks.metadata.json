@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"f70339d6d5444e6d8d71d93c98834a1a","collectionName":"honeypot_blocks","type":"collection"}

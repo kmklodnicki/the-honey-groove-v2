@@ -1,0 +1,1 @@
+{"indexes":[{"v":{"$numberInt":"2"},"key":{"_id":{"$numberInt":"1"}},"name":"_id_"}],"uuid":"e2552029811745459639f0a4140eab03","collectionName":"discogs_releases","type":"collection"}
