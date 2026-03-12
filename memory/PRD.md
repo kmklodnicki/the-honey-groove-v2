@@ -10,25 +10,22 @@ Premium social platform for vinyl collectors. Features include collection manage
 
 ## What's Been Implemented
 
+### BLOCKs 571-572: Force Refresh & Instant Failsafe (Completed Mar 12, 2026)
+- **571**: Admin override hard-coded by user ID (4072aaa7...) + email fallback. Cache-bust v=2.3.9 on all image URLs. Gold Shield SVG fully inline (no 404 risk).
+- **572**: 50ms thumb preview (showThumb state). 8s timeout → 'shimmer' state (not 'error') = silk-shimmer indefinitely, never broken icon. Error cascade: proxy → WebP fallback → charcoal Disc.
+
 ### BLOCKs 566-570: Instant Art Pipeline + Identity Sync (Completed Mar 12, 2026)
-- **567**: Priority preloading (first 12 eager+high), IntersectionObserver prefetch 2 rows ahead, CacheStorage blob caching, WebP conversion for Discogs URLs
-- **568**: Dual-stream loading, silk-shimmer instant render, zero-jitter locked dimensions
-- **566/570**: Gold Shield 32x32px, 3-stop chrome gradient (#FFD700→#FDB931→#B8860B), soft glow, renders via `golden_hive_verified` flag
-- **569**: Admin override tied to email/user ID (not username). Updated server.py, honeypot.py, auth.py, and ProfilePage.js
+- Priority preloading (first 12 eager+high), IntersectionObserver prefetch 2 rows ahead
+- CacheStorage blob caching, WebP conversion, Gold Shield 32px 3-stop gradient
+- Admin override tied to user ID/email (not username)
 
-### BLOCK 565: Silk Image Fix (Completed Mar 12, 2026)
-- Diagonal silk light-sweep shimmer, 0.4s fade-in, charcoal Disc error placeholder
-
-### BLOCK 563: Mobile Tooltip Trigger Fix (Completed Mar 12, 2026)
+### BLOCKs 563-565: Mobile Tooltip Fix + Silk Image (Completed Mar 12, 2026)
 - InfoBubble with 44x44px touch target, separated from action buttons
+- Diagonal silk light-sweep shimmer, 0.4s fade-in, charcoal error placeholder
 
 ### BLOCKs 559/561: Portal Tooltips (Completed Mar 12, 2026)
-- React Portal z-index 9999, collision detection
-
 ### BLOCKs 550-556: Tooltip & Card Cleanup (Completed Mar 12, 2026)
-
 ### BLOCKs 541-545: Profile & Treasury Overhaul (Completed Mar 12, 2026)
-
 ### BLOCK 476: Value Recovery Engine (Completed Mar 12, 2026)
 
 ## Prioritized Backlog
@@ -49,13 +46,11 @@ Premium social platform for vinyl collectors. Features include collection manage
 
 ## Test Credentials
 - User: test_recovery@test.com / test123
-- Katie: katie@thehoneygroove.com (golden_hive_verified + is_admin, via email lookup)
+- Katie: kmklodnicki@gmail.com (user ID: 4072aaa7-1171-4cd2-9c8f-20dfca8fdc58, golden_hive_verified + is_admin)
 
 ## Key Files
-- Frontend: /app/frontend/src/components/AlbumArt.js (BLOCKs 565-568)
+- Frontend: /app/frontend/src/components/AlbumArt.js (BLOCKs 565-572)
 - Frontend: /app/frontend/src/pages/CollectionPage.js (BLOCK 567 IntersectionObserver)
-- Frontend: /app/frontend/src/pages/ProfilePage.js (BLOCKs 566/569/570)
-- Backend: /app/backend/server.py (BLOCK 569 admin override)
-- Backend: /app/backend/routes/honeypot.py (BLOCK 569 is_admin)
-- Backend: /app/backend/routes/auth.py (BLOCK 569 debug-reset)
+- Frontend: /app/frontend/src/pages/ProfilePage.js (GoldenHiveShield, identity cluster)
+- Backend: /app/backend/server.py (BLOCK 571 admin override by user ID)
 - Backend: /app/backend/services/value_recovery.py (BLOCK 476)
