@@ -19,7 +19,7 @@ import PromptArchiveDrawer from './PromptArchiveDrawer';
 
 // ─── Daily Prompt Card (top of Hive feed) ───
 
-export const DailyPromptCard = ({ records, onPostCreated, fetchPrompt }) => {
+export const DailyPromptCard = ({ records, onPostCreated }) => {
   const { user, token, API } = useAuth();
   const [prompt, setPrompt] = useState(null);
   const [hasBuzzedIn, setHasBuzzedIn] = useState(false);
@@ -47,6 +47,21 @@ useEffect(() => {
       }
     }
   }, [highlightId, responses]);
+
+  const fetchPrompt = useCallback(async () => {
+    setLoading(true);
+    try {
+      const r = await axios.get(`${API}/prompts/today`, { headers: { Authorization: `Bearer ${token}` } });
+      setPrompt(r.data.prompt || null);
+      setHasBuzzedIn(r.data.has_buzzed_in || false);
+      setBuzzResponse(r.data.response || null);
+      setStreak(r.data.streak || 0);
+      setBuzzCount(r.data.buzz_count || 0);
+    } catch {
+      setPrompt(null);
+    }
+    setLoading(false);
+  }, [API, token]);
 
   useEffect(() => { fetchPrompt(); }, [fetchPrompt]);
 
