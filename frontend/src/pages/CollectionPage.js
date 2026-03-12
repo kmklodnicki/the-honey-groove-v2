@@ -66,39 +66,31 @@ const HoneycombIcon = ({ className }) => (
   </svg>
 );
 
-// BLOCK 553/561: Mobile-friendly portal tooltip — tap-to-open, tap-outside-to-close, collision-aware
-const MobileTooltip = ({ children, text, side = 'top', testId }) => {
+// BLOCK 563: InfoBubble — dedicated ⓘ trigger for tooltip, separated from action buttons
+// Desktop: hovering the parent group shows tooltip. Mobile: only the ⓘ icon opens tooltip.
+const InfoBubble = ({ text, side = 'bottom', testId }) => {
   const [open, setOpen] = useState(false);
-  const [pos, setPos] = useState({ top: 0, left: 0, flip: false });
-  const triggerRef = useRef(null);
+  const [pos, setPos] = useState({ top: 0, left: 0, above: false });
+  const iconRef = useRef(null);
   const tooltipRef = useRef(null);
-  const isTouchDevice = typeof window !== 'undefined' && 'ontouchstart' in window;
 
-  // Position calculation + collision detection
   useEffect(() => {
-    if (!open || !triggerRef.current) return;
-    const rect = triggerRef.current.getBoundingClientRect();
+    if (!open || !iconRef.current) return;
+    const rect = iconRef.current.getBoundingClientRect();
     const tipW = 220;
     let left = rect.left + rect.width / 2 - tipW / 2;
     left = Math.max(8, Math.min(left, window.innerWidth - tipW - 8));
-
-    // Smart flip: if near bottom, show above; if near top, show below
-    const preferTop = side === 'top';
     const spaceAbove = rect.top;
     const spaceBelow = window.innerHeight - rect.bottom;
-    const flip = preferTop ? spaceAbove < 60 : spaceBelow < 60;
-    const top = flip
-      ? (preferTop ? rect.bottom + 8 : rect.top - 8)
-      : (preferTop ? rect.top - 8 : rect.bottom + 8);
-
-    setPos({ top, left, flip });
+    const above = side === 'top' ? spaceAbove >= 60 : spaceBelow < 60;
+    const top = above ? rect.top - 8 : rect.bottom + 8;
+    setPos({ top, left, above });
   }, [open, side]);
 
-  // Click-outside dismiss
   useEffect(() => {
     if (!open) return;
     const dismiss = (e) => {
-      if (triggerRef.current?.contains(e.target)) return;
+      if (iconRef.current?.contains(e.target)) return;
       if (tooltipRef.current?.contains(e.target)) return;
       setOpen(false);
     };
@@ -111,21 +103,28 @@ const MobileTooltip = ({ children, text, side = 'top', testId }) => {
   }, [open]);
 
   return (
-    <div ref={triggerRef} className="relative inline-flex"
-      onMouseEnter={() => !isTouchDevice && setOpen(true)}
-      onMouseLeave={() => !isTouchDevice && setOpen(false)}
-      onClick={() => isTouchDevice && setOpen(o => !o)}
-    >
-      {children}
+    <>
+      {/* 44×44 invisible hit area around the ⓘ icon */}
+      <button
+        ref={iconRef}
+        type="button"
+        onClick={(e) => { e.stopPropagation(); e.preventDefault(); setOpen(o => !o); }}
+        className="relative flex items-center justify-center w-5 h-5 shrink-0"
+        style={{ minWidth: '44px', minHeight: '44px', margin: '-12px' }}
+        data-testid={`${testId}-trigger`}
+        aria-label="More info"
+      >
+        <span className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold leading-none"
+          style={{ background: 'rgba(218,165,32,0.15)', color: '#7A5A1A', border: '1px solid rgba(218,165,32,0.25)' }}>
+          i
+        </span>
+      </button>
       {open && ReactDOM.createPortal(
         <div
           ref={tooltipRef}
           className="fixed px-3 py-2 rounded-lg text-[11px] leading-relaxed max-w-[220px] whitespace-normal pointer-events-auto animate-in fade-in-0 zoom-in-95 duration-150"
           style={{
-            top: pos.flip && side === 'top' ? pos.top : undefined,
-            bottom: !pos.flip && side === 'top' ? `${window.innerHeight - pos.top}px` : undefined,
-            ...(pos.flip && side !== 'top' ? { bottom: `${window.innerHeight - pos.top}px` } : {}),
-            ...(!pos.flip && side !== 'top' ? { top: pos.top } : {}),
+            ...(pos.above ? { bottom: `${window.innerHeight - pos.top}px` } : { top: pos.top }),
             left: pos.left,
             zIndex: 9999,
             background: '#1A1A1A',
@@ -134,20 +133,18 @@ const MobileTooltip = ({ children, text, side = 'top', testId }) => {
           }}
           data-testid={testId}
         >
-          {isTouchDevice && (
-            <button
-              onClick={(e) => { e.stopPropagation(); setOpen(false); }}
-              className="absolute top-1 right-1 p-0.5 rounded-full hover:bg-white/20 transition-colors sm:hidden"
-              data-testid={`${testId}-close`}
-            >
-              <X className="w-3 h-3" />
-            </button>
-          )}
+          <button
+            onClick={(e) => { e.stopPropagation(); setOpen(false); }}
+            className="absolute top-1 right-1 p-0.5 rounded-full hover:bg-white/20 transition-colors"
+            data-testid={`${testId}-close`}
+          >
+            <X className="w-3 h-3" />
+          </button>
           {text}
         </div>,
         document.body
       )}
-    </div>
+    </>
   );
 };
 
@@ -264,29 +261,31 @@ const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamL
           </button>
         </div>
 
-        {/* Refresh & Recovery buttons — BLOCK 550/553/556 */}
-        <div className="flex justify-center items-center gap-3 mt-3">
-          <MobileTooltip text="Quick Sync: Refresh current market prices." side="bottom" testId="refresh-tooltip">
-            <button
-              onClick={onRefresh}
-              disabled={refreshing}
-              className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 disabled:opacity-50 active:scale-95"
-              style={{
-                background: 'linear-gradient(135deg, rgba(218,165,32,0.25), rgba(200,134,26,0.15))',
-                backdropFilter: 'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)',
-                border: '1.5px solid rgba(218,165,32,0.4)',
-                boxShadow: '0 2px 8px rgba(218,165,32,0.15), inset 0 1px 0 rgba(255,255,255,0.3)',
-              }}
-              data-testid="treasury-refresh-btn"
-              aria-label="Quick Sync: Refresh current market prices"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 text-[#C8861A] ${refreshing ? 'animate-spin' : ''}`} />
-            </button>
-          </MobileTooltip>
-          {/* BLOCK 556: Recover Values — sole manual trigger for deep collection valuation */}
+        {/* BLOCK 563: Refresh & Recovery — action buttons + dedicated ⓘ info triggers */}
+        <div className="flex justify-center items-center gap-2 mt-3">
+          {/* Refresh button */}
+          <button
+            onClick={onRefresh}
+            disabled={refreshing}
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 disabled:opacity-50 active:scale-95"
+            style={{
+              background: 'linear-gradient(135deg, rgba(218,165,32,0.25), rgba(200,134,26,0.15))',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1.5px solid rgba(218,165,32,0.4)',
+              boxShadow: '0 2px 8px rgba(218,165,32,0.15), inset 0 1px 0 rgba(255,255,255,0.3)',
+            }}
+            data-testid="treasury-refresh-btn"
+            aria-label="Quick Sync: Refresh current market prices"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-[#C8861A] ${refreshing ? 'animate-spin' : ''}`} />
+          </button>
+          <InfoBubble text="Quick Sync: Refresh current market prices." side="bottom" testId="refresh-tooltip" />
+
+          {/* Recover Values button + info */}
           {totalCount > 0 && valuedCount != null && totalCount > valuedCount && (!recoveryStatus || recoveryStatus.status !== 'in_progress') && (
-            <MobileTooltip text="Deep Search: Use the Recovery Engine to find prices for all unvalued or $0 records in your collection at once." side="bottom" testId="recover-tooltip">
+            <>
+              <div className="w-px h-4 bg-[#C8861A]/20 mx-1" />
               <button
                 onClick={onStartRecovery}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-semibold transition-all hover:scale-105 active:scale-95"
@@ -300,7 +299,8 @@ const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamL
                 <Sparkles className="w-3 h-3" />
                 Recover Values
               </button>
-            </MobileTooltip>
+              <InfoBubble text="Deep Search: Use the Recovery Engine to find prices for all unvalued or $0 records in your collection at once." side="bottom" testId="recover-tooltip" />
+            </>
           )}
         </div>
       </div>
@@ -1320,13 +1320,12 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
               ${record.custom_valuation.toFixed(0)}
             </div>
           ) : record.discogs_id ? (
-            <MobileTooltip text="Valuation Pending — use Recover Values in the header to find prices for all unvalued records." side="bottom" testId={`pending-tooltip-${record.id}`}>
-              <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-medium z-[5] cursor-default"
-                style={{ background: 'rgba(218,165,32,0.12)', color: '#7A5A1A', border: '1px solid rgba(218,165,32,0.2)' }}
-                data-testid={`record-value-pending-${record.id}`}>
-                Pending
-              </div>
-            </MobileTooltip>
+            <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-medium z-[5] cursor-default"
+              style={{ background: 'rgba(218,165,32,0.12)', color: '#7A5A1A', border: '1px solid rgba(218,165,32,0.2)' }}
+              title="Valuation Pending — use Recover Values in the header to find prices for all unvalued records."
+              data-testid={`record-value-pending-${record.id}`}>
+              Pending
+            </div>
           ) : null}
         </div>
       </Link>
@@ -1464,13 +1463,12 @@ const WishlistCard = ({ item, onPromote, onAddToCollection, onDelete }) => (
             )}
           </div>
         ) : (
-          <MobileTooltip text="Valuation Pending — use Recover Values in the header to find prices for all unvalued records." side="bottom" testId={`pending-tooltip-wish-${item.id}`}>
-            <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-medium z-[5] cursor-default"
-              style={{ background: 'rgba(218,165,32,0.12)', color: '#7A5A1A', border: '1px solid rgba(218,165,32,0.2)' }}
-              data-testid={`wishlist-value-pending-${item.id}`}>
-              Pending
-            </div>
-          </MobileTooltip>
+          <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-medium z-[5] cursor-default"
+            style={{ background: 'rgba(218,165,32,0.12)', color: '#7A5A1A', border: '1px solid rgba(218,165,32,0.2)' }}
+            title="Valuation Pending — use Recover Values in the header to find prices for all unvalued records."
+            data-testid={`wishlist-value-pending-${item.id}`}>
+            Pending
+          </div>
         )}
       </div>
     </Link>

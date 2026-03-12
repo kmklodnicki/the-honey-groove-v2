@@ -208,3 +208,23 @@ h1, h2, h3, h4, h5, h6 {
   from { opacity: 0; transform: translateX(20px); }
   to   { opacity: 1; transform: translateX(0); }
 }
+
+/* BLOCK 565: Silk shimmer — diagonal light-sweep for image loading */
+@keyframes silkSweep {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.silk-shimmer {
+  background: linear-gradient(
+    105deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.1) 35%,
+    rgba(255, 255, 255, 0.35) 50%,
+    rgba(255, 255, 255, 0.1) 65%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+  background-color: rgba(235, 231, 224, 0.6);
+  background-size: 200% 100%;
+  animation: silkSweep 1.8s ease-in-out infinite;
+}

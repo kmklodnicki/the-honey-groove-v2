@@ -9,8 +9,6 @@ const AlbumArt = ({
   alt = '',
   className = '',
   style,
-  artist,
-  title,
   blurDataUrl,
   thumbSrc,
   priority = false,
@@ -18,7 +16,6 @@ const AlbumArt = ({
 }) => {
   const resolvedSrc = resolveImageUrl(src);
   const [status, setStatus] = useState(resolvedSrc ? 'loading' : 'error');
-  // The blur source: prefer inline base64, fall back to small thumb URL
   const blurSrc = blurDataUrl || thumbSrc || null;
 
   useEffect(() => {
@@ -31,11 +28,9 @@ const AlbumArt = ({
     return () => clearTimeout(t);
   }, [status]);
 
-  const showGlassFallback = status === 'error' && (artist || title);
-
   return (
     <div className={`relative overflow-hidden ${className}`} style={style} {...props}>
-      {/* Layer 1: Blur placeholder OR grey shimmer */}
+      {/* BLOCK 565: Glassy shimmer skeleton while loading — no text overlay */}
       {status === 'loading' && (
         blurSrc ? (
           <div className="absolute inset-0">
@@ -47,33 +42,28 @@ const AlbumArt = ({
               style={{ filter: 'blur(20px)', transform: 'scale(1.2)' }}
               draggable={false}
             />
-            <div className="absolute inset-0 honey-shimmer-overlay" />
+            <div className="absolute inset-0 silk-shimmer" />
           </div>
         ) : (
-          <div className="absolute inset-0 honey-shimmer" />
+          <div className="absolute inset-0 silk-shimmer" />
         )
       )}
 
-      {/* Layer 2: Glass fallback (no cover art at all) */}
-      {showGlassFallback ? (
+      {/* BLOCK 565: Error state — clean charcoal vinyl icon, no text, no broken image */}
+      {status === 'error' ? (
         <div
-          className="w-full h-full flex flex-col items-center justify-center p-3 text-center honey-fade-in"
-          style={{
-            background: 'linear-gradient(135deg, rgba(255,246,230,0.9), rgba(218,165,32,0.15))',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-          }}
+          className="w-full h-full flex items-center justify-center honey-fade-in"
+          style={{ background: 'rgba(245, 243, 238, 1)' }}
         >
-          <Disc className="w-8 h-8 text-[#DAA520] opacity-30 mb-2" />
-          {title && <p className="text-xs font-bold text-vinyl-black/80 leading-tight line-clamp-2">{title}</p>}
-          {artist && <p className="text-[10px] text-vinyl-black/50 mt-0.5 truncate max-w-full">{artist}</p>}
+          <Disc className="w-10 h-10" style={{ color: '#4A4A4A', opacity: 0.35 }} />
         </div>
       ) : (
-        /* Layer 3: High-res image — fades in over blur */
+        /* BLOCK 565: Smooth 0.4s fade-in over shimmer */
         <img
-          src={status === 'error' || !resolvedSrc ? FALLBACK : resolvedSrc}
+          src={!resolvedSrc ? FALLBACK : resolvedSrc}
           alt={alt}
-          className={`w-full h-full object-cover transition-opacity duration-300 ease-in ${status === 'loaded' ? 'opacity-100' : 'opacity-0'}`}
+          className={`w-full h-full object-cover transition-opacity ease-in-out ${status === 'loaded' ? 'opacity-100' : 'opacity-0'}`}
+          style={{ transitionDuration: '0.4s' }}
           crossOrigin="anonymous"
           onLoad={() => setStatus('loaded')}
           onError={(e) => {
