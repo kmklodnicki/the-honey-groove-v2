@@ -15,13 +15,19 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors. Featu
 - Integrated across Feed, Profile, Search, Navbar menus
 - Founder identity tied to User ID `4072aaa7-1171-4cd2-9c8f-20dfca8fdc58`
 
-### OAuth Flow (Discogs)
+### OAuth Flow (Discogs) — BLOCKs 583, 585, 587
 - User-initiated "Golden Glassy Banner" for Discogs connection
-- Fixed z-index (`z-[200000]`) to render above navbar (`z-[100000]`)
-- CSS variable `--oauth-banner-h` dynamically pushes navbar down when banner active
+- Fixed z-index (`z-[200000]`) above navbar (`z-[100000]`)
+- CSS variable `--oauth-banner-h` dynamically pushes navbar down
 - Honey-gold gradient for high-priority alert appearance
-- Dismiss (X) removes banner and resets layout offset
-- No auto-popups (browser compliance)
+- Friendly copy: "Want to import your collection? Connect your Discogs account to sync your library instantly."
+- "Skip for now" link — hides banner for 24h via localStorage
+- X dismiss also hides banner
+- `discogs_import_intent` field: PENDING | LATER | DECLINED | CONNECTED
+  - LATER: shows banner
+  - DECLINED/CONNECTED: permanently hides banner
+- DiscogsSecurityModal with 3 options: Connect Discogs / Maybe Later / Proceed without Discogs
+- Golden Hive verification independent of Discogs — skipping doesn't affect trust
 
 ### Collection & Valuation
 - Full collection management with Discogs import/sync
@@ -44,6 +50,12 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors. Featu
 - Stripe Connect for seller payouts
 - Golden Hive membership system
 - Collector Bingo, Mood Board
+
+## Key API Endpoints
+- `POST /api/discogs/update-import-intent` — Update discogs_import_intent (PENDING/LATER/DECLINED/CONNECTED)
+- `GET /api/notifications` — Paginated (skip, limit params)
+- `POST /api/valuation/start` — Start Value Recovery Engine
+- `GET /api/valuation/status` — Recovery run status
 
 ## Known Issues
 - Service Worker caching incomplete (BLOCK 321) — only on-demand, not pre-cached on install
