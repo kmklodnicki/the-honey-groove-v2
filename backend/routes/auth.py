@@ -294,7 +294,7 @@ async def forgot_password(data: dict):
         "created_at": now,
     })
 
-    reset_url = f"{FRONTEND_URL}/reset-password?token={token}"
+    reset_url = f"{FRONTEND_URL}/reset-password/{token}"
     from templates.base import wrap_email
     body = f"""
     <p style="font-size:16px;color:#2A1A06;line-height:1.6;">

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useSearchParams, useNavigate } from 'react-router-dom';
+import { Link, useSearchParams, useParams, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -12,7 +12,8 @@ const API = process.env.REACT_APP_BACKEND_URL;
 
 const ResetPasswordPage = () => {
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token');
+  const { token: pathToken } = useParams();
+  const token = pathToken || searchParams.get('token');
   const navigate = useNavigate();
 
   const [password, setPassword] = useState('');
