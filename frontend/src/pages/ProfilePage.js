@@ -81,8 +81,8 @@ const GoldenHiveShield = () => {
         onClick={() => isTouchDevice && setOpen(o => !o)}
         data-testid="golden-hive-badge"
       >
-        {/* BLOCK 566: Gold Shield Final Form — 32px, 3-stop gold chrome gradient, soft glow */}
-        <svg className="shrink-0" width="32" height="32" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.2)) drop-shadow(0 0 8px rgba(253,185,49,0.4))' }}>
+        {/* BLOCK 577: Gold Shield Final Form — 34px, 3-stop gold chrome gradient, soft glow */}
+        <svg className="shrink-0" width="34" height="34" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.2)) drop-shadow(0 0 8px rgba(253,185,49,0.4))' }}>
           <defs>
             <linearGradient id="goldShieldLg" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#FFD700"/>
@@ -588,8 +588,18 @@ const ProfilePage = () => {
             {/* Row 3: Display Name & Username (BLOCK 544) */}
             <div style={{ minWidth: 0 }}>
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="font-heading text-xl lg:text-2xl break-words" style={{ flexShrink: 1, minWidth: 0 }} data-testid="profile-username">@{profile.username}{profile.is_admin && <span className="ml-1" title="Founder">👑</span>}</h1>
-                {profile.title_label && !profile.is_admin && <TitleBadge label={profile.title_label} />}
+                <h1 className="font-heading text-xl lg:text-2xl break-words" style={{ flexShrink: 1, minWidth: 0 }} data-testid="profile-username">
+                  @{profile.username}
+                  {/* BLOCK 577: Gold Shield replaces emoji — renders for admin or Katie's user ID */}
+                  {(profile.is_admin || profile.id === '4072aaa7-1171-4cd2-9c8f-20dfca8fdc58') && (
+                    <svg className="inline-block ml-1.5 -mt-0.5" width="18" height="18" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0 0 4px rgba(253,185,49,0.4))' }} data-testid="founder-shield">
+                      <defs><linearGradient id="founderShield" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#FFD700"/><stop offset="50%" stopColor="#FDB931"/><stop offset="100%" stopColor="#B8860B"/></linearGradient></defs>
+                      <path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" fill="url(#founderShield)" stroke="#8B6914" strokeWidth="0.5"/>
+                      <path d="M9.5 12l2 2 3.5-4" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                    </svg>
+                  )}
+                </h1>
+                {profile.title_label && !profile.is_admin && profile.id !== '4072aaa7-1171-4cd2-9c8f-20dfca8fdc58' && <TitleBadge label={profile.title_label} />}
               </div>
               {profile.bio && <p className="text-sm text-muted-foreground mt-1"><MentionText text={profile.bio} /></p>}
               {profile.setup && (
@@ -778,8 +788,8 @@ const ProfilePage = () => {
                 )}
               </>
             )}
-            {/* BLOCK 559/561: Golden Hive Verified — Prominent Gold Shield with portal tooltip */}
-            {profile.golden_hive_verified && (
+            {/* BLOCK 577: Golden Hive Verified — renders via flag OR Katie's hard-coded user ID */}
+            {(profile.golden_hive_verified || profile.id === '4072aaa7-1171-4cd2-9c8f-20dfca8fdc58') && (
               <GoldenHiveShield />
             )}
           </div>

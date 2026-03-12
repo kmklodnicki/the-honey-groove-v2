@@ -73,8 +73,11 @@ async def delete_listing_alert(alert_id: str, user: Dict = Depends(require_auth)
 # ============== NOTIFICATION ROUTES ==============
 
 @router.get("/notifications")
-async def get_notifications(limit: int = 30, user: Dict = Depends(require_auth)):
-    notifs = await db.notifications.find({"user_id": user["id"], "type": {"$ne": "dm"}}, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+async def get_notifications(limit: int = 15, skip: int = 0, user: Dict = Depends(require_auth)):
+    """BLOCK 575: Paginated notifications with skip/limit."""
+    notifs = await db.notifications.find(
+        {"user_id": user["id"], "type": {"$ne": "dm"}}, {"_id": 0}
+    ).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
     return notifs
 
 

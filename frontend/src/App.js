@@ -8,7 +8,8 @@ import VariantModal from "./components/VariantModal";
 import { Toaster } from "./components/ui/sonner";
 import { HelmetProvider } from "react-helmet-async";
 import { SWRConfig } from "swr";
-import { ArrowLeft, AlertTriangle, ExternalLink } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 import Navbar from "./components/Navbar";
 import DiscogsSecurityModal from "./components/DiscogsSecurityModal";
 
@@ -101,9 +102,27 @@ const AppLayout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [showMigration, setShowMigration] = useState(false);
-  // BLOCK 573: Detect missing Discogs OAuth token
-  const [dismissedBanner, setDismissedBanner] = useState(false);
+
+  // BLOCK 576: Show high-priority toast for missing Discogs OAuth (replaces popup/banner)
+  const toastShownRef = React.useRef(false);
   const needsDiscogs = user && !user.discogs_oauth_verified && user.discogs_migration_dismissed;
+  useEffect(() => {
+    if (needsDiscogs && !toastShownRef.current) {
+      toastShownRef.current = true;
+      // Delay to let page render first
+      const t = setTimeout(() => {
+        toast('Action Required: Connect Discogs to unlock your Golden Shield.', {
+          duration: 12000,
+          action: {
+            label: 'Connect Now',
+            onClick: () => navigate('/settings'),
+          },
+          style: { background: '#FFFBEB', border: '1px solid rgba(218,165,32,0.3)', color: '#7A5A1A' },
+        });
+      }, 2000);
+      return () => clearTimeout(t);
+    }
+  }, [needsDiscogs, navigate]);
 
   // BLOCK 492: Mount migration modal immediately after session loads
   // Trigger: user.needs_discogs_migration (computed from has_seen_security_migration === false)
@@ -119,27 +138,6 @@ const AppLayout = ({ children }) => {
   return (
     <div className="min-h-screen relative" style={{ background: 'transparent', overflow: 'visible' }}>
       {user && <Navbar />}
-      {/* BLOCK 573: Action Required banner when Discogs OAuth is missing */}
-      {user && needsDiscogs && !dismissedBanner && location.pathname !== '/settings' && (
-        <div className="sticky top-0 z-50 w-full px-4 py-2 flex items-center justify-center gap-3 text-sm"
-          style={{ background: 'linear-gradient(90deg, rgba(255,215,0,0.15), rgba(218,165,32,0.1))', borderBottom: '1px solid rgba(218,165,32,0.2)' }}
-          data-testid="discogs-action-banner"
-        >
-          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-          <span className="text-amber-800 font-medium">Action Required: Connect your Discogs account to unlock full collection valuation.</span>
-          <button
-            onClick={() => navigate('/settings')}
-            className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-all hover:scale-105"
-            style={{ background: 'linear-gradient(135deg, #FFD700, #F4B521)', color: '#1A1A1A' }}
-            data-testid="discogs-banner-connect-btn"
-          >
-            Connect <ExternalLink className="w-3 h-3" />
-          </button>
-          <button onClick={() => setDismissedBanner(true)} className="text-amber-600/50 hover:text-amber-800 transition-colors text-xs ml-1" data-testid="discogs-banner-dismiss">
-            Dismiss
-          </button>
-        </div>
-      )}
       {user && !isHome && !hasInlineBack && (
         <button
           onClick={() => navigate(-1)}

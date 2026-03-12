@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog';
-import { Home, Search, User, LogOut, Settings, Library, ShoppingBag, ArrowRightLeft, Bell, Check, MessageCircle, Globe, HelpCircle, Package, AlertTriangle, Sparkles } from 'lucide-react';
+import { Home, Search, User, LogOut, Settings, Library, ShoppingBag, ArrowRightLeft, Bell, Check, MessageCircle, Globe, HelpCircle, Package, AlertTriangle, Sparkles, Loader2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import ReportModal from './ReportModal';
 import { resolveImageUrl } from '../utils/imageUrl';
@@ -464,6 +464,8 @@ const NotificationBell = () => {
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [open, setOpen] = useState(false);
   const prevCountRef = React.useRef(0);
   const hasNotificationAPI = typeof Notification !== 'undefined';
@@ -501,10 +503,26 @@ const NotificationBell = () => {
 
   const fetchNotifications = useCallback(async () => {
     try {
-      const resp = await axios.get(`${API}/notifications?limit=15`, { headers: { Authorization: `Bearer ${token}` } });
+      const resp = await axios.get(`${API}/notifications?limit=15&skip=0`, { headers: { Authorization: `Bearer ${token}` } });
       setNotifications(resp.data);
+      setHasMore(resp.data.length >= 15);
     } catch { /* ignore */ }
   }, [API, token]);
+
+  // BLOCK 575/578: Load next page of notifications
+  const fetchMore = async () => {
+    setLoadingMore(true);
+    try {
+      const resp = await axios.get(`${API}/notifications?limit=15&skip=${notifications.length}`, { headers: { Authorization: `Bearer ${token}` } });
+      if (resp.data.length === 0) {
+        setHasMore(false);
+      } else {
+        setNotifications(prev => [...prev, ...resp.data]);
+        setHasMore(resp.data.length >= 15);
+      }
+    } catch { /* ignore */ }
+    setLoadingMore(false);
+  };
 
   useEffect(() => {
     fetchCount();
@@ -607,6 +625,35 @@ const NotificationBell = () => {
               {!n.read && <span className="w-2 h-2 rounded-full bg-honey shrink-0 mt-2" />}
             </DropdownMenuItem>
           ))
+        )}
+        {/* BLOCK 575/578: View More button — glassy honey style */}
+        {notifications.length > 0 && (
+          <div className="p-2 border-t" style={{ borderColor: 'rgba(218,165,32,0.15)' }}>
+            {hasMore ? (
+              <button
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); fetchMore(); }}
+                disabled={loadingMore}
+                className="w-full py-2 rounded-lg text-xs font-semibold transition-all hover:scale-[1.01]"
+                style={{
+                  background: 'rgba(255,255,255,0.4)',
+                  backdropFilter: 'blur(8px)',
+                  border: '1px solid rgba(218,165,32,0.3)',
+                  color: '#7A5A1A',
+                }}
+                data-testid="notif-view-more"
+              >
+                {loadingMore ? (
+                  <Loader2 className="w-4 h-4 animate-spin mx-auto text-[#C8861A]" />
+                ) : (
+                  'View More'
+                )}
+              </button>
+            ) : (
+              <p className="text-center text-[11px] text-muted-foreground py-1" data-testid="notif-caught-up">
+                You're all caught up!
+              </p>
+            )}
+          </div>
         )}
       </DropdownMenuContent>
     </DropdownMenu>
