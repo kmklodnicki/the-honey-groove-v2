@@ -289,6 +289,7 @@ def get_discogs_release(release_id: int) -> Optional[Dict]:
                 "thumb_url": data.get("images", [{}])[0].get("uri150") if data.get("images") else data.get("thumb"),
                 "tracklist": [{"position": t.get("position"), "title": t.get("title"), "duration": t.get("duration")} for t in data.get("tracklist", [])],
                 "format": [f.get("name", "") for f in data.get("formats", [])],
+                "format_descriptions": [desc for f in data.get("formats", []) for desc in f.get("descriptions", [])],
                 "label": label_names,
                 "catno": catno,
                 "country": data.get("country"),

@@ -1550,8 +1550,7 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
                     "format": format_name,
                     "color_variant": color_variant,
                     "is_unofficial": any(
-                        fmt.get("name", "").lower() == "unofficial release"
-                        or "unofficial" in " ".join(fmt.get("descriptions", [])).lower()
+                        "Unofficial Release" in fmt.get("descriptions", [])
                         for fmt in formats
                     ),
                     "notes": release.get("notes", [{}])[0].get("value", "") if release.get("notes") else "Imported from Discogs",
