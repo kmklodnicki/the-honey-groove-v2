@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, RefreshCw, Heart, ArrowRight, ShoppingBag, Cloud, Sparkles, CheckSquare, Square, ListChecks, AlertTriangle, Copy, Loader2, X, ImageDown } from 'lucide-react';
+import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, RefreshCw, Heart, ArrowRight, Cloud, Sparkles, CheckSquare, Square, ListChecks, AlertTriangle, Copy, Loader2, X, ImageDown } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,19 +26,17 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from '../components/ui/alert-dialog';
-import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '../components/ui/dialog';
 import { toast } from 'sonner';
 import DiscogsImport from '../components/DiscogsImport';
 import { usePageTitle } from '../hooks/usePageTitle';
 import AlbumArt, { prefetchArt } from '../components/AlbumArt';
-import { VariantTag } from '../components/PostCards';
 import SEOHead from '../components/SEOHead';
 import BackToTop from '../components/BackToTop';
 import ValuationAssistantModal from '../components/ValuationAssistantModal';
 import ValuationWizard from '../components/ValuationWizard';
 import { useBlurPlaceholders } from '../hooks/useBlurPlaceholders';
 import { RarityBadge } from '../components/RarityBadge';
-import UnofficialPill from '../components/UnofficialPill';
 
 // Counting animation hook
 const useCountUp = (target, duration = 1400, enabled = true) => {
@@ -1158,6 +1156,7 @@ const CollectionPage = () => {
       <Dialog open={dupeModalOpen} onOpenChange={setDupeModalOpen}>
         <DialogContent className="max-w-md" data-testid="duplicate-modal">
           <DialogTitle className="font-heading text-lg">Duplicate Records Found</DialogTitle>
+          <DialogDescription className="sr-only">Review and clean duplicate records in your collection</DialogDescription>
           {dupeData && dupeData.total_duplicates > 0 ? (
             <div>
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">
@@ -1222,6 +1221,7 @@ const CollectionPage = () => {
             <Sparkles className="w-5 h-5" style={{ color: '#DAA520' }} />
             Value Recovery Results
           </DialogTitle>
+          <DialogDescription className="sr-only">Detailed breakdown of recovered record values</DialogDescription>
           {recoveryDetails && (
             <div className="space-y-4 pt-2">
               {/* Big Win number */}
