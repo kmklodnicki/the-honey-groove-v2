@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, RefreshCw, Heart, ArrowRight, ShoppingBag, Cloud, Sparkles, CheckSquare, Square, ListChecks, AlertTriangle, Copy, Loader2, X } from 'lucide-react';
+import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, RefreshCw, Heart, ArrowRight, ShoppingBag, Cloud, Sparkles, CheckSquare, Square, ListChecks, AlertTriangle, Copy, Loader2, X, ImageDown } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -344,6 +344,7 @@ const CollectionPage = () => {
   const [dupeData, setDupeData] = useState(null);
   const [dupeLoading, setDupeLoading] = useState(false);
   const [dupeCleaning, setDupeCleaning] = useState(false);
+  const [imageRefreshing, setImageRefreshing] = useState(false);
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
   const [fadingIds, setFadingIds] = useState(new Set());
   // BLOCK 476: Value Recovery Engine state
@@ -537,12 +538,31 @@ const CollectionPage = () => {
     setDupeCleaning(true);
     try {
       const r = await axios.delete(`${API}/records/duplicates/clean`, { headers: { Authorization: `Bearer ${token}` } });
-      toast.success(`Removed ${r.data.removed_count} duplicate${r.data.removed_count !== 1 ? 's' : ''}!`);
+      const msg = r.data.spins_merged > 0
+        ? `Removed ${r.data.removed_count} duplicate${r.data.removed_count !== 1 ? 's' : ''} and merged ${r.data.spins_merged} spin${r.data.spins_merged !== 1 ? 's' : ''}!`
+        : `Removed ${r.data.removed_count} duplicate${r.data.removed_count !== 1 ? 's' : ''}!`;
+      toast.success(msg);
       setDupeModalOpen(false);
       setDupeData(null);
       fetchData();
     } catch { toast.error('Could not clean duplicates'); }
     setDupeCleaning(false);
+  };
+
+  const handleHardRefreshImages = async () => {
+    setImageRefreshing(true);
+    try {
+      const r = await axios.post(`${API}/records/hard-refresh-images`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      if (r.data.fixed > 0) {
+        toast.success(`Fixed ${r.data.fixed} placeholder image${r.data.fixed !== 1 ? 's' : ''}!`);
+        fetchData();
+      } else if (r.data.total_placeholders === 0) {
+        toast.success('All images are already hydrated!');
+      } else {
+        toast.info(`Found ${r.data.total_placeholders} placeholders but could not resolve images from Discogs.`);
+      }
+    } catch { toast.error('Image refresh failed'); }
+    setImageRefreshing(false);
   };
 
 
@@ -957,6 +977,17 @@ const CollectionPage = () => {
               {dupeLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Copy className="w-4 h-4" />}
               Duplicates
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleHardRefreshImages}
+              disabled={imageRefreshing}
+              className="gap-1.5 shrink-0 border-honey/50 text-stone-600"
+              data-testid="hard-refresh-images-btn"
+            >
+              {imageRefreshing ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageDown className="w-4 h-4" />}
+              Fix Images
+            </Button>
           </div>
 
           {/* Multi-select action bar */}
@@ -1132,14 +1163,8 @@ const CollectionPage = () => {
           {dupeData && dupeData.total_duplicates > 0 ? (
             <div>
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                We found <strong>{dupeData.total_duplicates}</strong> duplicate {dupeData.total_duplicates === 1 ? 'entry' : 'entries'} across {dupeData.duplicate_groups.length} record{dupeData.duplicate_groups.length !== 1 ? 's' : ''} in your collection. This will remove the extra copies and keep one of each. This action cannot be undone.
+                We found <strong>{dupeData.total_duplicates}</strong> duplicate {dupeData.total_duplicates === 1 ? 'entry' : 'entries'} across {dupeData.duplicate_groups.length} record{dupeData.duplicate_groups.length !== 1 ? 's' : ''} in your collection. Hydrated copies with real images and the most detailed notes will be kept. Listening history will be merged.
               </p>
-              {dupeData.duplicate_groups.some(g => g.needs_review) && (
-                <div className="mb-4 px-3 py-2 rounded-lg border border-amber-200 bg-amber-50 text-xs text-amber-800">
-                  <AlertTriangle className="inline w-3.5 h-3.5 mr-1 -mt-0.5" />
-                  {dupeData.duplicate_groups.filter(g => g.needs_review).length} group{dupeData.duplicate_groups.filter(g => g.needs_review).length !== 1 ? 's have' : ' has'} records with different notes. The copy with the most detail will be kept.
-                </div>
-              )}
               <div className="max-h-48 overflow-y-auto space-y-2 mb-5">
                 {dupeData.duplicate_groups.slice(0, 10).map((g, i) => (
                   <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-stone-50 border border-stone-200" data-testid={`dupe-group-${i}`}>
@@ -1152,12 +1177,14 @@ const CollectionPage = () => {
                       <p className="text-xs font-semibold truncate">{g.records[0]?.title}</p>
                       <p className="text-[10px] text-stone-400">{g.records[0]?.artist}</p>
                     </div>
+                    {g.total_spins > 0 && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-honey/15 text-amber-700 shrink-0" data-testid={`dupe-spins-${i}`}>
+                        {g.total_spins} spin{g.total_spins !== 1 ? 's' : ''}
+                      </span>
+                    )}
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 shrink-0" data-testid={`dupe-count-${i}`}>
                       {g.count}x
                     </span>
-                    {g.needs_review && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700">review</span>
-                    )}
                   </div>
                 ))}
                 {dupeData.duplicate_groups.length > 10 && (
@@ -1321,7 +1348,7 @@ const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg, pending
 const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, isSpinning, value, selectMode, isSelected, onToggleSelect, blurData, isFading, priority }) => {
   return (
     <Card 
-      className={`relative group border-honey/20 overflow-hidden hover:shadow-honey transition-all duration-300 hover:-translate-y-1 ${isSelected ? 'ring-2 ring-honey shadow-honey' : ''} ${selectMode ? 'cursor-pointer' : ''} ${isFading ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}
+      className={`relative group border-honey/20 overflow-hidden hover:shadow-honey transition-all duration-300 hover:-translate-y-1 flex flex-col ${isSelected ? 'ring-2 ring-honey shadow-honey' : ''} ${selectMode ? 'cursor-pointer' : ''} ${isFading ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}
       style={{ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', background: 'rgba(255,255,255,0.75)' }}
       data-testid={`record-card-${record.id}`}
       onClick={selectMode ? () => onToggleSelect(record.id) : undefined}
@@ -1437,29 +1464,33 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
         </div>
       </Link>
 
-      <div className="p-3">
-        <div className="flex items-start justify-between gap-2">
-          <Link to={`/record/${record.id}`} className="flex-1 min-w-0">
-            <h4 className="font-medium text-sm truncate hover:text-honey-amber transition-colors">
-              {record.title}
-            </h4>
-            <p className="text-xs text-muted-foreground truncate">{record.artist}</p>
-            {record.rarity_label && (
-              <div className="mt-1">
-                <RarityBadge label={record.rarity_label} size="sm" />
-              </div>
-            )}
-            {record.color_variant && (
-              record.discogs_id ? (
-                <Link to={`/variant/${record.discogs_id}`} onClick={e => e.stopPropagation()} className="text-[11px] text-honey-amber font-medium truncate mt-0.5 block hover:underline cursor-pointer transition-transform duration-150 hover:scale-105 origin-left" data-testid={`variant-label-${record.id}`}>
-                  {record.color_variant}
-                </Link>
-              ) : (
-                <p className="text-[11px] text-honey-amber font-medium truncate mt-0.5" data-testid={`variant-label-${record.id}`}>
-                  {record.color_variant}
-                </p>
-              )
-            )}
+      <div className="p-3 flex flex-col flex-grow">
+        <div className="flex items-start justify-between gap-2 flex-grow" style={{ minHeight: '80px' }}>
+          <Link to={`/record/${record.id}`} className="flex-1 min-w-0 flex flex-col justify-between h-full">
+            <div>
+              <h4 className="font-medium text-sm truncate hover:text-honey-amber transition-colors">
+                {record.title}
+              </h4>
+              <p className="text-xs text-muted-foreground truncate">{record.artist}</p>
+            </div>
+            <div>
+              {record.rarity_label && (
+                <div className="mt-1">
+                  <RarityBadge label={record.rarity_label} size="sm" />
+                </div>
+              )}
+              {record.color_variant && (
+                record.discogs_id ? (
+                  <Link to={`/variant/${record.discogs_id}`} onClick={e => e.stopPropagation()} className="text-[11px] text-honey-amber font-medium truncate mt-0.5 block hover:underline cursor-pointer transition-transform duration-150 hover:scale-105 origin-left" data-testid={`variant-label-${record.id}`}>
+                    {record.color_variant}
+                  </Link>
+                ) : (
+                  <p className="text-[11px] text-honey-amber font-medium truncate mt-0.5" data-testid={`variant-label-${record.id}`}>
+                    {record.color_variant}
+                  </p>
+                )
+              )}
+            </div>
           </Link>
           
           <DropdownMenu>

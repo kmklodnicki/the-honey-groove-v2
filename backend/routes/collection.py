@@ -170,15 +170,24 @@ async def detect_duplicates(user: Dict = Depends(require_auth)):
     """Detect duplicate records in the user's collection by discogs_id."""
     pipeline = [
         {"$match": {"user_id": user["id"], "discogs_id": {"$ne": None}}},
+        {"$lookup": {
+            "from": "spins",
+            "localField": "id",
+            "foreignField": "record_id",
+            "as": "_spins"
+        }},
+        {"$addFields": {"spin_count": {"$size": "$_spins"}}},
         {"$group": {
             "_id": "$discogs_id",
             "count": {"$sum": 1},
+            "total_spins": {"$sum": "$spin_count"},
             "records": {"$push": {
                 "id": "$id",
                 "title": "$title",
                 "artist": "$artist",
                 "notes": "$notes",
                 "cover_url": "$cover_url",
+                "spin_count": "$spin_count",
                 "created_at": "$created_at",
             }},
         }},
@@ -187,39 +196,64 @@ async def detect_duplicates(user: Dict = Depends(require_auth)):
     ]
     groups = await db.records.aggregate(pipeline).to_list(500)
     total_dupes = sum(g["count"] - 1 for g in groups)
-    # Flag groups where records have different notes (need manual review)
     for g in groups:
-        notes_set = {r.get("notes") or "" for r in g["records"]}
-        g["needs_review"] = len(notes_set) > 1
+        # Mark which record is hydrated (has real image vs placeholder)
+        for r in g["records"]:
+            url = r.get("cover_url") or ""
+            r["is_hydrated"] = bool(url) and "placeholder" not in url.lower() and "spacer.gif" not in url.lower()
         g["discogs_id"] = g.pop("_id")
     return {"duplicate_groups": groups, "total_duplicates": total_dupes}
 
 
 @router.delete("/records/duplicates/clean")
 async def clean_duplicates(user: Dict = Depends(require_auth)):
-    """Remove duplicate records, keeping the best copy of each discogs_id.
-    For groups with different notes, keeps the record with the longest note (most metadata)."""
+    """Smart de-duplication: keeps hydrated records, merges spins, protects notes."""
     pipeline = [
         {"$match": {"user_id": user["id"], "discogs_id": {"$ne": None}}},
         {"$group": {
             "_id": "$discogs_id",
             "count": {"$sum": 1},
-            "records": {"$push": {"id": "$id", "notes": "$notes", "created_at": "$created_at"}},
+            "records": {"$push": {
+                "id": "$id",
+                "notes": "$notes",
+                "cover_url": "$cover_url",
+                "created_at": "$created_at",
+            }},
         }},
         {"$match": {"count": {"$gt": 1}}},
     ]
     groups = await db.records.aggregate(pipeline).to_list(500)
     ids_to_delete = []
+    spins_merged = 0
     for g in groups:
         recs = g["records"]
-        # Pick master: longest note first, then oldest created_at as tiebreaker
-        master = max(recs, key=lambda r: (len(r.get("notes") or ""), -(hash(r.get("created_at", "")))))
-        for r in recs:
-            if r["id"] != master["id"]:
-                ids_to_delete.append(r["id"])
+
+        def is_hydrated(r):
+            url = r.get("cover_url") or ""
+            return bool(url) and "placeholder" not in url.lower() and "spacer.gif" not in url.lower()
+
+        # Priority: hydrated image > longest notes > oldest created_at
+        master = max(recs, key=lambda r: (
+            is_hydrated(r),
+            len(r.get("notes") or ""),
+            r.get("created_at") or "",
+        ))
+        dupes = [r for r in recs if r["id"] != master["id"]]
+
+        # Merge spins: reassign all spin records from dupes to master
+        dupe_ids = [r["id"] for r in dupes]
+        if dupe_ids:
+            result = await db.spins.update_many(
+                {"record_id": {"$in": dupe_ids}},
+                {"$set": {"record_id": master["id"]}}
+            )
+            spins_merged += result.modified_count
+
+        ids_to_delete.extend(dupe_ids)
+
     if ids_to_delete:
         await db.records.delete_many({"id": {"$in": ids_to_delete}, "user_id": user["id"]})
-    return {"removed_count": len(ids_to_delete)}
+    return {"removed_count": len(ids_to_delete), "spins_merged": spins_merged}
 
 
 
@@ -288,6 +322,45 @@ async def enrich_rarity(user: Dict = Depends(require_auth)):
         except Exception as e:
             logger.warning(f"Rarity enrichment failed for {rec['discogs_id']}: {e}")
     return {"enriched": enriched, "total": len(records)}
+
+
+@router.post("/records/hard-refresh-images")
+async def hard_refresh_images(user: Dict = Depends(require_auth)):
+    """Bulk repair: re-fetch cover images for all records with placeholder/missing images."""
+    import time
+    cursor = db.records.find(
+        {"user_id": user["id"], "$or": [
+            {"cover_url": None},
+            {"cover_url": ""},
+            {"cover_url": {"$regex": "spacer\\.gif|placeholder|honeycomb", "$options": "i"}},
+        ]},
+        {"_id": 0, "id": 1, "discogs_id": 1, "title": 1, "artist": 1, "cover_url": 1}
+    )
+    records = await cursor.to_list(length=500)
+    fixed = 0
+    failed = 0
+    fixed_records = []
+    for rec in records:
+        discogs_id = rec.get("discogs_id")
+        if not discogs_id:
+            failed += 1
+            continue
+        try:
+            release = get_discogs_release(int(discogs_id))
+            new_url = release.get("cover_url") if release else None
+            if new_url and "spacer.gif" not in new_url and "placeholder" not in new_url.lower():
+                await db.records.update_one(
+                    {"id": rec["id"]},
+                    {"$set": {"cover_url": new_url}}
+                )
+                fixed += 1
+                fixed_records.append({"title": rec.get("title"), "artist": rec.get("artist")})
+            else:
+                failed += 1
+        except Exception:
+            failed += 1
+        await asyncio.sleep(0.3)  # Rate limit Discogs API
+    return {"total_placeholders": len(records), "fixed": fixed, "failed": failed, "fixed_records": fixed_records[:20]}
 
 
 

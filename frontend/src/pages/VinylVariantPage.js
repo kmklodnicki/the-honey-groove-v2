@@ -231,12 +231,12 @@ export default function VinylVariantPage() {
             <StatCard icon={DollarSign} label="Avg. Value" value={val.average_value ? `$${val.average_value.toFixed(2)}` : '—'} />
             <StatCard icon={TrendingUp} label="Highest Sale" value={val.highest_sale ? `$${val.highest_sale.toFixed(2)}` : '—'} />
             <StatCard icon={ShoppingCart} label="Sales" value={val.recent_sales_count} sub="recorded" />
-            {/* Honey Market: internal listing price */}
+            {/* The Honeypot Price: internal listing price */}
             <div
               className="rounded-xl p-3 border cursor-pointer hover:shadow-md transition-all"
               style={{ borderColor: 'rgba(218,165,32,0.3)', background: 'rgba(255,215,0,0.06)' }}
               onClick={() => mp.listing_count > 0 ? document.querySelector('[data-testid="marketplace-section"]')?.scrollIntoView({ behavior: 'smooth' }) : navigate('/honeypot')}
-              data-testid="honey-market-card"
+              data-testid="honeypot-price-card"
             >
               <div className="flex items-center gap-1.5 mb-1">
                 <Store className="w-3.5 h-3.5" style={{ color: '#DAA520' }} />
@@ -259,12 +259,12 @@ export default function VinylVariantPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             <StatCard icon={DollarSign} label="Median Value" value={`$${val.discogs_median.toFixed(2)}`} sub="via Discogs" />
             <StatCard icon={TrendingUp} label="High" value={val.discogs_high ? `$${val.discogs_high.toFixed(2)}` : '—'} sub="via Discogs" />
-            {/* Honey Market fallback */}
+            {/* The Honeypot Price fallback */}
             <div
               className="rounded-xl p-3 border cursor-pointer hover:shadow-md transition-all"
               style={{ borderColor: 'rgba(218,165,32,0.3)', background: 'rgba(255,215,0,0.06)' }}
               onClick={() => mp.listing_count > 0 ? document.querySelector('[data-testid="marketplace-section"]')?.scrollIntoView({ behavior: 'smooth' }) : navigate('/honeypot')}
-              data-testid="honey-market-card"
+              data-testid="honeypot-price-card"
             >
               <div className="flex items-center gap-1.5 mb-1">
                 <Store className="w-3.5 h-3.5" style={{ color: '#DAA520' }} />

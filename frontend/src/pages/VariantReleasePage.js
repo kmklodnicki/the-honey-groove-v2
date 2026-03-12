@@ -173,7 +173,7 @@ export default function VariantReleasePage() {
           <div className="grid grid-cols-3 gap-3">
             <Stat icon={Users} label="Owners" value={scarcity.discogs_have != null ? scarcity.discogs_have.toLocaleString() : '—'} sub={scarcity.stats_source === 'master' ? 'via master release' : 'global (this pressing)'} />
             <Stat icon={Heart} label="Wantlist" value={scarcity.discogs_want != null ? scarcity.discogs_want.toLocaleString() : '—'} sub={scarcity.stats_source === 'master' ? 'via master release' : 'global (this pressing)'} />
-            {/* Honey Market: internal listing price replaces external "Lowest" */}
+            {/* The Honeypot Price: internal listing price */}
             <div
               className="flex flex-col items-center text-center p-2 rounded-xl cursor-pointer hover:shadow-md transition-all"
               style={{ background: 'rgba(255,215,0,0.06)', border: '1px solid rgba(218,165,32,0.2)' }}

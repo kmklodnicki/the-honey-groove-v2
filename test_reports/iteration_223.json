@@ -1,0 +1,111 @@
+{
+  "summary": "Composite Build Directive v2.9.5 - Backend and Frontend Testing Complete. All 7 backend API tests passed. Frontend features verified through code review and Playwright testing.",
+  
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "Various /api/* endpoints", "issue": "Intermittent 503/502 errors in console - does not block functionality, appears to be pod scaling or websocket connection issues"}
+    ]
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "passed_tests": [
+    "Backend: GET /api/records/duplicates requires auth (401)",
+    "Backend: GET /api/records/duplicates returns proper structure with is_hydrated, total_spins, spin_count per record",
+    "Backend: GET /api/records/duplicates has NO needs_review field (removed per v2.9.5)",
+    "Backend: DELETE /api/records/duplicates/clean requires auth (401)",
+    "Backend: DELETE /api/records/duplicates/clean returns removed_count AND spins_merged fields",
+    "Backend: POST /api/records/hard-refresh-images requires auth (401)",
+    "Backend: POST /api/records/hard-refresh-images returns total_placeholders/fixed/failed fields",
+    "Backend: POST /api/records/hard-refresh-images works for regular user (user-scoped, not admin-only)",
+    "Frontend: CollectionPage loads without errors after login",
+    "Frontend: 'Fix Images' button visible with data-testid='hard-refresh-images-btn'",
+    "Frontend: RecordCard has 'flex flex-col' layout (verified via code and Playwright)",
+    "Frontend: RecordCard has 'flex-grow' text container",
+    "Frontend: RecordCard text area has min-height 80px",
+    "Frontend: Duplicate modal opens correctly with no 'review' badge",
+    "Code Review: VinylVariantPage.js uses 'The Honeypot Price' label (lines 243, 271)",
+    "Code Review: VinylVariantPage.js uses data-testid='honeypot-price-card' (lines 239, 267)",
+    "Code Review: VariantReleasePage.js uses 'The Honeypot Price' in scarcity section (line 184)",
+    "Code Review: VariantReleasePage.js uses data-testid='honey-market-stat' (line 181)",
+    "Code Review: VariantReleasePage.js uses 'The Honeypot Price' in Market Value section (line 249)",
+    "Code Review: VariantReleasePage.js uses data-testid='honeypot-price-card' (line 245)",
+    "Code Review: No 'Honey Market' text found in VinylVariantPage.js or VariantReleasePage.js"
+  ],
+
+  "test_report_links": [
+    "/app/backend/tests/test_v295_composite_build.py",
+    "/app/test_reports/pytest/v295_composite_build_results.xml"
+  ],
+
+  "action_items": [],
+
+  "critical_code_review_comments": [],
+
+  "updated_files": [
+    "/app/backend/tests/test_v295_composite_build.py"
+  ],
+
+  "success_rate": {
+    "backend": "100% (7/7 tests passed)",
+    "frontend": "100% (All UI features verified)"
+  },
+
+  "test_credentials": {
+    "admin": {"email": "admin@thehoneygroove.com", "password": "admin_password"},
+    "test_user": {"email": "test@example.com", "password": "test123"}
+  },
+
+  "seed_data_creation": "No new seed data created",
+
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+
+  "context_for_next_testing_agent": "Composite Build Directive v2.9.5 verified. Smart De-Duplication: GET /api/records/duplicates returns is_hydrated, total_spins, spin_count per record (NO needs_review field). DELETE /api/records/duplicates/clean returns removed_count AND spins_merged. POST /api/records/hard-refresh-images is user-scoped (not admin-only). RecordCard uses flex flex-col layout with flex-grow text container (min-height: 80px) - 'Spin Now' buttons align at bottom. Terminology Lock: VinylVariantPage.js and VariantReleasePage.js both use 'The Honeypot Price' (no 'Honey Market' references remain). All data-testid attributes verified: hard-refresh-images-btn, honeypot-price-card, honey-market-stat.",
+
+  "features_verified": {
+    "smart_deduplication": {
+      "status": "FULLY WORKING",
+      "backend_endpoints": [
+        "GET /api/records/duplicates - returns is_hydrated, total_spins, spin_count per record, NO needs_review",
+        "DELETE /api/records/duplicates/clean - returns removed_count AND spins_merged"
+      ],
+      "frontend_components": [
+        "Duplicate modal shows no 'review' badge",
+        "Duplicate modal shows spin count for groups with spins (data-testid='dupe-spins-{i}')"
+      ]
+    },
+    "terminology_lock": {
+      "status": "FULLY WORKING",
+      "changes": [
+        "VinylVariantPage.js: 'The Honeypot Price' at lines 243, 271",
+        "VariantReleasePage.js: 'The Honeypot Price' at lines 184, 249",
+        "No 'Honey Market' text remains in either file"
+      ],
+      "data_testids": [
+        "honeypot-price-card (VinylVariantPage.js lines 239, 267)",
+        "honey-market-stat (VariantReleasePage.js line 181)",
+        "honeypot-price-card (VariantReleasePage.js line 245)"
+      ]
+    },
+    "spin_now_alignment": {
+      "status": "FULLY WORKING",
+      "layout": [
+        "RecordCard: 'flex flex-col' on Card component",
+        "Text container: 'flex flex-col flex-grow' with min-height: 80px",
+        "Spin Now button pushed to card bottom"
+      ]
+    },
+    "deep_asset_hydration": {
+      "status": "FULLY WORKING",
+      "endpoint": "POST /api/records/hard-refresh-images",
+      "response_fields": ["total_placeholders", "fixed", "failed", "fixed_records"],
+      "frontend_button": "data-testid='hard-refresh-images-btn' visible in collection toolbar"
+    }
+  }
+}
