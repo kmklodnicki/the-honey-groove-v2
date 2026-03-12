@@ -52,12 +52,14 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - `POST /api/admin/scrub-unofficial-metadata` (admin-only, re-checks all records against Discogs)
 - `POST /api/admin/oauth-status` (admin-only, verifies Discogs OAuth keys + handshake)
 - `GET /api/image-proxy?url=` (persistent cache: memory → object store → upstream, CORS-safe)
+- `POST /api/admin/purge-test-data` (admin-only, removes test listings/trades/notifications/posts, protects founder)
 - `GET /api/prompts/{id}/responses` (returns proxy_cover_url for carousel image proxying)
 
 ## Blocked
 - Spotify/Apple Music integration — waiting for callback URL
 
 ## Recently Completed (2026-03-12)
+- **v2.7.2:** Interactive Value Recovery Toast (clickable → modal with per-record old/new values + total increase), Disclaimer Padding (40px mb-10), Test Data Purge endpoint
 - OAuth Configuration Fix: admin diagnostic endpoint, startup log, handshake test
 - Daily Prompts Image Proxy: persistent storage cache, proxy_cover_url, loading="eager" first 3 slides
 - Image proxy User-Agent fix (Discogs CDN blocks bot agents)
