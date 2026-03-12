@@ -39,7 +39,7 @@ export const ISOCard = ({ iso, isOwn, onMarkFound, onDelete, onSetPriceAlert, on
     <Card className={`p-4 border-honey/30 transition-all ${iso.status === 'FOUND' ? 'opacity-60 bg-amber-50/30' : 'hover:shadow-md'}`} data-testid={`iso-item-${iso.id}`}>
       <div className="flex items-start gap-3">
         <div className="relative shrink-0">
-          <AlbumArt src={iso.cover_url} alt={`${iso.artist} ${iso.album}${iso.pressing_notes ? ` ${iso.pressing_notes}` : ''} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow" />
+          <AlbumArt src={iso.cover_url} alt={`${iso.artist} ${iso.album}${iso.pressing_notes ? ` ${iso.pressing_notes}` : ''} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow" isUnofficial={iso.is_unofficial} />
           {iso.status === 'OPEN' && (
             <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #DAA520, #E8A820)', boxShadow: '0 2px 6px rgba(218,165,32,0.5)' }} data-testid={`seeking-bolt-${iso.id}`}>
               <Zap className="w-3 h-3 text-white fill-white" />
@@ -109,7 +109,7 @@ export const ISOCard = ({ iso, isOwn, onMarkFound, onDelete, onSetPriceAlert, on
 export const CommunityISOCard = ({ iso, onHaveThis }) => (
   <Card className="p-4 border-honey/30 hover:shadow-md transition-all" data-testid={`community-iso-${iso.id}`}>
     <div className="flex items-start gap-3">
-      <AlbumArt src={iso.cover_url} alt={`${iso.artist} ${iso.album} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow" />
+      <AlbumArt src={iso.cover_url} alt={`${iso.artist} ${iso.album} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow" isUnofficial={iso.is_unofficial} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <h4 className="font-heading text-base">{iso.album}</h4>
@@ -144,7 +144,7 @@ export const ActiveTradeCard = ({ trade, currentUserId }) => {
       <Card className="p-4 border-honey/30 hover:shadow-md transition-all cursor-pointer">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <AlbumArt src={trade.offered_record?.cover_url} alt={`${trade.offered_record?.artist || ''} ${trade.offered_record?.title || 'Record'} vinyl record`} className="w-10 h-10 rounded object-cover" />
+            <AlbumArt src={trade.offered_record?.cover_url} alt={`${trade.offered_record?.artist || ''} ${trade.offered_record?.title || 'Record'} vinyl record`} className="w-10 h-10 rounded object-cover" isUnofficial={trade.offered_record?.is_unofficial} />
             <div className="min-w-0">
               <p className="text-sm font-medium truncate">{trade.offered_record?.title || 'Your record'}</p>
               <p className="text-xs text-muted-foreground">with @{otherUser?.username || '?'}</p>
@@ -185,7 +185,7 @@ export const ListingCard = ({ listing, currentUserId, onProposeTrade, onBuyNow, 
     <div className="flex items-center gap-3 py-3 px-2 cursor-pointer hover:bg-honey/5 transition-all duration-200"
       onClick={onClick} data-testid={`listing-${listing.id}`}>
       <div className="w-16 h-16 rounded-[10px] overflow-hidden bg-honey/10 shrink-0">
-        {mainImage ? <AlbumArt src={mainImage} alt={`${listing.artist} ${listing.album}${listing.pressing_notes ? ` ${listing.pressing_notes}` : ''} vinyl record`} className="w-full h-full" />
+        {mainImage ? <AlbumArt src={mainImage} alt={`${listing.artist} ${listing.album}${listing.pressing_notes ? ` ${listing.pressing_notes}` : ''} vinyl record`} className="w-full h-full" isUnofficial={listing.is_unofficial} />
           : <div className="w-full h-full flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>}
       </div>
       <div className="flex-1 min-w-0">

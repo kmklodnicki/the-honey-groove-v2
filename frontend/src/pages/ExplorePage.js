@@ -205,7 +205,7 @@ const ExplorePage = () => {
                       <div className="flex justify-center gap-1 mt-2">
                         {p.shared_covers.slice(0, 3).map((c, i) => (
                           <div key={i} className="w-10 h-10 rounded-md overflow-hidden bg-vinyl-black">
-                            <AlbumArt src={c.cover_url} alt={c.title} className="w-full h-full object-cover" />
+                            <AlbumArt src={c.cover_url} alt={c.title} className="w-full h-full object-cover" isUnofficial={c.is_unofficial} />
                           </div>
                         ))}
                       </div>
@@ -248,7 +248,7 @@ const ExplorePage = () => {
               <button key={r.id} onClick={() => openTrendingModal(r)}
                 className="flex-shrink-0 w-36 text-left group" data-testid={`trending-${r.id}`}>
                 <div className="aspect-square rounded-xl overflow-hidden bg-honey/10 mb-2 shadow-sm group-hover:shadow-md transition-shadow">
-                  <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} artist={r.artist} title={r.title} className="w-full h-full object-cover" />
+                  <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} artist={r.artist} title={r.title} className="w-full h-full object-cover" isUnofficial={r.is_unofficial} />
                 </div>
                 <p className="text-sm font-medium truncate">{r.title}</p>
                 <p className="text-xs text-muted-foreground truncate">{r.artist}</p>
@@ -272,7 +272,7 @@ const ExplorePage = () => {
             {crownJewels.map((r, idx) => (
               <button key={r.discogs_id || idx} onClick={() => navigate(`/variant/${r.discogs_id}`)} className="flex-shrink-0 w-40 text-left group" data-testid={`crown-jewel-${r.discogs_id || idx}`}>
                 <div className="aspect-square rounded-xl overflow-hidden bg-honey/10 mb-2 shadow-sm relative group-hover:shadow-md transition-shadow">
-                  <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} artist={r.artist} title={r.title} className="w-full h-full object-cover" />
+                  <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} artist={r.artist} title={r.title} className="w-full h-full object-cover" isUnofficial={r.is_unofficial} />
                   {r.estimated_value > 0 && (
                     <span
                       className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full"
@@ -316,7 +316,7 @@ const ExplorePage = () => {
               <button key={`${r.artist}-${r.album}`} onClick={() => openTrendingModal({ ...r, title: r.album })}
                 className="flex items-center gap-3 py-2 px-1 rounded-lg hover:bg-honey/5 transition-colors w-full text-left" data-testid={`most-wanted-${idx}`}>
                 <span className="text-sm font-heading text-honey-amber w-6 text-right shrink-0">{idx + 1}</span>
-                <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} className="w-10 h-10 rounded-lg object-cover" />
+                <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} className="w-10 h-10 rounded-lg object-cover" isUnofficial={r.is_unofficial} />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate">{r.album}</p>
                   <p className="text-xs text-muted-foreground truncate">{r.artist}{r.year ? ` (${r.year})` : ''}</p>
@@ -377,7 +377,7 @@ const ExplorePage = () => {
                   {nearYou.listings.map(l => (
                     <Card key={l.id} className="flex-shrink-0 w-40 p-2 border-honey/30" data-testid={`nearby-listing-${l.id}`}>
                       <div className="aspect-square rounded-lg overflow-hidden bg-honey/10 mb-1.5">
-                        {(l.photo_urls?.[0] || l.cover_url) ? <AlbumArt src={l.photo_urls?.[0] || l.cover_url} alt={`${l.artist} ${l.album} vinyl record`} className="w-full h-full object-cover" />
+                        {(l.photo_urls?.[0] || l.cover_url) ? <AlbumArt src={l.photo_urls?.[0] || l.cover_url} alt={`${l.artist} ${l.album} vinyl record`} className="w-full h-full object-cover" isUnofficial={l.is_unofficial} />
                           : <div className="w-full h-full flex items-center justify-center"><Disc className="w-8 h-8 text-honey" /></div>}
                       </div>
                       <p className="text-xs font-medium truncate">{l.album}</p>

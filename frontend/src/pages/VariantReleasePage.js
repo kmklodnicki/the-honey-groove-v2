@@ -97,7 +97,7 @@ export default function VariantReleasePage() {
         <div className="w-full md:w-72 shrink-0">
           <div className="relative aspect-square overflow-hidden bg-stone-200 rounded-2xl shadow-lg shadow-black/5">
             {ov.cover_url ? (
-              <AlbumArt src={ov.cover_url} alt={`${ov.artist} ${ov.album} ${ov.variant} vinyl`} className="w-full h-full object-cover" />
+              <AlbumArt src={ov.cover_url} alt={`${ov.artist} ${ov.album} ${ov.variant} vinyl`} className="w-full h-full object-cover" isUnofficial={ov.is_unofficial} />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <Disc className="w-16 h-16 text-honey/30" />

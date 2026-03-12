@@ -19,8 +19,9 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - `discogs_import_intent`: PENDING | LATER | DECLINED | CONNECTED
 - "Skip for now" 24h localStorage hide
 
-### Unofficial Record Compliance — BLOCK 592, v2.5.2, v2.5.3, v2.6.5
-- **Universal AlbumArt injection**: `isUnofficial` prop on `AlbumArt.js` → pill in bottom-left corner everywhere
+### Unofficial Record Compliance — v2.6.6 (Omnipresent Pill)
+- **Universal AlbumArt injection**: `isUnofficial` prop on `AlbumArt.js` → steel gray pill in bottom-left corner everywhere
+- **Full coverage**: Collection, Feed (all card types), Search Results, ISO/Want Lists, Variant & Record Pages, Listings, Profile, Trades, Orders, WaxReport, CreateHaul, Admin
 - **Strict auto-tagging**: Discogs `format.descriptions[]` checked for exact `"Unofficial Release"`
 - **ISO posts**: Backend fetches Discogs release on ISO creation, auto-tags unofficial
 - **Variant Page**: "UNOFFICIAL" badge next to title + Safe Harbor disclaimer
@@ -36,7 +37,7 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 
 ### Feed & Social
 - Daily Prompt, post types (Now Spinning, Haul, ISO, Note, Randomizer)
-- ISO pill label fixed (shows "ISO" not "Grail Find")
+- ISO pill label shows "ISO"
 - Real-time feed via Socket.IO, paginated notifications
 
 ### Image Pipeline ("Instant Art")

@@ -20,7 +20,7 @@ const RecordSearchResult = ({ record, onClick, actions, size = 'md', testId }) =
     >
       <div className="shrink-0">
         {r.cover_url ? (
-          <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} className={`${imgSize} rounded-md object-cover shadow-sm`} />
+          <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} className={`${imgSize} rounded-md object-cover shadow-sm`} isUnofficial={r.is_unofficial} />
         ) : (
           <div className={`${imgSize} rounded-md bg-stone-100 flex items-center justify-center`}>
             <Disc className="w-5 h-5 text-stone-400" />

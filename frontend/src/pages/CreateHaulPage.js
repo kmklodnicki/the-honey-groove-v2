@@ -170,7 +170,7 @@ const CreateHaulPage = () => {
                 className="flex items-center gap-3 p-3 bg-honey/10 rounded-lg"
               >
                 {item.cover_url ? (
-                  <AlbumArt src={item.cover_url} alt={item.title} className="w-12 h-12 rounded object-cover" />
+                  <AlbumArt src={item.cover_url} alt={item.title} className="w-12 h-12 rounded object-cover" isUnofficial={item.is_unofficial} />
                 ) : (
                   <div className="w-12 h-12 rounded bg-vinyl-black flex items-center justify-center">
                     <Disc className="w-5 h-5 text-honey" />
@@ -224,7 +224,7 @@ const CreateHaulPage = () => {
                 onClick={() => addItem(result)}
               >
                 {result.cover_url ? (
-                  <AlbumArt src={result.cover_url} alt={result.title} className="w-12 h-12 rounded object-cover" />
+                  <AlbumArt src={result.cover_url} alt={result.title} className="w-12 h-12 rounded object-cover" isUnofficial={result.is_unofficial} />
                 ) : (
                   <div className="w-12 h-12 rounded bg-vinyl-black flex items-center justify-center">
                     <Disc className="w-5 h-5 text-honey" />

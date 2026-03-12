@@ -770,7 +770,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                           <button key={s.id} onClick={() => { setListing(null); setLoading(true); }}
                             className="flex-shrink-0 w-28 text-left" data-testid={`similar-listing-${s.id}`}>
                             <div className="w-28 h-28 rounded-lg overflow-hidden bg-stone-100 mb-1">
-                              <AlbumArt src={s.cover_url} alt={`${s.artist} ${s.album} vinyl record`} className="w-full h-full object-cover" />
+                              <AlbumArt src={s.cover_url} alt={`${s.artist} ${s.album} vinyl record`} className="w-full h-full object-cover" isUnofficial={s.is_unofficial} />
                             </div>
                             <p className="text-xs font-medium truncate">{s.album}</p>
                             <p className="text-[10px] text-muted-foreground truncate">{s.price ? `$${s.price}` : 'Trade'}</p>
