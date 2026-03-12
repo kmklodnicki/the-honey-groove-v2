@@ -159,28 +159,50 @@ async def run_value_recovery(user_id: str):
             # Get old value before recovery
             old_doc = await db.collection_values.find_one({"release_id": did}, {"_id": 0, "median_value": 1})
             old_value = old_doc.get("median_value", 0) if old_doc else 0
+            price_source = "Discogs"
+            rec_doc = None
 
             data = await _fetch_market_value(did, oauth_token, oauth_token_secret)
-            if data:
+
+            # Advanced Price Hunting: if Discogs returns no data, try eBay/Google scraper
+            if not data or data.get("median_value", 0) == 0:
+                rec_doc = await db.records.find_one(
+                    {"discogs_id": did, "user_id": user_id},
+                    {"_id": 0, "title": 1, "artist": 1, "id": 1, "catno": 1}
+                )
+                if rec_doc:
+                    from services.price_scraper import hunt_external_price
+                    ext = await hunt_external_price(
+                        rec_doc.get("artist", ""),
+                        rec_doc.get("title", ""),
+                        rec_doc.get("catno", ""),
+                        db=db,
+                    )
+                    if ext:
+                        data = ext
+                        price_source = ext["source"]  # "eBay Sold" or "Google Market"
+
+            if data and data.get("median_value", 0) > 0:
                 await db.collection_values.update_one(
                     {"release_id": did},
                     {"$set": {
                         "release_id": did,
                         "median_value": data["median_value"],
-                        "low_value": data["low_value"],
-                        "high_value": data["high_value"],
+                        "low_value": data.get("low_value", 0),
+                        "high_value": data.get("high_value", 0),
                         "last_updated": datetime.now(timezone.utc).isoformat(),
-                        "source": "oauth_recovery" if has_oauth else "token_recovery",
+                        "source": price_source,
                     }},
                     upsert=True,
                 )
                 recovered += 1
 
                 # Get record title/artist for the detail
-                rec_doc = await db.records.find_one(
-                    {"discogs_id": did, "user_id": user_id},
-                    {"_id": 0, "title": 1, "artist": 1, "id": 1}
-                )
+                if not rec_doc:
+                    rec_doc = await db.records.find_one(
+                        {"discogs_id": did, "user_id": user_id},
+                        {"_id": 0, "title": 1, "artist": 1, "id": 1}
+                    )
                 if rec_doc:
                     recovered_details.append({
                         "record_id": rec_doc.get("id"),
@@ -189,6 +211,7 @@ async def run_value_recovery(user_id: str):
                         "old_value": round(old_value, 2),
                         "new_value": data["median_value"],
                         "increase": round(data["median_value"] - old_value, 2),
+                        "source": price_source,
                     })
             else:
                 failed += 1

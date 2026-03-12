@@ -343,6 +343,7 @@ async def get_variant_page(artist_slug: str, album_slug: str, variant_slug: str)
         "marketplace": {
             "active_listings": variant_listings,
             "listing_count": len(variant_listings),
+            "honey_lowest": min((l.get("price", float("inf")) for l in variant_listings if l.get("price")), default=None),
         },
         "value": {
             **internal_value,
@@ -479,7 +480,9 @@ async def get_variant_by_release_id(release_id: int, force_refresh: bool = False
     artist_re = re.compile(re.escape(artist), re.IGNORECASE)
     album_re = re.compile(re.escape(album), re.IGNORECASE)
     honeypot_query = {"artist": artist_re, "album": album_re, "status": "ACTIVE"}
-    honeypot_count = await db.listings.count_documents(honeypot_query)
+    honeypot_listings = await db.listings.find(honeypot_query, {"_id": 0, "price": 1}).to_list(50)
+    honeypot_count = len(honeypot_listings)
+    honey_lowest = min((l.get("price", float("inf")) for l in honeypot_listings if l.get("price")), default=None)
 
     return {
         "release_id": release_id,
@@ -501,12 +504,12 @@ async def get_variant_by_release_id(release_id: int, force_refresh: bool = False
             **rarity,
             "discogs_have": discogs_have,
             "discogs_want": discogs_want,
-            "lowest_price": lowest_price,
             "stats_source": stats_source,
             "master_id": master_id,
         },
         "honeypot": {
             "active_listings": honeypot_count,
+            "honey_lowest": honey_lowest,
         },
         "value": {
             "discogs_median": discogs_market.get("median_value"),

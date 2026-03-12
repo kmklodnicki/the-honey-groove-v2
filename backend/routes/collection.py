@@ -43,6 +43,13 @@ async def get_discogs_release_info(release_id: int, user: Dict = Depends(require
 async def add_record(record_data: RecordCreate, user: Dict = Depends(require_auth)):
     record_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
+
+    # Image Hydration: if cover_url is missing/placeholder, fetch from Discogs
+    cover_url = record_data.cover_url
+    if (not cover_url or cover_url.endswith("spacer.gif") or "placeholder" in (cover_url or "").lower()) and record_data.discogs_id:
+        release = get_discogs_release(record_data.discogs_id)
+        if release and release.get("cover_url"):
+            cover_url = release["cover_url"]
     
     record_doc = {
         "id": record_id,
@@ -51,7 +58,7 @@ async def add_record(record_data: RecordCreate, user: Dict = Depends(require_aut
         "instance_id": record_data.instance_id,
         "title": record_data.title,
         "artist": record_data.artist,
-        "cover_url": record_data.cover_url,
+        "cover_url": cover_url,
         "year": record_data.year,
         "format": record_data.format,
         "notes": record_data.notes,
@@ -121,7 +128,7 @@ async def add_record(record_data: RecordCreate, user: Dict = Depends(require_aut
         instance_id=record_data.instance_id,
         title=record_data.title,
         artist=record_data.artist,
-        cover_url=record_data.cover_url,
+        cover_url=cover_url,
         year=record_data.year,
         format=record_data.format,
         notes=record_data.notes,

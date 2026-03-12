@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Disc, TrendingUp, TrendingDown, Users, Search, ShoppingCart, MessageCircle, ArrowUpRight, Calendar, DollarSign, BarChart3, Heart } from 'lucide-react';
+import { Disc, TrendingUp, Users, Search, ShoppingCart, MessageCircle, ArrowUpRight, Calendar, DollarSign, BarChart3, Heart, Store } from 'lucide-react';
 import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import AlbumArt from '../components/AlbumArt';
@@ -230,14 +230,58 @@ export default function VinylVariantPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <StatCard icon={DollarSign} label="Avg. Value" value={val.average_value ? `$${val.average_value.toFixed(2)}` : '—'} />
             <StatCard icon={TrendingUp} label="Highest Sale" value={val.highest_sale ? `$${val.highest_sale.toFixed(2)}` : '—'} />
-            <StatCard icon={TrendingDown} label="Lowest Sale" value={val.lowest_sale ? `$${val.lowest_sale.toFixed(2)}` : '—'} />
             <StatCard icon={ShoppingCart} label="Sales" value={val.recent_sales_count} sub="recorded" />
+            {/* Honey Market: internal listing price */}
+            <div
+              className="rounded-xl p-3 border cursor-pointer hover:shadow-md transition-all"
+              style={{ borderColor: 'rgba(218,165,32,0.3)', background: 'rgba(255,215,0,0.06)' }}
+              onClick={() => mp.listing_count > 0 ? document.querySelector('[data-testid="marketplace-section"]')?.scrollIntoView({ behavior: 'smooth' }) : navigate('/honeypot')}
+              data-testid="honey-market-card"
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <Store className="w-3.5 h-3.5" style={{ color: '#DAA520' }} />
+                <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">The Honeypot Price</span>
+              </div>
+              {mp.honey_lowest ? (
+                <>
+                  <p className="text-xl font-heading font-bold" style={{ color: '#1A1A1A' }}>${mp.honey_lowest.toFixed(2)}</p>
+                  <p className="text-[10px] text-muted-foreground">lowest in the Hive</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm font-semibold text-muted-foreground">Not for sale</p>
+                  <p className="text-[10px] font-medium" style={{ color: '#DAA520' }}>List yours &rarr;</p>
+                </>
+              )}
+            </div>
           </div>
         ) : val.discogs_median ? (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             <StatCard icon={DollarSign} label="Median Value" value={`$${val.discogs_median.toFixed(2)}`} sub="via Discogs" />
             <StatCard icon={TrendingUp} label="High" value={val.discogs_high ? `$${val.discogs_high.toFixed(2)}` : '—'} sub="via Discogs" />
-            <StatCard icon={TrendingDown} label="Low" value={val.discogs_low ? `$${val.discogs_low.toFixed(2)}` : '—'} sub="via Discogs" />
+            {/* Honey Market fallback */}
+            <div
+              className="rounded-xl p-3 border cursor-pointer hover:shadow-md transition-all"
+              style={{ borderColor: 'rgba(218,165,32,0.3)', background: 'rgba(255,215,0,0.06)' }}
+              onClick={() => mp.listing_count > 0 ? document.querySelector('[data-testid="marketplace-section"]')?.scrollIntoView({ behavior: 'smooth' }) : navigate('/honeypot')}
+              data-testid="honey-market-card"
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <Store className="w-3.5 h-3.5" style={{ color: '#DAA520' }} />
+                <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">The Honeypot Price</span>
+              </div>
+              {mp.honey_lowest ? (
+                <>
+                  <p className="text-xl font-heading font-bold" style={{ color: '#1A1A1A' }}>${mp.honey_lowest.toFixed(2)}</p>
+                  <p className="text-[10px] text-muted-foreground">lowest in the Hive</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm font-semibold text-muted-foreground">Not for sale</p>
+                  <p className="text-[10px] font-medium" style={{ color: '#DAA520' }}>List yours &rarr;</p>
+                </>
+              )}
+            </div>
           </div>
         ) : (
           <Card className="p-6 border-honey/20 text-center">

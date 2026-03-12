@@ -424,220 +424,229 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
 
       {/* ═══ Now Spinning Modal (merged with Mood) ═══ */}
       <Dialog open={activeModal === 'NOW_SPINNING'} onOpenChange={(open) => !open && closeModal()}>
-        <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="font-heading flex items-center gap-2" style={{ color: '#D98C2F' }}>
-              <Disc className="w-5 h-5" /> Now Spinning
-              {spinMood && <span className="text-sm font-normal ml-1">· {MOOD_CONFIG[spinMood].emoji} {spinMood}</span>}
-            </DialogTitle>
-            <DialogDescription>
-              Share what you're listening to right now
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <div>
-              <label className="text-sm font-medium mb-1 block">Record</label>
-              {!spinSelectedRecord ? (
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    placeholder="search your collection..."
-                    value={spinSearch}
-                    onChange={e => { setSpinSearch(e.target.value); searchCollection(e.target.value); }}
-                    className="pl-9 border-honey/50"
-                    data-testid="spin-record-search"
-                  />
-                  {spinSearchResults.length > 0 && (
-                    <div className="absolute z-50 left-0 right-0 mt-1 border rounded-lg max-h-52 overflow-y-auto shadow-lg bg-white" style={{ borderColor: 'rgba(200,134,26,0.3)' }}>
-                      {spinSearchResults.map(r => (
-                        <RecordSearchResult key={r.id} record={r} onClick={() => selectSpinRecord(r)} size="sm" testId={`spin-result-${r.id}`} />
-                      ))}
-                    </div>
-                  )}
-                  {spinSearch.length >= 2 && spinSearchResults.length === 0 && (
-                    <div className="absolute z-50 left-0 right-0 mt-1 border rounded-lg p-4 text-center shadow-lg bg-white" style={{ borderColor: 'rgba(200,134,26,0.3)' }}>
-                      <p className="text-sm" style={{ color: '#8A6B4A' }}>
-                        no results in your collection 🐝
-                      </p>
-                      <a href="/add-record" className="text-xs mt-1 inline-block hover:underline"
-                        style={{ color: '#C8861A' }}
-                        data-testid="spin-add-record-link">
-                        add it first →
-                      </a>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="flex items-center gap-3 rounded-lg p-2.5" style={{ background: 'rgba(244,185,66,0.1)' }}>
-                  {spinSelectedRecord.cover_url ? (
-                    <AlbumArt src={spinSelectedRecord.cover_url} alt={`${spinSelectedRecord.artist} ${spinSelectedRecord.title} vinyl record`} className="w-11 h-11 rounded-md object-cover shadow-sm" />
-                  ) : (
-                    <div className="w-11 h-11 rounded-md bg-stone-100 flex items-center justify-center"><Disc className="w-5 h-5 text-stone-400" /></div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{spinSelectedRecord.title}</p>
-                    <p className="text-xs truncate" style={{ color: '#8A6B4A' }}>{spinSelectedRecord.artist}</p>
-                  </div>
-                  <button onClick={deselectSpinRecord} className="p-1 rounded-full hover:bg-black/10"
-                    style={{ color: '#8A6B4A' }}
-                    data-testid="spin-deselect-record">
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              )}
-            </div>
+        <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col overflow-hidden p-0">
+          <div className="px-6 pt-6 pb-2 shrink-0">
+            <DialogHeader>
+              <DialogTitle className="font-heading flex items-center gap-2" style={{ color: '#D98C2F' }}>
+                <Disc className="w-5 h-5" /> Now Spinning
+                {spinMood && <span className="text-sm font-normal ml-1">· {MOOD_CONFIG[spinMood].emoji} {spinMood}</span>}
+              </DialogTitle>
+              <DialogDescription>
+                Share what you're listening to right now
+              </DialogDescription>
+            </DialogHeader>
+          </div>
 
-            {/* Track selector — searchable dropdown when tracks available */}
-            <div className="relative" ref={trackDropdownRef}>
-              {spinTracksLoading ? (
-                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-sm" style={{ border: '1px solid rgba(200,134,26,0.5)', background: '#FFFDF5' }} data-testid="spin-track-loading">
-                  <div className="flex gap-1 items-end h-4">
-                    <span className="w-1 rounded-full animate-pulse" style={{ background: '#C8861A', height: '8px', animationDelay: '0ms', animationDuration: '800ms' }} />
-                    <span className="w-1 rounded-full animate-pulse" style={{ background: '#C8861A', height: '12px', animationDelay: '200ms', animationDuration: '800ms' }} />
-                    <span className="w-1 rounded-full animate-pulse" style={{ background: '#C8861A', height: '16px', animationDelay: '400ms', animationDuration: '800ms' }} />
-                    <span className="w-1 rounded-full animate-pulse" style={{ background: '#C8861A', height: '10px', animationDelay: '600ms', animationDuration: '800ms' }} />
-                  </div>
-                  <span style={{ color: '#8A6B4A' }}>Loading tracklist...</span>
-                </div>
-              ) : spinTracks.length > 0 ? (
-                <>
-                  <div
-                    className="flex items-center gap-2 px-3 py-2.5 rounded-md text-sm cursor-pointer transition-colors"
-                    style={{
-                      border: '1px solid rgba(200,134,26,0.5)',
-                      background: '#FFFDF5',
-                      color: spinTrack ? '#1a1a1a' : '#8A6B4A',
-                    }}
-                    onClick={() => setSpinTrackDropdownOpen(!spinTrackDropdownOpen)}
-                    data-testid="spin-track-dropdown-trigger"
-                  >
-                    <Music className="w-4 h-4 shrink-0" style={{ color: '#C8861A' }} />
-                    <span className="flex-1 truncate">{spinTrack || 'Select a track (optional)'}</span>
-                    {spinTrack ? (
-                      <button
-                        onClick={(e) => { e.stopPropagation(); setSpinTrack(''); setSpinTrackSearch(''); }}
-                        className="p-0.5 rounded-full hover:bg-black/10"
-                        data-testid="spin-track-clear"
-                      >
-                        <X className="w-3.5 h-3.5" style={{ color: '#8A6B4A' }} />
-                      </button>
-                    ) : (
-                      <ChevronDown className="w-4 h-4 shrink-0 transition-transform" style={{ color: '#8A6B4A', transform: spinTrackDropdownOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
+          {/* Scrollable content area */}
+          <div className="flex-1 overflow-y-auto px-6 min-h-0">
+            <div className="space-y-3 pb-2">
+              <div>
+                <label className="text-sm font-medium mb-1 block">Record</label>
+                {!spinSelectedRecord ? (
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="search your collection..."
+                      value={spinSearch}
+                      onChange={e => { setSpinSearch(e.target.value); searchCollection(e.target.value); }}
+                      className="pl-9 border-honey/50"
+                      data-testid="spin-record-search"
+                    />
+                    {spinSearchResults.length > 0 && (
+                      <div className="absolute z-50 left-0 right-0 mt-1 border rounded-lg max-h-52 overflow-y-auto shadow-lg bg-white" style={{ borderColor: 'rgba(200,134,26,0.3)' }}>
+                        {spinSearchResults.map(r => (
+                          <RecordSearchResult key={r.id} record={r} onClick={() => selectSpinRecord(r)} size="sm" testId={`spin-result-${r.id}`} />
+                        ))}
+                      </div>
+                    )}
+                    {spinSearch.length >= 2 && spinSearchResults.length === 0 && (
+                      <div className="absolute z-50 left-0 right-0 mt-1 border rounded-lg p-4 text-center shadow-lg bg-white" style={{ borderColor: 'rgba(200,134,26,0.3)' }}>
+                        <p className="text-sm" style={{ color: '#8A6B4A' }}>
+                          no results in your collection
+                        </p>
+                        <a href="/add-record" className="text-xs mt-1 inline-block hover:underline"
+                          style={{ color: '#C8861A' }}
+                          data-testid="spin-add-record-link">
+                          add it first &rarr;
+                        </a>
+                      </div>
                     )}
                   </div>
-                  {spinTrackDropdownOpen && (
-                    <div className="absolute z-50 left-0 right-0 mt-1 rounded-lg shadow-lg overflow-hidden" style={{ border: '1px solid rgba(200,134,26,0.3)', background: '#FFFDF5' }}>
-                      <div className="p-2 border-b" style={{ borderColor: 'rgba(200,134,26,0.15)' }}>
-                        <Input
-                          placeholder="Search tracks..."
-                          value={spinTrackSearch}
-                          onChange={e => setSpinTrackSearch(e.target.value)}
-                          className="h-8 text-sm border-honey/40"
-                          data-testid="spin-track-search-input"
-                          autoFocus
-                        />
-                      </div>
-                      <div className="max-h-48 overflow-y-auto">
-                        {spinTracks
-                          .filter(t => {
+                ) : (
+                  <div className="flex items-center gap-3 rounded-lg p-2" style={{ background: 'rgba(244,185,66,0.1)' }}>
+                    {spinSelectedRecord.cover_url ? (
+                      <AlbumArt src={spinSelectedRecord.cover_url} alt={`${spinSelectedRecord.artist} ${spinSelectedRecord.title} vinyl record`} className="w-10 h-10 rounded-md object-cover shadow-sm" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-md bg-stone-100 flex items-center justify-center"><Disc className="w-5 h-5 text-stone-400" /></div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{spinSelectedRecord.title}</p>
+                      <p className="text-xs truncate" style={{ color: '#8A6B4A' }}>{spinSelectedRecord.artist}</p>
+                    </div>
+                    <button onClick={deselectSpinRecord} className="p-1 rounded-full hover:bg-black/10"
+                      style={{ color: '#8A6B4A' }}
+                      data-testid="spin-deselect-record">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Track selector — searchable dropdown when tracks available */}
+              <div className="relative" ref={trackDropdownRef}>
+                {spinTracksLoading ? (
+                  <div className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm" style={{ border: '1px solid rgba(200,134,26,0.5)', background: '#FFFDF5' }} data-testid="spin-track-loading">
+                    <div className="flex gap-1 items-end h-4">
+                      <span className="w-1 rounded-full animate-pulse" style={{ background: '#C8861A', height: '8px', animationDelay: '0ms', animationDuration: '800ms' }} />
+                      <span className="w-1 rounded-full animate-pulse" style={{ background: '#C8861A', height: '12px', animationDelay: '200ms', animationDuration: '800ms' }} />
+                      <span className="w-1 rounded-full animate-pulse" style={{ background: '#C8861A', height: '16px', animationDelay: '400ms', animationDuration: '800ms' }} />
+                      <span className="w-1 rounded-full animate-pulse" style={{ background: '#C8861A', height: '10px', animationDelay: '600ms', animationDuration: '800ms' }} />
+                    </div>
+                    <span style={{ color: '#8A6B4A' }}>Loading tracklist...</span>
+                  </div>
+                ) : spinTracks.length > 0 ? (
+                  <>
+                    <div
+                      className="flex items-center gap-2 px-3 py-2 rounded-md text-sm cursor-pointer transition-colors"
+                      style={{
+                        border: '1px solid rgba(200,134,26,0.5)',
+                        background: '#FFFDF5',
+                        color: spinTrack ? '#1a1a1a' : '#8A6B4A',
+                      }}
+                      onClick={() => setSpinTrackDropdownOpen(!spinTrackDropdownOpen)}
+                      data-testid="spin-track-dropdown-trigger"
+                    >
+                      <Music className="w-4 h-4 shrink-0" style={{ color: '#C8861A' }} />
+                      <span className="flex-1 truncate">{spinTrack || 'Select a track (optional)'}</span>
+                      {spinTrack ? (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setSpinTrack(''); setSpinTrackSearch(''); }}
+                          className="p-0.5 rounded-full hover:bg-black/10"
+                          data-testid="spin-track-clear"
+                        >
+                          <X className="w-3.5 h-3.5" style={{ color: '#8A6B4A' }} />
+                        </button>
+                      ) : (
+                        <ChevronDown className="w-4 h-4 shrink-0 transition-transform" style={{ color: '#8A6B4A', transform: spinTrackDropdownOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
+                      )}
+                    </div>
+                    {spinTrackDropdownOpen && (
+                      <div className="absolute z-50 left-0 right-0 mt-1 rounded-lg shadow-lg overflow-hidden" style={{ border: '1px solid rgba(200,134,26,0.3)', background: '#FFFDF5' }}>
+                        <div className="p-2 border-b" style={{ borderColor: 'rgba(200,134,26,0.15)' }}>
+                          <Input
+                            placeholder="Search tracks..."
+                            value={spinTrackSearch}
+                            onChange={e => setSpinTrackSearch(e.target.value)}
+                            className="h-8 text-sm border-honey/40"
+                            data-testid="spin-track-search-input"
+                            autoFocus
+                          />
+                        </div>
+                        <div className="max-h-48 overflow-y-auto">
+                          {spinTracks
+                            .filter(t => {
+                              if (!spinTrackSearch) return true;
+                              const q = spinTrackSearch.toLowerCase();
+                              return (t.title || '').toLowerCase().includes(q) || (t.position || '').toLowerCase().includes(q);
+                            })
+                            .map((t, idx) => {
+                              const label = t.position ? `${t.position} — ${t.title}` : t.title;
+                              return (
+                                <button
+                                  key={idx}
+                                  className="w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2"
+                                  style={{
+                                    background: spinTrack === label ? 'rgba(255,184,0,0.15)' : 'transparent',
+                                    color: '#1a1a1a',
+                                  }}
+                                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,184,0,0.1)'}
+                                  onMouseLeave={e => e.currentTarget.style.background = spinTrack === label ? 'rgba(255,184,0,0.15)' : 'transparent'}
+                                  onClick={() => {
+                                    setSpinTrack(label);
+                                    setSpinTrackDropdownOpen(false);
+                                    setSpinTrackSearch('');
+                                  }}
+                                  data-testid={`spin-track-option-${idx}`}
+                                >
+                                  {t.position && <span className="text-xs font-mono shrink-0 w-7" style={{ color: '#C8861A' }}>{t.position}</span>}
+                                  <span className="truncate">{t.title}</span>
+                                  {t.duration && <span className="text-xs ml-auto shrink-0" style={{ color: '#8A6B4A' }}>{t.duration}</span>}
+                                </button>
+                              );
+                            })}
+                          {spinTracks.filter(t => {
                             if (!spinTrackSearch) return true;
                             const q = spinTrackSearch.toLowerCase();
                             return (t.title || '').toLowerCase().includes(q) || (t.position || '').toLowerCase().includes(q);
-                          })
-                          .map((t, idx) => {
-                            const label = t.position ? `${t.position} — ${t.title}` : t.title;
-                            return (
-                              <button
-                                key={idx}
-                                className="w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2"
-                                style={{
-                                  background: spinTrack === label ? 'rgba(255,184,0,0.15)' : 'transparent',
-                                  color: '#1a1a1a',
-                                }}
-                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,184,0,0.1)'}
-                                onMouseLeave={e => e.currentTarget.style.background = spinTrack === label ? 'rgba(255,184,0,0.15)' : 'transparent'}
-                                onClick={() => {
-                                  setSpinTrack(label);
-                                  setSpinTrackDropdownOpen(false);
-                                  setSpinTrackSearch('');
-                                }}
-                                data-testid={`spin-track-option-${idx}`}
-                              >
-                                {t.position && <span className="text-xs font-mono shrink-0 w-7" style={{ color: '#C8861A' }}>{t.position}</span>}
-                                <span className="truncate">{t.title}</span>
-                                {t.duration && <span className="text-xs ml-auto shrink-0" style={{ color: '#8A6B4A' }}>{t.duration}</span>}
-                              </button>
-                            );
-                          })}
-                        {spinTracks.filter(t => {
-                          if (!spinTrackSearch) return true;
-                          const q = spinTrackSearch.toLowerCase();
-                          return (t.title || '').toLowerCase().includes(q) || (t.position || '').toLowerCase().includes(q);
-                        }).length === 0 && (
-                          <p className="text-xs text-center py-3" style={{ color: '#8A6B4A' }}>No tracks match "{spinTrackSearch}"</p>
-                        )}
+                          }).length === 0 && (
+                            <p className="text-xs text-center py-3" style={{ color: '#8A6B4A' }}>No tracks match "{spinTrackSearch}"</p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="flex items-center gap-1.5">
-                  <Input
-                    placeholder={spinTracksFetched ? 'Tracklist unavailable\u2014type a track name manually (optional)' : 'Track (optional)'}
-                    value={spinTrack}
-                    onChange={e => setSpinTrack(e.target.value)}
-                    style={{ border: '1px solid rgba(200,134,26,0.5)', background: '#FFFDF5' }}
-                    data-testid="spin-track-input" />
-                  {spinTracksFetched && spinSelectedRecord?.discogs_id && (
-                    <button
-                      onClick={() => fetchTracklist(spinSelectedRecord.discogs_id)}
-                      className="shrink-0 p-2 rounded-md transition-colors hover:bg-amber-50"
-                      title="Retry fetching tracklist"
-                      data-testid="spin-track-refresh"
-                    >
-                      <RefreshCw className="w-4 h-4" style={{ color: '#C8861A' }} />
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block" style={{ color: '#8A6B4A' }}>
-                how does it feel?
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {MOOD_KEYS.map(m => {
-                  const mc = MOOD_CONFIG[m];
-                  const isSelected = spinMood === m;
-                  return (
-                    <button key={m}
-                      onClick={() => setSpinMood(isSelected ? '' : m)}
-                      className="px-3 py-2 rounded-lg text-xs font-medium transition-all"
-                      style={{
-                        background: isSelected ? 'linear-gradient(135deg, #FFB300, #FFA000)' : '#FFF8E1',
-                        color: isSelected ? '#000' : '#3E2723',
-                        border: isSelected ? '2px solid #FFA000' : '2px solid rgba(255,179,0,0.2)',
-                        transform: isSelected ? 'scale(1.06)' : 'scale(1)',
-                        transition: 'transform 180ms ease-in-out, background 200ms, border 200ms, color 200ms',
-                      }}
-                      data-testid={`mood-${m.toLowerCase().replace(/\s/g, '-')}`}>
-                      {mc.emoji} {m}
-                    </button>
-                  );
-                })}
+                    )}
+                  </>
+                ) : (
+                  <div className="flex items-center gap-1.5">
+                    <Input
+                      placeholder={spinTracksFetched ? 'Tracklist unavailable\u2014type a track name manually (optional)' : 'Track (optional)'}
+                      value={spinTrack}
+                      onChange={e => setSpinTrack(e.target.value)}
+                      style={{ border: '1px solid rgba(200,134,26,0.5)', background: '#FFFDF5' }}
+                      data-testid="spin-track-input" />
+                    {spinTracksFetched && spinSelectedRecord?.discogs_id && (
+                      <button
+                        onClick={() => fetchTracklist(spinSelectedRecord.discogs_id)}
+                        className="shrink-0 p-2 rounded-md transition-colors hover:bg-amber-50"
+                        title="Retry fetching tracklist"
+                        data-testid="spin-track-refresh"
+                      >
+                        <RefreshCw className="w-4 h-4" style={{ color: '#C8861A' }} />
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
+
+              <div>
+                <label className="text-xs font-medium mb-1.5 block" style={{ color: '#8A6B4A' }}>
+                  how does it feel?
+                </label>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {MOOD_KEYS.map(m => {
+                    const mc = MOOD_CONFIG[m];
+                    const isSelected = spinMood === m;
+                    return (
+                      <button key={m}
+                        onClick={() => setSpinMood(isSelected ? '' : m)}
+                        className="px-2 py-1.5 rounded-lg text-[11px] font-medium transition-all leading-tight"
+                        style={{
+                          background: isSelected ? 'linear-gradient(135deg, #FFB300, #FFA000)' : '#FFF8E1',
+                          color: isSelected ? '#000' : '#3E2723',
+                          border: isSelected ? '2px solid #FFA000' : '1.5px solid rgba(255,179,0,0.2)',
+                          transform: isSelected ? 'scale(1.04)' : 'scale(1)',
+                          transition: 'transform 180ms ease-in-out, background 200ms, border 200ms, color 200ms',
+                        }}
+                        data-testid={`mood-${m.toLowerCase().replace(/\s/g, '-')}`}>
+                        {mc.emoji} {m}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <MentionTextarea
+                placeholder={moodCfg ? moodCfg.placeholder : "Right now I'm..."}
+                value={spinCaption} onChange={setSpinCaption}
+                className="resize-none"
+                style={{ borderColor: 'rgba(200,134,26,0.5)' }}
+                rows={2} data-testid="spin-caption-input" />
             </div>
+          </div>
 
-            <MentionTextarea
-              placeholder={moodCfg ? moodCfg.placeholder : "Right now I'm..."}
-              value={spinCaption} onChange={setSpinCaption}
-              className="resize-none"
-              style={{ borderColor: 'rgba(200,134,26,0.5)' }}
-              rows={2} data-testid="spin-caption-input" />
-
+          {/* Sticky footer — always visible */}
+          <div className="shrink-0 px-6 pb-5 pt-3 border-t border-honey/15 bg-white">
             <Button onClick={submitNowSpinning} disabled={submitting || !spinRecordId || !spinCaption.trim()}
-              className="w-full rounded-full transition-all duration-200 text-white sticky bottom-0 z-10"
+              className="w-full rounded-full transition-all duration-200 text-white"
               style={{ background: 'linear-gradient(135deg, #FFB300, #FFA000)' }}
               data-testid="spin-submit-btn">
               {submitting ? (

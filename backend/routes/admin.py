@@ -794,3 +794,65 @@ async def purge_test_data(user: Dict = Depends(require_admin)):
 
     logger.info(f"Test data purge by @{user.get('username')}: {purge_report}")
     return purge_report
+
+
+# ─── Placeholder Image Sweep ───
+
+@router.post("/admin/placeholder-sweep")
+async def placeholder_sweep(user: Dict = Depends(require_admin)):
+    """Sweep all records with missing/placeholder cover images and re-fetch from Discogs."""
+    from database import get_discogs_release
+    import time
+
+    # Find records with no cover_url, empty cover_url, or known placeholder patterns
+    cursor = db.records.find(
+        {"$or": [
+            {"cover_url": None},
+            {"cover_url": ""},
+            {"cover_url": {"$regex": "spacer\\.gif|placeholder", "$options": "i"}},
+        ]},
+        {"_id": 0, "id": 1, "discogs_id": 1, "title": 1, "artist": 1, "cover_url": 1}
+    )
+    records = await cursor.to_list(length=None)
+    total = len(records)
+    fixed = 0
+    failed = 0
+    fixed_records = []
+
+    for i, rec in enumerate(records):
+        discogs_id = rec.get("discogs_id")
+        if not discogs_id:
+            failed += 1
+            continue
+
+        try:
+            release = get_discogs_release(int(discogs_id))
+            new_url = release.get("cover_url") if release else None
+            if new_url:
+                await db.records.update_one(
+                    {"id": rec["id"]},
+                    {"$set": {"cover_url": new_url}}
+                )
+                fixed += 1
+                fixed_records.append({
+                    "id": rec["id"],
+                    "title": rec.get("title"),
+                    "artist": rec.get("artist"),
+                    "old_url": rec.get("cover_url"),
+                    "new_url": new_url[:80],
+                })
+            else:
+                failed += 1
+        except Exception as e:
+            failed += 1
+
+        if (i + 1) % 25 == 0:
+            await asyncio.sleep(1)
+
+    logger.info(f"Placeholder sweep: {total} found, {fixed} fixed, {failed} failed")
+    return {
+        "total_placeholders": total,
+        "fixed": fixed,
+        "failed": failed,
+        "fixed_records": fixed_records[:30],
+    }

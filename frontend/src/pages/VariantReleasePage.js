@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
-  Disc, Users, TrendingUp, TrendingDown, DollarSign, BarChart3,
-  Calendar, ArrowLeft, Loader2, Heart, RefreshCw
+  Disc, Users, TrendingUp, DollarSign, BarChart3,
+  Calendar, ArrowLeft, Loader2, Heart, RefreshCw, Store
 } from 'lucide-react';
 import { Card } from '../components/ui/card';
 import AlbumArt from '../components/AlbumArt';
@@ -173,7 +173,27 @@ export default function VariantReleasePage() {
           <div className="grid grid-cols-3 gap-3">
             <Stat icon={Users} label="Owners" value={scarcity.discogs_have != null ? scarcity.discogs_have.toLocaleString() : '—'} sub={scarcity.stats_source === 'master' ? 'via master release' : 'global (this pressing)'} />
             <Stat icon={Heart} label="Wantlist" value={scarcity.discogs_want != null ? scarcity.discogs_want.toLocaleString() : '—'} sub={scarcity.stats_source === 'master' ? 'via master release' : 'global (this pressing)'} />
-            <Stat icon={DollarSign} label="Lowest" value={scarcity.lowest_price ? `$${scarcity.lowest_price.toFixed(2)}` : '—'} sub="current listing" />
+            {/* Honey Market: internal listing price replaces external "Lowest" */}
+            <div
+              className="flex flex-col items-center text-center p-2 rounded-xl cursor-pointer hover:shadow-md transition-all"
+              style={{ background: 'rgba(255,215,0,0.06)', border: '1px solid rgba(218,165,32,0.2)' }}
+              onClick={() => honeypot?.active_listings > 0 ? navigate(`/honeypot?q=${encodeURIComponent(ov.artist + ' ' + ov.album)}`) : navigate('/honeypot')}
+              data-testid="honey-market-stat"
+            >
+              <Store className="w-4 h-4 mb-0.5" style={{ color: '#DAA520' }} />
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">The Honeypot Price</span>
+              {honeypot?.honey_lowest ? (
+                <>
+                  <span className="text-xl font-heading font-bold" style={{ color: '#1A1A1A' }}>${honeypot.honey_lowest.toFixed(2)}</span>
+                  <span className="text-[10px] text-muted-foreground">in the Hive</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-sm font-semibold text-muted-foreground mt-0.5">Not listed</span>
+                  <span className="text-[10px] font-medium" style={{ color: '#DAA520' }}>List yours</span>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </section>
@@ -211,13 +231,35 @@ export default function VariantReleasePage() {
       )}
 
       {/* Market Value */}
-      {(val.discogs_median || val.discogs_low || val.discogs_high) && (
+      {(val.discogs_median || val.discogs_high || honeypot?.honey_lowest) && (
         <section className="mb-10" data-testid="value-section">
           <h2 className="text-xl font-heading font-bold mb-4 flex items-center gap-2">
             <BarChart3 className="w-5 h-5 text-honey-amber" /> Market Value
           </h2>
           <div className="grid grid-cols-3 gap-3">
-            <Stat icon={TrendingDown} label="Low" value={val.discogs_low ? `$${val.discogs_low.toFixed(2)}` : '—'} sub="via Discogs" />
+            {/* The Honeypot Price replaces Discogs Low */}
+            <div
+              className="rounded-xl p-4 border cursor-pointer hover:shadow-md transition-all"
+              style={{ borderColor: 'rgba(218,165,32,0.3)', background: 'rgba(255,215,0,0.06)' }}
+              onClick={() => honeypot?.active_listings > 0 ? navigate(`/honeypot?q=${encodeURIComponent(ov.artist + ' ' + ov.album)}`) : navigate('/honeypot')}
+              data-testid="honeypot-price-card"
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <Store className="w-3.5 h-3.5" style={{ color: '#DAA520' }} />
+                <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">The Honeypot Price</span>
+              </div>
+              {honeypot?.honey_lowest ? (
+                <>
+                  <p className="text-xl font-heading font-bold" style={{ color: '#1A1A1A' }}>${honeypot.honey_lowest.toFixed(2)}</p>
+                  <p className="text-[10px] text-muted-foreground">lowest in the Hive</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-sm font-semibold text-muted-foreground">Not listed</p>
+                  <p className="text-[10px] font-medium" style={{ color: '#DAA520' }}>List yours &rarr;</p>
+                </>
+              )}
+            </div>
             <Stat icon={DollarSign} label="Median" value={val.discogs_median ? `$${val.discogs_median.toFixed(2)}` : '—'} sub="via Discogs" />
             <Stat icon={TrendingUp} label="High" value={val.discogs_high ? `$${val.discogs_high.toFixed(2)}` : '—'} sub="via Discogs" />
           </div>

@@ -1225,6 +1225,14 @@ const CollectionPage = () => {
                       {item.increase > 0 && (
                         <p className="text-[10px] font-semibold text-emerald-600 mt-0.5">+${item.increase.toFixed(2)}</p>
                       )}
+                      {item.source && (
+                        <p className="text-[9px] uppercase tracking-wider mt-0.5"
+                           style={{ color: item.source === 'Discogs' ? '#6B7280' : item.source?.includes('eBay') ? '#e53e3e' : '#2563EB' }}
+                           data-testid="recovery-source-label"
+                        >
+                          {item.source}
+                        </p>
+                      )}
                     </div>
                   </div>
                 ))}
