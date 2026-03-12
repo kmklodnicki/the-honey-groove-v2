@@ -187,6 +187,7 @@ class PostResponse(BaseModel):
     post_type: str
     caption: Optional[str] = None
     image_url: Optional[str] = None
+    photo_url: Optional[str] = None
     share_card_square_url: Optional[str] = None
     share_card_story_url: Optional[str] = None
     record_id: Optional[str] = None
