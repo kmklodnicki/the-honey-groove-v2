@@ -253,7 +253,7 @@ export default function SearchPage() {
   });
 
   return (
-    <div className="min-h-screen bg-white pt-[52px] md:pt-[88px]" data-testid="search-page">
+    <div className="min-h-screen bg-white pt-3 md:pt-2" data-testid="search-page">
       <SEOHead title="Search Vinyl Variants | The Honey Groove" description="Discover rare vinyl variants, albums, and artists." />
 
       {/* Search Bar — compact sticky bar */}

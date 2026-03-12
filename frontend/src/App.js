@@ -130,16 +130,6 @@ const AppLayout = ({ children }) => {
   const [skippedLocal, setSkippedLocal] = useState(isSkippedRecently);
   const showOAuthBanner = intentShowsBanner() && !skippedLocal;
 
-  // BLOCK 583 FIX: Set CSS variable to push Navbar down when banner is active
-  useEffect(() => {
-    if (showOAuthBanner) {
-      document.documentElement.style.setProperty('--oauth-banner-h', '49px');
-    } else {
-      document.documentElement.style.setProperty('--oauth-banner-h', '0px');
-    }
-    return () => document.documentElement.style.setProperty('--oauth-banner-h', '0px');
-  }, [showOAuthBanner]);
-
   // BLOCK 583: User-initiated OAuth launch — must be direct onClick, not auto-popup
   const handleOAuthClick = async () => {
     setOAuthLoading(true);
@@ -222,7 +212,7 @@ const AppLayout = ({ children }) => {
         <button
           onClick={() => navigate(-1)}
           className="fixed z-40 flex items-center justify-center w-8 h-8 rounded-full text-stone-400/70 hover:text-stone-600 hover:bg-stone-200/40 transition-all left-3 md:left-5"
-          style={{ top: `calc(var(--oauth-banner-h, 0px) + 56px)` }}
+          style={{ top: '96px' }}
           data-testid="global-back-btn"
           aria-label="Go back"
         >

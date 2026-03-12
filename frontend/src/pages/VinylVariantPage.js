@@ -52,7 +52,7 @@ export default function VinylVariantPage() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 pt-16 md:pt-24 pb-28 flex items-center justify-center">
+      <div className="max-w-4xl mx-auto px-4 pt-3 md:pt-2 pb-28 flex items-center justify-center">
         <Disc className="w-8 h-8 animate-spin text-honey" />
       </div>
     );
@@ -60,7 +60,7 @@ export default function VinylVariantPage() {
 
   if (error || !data) {
     return (
-      <div className="max-w-4xl mx-auto px-4 pt-16 md:pt-24 pb-28 text-center">
+      <div className="max-w-4xl mx-auto px-4 pt-3 md:pt-2 pb-28 text-center">
         <Disc className="w-12 h-12 text-honey/40 mx-auto mb-4" />
         <h1 className="text-xl font-heading mb-2">Variant Not Found</h1>
         <p className="text-muted-foreground text-sm mb-6">We don't have data for this variant yet. As collectors add it, this page will come alive.</p>
@@ -76,7 +76,7 @@ export default function VinylVariantPage() {
   const { variant_overview: ov, marketplace: mp, value: val, demand: dm, activity: act, seo, rarity } = data;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-28" data-testid="vinyl-variant-page">
+    <div className="max-w-4xl mx-auto px-4 py-8 pt-3 md:pt-2 pb-28" data-testid="vinyl-variant-page">
       <SEOHead
         title={seo.title}
         description={seo.description}

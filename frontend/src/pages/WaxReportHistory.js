@@ -27,7 +27,7 @@ const WaxReportHistory = () => {
 
   return (
     <div className="min-h-screen pb-24 md:pb-8" style={{ background: C.bg }} data-testid="wax-history-page">
-      <div className="max-w-2xl mx-auto px-4 py-8 pt-16 md:pt-24">
+      <div className="max-w-2xl mx-auto px-4 py-8 pt-3 md:pt-2">
         <Link to="/collection" className="inline-flex items-center gap-1.5 text-sm mb-6" style={{ color: C.textMuted }} data-testid="wax-history-back">
           <ArrowLeft className="w-4 h-4" /> back to collection
         </Link>

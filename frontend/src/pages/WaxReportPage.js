@@ -100,7 +100,7 @@ const WaxReportPage = () => {
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-8 pt-16 md:pt-24" style={{ background: C.bg, minHeight: '100vh' }}>
+      <div className="max-w-2xl mx-auto px-4 py-8 pt-3 md:pt-2" style={{ background: C.bg, minHeight: '100vh' }}>
         <Skeleton className="h-8 w-48 mb-4" /><Skeleton className="h-6 w-64 mb-8" />
         {[1,2,3,4].map(i => <Skeleton key={i} className="h-40 w-full mb-4 rounded-2xl" />)}
       </div>
@@ -109,7 +109,7 @@ const WaxReportPage = () => {
 
   if (!report) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-8 pt-16 md:pt-24 text-center" style={{ background: C.bg, minHeight: '100vh' }}>
+      <div className="max-w-2xl mx-auto px-4 py-8 pt-3 md:pt-2 text-center" style={{ background: C.bg, minHeight: '100vh' }}>
         <p style={{ color: C.textMuted }}>No report found yet. Keep spinning!</p>
         <Link to="/collection" className="text-sm mt-2 inline-block" style={{ color: C.amberAccent }}>Back to Collection</Link>
       </div>
@@ -131,7 +131,7 @@ const WaxReportPage = () => {
 
   return (
     <div className="min-h-screen pb-24 md:pb-8" style={{ background: C.bg }} data-testid="wax-report-page">
-      <div className="max-w-2xl mx-auto px-4 py-8 pt-16 md:pt-24">
+      <div className="max-w-2xl mx-auto px-4 py-8 pt-3 md:pt-2">
         {/* Back */}
         <Link to="/collection" className="inline-flex items-center gap-1.5 text-sm mb-6 transition-colors" style={{ color: C.textMuted }} data-testid="wax-back">
           <ArrowLeft className="w-4 h-4" /> back to collection

@@ -19,7 +19,7 @@ const UnofficialDisclaimer = () => (
       <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0 text-stone-400" />
       <p>
         <span className="font-semibold text-stone-500">NOTICE:</span> This release is identified as
-        &lsquo;Unofficial.&rsquo; The Hive facilitates the secondary market trade of these items for
+        &lsquo;Unofficial.&rsquo; The Honey Groove facilitates the secondary market trade of these items for
         archival and collection purposes. The platform does not claim affiliation with the original
         rights holders or guarantee audio fidelity.
       </p>

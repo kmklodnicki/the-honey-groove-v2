@@ -44,7 +44,7 @@ export default function VariantReleasePage() {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 pt-16 md:pt-24 pb-28 flex items-center justify-center min-h-[60vh]">
+      <div className="max-w-4xl mx-auto px-4 pt-3 md:pt-2 pb-28 flex items-center justify-center min-h-[60vh]">
         <Loader2 className="w-8 h-8 animate-spin text-honey-amber" />
       </div>
     );
@@ -52,7 +52,7 @@ export default function VariantReleasePage() {
 
   if (!data || data.error) {
     return (
-      <div className="max-w-4xl mx-auto px-4 pt-16 md:pt-24 pb-28 text-center">
+      <div className="max-w-4xl mx-auto px-4 pt-3 md:pt-2 pb-28 text-center">
         <Disc className="w-12 h-12 text-honey/40 mx-auto mb-4" />
         <h1 className="text-xl font-heading mb-2">Variant Not Found</h1>
         <p className="text-muted-foreground text-sm mb-6">
@@ -75,7 +75,7 @@ export default function VariantReleasePage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-28" data-testid="variant-release-page">
+    <div className="max-w-4xl mx-auto px-4 py-8 pt-3 md:pt-2 pb-28" data-testid="variant-release-page">
       <SEOHead
         title={`${ov.artist} — ${ov.album} (${ov.variant})`}
         description={`${ov.variant} pressing of ${ov.album} by ${ov.artist}. ${scarcity.discogs_have} global owners.`}

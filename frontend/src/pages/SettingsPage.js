@@ -255,7 +255,7 @@ const SettingsPage = () => {
   const hasCustomAvatar = avatarPreview && !avatarPreview.includes('dicebear');
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8">
+    <div className="max-w-2xl mx-auto px-4 py-8 pt-3 md:pt-2 pb-24 md:pb-8">
       <Button 
         variant="ghost" 
         onClick={() => navigate(-1)}

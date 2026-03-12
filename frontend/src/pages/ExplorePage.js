@@ -129,7 +129,7 @@ const ExplorePage = () => {
 
   if (!user) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-24">
+      <div className="max-w-4xl mx-auto px-4 py-8 pt-3 md:pt-2">
         <h1 className="font-heading text-3xl text-vinyl-black mb-6">Nectar</h1>
         <div className="relative">
           <div className="blur-md pointer-events-none">
@@ -153,7 +153,7 @@ const ExplorePage = () => {
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-24">
+      <div className="max-w-4xl mx-auto px-4 py-8 pt-3 md:pt-2">
         <Skeleton className="h-8 w-40 mb-6" />
         <Skeleton className="h-6 w-48 mb-3" />
         <div className="flex gap-3 overflow-hidden mb-8">{[1,2,3,4,5].map(i => <Skeleton key={i} className="h-48 w-36 rounded-xl shrink-0" />)}</div>
@@ -164,7 +164,7 @@ const ExplorePage = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8 honey-fade-in" data-testid="explore-page">
+    <div className="max-w-4xl mx-auto px-4 py-8 pt-3 md:pt-2 pb-24 md:pb-8 honey-fade-in" data-testid="explore-page">
       <h1 className="font-heading text-3xl text-vinyl-black mb-1">Nectar</h1>
       <p className="text-sm text-muted-foreground mb-8">what the hive is into right now.</p>
 

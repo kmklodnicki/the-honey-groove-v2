@@ -701,7 +701,7 @@ const OrdersPage = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8 overflow-x-hidden" data-testid="orders-page">
+    <div className="max-w-2xl mx-auto px-4 py-8 pt-3 md:pt-2 pb-24 md:pb-8 overflow-x-hidden" data-testid="orders-page">
       <h1 className="font-heading text-3xl text-vinyl-black mb-4">Orders</h1>
 
       <Tabs defaultValue="purchases" className="w-full overflow-hidden">

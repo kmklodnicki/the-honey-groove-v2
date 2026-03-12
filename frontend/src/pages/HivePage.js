@@ -676,7 +676,7 @@ const HivePage = () => {
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-8 pt-16 md:pt-24">
+      <div className="max-w-2xl mx-auto px-4 py-8 pt-3 md:pt-2">
         <h1 className="font-heading text-3xl mb-6">The Hive</h1>
         {[1, 2, 3].map(i => (
           <Card key={i} className="mb-4 p-6">
@@ -695,7 +695,7 @@ const HivePage = () => {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8 honey-fade-in">
+    <div className="max-w-2xl mx-auto px-4 py-8 pt-3 md:pt-2 pb-24 md:pb-8 honey-fade-in">
       <SEOHead
         title="The Hive — Vinyl Social Feed"
         description="See what collectors are spinning, buying, and trading. The Hive is the social feed for vinyl lovers on The Honey Groove."

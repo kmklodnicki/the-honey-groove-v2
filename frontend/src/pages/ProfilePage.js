@@ -423,7 +423,7 @@ const ProfilePage = () => {
 
   if (isFirstLoad) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-8 pt-16 md:pt-24">
+      <div className="max-w-3xl mx-auto px-4 py-8 pt-3 md:pt-2">
         <Skeleton className="h-48 w-full rounded-xl mb-6" />
         <Skeleton className="h-12 w-64 mb-4" />
         <Skeleton className="h-64 w-full" />
@@ -433,7 +433,7 @@ const ProfilePage = () => {
 
   if (!profile && !profileUnavailable) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-8 pt-16 md:pt-24 text-center">
+      <div className="max-w-3xl mx-auto px-4 py-8 pt-3 md:pt-2 text-center">
         <h2 className="font-heading text-2xl mb-2">User not found</h2>
         <p className="text-muted-foreground">@{username} doesn't exist.</p>
       </div>
@@ -442,7 +442,7 @@ const ProfilePage = () => {
 
   if (profileUnavailable) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-8 pt-16 md:pt-24 text-center" data-testid="profile-unavailable">
+      <div className="max-w-3xl mx-auto px-4 py-8 pt-3 md:pt-2 text-center" data-testid="profile-unavailable">
         <div className="flex flex-col items-center gap-4 py-16">
           <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center">
             <ShieldOff className="w-7 h-7 text-stone-400" />
@@ -469,7 +469,7 @@ const ProfilePage = () => {
   const profileDesc = `@${profile.username}'s vinyl collection on The Honey Groove. ${records.length} records collected.${profile.bio ? ` ${profile.bio.slice(0, 160)}` : ''}${profile.city ? ` Based in ${profile.city}.` : ''}`;
 
   return (
-    <div className="max-w-3xl lg:max-w-5xl mx-auto px-4 py-8 pt-16 md:pt-24 pb-24 md:pb-8 honey-fade-in" data-testid="profile-page">
+    <div className="max-w-3xl lg:max-w-5xl mx-auto px-4 py-8 pt-3 md:pt-2 pb-24 md:pb-8 honey-fade-in" data-testid="profile-page">
       <SEOHead
         title={profileTitle}
         description={profileDesc}

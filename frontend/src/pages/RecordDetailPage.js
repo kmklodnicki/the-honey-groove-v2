@@ -95,7 +95,7 @@ const RecordDetailPage = () => {
   };
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center pt-16 md:pt-24">
+    <div className="min-h-screen flex items-center justify-center pt-3 md:pt-2">
       <Loader2 className="w-8 h-8 animate-spin text-honey-amber" />
     </div>
   );
@@ -109,7 +109,7 @@ const RecordDetailPage = () => {
   const recordDesc = `${record.artist} - ${record.title}${record.color_variant ? ` — ${record.color_variant} pressing` : ''}${record.year ? ` (${record.year})` : ''} in a collector's vinyl library on The Honey Groove. ${community?.total_owners || 0} collectors own this record.`;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 pt-16 md:pt-24 pb-28" data-testid="record-detail-page">
+    <div className="max-w-4xl mx-auto px-4 pt-3 md:pt-2 pb-28" data-testid="record-detail-page">
       <SEOHead
         title={recordTitle}
         description={recordDesc}
