@@ -557,6 +557,7 @@ const ISOCard = ({ post, onAlbumClick }) => {
     album: post.record_title || '',
     artist: post.record_artist || '',
     cover_url: post.cover_url,
+    color_variant: post.color_variant,
     pressing_notes: post.pressing_notes,
   };
 
@@ -594,7 +595,8 @@ const ISOCard = ({ post, onAlbumClick }) => {
               <p className="font-heading text-lg truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{isoData.album}</p>
               <p className="text-sm text-muted-foreground truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{isoData.artist}</p>
             </div>
-            {isoData.pressing_notes && <p className="text-xs mt-1 text-[#8A6B4A]">Pressing: {isoData.pressing_notes}</p>}
+            {isoData.color_variant && <p className="text-xs mt-1 text-[#8A6B4A]">Pressing: {isoData.color_variant}</p>}
+            {isoData.pressing_notes && <p className="text-xs text-[#8A6B4A]">Notes: {isoData.pressing_notes}</p>}
             {isoData.condition_pref && <p className="text-xs text-[#8A6B4A]">Condition: {isoData.condition_pref}</p>}
             {(isoData.target_price_min || isoData.target_price_max) && (
               <p className="text-xs text-[#8A6B4A] mt-0.5">Budget: {isoData.target_price_min ? `$${isoData.target_price_min}` : '?'} – {isoData.target_price_max ? `$${isoData.target_price_max}` : '?'}</p>
