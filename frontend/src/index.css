@@ -4,6 +4,8 @@
 @tailwind components;
 @tailwind utilities;
 
+.card-title, .card-artist { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 html, body {
     /* iOS Safari: ensure touch scrolling works reliably */
     -webkit-overflow-scrolling: touch;
