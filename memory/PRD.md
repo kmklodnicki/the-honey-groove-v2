@@ -135,6 +135,7 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - **Re-pollinate Success Page:** New `/repollinate/success` page with gold confetti animation, restored streak badge, auto-redirect to The Hive after 5 seconds.
 - **Required Comment for Now Spinning:** Comment field required. Helper text: "Tell the hive what you love about this record! 🐝". Post button disabled until comment entered.
 - **Stripe Live Mode:** Confirmed `sk_live_...` keys in production .env.
+- **High-Speed Tracklist Dropdown:** Immediate Discogs API fetch on record selection. Native `<select>` with "Select a track...", all tracks, and "-- Manual Input --" option. Loading shows "Fetching tracks... 🐝". Manual mode has text input + "Back to tracklist" link. Fallback text input when no tracklist available.
 
 ## Backlog
 - P1: Harden web scraper (user-agent rotation, exponential backoff) — fragile but functional
