@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Card } from './ui/card';
@@ -6,6 +6,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
 import { Textarea } from './ui/textarea';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import MentionText from './MentionText';
 import { Loader2, Disc, Share2, Send, Download, Search, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
@@ -238,6 +239,40 @@ useEffect(() => {
         )}
 
         {/* Centered archive link — secondary explore action */}
+        {/* Re-pollinate: only show when spin streak is broken but within 48hr grace */}
+        {(() => {
+          const lastSpin = user?.last_spin_date;
+          if (!lastSpin) return null;
+          const gap = (Date.now() - new Date(lastSpin).getTime()) / (1000 * 60 * 60);
+          // Show only if streak broken (>24hrs) but within grace period (<72hrs = 24hr miss + 48hr grace)
+          if (gap <= 24 || gap >= 72) return null;
+          return (
+            <div className="flex justify-center mt-3">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={async () => {
+                        try {
+                          const res = await axios.post(`${API}/repollinate/checkout`, {}, { headers: { Authorization: `Bearer ${token}` } });
+                          window.location.href = res.data.url;
+                        } catch { toast.error('Could not start checkout.'); }
+                      }}
+                      className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all hover:scale-105 hover:shadow-md"
+                      style={{ background: '#FDE68A', color: '#915527', border: '1px solid #E5C76B' }}
+                      data-testid="repollinate-btn"
+                    >
+                      Re-pollinate 🐝
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs text-xs">
+                    Lost your streak? No worries, just re-pollinate! You have 48 hours to save your daily spin. ($1.99 per transaction)
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          );
+        })()}
         <div className="text-center mt-4">
           <button
             onClick={() => setArchiveOpen(true)}
@@ -409,7 +444,7 @@ const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
-                      placeholder="search your collection..."
+                      placeholder="search your vault..."
                       value={buzzSearch}
                       onChange={e => { setBuzzSearch(e.target.value); searchCollection(e.target.value); }}
                       className="pl-9 border-amber-200"
@@ -425,7 +460,7 @@ const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
                     )}
                     {buzzSearch.length >= 2 && buzzSearchResults.length === 0 && (
                       <div className="absolute z-50 left-0 right-0 mt-1 border border-amber-200/60 rounded-lg p-4 text-center shadow-lg bg-white" data-testid="buzz-no-results">
-                        <p className="text-sm text-amber-700">no results in your collection</p>
+                        <p className="text-sm text-amber-700">no results in your vault</p>
                       </div>
                     )}
                   </div>

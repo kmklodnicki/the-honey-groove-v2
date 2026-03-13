@@ -87,6 +87,7 @@ async def _build_user_response(user: dict) -> UserResponse:
         current_streak=user.get("current_streak", 0),
         longest_streak=user.get("longest_streak", 0),
         total_spin_days=user.get("total_spin_days", 0),
+        last_spin_date=user.get("last_spin_date"),
     )
 
 # ============== AUTH ROUTES ==============

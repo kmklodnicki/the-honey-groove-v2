@@ -1211,7 +1211,7 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
       <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-heading flex items-center gap-2"><ArrowRightLeft className="w-5 h-5 text-honey" /> Propose a Trade</DialogTitle>
-          <DialogDescription>Offer a record from your collection</DialogDescription>
+          <DialogDescription>Offer a record from your vault</DialogDescription>
         </DialogHeader>
         <div className="space-y-4 pt-2">
           <div>
@@ -1230,7 +1230,7 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
           <div>
             <p className="text-xs font-medium text-muted-foreground mb-2">YOU OFFER</p>
             {loadingRecords ? <Skeleton className="h-10 w-full" /> : records.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No records in your collection to offer.</p>
+              <p className="text-sm text-muted-foreground">No records in your vault to offer.</p>
             ) : (
               <Select value={selectedRecordId} onValueChange={setSelectedRecordId}>
                 <SelectTrigger className="border-honey/50" data-testid="trade-offer-select"><SelectValue placeholder="Choose a record from your collection" /></SelectTrigger>

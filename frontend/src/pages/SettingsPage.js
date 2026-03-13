@@ -9,7 +9,7 @@ import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Switch } from '../components/ui/switch';
-import { ArrowLeft, Save, LogOut, Camera, Loader2, Mail, HelpCircle, ExternalLink, MessageSquare, Flag, Trash2, CreditCard, CheckCircle2, Shield, Bug, Lock, Globe, Users, MessageCircleMore } from 'lucide-react';
+import { ArrowLeft, Save, LogOut, Camera, Loader2, Mail, HelpCircle, ExternalLink, MessageSquare, Flag, Trash2, CreditCard, CheckCircle2, Shield, Bug, Lock, Globe, Users, MessageCircleMore, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
 import {
@@ -598,6 +598,30 @@ const SettingsPage = () => {
               data-testid="newsletter-toggle"
             />
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Download App */}
+      <Card className="border-honey/30 mb-6" data-testid="download-app-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Download className="w-5 h-5 text-amber-500" /> Download App</CardTitle>
+          <CardDescription>Install The Honey Groove on your device for the best experience.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <button
+            onClick={() => {
+              if (window.__pwaPrompt) {
+                window.__pwaPrompt.prompt();
+              } else {
+                toast.info('Open this site in your mobile browser and tap "Add to Home Screen" to install.');
+              }
+            }}
+            className="w-full flex items-center justify-center gap-2 rounded-full py-2.5 text-sm font-bold transition-all hover:scale-[1.02] hover:shadow-md"
+            style={{ background: '#FDE68A', color: '#915527', border: '1px solid #E5C76B' }}
+            data-testid="download-app-btn"
+          >
+            Download The Honey Groove App!
+          </button>
         </CardContent>
       </Card>
 

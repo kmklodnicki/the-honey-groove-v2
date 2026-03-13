@@ -54,7 +54,7 @@ const HONEY_SHOP_ITEMS = [
     id: 'pearl-shimmer',
     honeyLabel: 'The Glow',
     name: 'Holographic Outer Sleeves - Pearl Shimmer',
-    descriptor: 'Soft pearl iridescence that gives your collection an ethereal glow.',
+    descriptor: 'Soft pearl iridescence that gives your vault an ethereal glow.',
     url: 'https://vinylsupplyco.com/collections/holographic-sleeves/products/holographic-outer-sleeves-pearl-shimmer?ref=KATHRYNKLODNICKI',
     partner: 'vinylsupplyco',
     image: 'https://customer-assets.emergentagent.com/job_088a9581-bbfd-42c2-ad31-f5535df4814c/artifacts/tvavxlin_3.webp',
@@ -375,7 +375,7 @@ const EssentialsPage = () => {
             Honey Essentials
           </h1>
           <p className="text-base text-stone-500 max-w-md mx-auto">
-            The curated essentials that keep your collection sweet.
+            The curated essentials that keep your vault sweet.
           </p>
           <p className="text-sm text-stone-400 italic">
             Preserve the pressings. Protect the hive.

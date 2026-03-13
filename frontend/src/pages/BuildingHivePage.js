@@ -93,10 +93,10 @@ const BuildingHivePage = () => {
             if (resp.data.status === 'completed' && resp.data.imported > 0) {
               handleImportComplete(resp.data);
             } else if (resp.data.status === 'completed' && resp.data.imported === 0) {
-              toast.info('No new records to import — your collection is already in sync.');
+              toast.info('No new records to import — your vault is already in sync.');
               navigate('/hive', { replace: true });
             } else if (resp.data.status === 'error') {
-              toast.error(resp.data.error_message || 'Import failed. Please try again from your collection page.');
+              toast.error(resp.data.error_message || 'Import failed. Please try again from your vault page.');
               navigate('/collection', { replace: true });
             }
           }
@@ -179,7 +179,7 @@ const BuildingHivePage = () => {
               </h1>
               <p className="text-[#8A6B4A] text-base" data-testid="success-summary">
                 <span className="font-semibold text-[#C8861A]">{progress.imported}</span> records imported
-                {progress.skipped > 0 && <span className="text-[#8A6B4A]/60"> ({progress.skipped} already in your collection)</span>}
+                {progress.skipped > 0 && <span className="text-[#8A6B4A]/60"> ({progress.skipped} already in your vault)</span>}
               </p>
               {username && (
                 <p className="text-sm text-[#8A6B4A]/60">

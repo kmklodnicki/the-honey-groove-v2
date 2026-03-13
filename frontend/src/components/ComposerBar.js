@@ -481,7 +481,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <Input
-                      placeholder="search your collection..."
+                      placeholder="search your vault..."
                       value={spinSearch}
                       onChange={e => { setSpinSearch(e.target.value); searchCollection(e.target.value); }}
                       className="pl-9 border-honey/50"
@@ -497,7 +497,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                     {spinSearch.length >= 2 && spinSearchResults.length === 0 && (
                       <div className="absolute z-50 left-0 right-0 mt-1 border rounded-lg p-4 text-center shadow-lg bg-white" style={{ borderColor: 'rgba(200,134,26,0.3)' }}>
                         <p className="text-sm" style={{ color: '#8A6B4A' }}>
-                          no results in your collection
+                          no results in your vault
                         </p>
                         <a href="/add-record" className="text-xs mt-1 inline-block hover:underline"
                           style={{ color: '#C8861A' }}
@@ -973,7 +973,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
             {noteShowRecordPicker && (
               <Select value={noteRecordId} onValueChange={v => { setNoteRecordId(v); setNoteShowRecordPicker(false); }}>
                 <SelectTrigger className="border-stone-200" data-testid="note-record-select">
-                  <SelectValue placeholder="Choose from your collection" />
+                  <SelectValue placeholder="Choose from your vault" />
                 </SelectTrigger>
                 <SelectContent>
                   {records.map(r => (
@@ -1041,7 +1041,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                 <div className="w-40 h-40 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center honey-shimmer">
                   <Shuffle className="w-10 h-10 text-amber-600 animate-spin" />
                 </div>
-                <p className="text-sm text-muted-foreground mt-3">shuffling your collection...</p>
+                <p className="text-sm text-muted-foreground mt-3">shuffling your vault...</p>
               </div>
             ) : randRecord ? (
               <div className="flex flex-col items-center" data-testid="randomizer-result">
@@ -1061,7 +1061,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
             ) : (
               <div className="flex flex-col items-center py-8 text-muted-foreground">
                 <Disc className="w-10 h-10 mb-2 opacity-50" />
-                <p className="text-sm">No records found in your collection</p>
+                <p className="text-sm">No records found in your vault</p>
               </div>
             )}
 

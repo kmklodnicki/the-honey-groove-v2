@@ -12,7 +12,7 @@ const faqSections = [
         q: 'What is The Honey Groove?',
         a: (
           <>
-            <p>The Honey Groove is a social platform built specifically for vinyl collectors. Track your collection, share what you're spinning, post your hauls, build a Dream List of records you want, and buy, sell, or trade vinyl directly with other collectors.</p>
+            <p>The Honey Groove is a social platform built specifically for vinyl collectors. Track your vault, share what you're spinning, post your hauls, build a Dream List of records you want, and buy, sell, or trade vinyl directly with other collectors.</p>
             <p className="mt-2">Unlike traditional record marketplaces, The Honey Groove combines collection tracking, community, and a vinyl marketplace in one place.</p>
           </>
         ),
@@ -111,7 +111,7 @@ const faqSections = [
         q: 'What is the Randomizer?',
         a: (
           <>
-            <p>The Randomizer selects a random record from your collection and allows you to instantly share it to The Hive.</p>
+            <p>The Randomizer selects a random record from your vault and allows you to instantly share it to The Hive.</p>
             <p className="mt-2">It's a fun way to rediscover records you already own and spark conversation.</p>
             <p className="mt-2">Randomizer posts include a Randomizer tag so others know it was randomly selected.</p>
           </>
@@ -128,7 +128,7 @@ const faqSections = [
               <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>"What's spinning right now?"</li>
               <li className="flex items-start gap-2"><span className="text-honey-amber mt-1.5 shrink-0">•</span>"Your favorite album closer?"</li>
             </ul>
-            <p className="mt-2">Tap Buzz In and answer using a record from your collection.</p>
+            <p className="mt-2">Tap Buzz In and answer using a record from your vault.</p>
           </>
         ),
       },
@@ -215,7 +215,7 @@ const faqSections = [
       },
       {
         q: 'Can I move a Dream record into my collection?',
-        a: 'Yes. If you obtain a Dream record, simply tap Add to Collection and it will move from your Dream List to your collection.',
+        a: 'Yes. If you obtain a Dream record, simply tap Add to Your Vault and it will move from your Dream List to your vault.',
       },
     ],
   },

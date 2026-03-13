@@ -102,7 +102,7 @@ const WelcomeHivePage = () => {
             Welcome to the Hive
           </h1>
           <p className="text-base text-[#8A6B4A]" data-testid="welcome-subtitle">
-            We took a look at your collection... and wow.
+            We took a look at your vault... and wow.
           </p>
         </div>
 
@@ -114,7 +114,7 @@ const WelcomeHivePage = () => {
           {hasValue ? (
             <>
               <p className="text-sm text-[#8A6B4A] uppercase tracking-widest mb-2 font-medium">
-                Your Collection Value
+                Your Vault Value
               </p>
               <p
                 className="font-heading text-5xl sm:text-6xl text-[#1F1F1F] tabular-nums"
@@ -199,7 +199,7 @@ const WelcomeHivePage = () => {
             data-testid="cta-view-collection"
           >
             <Library className="w-4 h-4" />
-            View Your Collection
+            View Your Vault
           </Button>
           <Button
             onClick={() => navigate('/nectar')}

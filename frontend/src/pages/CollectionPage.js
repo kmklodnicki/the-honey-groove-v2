@@ -184,7 +184,7 @@ const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamL
               <HoneycombIcon className="w-5 h-5 text-white" />
             </div>
             <div className="text-left">
-              <p className="text-[10px] font-medium uppercase tracking-widest text-stone-500">Collection Value</p>
+              <p className="text-[10px] font-medium uppercase tracking-widest text-stone-500">Vault Value</p>
               <p className="font-serif text-2xl font-bold leading-tight" style={{ color: '#1A1A1A' }} data-testid="treasury-collection-value">
                 ${Math.round(animCollection).toLocaleString()}
               </p>
@@ -288,7 +288,7 @@ const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamL
                 <Sparkles className="w-3 h-3" />
                 Recover Values
               </button>
-              <InfoBubble text="Deep Search: Use the Recovery Engine to find prices for all unvalued or $0 records in your collection at once." side="bottom" testId="recover-tooltip" />
+              <InfoBubble text="Deep Search: Use the Recovery Engine to find prices for all unvalued or $0 records in your vault at once." side="bottom" testId="recover-tooltip" />
             </>
           )}
         </div>
@@ -312,7 +312,7 @@ const SORT_OPTIONS = [
 ];
 
 const CollectionPage = () => {
-  usePageTitle('Your Collection');
+  usePageTitle('The Vault');
   const { user, token, API } = useAuth();
   const [records, setRecords] = useState([]);
   const [spins, setSpins] = useState([]);
@@ -407,7 +407,7 @@ const CollectionPage = () => {
       ]).catch(() => {});
     } catch (error) {
       console.error('Failed to fetch records:', error);
-      toast.error('something went wrong loading your collection.');
+      toast.error('something went wrong loading your vault.');
     } finally {
       setLoading(false);
     }
@@ -588,7 +588,7 @@ const CollectionPage = () => {
   };
 
   const handleDeleteRecord = async (recordId) => {
-    if (!confirm('Are you sure you want to remove this record from your collection?')) return;
+    if (!confirm('Are you sure you want to remove this record from your vault?')) return;
 
     try {
       await axios.delete(`${API}/records/${recordId}`, {
@@ -702,10 +702,10 @@ const CollectionPage = () => {
       const res = await axios.post(`${API}/iso/${isoId}/convert-to-collection`, {}, { headers: { Authorization: `Bearer ${token}` }});
       const updatedWishlist = wishlistItems.filter(i => i.id !== isoId);
       setWishlistItems(updatedWishlist);
-      toast.success(res.data.message || `${item?.album || 'Record'} added to your collection!`);
+      toast.success(res.data.message || `${item?.album || 'Record'} added to your vault!`);
       // Refresh collection data
       fetchData();
-    } catch { toast.error('could not add to collection.'); }
+    } catch { toast.error('could not add to vault.'); }
   };
 
   const handleDeleteWishlistItem = async (isoId) => {
@@ -826,7 +826,7 @@ const CollectionPage = () => {
   if (loading) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-8 pt-3 md:pt-2">
-        <h1 className="font-heading text-3xl mb-6 ml-12 md:ml-0">My Collection</h1>
+        <h1 className="font-heading text-3xl mb-6 ml-12 md:ml-0">My Vault</h1>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {[1, 2, 3, 4, 5, 6].map(i => (
             <Card key={i} className="aspect-square">
@@ -841,20 +841,20 @@ const CollectionPage = () => {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 pt-3 md:pt-2 pb-24 md:pb-8 honey-fade-in">
       <SEOHead
-        title={`My Collection — ${records.length} Records`}
+        title={`My Vault — ${records.length} Records`}
         description={`Your vinyl collection on The Honey Groove. ${records.length} records owned, ${wishlistItems.length} on the Dream List.`}
         url="/collection"
         noIndex
       />
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div className="ml-12 md:ml-0">
-          <h1 className="font-heading text-3xl text-vinyl-black">My Collection</h1>
+          <h1 className="font-heading text-3xl text-vinyl-black">My Vault</h1>
           <p className="text-muted-foreground">{records.length} owned · {wishlistItems.length} on Dream List</p>
         </div>
         <Link to={`/add-record?mode=${collectionTab === 'wishlist' ? 'dreaming' : 'reality'}`}>
           <Button className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2" data-testid="add-record-btn">
             <Plus className="w-4 h-4" />
-            {collectionTab === 'wishlist' ? 'Add to Dream List' : 'Add to Collection'}
+            {collectionTab === 'wishlist' ? 'Add to Dream List' : 'Add to Your Vault'}
           </Button>
         </Link>
       </div>
@@ -882,7 +882,7 @@ const CollectionPage = () => {
 
         <TabsList className="bg-honey/10 mb-6 w-full grid grid-cols-2">
           <TabsTrigger value="owned" className="data-[state=active]:bg-honey text-sm gap-1.5" data-testid="tab-owned">
-            <Sparkles className="w-3.5 h-3.5" /> Collection ({records.length})
+            <Sparkles className="w-3.5 h-3.5" /> Vault ({records.length})
           </TabsTrigger>
           <TabsTrigger value="wishlist" className="data-[state=active]:bg-honey text-sm gap-1.5" data-testid="tab-wishlist">
             <Cloud className="w-3.5 h-3.5" /> Dream List ({wishlistItems.length})
@@ -934,7 +934,7 @@ const CollectionPage = () => {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Search collection..."
+                placeholder="Search vault..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 border-honey/50"
@@ -1071,7 +1071,7 @@ const CollectionPage = () => {
             <Card className="p-12 text-center border-stone-200/60">
               <Cloud className="w-12 h-12 text-stone-300 mx-auto mb-4" />
               <h3 className="font-heading text-xl mb-2 text-stone-500">Nothing here yet...</h3>
-              <p className="text-sm text-stone-400 mb-4">Move records from your collection to dream about them here.</p>
+              <p className="text-sm text-stone-400 mb-4">Move records from your vault to dream about them here.</p>
             </Card>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -1155,11 +1155,11 @@ const CollectionPage = () => {
       <Dialog open={dupeModalOpen} onOpenChange={setDupeModalOpen}>
         <DialogContent className="max-w-md" data-testid="duplicate-modal">
           <DialogTitle className="font-heading text-lg">Duplicate Records Found</DialogTitle>
-          <DialogDescription className="sr-only">Review and clean duplicate records in your collection</DialogDescription>
+          <DialogDescription className="sr-only">Review and clean duplicate records in your vault</DialogDescription>
           {dupeData && dupeData.total_duplicates > 0 ? (
             <div>
               <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                We found <strong>{dupeData.total_duplicates}</strong> duplicate {dupeData.total_duplicates === 1 ? 'entry' : 'entries'} across {dupeData.duplicate_groups.length} record{dupeData.duplicate_groups.length !== 1 ? 's' : ''} in your collection. Hydrated copies with real images and the most detailed notes will be kept. Listening history will be merged.
+                We found <strong>{dupeData.total_duplicates}</strong> duplicate {dupeData.total_duplicates === 1 ? 'entry' : 'entries'} across {dupeData.duplicate_groups.length} record{dupeData.duplicate_groups.length !== 1 ? 's' : ''} in your vault. Hydrated copies with real images and the most detailed notes will be kept. Listening history will be merged.
               </p>
               <div className="max-h-48 overflow-y-auto space-y-2 mb-5">
                 {dupeData.duplicate_groups.slice(0, 10).map((g, i) => (
@@ -1608,7 +1608,7 @@ const WishlistCard = ({ item, onPromote, onAddToCollection, onDelete }) => (
           className="w-full h-8 text-[0.8rem] rounded-full font-semibold border-0"
           style={{ background: '#FFD700', color: '#1A1A1A' }}
           data-testid={`add-to-collection-btn-${item.id}`}>
-          Add to Collection
+          Add to Your Vault
         </Button>
         <div className="flex gap-2">
           <Button size="sm" variant="outline" onClick={() => onPromote(item.id)}

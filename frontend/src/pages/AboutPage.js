@@ -75,7 +75,7 @@ const AboutPage = () => {
             <FeatureCard
               icon={<TrendingUp className="w-5 h-5" />}
               title="Your collection, valued."
-              body="Every record in your collection shows its current Discogs market value. Watch your collection grow in more ways than one."
+              body="Every record in your vault shows its current Discogs market value. Watch your vault grow in more ways than one."
             />
           </div>
         </div>

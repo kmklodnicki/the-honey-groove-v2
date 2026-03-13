@@ -1175,7 +1175,7 @@ const ISOPage = () => {
             <DialogDescription>
               {acquireTarget?.album && acquireTarget?.artist
                 ? <><span className="font-semibold text-foreground">{acquireTarget.album}</span> by {acquireTarget.artist}</>
-                : 'Finalize the details before adding to your collection.'}
+                : 'Finalize the details before adding to your vault.'}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-2">

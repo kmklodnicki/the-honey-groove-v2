@@ -236,7 +236,7 @@ const TrendingAll = ({ data, onOpen }) => {
 };
 
 const TasteMatchAll = ({ data, navigate }) => {
-  if (!data || data.length === 0) return <EmptyState text="Add more records to your collection to discover new friends." />;
+  if (!data || data.length === 0) return <EmptyState text="Add more records to your vault to discover new friends." />;
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" data-testid="make-friends-grid">
       {data.map(u => (
@@ -387,7 +387,7 @@ const NearYouAll = ({ data, navigate, onSetLocation }) => {
 /* ========================== Shared Components ========================== */
 
 const CrownJewelsAll = ({ data, navigate, openDreamCatcher, addedIds }) => {
-  if (!data || data.length === 0) return <EmptyState text="No Crown Jewels found yet. Add rare records to your collection!" />;
+  if (!data || data.length === 0) return <EmptyState text="No Crown Jewels found yet. Add rare records to your vault!" />;
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4" data-testid="crown-jewels-grid">
       {data.map((r, idx) => (

@@ -206,7 +206,7 @@ const AppLayout = ({ children }) => {
           data-testid="oauth-glassy-banner"
         >
           <Shield className="w-4 h-4 text-amber-900 shrink-0" />
-          <span className="text-sm text-amber-900 font-medium">Want to import your collection? Connect your Discogs account to sync your library instantly.</span>
+          <span className="text-sm text-amber-900 font-medium">Want to import your vault? Connect your Discogs account to sync your library instantly.</span>
           <button
             onClick={handleOAuthClick}
             disabled={oauthLoading}

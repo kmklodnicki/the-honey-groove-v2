@@ -116,7 +116,7 @@ const Navbar = () => {
                   className={`gap-2 ${isActive('/collection') ? 'bg-honey/20 text-[#C8861A]' : ''}`}
                 >
                   <Library className="w-4 h-4" />
-                  Collection
+                  The Vault
                 </Button>
               </Link>
               <Link to="/honeypot" data-testid="nav-honeypot" onMouseEnter={() => handlePrefetch('/honeypot')} className={`nav-honey-link ${isActive('/honeypot') ? 'nav-active' : ''}`}>
@@ -290,7 +290,7 @@ const Navbar = () => {
           </Link>
           <Link to="/collection" className={`mobile-nav-item flex flex-col items-center justify-center flex-1 h-full gap-0.5 ${isActive('/collection') ? 'nav-active' : ''}`} data-testid="mobile-collection">
             <Library className="w-5 h-5 transition-all duration-200" style={{ color: isActive('/collection') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
-            <span className="text-[10px] font-medium transition-colors duration-200" style={{ color: isActive('/collection') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }}>Collection</span>
+            <span className="text-[10px] font-medium transition-colors duration-200" style={{ color: isActive('/collection') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }}>The Vault</span>
             <span className="mobile-nav-dot" />
           </Link>
           <Link to="/honeypot" className={`mobile-nav-item flex flex-col items-center justify-center flex-1 h-full gap-0.5 ${isActive('/honeypot') ? 'nav-active' : ''}`} data-testid="mobile-honeypot">

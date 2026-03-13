@@ -183,7 +183,7 @@ const MilestoneSlide = ({ totalRecords, dominantColor }) => {
         Collection Milestone
       </p>
       <p className="text-6xl sm:text-8xl font-black text-white mb-2">{totalRecords}</p>
-      <p className="text-sm text-stone-400">records in your collection</p>
+      <p className="text-sm text-stone-400">records in your vault</p>
       {away && (
         <p className="mt-4 text-lg font-bold" style={{ color: dominantColor }}>
           Only {away} away from {next}!

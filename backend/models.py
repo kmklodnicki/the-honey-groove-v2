@@ -53,6 +53,7 @@ class UserResponse(BaseModel):
     current_streak: int = 0
     longest_streak: int = 0
     total_spin_days: int = 0
+    last_spin_date: Optional[str] = None
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None
