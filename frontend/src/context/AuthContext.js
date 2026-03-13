@@ -2,8 +2,9 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import axios from 'axios';
 import safeStorage from '../utils/safeStorage';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
-const API = `${BACKEND_URL}/api`;
+import { API_BASE, API as SHARED_API } from '../utils/apiBase';
+const BACKEND_URL = API_BASE;
+const API = SHARED_API;
 
 const AuthContext = createContext(null);
 

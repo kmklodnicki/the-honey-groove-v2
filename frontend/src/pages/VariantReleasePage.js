@@ -14,7 +14,8 @@ import { useAuth } from '../context/AuthContext';
 import { resolveImageUrl } from '../utils/imageUrl';
 import axios from 'axios';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
+import { API_BASE } from '../utils/apiBase';
+const BACKEND_URL = API_BASE;
 const API = `${BACKEND_URL}/api`;
 
 const Stat = ({ icon: Icon, label, value, sub }) => (

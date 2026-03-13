@@ -7,7 +7,7 @@ import { Button } from '../components/ui/button';
 import { resolveImageUrl } from '../utils/imageUrl';
 import html2canvas from 'html2canvas';
 
-const API_BASE = process.env.REACT_APP_BACKEND_URL ? `${process.env.REACT_APP_BACKEND_URL}/api` : '/api';
+import { API as API_BASE } from '../utils/apiBase';
 
 // ─── Proxy wrapper: route external images through our CORS-safe proxy ───
 const proxyImageUrl = (url) => {

@@ -1,4 +1,5 @@
-const API = process.env.REACT_APP_BACKEND_URL ? `${process.env.REACT_APP_BACKEND_URL}/api` : '/api';
+import { API as SHARED_API } from '../utils/apiBase';
+const API = SHARED_API;
 
 const SERVE_PATH = '/api/files/serve/';
 

@@ -18,7 +18,8 @@ import axios from 'axios';
 import { toast } from 'sonner';
 import DuplicateConfirmationModal from './DuplicateConfirmationModal';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
+import { API_BASE } from '../utils/apiBase';
+const BACKEND_URL = API_BASE;
 const API = `${BACKEND_URL}/api`;
 
 const ProgressBar = ({ pct }) => (

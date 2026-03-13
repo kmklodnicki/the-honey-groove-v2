@@ -1,6 +1,17 @@
 // Single source of truth for API base URL.
-// Falls back to window.location.origin so production deployments
-// always talk to their own backend, regardless of build-time env.
-const BASE = process.env.REACT_APP_BACKEND_URL || window.location.origin;
-export const API_BASE = BASE;           // e.g. https://thehoneygroove.com
-export const API = `${BASE}/api`;       // e.g. https://thehoneygroove.com/api
+// On custom domains (e.g. thehoneygroove.com), uses same-origin to avoid CORS.
+// On preview/localhost, uses the env variable.
+const BASE = (() => {
+  const envUrl = process.env.REACT_APP_BACKEND_URL;
+  if (!envUrl) return window.location.origin;
+  try {
+    const envHost = new URL(envUrl).hostname;
+    const currentHost = window.location.hostname;
+    if (currentHost !== 'localhost' && currentHost !== '127.0.0.1' && currentHost !== envHost) {
+      return window.location.origin;
+    }
+  } catch {}
+  return envUrl;
+})();
+export const API_BASE = BASE;
+export const API = `${BASE}/api`;

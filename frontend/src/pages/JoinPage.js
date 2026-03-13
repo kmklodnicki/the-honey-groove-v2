@@ -8,7 +8,8 @@ import { trackEvent } from '../utils/analytics';
 import { usePageTitle } from '../hooks/usePageTitle';
 import safeStorage from '../utils/safeStorage';
 
-const API = process.env.REACT_APP_BACKEND_URL || window.location.origin;
+import { API_BASE } from '../utils/apiBase';
+const API = API_BASE;
 
 const JoinPage = () => {
   usePageTitle('Join the Hive');

@@ -1,7 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+import { API } from '../utils/apiBase';
 const VINYL_IMG = 'https://static.prod-images.emergentagent.com/jobs/bcb688fd-4e52-4359-88b5-27a51977a715/images/a0ef91b80488fa7a1fc8c5fe5b0c56afe8c6b230aede87ec22f9efd8cd7ad7cc.png';
 
 /* Inject keyframes once */

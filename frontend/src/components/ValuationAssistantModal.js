@@ -8,7 +8,8 @@ import { DollarSign, Check, Loader2, Info, ChevronDown, ChevronUp, AlertTriangle
 import { toast } from 'sonner';
 import AlbumArt from './AlbumArt';
 
-const API = process.env.REACT_APP_BACKEND_URL || window.location.origin;
+import { API_BASE } from '../utils/apiBase';
+const API = API_BASE;
 
 const ValuationAssistantModal = ({ open, onClose, onValuesUpdated, focusItem }) => {
   const { token } = useAuth();

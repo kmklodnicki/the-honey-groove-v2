@@ -1,8 +1,8 @@
 /* Service Worker — HoneyGroove Performance Cache */
 /* eslint-disable no-restricted-globals */
 
-const STATIC_CACHE = 'honeygroove-static-v2';
-const IMG_CACHE = 'honeygroove-img-v2';
+const STATIC_CACHE = 'honeygroove-static-v3';
+const IMG_CACHE = 'honeygroove-img-v3';
 const IMG_CACHE_MAX = 150;
 
 // Static assets to pre-cache on install for instant second-visit loads

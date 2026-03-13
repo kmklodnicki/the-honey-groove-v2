@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
-const API = process.env.REACT_APP_BACKEND_URL;
+import { API_BASE } from '../utils/apiBase';
+const API = API_BASE;
 
 export default function ClaimInvitePage() {
   const [searchParams] = useSearchParams();

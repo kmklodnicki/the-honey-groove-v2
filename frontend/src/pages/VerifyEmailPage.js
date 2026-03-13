@@ -4,7 +4,8 @@ import axios from 'axios';
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
 
-const API = process.env.REACT_APP_BACKEND_URL || window.location.origin;
+import { API_BASE } from '../utils/apiBase';
+const API = API_BASE;
 
 const VerifyEmailPage = () => {
   usePageTitle('Verify Email');

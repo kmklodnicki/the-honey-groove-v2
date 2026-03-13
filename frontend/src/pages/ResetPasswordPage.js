@@ -8,7 +8,8 @@ import { Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import axios from 'axios';
 
-const API = process.env.REACT_APP_BACKEND_URL || window.location.origin;
+import { API_BASE } from '../utils/apiBase';
+const API = API_BASE;
 
 const ResetPasswordPage = () => {
   const [searchParams] = useSearchParams();

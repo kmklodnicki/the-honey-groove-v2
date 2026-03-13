@@ -438,6 +438,7 @@ const HivePage = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [showBackToTop, setShowBackToTop] = useState(false);
+  const [feedError, setFeedError] = useState(false);
   // Following filter works by fetching the user's following list
   const [followingIds, setFollowingIds] = useState([]);
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -479,9 +480,11 @@ const HivePage = () => {
 
   const fetchFeed = useCallback(async () => {
     try {
+      setFeedError(false);
       const response = await axios.get(`${API}/feed`, {
         params: { limit: FEED_LIMIT },
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 15000,
       });
       let feedPosts = response.data;
       setHasMore(feedPosts.length >= FEED_LIMIT);
@@ -496,6 +499,8 @@ const HivePage = () => {
       }
       setPosts(feedPosts);
     } catch (error) {
+      console.error('Feed fetch failed:', error?.message, error?.response?.status);
+      setFeedError(true);
       toast.error('something went wrong loading the hive.');
     } finally {
       setLoading(false);
@@ -707,7 +712,17 @@ const HivePage = () => {
     return (
       <div className="max-w-2xl mx-auto px-4 py-8 pt-3 md:pt-2">
         <h1 className="font-heading text-3xl mb-6">The Hive</h1>
-        {[1, 2, 3].map(i => (
+        {feedError ? (
+          <Card className="p-8 text-center border-honey/30" data-testid="hive-error-state">
+            <p className="italic text-muted-foreground mb-4" style={{ fontFamily: '"DM Serif Display", serif', color: '#8A6B4A' }}>
+              couldn't reach the hive. tap below to try again.
+            </p>
+            <Button onClick={() => { setLoading(true); setFeedError(false); fetchFeed(); }} className="bg-amber-500 text-white hover:bg-amber-600 rounded-full" data-testid="hive-retry-btn">
+              Try Again
+            </Button>
+          </Card>
+        ) : (
+          [1, 2, 3].map(i => (
           <Card key={i} className="mb-4 p-6">
             <div className="flex items-start gap-4">
               <Skeleton className="w-12 h-12 rounded-full" />
@@ -718,7 +733,7 @@ const HivePage = () => {
               </div>
             </div>
           </Card>
-        ))}
+        )))}
       </div>
     );
   }

@@ -10,7 +10,8 @@ import { useVariantModal } from '../context/VariantModalContext';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || window.location.origin;
+import { API_BASE } from '../utils/apiBase';
+const BACKEND_URL = API_BASE;
 const API = `${BACKEND_URL}/api`;
 
 /* ─── Tag color map for collector metadata pills ─── */
