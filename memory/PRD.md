@@ -119,13 +119,15 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - OAuth diagnostic endpoint, Daily Prompts Image Proxy, User-Agent fix
 
 ## Recently Completed (2026-03-13 — Session 2)
-- **FINAL FILTER LOCK — The Essential Six:** Locked to 6 filters only: 🍯 All, 🐝 Now Spinning, 🔍 ISO, 📦 Haul, 📝 Notes, 🏷️ For Sale/Trade. Mobile: 2×3 grid centered. Desktop: 1×6 flex row centered. `whitespace: nowrap` on all pills.
-- **Re-pollinate Streak Recovery:** Added "Re-pollinate 🐝" button on profile pages with tooltip ("$1.99 per transaction"). Backend endpoint `POST /api/repollinate/checkout` creates Stripe Checkout Session. `GET /api/repollinate/success` verifies payment and restores streak.
-- **PWA Install Banner:** Sticky banner (`#FDE68A` bg, `#915527` text) with Install + Dismiss (X). Both actions persist via `localStorage('honey_groove_installed')`.
-- **Weekly Wax Auto-Subscribe:** Retroactively subscribed all 132 users to The Weekly Wax newsletter. New user registration already auto-subscribes (auth.py). Toggle visible in Settings page.
-- **Pull-to-Refresh:** Honey-colored spinner on HivePage (re-fetches feed) and EssentialsPage. Touch-gesture activated.
-- **Global Empty State:** Changed to "No posts yet." / "No [filter] posts yet."
-- **Track Display:** Simplified to show only the user-selected track name on post cards.
+- **FINAL FILTER LOCK — The Essential Six:** 🍯 All, 🐝 Now Spinning, 🔍 ISO, 📦 Haul, 📝 Notes, 🏷️ For Sale/Trade. Mobile: 2×3 grid. Desktop: 1×6 row. Both centered.
+- **Re-pollinate → Daily Prompt Card:** Moved from profile page to Daily Prompt card. Only shows when spin streak is broken (gap > 24hrs from `last_spin_date`) but within 48hr grace period (< 72hrs total). Links to Stripe $1.99 checkout.
+- **Collection → The Vault Rebrand:** Global rename across nav (desktop+mobile), page headings ("My Vault"), tabs ("Vault (N)"), search placeholders, value headers ("Vault Value"), buttons ("Add to Your Vault"), empty states, ComposerBar, FAQ, About, Landing, Welcome, Building, ISO, Explore, Trades, Weekly Report, Essentials pages. Route stays `/collection`.
+- **Download App in Settings:** Permanent "Download The Honey Groove App!" button in Settings page. Triggers native PWA install prompt or shows instruction toast.
+- **PWA Banner localStorage:** Uses `honey_groove_installed` key for persistent hide. Global `window.__pwaPrompt` for Settings button access.
+- **Weekly Wax Auto-Subscribe:** All 132 users retroactively subscribed. New users auto-subscribe on registration.
+- **Pull-to-Refresh:** Honey-colored spinner on HivePage and EssentialsPage.
+- **Global Empty State:** "No posts yet." / "No [filter] posts yet."
+- **Backend:** Added `last_spin_date` to UserResponse model and API. Added `/api/repollinate/checkout` and `/api/repollinate/success` endpoints.
 
 ## Backlog
 - P1: Harden web scraper (user-agent rotation, exponential backoff) — fragile but functional
