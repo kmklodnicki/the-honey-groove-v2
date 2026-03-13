@@ -118,6 +118,11 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - **v2.7.2:** Interactive Value Recovery Toast, Disclaimer Padding, Test Data Purge
 - OAuth diagnostic endpoint, Daily Prompts Image Proxy, User-Agent fix
 
+## Recently Completed (2026-03-13 — Session 2)
+- **Filter Merge:** Merged 'For Sale' and 'For Trade' into single '🏷️ For Sale/Trade' filter. Feed now has 6 filters: All, Now Spinning, ISO, Haul, Notes, For Sale/Trade.
+- **Filter Center Alignment:** Changed filter bar from CSS grid to flex-wrap justify-center for proper horizontal centering on mobile.
+- **Tracklist Viewer (P0 Bug Fix):** Added collapsible `TracklistViewer` component to Now Spinning and Randomizer posts. Fetches tracklist from `/api/discogs/release/{discogs_id}` on demand, shows track positions/titles/durations, highlights currently playing track with spinning disc icon.
+
 ## Backlog
 - P1: Harden web scraper (user-agent rotation, exponential backoff) — fragile but functional
 - P1: Service Worker pre-caching (BLOCK 321)
