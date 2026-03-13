@@ -20,14 +20,16 @@ import RecordSearchResult from './RecordSearchResult';
 const MOOD_CONFIG = {
   'New Arrival': { emoji: '\u{1F4E6}', bg: '#1a1a08', btnColor: '#c8861a', placeholder: 'what just came in the mail?' },
   'Deep Listening': { emoji: '\u{1F9D8}', bg: '#0a1a2a', btnColor: '#4a7aaa', placeholder: 'what are you really hearing right now?' },
-  'High Fidelity': { emoji: '\u{1F50A}', bg: '#1a0a0a', btnColor: '#cc3a2a', placeholder: 'audiophile moment...' },
-  'Solo Session': { emoji: '\u{1F56F}\uFE0F', bg: '#1a1230', btnColor: '#6a3a9a', placeholder: 'just you and the record...' },
+  'In The Zone': { emoji: '\u{1F3AF}', bg: '#0a1a0a', btnColor: '#2a6a2a', placeholder: 'locked in. what are you working to?' },
+  'Me Time': { emoji: '\u{1F9CD}', bg: '#1a1230', btnColor: '#6a3a9a', placeholder: 'just you and the record...' },
   'Cleaning Session': { emoji: '\u{1F9FC}', bg: '#0a2a1a', btnColor: '#3a9a5a', placeholder: 'fresh grooves only...' },
-  'Spin Party': { emoji: '\u{1F379}', bg: '#1a0a2a', btnColor: '#aa3a8a', placeholder: "who's pulling up?" },
+  'Spin Party': { emoji: '\u{1FA69}', bg: '#1a0a2a', btnColor: '#aa3a8a', placeholder: "who's pulling up?" },
   'Limited Edition': { emoji: '\u{1F48E}', bg: '#0a0a2a', btnColor: '#5a5aaa', placeholder: 'how rare is this one?' },
   'Vibe Check': { emoji: '\u2728', bg: '#2a1a08', btnColor: '#aa7a3a', placeholder: "what's the vibe?" },
   'Late Night': { emoji: '\u{1F319}', bg: '#0a0a1a', btnColor: '#4a4a8a', placeholder: 'what are you listening to at this hour?' },
-  'Background Wax': { emoji: '\u2615', bg: '#1a1208', btnColor: '#8a6a3a', placeholder: "what's on in the background?" },
+  'Background': { emoji: '\u2615', bg: '#1a1208', btnColor: '#8a6a3a', placeholder: "what's on in the background?" },
+  'In My Feels': { emoji: '\u{1F972}', bg: '#1a1a2a', btnColor: '#5a5a8a', placeholder: 'some records just hit different...' },
+  'Daydreaming': { emoji: '\u2601\uFE0F', bg: '#0a1a2a', btnColor: '#6a8aaa', placeholder: 'where is this record taking you?' },
 };
 const MOOD_KEYS = Object.keys(MOOD_CONFIG);
 

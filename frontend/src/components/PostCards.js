@@ -34,24 +34,26 @@ const StreamingLinks = ({ artist, album, showEqualizer }) => {
 };
 
 const MOOD_EMOJI_MAP = {
-  // Current tags
-  'New Arrival': '\u{1F4E6}', 'Deep Listening': '\u{1F9D8}', 'High Fidelity': '\u{1F50A}',
-  'Solo Session': '\u{1F56F}\uFE0F', 'Cleaning Session': '\u{1F9FC}', 'Spin Party': '\u{1F379}',
-  'Limited Edition': '\u{1F48E}', 'Vibe Check': '\u2728',
-  'Late Night': '\u{1F319}', 'Background Wax': '\u2615',
-  // Legacy (backward compat for existing posts)
+  // Current 12 moods
+  'New Arrival': '\u{1F4E6}', 'Deep Listening': '\u{1F9D8}', 'In The Zone': '\u{1F3AF}',
+  'Me Time': '\u{1F9CD}', 'Cleaning Session': '\u{1F9FC}', 'Spin Party': '\u{1FA69}',
+  'Limited Edition': '\u{1F48E}', 'Vibe Check': '\u2728', 'Late Night': '\u{1F319}',
+  'Background': '\u2615', 'In My Feels': '\u{1F972}', 'Daydreaming': '\u2601\uFE0F',
+  // Legacy (backward compat)
+  'High Fidelity': '\u{1F50A}', 'Solo Session': '\u{1F56F}\uFE0F', 'Background Wax': '\u2615',
   'Good Morning': '\u2600\uFE0F', 'Sunday Morning': '\u2600\uFE0F',
   'Rainy Day': '\u{1F327}\uFE0F', 'Road Trip': '\u{1F697}', 'Golden Hour': '\u{1F305}',
   'Deep Focus': '\u{1F3A7}', 'Party Mode': '\u{1F942}', 'Lazy Afternoon': '\u{1F6CB}\uFE0F',
   'Melancholy': '\u{1F494}', 'Upbeat Vibes': '\u2728', 'Cozy Evening': '\u{1F9F8}', 'Workout': '\u{1F525}',
 };
 const MOOD_COLOR_MAP = {
-  // Current tags
-  'New Arrival': '#c8861a', 'Deep Listening': '#4a7aaa', 'High Fidelity': '#cc3a2a',
-  'Solo Session': '#6a3a9a', 'Cleaning Session': '#3a9a5a', 'Spin Party': '#aa3a8a',
-  'Limited Edition': '#5a5aaa', 'Vibe Check': '#aa7a3a',
-  'Late Night': '#4a4a8a', 'Background Wax': '#8a6a3a',
+  // Current 12 moods
+  'New Arrival': '#c8861a', 'Deep Listening': '#4a7aaa', 'In The Zone': '#2a6a2a',
+  'Me Time': '#6a3a9a', 'Cleaning Session': '#3a9a5a', 'Spin Party': '#aa3a8a',
+  'Limited Edition': '#5a5aaa', 'Vibe Check': '#aa7a3a', 'Late Night': '#4a4a8a',
+  'Background': '#8a6a3a', 'In My Feels': '#5a5a8a', 'Daydreaming': '#6a8aaa',
   // Legacy
+  'High Fidelity': '#cc3a2a', 'Solo Session': '#6a3a9a', 'Background Wax': '#8a6a3a',
   'Good Morning': '#e8a820', 'Sunday Morning': '#e8a820',
   'Rainy Day': '#4a7aaa', 'Road Trip': '#4a8a4a', 'Golden Hour': '#c8861a',
   'Deep Focus': '#2a6a2a', 'Party Mode': '#aa3a8a', 'Lazy Afternoon': '#aa7a3a',

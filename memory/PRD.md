@@ -79,7 +79,7 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - **Image Lazy Loading:** AlbumArt now uses `loading="lazy"` for non-priority images.
 - **Mobile Collection Grid:** Essentials `grid-cols-2` on mobile. RecordCard padding tightened (`p-2 sm:p-3`).
 - **Honeypot Background Sync:** ISOPage glass header matches Collection page exactly.
-- **Final Feed Taxonomy:** 6 action-based filters: Now Spinning, ISO, Haul, Notes, For Sale, For Trade. Randomizer posts already show "Now Spinning from Randomizer" badge. Old mood/tag filters removed.
+- **12-Mood Filter System (Final):** New Arrival, Deep Listening, In The Zone, Me Time, Cleaning Session, Spin Party (🪩), Limited Edition, Vibe Check, Late Night, Background, In My Feels (🥲), Daydreaming (☁️). Replaced previous 6 action-based filters. 3x4 grid on mobile, centered flex on desktop. Dark Honey (#C8861A) hover with black text on all pills. Updated MOOD_CONFIG, FEED_FILTERS, PostCards maps, and DB `platform_settings.global_tags`.
 - **Streak Recalculation:** Recalculated streaks for 3 users with spins (Katie: 6-day streak). Fields `current_streak`, `longest_streak`, `total_spin_days` added to user model and API response. Spin streak pill added to profile page.
 - **AlbumArt Priority Loading:** First 4 images eager (LCP), rest lazy. Changed from 12→4 priority threshold.
 - **Nav Hover States:** Essentials nav button changed from `variant="outline"` to `variant="ghost"` to match all other nav items. Mobile nav already consistent.

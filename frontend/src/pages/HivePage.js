@@ -461,12 +461,18 @@ const HivePage = () => {
 
   const FEED_FILTERS = [
     { key: 'all', label: 'All' },
-    { key: 'NOW_SPINNING', label: '\u{1F41D} Now Spinning' },
-    { key: 'ISO', label: '\u{1F50D} ISO' },
-    { key: 'NEW_HAUL', label: '\u{1F4E6} Haul' },
-    { key: 'NOTE', label: '\u{1F4DD} Notes' },
-    { key: 'listing_sale', label: '\u{1F3F7}\uFE0F For Sale' },
-    { key: 'listing_trade', label: '\u{1F91D} For Trade' },
+    { key: 'tag:New Arrival', label: '\u{1F4E6} New Arrival' },
+    { key: 'tag:Deep Listening', label: '\u{1F9D8} Deep Listening' },
+    { key: 'tag:In The Zone', label: '\u{1F3AF} In The Zone' },
+    { key: 'tag:Me Time', label: '\u{1F9CD} Me Time' },
+    { key: 'tag:Cleaning Session', label: '\u{1F9FC} Cleaning Session' },
+    { key: 'tag:Spin Party', label: '\u{1FA69} Spin Party' },
+    { key: 'tag:Limited Edition', label: '\u{1F48E} Limited Edition' },
+    { key: 'tag:Vibe Check', label: '\u2728 Vibe Check' },
+    { key: 'tag:Late Night', label: '\u{1F319} Late Night' },
+    { key: 'tag:Background', label: '\u2615 Background' },
+    { key: 'tag:In My Feels', label: '\u{1F972} In My Feels' },
+    { key: 'tag:Daydreaming', label: '\u2601\uFE0F Daydreaming' },
   ];
 
   const headers = { Authorization: `Bearer ${token}` };
@@ -595,9 +601,10 @@ const HivePage = () => {
     }
     // Apply content type filter
     if (activeFilter === 'all') return result;
-    if (activeFilter === 'NOW_SPINNING') return result.filter(p => p.post_type === 'NOW_SPINNING' || p.post_type === 'RANDOMIZER');
-    if (activeFilter === 'listing_sale') return result.filter(p => p.post_type === 'listing_sale');
-    if (activeFilter === 'listing_trade') return result.filter(p => p.post_type === 'listing_trade');
+    if (activeFilter.startsWith('tag:')) {
+      const tagName = activeFilter.slice(4);
+      return result.filter(p => p.mood === tagName);
+    }
     return result.filter(p => p.post_type === activeFilter);
   }, [posts, feedMode, activeFilter, followingIds, user?.id, promptFilter]);
 
@@ -788,25 +795,25 @@ const HivePage = () => {
       {/* Daily Prompt */}
       <DailyPromptCard records={records} onPostCreated={handlePostCreated} />
 
-      {/* Action Filter Bar — centered, 2 rows on mobile */}
-      <div className="flex flex-wrap justify-center items-center gap-2 mb-4 w-full mx-auto px-2" style={{ maxWidth: '580px' }} data-testid="feed-filter-bar">
+      {/* 12-Mood Filter Bar — 3x4 grid on mobile, centered flex on desktop */}
+      <div className="grid grid-cols-3 sm:flex sm:flex-wrap sm:justify-center items-center gap-1.5 sm:gap-2 mb-4 w-full mx-auto px-2" style={{ maxWidth: '600px' }} data-testid="feed-filter-bar">
         {FEED_FILTERS.map(f => {
           const isActive = activeFilter === f.key;
           return (
             <button
               key={f.key}
               onClick={() => setActiveFilter(f.key)}
-              className={`rounded-full text-xs font-medium transition-all duration-200 border whitespace-nowrap ${
-                isActive
-                  ? 'font-semibold shadow-sm'
-                  : 'hover:bg-amber-50'
+              className={`rounded-full text-xs font-medium border whitespace-nowrap text-center transition-colors duration-200 ${
+                isActive ? 'font-semibold shadow-sm' : ''
               }`}
               style={{
-                padding: '6px 14px',
+                padding: '5px 10px',
                 ...(isActive
                   ? { background: '#FFB800', borderColor: '#FFB800', color: '#000' }
                   : { background: 'transparent', borderColor: 'rgba(200,134,26,0.3)', color: 'rgba(120,80,20,0.7)' }),
               }}
+              onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = '#C8861A'; e.currentTarget.style.color = '#000'; e.currentTarget.style.borderColor = '#C8861A'; } }}
+              onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(120,80,20,0.7)'; e.currentTarget.style.borderColor = 'rgba(200,134,26,0.3)'; } }}
               data-testid={`filter-${f.key}`}
             >
               {f.label}
