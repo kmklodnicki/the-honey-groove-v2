@@ -75,7 +75,7 @@ async def download_archive():
 cors_origins = [
     "https://thehoneygroove.com",
     "https://www.thehoneygroove.com",
-    "https://lost-data-fix.preview.emergentagent.com",
+    "https://vinyl-shield-prod.preview.emergentagent.com",
     "http://localhost:3000",
 ]
 # Also include FRONTEND_URL if it's a real URL and not already listed

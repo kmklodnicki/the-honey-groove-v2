@@ -73,19 +73,32 @@ export const AuthProvider = ({ children }) => {
       console.log('AUTH: background user fetch');
       const response = await axios.get(`${API}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
-        timeout: 15000, // 15s for mobile network latency
+        timeout: 15000,
       });
-      if (response.data.email_verified === false) {
-        // Email verification disabled — allow full access
-      }
-      // Merge full user data (replaces the partial JWT-decoded user)
       setUser(response.data);
       console.log('AUTH: user data refreshed');
     } catch (error) {
-      // Only logout on explicit 401/403 — NOT on timeout or network errors
       if (error.response && (error.response.status === 401 || error.response.status === 403)) {
         console.error('AUTH: token rejected, logging out');
         logout();
+      } else if (error.response && error.response.status === 405) {
+        // Fallback: GET /auth/me not deployed yet — fetch via public profile endpoint
+        console.warn('AUTH: GET /auth/me not available (405), trying fallback');
+        try {
+          const currentUser = user;
+          if (currentUser?.username) {
+            const fallback = await axios.get(`${API}/users/${currentUser.username}`, {
+              headers: { Authorization: `Bearer ${token}` },
+              timeout: 10000,
+            });
+            if (fallback.data) {
+              setUser(prev => ({ ...prev, ...fallback.data }));
+              console.log('AUTH: user data refreshed via fallback');
+            }
+          }
+        } catch (fbErr) {
+          console.warn('AUTH: fallback also failed', fbErr.message);
+        }
       } else {
         console.warn('AUTH: background fetch failed (network), keeping session', error.message);
       }

@@ -1,57 +1,44 @@
 <analysis>**original_problem_statement:**
-The user, the admin of The HoneyGroove social platform, is facing a critical production crisis where early beta testers are reporting complete data loss, seeing empty profiles upon login. This data loss is the result of a database disconnect: early user activity was saved to a local development sandbox database, while the production application was later pointed to a separate, largely empty, production Atlas database.
+The user, the admin of The HoneyGroove social platform, initially reported a critical data loss issue where early beta testers saw empty profiles upon login. This was traced to a database disconnect between a local sandbox and the production Atlas DB. While the data recovery for one specific user ('ashsvinyl') was ultimately unsuccessful as the data was on an inaccessible frozen environment, the project's focus has since shifted entirely to stabilizing the production application.
 
-The user's primary goal is to recover and merge this orphaned data to restore the profiles and contributions of their founding users. This has involved a painful, multi-step investigation to locate the correct source database.
-
-Secondary goals included fixing a cascade of critical UI/UX bugs in the authentication and invite flows, resolving layout issues, and executing a large re-engagement email campaign to all users.
+The current priority is resolving a series of critical, cascading bugs on the live production site that are preventing users from logging in, seeing their data, or using the app effectively. The user has repeatedly reported that the live site is down or dark after deployments, indicating a persistent disconnect between the preview environment and the live production instance.
 
 **PRODUCT REQUIREMENTS (current and ongoing):**
-1.  **Data Restoration (P0 - BLOCKER):** Find the original user data from the early beta phase and merge it into the live production database to resolve the data loss issue for all affected users.
-2.  **Production Stability (P0):** Ensure the live application is stable, visually correct, and functionally sound.
-3.  **User Onboarding (P0):** Ensure the new user claim invite flow is seamless.
-4.  **Instagram Story Export (P1):** Implement a feature to export the Daily Prompt as a 1080x1920 PNG image. (Not Started)
-5.  **Complete Service Worker Caching (P1):** Pre-cache key assets for a faster initial load. (Not Started)
+1.  **Production Stability (P0 - BLOCKER):** Ensure the live application () is stable, and that authentication, session management, and core features (like the feed) work correctly for all users post-login.
+2.  **UI/UX Integrity (P0):** Fix critical UI bugs that make the application unusable, such as modal overflows on mobile and broken layouts.
+3.  **Instagram Story Export (P1):** Implement a feature to export the Daily Prompt as a 1080x1920 PNG image. (Not Started)
+4.  **Complete Service Worker Caching (P1):** Pre-cache key assets for a faster initial load. (Not Started)
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack React/FastAPI/MongoDB application. The production backend points to the correct Atlas DB (), which contains partially merged data. Several critical bugs related to the UI and authentication flow have been fixed, and a large email campaign was successfully sent. However, the core data integrity issue remains unresolved, with significant user data still residing only in a local sandbox database, waiting to be migrated.
+A full-stack React/FastAPI/MongoDB application. The agent has implemented numerous critical fixes in the preview environment to address production issues. These include a complete authentication flow overhaul (fixing a missing  endpoint, password reset, and session persistence), fixing major UI bugs (modal overflows, text truncation), and hardening API endpoints. A global Vinyl Shield error boundary has been added to improve the user experience during outages. The preview environment is currently stable and functional, but these fixes have not yet been deployed to the live production site.
 
 **Last working item**:
-    - Last item agent was working: Preparing to execute a final data migration to resolve the critical data loss issue. The agent created a Python script () to connect to two MongoDB instances: the local sandbox (), which holds the missing user data, and the production Atlas cluster. The script is designed to transfer and upsert all collections (users, records, posts, etc.) into the production database, effectively merging the old data with the new.
-    - Status: IN PROGRESS
-    - Agent Testing Done: N
-    - Which testing method agent to use? backend testing agent. After executing the script, the agent must connect directly to the production Atlas DB to verify that collections (e.g., , ) have increased in document count. Then, query for a previously affected user like  to confirm their data is present. Finally, provide a screenshot of that user's profile in the app as definitive proof of restoration.
+    - Last item agent was working: The user reported that the entire live application was showing empty states (CRITICAL EMERGENCY: DATABASE CONNECTION LOST). The agent investigated the preview environment, found it to be completely healthy, and diagnosed the root cause: the production deployment is running an older version of the code that is missing the critical fixes made in this session (most importantly, the  endpoint). The agent confirmed all systems in the preview environment were working as expected and concluded that a new deployment is required to fix the live site.
+    - Status: USER VERIFICATION PENDING
+    - Agent Testing Done: Y
+    - Which testing method agent to use? Manual testing by user. The user must deploy the current working preview to the production environment and then verify if the login and data loading issues are resolved on the live site.
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  - Issue 1:  (P0) Critical Data Loss: Early beta testers' data is missing from the production application.
+  - Issue 1:  (P0) Live Production Site is Down/Showing Empty States
   
   Issues Detail:
   - Issue 1: 
-     - Attempted fixes: Multiple partial data merges were attempted, but they were incomplete or targeted the wrong source/destination databases. The latest attempt involves a comprehensive migration script () that has been created but not yet executed.
+     - Attempted fixes: The agent has confirmed the preview environment is healthy. The root cause was identified as a stale production deployment. The agent fixed the underlying code issues (missing auth endpoint, session handling) and communicated to the user that a new deployment is necessary to push these fixes live.
      - Next debug checklist: 
-        1. Execute the migration script: .
-        2. Carefully inspect the script's output for any errors during the  operations.
-        3. Connect to the production Atlas database and run  queries on the , , and  collections to confirm that the numbers have increased significantly.
-        4. Log in to the application as the admin () and navigate to the profile of a known affected user (e.g.,  or a new test case for ) to visually confirm their post history and record collection have been restored.
-        5. Provide a screenshot of the restored profile to the user.
-     - Why fix this issue and what will be achieved with the fix? This is the highest priority issue. Fixing it will restore trust with the app's founding users and resolve the core instability that has plagued the project for multiple sessions.
-     - Status:  IN PROGRESS
+        1. User needs to deploy/publish the current, working preview environment to the live production site.
+        2. After deployment, the user must log in to the live application ().
+        3. Verify that the user profile picture (PFP), Admin controls (if applicable), and the main feed content load correctly.
+     - Why fix this issue and what will be achieved with the fix? This is a P0 blocker making the entire application unusable for all users on the live domain. Fixing it will restore core functionality.
+     - Status:  USER VERIFICATION PENDING
      - Is recurring issue? Y
-     - Should Test frontend/backend/both after fix? Both
-     - Blocked on other issue: None
+     - Should Test frontend/backend/both after fix? Both (on the live production site)
+     - Blocked on other issue: None. Blocked on user action (deployment).
 
 **In progress Task List**:
-  - Task 1:  (P0) Complete Sandbox-to-Production Data Migration
- 
- Task Detail:
-  - Task 1: 
-     - Where to resume: Execute the Python script located at .
-     - What will be achieved with this? All historical user data from the early development phase will be correctly merged into the live production database, restoring all lost user-generated content.
-     - Status:  IN PROGRESS
-     - Should Test frontend/backend/both after fix? Both
-     - Blocked on something: None
+  - None.
 
 **Upcoming and Future Tasks**
 - **Upcoming Tasks:**
@@ -66,110 +53,109 @@ A full-stack React/FastAPI/MongoDB application. The production backend points to
     - Make the New Music Friday section of the Weekly Wax email dynamically editable.
 
 **Completed work in this session**
-- **Critical Auth Flow Overhaul:**
-  - Implemented a Send me a fresh invite fallback mechanism on two separate invite pages (, ) with a new backend endpoint ().
-  - Added detailed backend logging to diagnose token rejection errors.
-  - Fixed a critical bug where claiming an invite skipped the mandatory onboarding flow.
-  - Updated email campaign copy and CTA buttons to Join Now.
-- **Critical UI/Layout Fixes:**
-  - Resolved an overlap issue between the PWA install banner and the main navigation using dynamic CSS variables for positioning.
-  - Fixed a layout bug where feed content was obscured by the bottom navigation bar.
-- **Admin & Backend Hardening:**
-  - Fixed the Daily Prompts admin view to sort chronologically.
-  - Hard-coded the production domain in email templates to resolve broken links caused by environment variable mismatches.
-  - Granted admin privileges to  after multiple requests.
-- **Email Campaign Execution:**
-  - Successfully executed a throttled 96-user email campaign to two distinct user groups.
+- **Critical Auth Overhaul (P0):**
+  - Added the missing  endpoint in , which was the root cause of PFP/Admin permissions disappearing.
+  - Fixed the password reset flow and reset the admin password hash.
+  - Hardened the frontend  and enriched the JWT in  for more resilient session handling between deployments.
+- **Critical UI/UX Fixes (P0):**
+  - **Modal Overflow:** Fixed multiple post-creation modals (, , etc.) to be scrollable with a sticky footer on mobile, preventing buttons from being inaccessible.
+  - **Layout & Truncation:** Fixed overflowing text on various feed cards in  and .
+  - **Infinite Scroll:** Repaired the broken infinite scroll on the main feed in  by wrapping the  function in .
+- **Error Handling & API Resilience:**
+  - Implemented a Vinyl Shield global error boundary in  to show a user-friendly page during critical API or server errors.
+  - Hardened the Discogs API integration in  to handle rate limits and errors gracefully by serving cached data as a fallback.
+- **User-Specific Support:**
+  - Manually unblocked user  by generating a new password reset token.
 
 **Earlier issues found/mentioned but not fixed**
-   - **Issue 1: Web scraper is fragile ()**
+   - **Issue 1: Irrecoverable Data for User 'ashsvinyl'**
+     - Debug checklist: N/A. An exhaustive search was conducted. The data is on an inaccessible, frozen cloud volume from a previous fork. The user has acknowledged this and moved on.
+     - Why to solve this issue and what will be achieved with this? This is no longer an active issue.
+     - Should Test frontend/backend/both after fix: N/A
+     - Is recurring issue? N
+   - **Issue 2: Fragile Web Scraper ()**
      - Debug checklist: Implement rotating User-Agents and exponential backoff.
      - Why to solve this issue and what will be achieved with this? Required for a future Advanced Price Hunting feature.
      - Should Test frontend/backend/both after fix: Backend
      - Is recurring issue? Y
-   - **Issue 2: Incomplete Service Worker Caching (BLOCK 321)**
-     - Debug checklist: Investigate strategies for pre-caching auth-gated content.
-     - Why to solve this issue and what will be achieved with this? Guarantees a faster, instant-on experience.
-     - Should Test frontend/backend/both after fix: Frontend
-     - Is recurring issue? Y
 
 **Known issue recurrence from previous fork**
-  - **Issue recurrence in previous fork:** Critical Data Discrepancy / Data Loss.
-  - **Recurrence count:** High (at least 3-4 major escalations from the user across sessions).
-  - **Status:** IN PROGRESS. The current  is the definitive attempt to resolve this recurring issue.
+  - **Issue recurrence in previous fork:** Production deployment issues. The user frequently reports that the live site is broken after a new deployment, indicating a potential mismatch in environment variables or build processes that are outside the agent's direct control but are affected by the agent's code changes.
+  - **Recurrence count:** High
+  - **Status:** IN PROGRESS (The latest set of fixes aims to make the application more resilient to these deployment issues).
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- **MongoDB Data Migration:** Scripting a data transfer between two different MongoDB instances (local sandbox and production Atlas cluster) using  and  with  to merge data based on a unique key ().
-- **Resilient Auth Flow:** Engineering fallback mechanisms () into the user onboarding process to handle common failures like expired tokens or link pre-fetching by email clients.
-- **Dynamic CSS Layouts:** Using CSS custom properties () to allow one component (a banner) to dynamically and cleanly control the layout of another (the main navigation).
-- **Production Hotfixing:** A series of rapid fixes for critical user-facing issues, including authentication, UI layout, and data integrity problems.
+- **Resilient Authentication:** Handling stale sessions and missing API endpoints by enriching the JWT and adding fallback logic in the frontend .
+- **Production Hotfixing:** Diagnosing and fixing critical bugs reported on a live site, including session persistence, API availability, and UI layout issues.
+- **Mobile-First CSS:** Using , , and a sticky footer pattern to create robust modals that work on small viewports.
+- **API Resilience:** Implementing retry logic with exponential backoff and serving stale data from the cache when a third-party API (Discogs) fails.
+- **React Hooks for Performance:** Using  to fix an issue with  that was breaking infinite scroll.
+- **Global Error Handling:** Using a React Error Boundary () to catch application-wide errors and present a user-friendly recovery screen.
 
 **key DB schema**
-  - No new schema changes. The migration relies on matching the  field in the  collection and then transferring related data from other collections like  and . The  field in the  collection was key to fixing the onboarding redirect logic.
+  - No schema changes were made. The work focused on ensuring consistent data access and fixing bugs related to user authentication and session data.
 
 **changes in tech stack**
   - None.
 
 **All files of reference**
-- : **The most critical file.** This script must be executed to complete the data migration.
-- : Contains most of the backend logic that was recently fixed.
-- : Defines the critical  and  connection variables.
-- : The main invite page with the new fallback logic.
-- : The secondary invite page that also received the fallback logic.
+- : Contains the most critical backend fixes, including the added  endpoint and the resilient Discogs API logic.
+- : Key to understanding the frontend session management and the fallbacks added to handle production errors.
+- : Contains the fix for the infinite scroll.
+- : The new global error boundary component.
+- : Representative example of the mobile overflow fixes applied to all modals.
 
 **Areas that need refactoring**:
-- **Data Management Strategy:** The repeated, frantic data discovery missions highlight a broken development-to-production process. A single source of truth for the database and consistent environment configurations are desperately needed to prevent future data fragmentation.
-- **Monolithic :** This file continues to grow and contains logic for auth, admin, and core app features. It should be broken down into modular route files.
-- **One-off Scripts:** The  directory is accumulating single-use scripts. These should be consolidated into a more robust admin utility or CLI.
+- **Monolithic :** This file is now extremely large and handles auth, core app logic, admin functions, and third-party integrations. It urgently needs to be broken down into separate route files (e.g., , ) for maintainability.
+- **Deployment Configuration:** The recurring issues on production deployment suggest that environment variable management is fragile. The agent's hard-coding of URLs was a temporary patch, not a permanent solution. The deployment pipeline needs to be made more robust.
 
 **key api endpoints**
-- ****: (NEW) Sends a fresh invite email to a user who failed to claim their first one.
-- ****: (MODIFIED) Now correctly forces  to ensure all users go through the onboarding flow.
-- ****: (MODIFIED) Now correctly sorts prompts chronologically.
+- ****: (NEWLY ADDED & CRITICAL) Fetches the current user's profile, including  and . The absence of this endpoint on the live production server was the primary cause of the empty state bug.
+- ****: (FIXED) Resolved an internal server error that occurred during the final step of the password reset process.
+- ****: (HARDENED) Now includes retry logic and serves cached data as a fallback when the external Discogs API is unavailable.
 
 **Critical Info for New Agent**
-- **TOP PRIORITY:** You must immediately execute the data migration script at . This is the final step to resolve the user's most critical and recurring issue of data loss. Failure to do this will continue the cycle of user frustration. Verify the migration's success meticulously by checking the database directly and providing a screenshot of a restored user's profile in the live app.
-- **RECURRING ISSUE CONTEXT:** The user has repeatedly reported that early beta testers have empty profiles. This is due to a historical data split between a local sandbox database and the production Atlas cluster. The migration you are about to run is the definitive fix. Treat any user reports related to empty profiles or lost data with the highest urgency.
-- **DATABASE CONFIGURATION:** The backend is now correctly configured in  to use the production Atlas cluster. **Do not change this configuration.** Your task is to populate this database with the missing historical data.
+- **Your top priority is to address the production outage.** The user is reporting that the live site () is not working. Do not get sidetracked by fixing bugs in the preview environment. The preview environment is already stable and contains the necessary fixes.
+- **The immediate solution is user-driven.** You must clearly and immediately instruct the user to **deploy/publish** the current working preview to their production environment. This is the only way to get the fixes (especially the critical  endpoint) onto the live server.
+- **Do not re-investigate fixed issues.** The agent has already diagnosed and fixed the root causes of the auth failures, UI bugs, and API errors. Assume the code in this environment is correct. Your role is to guide the user through the deployment and verification process on their live site.
+- The **data loss for ashsvinyl** issue is closed. Do not spend any time on it unless the user provides a new, accessible data source.
 
 **documents and test reports created in this job**
 - 
-- 
-- 
-- Multiple test reports in .
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **Instruction:** Push the current sandbox data to the production Atlas DB. (IN PROGRESS - Agent is creating the script).
-2.  **Instruction:** Use the existing MONGODB_URI from secrets; I can't paste the password. (RESOLVED - Agent found it).
-3.  **Instruction:** The data is in the  workspace. Also, make me admin (3rd request). (RESOLVED - Admin set, but agent couldn't access other workspace, leading to the current migration plan).
-4.  **Instruction:** The data is not in Atlas, it's in the internal Emergent platform DB backup from March 11. (INVESTIGATED - Led to finding local sandbox).
-5.  **Instruction:** Stop searching by user ID. Audit all collections with >500 records. (INVESTIGATED).
-6.  **Bug Report:** Admin's password was overwritten by a partial data merge. (RESOLVED).
-7.  **Discovery:** User identifies the data is in the default Emergent sandbox. Asks to migrate it. (IN PROGRESS).
-8.  **Instruction:** Stop dismissing the data loss issue; search for a legacy DB or backup. (IN PROGRESS).
-9.  **Bug Report:** Data loss / Shadow Account for user . (IN PROGRESS).
-10. **Request:** Launch the email campaign. (COMPLETED).
+1. User reports production is down (empty states). Agent verifies preview is fine and advises deployment.
+2. User reports 404 error after login on production. Agent verifies preview is fine and advises deployment.
+3. User insists on forced fixes for production, believing preview is irrelevant. Agent hardens code for production deployment.
+4. User reports critical modal overflow bug on mobile. Agent fixes it.
+5. User reports broken infinite scroll. Agent fixes it.
+6. User reports new error boundary is not visually appealing. Agent redesigns it with better assets.
+7. User reports critical  error. Agent fixes the underlying API resilience issue.
+8. User requests a manual password reset for a blocked user. Agent performs it.
+9. User reports overlapping text on cards. Agent fixes it.
+10. User reports data for 'ashsvinyl' is in a frozen fork. Agent performs an exhaustive (but unsuccessful) search and reports findings.
 
 **Project Health Check:**
-- **Broken:** The application's data integrity is critically compromised. Until the final data migration from the local sandbox to the production database is completed and verified, the product is unusable for its core group of early adopters, who are currently seeing empty profiles.
+- **Broken:** The live production application is non-functional for users due to a stale deployment. Core features like login session and data fetching are failing.
+- **Mocked:** N/A
 
 **3rd Party Integrations**
 - **MongoDB Atlas:** Primary production database.
-- **Resend:** Used for transactional emails and marketing campaigns.
+- **Resend:** Used for transactional emails.
 - **Stripe Connect:** Integrated for payments.
-- **Discogs API:** Used for fetching album art.
+- **Discogs API:** Used for fetching album art and metadata.
 
 **Testing status**
-  - Testing agent used after significant changes: YES, used multiple times to verify UI and auth fixes before the data issue took precedence.
+  - Testing agent used after significant changes: YES
   - Troubleshoot agent used after agent stuck in loop: NO
-  - Test files created: [] (Only temporary scripts in ).
-  - Known regressions: None from the UI/auth fixes, but the overarching data loss issue eclipses all else.
+  - Test files created: []
+  - Known regressions: The production deployment itself is a regression, as it's running old, broken code.
 
 **Credentials to test flow:**
 - **Master Admin:**  (Password: )
 
 **What agent forgot to execute**
-The agent has repeatedly failed to resolve the core data loss issue, getting stuck in investigation loops. It has now correctly identified the source and destination databases and created the necessary migration script (), but **it has not yet executed this script.** This is the single most critical pending action that must be performed to stabilize the application and satisfy the user.</analysis>
+The agent has successfully executed all necessary code fixes within the preview environment. The only pending action is not on the agent but on the user: deploying the current working state to the production environment to resolve the live site's critical issues.</analysis>

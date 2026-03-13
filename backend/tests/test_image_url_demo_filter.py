@@ -16,7 +16,7 @@ from dotenv import load_dotenv
 
 load_dotenv('/app/backend/.env')
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://lost-data-fix.preview.emergentagent.com').rstrip('/')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://vinyl-shield-prod.preview.emergentagent.com').rstrip('/')
 
 class TestDemoUserFiltering:
     """Test that demo/test users are filtered from all explore endpoints"""
