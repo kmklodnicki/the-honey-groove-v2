@@ -355,8 +355,93 @@ async def reset_password(data: dict):
     return {"status": "ok", "message": "Password reset successfully. You can now log in."}
 
 
+# ── Claim-Invite: token-based account claim (bypasses forgot-password) ──────
 
-@router.get("/auth/me", response_model=UserResponse)
+@router.get("/auth/validate-invite")
+async def validate_invite(token: str = Query(...)):
+    """Validate an invite token and return the associated email."""
+    doc = await db.invite_tokens.find_one({"token": token}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=400, detail="Invalid or expired invite link.")
+    created = datetime.fromisoformat(doc["created_at"])
+    if datetime.now(timezone.utc) - created > timedelta(days=7):
+        await db.invite_tokens.delete_one({"token": token})
+        raise HTTPException(status_code=400, detail="This invite link has expired.")
+    return {"email": doc["email"], "is_existing": doc.get("is_existing", False)}
+
+
+@router.post("/auth/claim-invite")
+async def claim_invite(data: dict):
+    """Claim an invite: set password and log in immediately."""
+    token = (data.get("token") or "").strip()
+    password = data.get("password") or ""
+    if not token:
+        raise HTTPException(status_code=400, detail="Invite token is required")
+    if len(password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+
+    doc = await db.invite_tokens.find_one({"token": token}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=400, detail="Invalid or expired invite link.")
+    created = datetime.fromisoformat(doc["created_at"])
+    if datetime.now(timezone.utc) - created > timedelta(days=7):
+        await db.invite_tokens.delete_one({"token": token})
+        raise HTTPException(status_code=400, detail="This invite link has expired.")
+
+    email = doc["email"].lower().strip()
+    user = await db.users.find_one({"email": email}, {"_id": 0})
+
+    if user:
+        # Existing user: update password & mark verified
+        new_hash = hash_password(password)
+        await db.users.update_one(
+            {"id": user["id"]},
+            {"$set": {"password_hash": new_hash, "is_verified": True}},
+        )
+        user["is_verified"] = True
+    else:
+        # New user: create account
+        user_id = str(uuid.uuid4())
+        username = email.split("@")[0].lower().replace(".", "").replace("+", "")[:20]
+        # Ensure unique username
+        while await db.users.find_one({"username": username}):
+            username = username[:16] + str(uuid.uuid4())[:4]
+        user = {
+            "id": user_id,
+            "email": email,
+            "username": username,
+            "password_hash": hash_password(password),
+            "display_name": "",
+            "bio": "",
+            "avatar_url": "",
+            "is_verified": True,
+            "is_admin": False,
+            "onboarding_completed": False,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+        await db.users.insert_one({**user})
+        user.pop("_id", None)
+
+    # Burn the token
+    await db.invite_tokens.delete_one({"token": token})
+
+    # Issue JWT
+    jwt_token = create_token(user["id"])
+    logger.info(f"Invite claimed by {email} (user {user.get('username')})")
+
+    return {
+        "access_token": jwt_token,
+        "token_type": "bearer",
+        "user": {
+            "id": user["id"],
+            "email": user["email"],
+            "username": user.get("username", ""),
+            "display_name": user.get("display_name", ""),
+            "avatar_url": user.get("avatar_url", ""),
+            "is_admin": user.get("is_admin", False),
+            "onboarding_completed": user.get("onboarding_completed", False),
+        },
+    }
 async def get_me(user: Dict = Depends(require_auth)):
     return await _build_user_response(user)
 

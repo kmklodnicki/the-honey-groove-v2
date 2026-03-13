@@ -82,6 +82,7 @@ const CheckoutSuccessPage = lazy(() => import("./pages/CheckoutSuccessPage"));
 const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
 const RepollinateSuccessPage = lazy(() => import("./pages/RepollinateSuccessPage"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
+const ClaimInvitePage = lazy(() => import("./pages/ClaimInvitePage"));
 
 // Auth guards — loading is ALWAYS false. No gates.
 // If user exists (from JWT decode or login), render children.
@@ -286,6 +287,7 @@ function AppContent() {
       <Route path="/confirm-email-change" element={<ConfirmEmailChangePage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/set-password" element={<ForgotPasswordPage />} />
+      <Route path="/claim-invite" element={<ClaimInvitePage />} />
       <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/stripe/connect/return" element={<StripeConnectReturnPage />} />
