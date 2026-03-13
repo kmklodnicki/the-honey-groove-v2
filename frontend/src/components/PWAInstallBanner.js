@@ -71,7 +71,7 @@ const PWAInstallBanner = () => {
 
       <div
         className="fixed top-0 left-0 right-0 w-full"
-        style={{ zIndex: 9999, paddingTop: 'env(safe-area-inset-top, 0px)' }}
+        style={{ zIndex: 50, paddingTop: 'env(safe-area-inset-top, 0px)' }}
         data-testid="pwa-install-banner"
       >
         <div
@@ -91,12 +91,12 @@ const PWAInstallBanner = () => {
           </button>
           <button
             onClick={handleDismiss}
-            className="ml-1 transition-colors"
-            style={{ color: 'rgba(145,85,39,0.5)' }}
+            className="ml-1 p-1.5 rounded-full transition-colors hover:bg-amber-200/50 active:bg-amber-200"
+            style={{ color: '#915527' }}
             aria-label="Dismiss install banner"
             data-testid="pwa-dismiss-btn"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 

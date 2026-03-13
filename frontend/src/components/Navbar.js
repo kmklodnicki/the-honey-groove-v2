@@ -273,7 +273,7 @@ const Navbar = () => {
     {/* Mobile Bottom Nav */}
     {user && (
       <div
-        className="md:hidden fixed bottom-0 left-0 right-0 z-[100000] bg-[#FAF6EE] border-t border-[#C8861A]/10"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-[#FAF6EE] border-t border-[#C8861A]/10"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         data-testid="mobile-bottom-nav"
       >
