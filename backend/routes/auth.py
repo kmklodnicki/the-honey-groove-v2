@@ -350,7 +350,10 @@ async def reset_password(data: dict):
     await db.password_resets.delete_many({"user_id": doc["user_id"]})
 
     user = await db.users.find_one({"id": doc["user_id"]}, {"_id": 0, "username": 1, "email": 1})
-    logger.info(f"Password reset completed for user '{user.get('username')}' ({user.get('email')})")
+    if user:
+        logger.info(f"Password reset completed for user '{user.get('username')}' ({user.get('email')})")
+    else:
+        logger.warning(f"Password reset: user_id {doc['user_id']} not found after update")
 
     return {"status": "ok", "message": "Password reset successfully. You can now log in."}
 
@@ -532,6 +535,14 @@ async def claim_invite(data: dict):
     }
 async def get_me(user: Dict = Depends(require_auth)):
     return await _build_user_response(user)
+
+@router.get("/auth/me", response_model=UserResponse)
+async def get_me_route(user: Dict = Depends(require_auth)):
+    """Return the current authenticated user's full profile."""
+    full_user = await db.users.find_one({"id": user["id"]}, {"_id": 0, "password_hash": 0})
+    if not full_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return await _build_user_response(full_user)
 
 @router.put("/auth/me", response_model=UserResponse)
 async def update_me(update_data: UserUpdate, user: Dict = Depends(require_auth)):

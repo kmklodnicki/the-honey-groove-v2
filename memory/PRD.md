@@ -9,25 +9,30 @@ A premium social platform for vinyl collectors. React frontend + FastAPI backend
 
 ## Completed — March 13, 2026
 
+### Session 4 — Critical Auth Fix
+- **GET /auth/me endpoint**: Added missing `@router.get("/auth/me")` — was only PUT, frontend GET returned 405. Root cause of PFP/admin disappearing after refresh.
+- **Password reset 500 fix**: Null-check on user lookup after password update in `reset_password()`
+- **Admin password re-hash**: Password hash was stale from data merge; re-hashed to match `HoneyGroove2026!`
+
 ### Session 3 — Variant Bug Fix
-- **Discogs Rate Limit Handling**: Added retry with backoff (2 retries, Retry-After header) in `database.py`
-- **Internal Records Fallback**: If Discogs API fails, variant page builds response from internal DB records instead of showing error
-- **Frontend Retry UX**: "Variant Not Found" page now has "Try Again" button instead of dead-end
+- Discogs rate limit retry with backoff (2 retries)
+- Internal records fallback when Discogs API fails
+- "Try Again" button on Variant Not Found page
 
 ### Session 2 — Data Export & UI Fixes
-- **Data Export**: All 23 collections exported to `/app/export/` with download endpoints
-- **CSS Truncation**: Applied to all artist/album labels in PostCards.js, HoneypotCards.js, ISOPage.js + global `.card-title, .card-artist` rule in index.css
-- **Honeypot Pagination**: Limited to 24 items with "Show More" on Shop/Trade tabs
-- **User Unblock**: Generated password reset token for swiftlylyrical@gmail.com
+- 23 collections exported to `/app/export/` with download endpoints
+- CSS truncation on all artist/album labels + global `.card-title, .card-artist` rule
+- Honeypot pagination: 24-item limit with "Show More"
+- Variant pill max-width capped at all breakpoints (320px desktop, 220px tablet, 150px mobile)
+- Password reset token for swiftlylyrical@gmail.com
 
 ### Session 1 — Auth & Campaign
-- Auth flow overhaul with resend-invite fallback
+- Auth flow with resend-invite fallback
 - PWA banner / nav layout fixes
-- Admin prompts sorted, admin role set
 - 95-user email campaign sent
 
 ## P0 — Outstanding
-- **Ash's Data**: `contact.ashsvinyl@gmail.com` has 0 records — data in frozen fork (March 8-11), not accessible from current environment
+- **Ash's Data**: Not in any accessible data source
 
 ## P1 — Upcoming
 - Instagram Story Export (1080x1920 PNG for Daily Prompt)
@@ -36,11 +41,10 @@ A premium social platform for vinyl collectors. React frontend + FastAPI backend
 ## P2 — Future/Backlog
 - Streaming Service Integration (BLOCK 254)
 - Record Store Day Proxy Network
-- Safari-compatible loading animation
+- Safari loading animation
 - "Pro" memberships / "Verified Seller" badge
 - Secret Search Feature
-- Dynamic "New Music Friday" in Weekly Wax email
-- Web scraper hardening
+- Dynamic "New Music Friday" in Weekly Wax
 
 ## Credentials
 - Admin: kmklodnicki@gmail.com / HoneyGroove2026!
