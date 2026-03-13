@@ -1,0 +1,59 @@
+[
+  {
+    "_id": "69b39c17b34d303258668a30",
+    "id": "a448de35-c8f2-4b26-87c0-a8367ea009bf",
+    "album": "Penny Test Record",
+    "artist": "Test Artist",
+    "condition": "NM",
+    "cover_url": null,
+    "created_at": "2026-03-11T20:55:07.802811+00:00",
+    "description": null,
+    "discogs_id": null,
+    "hidden_at": "2026-03-11T22:18:18.261090+00:00",
+    "hidden_reason": "great_disconnect_migration",
+    "insured": null,
+    "international_shipping": false,
+    "international_shipping_cost": null,
+    "is_test_listing": true,
+    "listing_type": "BUY_NOW",
+    "offplatform_flagged": false,
+    "photo_urls": [
+      "https://example.com/test.jpg"
+    ],
+    "pressing_notes": null,
+    "price": 0.01,
+    "record_id": null,
+    "shipping_cost": null,
+    "status": "HIDDEN_PENDING_VERIFICATION",
+    "user_id": "63dcf386-b4aa-4061-9333-99adc0a770bd",
+    "year": null
+  },
+  {
+    "_id": "69b429bb22fde60483dd385b",
+    "id": "e2fb62f4-071f-48c9-89d8-d427390843ec",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "record_id": null,
+    "discogs_id": 14401235,
+    "artist": "Taylor Swift",
+    "album": "Lover",
+    "cover_url": "https://i.discogs.com/AtDFDg1_gZyjv16Ysg_boeOi-5prd9ISFDVizTGfGY4/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE0NDAx/MjM1LTE2ODI0NjY5/ODMtOTU5NC5qcGVn.jpeg",
+    "year": 2019,
+    "condition": "NM",
+    "pressing_notes": "Test",
+    "listing_type": "BUY_NOW",
+    "price": 1.0,
+    "shipping_cost": 0.0,
+    "description": null,
+    "photo_urls": [
+      "https://wax-collector-app.emergent.host/api/files/serve/honeygroove/uploads/4072aaa7-1171-4cd2-9c8f-20dfca8fdc58/fdde2849-1a5a-4111-a087-704d63ef547c.jpg"
+    ],
+    "insured": null,
+    "international_shipping": false,
+    "international_shipping_cost": null,
+    "is_unofficial": false,
+    "offplatform_flagged": false,
+    "is_test_listing": true,
+    "status": "ACTIVE",
+    "created_at": "2026-03-13T15:14:03.461185+00:00"
+  }
+]

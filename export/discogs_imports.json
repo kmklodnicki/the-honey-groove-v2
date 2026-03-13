@@ -1,0 +1,524 @@
+[
+  {
+    "_id": "69b39c0cc5ba1da0934ee6f8",
+    "user_id": "9221572c-1d80-4274-8393-77f0b2fdffc4",
+    "completed_at": "2026-03-05T22:37:57.523401+00:00",
+    "discogs_username": "katieintheafterglow",
+    "imported": 0,
+    "skipped": 143,
+    "total": 143,
+    "errors": 0,
+    "sample_covers": []
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6f9",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "completed_at": "2026-03-11T03:14:02.387060+00:00",
+    "discogs_username": "katieintheafterglow",
+    "errors": 0,
+    "imported": 143,
+    "sample_covers": [
+      {
+        "title": "Pink Pony Club",
+        "artist": "Chappell Roan",
+        "cover_url": "https://i.discogs.com/1lIoN90TJ6tb2HIZeWx8rPEUPVaYrceQCdJWYx7ABGM/rs:fit/g:sm/q:90/h:600/w:591/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMxNzg1/Njc0LTE3MjY5NjA1/MTUtOTIyNi5wbmc.jpeg"
+      },
+      {
+        "title": "Guess",
+        "artist": "Charli XCX, Billie Eilish",
+        "cover_url": "https://i.discogs.com/srbHf2EY2PzPa9pjanUseItV9E8StyjedMbV2CKnlMY/rs:fit/g:sm/q:90/h:595/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMzNjQ2/MDM4LTE3NDUyNzY2/MTUtMTM2Mi5qcGVn.jpeg"
+      },
+      {
+        "title": "Brat",
+        "artist": "Charli XCX",
+        "cover_url": "https://i.discogs.com/LvN0PHoKP186pgKeboIOLI_GVblmYxnux_HhiwiG-48/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMwOTg0/OTU4LTE3NDkyMjE5/MTEtNzA5Ni5qcGVn.jpeg"
+      },
+      {
+        "title": "Valentine",
+        "artist": "Laufey (2)",
+        "cover_url": "https://i.discogs.com/iH_3owMNnqMiyLo-xjrUFaprm-J7aw65B7kOgTvjbTk/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMzNjUx/NzMyLTE3NDQ1Njg5/ODUtODI0NC5qcGVn.jpeg"
+      },
+      {
+        "title": "Suddenly/Honeybee",
+        "artist": "B\u00d8RNS",
+        "cover_url": "https://i.discogs.com/9LzX9i0dpprrLEzu03Jv0yV8qMpGnTIFQ7QqtRCk1uw/rs:fit/g:sm/q:90/h:600/w:593/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMzNzYy/NTc5LTE3NzI2NDc0/MzYtNzU0Ny5qcGVn.jpeg"
+      },
+      {
+        "title": "Reputation",
+        "artist": "Taylor Swift",
+        "cover_url": "https://i.discogs.com/OZiVXOktigzIJtNgWS9KGrPbpcpBIeYrEL3WcmCsf3Y/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTExMjU2/MTc1LTE1MTMzNzc4/OTktODYyNC5qcGVn.jpeg"
+      },
+      {
+        "title": "Taylor Swift",
+        "artist": "Taylor Swift",
+        "cover_url": "https://i.discogs.com/P3NDdPQzsd3YP3Hjq0FoOulklX7wlsLmID7VeEIocFw/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTg0Nzg0/MTgtMTY1ODEzMTAz/NC00MDcxLmpwZWc.jpeg"
+      },
+      {
+        "title": "Fearless (Platinum Edition)",
+        "artist": "Taylor Swift",
+        "cover_url": "https://i.discogs.com/nQOm_libAIdOPScWqmrhCYniKWVn5AmcbRE3N0bpgao/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTg0Nzgz/NjUtMTQ2MjM5NzEz/Ny04NTI2LmpwZWc.jpeg"
+      },
+      {
+        "title": "Speak Now",
+        "artist": "Taylor Swift",
+        "cover_url": "https://i.discogs.com/87sf0MZNnCbWMcZaWZYr75spHg3f8hmzXAXKOvA2Ke0/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI1NTUx/MjctMTY3NzE2MzIx/OC03NTQ5LmpwZWc.jpeg"
+      },
+      {
+        "title": "Red",
+        "artist": "Taylor Swift",
+        "cover_url": "https://i.discogs.com/oHn0PWyII_BipJYCwfZbOHYIcIUJZ41WMhXSgl7cadQ/rs:fit/g:sm/q:90/h:600/w:593/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTkzNTk5/MzktMTYzMjc2NTI1/NC00MDczLmpwZWc.jpeg"
+      },
+      {
+        "title": "143",
+        "artist": "Katy Perry",
+        "cover_url": "https://i.discogs.com/bB89KO6aib1j6Rm5ZnEIKJoBf_l2tT9BLlfLVwQAtnU/rs:fit/g:sm/q:90/h:597/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMxNzkz/NjQ1LTE3MjY5Njk3/OTQtMTEzNS5qcGVn.jpeg"
+      },
+      {
+        "title": "Woman's World",
+        "artist": "Katy Perry",
+        "cover_url": "https://i.discogs.com/w7l_KujWQCib4Y8-kI4njHe8mmqTiaTpDV-HBoMEc9s/rs:fit/g:sm/q:90/h:598/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMxMjEz/NjkwLTE3MjA5NzI3/MDEtMzQzMi5qcGVn.jpeg"
+      }
+    ],
+    "skipped": 0,
+    "total": 143,
+    "skipped_records": []
+  },
+  {
+    "_id": "69b435c3b34d303258669a85",
+    "user_id": "2c557204-fc7c-45ac-85d4-0cdd0f3d5570",
+    "completed_at": "2026-03-13T16:05:23.829580+00:00",
+    "discogs_username": "tangerine_vinyl",
+    "errors": 0,
+    "imported": 771,
+    "sample_covers": [
+      {
+        "title": "Greatest Hits",
+        "artist": "Waterparks",
+        "cover_url": "https://i.discogs.com/HdhO4_0gyqsp8mOWGtnSM4Mk6on8xctfnAwURzU3zrI/rs:fit/g:sm/q:90/h:586/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE4ODIx/MjEyLTE2MjE2MjI1/OTItNzE1MS5qcGVn.jpeg"
+      },
+      {
+        "title": "Calm",
+        "artist": "5 Seconds Of Summer",
+        "cover_url": "https://i.discogs.com/QNRkDvtRoX99fxtFgwqJ5GgegdPGynDnXFgy9LhOYt4/rs:fit/g:sm/q:90/h:582/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE1MDAz/MzkxLTE1ODUzODE3/MDAtNzM5Mi5qcGVn.jpeg"
+      },
+      {
+        "title": "Walls",
+        "artist": "Louis Tomlinson",
+        "cover_url": "https://i.discogs.com/yK3BXAg3ynzBpO1B_PB_mk3EvxeBcgDd7IudkDPiA2k/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE0NzYz/MDEyLTE1ODExMTQ5/MjItMjk2MS5qcGVn.jpeg"
+      },
+      {
+        "title": "Every Breath You Take",
+        "artist": "The Police",
+        "cover_url": "https://i.discogs.com/teOGhzc2kpyQdPo6kq9cggfu7l8i1T3VQUqyoqMCzSg/rs:fit/g:sm/q:90/h:600/w:599/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE2MjQ0/NTAtMTI3MDU4ODI1/MS5qcGVn.jpeg"
+      },
+      {
+        "title": "Mirror Man",
+        "artist": "The Human League",
+        "cover_url": "https://i.discogs.com/fht1Za7R-ODi2kDLwy0cm8vCOecbzW6pZlaTLxirqPI/rs:fit/g:sm/q:90/h:593/w:599/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTY0Nzkx/MS0xMjU1MTQ1NzU0/LmpwZWc.jpeg"
+      },
+      {
+        "title": "Don't You (Forget About Me)",
+        "artist": "Simple Minds",
+        "cover_url": "https://i.discogs.com/zrJk2VlJ3TF99Jx51osNOjHeAdoJdh_kng89J_6XI0o/rs:fit/g:sm/q:90/h:600/w:598/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTExNTE3/MDUtMTE5NjI5OTc4/MC5qcGVn.jpeg"
+      },
+      {
+        "title": "Synchronicity",
+        "artist": "The Police",
+        "cover_url": "https://i.discogs.com/-_zH6T6k8_SOb1j23-CZcOkfzkwuKyv1716V3LNiiZU/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTQ0MjQ5/MC0xMzMyNTYxOTE1/LmpwZWc.jpeg"
+      },
+      {
+        "title": "Diamonds & Rust",
+        "artist": "Joan Baez",
+        "cover_url": "https://i.discogs.com/oURq0krMyr9mGAvbt0OcNOlgNOteeruj7Be4szDAJfs/rs:fit/g:sm/q:90/h:400/w:401/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMzMDYz/ODQtMTMyNDk5ODk0/MS5qcGVn.jpeg"
+      },
+      {
+        "title": "East Side Story",
+        "artist": "Squeeze (2)",
+        "cover_url": "https://i.discogs.com/mJFGUUe3FbUz43Q696FomqOWObAIkGfvGj7bp7Ek5-Y/rs:fit/g:sm/q:90/h:400/w:400/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTEyNTIz/MTEyLTE1MzY5Mzg1/ODYtNTM3My5qcGVn.jpeg"
+      },
+      {
+        "title": "Sweets From A Stranger",
+        "artist": "Squeeze (2)",
+        "cover_url": "https://i.discogs.com/Od6OaJ03EvRDmRcZScO6VMa2dP3Ea4glPsslFdKH8eM/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTcwODI2/NDEtMTQzMzM0NTU5/NS00MzkxLmpwZWc.jpeg"
+      },
+      {
+        "title": "Singles - 45's And Under",
+        "artist": "Squeeze (2)",
+        "cover_url": "https://i.discogs.com/BCYGdA-dotDaQNfTtMlxRKfgDzw1Op4-9lL-GttLkmM/rs:fit/g:sm/q:90/h:597/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTkwMjAx/NDEtMTQ3MzUyNDQz/NC0xODU5LmpwZWc.jpeg"
+      },
+      {
+        "title": "Reckless",
+        "artist": "Bryan Adams",
+        "cover_url": "https://i.discogs.com/djqcD2vwt3SOHbtfD5X5EV5Ps9sc4zAMKa8zLAWMq-s/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE0Njkz/MzQtMTUwNjgxODA3/Ny0yODM4LmpwZWc.jpeg"
+      }
+    ],
+    "skipped": 0,
+    "skipped_records": [],
+    "total": 771
+  },
+  {
+    "_id": "69b43ce1b34d303258669b85",
+    "user_id": "93ad244e-d8ad-4160-981d-dc7ca1024de1",
+    "completed_at": "2026-03-13T16:35:45.239894+00:00",
+    "discogs_username": "sohappyicouldie",
+    "errors": 0,
+    "imported": 14,
+    "sample_covers": [
+      {
+        "title": "Portals",
+        "artist": "Melanie Martinez (2)",
+        "cover_url": "https://i.discogs.com/_ZDatPtdkGpO5SkDMsHlLkwZnlBaPjlxbFdzISlf81Y/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2NTkz/MDkxLTE3MzQ3MDk1/MjQtODkyOC5qcGVn.jpeg"
+      },
+      {
+        "title": "Lost Girls",
+        "artist": "Bat For Lashes",
+        "cover_url": "https://i.discogs.com/dyW_tr3yVsbv0kPH182sJV1Qu2In-hhqJmVUrP-CBf8/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE0MDgw/MTk3LTE1Njc0OTI4/NzItMTU4NS5qcGVn.jpeg"
+      },
+      {
+        "title": "Success",
+        "artist": "The Weather Girls",
+        "cover_url": "https://i.discogs.com/ayiKoL-ux6moBVCqPx_7_SGcTwl8ilQGjt8E9gUswr4/rs:fit/g:sm/q:90/h:495/w:500/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE2Njc2/MDItMTI2MDYzNjEz/NC5qcGVn.jpeg"
+      },
+      {
+        "title": "Chromatica",
+        "artist": "Lady Gaga",
+        "cover_url": "https://i.discogs.com/P-FkCVWqVE1r5eRW8wTKL9hx08AohkwTTm8INq7-qt4/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE1Mzkx/Nzg5LTE3MzQ0MzQ3/NDUtNzAyOC5qcGVn.jpeg"
+      },
+      {
+        "title": "Man's Best Friend",
+        "artist": "Sabrina Carpenter",
+        "cover_url": "https://i.discogs.com/v0JNMbrq0xCWqpdet5vudlbalroFqI0rnkl0nz9ZoxY/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTM0OTY4/MDgwLTE3NTY2NTM2/NjQtOTQ1Ni5qcGVn.jpeg"
+      },
+      {
+        "title": "Experience Gloria Gaynor",
+        "artist": "Gloria Gaynor",
+        "cover_url": "https://i.discogs.com/pUM4ib_1951bn4XujE5lFGI8kZ3wmrnvXC4DG52GHPo/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTc3ODEz/NC0xNTcwNTM4MDY0/LTkwMzEuanBlZw.jpeg"
+      },
+      {
+        "title": "Lollipop Luxury",
+        "artist": "Jeffree Star, Nicki Minaj",
+        "cover_url": "https://i.discogs.com/7cUbbwqnWB0vkox499rXgNgvDLAKHbDKHPoSDDT8wMg/rs:fit/g:sm/q:90/h:600/w:546/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMyNTkx/Nzg0LTE3MzQ0NTIz/MjktNjAwNy5qcGVn.jpeg"
+      },
+      {
+        "title": "Beauty Killer",
+        "artist": "Jeffree Star",
+        "cover_url": "https://i.discogs.com/oD1isL8NL88maoBycfp0sK3dcc5ApvcYSXaiMLtCgkI/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMzNDAw/OTkxLTE3NDE5MDQ2/NzYtMjg4NC5qcGVn.jpeg"
+      },
+      {
+        "title": "I've Got You",
+        "artist": "Gloria Gaynor",
+        "cover_url": "https://i.discogs.com/t3ZUQ-1wd0fN-wcI1LlT5wunlXPqHrzmHBJUyIpLv_M/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI0Mzkx/MS0xNjcyNDAzNDI0/LTc0NDIuanBlZw.jpeg"
+      },
+      {
+        "title": "Ultraviolence",
+        "artist": "Lana Del Rey",
+        "cover_url": "https://i.discogs.com/g_sSXusT05zVJQpGl2azDJYo6Any1Tt5DXfwsDGVTXY/rs:fit/g:sm/q:90/h:600/w:599/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI4NDMy/ODQwLTE2OTU5OTQy/NzYtNTk4NC5qcGVn.jpeg"
+      },
+      {
+        "title": "Honeymoon",
+        "artist": "Lana Del Rey",
+        "cover_url": "https://i.discogs.com/4zsyHwoQvP7GNpAb0jzbeiqs_mNkch5o26EKw6CLzCQ/rs:fit/g:sm/q:90/h:589/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE2MjMx/NzQ0LTE2MDU2ODM2/NDYtNTI1OS5qcGVn.jpeg"
+      },
+      {
+        "title": "Say Yes To Heaven",
+        "artist": "Lana Del Rey",
+        "cover_url": "https://i.discogs.com/oggyRr1Z5y94-_NkHn4gz559ZUDj7OvRi8JzSUU8WCU/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI4OTMw/NjM5LTE3MDA5NjI2/NjMtNzc3Mi5qcGVn.jpeg"
+      }
+    ],
+    "skipped": 0,
+    "skipped_records": [],
+    "total": 14
+  },
+  {
+    "_id": "69b43f52b34d303258669bbf",
+    "user_id": "835d3df6-970e-4dd2-a71c-4ad6ec8dcd40",
+    "completed_at": "2026-03-13T16:46:10.050486+00:00",
+    "discogs_username": "watchkayshine",
+    "errors": 0,
+    "imported": 87,
+    "sample_covers": [
+      {
+        "title": "Pink Pony Club",
+        "artist": "Chappell Roan",
+        "cover_url": "https://i.discogs.com/EUbhI_VUaZLIFW5-9C9JPQ9Go_l8rNvqAo9rtHUDg3U/rs:fit/g:sm/q:90/h:600/w:589/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMyODA0/NDM5LTE3Mzg3NTM5/ODYtODg3MS5qcGVn.jpeg"
+      },
+      {
+        "title": "The Rise & Fall Of A Midwest Princess",
+        "artist": "Chappell Roan",
+        "cover_url": "https://i.discogs.com/iejysiuZZMMScKhszIck7jmzKUomj1nqDmfpICMPAjw/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI4NDYx/NDU0LTE3MTYzNDU0/OTAtNjg5OC5qcGVn.jpeg"
+      },
+      {
+        "title": "More",
+        "artist": "Wallows",
+        "cover_url": "https://i.discogs.com/g8yMdNpvyvxOTiLkIWF-cWamWliJ4CBUrajhiqwkBwA/rs:fit/g:sm/q:90/h:598/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMzNjcx/ODM1LTE3NDQ0ODU5/MjMtOTM5NS5qcGVn.jpeg"
+      },
+      {
+        "title": "Model",
+        "artist": "Wallows",
+        "cover_url": "https://i.discogs.com/Ma21pI5jCgEcQp6XKAc5Q1WK16JalZco2WkeKbaceJ8/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMwNzY5/NzI4LTE3MTY4NzIw/MjktNjE0Ni5qcGVn.jpeg"
+      },
+      {
+        "title": "Remote",
+        "artist": "Wallows",
+        "cover_url": "https://i.discogs.com/GgHRObWavOWDFvbzM43twBo6BDcnXR1omXb2oy7oMgc/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE2MDk5/NDY0LTE2MDM0MDY1/ODItODMyMC5qcGVn.jpeg"
+      },
+      {
+        "title": "Thats What They All Say",
+        "artist": "Jack Harlow (2)",
+        "cover_url": "https://i.discogs.com/eIWnEniEj6fU-NWogSt-ylowPrigT8wjNYtWH4P3_ww/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTIyMjE0/MDQxLTE2NDUyMjU1/NzAtNzY1My5qcGVn.jpeg"
+      },
+      {
+        "title": "Spring",
+        "artist": "Wallows",
+        "cover_url": "https://i.discogs.com/um3qHvU4MMS8BgqhUBo8R5wh6WLtaEX1157gog5lo4o/rs:fit/g:sm/q:90/h:600/w:558/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI3MDk4/MzIyLTE2ODQyNjA4/NDUtMTMyMi5qcGVn.jpeg"
+      },
+      {
+        "title": "Singles Collection 2017-2020",
+        "artist": "Wallows",
+        "cover_url": "https://i.discogs.com/CiAE1sJWKjzHq20ShOTj23lRz1rV2MFlZU9ZySvMyzg/rs:fit/g:sm/q:90/h:600/w:599/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTIyOTc2/NTczLTE3MTgwNDY3/ODYtMTYzNi5qcGVn.jpeg"
+      },
+      {
+        "title": "Cry Baby",
+        "artist": "Melanie Martinez (2)",
+        "cover_url": "https://i.discogs.com/Hvw8_lk1G4McYXFCFbHQ8l1Quf9uiy4b_g5LTrOS0nU/rs:fit/g:sm/q:90/h:600/w:591/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTk1Njk3/ODQtMTY3NzI3NTc2/MC00NDgxLmpwZWc.jpeg"
+      },
+      {
+        "title": "Jackman.",
+        "artist": "Jack Harlow (2)",
+        "cover_url": "https://i.discogs.com/YA9RXVjLa94FqMOvhcGB7ZqucP1XQPok8nk9oCIHemo/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI4MTUx/MDQ3LTE2OTM2NzEz/MDAtMjUxMS5qcGVn.jpeg"
+      },
+      {
+        "title": "Hamilton: 10 Shots (Highlights From The Original Broadway Cast Recording)",
+        "artist": "Lin-Manuel Miranda",
+        "cover_url": "https://i.discogs.com/quP2zko2wsIL3yWETpusUmlmLS98z_Su-C923Le979I/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTM1NTg0/NDIzLTE3NjI0MjYz/NjQtODM5NC5qcGVn.jpeg"
+      },
+      {
+        "title": "Barbie The Album",
+        "artist": "Various",
+        "cover_url": "https://i.discogs.com/xzl3qPlWRudzeyXMdJ-teK9r_y99lOhjJR0nHpgH4rE/rs:fit/g:sm/q:90/h:598/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI3NTM1/MTk3LTE2OTI2NDU1/MjgtMTc3Mi5qcGVn.jpeg"
+      }
+    ],
+    "skipped": 0,
+    "skipped_records": [],
+    "total": 87
+  },
+  {
+    "_id": "69b43f71b34d303258669bd2",
+    "user_id": "69518616-8a24-4597-b173-18927ac5a446",
+    "completed_at": "2026-03-13T16:46:41.461284+00:00",
+    "discogs_username": "Blakesvinyll",
+    "errors": 0,
+    "imported": 191,
+    "sample_covers": [
+      {
+        "title": "Pink Pony Club",
+        "artist": "Chappell Roan",
+        "cover_url": "https://i.discogs.com/1lIoN90TJ6tb2HIZeWx8rPEUPVaYrceQCdJWYx7ABGM/rs:fit/g:sm/q:90/h:600/w:591/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMxNzg1/Njc0LTE3MjY5NjA1/MTUtOTIyNi5wbmc.jpeg"
+      },
+      {
+        "title": "More",
+        "artist": "Wallows",
+        "cover_url": "https://i.discogs.com/g8yMdNpvyvxOTiLkIWF-cWamWliJ4CBUrajhiqwkBwA/rs:fit/g:sm/q:90/h:598/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMzNjcx/ODM1LTE3NDQ0ODU5/MjMtOTM5NS5qcGVn.jpeg"
+      },
+      {
+        "title": "Brat And It's Completely Different But Also Still Brat",
+        "artist": "Charli XCX",
+        "cover_url": "https://i.discogs.com/93sRtfA4JpaHj5otay9_HLND_UTSEyoGDvhZGIqbuqk/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMyMDEz/MzkyLTE3MjkyNDc2/NTgtNTExNy5qcGVn.jpeg"
+      },
+      {
+        "title": "Brat And It's The Same But There's Three More Songs So It's Not",
+        "artist": "Charli XCX",
+        "cover_url": "https://i.discogs.com/Cr4J9_qafi_kTastZAEWUXBv7wcBKxPWrrsFTCBiEy8/rs:fit/g:sm/q:90/h:600/w:599/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMxOTk4/MzQ3LTE3Mjk2Njgz/OTYtMzQxNi5qcGVn.jpeg"
+      },
+      {
+        "title": "Model",
+        "artist": "Wallows",
+        "cover_url": "https://i.discogs.com/Ma21pI5jCgEcQp6XKAc5Q1WK16JalZco2WkeKbaceJ8/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMwNzY5/NzI4LTE3MTY4NzIw/MjktNjE0Ni5qcGVn.jpeg"
+      },
+      {
+        "title": "Nothing Happens (5th Anniversary Edition)",
+        "artist": "Wallows",
+        "cover_url": "https://i.discogs.com/hAomtp5mWZjRgzIiLX3VvZ1kzY31mXtJEB4Zp4HBxRo/rs:fit/g:sm/q:90/h:600/w:598/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMwNDUy/ODEzLTE3MTM4MTY0/OTMtNzQwNi5qcGVn.jpeg"
+      },
+      {
+        "title": "This Is Why",
+        "artist": "Paramore",
+        "cover_url": "https://i.discogs.com/XNe4QIKBDV_Y8ZAMoM3oHxbS1IFpf69qocnll1zo-_c/rs:fit/g:sm/q:90/h:598/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2MDQx/NDE0LTE2Nzk4MjA2/MDctODE0Ni5qcGVn.jpeg"
+      },
+      {
+        "title": "Brat",
+        "artist": "Charli XCX",
+        "cover_url": "https://i.discogs.com/OMEttVMoYdgkWhbMqRtIyRk3lOcWJOEmVmOUwe-WLXA/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMwOTMw/MTI2LTE3MTkyNDc1/MTgtMTkzOS5qcGVn.jpeg"
+      },
+      {
+        "title": "Melt",
+        "artist": "Not for Radio",
+        "cover_url": "https://i.discogs.com/ckHxDan7PqfdSXREdhDk1J9leVpVyjCjmuvWQi8QWjU/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTM1Mjg1/OTUwLTE3NjA1MDc3/MDYtMzMzNS5qcGVn.jpeg"
+      },
+      {
+        "title": "Bewitched (Stormy Edition)",
+        "artist": "Laufey (2)",
+        "cover_url": "https://i.discogs.com/V1Nj5oE1BsWbCQcjQF37FbvTNsYf86XKqpSABVYHkF4/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMyMDUz/MTYxLTE3Mjk0MDY3/MDUtNTQyMy5qcGVn.jpeg"
+      },
+      {
+        "title": "From The Start",
+        "artist": "Laufey (2)",
+        "cover_url": "https://i.discogs.com/Fx5oPqGbsCS7OjRzEsAJx8BHaCmshI0MNC9eP-t7cnA/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMyMjQ2/MDgyLTE3MzU3MjA2/NTItMTE2OC5wbmc.jpeg"
+      },
+      {
+        "title": "Valentine",
+        "artist": "Laufey (2)",
+        "cover_url": "https://i.discogs.com/3MhgTpJcpfUQAWW_coO5jRjwTViYkYaUPEvQ8Y4H2Xk/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMyODc0/OTE4LTE3Mzk5OTM3/MjYtMzA2MS5qcGVn.jpeg"
+      }
+    ],
+    "skipped": 0,
+    "skipped_records": [],
+    "total": 191
+  },
+  {
+    "_id": "69b44161b34d303258669c4c",
+    "user_id": "d775d34c-4683-47ee-bec6-04c9a4c93a2f",
+    "completed_at": "2026-03-13T16:54:57.163749+00:00",
+    "discogs_username": "Kerrileighg",
+    "errors": 0,
+    "imported": 427,
+    "sample_covers": [
+      {
+        "title": "How Long Do You Think It's Gonna Last?",
+        "artist": "Big Red Machine (2)",
+        "cover_url": "https://i.discogs.com/iTS4PeBAHHMGHCtAo4SLrW54QbxRLHh_RZLGgmtM9lY/rs:fit/g:sm/q:90/h:600/w:595/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTE5OTY5/NzE3LTE2MzExOTE4/NjUtMzA5MS5qcGVn.jpeg"
+      },
+      {
+        "title": "First Two Pages Of Frankenstein",
+        "artist": "The National",
+        "cover_url": "https://i.discogs.com/J-VRhKC70bHGoQ03HhF-nJicX6NGN8POkMCbI358Kq4/rs:fit/g:sm/q:90/h:595/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI2OTM3/NjI5LTE2ODMyMzMy/NjItOTM5MS5qcGVn.jpeg"
+      },
+      {
+        "title": "Laugh Track",
+        "artist": "The National",
+        "cover_url": "https://i.discogs.com/3aXMimTw6jvz5jJe7B4HMfmQM0ERAxDkfnLyiDvMx0I/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI4OTA1/MjM4LTE2OTk5MDIy/NDctNzU1MS5qcGVn.jpeg"
+      },
+      {
+        "title": "The Loveliest Time",
+        "artist": "Carly Rae Jepsen",
+        "cover_url": "https://i.discogs.com/2IMhUBVm1gSoDaPS6JB2RkGicqOeOCGfau75j6KP_-Y/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI4MjA4/NTI0LTE2OTQ4MDUy/NzYtMjQwNS5qcGVn.jpeg"
+      },
+      {
+        "title": "The Family Jewels",
+        "artist": "Marina & The Diamonds",
+        "cover_url": "https://i.discogs.com/Rr7du5MejyP1pcyZlgmzmldV52iPufrcAeOugBi0E0Q/rs:fit/g:sm/q:90/h:597/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTIxNTQ0/NTItMTY5NDQwNDcy/Mi0yMTcyLmpwZWc.jpeg"
+      },
+      {
+        "title": "Roxwell",
+        "artist": "Matilda Mann",
+        "cover_url": "https://i.discogs.com/PGBYdgh2jBYMOv12Ngwly4zuL5oKLfGNyd0Aq1DR1lw/rs:fit/g:sm/q:90/h:585/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMzODU0/MDIyLTE3NDc2MDE5/NTMtODE5MC5qcGVn.jpeg"
+      },
+      {
+        "title": "Everyone's Getting Involved: A Tribute To Talking Heads' Stop Making Sense",
+        "artist": "Various",
+        "cover_url": "https://i.discogs.com/YypCIKURt9x30MtNM_RW8cMdAfj5U_ovM_0ti_RkFpY/rs:fit/g:sm/q:90/h:597/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMxNDEw/NzIyLTE3MjI4ODk0/MTAtNzU1MC5qcGVn.jpeg"
+      },
+      {
+        "title": "\"Bye Bye Bye\"",
+        "artist": "Suzanna Son",
+        "cover_url": "https://i.discogs.com/QGfKDxTm8ChcFSbMzDIvWJ6VoMGO_PFmtlV4FJMIpxU/rs:fit/g:sm/q:90/h:393/w:397/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTIyNTU5/MjI1LTE2NDc2MzIx/MzItMzY0NC5qcGVn.jpeg"
+      },
+      {
+        "title": "Potential Breakup Song Explicit",
+        "artist": "Aly & AJ",
+        "cover_url": "https://i.discogs.com/zMr5Llb_linpj4eue7j-hnn792PmDqZKJTyTXmM37ek/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTIxODQz/MDQ2LTE2NDQ1ODc1/NTMtNTUwNi5wbmc.jpeg"
+      },
+      {
+        "title": "A Touch Of The Beat Gets You Up On Your Feet Gets You Out And Then Into The Sun",
+        "artist": "Aly & AJ",
+        "cover_url": "https://i.discogs.com/WlQ2l22Q0EHTo6QwBhc3OkquwUqqBdOKGbgGnlRSjFY/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTIwODE2/MTg4LTE3MzIyODQy/NDktNDg3OC5qcGVn.jpeg"
+      },
+      {
+        "title": "The Rise And Fall Of A Midwest Princess",
+        "artist": "Chappell Roan",
+        "cover_url": "https://i.discogs.com/FReK2Suy-HoNIcPLFxrOUXk3ynUwYQa4RM0RFkUoGgI/rs:fit/g:sm/q:90/h:600/w:376/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTMyMDc0/NTY2LTE3Mjk1OTk2/MTQtMjU3NC5qcGVn.jpeg"
+      },
+      {
+        "title": "Fatal Optimist",
+        "artist": "Madi Diaz",
+        "cover_url": "https://i.discogs.com/ijVOi20oxr1zlq6vD28VwRaeKlaREmat6wBtPfQqn7k/rs:fit/g:sm/q:90/h:595/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTM1Nzk5/Mzk3LTE3NjQ0NTA2/OTEtMTcyMC5qcGVn.jpeg"
+      }
+    ],
+    "skipped": 0,
+    "skipped_records": [],
+    "total": 427
+  },
+  {
+    "_id": "69b444bfb34d303258669c9b",
+    "user_id": "4edfe1fd-0074-4515-9010-b0c11667f1a5",
+    "completed_at": "2026-03-13T17:09:19.271599+00:00",
+    "discogs_username": "yolguin5",
+    "errors": 0,
+    "imported": 112,
+    "sample_covers": [
+      {
+        "title": "Lana Del Ray A.K.A. Lizzy Grant",
+        "artist": "Lana Del Rey",
+        "cover_url": "https://i.discogs.com/X-8lZQ7x_tPqLzg_5-8XxR3HKN2G9D_LxBzXW9KvZtU/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTI1MzA5/ODk3LTE2Njk2NTE2/MzMtNTE1NS5qcGVn.jpeg"
+      },
+      {
+        "title": "Fun And Games",
+        "artist": "Chuck Mangione",
+        "cover_url": "https://i.discogs.com/m7_ZCmMbVvJ_HCsp-c8t3f-hqbabNdnp4Ac8C-FwEYA/rs:fit/g:sm/q:90/h:600/w:598/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTYzNjM4/OS0xNDkxMTU4Nzk3/LTI4OTUuanBlZw.jpeg"
+      },
+      {
+        "title": "Diamonds & Rust",
+        "artist": "Joan Baez",
+        "cover_url": "https://i.discogs.com/ryA-_YpEoGJYZ7JLL3EEH_8Fg0HEhxmTe9P4LoGwUSE/rs:fit/g:sm/q:90/h:600/w:599/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTEyOTcw/NTM3LTE1NDU1Nzk1/MDgtNDc4NC5qcGVn.jpeg"
+      },
+      {
+        "title": "Emotional",
+        "artist": "Jeffrey Osborne",
+        "cover_url": "https://i.discogs.com/EH1vDW7o-NQFZFrm4rSXMMxskeBwm1lXkWK0NIBEl1U/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTgwMzgy/NjQtMTQ1Mzk0MDg1/MC0xNzI0LmpwZWc.jpeg"
+      },
+      {
+        "title": "Carpenters",
+        "artist": "Carpenters",
+        "cover_url": "https://i.discogs.com/EpZP4pdJ00RC5MTVQoSP-utQfD8F5dQjYOeoC9GsseI/rs:fit/g:sm/q:90/h:600/w:598/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTYwMTAw/OS0xNzE4ODMzNDM5/LTMzMTkuanBlZw.jpeg"
+      },
+      {
+        "title": "Now & Then",
+        "artist": "Carpenters",
+        "cover_url": "https://i.discogs.com/nku5XzkvdIHmsHZ6iiBqlfbuglDsPhuFQ7SDUFopPQk/rs:fit/g:sm/q:90/h:176/w:172/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTExMzY2/NDc3LTE1MTUwMzc2/MzQtNzA2My5qcGVn.jpeg"
+      },
+      {
+        "title": "The Best Of The Stylistics",
+        "artist": "The Stylistics",
+        "cover_url": "https://i.discogs.com/Ovm9zCDbl6M-iQkgV-ATTYaVAzRl2PkV4KGXDq0rtu8/rs:fit/g:sm/q:90/h:600/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTY5NzM4/NjctMTQzMDc1NDUx/NS04ODEyLmpwZWc.jpeg"
+      },
+      {
+        "title": "With The Beatles",
+        "artist": "The Beatles",
+        "cover_url": "https://i.discogs.com/Ai4Nt7Se5DfC72MZmgKwm-jGajI-tHi_XA7MtqjRvM4/rs:fit/g:sm/q:90/h:545/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTIxMTAz/NTgtMTUwNTkxNTA1/MC02MTQxLmpwZWc.jpeg"
+      },
+      {
+        "title": "Greatest Hits",
+        "artist": "Linda Ronstadt",
+        "cover_url": "https://i.discogs.com/4FlXZ0K0_u3e3OT7JXFq4SjK767AeaLRluH3VuuN8oA/rs:fit/g:sm/q:90/h:600/w:583/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTIyODAw/MTc2LTE2NTAwMzcw/MTEtNzI3MS5qcGVn.jpeg"
+      },
+      {
+        "title": "Wuthering Heights",
+        "artist": "Charli XCX",
+        "cover_url": "https://i.discogs.com/WgyqJKaTBW2zXKQ1fVF1FIOIzt5XJbO8dgLRRbTOV74/rs:fit/g:sm/q:90/h:600/w:596/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTM2NDkx/MTQzLTE3NzA5OTA2/MjAtNjQ4OS5qcGVn.jpeg"
+      },
+      {
+        "title": "Super Trouper",
+        "artist": "ABBA",
+        "cover_url": "https://i.discogs.com/NPaH3ArkRJx7-ikaQ0OS0Bnt_3hGx8tIvF3IA0gmY-U/rs:fit/g:sm/q:90/h:598/w:600/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTc0MDEx/MDgtMTU3NzE2MTMy/Mi01MTA3LmpwZWc.jpeg"
+      },
+      {
+        "title": "Luck \u2026 Or Something ",
+        "artist": "Hilary Duff",
+        "cover_url": "https://i.discogs.com/-nxxR1x7QUavBsBHYadGxD5j1vtECt3vQ3ufAKunpGo/rs:fit/g:sm/q:90/h:600/w:588/czM6Ly9kaXNjb2dz/LWRhdGFiYXNlLWlt/YWdlcy9SLTM2NTcz/MTUxLTE3NzE5NDQx/ODAtNjQ5OC5qcGVn.jpeg"
+      }
+    ],
+    "skipped": 0,
+    "skipped_records": [],
+    "total": 112
+  }
+]

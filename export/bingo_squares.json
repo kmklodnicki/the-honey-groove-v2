@@ -1,0 +1,1193 @@
+[
+  {
+    "_id": "69b33987a10310602f6fe9c6",
+    "id": "ba46a003-1740-48a1-8948-21e9b752366d",
+    "text": "bought a record for the cover art",
+    "emoji": "\ud83c\udfa8",
+    "active": true,
+    "created_at": "2026-03-12T22:09:11.282029+00:00"
+  },
+  {
+    "_id": "69b33987a10310602f6fe9c7",
+    "id": "8bb81430-3878-40cc-a0da-71355f91fd11",
+    "text": "own multiple copies of the same album",
+    "emoji": "\ud83d\udcbf",
+    "active": true,
+    "created_at": "2026-03-12T22:09:11.282063+00:00"
+  },
+  {
+    "_id": "69b33987a10310602f6fe9c8",
+    "id": "b63efa66-2ff6-4c7c-b450-88543d4befdd",
+    "text": "judged someone's collection silently",
+    "emoji": "\ud83d\udc40",
+    "active": true,
+    "created_at": "2026-03-12T22:09:11.282079+00:00"
+  },
+  {
+    "_id": "69b33987a10310602f6fe9c9",
+    "id": "96ffa709-e35b-4c59-aa38-e174246d090f",
+    "text": "have a record still in shrink wrap",
+    "emoji": "\ud83d\udce6",
+    "active": true,
+    "created_at": "2026-03-12T22:09:11.282093+00:00"
+  },
+  {
+    "_id": "69b33987a10310602f6fe9ca",
+    "id": "f751d5f5-12c6-4dd6-b88b-94cfb24812c2",
+    "text": "paid more than $100 for one record",
+    "emoji": "\ud83d\udcb8",
+    "active": true,
+    "created_at": "2026-03-12T22:09:11.282105+00:00"
+  },
+  {
+    "_id": "69b33987a10310602f6fe9cb",
+    "id": "e88593d3-c8e8-40d1-a156-a195d3ce9cd5",
+    "text": "bought a record you already own on streaming",
+    "emoji": "\ud83c\udfb5",
+    "active": true,
+    "created_at": "2026-03-12T22:09:11.282117+00:00"
+  },
+  {
+    "_id": "69b33987a10310602f6fe9cc",
+    "id": "83036e0b-9eaf-4962-b4f3-c332a1a8d2b9",
+    "text": "reorganized your collection twice this month",
+    "emoji": "\ud83d\udcda",
+    "active": true,
+    "created_at": "2026-03-12T22:09:11.282134+00:00"
+  },
+  {
+    "_id": "69b33987a10310602f6fe9cd",
+    "id": "dbbb4ed3-3de4-4f06-ba8a-8d46fffe8f26",
+    "text": "have a record you've never played",
+    "emoji": "\ud83e\udd2b",
+    "active": true,
+    "created_at": "2026-03-12T22:09:11.282147+00:00"
+  },
+  {
+    "_id": "69b33987a10310602f6fe9ce",
+    "id": "0b21e134-64ff-43e8-8ab8-bfcd7bb7f174",
+    "text": "own something your parents think is noise",
+    "emoji": "\ud83d\udd0a",
+    "active": true,
+    "created_at": "2026-03-12T22:09:11.282160+00:00"
+  },
+  {
+    "_id": "69b33987a10310602f6fe9cf",
+    "id": "ae8f61ea-4b04-47c8-a3de-35c0e53723bf",
+    "text": "found a gem at a thrift store",
+    "emoji": "\ud83d\udc8e",
+    "active": true,
+    "created_at": "2026-03-12T22:09:11.282172+00:00"
+  },
+  {
+    "_id": "69b33987a10310602f6fe9d0",
+    "id": "5439f6fb-2084-47ac-a8d1-a169b7419bfb",
+    "text": "cried to a record alone",
+    "emoji": "\ud83d\ude22",
+    "active": true,
+    "created_at": "2026-03-12T22:09:11.282203+00:00"
+  },
+  {
+    "_id": "69b33987a10310602f6fe9d1",
+    "id": "a05dab32-ee92-4a23-bc3a-5fd2637020f9",
+    "text": "bought a record on a trip and had to carry it home",
+    "emoji": "\u2708\ufe0f",
+    "active": true,
+    "created_at": "2026-03-12T22:09:11.282216+00:00"
+  },
+  {
+    "_id": "69b33987a10310602f6fe9d2",
+    "id": "64dea94f-551a-40e0-bf56-a356bee8a436",
+    "text": "have a wantlist longer than your collection",
+    "emoji": "\ud83d\udcdd",
+    "active": true,
+    "created_at": "2026-03-12T22:09:11.282240+00:00"
+  },
+  {
+    "_id": "69b33987a10310602f6fe9d3",
+    "id": "8c8a26f1-b0d7-4a1c-898a-f019c182389b",
+    "text": "stayed up past midnight listening",
+    "emoji": "\ud83c\udf19",
+    "active": true,
+    "created_at": "2026-03-12T22:09:11.282253+00:00"
+  },
+  {
+    "_id": "69b33987a10310602f6fe9d4",
+    "id": "8c3570f7-d6ae-40c5-b872-7db4019a4680",
+    "text": "bought a turntable upgrade this year",
+    "emoji": "\ud83c\udf9b\ufe0f",
+    "active": true,
+    "created_at": "2026-03-12T22:09:11.282265+00:00"
+  },
+  {
+    "_id": "69b33987a10310602f6fe9d5",
+    "id": "805dea64-ddb5-49a0-bd35-abedd2dd02bd",
+    "text": "own a colored or picture disc",
+    "emoji": "\ud83c\udf08",
+    "active": true,
+    "created_at": "2026-03-12T22:09:11.282277+00:00"
+  },
+  {
+    "_id": "69b33987a10310602f6fe9d6",
+    "id": "aad2ed2d-a82f-45cd-ac08-958306c24c0f",
+    "text": "have a record signed by the artist",
+    "emoji": "\u270d\ufe0f",
+    "active": true,
+    "created_at": "2026-03-12T22:09:11.282290+00:00"
+  },
+  {
+    "_id": "69b33987a10310602f6fe9d7",
+    "id": "82cf7c64-6619-4be9-8939-efaf15b73365",
+    "text": "recommended a record and they loved it",
+    "emoji": "\u2764\ufe0f",
+    "active": true,
+    "created_at": "2026-03-12T22:09:11.282302+00:00"
+  },
+  {
+    "_id": "69b33987a10310602f6fe9d8",
+    "id": "709e317f-65db-4346-9b3f-d4cce50a1df5",
+    "text": "lied about how much a record cost",
+    "emoji": "\ud83e\udd25",
+    "active": true,
+    "created_at": "2026-03-12T22:09:11.282321+00:00"
+  },
+  {
+    "_id": "69b33987a10310602f6fe9d9",
+    "id": "ae4035d7-f498-4da2-bbe1-d0529d20d8fc",
+    "text": "own something older than you are",
+    "emoji": "\ud83d\udc74",
+    "active": true,
+    "created_at": "2026-03-12T22:09:11.282334+00:00"
+  },
+  {
+    "_id": "69b33987a10310602f6fe9da",
+    "id": "b533c068-c649-42e3-89ff-e2907803945c",
+    "text": "have a record with sentimental value you'd never sell",
+    "emoji": "\ud83d\udc9b",
+    "active": true,
+    "created_at": "2026-03-12T22:09:11.282346+00:00"
+  },
+  {
+    "_id": "69b33987a10310602f6fe9db",
+    "id": "e008d391-abec-4985-b967-961577724d91",
+    "text": "bought something just because the label was cool",
+    "emoji": "\ud83c\udff7\ufe0f",
+    "active": true,
+    "created_at": "2026-03-12T22:09:11.282357+00:00"
+  },
+  {
+    "_id": "69b33987a10310602f6fe9dc",
+    "id": "81489dcf-780a-4373-a61d-4954a839e486",
+    "text": "discovered an artist through the Honey Groove",
+    "emoji": "\ud83d\udc1d",
+    "active": true,
+    "created_at": "2026-03-12T22:09:11.282369+00:00"
+  },
+  {
+    "_id": "69b33987a10310602f6fe9dd",
+    "id": "7b453f26-abdc-4ade-8607-59a761930472",
+    "text": "completed a trade on the Honey Groove",
+    "emoji": "\ud83e\udd1d",
+    "active": true,
+    "created_at": "2026-03-12T22:09:11.282382+00:00"
+  },
+  {
+    "_id": "69b33987a10310602f6fe9de",
+    "id": "af40ffe8-ad32-4e90-9aea-b487b1d0a865",
+    "text": "posted a Now Spinning this week",
+    "emoji": "\ud83c\udfb6",
+    "active": true,
+    "created_at": "2026-03-12T22:09:11.282395+00:00"
+  },
+  {
+    "_id": "69b39c06b34d30325866891a",
+    "id": "78b14198-e82f-4fa1-9197-cf097c7391b2",
+    "active": true,
+    "created_at": "2026-03-05T18:33:56.117579+00:00",
+    "emoji": "\ud83c\udfa8",
+    "text": "bought a record for the cover art"
+  },
+  {
+    "_id": "69b39c06b34d30325866891b",
+    "id": "aafd8100-e356-4c16-a335-8bf892597a03",
+    "active": true,
+    "created_at": "2026-03-05T18:33:56.117589+00:00",
+    "emoji": "\ud83d\udcbf",
+    "text": "own multiple copies of the same album"
+  },
+  {
+    "_id": "69b39c06b34d30325866891c",
+    "id": "366dafa2-11af-414b-8762-a69a5ba15ea4",
+    "active": true,
+    "created_at": "2026-03-05T18:33:56.117598+00:00",
+    "emoji": "\ud83d\udc40",
+    "text": "judged someone's collection silently"
+  },
+  {
+    "_id": "69b39c06b34d30325866891d",
+    "id": "ebaa4828-6c46-4878-aa2a-d66edff2c588",
+    "active": true,
+    "created_at": "2026-03-05T18:33:56.117604+00:00",
+    "emoji": "\ud83d\udce6",
+    "text": "have a record still in shrink wrap"
+  },
+  {
+    "_id": "69b39c06b34d30325866891e",
+    "id": "97c3d381-558a-4437-8a42-b9a24c6435bc",
+    "active": true,
+    "created_at": "2026-03-05T18:33:56.117609+00:00",
+    "emoji": "\ud83d\udcb8",
+    "text": "paid more than $100 for one record"
+  },
+  {
+    "_id": "69b39c06b34d30325866891f",
+    "id": "d4e1f023-8b8c-4396-8942-43d611dcc1b0",
+    "active": true,
+    "created_at": "2026-03-05T18:33:56.117613+00:00",
+    "emoji": "\ud83c\udfb5",
+    "text": "bought a record you already own on streaming"
+  },
+  {
+    "_id": "69b39c06b34d303258668920",
+    "id": "4c32984e-9a1c-43d3-994b-2d1ee371a12d",
+    "active": true,
+    "created_at": "2026-03-05T18:33:56.117619+00:00",
+    "emoji": "\ud83d\udcda",
+    "text": "reorganized your collection twice this month"
+  },
+  {
+    "_id": "69b39c06b34d303258668921",
+    "id": "96924c68-3924-443b-92ef-01cf1bb7076c",
+    "active": true,
+    "created_at": "2026-03-05T18:33:56.117625+00:00",
+    "emoji": "\ud83e\udd2b",
+    "text": "have a record you've never played"
+  },
+  {
+    "_id": "69b39c06b34d303258668922",
+    "id": "e7d737bb-b40d-4484-99d8-3ee361f35e89",
+    "active": true,
+    "created_at": "2026-03-05T18:33:56.117635+00:00",
+    "emoji": "\ud83d\udd0a",
+    "text": "own something your parents think is noise"
+  },
+  {
+    "_id": "69b39c06b34d303258668923",
+    "id": "160c289a-6870-4756-8829-c27bfb1d14f6",
+    "active": true,
+    "created_at": "2026-03-05T18:33:56.117639+00:00",
+    "emoji": "\ud83d\udc8e",
+    "text": "found a gem at a thrift store"
+  },
+  {
+    "_id": "69b39c06b34d303258668924",
+    "id": "1f394bfe-4431-4b85-8bb7-9fc9269f31d5",
+    "active": true,
+    "created_at": "2026-03-05T18:33:56.117643+00:00",
+    "emoji": "\ud83d\ude22",
+    "text": "cried to a record alone"
+  },
+  {
+    "_id": "69b39c06b34d303258668925",
+    "id": "3dee1531-c9e3-4421-be50-be31e64d70ae",
+    "active": true,
+    "created_at": "2026-03-05T18:33:56.117646+00:00",
+    "emoji": "\u2708\ufe0f",
+    "text": "bought a record on a trip and had to carry it home"
+  },
+  {
+    "_id": "69b39c06b34d303258668926",
+    "id": "b11a2d2e-fca9-4307-a394-367b3c13558f",
+    "active": true,
+    "created_at": "2026-03-05T18:33:56.117650+00:00",
+    "emoji": "\ud83d\udcdd",
+    "text": "have a wantlist longer than your collection"
+  },
+  {
+    "_id": "69b39c06b34d303258668927",
+    "id": "225a43e5-a9d8-47b1-8ed8-1a49970c5c4b",
+    "active": true,
+    "created_at": "2026-03-05T18:33:56.117654+00:00",
+    "emoji": "\ud83c\udf19",
+    "text": "stayed up past midnight listening"
+  },
+  {
+    "_id": "69b39c06b34d303258668928",
+    "id": "70d56bb0-c21b-4789-af20-d263229a4ee4",
+    "active": true,
+    "created_at": "2026-03-05T18:33:56.117658+00:00",
+    "emoji": "\ud83c\udf9b\ufe0f",
+    "text": "bought a turntable upgrade this year"
+  },
+  {
+    "_id": "69b39c06b34d303258668929",
+    "id": "b3fc34c2-d87c-4b1d-94c9-1ab68cd462b1",
+    "active": true,
+    "created_at": "2026-03-05T18:33:56.117662+00:00",
+    "emoji": "\ud83c\udf08",
+    "text": "own a colored or picture disc"
+  },
+  {
+    "_id": "69b39c06b34d30325866892a",
+    "id": "dbd6570e-e6f8-4a93-aaed-bb781a2c6c62",
+    "active": true,
+    "created_at": "2026-03-05T18:33:56.117665+00:00",
+    "emoji": "\u270d\ufe0f",
+    "text": "have a record signed by the artist"
+  },
+  {
+    "_id": "69b39c06b34d30325866892b",
+    "id": "272f6ddd-e970-49ab-89dc-b0dba5edc1ff",
+    "active": true,
+    "created_at": "2026-03-05T18:33:56.117669+00:00",
+    "emoji": "\u2764\ufe0f",
+    "text": "recommended a record and they loved it"
+  },
+  {
+    "_id": "69b39c07b34d30325866892c",
+    "id": "b1b0ffcc-2bb9-4aa7-8409-1bd7ecf1b6ae",
+    "active": true,
+    "created_at": "2026-03-05T18:33:56.117673+00:00",
+    "emoji": "\ud83e\udd25",
+    "text": "lied about how much a record cost"
+  },
+  {
+    "_id": "69b39c07b34d30325866892d",
+    "id": "dad5f941-2d97-4fc3-ab82-31e6eeb66a07",
+    "active": true,
+    "created_at": "2026-03-05T18:33:56.117677+00:00",
+    "emoji": "\ud83d\udc74",
+    "text": "own something older than you are"
+  },
+  {
+    "_id": "69b39c07b34d30325866892e",
+    "id": "c6dc19f8-2e0a-4bf4-973c-f929bd914941",
+    "active": true,
+    "created_at": "2026-03-05T18:33:56.117680+00:00",
+    "emoji": "\ud83d\udc9b",
+    "text": "have a record with sentimental value you'd never sell"
+  },
+  {
+    "_id": "69b39c07b34d30325866892f",
+    "id": "3de41120-269f-4560-94ae-85b20bcab200",
+    "active": true,
+    "created_at": "2026-03-05T18:33:56.117684+00:00",
+    "emoji": "\ud83c\udff7\ufe0f",
+    "text": "bought something just because the label was cool"
+  },
+  {
+    "_id": "69b39c07b34d303258668930",
+    "id": "59ac4307-23dd-4ed0-85b9-73a58ad32c5b",
+    "active": true,
+    "created_at": "2026-03-05T18:33:56.117688+00:00",
+    "emoji": "\ud83d\udc1d",
+    "text": "discovered an artist through the Honey Groove"
+  },
+  {
+    "_id": "69b39c07b34d303258668931",
+    "id": "42f01af2-2aff-45f3-9ef4-e71b32b6bbc1",
+    "active": true,
+    "created_at": "2026-03-05T18:33:56.117692+00:00",
+    "emoji": "\ud83e\udd1d",
+    "text": "completed a trade on the Honey Groove"
+  },
+  {
+    "_id": "69b39c07b34d303258668932",
+    "id": "6a28ff5e-fdcb-47ae-addc-858fd0a3b6fa",
+    "active": true,
+    "created_at": "2026-03-05T18:33:56.117695+00:00",
+    "emoji": "\ud83c\udfb6",
+    "text": "posted a Now Spinning this week"
+  },
+  {
+    "_id": "69b39c07b34d303258668933",
+    "id": "95279e90-055e-4f81-bdb8-6bc237d6c83f",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "bought a record you already own by accident"
+  },
+  {
+    "_id": "69b39c07b34d303258668934",
+    "id": "cbfc0718-8bd3-4a29-b191-8b7e80217a9d",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "added something to your wantlist this week"
+  },
+  {
+    "_id": "69b39c07b34d303258668935",
+    "id": "d70d3f91-eed1-41dd-9224-3467b93dfbe3",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "played a record before 9am"
+  },
+  {
+    "_id": "69b39c07b34d303258668936",
+    "id": "2e342075-f03c-419f-9023-94dea925777c",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "found something good in the bins"
+  },
+  {
+    "_id": "69b39c07b34d303258668937",
+    "id": "96ea8cd6-4f9e-4597-b4d7-13e62d24d1d6",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "recommended a record to someone"
+  },
+  {
+    "_id": "69b39c07b34d303258668938",
+    "id": "f30cc4d2-50ea-46e0-832e-39e2311b739a",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "posted a Now Spinning"
+  },
+  {
+    "_id": "69b39c07b34d303258668939",
+    "id": "1d603d4c-532a-4c9d-8e1d-93c6af835a96",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "listened to a full album without skipping"
+  },
+  {
+    "_id": "69b39c07b34d30325866893a",
+    "id": "008d8434-40bf-4b20-817f-90ece68b13c5",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "played a record you haven't touched in over a year"
+  },
+  {
+    "_id": "69b39c07b34d30325866893b",
+    "id": "9c55be2c-e13f-4160-8b33-190a88d546b8",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "added a new record to your collection"
+  },
+  {
+    "_id": "69b39c07b34d30325866893c",
+    "id": "529e4bfa-e1bf-4f39-b5b8-957ae9ee7b85",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "played something based on a mood not a plan"
+  },
+  {
+    "_id": "69b39c07b34d30325866893d",
+    "id": "7160a068-c325-4a90-8396-b0b675fe247f",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "looked up the pressing info on a record you own"
+  },
+  {
+    "_id": "69b39c07b34d30325866893e",
+    "id": "5234ef71-9f83-4912-b790-7ac07d0645ef",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "checked Discogs for a record's value"
+  },
+  {
+    "_id": "69b39c07b34d30325866893f",
+    "id": "8e835070-e629-40fd-8903-a3adcba73703",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "played a record you bought just for the cover"
+  },
+  {
+    "_id": "69b39c07b34d303258668940",
+    "id": "bd9e3c63-8c35-4b27-8cd2-aac7785e1887",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "listened to side B all the way through"
+  },
+  {
+    "_id": "69b39c07b34d303258668941",
+    "id": "35c69555-a1c5-401c-b120-5a6f810a67a6",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "played something your parents or grandparents listened to"
+  },
+  {
+    "_id": "69b39c07b34d303258668942",
+    "id": "76f119b0-dec9-4e39-99b5-27106e37c2d4",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "found a record at a thrift store or garage sale"
+  },
+  {
+    "_id": "69b39c07b34d303258668943",
+    "id": "76f82177-343e-4b0e-9f8b-9792b9fc7a94",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "played the same album twice in one day"
+  },
+  {
+    "_id": "69b39c07b34d303258668944",
+    "id": "0cb79c08-efc9-4661-a900-d6f62384cd4c",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "introduced someone to a record for the first time"
+  },
+  {
+    "_id": "69b39c08b34d303258668945",
+    "id": "9eb7773f-40b8-46b7-8ce8-6b148587f4ef",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "played something on a rainy day that matched the weather perfectly"
+  },
+  {
+    "_id": "69b39c08b34d303258668946",
+    "id": "6a7b799d-78c4-42e5-b5ed-a3de66841347",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "bought a record spontaneously without planning to"
+  },
+  {
+    "_id": "69b39c08b34d303258668947",
+    "id": "bd9d0d71-b472-4987-a268-037cd40f7b1e",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "played a record that made you emotional"
+  },
+  {
+    "_id": "69b39c08b34d303258668948",
+    "id": "d6960b51-97c5-42a0-9138-8c2861ee86b6",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "looked up the lyrics to a song while listening"
+  },
+  {
+    "_id": "69b39c08b34d303258668949",
+    "id": "fe2afbbd-ec08-4589-a83a-5fa2d9f23f29",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "played something you've been saving for the right moment"
+  },
+  {
+    "_id": "69b39c08b34d30325866894a",
+    "id": "05d75c96-a4b6-4588-8c38-1b749287637b",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "listened to a record from start to finish in one sitting"
+  },
+  {
+    "_id": "69b39c08b34d30325866894b",
+    "id": "88216ba4-3288-487a-8d3f-58ed04320d82",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "added a record to your ISO list"
+  },
+  {
+    "_id": "69b39c08b34d30325866894c",
+    "id": "e0bdf490-b8b9-4eca-aa20-17c9c48296d2",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "cleaned a record before playing it"
+  },
+  {
+    "_id": "69b39c08b34d30325866894d",
+    "id": "f9782e0b-d571-4cf0-91e3-1d78b0ca3450",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "reorganized part of your collection"
+  },
+  {
+    "_id": "69b39c08b34d30325866894e",
+    "id": "78d90200-cc55-4e40-924e-a05314d921e5",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "played something at a higher volume than usual"
+  },
+  {
+    "_id": "69b39c08b34d30325866894f",
+    "id": "27656b46-70a2-4079-8110-2fcd4ef0fc50",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "discovered a new artist through a record you already owned"
+  },
+  {
+    "_id": "69b39c08b34d303258668950",
+    "id": "a284a3e2-59c6-4c8c-9ca7-7ecffdbd67e5",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "played a record you bought years ago for the first time"
+  },
+  {
+    "_id": "69b39c08b34d303258668951",
+    "id": "c5f08cb3-0fec-4d76-9ebf-cf1dc18e4908",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "found a record on your wantlist listed in the Honeypot"
+  },
+  {
+    "_id": "69b39c08b34d303258668952",
+    "id": "2f6504d9-601c-4c76-8e81-3404e2bfffce",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "proposed or accepted a trade"
+  },
+  {
+    "_id": "69b39c08b34d303258668953",
+    "id": "ff79df2e-a759-41d8-8a9d-6247bc1eb036",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "played something just because the cover caught your eye"
+  },
+  {
+    "_id": "69b39c08b34d303258668954",
+    "id": "b5f09779-f913-463c-9ee8-04efcb61ca9c",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "listened to a record while doing something else and had to stop and just listen"
+  },
+  {
+    "_id": "69b39c08b34d303258668955",
+    "id": "719889c8-e1e8-4232-8ea5-a40a36d6c838",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "played a record that felt like the exact right choice for the moment"
+  },
+  {
+    "_id": "69b39c08b34d303258668956",
+    "id": "766d86d0-2e69-4a10-b57d-ea521ef84086",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "bought a record online this week"
+  },
+  {
+    "_id": "69b39c08b34d303258668957",
+    "id": "deb2a6ac-71be-4591-8f79-0c92daf9c9c8",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "played something that reminded you of a specific memory"
+  },
+  {
+    "_id": "69b39c08b34d303258668958",
+    "id": "c5910d36-dc63-45a5-94b1-e9e9b327b31e",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "listened to a record with someone else"
+  },
+  {
+    "_id": "69b39c08b34d303258668959",
+    "id": "93acaee8-1dc6-418d-a62c-d16d1dccf97c",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "played a record so many times this week you lost count"
+  },
+  {
+    "_id": "69b39c08b34d30325866895a",
+    "id": "aafab6dc-d5f2-45b1-8dd6-d709052d5b2f",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "checked your collection value this week"
+  },
+  {
+    "_id": "69b39c08b34d30325866895b",
+    "id": "079721ed-fec4-4d07-bfc3-8046f944e499",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "played something you'd be embarrassed to admit you love"
+  },
+  {
+    "_id": "69b39c08b34d30325866895c",
+    "id": "c445b7d5-c121-48e0-95af-fad47f974049",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "found a hidden gem on an album you thought you knew"
+  },
+  {
+    "_id": "69b39c09b34d30325866895d",
+    "id": "44c673cd-dd7c-4300-8642-cba89cb17a70",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "played a record from a genre you don't usually listen to"
+  },
+  {
+    "_id": "69b39c09b34d30325866895e",
+    "id": "2584e5ce-60fd-4b5f-8e21-3984cb0e1be6",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "buzzed in on the daily prompt every day this week"
+  },
+  {
+    "_id": "69b39c09b34d30325866895f",
+    "id": "cb4bb9c0-deb7-4c07-ab68-632eb9abeff0",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "played something so good you immediately texted someone about it"
+  },
+  {
+    "_id": "69b39c09b34d303258668960",
+    "id": "fe4647e7-970e-48e9-b2a4-1d679618214e",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "added pressing details to a record in your collection"
+  },
+  {
+    "_id": "69b39c09b34d303258668961",
+    "id": "d1034e2e-b727-44c1-bd53-f682b35c8535",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "played a record that felt like it was written about your life"
+  },
+  {
+    "_id": "69b39c09b34d303258668962",
+    "id": "b1637a8c-3c2f-4f3b-9d7f-a8da098a751e",
+    "active": true,
+    "created_at": "2026-03-06T09:44:18.882000",
+    "emoji": "\ud83c\udfb5",
+    "text": "completed a trade or sale in the Honeypot this week"
+  },
+  {
+    "_id": "69b39c09b34d303258668963",
+    "id": "98067590-9157-44e9-8a45-344a2a99b4df",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udd24",
+    "text": "organized your records alphabetically"
+  },
+  {
+    "_id": "69b39c09b34d303258668964",
+    "id": "ee6e5932-959a-463c-b546-1bdb191ff7e1",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udd04",
+    "text": "flipped a record mid-conversation because side A ended"
+  },
+  {
+    "_id": "69b39c09b34d303258668965",
+    "id": "350c98bb-87f0-4e77-9f74-5e180d342774",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udd50",
+    "text": "spent more than an hour in a record store"
+  },
+  {
+    "_id": "69b39c09b34d303258668966",
+    "id": "399fc130-01c8-4adf-a599-d56413e2007f",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83c\udfb5",
+    "text": "bought records from three different genres in one haul"
+  },
+  {
+    "_id": "69b39c09b34d303258668967",
+    "id": "2c963391-058d-48fc-acb1-0981038104d0",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udcf8",
+    "text": "photographed your setup for social media"
+  },
+  {
+    "_id": "69b39c09b34d303258668968",
+    "id": "ab67b862-4586-4cd6-9f71-38e72c19114a",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\ude34",
+    "text": "fell asleep listening to a record"
+  },
+  {
+    "_id": "69b39c09b34d303258668969",
+    "id": "73386521-88f3-4b4c-b328-f41a2332f7b7",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83c\udf89",
+    "text": "played a record at a party and someone asked what it was"
+  },
+  {
+    "_id": "69b39c09b34d30325866896a",
+    "id": "611a720d-64a4-4969-b725-5b84a76f93f0",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83c\udfac",
+    "text": "bought a record because of a movie or TV show"
+  },
+  {
+    "_id": "69b39c09b34d30325866896b",
+    "id": "ae0b0943-c16e-4395-a56d-29be83db534c",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udd2e",
+    "text": "owned a record before it became popular"
+  },
+  {
+    "_id": "69b39c09b34d30325866896c",
+    "id": "3546ba82-0a90-469c-8c5d-4697f10e55a3",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\ude24",
+    "text": "had a record skip and it ruined the moment"
+  },
+  {
+    "_id": "69b39c09b34d30325866896d",
+    "id": "4aa7fb36-79b2-4a65-bf4d-4dd85ee689b2",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udd6f\ufe0f",
+    "text": "played a record during a power outage"
+  },
+  {
+    "_id": "69b39c09b34d30325866896e",
+    "id": "d3ae9ba8-750a-44a0-b258-314f4c2fff5d",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83e\udd1d",
+    "text": "bonded with a stranger over music taste"
+  },
+  {
+    "_id": "69b39c09b34d30325866896f",
+    "id": "6ebd625d-91db-44da-8910-a617fb43d7e3",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udc94",
+    "text": "kept a record even though it's scratched"
+  },
+  {
+    "_id": "69b39c09b34d303258668970",
+    "id": "3df52a88-e3e8-4d9c-b011-2f300e935fb1",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udcb8",
+    "text": "spent over $50 on a single record this month"
+  },
+  {
+    "_id": "69b39c09b34d303258668971",
+    "id": "a47d8d9d-4268-44a4-ae9f-de72db683697",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udd0a",
+    "text": "played something just to test new equipment"
+  },
+  {
+    "_id": "69b39c09b34d303258668972",
+    "id": "ecfcab73-de4e-4858-bdab-ba300eef9596",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udc8e",
+    "text": "found a dollar bin treasure"
+  },
+  {
+    "_id": "69b39c09b34d303258668973",
+    "id": "85928edd-ab4b-4193-bb9d-eb1753b2475a",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udd0d",
+    "text": "researched a record's pressing history before buying"
+  },
+  {
+    "_id": "69b39c09b34d303258668974",
+    "id": "734729ea-05aa-4515-9658-68b71f9817ff",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83c\udf0d",
+    "text": "bought a record from another country"
+  },
+  {
+    "_id": "69b39c09b34d303258668975",
+    "id": "c1469110-db43-4340-88ae-ff1cf2b91756",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udcc5",
+    "text": "played a record that was older than 30 years"
+  },
+  {
+    "_id": "69b39c0ab34d303258668976",
+    "id": "5f95a13c-3113-490a-a3ab-f99ce9e72ed2",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udde3\ufe0f",
+    "text": "debated inner vs outer sleeves with someone"
+  },
+  {
+    "_id": "69b39c0ab34d303258668977",
+    "id": "b60b25b1-0eaa-4cf7-bb33-96e73c0130b8",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83c\udfa4",
+    "text": "bought a record at a live show"
+  },
+  {
+    "_id": "69b39c0ab34d303258668978",
+    "id": "8998f353-1bbe-4339-a8c4-a0a1778fac00",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udcbb",
+    "text": "played vinyl while working from home"
+  },
+  {
+    "_id": "69b39c0ab34d303258668979",
+    "id": "55cf4e35-3eec-4f45-87f3-9f2603ff55bf",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83e\uddfd",
+    "text": "hand-washed a record this week"
+  },
+  {
+    "_id": "69b39c0ab34d30325866897a",
+    "id": "a51f807a-603b-4605-8183-3cf811ec6161",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\uddbc\ufe0f",
+    "text": "displayed a record as wall art"
+  },
+  {
+    "_id": "69b39c0ab34d30325866897b",
+    "id": "12814c42-0e98-4074-8587-5045a64e54bb",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83c\udf81",
+    "text": "gifted a record to someone"
+  },
+  {
+    "_id": "69b39c0ab34d30325866897c",
+    "id": "6f2477ee-bd5f-42a9-bba0-ec15a75ed316",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83c\udfbc",
+    "text": "played a soundtrack or score album"
+  },
+  {
+    "_id": "69b39c0ab34d30325866897d",
+    "id": "9dcda0ca-5855-419f-9a83-45dd52e6e083",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83c\udfa8",
+    "text": "bought something solely for the gatefold artwork"
+  },
+  {
+    "_id": "69b39c0ab34d30325866897e",
+    "id": "a13c1bb6-a8ca-4f71-ba5d-266038050fb9",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udce6",
+    "text": "listened to an album you bought months ago for the first time"
+  },
+  {
+    "_id": "69b39c0ab34d30325866897f",
+    "id": "f434762b-8a19-4930-84a1-3b8fc4bb5045",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udcda",
+    "text": "stacked more than 10 records in your to-listen pile"
+  },
+  {
+    "_id": "69b39c0ab34d303258668980",
+    "id": "721624b6-74ec-4075-81d6-3f66d00f6047",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83c\udfb7",
+    "text": "played jazz on vinyl"
+  },
+  {
+    "_id": "69b39c0ab34d303258668981",
+    "id": "3b7a1875-851a-422e-8787-d3342db35498",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udcbf",
+    "text": "skipped a track by lifting the needle"
+  },
+  {
+    "_id": "69b39c0ab34d303258668982",
+    "id": "9d97c790-8375-4e2e-a6f6-6458e26e6bd4",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udde8\ufe0f",
+    "text": "talked about records for more than 20 minutes straight"
+  },
+  {
+    "_id": "69b39c0ab34d303258668983",
+    "id": "015d0253-fe4b-45a0-88d1-90adc8bb15a6",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\ude29",
+    "text": "regretted not buying something at a store"
+  },
+  {
+    "_id": "69b39c0ab34d303258668984",
+    "id": "f4513b10-bbd9-45f4-b67f-9502e46d388d",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83c\udfc3",
+    "text": "went back to the store for a record you left behind"
+  },
+  {
+    "_id": "69b39c0ab34d303258668985",
+    "id": "e7c51817-d016-4646-ba67-7bc7e4f97692",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83c\udf73",
+    "text": "played a record while cooking"
+  },
+  {
+    "_id": "69b39c0ab34d303258668986",
+    "id": "eff6e85d-5a09-485c-aef7-60c6eb4241b9",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udccb",
+    "text": "shared your Discogs profile with someone"
+  },
+  {
+    "_id": "69b39c0ab34d303258668987",
+    "id": "280c9843-f2bc-4a7d-a014-3e62b9cc522b",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udc1d",
+    "text": "listened to something a Honey Groove member recommended"
+  },
+  {
+    "_id": "69b39c0ab34d303258668988",
+    "id": "d6e544fb-a0cf-4fbf-b0f6-bc301a831c69",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\u2600\ufe0f",
+    "text": "played a record outdoors"
+  },
+  {
+    "_id": "69b39c0ab34d303258668989",
+    "id": "047d3fdf-bf49-4f3f-8035-4fafb940180a",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udc40",
+    "text": "stared at a spinning record for longer than you'd admit"
+  },
+  {
+    "_id": "69b39c0ab34d30325866898a",
+    "id": "4c2c2863-01e3-4e34-bca2-4c41e5740c2f",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udcca",
+    "text": "compared a vinyl pressing to the streaming version"
+  },
+  {
+    "_id": "69b39c0ab34d30325866898b",
+    "id": "d3259902-8469-4b94-a33e-ec851a0f7c1f",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udcec",
+    "text": "had a record delivered damaged and had to deal with it"
+  },
+  {
+    "_id": "69b39c0ab34d30325866898c",
+    "id": "297a926a-ca6a-478d-8d00-b0119ccbdb33",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udccd",
+    "text": "played a record from a local artist"
+  },
+  {
+    "_id": "69b39c0ab34d30325866898d",
+    "id": "0630bd90-2616-4c9b-9573-5885eaf61a0c",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udecb\ufe0f",
+    "text": "made someone sit down and listen to a full album with you"
+  },
+  {
+    "_id": "69b39c0ab34d30325866898e",
+    "id": "e9a5328a-0bb1-4d60-ab87-868f69fe87cf",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\u2764\ufe0f",
+    "text": "used a record as a conversation starter on a date"
+  },
+  {
+    "_id": "69b39c0bb34d30325866898f",
+    "id": "d1c3d6b4-5ff0-4eb1-88ae-92711c879fc9",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67",
+    "text": "played a record your kids or family didn't understand"
+  },
+  {
+    "_id": "69b39c0bb34d303258668990",
+    "id": "3baf00b0-aae6-43bd-8dd2-233b404310f9",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\u267b\ufe0f",
+    "text": "bought a record reissue of something you already own digitally"
+  },
+  {
+    "_id": "69b39c0bb34d303258668991",
+    "id": "4b4e44de-653a-40aa-b5dd-438a21e5f7fe",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\u23ef\ufe0f",
+    "text": "played a concept album front to back without pausing"
+  },
+  {
+    "_id": "69b39c0bb34d303258668992",
+    "id": "ce258924-f019-431b-9e6e-fcd5091cc0a3",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\u2b50",
+    "text": "rated or reviewed a record on Discogs"
+  },
+  {
+    "_id": "69b39c0bb34d303258668993",
+    "id": "02145e0a-2983-42f7-8118-ab8f3e39b221",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83c\udfaf",
+    "text": "felt personally attacked by a daily prompt"
+  },
+  {
+    "_id": "69b39c0bb34d303258668994",
+    "id": "7bf21257-a1e7-4dc2-af57-31ac74560bd5",
+    "active": true,
+    "created_at": "2026-03-06T17:20:02.315224+00:00",
+    "emoji": "\ud83c\udf6f",
+    "text": "told someone about the Honey Groove"
+  },
+  {
+    "_id": "69b441afbf946cd3192f90ea",
+    "text": "spun the same record twice in one row",
+    "active": true,
+    "created_at": "2026-03-06T09:44:04.180000",
+    "emoji": "\ud83c\udfb5"
+  }
+]

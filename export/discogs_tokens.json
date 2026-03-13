@@ -1,0 +1,79 @@
+[
+  {
+    "_id": "69b3685bb34d303258667cf0",
+    "user_id": "4072aaa7-1171-4cd2-9c8f-20dfca8fdc58",
+    "auth_type": "oauth",
+    "connected_at": "2026-03-13T01:28:59.582096+00:00",
+    "discogs_id": 18379968,
+    "discogs_username": "katieintheafterglow",
+    "oauth_token": "UIbuIelBhwDBxWcBmuqHUBwHhVdJEgaDdWavaTwC",
+    "oauth_token_secret": "dBUlXLhHUpaTtRIRbXYuIAXbkxLWCBxOwZLMHmEQ",
+    "oauth_verified": true
+  },
+  {
+    "_id": "69b43567b34d303258669a82",
+    "user_id": "2c557204-fc7c-45ac-85d4-0cdd0f3d5570",
+    "auth_type": "oauth",
+    "connected_at": "2026-03-13T16:03:50.993272+00:00",
+    "discogs_id": 7829448,
+    "discogs_username": "tangerine_vinyl",
+    "oauth_token": "lxqUusYzcJemYXHMXwharhynWmgqOXfxgePRrFOo",
+    "oauth_token_secret": "fPKEMuzdfXKdDGGaTfcmrkQILatgmJgpjQPxlnaN",
+    "oauth_verified": true
+  },
+  {
+    "_id": "69b43cd4b34d303258669b84",
+    "user_id": "93ad244e-d8ad-4160-981d-dc7ca1024de1",
+    "auth_type": "oauth",
+    "connected_at": "2026-03-13T16:35:32.335436+00:00",
+    "discogs_id": 17614178,
+    "discogs_username": "sohappyicouldie",
+    "oauth_token": "UvvXGNryQWsMcKAtIobabTPKMqdhlOzUyfQIPTyk",
+    "oauth_token_secret": "MpwQjWudfJKNUPXCwywUCSXobNXtBRWjIIOJKfwj",
+    "oauth_verified": true
+  },
+  {
+    "_id": "69b43ef7b34d303258669bb9",
+    "user_id": "835d3df6-970e-4dd2-a71c-4ad6ec8dcd40",
+    "auth_type": "oauth",
+    "connected_at": "2026-03-13T16:45:34.198246+00:00",
+    "discogs_id": 15054419,
+    "discogs_username": "watchkayshine",
+    "oauth_token": "wpaeNRDlPuizmVnBpEGunLjSJpyragSBChLrMfcN",
+    "oauth_token_secret": "QojFWdtIdBXBPtNgcAilYuLSeVDDQUUHYIJAJFRd",
+    "oauth_verified": true
+  },
+  {
+    "_id": "69b43f39b34d303258669bbe",
+    "user_id": "69518616-8a24-4597-b173-18927ac5a446",
+    "auth_type": "oauth",
+    "connected_at": "2026-03-13T16:45:45.491336+00:00",
+    "discogs_id": 16906675,
+    "discogs_username": "Blakesvinyll",
+    "oauth_token": "iWQiUNdtrRYQCcEWABeteDijFWoqkHpinBxLTAJG",
+    "oauth_token_secret": "VMbkzAxSKOFIOVyUQDcSOtJwtssMKgFFpnMSybRv",
+    "oauth_verified": true
+  },
+  {
+    "_id": "69b44128b34d303258669c4a",
+    "user_id": "d775d34c-4683-47ee-bec6-04c9a4c93a2f",
+    "auth_type": "oauth",
+    "connected_at": "2026-03-13T16:54:00.555993+00:00",
+    "discogs_id": 18518706,
+    "discogs_username": "Kerrileighg",
+    "oauth_token": "CNBmLYEIMichupPpDgXHvPiPZxEDSHpvCqpsiLmg",
+    "oauth_token_secret": "vEKakmOATfxoSSLKsumUCQQWkILrGwQSUuUhsxXk",
+    "oauth_verified": true
+  },
+  {
+    "_id": "69b444a6b34d303258669c98",
+    "user_id": "4edfe1fd-0074-4515-9010-b0c11667f1a5",
+    "auth_type": "oauth",
+    "connected_at": "2026-03-13T17:08:54.200437+00:00",
+    "discogs_id": 7369500,
+    "discogs_username": "yolguin5",
+    "oauth_token": "zUJmIblhrvTlvBZvZTImFWUgRwMiYaRUhxOCJzqZ",
+    "oauth_token_secret": "dSHbIorPjeElXsAIAHmuXIpAFsUuPnTzetswJpcb",
+    "oauth_verified": true
+  }
+]

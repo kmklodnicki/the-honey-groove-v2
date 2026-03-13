@@ -1,0 +1,211 @@
+[
+  {
+    "_id": "69b39c06b34d303258668919",
+    "id": "cdc7393b-983c-4f67-a0a4-000edffa3e8b",
+    "created_at": "2026-03-06T17:22:40.737668+00:00",
+    "grid": [
+      {
+        "text": "have a record with sentimental value you'd never sell",
+        "emoji": "\ud83d\udc9b",
+        "is_free": false,
+        "row": 0,
+        "col": 0,
+        "index": 0
+      },
+      {
+        "text": "bought a record for the cover art",
+        "emoji": "\ud83c\udfa8",
+        "is_free": false,
+        "row": 0,
+        "col": 1,
+        "index": 1
+      },
+      {
+        "text": "have a record signed by the artist",
+        "emoji": "\u270d\ufe0f",
+        "is_free": false,
+        "row": 0,
+        "col": 2,
+        "index": 2
+      },
+      {
+        "text": "played something at a higher volume than usual",
+        "emoji": "\ud83c\udfb5",
+        "is_free": false,
+        "row": 0,
+        "col": 3,
+        "index": 3
+      },
+      {
+        "text": "stayed up past midnight listening",
+        "emoji": "\ud83c\udf19",
+        "is_free": false,
+        "row": 0,
+        "col": 4,
+        "index": 4
+      },
+      {
+        "text": "completed a trade on the Honey Groove",
+        "emoji": "\ud83e\udd1d",
+        "is_free": false,
+        "row": 1,
+        "col": 0,
+        "index": 5
+      },
+      {
+        "text": "debated inner vs outer sleeves with someone",
+        "emoji": "\ud83d\udde3\ufe0f",
+        "is_free": false,
+        "row": 1,
+        "col": 1,
+        "index": 6
+      },
+      {
+        "text": "played something just to test new equipment",
+        "emoji": "\ud83d\udd0a",
+        "is_free": false,
+        "row": 1,
+        "col": 2,
+        "index": 7
+      },
+      {
+        "text": "have a record you've never played",
+        "emoji": "\ud83e\udd2b",
+        "is_free": false,
+        "row": 1,
+        "col": 3,
+        "index": 8
+      },
+      {
+        "text": "played something that reminded you of a specific memory",
+        "emoji": "\ud83c\udfb5",
+        "is_free": false,
+        "row": 1,
+        "col": 4,
+        "index": 9
+      },
+      {
+        "text": "bought a turntable upgrade this year",
+        "emoji": "\ud83c\udf9b\ufe0f",
+        "is_free": false,
+        "row": 2,
+        "col": 0,
+        "index": 10
+      },
+      {
+        "text": "bought a record at a live show",
+        "emoji": "\ud83c\udfa4",
+        "is_free": false,
+        "row": 2,
+        "col": 1,
+        "index": 11
+      },
+      {
+        "text": "sweet spot \ud83c\udf6f",
+        "emoji": "\ud83c\udf6f",
+        "is_free": true,
+        "row": 2,
+        "col": 2,
+        "index": 12
+      },
+      {
+        "text": "found a record at a thrift store or garage sale",
+        "emoji": "\ud83c\udfb5",
+        "is_free": false,
+        "row": 2,
+        "col": 3,
+        "index": 13
+      },
+      {
+        "text": "played vinyl while working from home",
+        "emoji": "\ud83d\udcbb",
+        "is_free": false,
+        "row": 2,
+        "col": 4,
+        "index": 14
+      },
+      {
+        "text": "bought a record from another country",
+        "emoji": "\ud83c\udf0d",
+        "is_free": false,
+        "row": 3,
+        "col": 0,
+        "index": 15
+      },
+      {
+        "text": "had a record skip and it ruined the moment",
+        "emoji": "\ud83d\ude24",
+        "is_free": false,
+        "row": 3,
+        "col": 1,
+        "index": 16
+      },
+      {
+        "text": "flipped a record mid-conversation because side A ended",
+        "emoji": "\ud83d\udd04",
+        "is_free": false,
+        "row": 3,
+        "col": 2,
+        "index": 17
+      },
+      {
+        "text": "kept a record even though it's scratched",
+        "emoji": "\ud83d\udc94",
+        "is_free": false,
+        "row": 3,
+        "col": 3,
+        "index": 18
+      },
+      {
+        "text": "researched a record's pressing history before buying",
+        "emoji": "\ud83d\udd0d",
+        "is_free": false,
+        "row": 3,
+        "col": 4,
+        "index": 19
+      },
+      {
+        "text": "looked up the lyrics to a song while listening",
+        "emoji": "\ud83c\udfb5",
+        "is_free": false,
+        "row": 4,
+        "col": 0,
+        "index": 20
+      },
+      {
+        "text": "played something you'd be embarrassed to admit you love",
+        "emoji": "\ud83c\udfb5",
+        "is_free": false,
+        "row": 4,
+        "col": 1,
+        "index": 21
+      },
+      {
+        "text": "played a record that felt like it was written about your life",
+        "emoji": "\ud83c\udfb5",
+        "is_free": false,
+        "row": 4,
+        "col": 2,
+        "index": 22
+      },
+      {
+        "text": "listened to a record with someone else",
+        "emoji": "\ud83c\udfb5",
+        "is_free": false,
+        "row": 4,
+        "col": 3,
+        "index": 23
+      },
+      {
+        "text": "hand-washed a record this week",
+        "emoji": "\ud83e\uddfd",
+        "is_free": false,
+        "row": 4,
+        "col": 4,
+        "index": 24
+      }
+    ],
+    "week_end": "2026-03-09T00:00:00+00:00",
+    "week_start": "2026-03-06T09:00:00+00:00"
+  }
+]

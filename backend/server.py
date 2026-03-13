@@ -2,6 +2,7 @@
 import asyncio
 from datetime import datetime, timezone
 from fastapi import FastAPI, Request, Response
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import socketio
 import os
@@ -47,6 +48,29 @@ for r in [auth_router, hive_router, collection_router, honeypot_router,
           verification_router, reports_router, seo_router, vinyl_router,
           weekly_wax_router, image_proxy_router]:
     app.include_router(r, prefix="/api")
+
+# --- Data export download endpoints ---
+import glob as _glob
+
+@app.get("/api/export/list")
+async def list_exports():
+    files = _glob.glob("/app/export/*.json")
+    return [{"name": os.path.basename(f), "size_kb": round(os.path.getsize(f)/1024, 1)} for f in sorted(files)]
+
+@app.get("/api/export/{filename}")
+async def download_export(filename: str):
+    path = f"/app/export/{filename}"
+    if not os.path.exists(path) or ".." in filename:
+        return {"error": "not found"}
+    return FileResponse(path, media_type="application/json", filename=filename)
+
+@app.get("/api/export/archive/all")
+async def download_archive():
+    path = "/app/export/honeygroove_export.tar.gz"
+    if not os.path.exists(path):
+        return {"error": "archive not found"}
+    return FileResponse(path, media_type="application/gzip", filename="honeygroove_export.tar.gz")
+
 
 cors_origins = [
     "https://thehoneygroove.com",

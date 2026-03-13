@@ -1,0 +1,1052 @@
+[
+  {
+    "_id": "69b39c0cc5ba1da0934ee6c6",
+    "text": "the record you'd play for someone who says they don't like vinyl",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6c7",
+    "text": "last record you bought based on the cover alone",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6c8",
+    "text": "a record that makes you feel invincible",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6c9",
+    "text": "the one that started it all",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6ca",
+    "text": "a record you know every single word to",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6cb",
+    "text": "what's on your turntable right now, no context",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6cc",
+    "text": "a record you bought for one song and ended up loving the whole thing",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6cd",
+    "text": "the most you've ever spent on a single record",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6ce",
+    "text": "a record that hits different at night",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6cf",
+    "text": "your most played record this month",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6d0",
+    "text": "a record you'd give to your younger self",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6d1",
+    "text": "the last record that genuinely surprised you",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6d2",
+    "text": "a record you inherited or were given",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6d3",
+    "text": "your guiltiest pleasure in the collection",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6d4",
+    "text": "a record you've replaced because you wore out the first copy",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6d5",
+    "text": "the one you'd play on the last night of summer",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6d6",
+    "text": "a record that changed how you listen to music",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6d7",
+    "text": "your most visually beautiful pressing",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6d8",
+    "text": "a record you bought at a record store you'll never forget",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6d9",
+    "text": "what are you spinning on a rainy Sunday morning",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6da",
+    "text": "a record that reminds you of someone specific",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6db",
+    "text": "the variant or pressing you're most proud of",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6dc",
+    "text": "a record you almost didn't buy and are so glad you did",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6dd",
+    "text": "your go-to when you need to cry it out",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6de",
+    "text": "a record that sounds better on vinyl than any other format",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6df",
+    "text": "the last record you played start to finish without skipping",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6e0",
+    "text": "a record you'd describe as a warm hug",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6e1",
+    "text": "your most underrated record that nobody talks about",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6e2",
+    "text": "a record that defined a specific year of your life",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6e3",
+    "text": "what would you play at your dinner party",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6e4",
+    "text": "a record you bought on a whim and it became a favorite",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6e5",
+    "text": "the longest you've hunted for a single record",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6e6",
+    "text": "a record that makes you want to dance alone in your kitchen",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6e7",
+    "text": "your most recent thrift store or bin find",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6e8",
+    "text": "a record you play when you need to feel something",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6e9",
+    "text": "a pressing you'd never play because it's too precious",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6ea",
+    "text": "the record you recommend to absolutely everyone",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6eb",
+    "text": "a record that sounds like a place",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6ec",
+    "text": "your favorite album side B",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6ed",
+    "text": "a record that makes you feel nostalgic for a time you never lived in",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6ee",
+    "text": "what are you spinning at 2am",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6ef",
+    "text": "a record you bought just for the artwork",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6f0",
+    "text": "the one that lives permanently on your turntable",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6f1",
+    "text": "a record you and someone else both love that brought you closer",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6f2",
+    "text": "your most recent ISO success story",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6f3",
+    "text": "a record that feels like it was made specifically for you",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6f4",
+    "text": "what record do you put on when you have guests over",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6f5",
+    "text": "a record you fell asleep to and woke up still playing",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6f6",
+    "text": "the most recent record you added to your wantlist",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b39c0cc5ba1da0934ee6f7",
+    "text": "a record you'd describe in one word",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a2bf946cd3192f90b2",
+    "text": "the record you'd play for someone who says they don't like vinyl",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a2bf946cd3192f90b3",
+    "text": "last record you bought based on the cover alone",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a2bf946cd3192f90b4",
+    "text": "a record that makes you feel invincible",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a2bf946cd3192f90b5",
+    "text": "the one that started it all",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a2bf946cd3192f90b6",
+    "text": "a record you know every single word to",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a2bf946cd3192f90b7",
+    "text": "what's on your turntable right now, no context",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a2bf946cd3192f90b8",
+    "text": "a record you bought for one song and ended up loving the whole thing",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a2bf946cd3192f90b9",
+    "text": "the most you've ever spent on a single record",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a2bf946cd3192f90ba",
+    "text": "a record that hits different at night",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a2bf946cd3192f90bb",
+    "text": "your most played record this month",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a2bf946cd3192f90bc",
+    "text": "a record you'd give to your younger self",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a2bf946cd3192f90bd",
+    "text": "the last record that genuinely surprised you",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a2bf946cd3192f90be",
+    "text": "a record you inherited or were given",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a2bf946cd3192f90bf",
+    "text": "your guiltiest pleasure in the collection",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a2bf946cd3192f90c0",
+    "text": "a record you've replaced because you wore out the first copy",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90c1",
+    "text": "the one you'd play on the last night of summer",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90c2",
+    "text": "a record that changed how you listen to music",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90c3",
+    "text": "your most visually beautiful pressing",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90c4",
+    "text": "a record you bought at a record store you'll never forget",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90c5",
+    "text": "what are you spinning on a rainy Sunday morning",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90c6",
+    "text": "a record that reminds you of someone specific",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90c7",
+    "text": "the variant or pressing you're most proud of",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90c8",
+    "text": "a record you almost didn't buy and are so glad you did",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90c9",
+    "text": "your go-to when you need to cry it out",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90ca",
+    "text": "a record that sounds better on vinyl than any other format",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90cb",
+    "text": "the last record you played start to finish without skipping",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90cc",
+    "text": "a record you'd describe as a warm hug",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90cd",
+    "text": "your most underrated record that nobody talks about",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90ce",
+    "text": "a record that defined a specific year of your life",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90cf",
+    "text": "what would you play at your dinner party",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90d0",
+    "text": "a record you bought on a whim and it became a favorite",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90d1",
+    "text": "the longest you've hunted for a single record",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90d2",
+    "text": "a record that makes you want to dance alone in your kitchen",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90d3",
+    "text": "your most recent thrift store or bin find",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90d4",
+    "text": "a record you play when you need to feel something",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90d5",
+    "text": "a pressing you'd never play because it's too precious",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90d6",
+    "text": "the record you recommend to absolutely everyone",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90d7",
+    "text": "a record that sounds like a place",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90d8",
+    "text": "your favorite album side B",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90d9",
+    "text": "a record that makes you feel nostalgic for a time you never lived in",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90da",
+    "text": "what are you spinning at 2am",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90db",
+    "text": "a record you bought just for the artwork",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a3bf946cd3192f90dc",
+    "text": "the one that lives permanently on your turntable",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a4bf946cd3192f90dd",
+    "text": "a record you and someone else both love that brought you closer",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a4bf946cd3192f90de",
+    "text": "your most recent ISO success story",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a4bf946cd3192f90df",
+    "text": "a record that feels like it was made specifically for you",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a4bf946cd3192f90e0",
+    "text": "what record do you put on when you have guests over",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a4bf946cd3192f90e1",
+    "text": "a record you fell asleep to and woke up still playing",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a4bf946cd3192f90e2",
+    "text": "the most recent record you added to your wantlist",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b441a4bf946cd3192f90e3",
+    "text": "a record you'd describe in one word",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fc3b62ed0cab38e15d",
+    "text": "the record you'd play for someone who says they don't like vinyl",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fc3b62ed0cab38e15e",
+    "text": "last record you bought based on the cover alone",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e15f",
+    "text": "a record that makes you feel invincible",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e160",
+    "text": "the one that started it all",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e161",
+    "text": "a record you know every single word to",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e162",
+    "text": "what's on your turntable right now, no context",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e163",
+    "text": "a record you bought for one song and ended up loving the whole thing",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e164",
+    "text": "the most you've ever spent on a single record",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e165",
+    "text": "a record that hits different at night",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e166",
+    "text": "your most played record this month",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e167",
+    "text": "a record you'd give to your younger self",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e168",
+    "text": "the last record that genuinely surprised you",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e169",
+    "text": "a record you inherited or were given",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e16a",
+    "text": "your guiltiest pleasure in the collection",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e16b",
+    "text": "a record you've replaced because you wore out the first copy",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e16c",
+    "text": "the one you'd play on the last night of summer",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e16d",
+    "text": "a record that changed how you listen to music",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e16e",
+    "text": "your most visually beautiful pressing",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e16f",
+    "text": "a record you bought at a record store you'll never forget",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e170",
+    "text": "what are you spinning on a rainy Sunday morning",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e171",
+    "text": "a record that reminds you of someone specific",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e172",
+    "text": "the variant or pressing you're most proud of",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e173",
+    "text": "a record you almost didn't buy and are so glad you did",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e174",
+    "text": "your go-to when you need to cry it out",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e175",
+    "text": "a record that sounds better on vinyl than any other format",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e176",
+    "text": "the last record you played start to finish without skipping",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e177",
+    "text": "a record you'd describe as a warm hug",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e178",
+    "text": "your most underrated record that nobody talks about",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e179",
+    "text": "a record that defined a specific year of your life",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e17a",
+    "text": "what would you play at your dinner party",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fd3b62ed0cab38e17b",
+    "text": "a record you bought on a whim and it became a favorite",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fe3b62ed0cab38e17c",
+    "text": "the longest you've hunted for a single record",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fe3b62ed0cab38e17d",
+    "text": "a record that makes you want to dance alone in your kitchen",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fe3b62ed0cab38e17e",
+    "text": "your most recent thrift store or bin find",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fe3b62ed0cab38e17f",
+    "text": "a record you play when you need to feel something",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fe3b62ed0cab38e180",
+    "text": "a pressing you'd never play because it's too precious",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fe3b62ed0cab38e181",
+    "text": "the record you recommend to absolutely everyone",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fe3b62ed0cab38e182",
+    "text": "a record that sounds like a place",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fe3b62ed0cab38e183",
+    "text": "your favorite album side B",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fe3b62ed0cab38e184",
+    "text": "a record that makes you feel nostalgic for a time you never lived in",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fe3b62ed0cab38e185",
+    "text": "what are you spinning at 2am",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fe3b62ed0cab38e186",
+    "text": "a record you bought just for the artwork",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fe3b62ed0cab38e187",
+    "text": "the one that lives permanently on your turntable",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fe3b62ed0cab38e188",
+    "text": "a record you and someone else both love that brought you closer",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fe3b62ed0cab38e189",
+    "text": "your most recent ISO success story",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fe3b62ed0cab38e18a",
+    "text": "a record that feels like it was made specifically for you",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fe3b62ed0cab38e18b",
+    "text": "what record do you put on when you have guests over",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fe3b62ed0cab38e18c",
+    "text": "a record you fell asleep to and woke up still playing",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fe3b62ed0cab38e18d",
+    "text": "the most recent record you added to your wantlist",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  },
+  {
+    "_id": "69b444fe3b62ed0cab38e18e",
+    "text": "a record you'd describe in one word",
+    "active": true,
+    "used": false,
+    "created_at": "2026-03-06T09:44:04.180000"
+  }
+]
