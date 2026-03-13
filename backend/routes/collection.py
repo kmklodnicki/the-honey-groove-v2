@@ -1309,6 +1309,11 @@ async def discogs_oauth_callback(oauth_token: str = Query(...), oauth_verifier: 
         
         # BLOCK 472: Redirect to the frontend that initiated the flow (dynamic env support)
         frontend_base = pending.get("callback_origin", FRONTEND_URL) if pending else FRONTEND_URL
+        # If user hasn't completed onboarding, redirect to the building hive page
+        if user_id:
+            user_doc = await db.users.find_one({"id": user_id}, {"_id": 0, "onboarding_completed": 1})
+            if user_doc and not user_doc.get("onboarding_completed", False):
+                return RedirectResponse(url=f"{frontend_base}/onboarding/building?discogs=connected&username={discogs_username}")
         return RedirectResponse(url=f"{frontend_base}/collection?discogs=connected&username={discogs_username}")
     
     except Exception as e:

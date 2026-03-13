@@ -72,6 +72,7 @@ const StripeConnectRefreshPage = lazy(() => import("./pages/StripeConnectRefresh
 const OrdersPage = lazy(() => import("./pages/OrdersPage"));
 const ConfirmEmailChangePage = lazy(() => import("./pages/ConfirmEmailChangePage"));
 const WelcomeHivePage = lazy(() => import("./pages/WelcomeHivePage"));
+const BuildingHivePage = lazy(() => import("./pages/BuildingHivePage"));
 const EssentialsPage = lazy(() => import("./pages/EssentialsPage"));
 const VinylVariantPage = lazy(() => import("./pages/VinylVariantPage"));
 const VariantReleasePage = lazy(() => import("./pages/VariantReleasePage"));
@@ -294,6 +295,7 @@ function AppContent() {
       <Route path="/search" element={<AppLayout><SearchPage /></AppLayout>} />
 
       {/* Protected routes */}
+      <Route path="/onboarding/building" element={<ProtectedRoute><BuildingHivePage /></ProtectedRoute>} />
       <Route path="/onboarding/welcome-to-the-hive" element={<ProtectedRoute><WelcomeHivePage /></ProtectedRoute>} />
       <Route path="/nectar" element={<ProtectedRoute><AppLayout><ExplorePage /></AppLayout></ProtectedRoute>} />
       <Route path="/nectar/:section" element={<ProtectedRoute><AppLayout><ExploreSeeAllPage /></AppLayout></ProtectedRoute>} />

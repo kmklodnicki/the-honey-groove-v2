@@ -67,7 +67,8 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - **CORS hardening:** Explicit `allow_methods` list (GET/POST/PUT/DELETE/OPTIONS/PATCH/HEAD), `max_age=86400`, dynamic FRONTEND_URL inclusion in origins.
 - **Health endpoint:** `GET /health` and `GET /api/health` for monitoring.
 - **Missing imports fixed:** `datetime`, `timezone`, `hash_password` now imported in server.py (was broken for fresh DB admin seeding).
-- **FRONTEND_URL updated:** Now points to `https://thehoneygroove.com` for correct password reset email links.
+- **FRONTEND_URL updated:** Now points to `https://www.thehoneygroove.com` for correct password reset email links. Both .env and database.py default updated.
+- **Discogs OAuth Onboarding Flow:** Replaced manual Discogs username entry with OAuth button in onboarding. New `BuildingHivePage.js` shows "Building your Hive..." loading state with animated progress during import. Backend callback now detects non-onboarded users and redirects to `/onboarding/building`.
 
 ## Recently Completed (2026-03-12)
 - **P0 Login Fix v2 (Comprehensive):** Removed dangerous `password.strip()`, added username-based login (4-step lookup: exact email → regex email → exact username → regex username), fixed regex injection (re.escape), email normalization on registration, detailed server-side login logging, admin login-diagnostic endpoint, frontend updated to accept "Email or Username". All 15 tests passed.
