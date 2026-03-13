@@ -132,6 +132,9 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - **Track Selector → Native `<select>`:** ComposerBar track selection converted from custom dropdown to native `<select>` with "Select a track..." placeholder. Cleaner, more accessible.
 - **First Name Field:** Added `first_name` to UserResponse/UserUpdate models. Settings page has required "First Name *" field with validation. Onboarding modal has Step 0 "What should we call you? 🐝" (conditional, only if first_name is empty).
 - **Filter Emoji Position:** Emojis moved to AFTER text: "All 🍯", "Now Spinning 🐝", "ISO 🔍", "Haul 📦", "Notes 📝", "For Sale/Trade 🏷️".
+- **Re-pollinate Success Page:** New `/repollinate/success` page with gold confetti animation, restored streak badge, auto-redirect to The Hive after 5 seconds.
+- **Required Comment for Now Spinning:** Comment field required. Helper text: "Tell the hive what you love about this record! 🐝". Post button disabled until comment entered.
+- **Stripe Live Mode:** Confirmed `sk_live_...` keys in production .env.
 
 ## Backlog
 - P1: Harden web scraper (user-agent rotation, exponential backoff) — fragile but functional
