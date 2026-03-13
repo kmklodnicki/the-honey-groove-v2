@@ -6,46 +6,40 @@ A premium social platform for vinyl collectors. React frontend + FastAPI backend
 ## Production URLs
 - **Live site**: thehoneygroove.com
 - **Production API**: wax-collector-app.emergent.host
-- **Production DB**: `groove-social-beta-test_database` (MongoDB Atlas)
+
+## CRITICAL: Active Database
+- **DB_NAME**: `groove-social-beta-test_database` (restored Mar 13 — contains all real user activity)
+- **DO NOT switch back to `the_honey_groove`** — that DB has only admin data; all user collections, posts, and profiles live in the beta DB
+- The merge copied 53 invite tokens, 34 new users, and 2 password syncs from `the_honey_groove` → `groove-social-beta-test_database`
+
+## Current DB Stats
+- 132 users, 1222 records, 78 posts, 29 followers, 32 likes, 56 invite tokens
 
 ## Completed — March 13, 2026
-- **P0 FIXED**: Admin prompts sorted descending (newest first)
-- **P0 FIXED**: Honeypot page bottom padding pb-32 for bottom nav clearance
-- **P0 FIXED**: FRONTEND_URL hard-coded to `https://www.thehoneygroove.com`
-- **P0 FIXED**: Sticky top banner hierarchy — PWA banner (z:101) above nav (z:100) via CSS var
-- **P0 FIXED**: Invite redemption — case-insensitive token lookup, read-only validation, `POST /api/auth/resend-invite`, "Send me a fresh invite link" fallback on BOTH error pages (ClaimInvitePage + JoinPage)
-- **P0 FIXED**: Email CTA updated to "Join Now" for new users
-- **P0 FIXED**: Detailed backend logging for invite token errors (`INVITE TOKEN ERROR [reason]`)
-- **P0 FIXED**: Frontend console.error logging for invite token errors
+- **CRITICAL FIX**: Switched DB_NAME from `the_honey_groove` → `groove-social-beta-test_database` to restore user data (771 records for kalie.kaufman, 14+ active users)
+- **DATA MERGE**: Synced invite tokens, new users, and password hashes from old DB to beta DB
+- **CAMPAIGN LAUNCHED**: 95 emails sent (47 Group A recovery + 48 Group B fresh invite), 0 failures
+- Admin prompts sorted descending
+- Honeypot bottom padding fix (pb-32)
+- FRONTEND_URL hard-coded to thehoneygroove.com
+- PWA banner z-index hierarchy fix
+- Invite redemption hardening (case-insensitive, resend fallback, logging)
+- Onboarding redirect fix for claim-invite flow
+- Email CTA updated to "Join Now"
 
 ## P0 — Next Priority
-1. **Instagram Story Export** — Export Daily Prompt as 1080x1920 PNG
-2. **CRITICAL: User must redeploy production** for all fixes to take effect
+1. **Redeploy production** with DB_NAME = `groove-social-beta-test_database`
+2. Instagram Story Export (1080x1920 PNG)
 
 ## P1 — Upcoming
 - Service Worker Caching (BLOCK 321)
-- Streaming Service Integration (BLOCK 254) — needs Spotify callback URL
+- Streaming Service Integration (BLOCK 254)
 
 ## P2 — Future/Backlog
 - Record Store Day Proxy Network
 - Safari-compatible loading animation
 - "Pro" memberships / "Verified Seller" badge
 - Secret Search Feature
-- Dynamic "New Music Friday" for Weekly Wax email
-
-## Key API Endpoints (Invite Flow)
-- `GET /api/auth/validate-invite?token=` — Read-only, case-insensitive, detailed logging
-- `POST /api/auth/resend-invite` — `{email}` → fresh token + branded email
-- `POST /api/auth/claim-invite` — `{token, password}` → burns token only on success
-
-## Key Files
-- `backend/routes/auth.py` — Auth + invite flow endpoints
-- `frontend/src/pages/ClaimInvitePage.js` — UUID token claim page with error fallback
-- `frontend/src/pages/JoinPage.js` — Short invite code page with error fallback
-- `frontend/src/components/PWAInstallBanner.js` — PWA banner
-- `frontend/src/components/Navbar.js` — Nav with banner coordination
-- `backend/database.py` — FRONTEND_URL hard-coded
-- `backend/scripts/send_invite_campaign.py` — Email campaign templates
 
 ## Credentials
 - Admin: kmklodnicki@gmail.com / HoneyGroove2026!
