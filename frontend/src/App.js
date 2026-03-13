@@ -285,6 +285,7 @@ function AppContent() {
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/confirm-email-change" element={<ConfirmEmailChangePage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/set-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/stripe/connect/return" element={<StripeConnectReturnPage />} />

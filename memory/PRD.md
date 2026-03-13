@@ -23,7 +23,13 @@ A premium social platform for vinyl collectors. React frontend + FastAPI backend
 - Listing (sale/trade) cards
 
 ## Completed — March 2026
-- **P0 FIXED**: PostCards fallback logic — all card components (NowSpinningCard, NewHaulCard, ISOCard, AddedToCollectionCard, VinylMoodCard, default) now handle missing nested objects by falling back to post-level flat fields (cover_url, record_title, record_artist)
+- **P0 FIXED**: PostCards fallback logic — all card components now handle missing nested objects
+- **FIXED**: PWA Smart App Banner — visible on iOS/Android, hidden on desktop/standalone, z-index 9999, safe-area-inset
+- **P0 DONE**: Beta Welcome Email Campaign — 49/49 emails sent via Resend to beta signups who haven't joined
+  - Subject: "You're in! Welcome to the Beta Hive"
+  - CTA: "Set Your Password & Sign In" → thehoneygroove.com/set-password
+  - Added `/set-password` route alias in App.js
+  - Skipped `katie@test.com` (test email), fixed `caroline.dissing@hotmail.con` → `.com`
 - Database migration from `the_honey_groove` to `groove-social-beta-test_database`
 - Seeded 54 posts, 27 follows, 31 likes for 23 real users
 - Fixed broken Discogs CDN image URLs
