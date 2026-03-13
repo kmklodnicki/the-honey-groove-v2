@@ -80,6 +80,7 @@ const VariantReleasePage = lazy(() => import("./pages/VariantReleasePage"));
 const SearchPage = lazy(() => import("./pages/SearchPage"));
 const CheckoutSuccessPage = lazy(() => import("./pages/CheckoutSuccessPage"));
 const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
+const RepollinateSuccessPage = lazy(() => import("./pages/RepollinateSuccessPage"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 
 // Auth guards — loading is ALWAYS false. No gates.
@@ -288,6 +289,7 @@ function AppContent() {
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/stripe/connect/return" element={<StripeConnectReturnPage />} />
       <Route path="/stripe/connect/refresh" element={<StripeConnectRefreshPage />} />
+      <Route path="/repollinate/success" element={<ProtectedRoute><AppLayout><RepollinateSuccessPage /></AppLayout></ProtectedRoute>} />
 
       {/* Public vinyl variant SEO pages — key forces full re-mount on URL change */}
       <Route path="/vinyl/:artist/:album/:variant" element={<AppLayout><VinylVariantPageWrapper /></AppLayout>} />

@@ -618,6 +618,11 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                 className="resize-none"
                 style={{ borderColor: 'rgba(200,134,26,0.5)' }}
                 rows={2} data-testid="spin-caption-input" />
+              {!spinCaption.trim() && (
+                <p className="text-xs italic mt-1" style={{ color: '#C8861A' }} data-testid="spin-caption-helper">
+                  Tell the hive what you love about this record! 🐝
+                </p>
+              )}
 
               {/* Photo upload */}
               <input type="file" accept="image/*" ref={postPhotoInputRef} onChange={handlePhotoSelect} className="hidden" data-testid="spin-photo-input" />
