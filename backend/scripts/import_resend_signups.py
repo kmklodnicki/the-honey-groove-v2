@@ -7,7 +7,7 @@ import io
 from datetime import datetime, timezone
 from motor.motor_asyncio import AsyncIOMotorClient
 
-ATLAS_URI = "mongodb+srv://katie:Swiftie420!@cluster0.abcipnu.mongodb.net/the_honey_groove"
+ATLAS_URI = "os.environ.get("MONGO_URL")"
 
 CSV_DATA = """First Name,Email,Role
 Contact,contact@kathrynklodnicki.com,Member
