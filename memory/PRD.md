@@ -30,6 +30,10 @@ A premium social platform for vinyl collectors. React frontend + FastAPI backend
   - CTA: "Set Your Password & Sign In" → thehoneygroove.com/set-password
   - Added `/set-password` route alias in App.js
   - Skipped `katie@test.com` (test email), fixed `caroline.dissing@hotmail.con` → `.com`
+- **P0 DONE**: "So Sorry" Re-engagement Campaign — 46/46 emails sent to existing real users
+  - Subject: "So sorry! Let's get you back into the groove"
+  - Filtered 37 test/demo accounts from 83 total, sent to 46 real users
+  - CTA: "Reset Your Password & Sign In" → thehoneygroove.com/set-password
 - Database migration from `the_honey_groove` to `groove-social-beta-test_database`
 - Seeded 54 posts, 27 follows, 31 likes for 23 real users
 - Fixed broken Discogs CDN image URLs
