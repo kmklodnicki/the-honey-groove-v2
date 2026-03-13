@@ -7,6 +7,7 @@ const API = process.env.REACT_APP_BACKEND_URL;
 export default function ClaimInvitePage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token') || '';
+  const emailParam = searchParams.get('email') || '';
   const navigate = useNavigate();
   const { setToken, setUser } = useAuth();
 
@@ -14,8 +15,10 @@ export default function ClaimInvitePage() {
   const [isExisting, setIsExisting] = useState(false);
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
-  const [status, setStatus] = useState('validating'); // validating | ready | submitting | success | error
+  const [status, setStatus] = useState('validating');
   const [error, setError] = useState('');
+  const [resendEmail, setResendEmail] = useState(emailParam);
+  const [resendStatus, setResendStatus] = useState('');
 
   useEffect(() => {
     if (!token) { setStatus('error'); setError('No invite token found.'); return; }
@@ -24,6 +27,7 @@ export default function ClaimInvitePage() {
       .then(({ ok, data }) => {
         if (!ok) { setStatus('error'); setError(data.detail || 'Invalid invite link.'); return; }
         setEmail(data.email);
+        setResendEmail(data.email);
         setIsExisting(data.is_existing);
         setStatus('ready');
       })
@@ -45,7 +49,6 @@ export default function ClaimInvitePage() {
       const data = await res.json();
       if (!res.ok) { setError(data.detail || 'Something went wrong.'); setStatus('ready'); return; }
       setStatus('success');
-      // Auto-login
       if (data.access_token) {
         localStorage.setItem('token', data.access_token);
         setToken(data.access_token);
@@ -58,10 +61,32 @@ export default function ClaimInvitePage() {
     }
   };
 
+  const handleResendInvite = async () => {
+    if (!resendEmail || !resendEmail.includes('@')) {
+      setResendStatus('Please enter a valid email address.');
+      return;
+    }
+    setResendStatus('sending');
+    try {
+      const res = await fetch(`${API}/api/auth/resend-invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resendEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setResendStatus(data.detail || 'Failed to send. Please try again.');
+        return;
+      }
+      setResendStatus('sent');
+    } catch {
+      setResendStatus('Network error. Please try again.');
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#FAF6EE' }}>
       <div className="w-full max-w-md">
-        {/* Logo */}
         <div className="text-center mb-8">
           <img src="/logo-wordmark.png" alt="the Honey Groove" className="h-10 mx-auto mb-2" />
         </div>
@@ -76,10 +101,44 @@ export default function ClaimInvitePage() {
           )}
 
           {status === 'error' && !email && (
-            <div className="text-center py-8" data-testid="claim-error">
+            <div className="text-center py-6" data-testid="claim-error">
               <p className="text-lg font-semibold mb-2" style={{ color: '#915527' }}>Invite Not Found</p>
               <p className="text-sm text-gray-500 mb-6">{error}</p>
-              <a href="https://www.thehoneygroove.com" className="inline-block px-6 py-2 rounded-full text-sm font-semibold" style={{ background: '#FDE68A', color: '#915527' }}>
+
+              {/* Resend invite fallback */}
+              <div className="border-t pt-5 mt-2" style={{ borderColor: 'rgba(145,85,39,0.1)' }}>
+                <p className="text-sm font-medium mb-3" style={{ color: '#915527' }}>
+                  No worries — we'll send you a fresh link.
+                </p>
+                <input
+                  type="email"
+                  value={resendEmail}
+                  onChange={e => setResendEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none transition-colors text-sm mb-3"
+                  data-testid="resend-email-input"
+                />
+                {resendStatus === 'sent' ? (
+                  <div className="bg-green-50 rounded-xl px-4 py-3 text-sm text-green-700 font-medium" data-testid="resend-success">
+                    Fresh invite sent! Check your inbox.
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleResendInvite}
+                    disabled={resendStatus === 'sending'}
+                    className="w-full py-3 rounded-full font-bold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                    style={{ background: '#915527', color: '#FDE68A' }}
+                    data-testid="resend-invite-btn"
+                  >
+                    {resendStatus === 'sending' ? 'Sending...' : 'Send me a fresh invite link'}
+                  </button>
+                )}
+                {resendStatus && resendStatus !== 'sending' && resendStatus !== 'sent' && (
+                  <p className="text-sm text-red-500 text-center mt-2" data-testid="resend-error">{resendStatus}</p>
+                )}
+              </div>
+
+              <a href="https://www.thehoneygroove.com" className="inline-block mt-4 text-sm underline" style={{ color: '#915527' }} data-testid="go-home-link">
                 Go to Home
               </a>
             </div>

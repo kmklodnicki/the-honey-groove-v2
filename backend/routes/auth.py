@@ -357,17 +357,98 @@ async def reset_password(data: dict):
 
 # ── Claim-Invite: token-based account claim (bypasses forgot-password) ──────
 
+async def _find_invite_token(token: str):
+    """Case-insensitive token lookup — email clients sometimes alter casing."""
+    doc = await db.invite_tokens.find_one({"token": token}, {"_id": 0})
+    if not doc:
+        doc = await db.invite_tokens.find_one({"token": token.lower()}, {"_id": 0})
+    if not doc:
+        doc = await db.invite_tokens.find_one(
+            {"token": {"$regex": f"^{token}$", "$options": "i"}}, {"_id": 0}
+        )
+    return doc
+
+
 @router.get("/auth/validate-invite")
 async def validate_invite(token: str = Query(...)):
-    """Validate an invite token and return the associated email."""
-    doc = await db.invite_tokens.find_one({"token": token}, {"_id": 0})
+    """Validate an invite token and return the associated email.
+    Read-only — does NOT burn the token. Token is only burned on successful claim."""
+    doc = await _find_invite_token(token)
     if not doc:
         raise HTTPException(status_code=400, detail="Invalid or expired invite link.")
     created = datetime.fromisoformat(doc["created_at"])
     if datetime.now(timezone.utc) - created > timedelta(days=7):
-        await db.invite_tokens.delete_one({"token": token})
-        raise HTTPException(status_code=400, detail="This invite link has expired.")
+        raise HTTPException(status_code=400, detail="This invite link has expired. Request a fresh one below.")
     return {"email": doc["email"], "is_existing": doc.get("is_existing", False)}
+
+
+@router.post("/auth/resend-invite")
+async def resend_invite(data: dict):
+    """Generate a fresh invite token and send a new invite email."""
+    from services.email_service import send_email
+    email = (data.get("email") or "").lower().strip()
+    if not email:
+        raise HTTPException(status_code=400, detail="Email is required")
+
+    # Check if user exists to determine existing vs new
+    user = await db.users.find_one({"email": email}, {"_id": 0, "id": 1, "username": 1})
+    is_existing = user is not None
+
+    # Invalidate any existing tokens for this email
+    await db.invite_tokens.delete_many({"email": email})
+
+    # Generate fresh token with 7-day expiry
+    new_token = str(uuid.uuid4())
+    await db.invite_tokens.insert_one({
+        "token": new_token,
+        "email": email,
+        "is_existing": is_existing,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    })
+
+    claim_url = f"{FRONTEND_URL}/invite/{new_token}"
+    html = f"""\
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/></head>
+<body style="margin:0;padding:0;background-color:#FAF6EE;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:#1A1A1A;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#FAF6EE;">
+<tr><td align="center" style="padding:24px 16px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:580px;background-color:#FFFFFF;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.06);">
+<tr><td align="center" style="background-color:#FDE68A;padding:28px 24px 20px;">
+<img src="https://www.thehoneygroove.com/logo-wordmark.png" alt="the Honey Groove" width="220" style="display:block;height:auto;"/>
+</td></tr>
+<tr><td style="padding:32px 28px 12px;">
+<h1 style="font-size:22px;font-weight:700;color:#915527;margin:0 0 20px;line-height:1.3;">Here's your fresh invite link!</h1>
+<p style="font-size:15px;line-height:1.7;color:#333;margin:0 0 16px;">
+You requested a new invite link for <strong>The Honey Groove</strong>. Click the button below to {'reset your password and sign' if is_existing else 'set your password and join'} in:
+</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+<tr><td align="center" style="padding:8px 0 28px;">
+<a href="{claim_url}" target="_blank"
+   style="display:inline-block;background-color:#915527;color:#FDE68A;font-size:16px;font-weight:700;text-decoration:none;padding:14px 36px;border-radius:999px;letter-spacing:0.3px;">
+{'Reset Password & Sign In' if is_existing else 'Set Password & Join'}
+</a>
+</td></tr>
+</table>
+<p style="font-size:13px;line-height:1.6;color:#888;margin:0 0 16px;">This link expires in 7 days. If you didn't request this, you can safely ignore this email.</p>
+<p style="font-size:15px;line-height:1.7;color:#333;margin:0;">Best,<br/><strong style="color:#915527;">Katie</strong><br/><span style="font-size:13px;color:#888;">Founder, The Honey Groove</span></p>
+</td></tr>
+<tr><td align="center" style="padding:20px 28px 24px;border-top:1px solid #F0E6D6;">
+<p style="font-size:11px;color:#AAAAAA;margin:0;line-height:1.5;">&copy; 2026 The Honey Groove &middot; the vinyl social club, finally.</p>
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>"""
+
+    sent = await send_email(email, "Your fresh invite link for The Honey Groove", html, reply_to="hello@thehoneygroove.com")
+    if not sent:
+        raise HTTPException(status_code=500, detail="Failed to send email. Please try again.")
+
+    logger.info(f"Resent invite to {email} (token: {new_token[:8]}...)")
+    return {"status": "sent", "message": "A fresh invite link has been sent to your email."}
 
 
 @router.post("/auth/claim-invite")
@@ -380,13 +461,12 @@ async def claim_invite(data: dict):
     if len(password) < 6:
         raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
 
-    doc = await db.invite_tokens.find_one({"token": token}, {"_id": 0})
+    doc = await _find_invite_token(token)
     if not doc:
         raise HTTPException(status_code=400, detail="Invalid or expired invite link.")
     created = datetime.fromisoformat(doc["created_at"])
     if datetime.now(timezone.utc) - created > timedelta(days=7):
-        await db.invite_tokens.delete_one({"token": token})
-        raise HTTPException(status_code=400, detail="This invite link has expired.")
+        raise HTTPException(status_code=400, detail="This invite link has expired. Request a fresh one below.")
 
     email = doc["email"].lower().strip()
     user = await db.users.find_one({"email": email}, {"_id": 0})
