@@ -55,6 +55,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const [spinTrackDropdownOpen, setSpinTrackDropdownOpen] = useState(false);
   const [spinTrackSearch, setSpinTrackSearch] = useState('');
   const [spinTracksFetched, setSpinTracksFetched] = useState(false);
+  const [spinTrackManual, setSpinTrackManual] = useState(false);
 
   // New Haul
   const [haulStoreName, setHaulStoreName] = useState('');
@@ -195,6 +196,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     setSpinTracks([]);
     setSpinTrack('');
     setSpinTrackSearch('');
+    setSpinTrackManual(false);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000);
     axios.get(`${API}/discogs/release/${discogsId}`, {
@@ -537,12 +539,40 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                       <span className="w-1 rounded-full animate-pulse" style={{ background: '#C8861A', height: '16px', animationDelay: '400ms', animationDuration: '800ms' }} />
                       <span className="w-1 rounded-full animate-pulse" style={{ background: '#C8861A', height: '10px', animationDelay: '600ms', animationDuration: '800ms' }} />
                     </div>
-                    <span style={{ color: '#8A6B4A' }}>Loading tracklist...</span>
+                    <span style={{ color: '#8A6B4A' }}>Fetching tracks... 🐝</span>
+                  </div>
+                ) : spinTrackManual ? (
+                  <div className="space-y-1.5">
+                    <Input
+                      placeholder="Type the track name..."
+                      value={spinTrack}
+                      onChange={e => setSpinTrack(e.target.value)}
+                      style={{ border: '1px solid rgba(200,134,26,0.5)', background: '#FFFDF5' }}
+                      autoFocus
+                      data-testid="spin-track-manual-input"
+                    />
+                    {spinTracks.length > 0 && (
+                      <button
+                        onClick={() => { setSpinTrackManual(false); setSpinTrack(''); }}
+                        className="text-xs underline transition-colors"
+                        style={{ color: '#C8861A' }}
+                        data-testid="spin-track-back-to-list"
+                      >
+                        Back to tracklist
+                      </button>
+                    )}
                   </div>
                 ) : spinTracks.length > 0 ? (
                   <select
                     value={spinTrack}
-                    onChange={e => setSpinTrack(e.target.value)}
+                    onChange={e => {
+                      if (e.target.value === '__manual__') {
+                        setSpinTrackManual(true);
+                        setSpinTrack('');
+                      } else {
+                        setSpinTrack(e.target.value);
+                      }
+                    }}
                     className="w-full rounded-md text-sm px-3 py-2 appearance-none cursor-pointer"
                     style={{
                       border: '1px solid rgba(200,134,26,0.5)',
@@ -562,15 +592,16 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                         <option key={idx} value={label}>{label}{t.duration ? ` (${t.duration})` : ''}</option>
                       );
                     })}
+                    <option value="__manual__">-- Manual Input --</option>
                   </select>
                 ) : (
                   <div className="flex items-center gap-1.5">
                     <Input
-                      placeholder={spinTracksFetched ? 'Tracklist unavailable\u2014type a track name manually (optional)' : 'Track (optional)'}
+                      placeholder={spinTracksFetched ? 'No tracklist found — type a track name' : 'Track (optional)'}
                       value={spinTrack}
                       onChange={e => setSpinTrack(e.target.value)}
                       style={{ border: '1px solid rgba(200,134,26,0.5)', background: '#FFFDF5' }}
-                      data-testid="spin-track-input" />
+                      data-testid="spin-track-manual-input" />
                     {spinTracksFetched && spinSelectedRecord?.discogs_id && (
                       <button
                         onClick={() => fetchTracklist(spinSelectedRecord.discogs_id)}
