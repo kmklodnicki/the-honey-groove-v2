@@ -11,7 +11,7 @@ import requests
 import os
 import uuid
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://honeypot-hotfix.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://lost-data-fix.preview.emergentagent.com')
 
 @pytest.fixture(scope='module')
 def auth_token():

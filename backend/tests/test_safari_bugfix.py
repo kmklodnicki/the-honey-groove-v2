@@ -67,7 +67,7 @@ class TestSafariBugFix:
         response = requests.options(
             f"{BASE_URL}/api/auth/me",
             headers={
-                "Origin": "https://honeypot-hotfix.preview.emergentagent.com",
+                "Origin": "https://lost-data-fix.preview.emergentagent.com",
                 "Access-Control-Request-Method": "GET"
             }
         )
