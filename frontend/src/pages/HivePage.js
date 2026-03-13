@@ -51,16 +51,19 @@ import { useVariantModal } from '../context/VariantModalContext';
 // Infinite scroll sentinel — fires loadMore when scrolled into view
 const InfiniteScrollSentinel = ({ onIntersect, loading }) => {
   const sentinelRef = useRef(null);
+  const callbackRef = useRef(onIntersect);
+  callbackRef.current = onIntersect;
+
   useEffect(() => {
     const el = sentinelRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting && !loading) onIntersect(); },
-      { rootMargin: '200px' }
+      ([entry]) => { if (entry.isIntersecting && !loading) callbackRef.current(); },
+      { rootMargin: '400px' }
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [onIntersect, loading]);
+  }, [loading]);
   return (
     <div ref={sentinelRef} className="flex justify-center py-6" data-testid="infinite-scroll-sentinel">
       {loading && <Loader2 className="w-5 h-5 animate-spin text-[#C8861A]" />}
@@ -499,7 +502,7 @@ const HivePage = () => {
     }
   }, [API, token, targetPostId]);
 
-  const loadMore = async () => {
+  const loadMore = useCallback(async () => {
     if (loadingMore || !hasMore) return;
     setLoadingMore(true);
     try {
@@ -520,7 +523,7 @@ const HivePage = () => {
     } finally {
       setLoadingMore(false);
     }
-  };
+  }, [loadingMore, hasMore, posts, API, token, FEED_LIMIT]);
 
   const fetchRecords = useCallback(async () => {
     try {
