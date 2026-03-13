@@ -90,12 +90,20 @@ const SettingsPage = () => {
   };
 
   const handleSave = async () => {
-    if (!username.trim()) {
-      toast.error('username is required.');
+    if (!firstName.trim()) {
+      toast.error('First name is required.');
       return;
     }
-    if (!firstName.trim()) {
-      toast.error('first name is required.');
+    if (!username.trim()) {
+      toast.error('Username is required.');
+      return;
+    }
+    if (!bio.trim()) {
+      toast.error('Bio is required.');
+      return;
+    }
+    if (!country) {
+      toast.error('Country is required.');
       return;
     }
     setSaving(true);
@@ -103,7 +111,7 @@ const SettingsPage = () => {
       const payload = {
         username: username !== user.username ? username : undefined,
         first_name: firstName.trim(),
-        bio: bio || '',
+        bio: bio.trim(),
         setup: setup || '',
         location: country === 'US' && stateUS ? `${stateUS}, USA` : (country || ''),
         country: country || undefined,
@@ -348,12 +356,12 @@ const SettingsPage = () => {
               className="border-honey/50"
               data-testid="settings-first-name"
             />
-            <p className="text-xs text-muted-foreground">Private. Used for communications.</p>
+            <p className="text-xs text-muted-foreground">Private. Used only for community emails.</p>
           </div>
 
           {/* Username */}
           <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="username">Username <span className="text-red-500">*</span></Label>
             <Input
               id="username"
               value={username}
@@ -416,7 +424,7 @@ const SettingsPage = () => {
 
           {/* Bio */}
           <div className="space-y-2">
-            <Label htmlFor="bio">Bio</Label>
+            <Label htmlFor="bio">Bio <span className="text-red-500">*</span></Label>
             <Textarea
               id="bio"
               placeholder="tell the hive who you are."
@@ -445,7 +453,7 @@ const SettingsPage = () => {
 
           {/* Country */}
           <div className="space-y-2">
-            <Label htmlFor="country" className="text-sm font-heading tracking-wide">Country</Label>
+            <Label htmlFor="country" className="text-sm font-heading tracking-wide">Country <span className="text-red-500">*</span></Label>
             <select
               id="country"
               value={country}

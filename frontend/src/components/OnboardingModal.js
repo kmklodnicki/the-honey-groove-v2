@@ -352,7 +352,7 @@ const OnboardingModal = ({ open, onComplete }) => {
                 {/* Quick picks from Step 1 */}
                 {addedRecords.length > 0 && !spinSearch && (
                   <div data-testid="onboarding-quick-picks">
-                    <p className="text-xs text-muted-foreground mb-2">quick pick from your collection</p>
+                    <p className="text-xs text-muted-foreground mb-2">quick pick from your vault</p>
                     <div className="flex gap-2 overflow-x-auto pb-1">
                       {addedRecords.slice(0, 8).map((r, i) => (
                         <button key={i} onClick={() => pickSpinRecord(r)} className="shrink-0 group" data-testid={`onboarding-quick-pick-${i}`}>
@@ -429,17 +429,15 @@ const OnboardingModal = ({ open, onComplete }) => {
 
             <Button
               onClick={postAndEnter}
-              disabled={submitting}
-              className="w-full rounded-full bg-amber-500 hover:bg-amber-600 text-white"
+              disabled={submitting || !onboardCountry}
+              className="w-full rounded-full bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-40"
               data-testid="onboarding-post-btn"
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               {spinRecord ? 'post and enter the hive' : 'enter the hive'}
             </Button>
 
-            <button onClick={skipAndEnter} className="w-full text-center text-xs text-muted-foreground hover:text-amber-600 transition-colors" data-testid="onboarding-skip-country">
-              skip for now
-            </button>
+            <p className="text-xs text-center text-muted-foreground">Country is required to continue.</p>
           </div>
         )}
       </DialogContent>
