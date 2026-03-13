@@ -1,7 +1,4 @@
 import React from 'react';
-import axios from 'axios';
-
-import { API } from '../utils/apiBase';
 const VINYL_IMG = 'https://static.prod-images.emergentagent.com/jobs/bcb688fd-4e52-4359-88b5-27a51977a715/images/a0ef91b80488fa7a1fc8c5fe5b0c56afe8c6b230aede87ec22f9efd8cd7ad7cc.png';
 
 /* Inject keyframes once */
@@ -109,7 +106,7 @@ function ShieldUI({ onRetry }) {
 class VinylShield extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, apiDown: false, checking: true };
+    this.state = { hasError: false };
   }
 
   static getDerivedStateFromError() {
@@ -119,21 +116,6 @@ class VinylShield extends React.Component {
   componentDidCatch(error, info) {
     console.error('[VinylShield] React error caught:', error, info);
   }
-
-  componentDidMount() {
-    this.checkHealth();
-  }
-
-  checkHealth = async () => {
-    try {
-      const res = await axios.get(`${API}/health`, { timeout: 8000 });
-      if (res.status >= 500) throw new Error('Server error');
-      this.setState({ apiDown: false, checking: false });
-    } catch (err) {
-      console.warn('[VinylShield] Health check failed:', err.message);
-      this.setState({ apiDown: true, checking: false });
-    }
-  };
 
   handleRetry = () => {
     try {
@@ -146,12 +128,11 @@ class VinylShield extends React.Component {
         }
       });
     } catch (_) {}
-    window.location.reload();
+    window.location.href = '/login';
   };
 
   render() {
     if (this.state.hasError) return <ShieldUI onRetry={this.handleRetry} />;
-    if (this.state.apiDown && !this.state.checking) return <ShieldUI onRetry={this.handleRetry} />;
     return this.props.children;
   }
 }
