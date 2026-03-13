@@ -69,6 +69,8 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - **Missing imports fixed:** `datetime`, `timezone`, `hash_password` now imported in server.py (was broken for fresh DB admin seeding).
 - **FRONTEND_URL updated:** Now points to `https://www.thehoneygroove.com` for correct password reset email links. Both .env and database.py default updated.
 - **Discogs OAuth Onboarding Flow:** Replaced manual Discogs username entry with OAuth button in onboarding. New `BuildingHivePage.js` shows "Building your Hive..." loading state with animated progress during import. Backend callback now detects non-onboarded users and redirects to `/onboarding/building`.
+- **Tag/Category Refactor:** Updated MOOD_CONFIG, FEED_FILTERS, and MOOD_EMOJI/COLOR maps to the new 8-tag system: New Arrival, Deep Listening, High Fidelity, Solo Session, Cleaning Session, Spin Party, Limited Edition, Vibe Check. Stored in DB `platform_settings.global_tags`. Backward compatibility preserved for legacy moods.
+- **DB Verification:** Confirmed `DB_NAME=the_honey_groove` has 132 users, 91 posts, 181 records, 30 spins. Stripe keys confirmed live (`sk_live_`/`pk_live_`).
 
 ## Recently Completed (2026-03-12)
 - **P0 Login Fix v2 (Comprehensive):** Removed dangerous `password.strip()`, added username-based login (4-step lookup: exact email → regex email → exact username → regex username), fixed regex injection (re.escape), email normalization on registration, detailed server-side login logging, admin login-diagnostic endpoint, frontend updated to accept "Email or Username". All 15 tests passed.

@@ -18,18 +18,14 @@ import AlbumArt from './AlbumArt';
 import RecordSearchResult from './RecordSearchResult';
 
 const MOOD_CONFIG = {
-  'Late Night': { emoji: '\u{1F56F}\uFE0F', bg: '#1a1230', btnColor: '#6a3a9a', placeholder: 'what are you listening to at this hour?' },
-  'Good Morning': { emoji: '\u2600\uFE0F', bg: '#fff8e8', btnColor: '#e8a820', placeholder: 'slow mornings, good records, nowhere to be...' },
-  'Rainy Day': { emoji: '\u{1F327}\uFE0F', bg: '#1a2a3a', btnColor: '#4a7aaa', placeholder: 'set the scene...' },
-  'Road Trip': { emoji: '\u{1F697}', bg: '#1a2a1a', btnColor: '#4a8a4a', placeholder: 'where are you headed?' },
-  'Golden Hour': { emoji: '\u{1F305}', bg: '#2a1a08', btnColor: '#c8861a', placeholder: 'the light is perfect right now...' },
-  'Deep Focus': { emoji: '\u{1F3A7}', bg: '#0a1a0a', btnColor: '#2a6a2a', placeholder: 'what are you working on?' },
-  'Party Mode': { emoji: '\u{1F942}', bg: '#1a0a2a', btnColor: '#aa3a8a', placeholder: "who's coming over?" },
-  'Lazy Afternoon': { emoji: '\u{1F6CB}\uFE0F', bg: '#2a1a0a', btnColor: '#aa7a3a', placeholder: 'not moving from this spot...' },
-  'Melancholy': { emoji: '\u{1F494}', bg: '#1a1a2a', btnColor: '#5a5a8a', placeholder: 'some records just hit different...' },
-  'Upbeat Vibes': { emoji: '\u2728', bg: '#1a2a1a', btnColor: '#3a9a5a', placeholder: "what's got you feeling good?" },
-  'Cozy Evening': { emoji: '\u{1F9F8}', bg: '#2a1808', btnColor: '#aa5a2a', placeholder: 'candles lit, record spinning...' },
-  'Workout': { emoji: '\u{1F525}', bg: '#2a0a0a', btnColor: '#cc3a2a', placeholder: "what's keeping you going?" },
+  'New Arrival': { emoji: '\u{1F4E6}', bg: '#1a1a08', btnColor: '#c8861a', placeholder: 'what just came in the mail?' },
+  'Deep Listening': { emoji: '\u{1F9D8}', bg: '#0a1a2a', btnColor: '#4a7aaa', placeholder: 'what are you really hearing right now?' },
+  'High Fidelity': { emoji: '\u{1F50A}', bg: '#1a0a0a', btnColor: '#cc3a2a', placeholder: 'audiophile moment...' },
+  'Solo Session': { emoji: '\u{1F56F}\uFE0F', bg: '#1a1230', btnColor: '#6a3a9a', placeholder: 'just you and the record...' },
+  'Cleaning Session': { emoji: '\u{1F9FC}', bg: '#0a2a1a', btnColor: '#3a9a5a', placeholder: 'fresh grooves only...' },
+  'Spin Party': { emoji: '\u{1F379}', bg: '#1a0a2a', btnColor: '#aa3a8a', placeholder: "who's pulling up?" },
+  'Limited Edition': { emoji: '\u{1F48E}', bg: '#0a0a2a', btnColor: '#5a5aaa', placeholder: 'how rare is this one?' },
+  'Vibe Check': { emoji: '\u2728', bg: '#2a1a08', btnColor: '#aa7a3a', placeholder: "what's the vibe?" },
 };
 const MOOD_KEYS = Object.keys(MOOD_CONFIG);
 

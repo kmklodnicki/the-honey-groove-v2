@@ -447,6 +447,14 @@ const HivePage = () => {
     { key: 'listing', label: 'Sale/Trade' },
     { key: 'NOTE', label: 'Note' },
     { key: 'NEW_FEATURE', label: 'New Feature' },
+    { key: 'tag:New Arrival', label: '\u{1F4E6} New Arrival' },
+    { key: 'tag:Deep Listening', label: '\u{1F9D8} Deep Listening' },
+    { key: 'tag:High Fidelity', label: '\u{1F50A} High Fidelity' },
+    { key: 'tag:Solo Session', label: '\u{1F56F}\uFE0F Solo Session' },
+    { key: 'tag:Cleaning Session', label: '\u{1F9FC} Cleaning Session' },
+    { key: 'tag:Spin Party', label: '\u{1F379} Spin Party' },
+    { key: 'tag:Limited Edition', label: '\u{1F48E} Limited Edition' },
+    { key: 'tag:Vibe Check', label: '\u2728 Vibe Check' },
   ];
 
   const headers = { Authorization: `Bearer ${token}` };
@@ -578,6 +586,11 @@ const HivePage = () => {
     if (activeFilter === 'listing') return result.filter(p => p.post_type === 'listing_sale' || p.post_type === 'listing_trade');
     if (activeFilter === 'NEW_FEATURE') return result.filter(p => p.is_new_feature);
     if (activeFilter === 'NOW_SPINNING') return result.filter(p => p.post_type === 'NOW_SPINNING' || p.post_type === 'RANDOMIZER');
+    // Tag-based filters (mood field)
+    if (activeFilter.startsWith('tag:')) {
+      const tagName = activeFilter.slice(4);
+      return result.filter(p => p.mood === tagName);
+    }
     return result.filter(p => p.post_type === activeFilter);
   }, [posts, feedMode, activeFilter, followingIds, user?.id, promptFilter]);
 
