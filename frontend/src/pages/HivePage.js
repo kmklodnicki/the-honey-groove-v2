@@ -465,8 +465,7 @@ const HivePage = () => {
     { key: 'ISO', label: '\u{1F50D} ISO' },
     { key: 'NEW_HAUL', label: '\u{1F4E6} Haul' },
     { key: 'NOTE', label: '\u{1F4DD} Notes' },
-    { key: 'listing_sale', label: '\u{1F3F7}\uFE0F For Sale' },
-    { key: 'listing_trade', label: '\u{1F91D} For Trade' },
+    { key: 'listing', label: '\u{1F3F7}\uFE0F For Sale/Trade' },
   ];
 
   const headers = { Authorization: `Bearer ${token}` };
@@ -597,8 +596,7 @@ const HivePage = () => {
     if (activeFilter === 'all') return result;
     // Now Spinning includes Randomizer posts
     if (activeFilter === 'NOW_SPINNING') return result.filter(p => p.post_type === 'NOW_SPINNING' || p.post_type === 'RANDOMIZER');
-    if (activeFilter === 'listing_sale') return result.filter(p => p.post_type === 'listing_sale');
-    if (activeFilter === 'listing_trade') return result.filter(p => p.post_type === 'listing_trade');
+    if (activeFilter === 'listing') return result.filter(p => p.post_type === 'listing_sale' || p.post_type === 'listing_trade');
     return result.filter(p => p.post_type === activeFilter);
   }, [posts, feedMode, activeFilter, followingIds, user?.id, promptFilter]);
 
@@ -790,7 +788,7 @@ const HivePage = () => {
       <DailyPromptCard records={records} onPostCreated={handlePostCreated} />
 
       {/* 6 Action Filters — 3 per row on mobile, centered flex on desktop */}
-      <div className="grid grid-cols-3 sm:flex sm:flex-wrap sm:justify-center items-center justify-items-center gap-1.5 sm:gap-2 mb-4 w-full mx-auto px-2" style={{ maxWidth: '520px' }} data-testid="feed-filter-bar">
+      <div className="flex flex-wrap justify-center items-center gap-1.5 sm:gap-2 mb-4 w-full mx-auto px-2" style={{ maxWidth: '520px' }} data-testid="feed-filter-bar">
         {FEED_FILTERS.map(f => {
           const isActive = activeFilter === f.key;
           return (

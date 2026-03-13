@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Disc, Package, Search, Moon, Plus, Music, Feather, ShoppingBag, ArrowRightLeft, Shuffle, Gem, MessageCircle, BookOpen, Sparkles } from 'lucide-react';
+import { Disc, Package, Search, Moon, Plus, Music, Feather, ShoppingBag, ArrowRightLeft, Shuffle, Gem, MessageCircle, BookOpen, Sparkles, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 import AlbumArt from './AlbumArt';
 import { resolveImageUrl } from '../utils/imageUrl';
 import PhotoLightbox from './PhotoLightbox';
@@ -315,6 +317,88 @@ const LiveEqualizer = () => (
   </div>
 );
 
+// Collapsible tracklist viewer for Now Spinning posts
+const TracklistViewer = ({ discogsId, currentTrack }) => {
+  const { token, API } = useAuth();
+  const [open, setOpen] = useState(false);
+  const [tracks, setTracks] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [fetched, setFetched] = useState(false);
+
+  const handleToggle = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!fetched && !loading) {
+      setLoading(true);
+      axios.get(`${API}/discogs/release/${discogsId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then(resp => {
+        const raw = resp.data;
+        const trackArray = raw.tracklist || raw.tracks || [];
+        const normalized = trackArray
+          .filter(t => t && (t.title || t.name))
+          .map(t => ({
+            position: t.position || '',
+            title: t.title || t.name || '',
+            duration: t.duration || '',
+          }));
+        setTracks(normalized);
+        setFetched(true);
+        setOpen(true);
+      }).catch(() => {
+        setFetched(true);
+      }).finally(() => setLoading(false));
+    } else {
+      setOpen(!open);
+    }
+  };
+
+  if (!discogsId) return null;
+
+  return (
+    <div className="mt-2" data-testid="tracklist-viewer" onClick={e => e.stopPropagation()}>
+      <button
+        onClick={handleToggle}
+        className="flex items-center gap-1.5 text-xs font-medium transition-colors hover:text-amber-700"
+        style={{ color: '#C8861A' }}
+        data-testid="tracklist-toggle"
+      >
+        <Music className="w-3 h-3" />
+        {loading ? 'Loading...' : open ? 'Hide Tracklist' : 'View Tracklist'}
+        {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : open ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+      </button>
+      {open && tracks.length > 0 && (
+        <div className="mt-1.5 rounded-lg overflow-hidden border" style={{ borderColor: 'rgba(200,134,26,0.2)', background: 'rgba(255,248,230,0.5)' }} data-testid="tracklist-list">
+          {tracks.map((t, i) => {
+            const isPlaying = currentTrack && t.title.toLowerCase() === currentTrack.toLowerCase();
+            return (
+              <div
+                key={i}
+                className={`flex items-center gap-2 px-3 py-1.5 text-xs ${i > 0 ? 'border-t' : ''}`}
+                style={{
+                  borderColor: 'rgba(200,134,26,0.1)',
+                  background: isPlaying ? 'rgba(255,184,0,0.15)' : 'transparent',
+                  fontWeight: isPlaying ? 600 : 400,
+                }}
+                data-testid={`tracklist-item-${i}`}
+              >
+                <span className="w-6 text-right shrink-0" style={{ color: isPlaying ? '#C8861A' : '#999' }}>
+                  {isPlaying ? <Disc className="w-3 h-3 inline animate-spin" style={{ animationDuration: '3s' }} /> : t.position}
+                </span>
+                <span className="flex-1 truncate" style={{ color: isPlaying ? '#92702A' : '#555' }}>{t.title}</span>
+                {t.duration && <span className="shrink-0 tabular-nums" style={{ color: '#999' }}>{t.duration}</span>}
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {open && fetched && tracks.length === 0 && (
+        <p className="text-xs mt-1" style={{ color: '#999' }}>No tracklist available.</p>
+      )}
+    </div>
+  );
+};
+
 // NOW_SPINNING card body
 const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
   const record = post.record;
@@ -361,6 +445,7 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
                   {record.is_unofficial && <UnofficialPill variant="inline" />}
                 </div>
                 {post.track && <p className="text-xs text-honey-amber mt-1">Track: {post.track}</p>}
+                <TracklistViewer discogsId={record.discogs_id} currentTrack={post.track} />
                 {post.caption && <p className="text-sm mt-2"><MentionText text={post.caption} /></p>}
               </div>
             </div>
