@@ -51,7 +51,7 @@ for r in [auth_router, hive_router, collection_router, honeypot_router,
 cors_origins = [
     "https://thehoneygroove.com",
     "https://www.thehoneygroove.com",
-    "https://honey-groove-vinyl.preview.emergentagent.com",
+    "https://honey-deploy.preview.emergentagent.com",
     "http://localhost:3000",
 ]
 # Also include FRONTEND_URL if it's a real URL and not already listed
