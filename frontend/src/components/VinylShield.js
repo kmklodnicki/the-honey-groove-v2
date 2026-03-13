@@ -2,66 +2,103 @@ import React from 'react';
 import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const VINYL_IMG = 'https://static.prod-images.emergentagent.com/jobs/bcb688fd-4e52-4359-88b5-27a51977a715/images/a0ef91b80488fa7a1fc8c5fe5b0c56afe8c6b230aede87ec22f9efd8cd7ad7cc.png';
 
-/**
- * VinylShield — Global Error Boundary + API health-check gate.
- * Shows a friendly "needle hit dust" screen when:
- *   - React component tree throws (classic Error Boundary)
- *   - /api/health or /api/auth/me returns 500 / timeout / ECONNREFUSED
- * Stays hidden when the app is working normally.
- */
-
-const SHIELD_STYLE = {
-  wrapper: {
-    position: 'fixed', inset: 0, zIndex: 9999,
-    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-    background: 'linear-gradient(135deg, #FFF8E7 0%, #FFE8A3 50%, #F5C542 100%)',
-    fontFamily: "'DM Sans', 'Inter', system-ui, sans-serif",
-    padding: '24px', textAlign: 'center',
-  },
-  vinyl: {
-    width: 120, height: 120, borderRadius: '50%',
-    background: 'radial-gradient(circle at 50% 50%, #222 30%, #111 31%, #111 48%, #333 49%, #333 50%, #111 51%, #111 100%)',
-    boxShadow: '0 0 0 4px #C8861A, 0 8px 32px rgba(0,0,0,0.25)',
-    animation: 'vinyl-spin 2s linear infinite',
-  },
-  heading: {
-    fontSize: 22, fontWeight: 700, color: '#5C3D10', marginTop: 28, marginBottom: 8,
-    lineHeight: 1.3, maxWidth: 400,
-  },
-  body: {
-    fontSize: 15, color: '#7A5A20', maxWidth: 360, lineHeight: 1.6, marginBottom: 28,
-  },
-  btn: {
-    background: '#C8861A', color: '#fff', border: 'none', borderRadius: 999,
-    padding: '12px 32px', fontSize: 15, fontWeight: 600, cursor: 'pointer',
-    boxShadow: '0 2px 12px rgba(200,134,26,0.35)',
-    transition: 'transform 0.15s, box-shadow 0.15s',
-  },
-};
-
-/* Inject the spin keyframes once */
-if (typeof document !== 'undefined' && !document.getElementById('vinyl-spin-kf')) {
-  const style = document.createElement('style');
-  style.id = 'vinyl-spin-kf';
-  style.textContent = `@keyframes vinyl-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`;
-  document.head.appendChild(style);
+/* Inject keyframes once */
+if (typeof document !== 'undefined' && !document.getElementById('vinyl-shield-kf')) {
+  const s = document.createElement('style');
+  s.id = 'vinyl-shield-kf';
+  s.textContent = `
+    @keyframes vs-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes vs-bob { 0%,100% { transform: rotate(-28deg) translateY(0); } 50% { transform: rotate(-28deg) translateY(2px); } }
+    @keyframes vs-fadein { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+  `;
+  document.head.appendChild(s);
 }
 
 function ShieldUI({ onRetry }) {
   return (
-    <div style={SHIELD_STYLE.wrapper} data-testid="vinyl-shield">
-      <div style={SHIELD_STYLE.vinyl} data-testid="vinyl-shield-spinner" />
-      <h1 style={SHIELD_STYLE.heading}>Don't skip a beat!</h1>
-      <p style={SHIELD_STYLE.body}>
+    <div style={{
+      position:'fixed',inset:0,zIndex:9999,
+      display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',
+      background:'linear-gradient(160deg,#FFF8E7 0%,#FFEDB5 40%,#F5C542 100%)',
+      fontFamily:"'DM Sans','Inter',system-ui,sans-serif",
+      padding:24,textAlign:'center',overflow:'hidden',
+    }} data-testid="vinyl-shield">
+
+      {/* Turntable area */}
+      <div style={{position:'relative',width:220,height:220,marginBottom:8,animation:'vs-fadein .6s ease-out'}}>
+        {/* Vinyl record */}
+        <img
+          src={VINYL_IMG}
+          alt="Vinyl maintenance"
+          data-testid="vinyl-shield-spinner"
+          style={{
+            width:220,height:220,borderRadius:'50%',
+            animation:'vs-spin 3s linear infinite',
+            filter:'drop-shadow(0 8px 24px rgba(0,0,0,0.3))',
+          }}
+        />
+        {/* Tonearm */}
+        <div style={{
+          position:'absolute',top:-18,right:-30,width:80,height:130,
+          transformOrigin:'12px 12px',
+          animation:'vs-bob 2s ease-in-out infinite',
+        }}>
+          {/* Arm pivot */}
+          <div style={{
+            position:'absolute',top:0,left:0,width:24,height:24,borderRadius:'50%',
+            background:'radial-gradient(circle at 40% 40%,#ddd,#888)',
+            border:'2px solid #999',boxShadow:'0 2px 6px rgba(0,0,0,.25)',
+          }} />
+          {/* Arm shaft */}
+          <div style={{
+            position:'absolute',top:12,left:10,width:4,height:100,
+            background:'linear-gradient(90deg,#bbb,#eee,#bbb)',
+            borderRadius:2,transformOrigin:'top center',transform:'rotate(28deg)',
+            boxShadow:'1px 1px 4px rgba(0,0,0,.15)',
+          }} />
+          {/* Cartridge / headshell */}
+          <div style={{
+            position:'absolute',top:104,left:48,width:14,height:20,
+            background:'linear-gradient(180deg,#666,#333)',borderRadius:'2px 2px 1px 1px',
+            transform:'rotate(28deg)',boxShadow:'0 2px 4px rgba(0,0,0,.2)',
+          }}>
+            <div style={{
+              position:'absolute',bottom:-3,left:5,width:3,height:6,
+              background:'#C8861A',borderRadius:'0 0 1px 1px',
+            }} />
+          </div>
+        </div>
+      </div>
+
+      {/* Copy */}
+      <h1 style={{
+        fontSize:24,fontWeight:700,color:'#5C3D10',marginTop:24,marginBottom:6,
+        lineHeight:1.3,maxWidth:380,animation:'vs-fadein .6s ease-out .15s both',
+      }}>
+        Don't skip a beat!
+      </h1>
+      <p style={{
+        fontSize:15,color:'#7A5A20',maxWidth:340,lineHeight:1.65,marginBottom:28,
+        animation:'vs-fadein .6s ease-out .3s both',
+      }}>
         Our needle hit a little dust. We're auto-cleaning the grooves right now — try refreshing in a moment!
       </p>
+
+      {/* Retry button */}
       <button
-        style={SHIELD_STYLE.btn}
         data-testid="vinyl-shield-retry"
         onClick={onRetry}
-        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.04)'; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; }}
+        style={{
+          background:'#C8861A',color:'#fff',border:'none',borderRadius:999,
+          padding:'13px 36px',fontSize:15,fontWeight:600,cursor:'pointer',
+          boxShadow:'0 4px 16px rgba(200,134,26,0.4)',
+          transition:'transform .15s,box-shadow .15s',
+          animation:'vs-fadein .6s ease-out .45s both',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(200,134,26,0.5)'; }}
+        onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(200,134,26,0.4)'; }}
       >
         Try Again
       </button>
@@ -99,34 +136,22 @@ class VinylShield extends React.Component {
   };
 
   handleRetry = () => {
-    // Clear local storage cache that could be stale
     try {
       localStorage.removeItem('honeygroove_token');
       localStorage.removeItem('swr-cache');
-      // Clear any stale session cookies
       document.cookie.split(';').forEach(c => {
         const name = c.split('=')[0].trim();
         if (name.startsWith('honeygroove') || name.startsWith('next-auth')) {
           document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
         }
       });
-    } catch (_) { /* storage access can throw in some browsers */ }
+    } catch (_) {}
     window.location.reload();
   };
 
   render() {
-    // React crash → show shield
-    if (this.state.hasError) {
-      return <ShieldUI onRetry={this.handleRetry} />;
-    }
-    // API health check failed → show shield
-    if (this.state.apiDown && !this.state.checking) {
-      return <ShieldUI onRetry={this.handleRetry} />;
-    }
-    // Still checking → show nothing (children will show their own loading states)
-    if (this.state.checking) {
-      return this.props.children;
-    }
+    if (this.state.hasError) return <ShieldUI onRetry={this.handleRetry} />;
+    if (this.state.apiDown && !this.state.checking) return <ShieldUI onRetry={this.handleRetry} />;
     return this.props.children;
   }
 }
