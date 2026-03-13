@@ -423,23 +423,23 @@ async def resend_invite(data: dict):
 <img src="https://www.thehoneygroove.com/logo-wordmark.png" alt="the Honey Groove" width="220" style="display:block;height:auto;"/>
 </td></tr>
 <tr><td style="padding:32px 28px 12px;">
-<h1 style="font-size:22px;font-weight:700;color:#915527;margin:0 0 20px;line-height:1.3;">Here's your fresh invite link!</h1>
+<h1 style="font-size:22px;font-weight:700;color:#915527;margin:0 0 20px;line-height:1.3;">Your fresh invite is here!</h1>
 <p style="font-size:15px;line-height:1.7;color:#333;margin:0 0 16px;">
-You requested a new invite link for <strong>The Honey Groove</strong>. Click the button below to {'reset your password and sign in' if is_existing else 'join the hive'}:
+Looks like the first invite got a little sticky! No worries&mdash;we've generated a fresh link just for you. Click the button below to set your password and claim your spot in the Hive. We've got a record waiting for you!
 </p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
 <tr><td align="center" style="padding:8px 0 28px;">
 <a href="{claim_url}" target="_blank"
    style="display:inline-block;background-color:#915527;color:#FDE68A;font-size:16px;font-weight:700;text-decoration:none;padding:14px 36px;border-radius:999px;letter-spacing:0.3px;">
-{'Reset Password & Sign In' if is_existing else 'Join Now'}
+Join Now
 </a>
 </td></tr>
 </table>
 <p style="font-size:13px;line-height:1.6;color:#888;margin:0 0 16px;">This link expires in 7 days. If you didn't request this, you can safely ignore this email.</p>
-<p style="font-size:15px;line-height:1.7;color:#333;margin:0;">Best,<br/><strong style="color:#915527;">Katie</strong><br/><span style="font-size:13px;color:#888;">Founder, The Honey Groove</span></p>
+<p style="font-size:15px;line-height:1.7;color:#333;margin:0;">Best,<br/><strong style="color:#915527;">Katie</strong><br/><span style="font-size:13px;color:#888;">Founder, The Honey Groove&trade;</span></p>
 </td></tr>
 <tr><td align="center" style="padding:20px 28px 24px;border-top:1px solid #F0E6D6;">
-<p style="font-size:11px;color:#AAAAAA;margin:0;line-height:1.5;">&copy; 2026 The Honey Groove &middot; the vinyl social club, finally.</p>
+<p style="font-size:11px;color:#AAAAAA;margin:0;line-height:1.5;">&copy; 2026 The Honey Groove&trade; &middot; the vinyl social club, finally.</p>
 </td></tr>
 </table>
 </td></tr>
@@ -447,7 +447,7 @@ You requested a new invite link for <strong>The Honey Groove</strong>. Click the
 </body>
 </html>"""
 
-    sent = await send_email(email, "Your fresh invite link for The Honey Groove", html, reply_to="hello@thehoneygroove.com")
+    sent = await send_email(email, "Your fresh invite is here! \U0001f36f", html, reply_to="hello@thehoneygroove.com")
     if not sent:
         raise HTTPException(status_code=500, detail="Failed to send email. Please try again.")
 
