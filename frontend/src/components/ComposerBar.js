@@ -694,12 +694,15 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
 
       {/* ═══ New Haul Modal ═══ */}
       <Dialog open={activeModal === 'NEW_HAUL'} onOpenChange={(open) => !open && closeModal()}>
-        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="font-heading flex items-center gap-2"><Package className="w-5 h-5 text-amber-600" /> New Haul</DialogTitle>
-            <DialogDescription>Share your latest finds</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 pt-2">
+        <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col overflow-hidden p-0">
+          <div className="px-6 pt-6 pb-2 shrink-0">
+            <DialogHeader>
+              <DialogTitle className="font-heading flex items-center gap-2"><Package className="w-5 h-5 text-amber-600" /> New Haul</DialogTitle>
+              <DialogDescription>Share your latest finds</DialogDescription>
+            </DialogHeader>
+          </div>
+          <div className="flex-1 overflow-y-auto px-6 min-h-0">
+          <div className="space-y-4 pt-2 pb-4">
             <Input placeholder="Where'd you find them? (store, thrift, eBay...)" value={haulStoreName} onChange={e => setHaulStoreName(e.target.value)} className="border-honey/50" data-testid="haul-store-input" />
             <div>
               <label className="text-sm font-medium mb-1 block">Records found</label>
@@ -769,17 +772,21 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               Post Haul ({haulItems.length} record{haulItems.length !== 1 ? 's' : ''})
             </Button>
           </div>
+          </div>
         </DialogContent>
       </Dialog>
 
       {/* ═══ ISO Modal ═══ */}
       <Dialog open={activeModal === 'ISO'} onOpenChange={(open) => !open && closeModal()}>
-        <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="font-heading flex items-center gap-2"><Search className="w-5 h-5 text-blue-600" /> In Search Of</DialogTitle>
-            <DialogDescription>Let the community know what you're looking for</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 pt-2">
+        <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col overflow-hidden p-0">
+          <div className="px-6 pt-6 pb-2 shrink-0">
+            <DialogHeader>
+              <DialogTitle className="font-heading flex items-center gap-2"><Search className="w-5 h-5 text-blue-600" /> In Search Of</DialogTitle>
+              <DialogDescription>Let the community know what you're looking for</DialogDescription>
+            </DialogHeader>
+          </div>
+          <div className="flex-1 overflow-y-auto px-6 min-h-0">
+          <div className="space-y-4 pt-2 pb-4">
             {/* Step 1: Intent Selection */}
             {!isoIntent ? (
               <div className="space-y-3" data-testid="iso-intent-selection">
@@ -896,16 +903,20 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                 )}
               </>
             )}
-          </div> 
+          </div>
+          </div>
     </DialogContent> {/* <--- Add this */}
   </Dialog>
 
       {/* ═══ A Note Modal ═══ */}
       <Dialog open={activeModal === 'NOTE'} onOpenChange={(open) => !open && closeModal()}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="sr-only">A Note</DialogTitle>
-          </DialogHeader>
+        <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col overflow-hidden p-0">
+          <div className="px-6 pt-6 pb-2 shrink-0">
+            <DialogHeader>
+              <DialogTitle className="sr-only">A Note</DialogTitle>
+            </DialogHeader>
+          </div>
+          <div className="flex-1 overflow-y-auto px-6 pb-6 min-h-0">
           <div className="space-y-3">
             <MentionTextarea
               placeholder="Thinking about..."
@@ -1001,18 +1012,22 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               post to the hive
             </Button>
           </div>
+          </div>
         </DialogContent>
       </Dialog>
 
       {/* ═══ Randomizer Modal ═══ */}
       <Dialog open={activeModal === 'RANDOMIZER'} onOpenChange={(open) => !open && closeModal()}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="font-heading flex items-center gap-2 text-amber-700">
-              <Shuffle className="w-5 h-5" /> Randomizer
-            </DialogTitle>
-            <DialogDescription>What record should you spin today?</DialogDescription>
-          </DialogHeader>
+        <DialogContent className="sm:max-w-sm max-h-[90vh] flex flex-col overflow-hidden p-0">
+          <div className="px-6 pt-6 pb-2 shrink-0">
+            <DialogHeader>
+              <DialogTitle className="font-heading flex items-center gap-2 text-amber-700">
+                <Shuffle className="w-5 h-5" /> Randomizer
+              </DialogTitle>
+              <DialogDescription>What record should you spin today?</DialogDescription>
+            </DialogHeader>
+          </div>
+          <div className="flex-1 overflow-y-auto px-6 pb-6 min-h-0">
           <div className="space-y-4 pt-2">
             {/* Record display */}
             {randAnimating ? (
@@ -1076,6 +1091,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                 </div>
               </>
             )}
+          </div>
           </div>
         </DialogContent>
       </Dialog>
