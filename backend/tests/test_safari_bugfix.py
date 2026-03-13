@@ -67,7 +67,7 @@ class TestSafariBugFix:
         response = requests.options(
             f"{BASE_URL}/api/auth/me",
             headers={
-                "Origin": "https://daily-prompt-share.preview.emergentagent.com",
+                "Origin": "https://wax-restored.preview.emergentagent.com",
                 "Access-Control-Request-Method": "GET"
             }
         )

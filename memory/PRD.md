@@ -62,6 +62,13 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 ## Blocked
 - Spotify/Apple Music integration — waiting for callback URL
 
+## Recently Completed (2026-03-13)
+- **Critical Production CORS/Preflight Fix:** Added global OPTIONS middleware that intercepts all preflight requests and returns 200 with correct CORS headers (origin-specific, credentials=true, max-age=86400). This sits outside CORSMiddleware as a safety net for production proxy chains.
+- **CORS hardening:** Explicit `allow_methods` list (GET/POST/PUT/DELETE/OPTIONS/PATCH/HEAD), `max_age=86400`, dynamic FRONTEND_URL inclusion in origins.
+- **Health endpoint:** `GET /health` and `GET /api/health` for monitoring.
+- **Missing imports fixed:** `datetime`, `timezone`, `hash_password` now imported in server.py (was broken for fresh DB admin seeding).
+- **FRONTEND_URL updated:** Now points to `https://thehoneygroove.com` for correct password reset email links.
+
 ## Recently Completed (2026-03-12)
 - **P0 Login Fix v2 (Comprehensive):** Removed dangerous `password.strip()`, added username-based login (4-step lookup: exact email → regex email → exact username → regex username), fixed regex injection (re.escape), email normalization on registration, detailed server-side login logging, admin login-diagnostic endpoint, frontend updated to accept "Email or Username". All 15 tests passed.
 - **PhotoLightbox TypeError Fix:** Fixed `src.indexOf is not a function` crash in `resolveImageUrl` by adding type-safety guards (handles objects, null, non-strings). Fixed PostCards.js passing `{url: "..."}` objects instead of string URLs to PhotoLightbox.

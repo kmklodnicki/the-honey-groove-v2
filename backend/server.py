@@ -1,12 +1,13 @@
 """HoneyGroove API — main app entry point."""
 import asyncio
-from fastapi import FastAPI
+from datetime import datetime, timezone
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 import socketio
 import os
 import logging
 
-from database import db, client, init_storage, logger
+from database import db, client, init_storage, logger, hash_password
 from live_hive import sio
 
 from routes.auth import router as auth_router
@@ -50,9 +51,13 @@ for r in [auth_router, hive_router, collection_router, honeypot_router,
 cors_origins = [
     "https://thehoneygroove.com",
     "https://www.thehoneygroove.com",
-    "https://daily-prompt-share.preview.emergentagent.com",
+    "https://wax-restored.preview.emergentagent.com",
     "http://localhost:3000",
 ]
+# Also include FRONTEND_URL if it's a real URL and not already listed
+_frontend = os.environ.get("FRONTEND_URL", "")
+if _frontend and _frontend.startswith("http") and _frontend.rstrip("/") not in cors_origins:
+    cors_origins.append(_frontend.rstrip("/"))
 cors_env = os.environ.get("CORS_ORIGINS", "")
 if cors_env and cors_env != "*":
     cors_origins += [o.strip().rstrip("/") for o in cors_env.split(",") if o.strip()]
@@ -61,10 +66,39 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"],
     allow_headers=["*"],
     expose_headers=["*"],
+    max_age=86400,
 )
+
+
+# ── Global OPTIONS preflight handler ──
+# Intercepts ALL OPTIONS requests and returns 200 immediately with CORS headers.
+# This sits OUTSIDE CORSMiddleware so it fires first, even behind reverse proxies.
+@app.middleware("http")
+async def handle_preflight(request: Request, call_next):
+    if request.method == "OPTIONS":
+        origin = request.headers.get("origin", "")
+        resp = Response(status_code=200)
+        if origin in cors_origins:
+            resp.headers["Access-Control-Allow-Origin"] = origin
+        else:
+            resp.headers["Access-Control-Allow-Origin"] = cors_origins[0]
+        resp.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD"
+        resp.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With, Accept, Origin"
+        resp.headers["Access-Control-Allow-Credentials"] = "true"
+        resp.headers["Access-Control-Max-Age"] = "86400"
+        return resp
+    response = await call_next(request)
+    return response
+
+
+# ── Health check ──
+@app.get("/health")
+@app.get("/api/health")
+async def health_check():
+    return {"status": "ok", "service": "honeygroove-api"}
 
 
 async def _backfill_color_variants():
