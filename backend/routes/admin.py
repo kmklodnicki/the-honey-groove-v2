@@ -856,3 +856,18 @@ async def placeholder_sweep(user: Dict = Depends(require_admin)):
         "failed": failed,
         "fixed_records": fixed_records[:30],
     }
+
+
+@router.get("/admin/db-stats")
+async def admin_db_stats(user: dict = Depends(require_auth)):
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin only")
+    collections = ["users", "posts", "records", "spins", "prompts", "prompt_responses",
+                    "followers", "likes", "comments", "notifications", "iso_items",
+                    "listings", "beta_signups", "invite_codes", "newsletter_subscribers"]
+    stats = {}
+    for coll in collections:
+        stats[coll] = await db[coll].count_documents({})
+    stats["_db_name"] = db.name
+    return stats
+
