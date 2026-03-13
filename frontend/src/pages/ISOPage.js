@@ -594,7 +594,7 @@ const ISOPage = () => {
       ) : selectedRelease ? (
         <div className="flex items-center gap-3 bg-honey/10 rounded-lg p-3">
           <AlbumArt src={selectedRelease.cover_url} alt={`${selectedRelease.artist} ${selectedRelease.title} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow" isUnofficial={isUnofficial} />
-          <div className="flex-1 min-w-0"><p className="font-heading text-base">{selectedRelease.title}</p><p className="text-sm text-muted-foreground">{selectedRelease.artist} {selectedRelease.year ? `(${selectedRelease.year})` : ''}</p></div>
+          <div className="flex-1 min-w-0"><p className="font-heading text-base truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{selectedRelease.title}</p><p className="text-sm text-muted-foreground truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{selectedRelease.artist} {selectedRelease.year ? `(${selectedRelease.year})` : ''}</p></div>
           <button onClick={() => { setSelectedRelease(null); setManualMode(false); }} className="text-xs text-muted-foreground hover:text-red-500">Change</button>
         </div>
       ) : null}

@@ -48,12 +48,12 @@ export const ISOCard = ({ iso, isOwn, onMarkFound, onDelete, onSetPriceAlert, on
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h4 className="font-heading text-base">{iso.album}</h4>
+            <h4 className="font-heading text-base truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{iso.album}</h4>
             <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${iso.status === 'FOUND' ? 'bg-amber-100 text-[#C8861A]' : ''}`}
               style={iso.status === 'OPEN' ? { background: 'rgba(255,215,0,0.15)', color: '#C8861A', border: '1.5px solid #DAA520' } : {}}
             >{iso.status === 'OPEN' ? 'SEEKING' : iso.status}</span>
           </div>
-          <p className="text-sm text-muted-foreground">{iso.artist}{iso.year ? ` (${iso.year})` : ''}</p>
+          <p className="text-sm text-muted-foreground truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{iso.artist}{iso.year ? ` (${iso.year})` : ''}</p>
           <div className="flex flex-wrap gap-1.5 mt-1">
             {(iso.tags || []).map(tag => <TagPill key={tag} tag={tag} />)}
           </div>
@@ -112,7 +112,7 @@ export const CommunityISOCard = ({ iso, onHaveThis }) => (
       <AlbumArt src={iso.cover_url} alt={`${iso.artist} ${iso.album} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow" isUnofficial={iso.is_unofficial} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <h4 className="font-heading text-base">{iso.album}</h4>
+          <h4 className="font-heading text-base truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{iso.album}</h4>
           <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-[#E8A820]/15 text-[#C8861A] border border-[#C8861A]/30">SEARCHING</span>
         </div>
         <p className="text-sm text-muted-foreground">{iso.artist}{iso.year ? ` (${iso.year})` : ''}</p>
@@ -146,14 +146,14 @@ export const ActiveTradeCard = ({ trade, currentUserId }) => {
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <AlbumArt src={trade.offered_record?.cover_url} alt={`${trade.offered_record?.artist || ''} ${trade.offered_record?.title || 'Record'} vinyl record`} className="w-10 h-10 rounded object-cover" isUnofficial={trade.offered_record?.is_unofficial} />
             <div className="min-w-0">
-              <p className="text-sm font-medium truncate">{trade.offered_record?.title || 'Your record'}</p>
-              <p className="text-xs text-muted-foreground">with @{otherUser?.username || '?'}</p>
+              <p className="text-sm font-medium truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{trade.offered_record?.title || 'Your record'}</p>
+              <p className="text-xs text-muted-foreground truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>with @{otherUser?.username || '?'}</p>
             </div>
           </div>
           <ArrowRightLeft className="w-4 h-4 text-honey shrink-0" />
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <div className="w-10 h-10 rounded bg-honey/20 flex items-center justify-center"><Disc className="w-4 h-4 text-honey" /></div>
-            <p className="text-sm font-medium truncate">{trade.listing_record?.album || 'Their record'}</p>
+            <p className="text-sm font-medium truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{trade.listing_record?.album || 'Their record'}</p>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             {trade.hold_enabled && (
@@ -189,8 +189,8 @@ export const ListingCard = ({ listing, currentUserId, onProposeTrade, onBuyNow, 
           : <div className="w-full h-full flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-heading text-sm font-bold truncate leading-tight">{listing.album}</p>
-        <p className="text-xs text-muted-foreground truncate">{listing.artist}{listing.year ? ` (${listing.year})` : ''}</p>
+        <p className="font-heading text-sm font-bold truncate leading-tight" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{listing.album}</p>
+        <p className="text-xs text-muted-foreground truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{listing.artist}{listing.year ? ` (${listing.year})` : ''}</p>
         <div className="flex items-center gap-1.5 mt-1 flex-wrap">
           {listing.condition && <GradeLabel condition={listing.condition} variant="compact" />}
           <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${tc.color}`}>{tc.label}</span>

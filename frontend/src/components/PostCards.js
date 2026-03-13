@@ -591,8 +591,8 @@ const ISOCard = ({ post, onAlbumClick }) => {
           </div>
           <div className="flex-1 min-w-0">
             <div className="min-w-0 pr-24">
-              <p className="font-heading text-lg truncate">{isoData.album}</p>
-              <p className="text-sm text-muted-foreground truncate">{isoData.artist}</p>
+              <p className="font-heading text-lg truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{isoData.album}</p>
+              <p className="text-sm text-muted-foreground truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{isoData.artist}</p>
             </div>
             {isoData.pressing_notes && <p className="text-xs mt-1 text-[#8A6B4A]">Pressing: {isoData.pressing_notes}</p>}
             {isoData.condition_pref && <p className="text-xs text-[#8A6B4A]">Condition: {isoData.condition_pref}</p>}
