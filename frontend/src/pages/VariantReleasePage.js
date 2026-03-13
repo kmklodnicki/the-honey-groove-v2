@@ -58,11 +58,24 @@ export default function VariantReleasePage() {
     return (
       <div className="max-w-4xl mx-auto px-4 pt-3 md:pt-2 pb-28 text-center">
         <Disc className="w-12 h-12 text-honey/40 mx-auto mb-4" />
-        <h1 className="text-xl font-heading mb-2">Variant Not Found</h1>
+        <h1 className="text-xl font-heading mb-2" data-testid="variant-not-found">Variant Not Found</h1>
         <p className="text-muted-foreground text-sm mb-6">
-          We couldn't find data for this pressing. It may not be catalogued on Discogs yet.
+          {data?.error || "We couldn't load data for this pressing. It may be a temporary issue with Discogs."}
         </p>
-        <button onClick={() => navigate(-1)} className="text-sm text-honey-amber hover:underline">Go Back</button>
+        <div className="flex gap-3 justify-center">
+          <button onClick={() => {
+            setLoading(true);
+            setData(null);
+            const headers = token ? { Authorization: `Bearer ${token}` } : {};
+            axios.get(`${API}/vinyl/release/${releaseId}`, { headers })
+              .then(r => setData(r.data))
+              .catch(() => setData(null))
+              .finally(() => setLoading(false));
+          }} className="text-sm text-white bg-honey-amber hover:bg-honey-amber/80 px-4 py-2 rounded-full transition-colors" data-testid="variant-retry-btn">
+            <RefreshCw className="w-3.5 h-3.5 inline mr-1.5" />Try Again
+          </button>
+          <button onClick={() => navigate(-1)} className="text-sm text-honey-amber hover:underline px-4 py-2" data-testid="variant-go-back">Go Back</button>
+        </div>
       </div>
     );
   }

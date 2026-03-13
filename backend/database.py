@@ -257,9 +257,21 @@ def get_discogs_release(release_id: int) -> Optional[Dict]:
     params = {}
     if DISCOGS_TOKEN:
         params["token"] = DISCOGS_TOKEN
-    try:
-        resp = requests.get(f"{DISCOGS_API_BASE}/releases/{release_id}", params=params, headers=headers, timeout=10)
-        if resp.status_code == 200:
+    max_retries = 2
+    for attempt in range(max_retries + 1):
+        try:
+            resp = requests.get(f"{DISCOGS_API_BASE}/releases/{release_id}", params=params, headers=headers, timeout=10)
+            if resp.status_code == 429:
+                wait = int(resp.headers.get("Retry-After", 2))
+                logger.warning(f"Discogs rate limit hit for {release_id}, retry {attempt+1}/{max_retries} after {wait}s")
+                if attempt < max_retries:
+                    import time
+                    time.sleep(wait)
+                    continue
+                return None
+            if resp.status_code != 200:
+                logger.warning(f"Discogs release {release_id}: HTTP {resp.status_code}")
+                return None
             data = resp.json()
             artists = ", ".join([a.get("name", "") for a in data.get("artists", [])])
             # Extract label + catno from first label entry
@@ -326,8 +338,8 @@ def get_discogs_release(release_id: int) -> Optional[Dict]:
                 "community_want": community.get("want", 0),
                 "num_for_sale": data.get("num_for_sale", 0),
             }
-    except Exception as e:
-        logger.error(f"Discogs release error: {e}")
+        except Exception as e:
+            logger.error(f"Discogs release error (attempt {attempt+1}): {e}")
     return None
 
 

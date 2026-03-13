@@ -408,7 +408,24 @@ async def get_variant_by_release_id(release_id: int, force_refresh: bool = False
         await db.discogs_releases.delete_one({"discogs_id": release_id})
     discogs_data = await _get_cached_discogs_release(release_id)
     if not discogs_data:
-        return {"error": "Release not found on Discogs", "release_id": release_id}
+        # Try to build a minimal response from internal records instead of giving up
+        internal_rec = await db.records.find_one(
+            {"discogs_id": release_id},
+            {"_id": 0}
+        )
+        if internal_rec:
+            discogs_data = {
+                "artist": internal_rec.get("artist", "Unknown"),
+                "title": internal_rec.get("title", "Unknown"),
+                "color_variant": internal_rec.get("color_variant", "Standard"),
+                "year": internal_rec.get("year"),
+                "cover_url": internal_rec.get("cover_url"),
+                "community_have": 0,
+                "community_want": 0,
+                "num_for_sale": 0,
+            }
+        else:
+            return {"error": "Release not found on Discogs", "release_id": release_id}
 
     market_raw = get_discogs_market_data(release_id)
     discogs_market = market_raw if market_raw else {}
