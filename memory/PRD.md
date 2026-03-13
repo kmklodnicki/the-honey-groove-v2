@@ -127,7 +127,11 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - **Weekly Wax Auto-Subscribe:** All 132 users retroactively subscribed. New users auto-subscribe on registration.
 - **Pull-to-Refresh:** Honey-colored spinner on HivePage and EssentialsPage.
 - **Global Empty State:** "No posts yet." / "No [filter] posts yet."
-- **Backend:** Added `last_spin_date` to UserResponse model and API. Added `/api/repollinate/checkout` and `/api/repollinate/success` endpoints.
+- **Streak Logic Refined (Prompt-Based):** Streaks now calculated from `daily_prompt_answers` only. Added `_check_missed_yesterday()` to backend and `missed_yesterday` field to `/api/prompts/today` response. Re-pollinate button on Daily Prompt card now uses this flag.
+- **3/12 Streak Protection:** Backend backfill script ran successfully — all users with prompt history got a protected response for March 12, 2026.
+- **Track Selector → Native `<select>`:** ComposerBar track selection converted from custom dropdown to native `<select>` with "Select a track..." placeholder. Cleaner, more accessible.
+- **First Name Field:** Added `first_name` to UserResponse/UserUpdate models. Settings page has required "First Name *" field with validation. Onboarding modal has Step 0 "What should we call you? 🐝" (conditional, only if first_name is empty).
+- **Filter Emoji Position:** Emojis moved to AFTER text: "All 🍯", "Now Spinning 🐝", "ISO 🔍", "Haul 📦", "Notes 📝", "For Sale/Trade 🏷️".
 
 ## Backlog
 - P1: Harden web scraper (user-agent rotation, exponential backoff) — fragile but functional
