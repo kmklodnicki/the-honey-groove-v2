@@ -69,8 +69,10 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - **Missing imports fixed:** `datetime`, `timezone`, `hash_password` now imported in server.py (was broken for fresh DB admin seeding).
 - **FRONTEND_URL updated:** Now points to `https://www.thehoneygroove.com` for correct password reset email links. Both .env and database.py default updated.
 - **Discogs OAuth Onboarding Flow:** Replaced manual Discogs username entry with OAuth button in onboarding. New `BuildingHivePage.js` shows "Building your Hive..." loading state with animated progress during import. Backend callback now detects non-onboarded users and redirects to `/onboarding/building`.
-- **Tag/Category Refactor:** Updated MOOD_CONFIG, FEED_FILTERS, and MOOD_EMOJI/COLOR maps to the new 8-tag system: New Arrival, Deep Listening, High Fidelity, Solo Session, Cleaning Session, Spin Party, Limited Edition, Vibe Check. Stored in DB `platform_settings.global_tags`. Backward compatibility preserved for legacy moods.
-- **DB Verification:** Confirmed `DB_NAME=the_honey_groove` has 132 users, 91 posts, 181 records, 30 spins. Stripe keys confirmed live (`sk_live_`/`pk_live_`).
+- **Tag/Category Refactor:** Updated to final 10-tag system: New Arrival, Deep Listening, High Fidelity, Solo Session, Cleaning Session, Spin Party, Limited Edition, Vibe Check, Late Night, Background Wax. Stored in DB. Old post-type filters (Now Spinning, Haul, ISO, etc.) removed from feed filter bar — only custom tags remain. Backward compat preserved for legacy moods on existing posts.
+- **Honeypot Background Sync:** Updated ISOPage glass header to match Collection page styling exactly (`rgba(252,248,232,0.5)`, `blur(12px)`, `saturate(180%)`, matching gradient overlay).
+- **Album Tracklist Dropdown:** Already fully implemented in ComposerBar.js — auto-fetches from `/api/discogs/release/{id}`, searchable dropdown, loading spinner, manual entry fallback.
+- **Mobile Filter Optimization:** Tighter padding/font for mobile (`11px`), wraps naturally into 2-3 rows on small screens.
 
 ## Recently Completed (2026-03-12)
 - **P0 Login Fix v2 (Comprehensive):** Removed dangerous `password.strip()`, added username-based login (4-step lookup: exact email → regex email → exact username → regex username), fixed regex injection (re.escape), email normalization on registration, detailed server-side login logging, admin login-diagnostic endpoint, frontend updated to accept "Email or Username". All 15 tests passed.

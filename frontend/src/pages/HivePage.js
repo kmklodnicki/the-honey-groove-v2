@@ -441,12 +441,6 @@ const HivePage = () => {
 
   const FEED_FILTERS = [
     { key: 'all', label: 'All' },
-    { key: 'NOW_SPINNING', label: 'Now Spinning' },
-    { key: 'NEW_HAUL', label: 'Haul' },
-    { key: 'ISO', label: 'ISO' },
-    { key: 'listing', label: 'Sale/Trade' },
-    { key: 'NOTE', label: 'Note' },
-    { key: 'NEW_FEATURE', label: 'New Feature' },
     { key: 'tag:New Arrival', label: '\u{1F4E6} New Arrival' },
     { key: 'tag:Deep Listening', label: '\u{1F9D8} Deep Listening' },
     { key: 'tag:High Fidelity', label: '\u{1F50A} High Fidelity' },
@@ -455,6 +449,8 @@ const HivePage = () => {
     { key: 'tag:Spin Party', label: '\u{1F379} Spin Party' },
     { key: 'tag:Limited Edition', label: '\u{1F48E} Limited Edition' },
     { key: 'tag:Vibe Check', label: '\u2728 Vibe Check' },
+    { key: 'tag:Late Night', label: '\u{1F319} Late Night' },
+    { key: 'tag:Background Wax', label: '\u2615 Background Wax' },
   ];
 
   const headers = { Authorization: `Bearer ${token}` };
@@ -781,22 +777,22 @@ const HivePage = () => {
       {/* Daily Prompt */}
       <DailyPromptCard records={records} onPostCreated={handlePostCreated} />
 
-      {/* Content Filter Bar — centered cloud */}
-      <div className="flex flex-wrap justify-center items-center gap-2.5 mb-4 w-full mx-auto" style={{ maxWidth: '600px' }} data-testid="feed-filter-bar">
+      {/* Content Filter Bar — mobile: 2 rows of 5+1 */}
+      <div className="flex flex-wrap justify-center items-center gap-1.5 sm:gap-2.5 mb-4 w-full mx-auto px-1" style={{ maxWidth: '640px' }} data-testid="feed-filter-bar">
         {FEED_FILTERS.map(f => {
           const isActive = activeFilter === f.key;
           return (
             <button
               key={f.key}
               onClick={() => setActiveFilter(f.key)}
-              className={`shrink-0 rounded-full text-xs font-medium transition-all border whitespace-nowrap ${
+              className={`shrink-0 rounded-full text-[11px] sm:text-xs font-medium transition-all border whitespace-nowrap ${
                 isActive
                   ? 'text-black shadow-sm font-semibold'
                   : 'bg-transparent hover:bg-amber-50'
               }`}
               style={{
-                padding: '5px 10px',
-                fontSize: '12px',
+                padding: '4px 8px',
+                fontSize: window.innerWidth < 640 ? '11px' : '12px',
                 ...(isActive
                   ? { background: '#FFB800', borderColor: '#FFB800', color: '#000' }
                   : { borderColor: 'rgba(200,134,26,0.3)', color: 'rgba(120,80,20,0.7)' }),

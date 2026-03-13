@@ -26,6 +26,8 @@ const MOOD_CONFIG = {
   'Spin Party': { emoji: '\u{1F379}', bg: '#1a0a2a', btnColor: '#aa3a8a', placeholder: "who's pulling up?" },
   'Limited Edition': { emoji: '\u{1F48E}', bg: '#0a0a2a', btnColor: '#5a5aaa', placeholder: 'how rare is this one?' },
   'Vibe Check': { emoji: '\u2728', bg: '#2a1a08', btnColor: '#aa7a3a', placeholder: "what's the vibe?" },
+  'Late Night': { emoji: '\u{1F319}', bg: '#0a0a1a', btnColor: '#4a4a8a', placeholder: 'what are you listening to at this hour?' },
+  'Background Wax': { emoji: '\u2615', bg: '#1a1208', btnColor: '#8a6a3a', placeholder: "what's on in the background?" },
 };
 const MOOD_KEYS = Object.keys(MOOD_CONFIG);
 

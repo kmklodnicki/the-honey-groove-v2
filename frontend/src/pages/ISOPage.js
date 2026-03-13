@@ -629,19 +629,20 @@ const ISOPage = () => {
         onClose={() => setShowEssentialsUpsell(false)}
         onProceed={() => { setShowEssentialsUpsell(false); proceedToCheckout(); }}
       />
-      {/* Sticky Glass Vault Header with Search */}
+      {/* Sticky Glass Vault Header with Search — synced with Collection style */}
       <div
         className="sticky top-0 z-[1000] rounded-2xl overflow-hidden mb-6"
         style={{
-          background: 'rgba(255, 255, 255, 0.01)',
-          backdropFilter: 'blur(60px) saturate(210%)',
-          WebkitBackdropFilter: 'blur(60px) saturate(210%)',
-          border: '1px solid rgba(255, 255, 255, 0.12)',
+          background: 'rgba(252, 248, 232, 0.5)',
+          backdropFilter: 'blur(12px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(12px) saturate(180%)',
+          border: '1px solid rgba(255, 255, 255, 0.6)',
+          boxShadow: '0 8px 32px rgba(200,134,26,0.06), 0 1px 2px rgba(0,0,0,0.03)',
         }}
         data-testid="honeypot-glass-header"
       >
-        {/* Ambient Hive Glow */}
-        <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(90deg, #FFD700 0%, #FF8C00 50%, #8B4513 100%)', filter: 'blur(80px)', opacity: 0.35 }} aria-hidden="true" />
+        {/* Ambient Hive Glow — synced with Collection */}
+        <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(135deg, rgba(255,215,0,0.08) 0%, rgba(218,165,32,0.06) 50%, rgba(200,134,26,0.04) 100%)' }} aria-hidden="true" />
 
         <div className="relative p-4 sm:p-5">
           <div className="flex items-center justify-between mb-3">
