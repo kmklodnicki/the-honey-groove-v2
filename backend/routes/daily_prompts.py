@@ -814,7 +814,7 @@ async def schedule_streak_nudges():
 async def admin_get_all_prompts(user: Dict = Depends(require_auth)):
     if not user.get("is_admin"):
         raise HTTPException(status_code=403, detail="Admin only")
-    prompts = await db.prompts.find({}, {"_id": 0}).sort("scheduled_date", 1).to_list(1000)
+    prompts = await db.prompts.find({}, {"_id": 0}).sort("scheduled_date", -1).to_list(1000)
     # Add response count for each prompt
     for p in prompts:
         p["response_count"] = await db.prompt_responses.count_documents({"prompt_id": p["id"]})

@@ -51,7 +51,8 @@ STRIPE_API_KEY = os.environ.get("STRIPE_API_KEY")
 STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 PLATFORM_FEE_PERCENT = 6.0  # Default, overridden by platform_settings collection
-FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://www.thehoneygroove.com")
+# Hard-coded to production domain to prevent broken email links from env misconfiguration
+FRONTEND_URL = "https://www.thehoneygroove.com"
 
 # Auth
 security = HTTPBearer(auto_error=False)

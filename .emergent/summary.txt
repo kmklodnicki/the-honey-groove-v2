@@ -1,58 +1,73 @@
 <analysis>**original_problem_statement:**
-The user is iteratively refining The HoneyGroove, a premium social platform for vinyl collectors. The project's main goal was to fix a critical production issue where the live application () was unable to connect to the database, resulting in an empty feed. After a lengthy and complex debugging process, the data connection was restored by migrating data to the correct database. However, this revealed subsequent issues with data integrity, missing content, and broken images, which the agent has been systematically fixing to get the production site into a stable, usable state for a re-launch email campaign.
+The user is iteratively stabilizing The HoneyGroove, a premium social platform for vinyl collectors, after a series of production outages. The initial goal was to fix database connectivity and data integrity issues. After restoring the site's data and appearance, the focus shifted to re-engaging users via two large email campaigns (Welcome Beta and So Sorry). Executing these campaigns revealed a cascade of critical bugs related to the user authentication flow, broken email links, and Progressive Web App (PWA) functionality. The session became a marathon of hot-fixing these production issues to create a stable and usable experience for new and returning users.
 
 **PRODUCT REQUIREMENTS (current and ongoing):**
-1.  **Production Stability (P0):** Ensure the live application is stable, all data is present, and all core features (feed, posts, daily prompts) are visually and functionally correct.
-2.  **So Sorry Email Campaign (P0):** After the site is stable, launch an email campaign to re-engage the 97 dormant users.
-3.  **Feature Parity:** The production site must reflect all previously completed features, including the Essential Six filters, The Vault rebranding, and the Re-pollinate Stripe feature.
-4.  **Upcoming Feature (P0):** Implement an Instagram Story Export for the Daily Prompt.
+1.  **Production Stability (P0):** Resolve all critical UI/UX bugs to ensure the live application is stable, visually correct, and functionally sound. This includes fixing auth flows, PWA behavior, and UI layout issues.
+2.  **User Onboarding (P0):** Ensure the new user claim invite flow and existing user password reset flow are seamless and direct users to the correct pages on the production domain.
+3.  **Instagram Story Export (P0):** Implement a feature to export the Daily Prompt as a 1080x1920 PNG image. (Not Started)
+4.  **Complete Service Worker Caching (P1):** Pre-cache key assets for a faster initial load. (Not Started)
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack React/FastAPI/MongoDB application. The production environment is live, but has been plagued by a series of data and environment issues. The agent has successfully diagnosed and fixed several critical problems:
-1.  **Database Connection:** Identified that the production backend was pointing to an empty database and migrated all user data from the correct source into the production database.
-2.  **Data Seeding:** To make the site feel active, the agent seeded realistic posts, follows, and likes for key users identified from the user's Resend email logs, as the original activity data was lost in previous environment switches. Test accounts and posts were cleaned up.
-3.  **Image Integrity:** Fixed broken album art across the feed by replacing expired/invalid Discogs CDN URLs with fresh, valid ones.
-4.  **Feature Restoration:** Ensured the Daily Prompts feature is active and populated with historical and current data.
+A full-stack React/FastAPI/MongoDB application. The production environment is live but has been undergoing a series of critical bug fixes. The application's core data has been restored, and major features have been made functional.
 
-The application is now mostly functional, but a final critical visual bug prevents it from being considered stable.
+Key work completed in this session:
+- **Resilient Post Rendering:** Fixed a critical bug where album art was missing by refactoring  to handle different API data structures.
+- **PWA Enhancements:** Implemented a new Smart App Banner, fixed session persistence to prevent profile flashing, added a pull-to-refresh mechanism for standalone mode, and resolved UI overlap issues.
+- **Unique Invite System:** Built a complete token-based invite flow () as a more robust alternative to the standard password reset for new users. This includes new backend endpoints and a dedicated frontend page.
+- **Email Campaigns:** Successfully executed two major email campaigns using Resend to re-engage over 90 users. This involved extensive debugging of email HTML, link behavior, and programmatically disabling Resend's click-tracking feature to ensure URL integrity.
+- **Auth Flow Hardening:** Enriched JWT tokens with user data to improve frontend hydration and thoroughly tested the custom password reset flow.
 
 **Last working item**:
-    - Last item agent was working: Fixing a critical bug where seeded posts (for users other than the admin) were not displaying album art, particularly on mobile. The agent correctly diagnosed that this was not a CSS issue but a data-logic flaw in the frontend. The React components in  (, , etc.) were written to expect a full  object and would fail to render the image (or render nothing at all) when this object was , which was the case for all the newly seeded posts. The agent began refactoring the  to be more resilient by adding fallback logic to use  if  is missing.
+    - Last item agent was working: Investigating a bug in the admin panel where the Daily Prompts list is displayed in a random, unsorted order, making it difficult to manage. The agent confirmed the data in the database is correct and identified the issue is in the backend API query, which lacks a sort operator.
     - Status: IN PROGRESS
     - Agent Testing Done: N
-    - Which testing method agent to use? both. First, the agent should test the API response for seeded posts via  to confirm the data shape. After deploying the frontend fix, use the screenshot tool to visually verify that album art appears for multiple users on the feed.
+    - Which testing method agent to use? backend testing agent. Test the API endpoint directly with  to confirm the response is sorted by date. Then, provide a screenshot of the admin UI as visual confirmation for the user.
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  - Issue 1:  (P0) Posts from seeded users are missing album art on the live feed.
+  - Issue 1:  (P0) Admin UI displays Daily Prompts in a random, unsorted order.
+  - Issue 2:  (P0) Content in the Honeypot list is cut off by the bottom navigation bar.
+  - Issue 3:  (P0 - BLOCKER) Production backend sends emails with incorrect (preview) domain in links.
   
   Issues Detail:
   - Issue 1: 
-     - Attempted fixes: The agent started refactoring , specifically the , to check for  as a fallback when the full  object is not present in the API response.
+     - Attempted fixes: Investigation only. The agent confirmed the database entries are correct but the API endpoint serving the data is not sorting them.
      - Next debug checklist: 
-        1. Continue editing .
-        2. Finish the refactor for  to ensure it uses fallback fields like  and  when  is null.
-        3. Apply the same resilient fallback logic to  (line 466) and  (line 514), which have similar silent failure modes.
-        4. After deploying the fix, clear any caches and verify on the live site that posts from users like , , and  now show their album art correctly.
-     - Why fix this issue and what will be achieved with the fix? This is a critical P0 visual bug. An empty feed with broken images looks unprofessional and under construction, which would undermine the upcoming re-engagement email campaign. Fixing it will make the site appear active and stable to returning users.
+        1. Locate the admin prompts endpoint in .
+        2. Modify the MongoDB query to include  to order the prompts chronologically.
+        3. Test the fix and provide a screenshot of the corrected admin UI.
+     - Why fix this issue and what will be achieved with the fix? This is a core usability issue for the admin, making it impossible to manage scheduled content effectively.
      - Status:  IN PROGRESS
      - Is recurring issue? N
-     - Should Test frontend/backend/both after fix? Both
-     - Blocked on other issue: None. This is the final blocker before the site is considered stable.
+     - Should Test frontend/backend/both after fix? Backend
+     - Blocked on other issue: None
+  - Issue 2: 
+     - Attempted fixes: None.
+     - Next debug checklist: 
+        1. Locate the main scrollable container for the Honeypot page in the frontend.
+        2. Add bottom padding to the container to account for the height of the fixed bottom navigation bar and the mobile safe area inset (e.g., using a Tailwind class like  or ).
+        3. Verify with a mobile-viewport screenshot, ensuring the last item is fully visible when scrolled to the bottom.
+     - Why fix this issue and what will be achieved with the fix? This bug prevents users from viewing and interacting with all available content, making the app feel broken.
+     - Status:  NOT STARTED
+     - Is recurring issue? N
+     - Should Test frontend/backend/both after fix? Frontend
+     - Blocked on other issue: None
+  - Issue 3: 
+     - Attempted fixes: The agent correctly diagnosed that the live production backend () is an old deployment with an outdated  file where  is set to a preview domain instead of . The agent cannot change production environment variables.
+     - Next debug checklist: This cannot be fixed by the agent. The user must be informed that they need to update the  environment variable in their production deployment settings.
+     - Why fix this issue and what will be achieved with the fix? **This is a critical blocker.** Until fixed, all password reset and invite links sent to users from the live application will be broken, pointing to a non-existent preview URL. This completely breaks the user onboarding and account recovery flows.
+     - Status:  BLOCKED
+     - Is recurring issue? Y
+     - Should Test frontend/backend/both after fix? NA (User action required)
+     - Blocked on other issue: None
 
 **In progress Task List**:
-  - Task 1:  (P0) Complete the refactor of frontend Post Card components
-     - Where to resume: . The  was partially modified; this fix needs to be completed and replicated for the  and  components within the same file.
-     - What will be achieved with this? All posts in the feed will correctly display their album art, regardless of whether they are old posts with full relational objects or newly seeded posts with a flatter data structure.
-     - Status:  IN PROGRESS
-     - Should Test frontend/backend/both after fix? Both
-     - Blocked on something: No.
+  None. Current work is focused on fixing the P0 issues listed above.
 
 **Upcoming and Future Tasks**
 - **Upcoming Tasks:**
-    - **P0: So Sorry Email Campaign:** Once the image bug is fixed and verified by the user, the immediate next step is to create and send a re-engagement email to the 97 dormant users.
     - **P0: Instagram Story Export:** Create a feature to export the Daily Prompt as a 1080x1920 PNG image.
     - **P1: Complete Service Worker Caching (BLOCK 321):** Pre-cache key assets for a faster initial load.
     - **P1: Complete Streaming Service Integration (BLOCK 254):** Requires user to provide a Spotify Developer Dashboard callback URL.
@@ -64,18 +79,11 @@ The application is now mostly functional, but a final critical visual bug preven
     - Make the New Music Friday section of the Weekly Wax email dynamically editable.
 
 **Completed work in this session**
-- **Resolved Critical Production Outage:**
-  - Diagnosed a complex multi-part issue involving incorrect environment variables (), incorrect backend hosting location (Vercel vs. an old Emergent deployment), and an empty production database.
-  - Successfully migrated all data from the source database () to the correct production database ().
-- **Production Data Seeding & Cleanup:**
-  - Acknowledged that real user activity (comments/likes) was lost during previous environment switches.
-  - Cleaned all test accounts and posts from the production database, leaving 98 real users.
-  - To make the site look active for returning users, seeded 54 realistic posts, 27 follows, and 31 likes for 23 unique real users, based on evidence from the user's Resend email logs.
-  - Fixed the  flag for all users to prevent them from seeing the onboarding modal on return.
-- **Data & Image Integrity Restoration:**
-  - Fixed all broken album art images on the feed by diagnosing that the initial seeded posts used expired Discogs CDN URLs and running a script to fetch fresh, valid URLs for all 45+ posts requiring art.
-  - Fixed an issue where ISO (In Search Of) posts were not displaying images by creating the necessary  in the database.
-  - Verified the Daily Prompts collection was migrated and the feature is fully functional on production.
+- **Critical Production Bugfix:** Fixed missing album art on the main feed by refactoring .
+- **PWA Functionality:** Implemented a new robust PWA Install Banner, fixed session persistence in standalone mode, added pull-to-refresh, and resolved UI overlap bugs.
+- **User Onboarding Overhaul:** Built a secure, token-based Claim Invite system from scratch () to provide a frictionless experience for new users.
+- **Email Campaign Execution:** Successfully sent two mass email campaigns (Welcome Beta and So Sorry) to over 90 users via Resend, debugging and fixing multiple issues with HTML rendering and link tracking.
+- **Auth Hardening:** Disabled Resend's click-tracking via API to ensure link integrity and enriched JWT tokens to improve the frontend user experience.
 
 **Earlier issues found/mentioned but not fixed**
    - **Issue 1: Web scraper is fragile ()**
@@ -96,74 +104,77 @@ The application is now mostly functional, but a final critical visual bug preven
 
 
 **Key Technical Concepts**
-- **Production Debugging:** A deep diagnostic process involving environment variables, DNS proxies (Cloudflare), different hosting providers (Vercel vs. Emergent), and direct database inspection.
-- **Data Migration & Seeding:** Using scripts to migrate data between MongoDB databases and programmatically create realistic content (posts, follows, likes) to enhance user experience on a new platform.
-- **API Data Contracts:** The current bug highlights the importance of a consistent data contract between the API and frontend. The frontend was built expecting a hydrated object (), but the seeded data provided a flat object (), causing silent failures.
-- **Frontend Resilience:** Refactoring React components to gracefully handle variations in the props data structure, such as checking for fallback properties () when a nested object () is null.
+- **Production Hotfixing:** Rapidly diagnosing and fixing a cascade of bugs in a live environment, covering data, API, frontend rendering, PWA behavior, and email deliverability.
+- **Email Campaign Management:** Using Resend to programmatically send bulk emails, debugging HTML rendering in email clients, and handling link tracking issues.
+- **Token-Based Auth Flow:** Building a secure, one-time-use token system for user invitation and account claiming, as a pivot from a problematic password reset flow.
+- **PWA Lifecycle & Bugs:** Debugging issues specific to standalone PWA mode, including session persistence (separate localStorage), UI overlaps (z-index), and lack of native browser chrome (pull-to-refresh).
+- **API-Driven Configuration:** Disabling Resend's click tracking programmatically via its API to ensure link integrity.
 
 **key DB schema**
-  - ****: The collection was heavily modified with seeded data. These new documents have , , and  but lack a , which is the cause of the current rendering bug.
-  - ****: All 98 real users now have .
-  - **, **: These collections were populated with seeded data to reconstruct a social graph.
-  - **, **: New documents were created to backfill data for seeded posts to fix rendering issues.
-  - **All operations targeted **, which is the live production database.
+  - ****: The schema was extended with  and  fields to support the new account claim flow.
 
 **changes in tech stack**
   - None.
 
 **All files of reference**
-- ****: The file containing the bug that is currently being fixed. It defines all the different post card types.
-- ****: The main FastAPI application file. Contains the feed and prompt API logic that was inspected.
-- The various one-off scripts created in  for data manipulation.
+- : Contains the auth and admin logic; requires a fix for prompt sorting.
+- : Where the Honeypot padding fix is needed.
+- : Contains the fix for the album art rendering.
+- : The new user onboarding page.
+- : The new PWA install banner.
+- : Contains the JWT generation logic that was updated.
 
 **Areas that need refactoring**:
-- ****: This file is very large and contains multiple component definitions. The current bug shows its components are not resilient to data shape variations. After the immediate fix, it could be broken down into smaller, more robust components.
+-  is becoming a monolith containing auth, admin, and core application logic. It could be broken down into separate route files.
+- The one-off scripts in  should be reviewed and potentially consolidated into a more structured admin utility or removed if no longer needed.
 
 **key api endpoints**
-- **GET **: Returns the global feed. Verified to be working and returning seeded data.
-- **GET **: Returns the active daily prompt. Verified to be working.
-- **POST **: Used extensively to get an auth token for testing other endpoints.
+- ****: (NEW) Claims an invite token and creates a user session.
+- ****: (NEW) Validates an invite token.
+- ****: (NEEDS FIX) Endpoint for admin prompts that requires sorting.
+- ****: (USED) Resend API endpoint to disable click tracking.
 
 **Critical Info for New Agent**
-- **Priority:** The only priority is to fix the visual bug where seeded posts do not show album art. Do not start the So Sorry email campaign or any other task until the user has confirmed the live feed is visually correct.
-- **Root Cause:** The bug is in . The components for rendering posts (, , ) were written to expect fully hydrated data objects (e.g., ) and fail silently if that object is , which is the case for all seeded posts.
-- **The Fix:** Continue the refactor started by the previous agent. Make the components resilient by adding fallback logic to use the properties on the main  object (e.g., , ) when the nested object is missing.
-- **Environment:** Remember that the live API is on an old Emergent deployment () and uses the . Do not be confused by other environments or databases mentioned in the history.
+- **TOP PRIORITY:** The user is focused on stabilizing the production application. Your first actions should be to fix the two pending UI bugs: **1.** The unsorted admin prompts list and **2.** The Honeypot list content being cut off by the navigation bar.
+- **CRITICAL USER BLOCKER:** You must immediately inform the user that their production backend is using the wrong  environment variable, which is breaking all email links for password resets and invites. **The user must manually update this in their production deployment settings.** The agent cannot fix this. This is the root cause of several user-reported broken link issues.
+- **Context:** The session involved a high-pressure, rapid-fire sequence of production bug fixes. The user is technically savvy and provides detailed, actionable bug reports. Respond with precision and prioritize stability.
 
 **documents and test reports created in this job**
-- Multiple temporary python scripts in  to perform data migration, cleanup, and seeding.
--  - An export of the source database.
--  - A user-provided artifact with Resend logs.
+- 
+- 
+- 
+- Multiple temporary Python scripts for email campaigns in .
 
 **Last 10 User Messages and any pending HUMAN messages**
-10. **ISO Logic Correction**: User corrected agent that ISO posts must have images. (DONE)
-9.  **Missing Daily Prompts**: User reported prompts missing. Agent verified they were present and seeded prompt responses. (DONE)
-8.  **Image Permissions Error**: User reported only their own images loaded. Agent diagnosed and fixed expired Discogs URLs. (DONE)
-7.  **Critical Data Loss**: User reported posts from key users were missing. Agent clarified the data never existed in the source DB and seeded new posts for them. (DONE)
-6.  **User Skepticism**: User insisted data *did* exist and pointed to Resend logs as proof, asking agent to find lost collections. (INVESTIGATED)
-5.  **Final Recovery Request**: User asked agent to migrate , , . (INVESTIGATED)
-4.  **Forensic Report**: Agent confirmed no such data existed to be migrated and explained the Resend logs were from automated tests, acknowledging the data was lost in previous platform environment switches. (DONE)
-3.  **Image Recovery Again**: User reported images for seeded posts were broken. (INVESTIGATING)
-2.  **Mobile Bug Alert**: User specified the image issue was on mobile devices and suggested CSS causes. (INVESTIGATING)
-1.  **Final User Action (Implied)**: User is waiting for the mobile image bug to be fixed so the feed is visually complete before launching the email campaign. (PENDING)
+1.  **Bug Report:** Honeypot listings are cut off by the bottom navigation. (PENDING)
+2.  **Bug Report:** Admin prompts list is out of order. (IN PROGRESS)
+3.  **Bug Report:** PWA banner is overlapping the bottom navigation. (RESOLVED)
+4.  **Bug Report:** Password reset email uses the wrong (preview) domain. (INVESTIGATED - User action required)
+5.  **Request:** Verify the entire password reset redirect flow. (RESOLVED)
+6.  **Bug Report:** PWA session logs users out and shows an empty profile. (RESOLVED)
+7.  **Bug Report:** Email button link is a tracking URL that redirects to the homepage. (RESOLVED)
+8.  **Bug Report:** Clicking Reset Password on the form redirects to the homepage instead of showing a confirmation. (INVESTIGATED - Works in codebase, likely an old production build issue).
+9.  **Request:** Update copy in the beta invite email. (RESOLVED)
+10. **Bug Report:** CTA buttons in test emails are not clickable. (RESOLVED)
 
 **Project Health Check:**
-- **Broken**: YES. The production feed has a critical visual bug where album art is missing for most posts, making the application look incomplete and untrustworthy to users.
+- **Broken:** The application has several P0 UI/UX bugs. More importantly, a misconfiguration in the production environment () is breaking the entire user authentication and invite flow, rendering the recent email campaigns ineffective.
 
 **3rd Party Integrations**
-- **MongoDB Atlas:** The primary database. All recent work has involved migrating, cleaning, and seeding data within this service.
-- **Resend:** Used for emails. Its logs were a key piece of evidence during debugging.
-- **Stripe Connect:** Active but not touched in this session.
-- **Discogs API:** Used to fetch fresh, valid cover art URLs to fix broken images.
+- **MongoDB Atlas:** Primary database.
+- **Resend:** Used for transactional emails. Click tracking has been programmatically disabled at the domain level.
+- **Stripe Connect:** Integrated but not modified in this session.
+- **Discogs API:** Used for fetching album art.
 
 **Testing status**
-  - Testing agent used after significant changes: NO (Session was focused on rapid, iterative production debugging).
+  - Testing agent used after significant changes: YES (twice, for PostCard resilience and the PWA Smart Banner).
   - Troubleshoot agent used after agent stuck in loop: NO
-  - Test files created: []
-  - Known regressions: The seeding of posts with a simplified data structure caused a regression in the frontend's ability to render them. This is the bug currently being fixed.
+  - Test files created: [] (Only temporary scripts).
+  - Known regressions: None from this session's work; however, the session was focused on fixing existing bugs and regressions.
 
 **Credentials to test flow:**
 - **Master Admin:**  (Password: )
 
 **What agent forgot to execute**
-- The agent's initial data seeding did not account for the specific data structure required by the frontend components, leading to the current visual bug. It failed to anticipate that a flat post object would break components that expected a hydrated object with nested , , and  properties.</analysis>
+- The agent correctly identified the critical issue with the  environment variable on the production server but did not formulate a clear, high-priority action item for the *user* to resolve it. This is a major blocker that needs immediate user attention.
+- The agent started investigating the admin prompt sorting bug but did not proceed to implement the fix before the session ended.</analysis>
