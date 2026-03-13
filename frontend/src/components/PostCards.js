@@ -585,7 +585,7 @@ const ISOCard = ({ post, onAlbumClick }) => {
         <div className="flex items-start gap-3">
           <div className="relative shrink-0">
             {isoData.cover_url ? (
-              <AlbumArt src={isoData.cover_url} alt={`${isoData.artist} ${isoData.album}${isoData.pressing_notes ? ` ${isoData.pressing_notes}` : ''} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow-sm" isUnofficial={isoData.is_unofficial} />
+              <AlbumArt src={isoData.cover_url} alt={`${isoData.artist} ${isoData.album}${isoData.color_variant ? ` ${isoData.color_variant}` : ''} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow-sm" isUnofficial={isoData.is_unofficial} />
             ) : (
               <div className="w-14 h-14 rounded-lg bg-[#C8861A]/10 flex items-center justify-center"><Search className="w-5 h-5 text-[#C8861A]/50" /></div>
             )}
