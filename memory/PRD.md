@@ -23,28 +23,22 @@ A premium social platform for vinyl collectors. React frontend + FastAPI backend
 - Listing (sale/trade) cards
 
 ## Completed — March 2026
-- **P0 FIXED**: PostCards fallback logic — all card components handle missing nested objects
-- **FIXED**: PWA Smart App Banner — visible on iOS/Android, hidden on desktop/standalone
-- **P0 DONE**: Beta Welcome Email Campaign — 49 emails resent with FIXED CTA link
-- **P0 DONE**: "So Sorry" Re-engagement Campaign — 46 emails resent with FIXED CTA link
-- **P0 FIXED (Mar 13)**: Admin prompts sorted descending (newest first) in `/api/prompts/admin/all`
-- **P0 FIXED (Mar 13)**: Honeypot page bottom padding increased to pb-32 for bottom nav clearance
-- **P0 FIXED (Mar 13)**: FRONTEND_URL hard-coded to `https://www.thehoneygroove.com` in `database.py`
-- **P0 FIXED (Mar 13)**: Sticky top banner hierarchy — PWA banner (z:101) stacks above mobile nav (z:100) with CSS variable coordination and smooth dismiss transition
-- Database migration from `the_honey_groove` to `groove-social-beta-test_database`
-- Seeded 54 posts, 27 follows, 31 likes for 23 real users
-- Fixed broken Discogs CDN image URLs
-- Fixed ISO post images
-- Daily Prompts restored
-- Onboarding flag fixed for all users
-- Test data cleanup
+- **P0 FIXED (Mar 13)**: Admin prompts sorted descending (newest first)
+- **P0 FIXED (Mar 13)**: Honeypot page bottom padding pb-32 for bottom nav clearance
+- **P0 FIXED (Mar 13)**: FRONTEND_URL hard-coded to `https://www.thehoneygroove.com`
+- **P0 FIXED (Mar 13)**: Sticky top banner hierarchy — PWA banner (z:101) stacks above mobile nav (z:100) via CSS variable `--pwa-banner-h`
+- **P0 FIXED (Mar 13)**: Invite redemption error — case-insensitive token lookup, validate-invite is now read-only (doesn't burn token), new `POST /api/auth/resend-invite` endpoint, frontend "Send me a fresh invite link" fallback button
+- **P0 DONE**: Test invite email sent to `contact@kathrynklodnicki.com`
+- PostCards fallback logic for missing nested objects
+- PWA Smart App Banner for iOS/Android
+- Beta Welcome & "So Sorry" email campaigns (95 users)
 - Token-based "Claim Invite" system
 - Enriched JWT tokens for frontend hydration
 - Resend click-tracking disabled at domain level
 
 ## P0 — Next Priority
 1. **Instagram Story Export** — Export Daily Prompt as 1080x1920 PNG
-2. **CRITICAL: User must redeploy production** after the FRONTEND_URL hard-code to take effect
+2. **CRITICAL: User must redeploy production** for all fixes to take effect
 
 ## P1 — Upcoming
 - Service Worker Caching (BLOCK 321) — pre-cache key assets
@@ -60,17 +54,20 @@ A premium social platform for vinyl collectors. React frontend + FastAPI backend
 ## Known Issues
 - Web scraper fragile (backend/services/scraper.py) — needs rotating User-Agents
 - Service Worker caching incomplete
-- server.py monolith should be broken into route files (already partially done)
+- server.py monolith should be broken into route files (partially done)
 
 ## Key Files
-- `frontend/src/components/PostCards.js` — All post card components
-- `frontend/src/components/PWAInstallBanner.js` — PWA install banner with CSS var coordination
-- `frontend/src/components/Navbar.js` — Top/bottom nav, reads --pwa-banner-h CSS var
-- `backend/routes/hive.py` — Feed API, build_post_response
-- `backend/server.py` — Main FastAPI app
-- `backend/database.py` — DB config, FRONTEND_URL, auth helpers
-- `backend/routes/daily_prompts.py` — Daily Prompts system + admin endpoints
-- `frontend/src/pages/ISOPage.js` — The Honeypot marketplace page
+- `backend/routes/auth.py` — Auth endpoints including invite flow, resend-invite
+- `frontend/src/pages/ClaimInvitePage.js` — Claim invite page with error fallback UI
+- `frontend/src/components/PWAInstallBanner.js` — PWA banner with CSS var coordination
+- `frontend/src/components/Navbar.js` — Top/bottom nav, reads --pwa-banner-h
+- `backend/database.py` — DB config, FRONTEND_URL hard-coded
+- `backend/routes/daily_prompts.py` — Daily Prompts + admin endpoints
+
+## API Endpoints (Invite Flow)
+- `GET /api/auth/validate-invite?token=` — Read-only validation, case-insensitive
+- `POST /api/auth/resend-invite` — `{email}` → generates fresh token + sends email
+- `POST /api/auth/claim-invite` — `{token, password}` → burns token, returns JWT
 
 ## Credentials
 - Admin: kmklodnicki@gmail.com / HoneyGroove2026!
