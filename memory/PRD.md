@@ -119,9 +119,12 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - OAuth diagnostic endpoint, Daily Prompts Image Proxy, User-Agent fix
 
 ## Recently Completed (2026-03-13 — Session 2)
-- **Filter Merge:** Merged 'For Sale' and 'For Trade' into single '🏷️ For Sale/Trade' filter. Feed now has 6 filters: All, Now Spinning, ISO, Haul, Notes, For Sale/Trade.
-- **Filter Center Alignment:** Changed filter bar from CSS grid to flex-wrap justify-center for proper horizontal centering on mobile.
-- **Tracklist Viewer (P0 Bug Fix):** Added collapsible `TracklistViewer` component to Now Spinning and Randomizer posts. Fetches tracklist from `/api/discogs/release/{discogs_id}` on demand, shows track positions/titles/durations, highlights currently playing track with spinning disc icon.
+- **Filter Merge:** Merged 'For Sale' and 'For Trade' into single '🏷️ For Sale/Trade' filter on mobile. Desktop keeps them separate.
+- **Responsive Filter Bars:** Mobile (<768px): 6 filters in 2-row grid-cols-3, centered, text-xs px-3 py-1. Desktop (≥768px): 12 filters (All, Now Spinning, ISO, Haul, Notes, For Sale, For Trade, Randomizer, Daily Prompt, Vinyl Mood, Weekly Wrap, Added) in one flex-nowrap row, centered.
+- **PWA Install Banner:** Sticky top banner (`#FDE68A` bg, `#915527` text) with "Download The Honey Groove App!" — triggers native beforeinstallprompt. Dismissable with localStorage persistence.
+- **Pull-to-Refresh:** Custom `usePullToRefresh` hook with honey-colored spinner. Integrated into HivePage (re-fetches feed+records) and EssentialsPage (page reload).
+- **Track Display Simplified:** Removed collapsible TracklistViewer from post cards. Now Spinning posts show only "Track: <name>" as plain text for the user-selected track.
+- **Filter Center Alignment:** Both mobile and desktop filter bars are horizontally centered.
 
 ## Backlog
 - P1: Harden web scraper (user-agent rotation, exponential backoff) — fragile but functional
