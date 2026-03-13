@@ -317,21 +317,26 @@ const LiveEqualizer = () => (
 
 // NOW_SPINNING card body
 const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
-  const record = post.record;
+  const record = post.record || {};
   const [lightboxOpen, setLightboxOpen] = React.useState(false);
-  if (!record) return null;
+  // Fallback: use post-level fields when record object is missing
+  const coverUrl = record.cover_url || post.cover_url;
+  const title = record.title || post.record_title || '';
+  const artist = record.artist || post.record_artist || '';
+  if (!coverUrl && !title && !post.caption) return null;
   const variantText = post.color_variant || record.color_variant || post.pressing_variant || record.pressing_notes;
+  const linkRecord = record.id ? record : { title, artist, cover_url: coverUrl };
   return (
-    <AlbumLink record={record} onAlbumClick={onAlbumClick}>
+    <AlbumLink record={linkRecord} onAlbumClick={onAlbumClick}>
       <div data-testid="now-spinning-card">
         <div className="flex justify-between items-start gap-3">
           {/* Left: album art + metadata */}
           <div className={`${post.photo_url ? 'flex-1 mr-2' : 'w-full'} min-w-0`}>
             <div className="flex gap-4 items-start">
-              {record.cover_url ? (
+              {coverUrl ? (
                 <div className="shrink-0" style={{ overflow: 'visible' }}>
                   <AlbumWithVinyl>
-                    <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-24 h-24 rounded-[10px] object-cover shadow-md album-art-hover relative z-[6]" priority={imgPriority} isUnofficial={record.is_unofficial} />
+                    <AlbumArt src={coverUrl} alt={`${artist} ${title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-24 h-24 rounded-[10px] object-cover shadow-md album-art-hover relative z-[6]" priority={imgPriority} isUnofficial={record.is_unofficial} />
                     {post.honeypot_rating && (
                       <div className="absolute top-1 right-4 z-[7] px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
                         style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
@@ -340,7 +345,7 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
                       </div>
                     )}
                   </AlbumWithVinyl>
-                  <StreamingLinks artist={record.artist} album={record.title} showEqualizer />
+                  <StreamingLinks artist={artist} album={title} showEqualizer />
                 </div>
               ) : (
                 <div className="w-24 h-24 rounded-lg bg-vinyl-black flex items-center justify-center shrink-0">
@@ -348,8 +353,8 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <p className="font-heading text-lg leading-tight">{record.title}</p>
-                <p className="text-sm text-muted-foreground">{record.artist}</p>
+                <p className="font-heading text-lg leading-tight">{title}</p>
+                <p className="text-sm text-muted-foreground">{artist}</p>
                 <div className="flex flex-wrap gap-1 mt-1" data-testid="card-meta-pills">
                   {variantText && <VariantTag variant={variantText} linkTo={variantLink(record)} />}
                   {(record.edition_number || post.edition_number) && <EditionTag number={record.edition_number || post.edition_number} />}
@@ -463,7 +468,42 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
   
   // Manual haul flow (from composer)
   const haul = post.haul;
-  if (!haul) return <p className="text-sm"><MentionText text={post.caption} /></p>;
+
+  // Fallback: no haul object but post has flat fields (seeded posts)
+  if (!haul) {
+    const coverUrl = post.cover_url;
+    const title = post.record_title || '';
+    const artist = post.record_artist || '';
+    if (!coverUrl && !title && !post.caption) return null;
+    // Render as a single-item haul card using flat fields
+    if (coverUrl || title) {
+      const fallbackRecord = { title, artist, cover_url: coverUrl };
+      return (
+        <AlbumLink record={fallbackRecord} onAlbumClick={onAlbumClick}>
+          <div data-testid="new-haul-card">
+            <div className="flex gap-4 items-start">
+              {coverUrl ? (
+                <div className="shrink-0">
+                  <AlbumArt src={coverUrl} alt={`${artist} ${title} vinyl record`} className="w-24 h-24 rounded-[10px] object-cover shadow-md" priority={imgPriority} />
+                </div>
+              ) : (
+                <div className="w-24 h-24 rounded-lg bg-pink-50 flex items-center justify-center shrink-0">
+                  <Package className="w-10 h-10 text-pink-300" />
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <p className="font-heading text-lg leading-tight">{title}</p>
+                <p className="text-sm text-muted-foreground">{artist}</p>
+                {post.caption && <p className="text-sm mt-2"><MentionText text={post.caption} /></p>}
+              </div>
+            </div>
+          </div>
+        </AlbumLink>
+      );
+    }
+    return <p className="text-sm"><MentionText text={post.caption} /></p>;
+  }
+
   const items = haul.items || [];
   return (
     <div data-testid="new-haul-card">
@@ -511,8 +551,20 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
 const ISOCard = ({ post, onAlbumClick }) => {
   const iso = post.iso;
   const intent = post.intent;
-  if (!iso) return <p className="text-sm"><MentionText text={post.caption} /></p>;
-  const isoRecord = { title: iso.album, artist: iso.artist, discogs_id: iso.discogs_id, cover_url: iso.cover_url, year: iso.year };
+
+  // Fallback: build iso-like data from flat post fields when iso object is missing
+  const isoData = iso || {
+    album: post.record_title || '',
+    artist: post.record_artist || '',
+    cover_url: post.cover_url,
+    pressing_notes: post.pressing_notes,
+  };
+
+  if (!iso && !post.cover_url && !post.record_title && !post.caption) {
+    return <p className="text-sm"><MentionText text={post.caption} /></p>;
+  }
+
+  const isoRecord = { title: isoData.album, artist: isoData.artist, discogs_id: isoData.discogs_id, cover_url: isoData.cover_url, year: isoData.year };
   return (
     <AlbumLink record={isoRecord} onAlbumClick={onAlbumClick}>
       <div className="relative bg-[#FAF6EE] border border-[#C8861A]/15 rounded-xl p-4 hover:border-[#C8861A]/40 transition-colors" data-testid="iso-card">
@@ -531,27 +583,27 @@ const ISOCard = ({ post, onAlbumClick }) => {
         )}
         <div className="flex items-start gap-3">
           <div className="relative shrink-0">
-            {iso.cover_url ? (
-              <AlbumArt src={iso.cover_url} alt={`${iso.artist} ${iso.album}${iso.pressing_notes ? ` ${iso.pressing_notes}` : ''} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow-sm" isUnofficial={iso.is_unofficial} />
+            {isoData.cover_url ? (
+              <AlbumArt src={isoData.cover_url} alt={`${isoData.artist} ${isoData.album}${isoData.pressing_notes ? ` ${isoData.pressing_notes}` : ''} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow-sm" isUnofficial={isoData.is_unofficial} />
             ) : (
               <div className="w-14 h-14 rounded-lg bg-[#C8861A]/10 flex items-center justify-center"><Search className="w-5 h-5 text-[#C8861A]/50" /></div>
             )}
           </div>
           <div className="flex-1 min-w-0">
             <div className="min-w-0 pr-24">
-              <p className="font-heading text-lg truncate">{iso.album}</p>
-              <p className="text-sm text-muted-foreground truncate">{iso.artist}</p>
+              <p className="font-heading text-lg truncate">{isoData.album}</p>
+              <p className="text-sm text-muted-foreground truncate">{isoData.artist}</p>
             </div>
-            {iso.pressing_notes && <p className="text-xs mt-1 text-[#8A6B4A]">Pressing: {iso.pressing_notes}</p>}
-            {iso.condition_pref && <p className="text-xs text-[#8A6B4A]">Condition: {iso.condition_pref}</p>}
-            {(iso.target_price_min || iso.target_price_max) && (
-              <p className="text-xs text-[#8A6B4A] mt-0.5">Budget: {iso.target_price_min ? `$${iso.target_price_min}` : '?'} – {iso.target_price_max ? `$${iso.target_price_max}` : '?'}</p>
+            {isoData.pressing_notes && <p className="text-xs mt-1 text-[#8A6B4A]">Pressing: {isoData.pressing_notes}</p>}
+            {isoData.condition_pref && <p className="text-xs text-[#8A6B4A]">Condition: {isoData.condition_pref}</p>}
+            {(isoData.target_price_min || isoData.target_price_max) && (
+              <p className="text-xs text-[#8A6B4A] mt-0.5">Budget: {isoData.target_price_min ? `$${isoData.target_price_min}` : '?'} – {isoData.target_price_max ? `$${isoData.target_price_max}` : '?'}</p>
             )}
-            {iso.is_unofficial && <UnofficialPill variant="inline" className="mt-1.5" />}
+            {isoData.is_unofficial && <UnofficialPill variant="inline" className="mt-1.5" />}
           </div>
         </div>
         {post.caption && <p className="text-sm mt-3"><MentionText text={post.caption} /></p>}
-        {iso.is_unofficial && (
+        {isoData.is_unofficial && (
           <div className="mt-3 px-3 py-2 rounded-lg text-[11px] leading-relaxed" style={{ background: 'rgba(74,74,74,0.05)', border: '1px solid rgba(74,74,74,0.1)', color: '#6B6B6B' }} data-testid="unofficial-disclaimer">
             <span className="font-semibold text-stone-500">NOTICE:</span> This release is identified as &lsquo;Unofficial.&rsquo; The Hive facilitates the secondary market trade of these items for archival and collection purposes.
           </div>
@@ -563,20 +615,31 @@ const ISOCard = ({ post, onAlbumClick }) => {
 
 // ADDED_TO_COLLECTION card body
 const AddedToCollectionCard = ({ post, onAlbumClick, imgPriority }) => {
-  const record = post.record;
-  if (!record) return <p className="text-sm"><MentionText text={post.caption} /></p>;
+  const record = post.record || {};
+  // Fallback: use post-level fields when record object is missing
+  const coverUrl = record.cover_url || post.cover_url;
+  const title = record.title || post.record_title || '';
+  const artist = record.artist || post.record_artist || '';
+  if (!coverUrl && !title && !post.caption) return null;
   const variantText = post.color_variant || record.color_variant || record.pressing_notes;
+  const linkRecord = record.id ? record : { title, artist, cover_url: coverUrl };
   return (
-    <AlbumLink record={record} onAlbumClick={onAlbumClick}>
+    <AlbumLink record={linkRecord} onAlbumClick={onAlbumClick}>
       <div className="flex gap-3 items-center" data-testid="added-card">
         <div className="shrink-0 pr-2">
           <AlbumWithVinyl preset="small">
-            <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-16 h-16 rounded-[10px] object-cover shadow relative z-[6]" priority={imgPriority} isUnofficial={record.is_unofficial} />
+            {coverUrl ? (
+              <AlbumArt src={coverUrl} alt={`${artist} ${title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-16 h-16 rounded-[10px] object-cover shadow relative z-[6]" priority={imgPriority} isUnofficial={record.is_unofficial} />
+            ) : (
+              <div className="w-16 h-16 rounded-[10px] bg-green-50 flex items-center justify-center relative z-[6]">
+                <Plus className="w-6 h-6 text-green-300" />
+              </div>
+            )}
           </AlbumWithVinyl>
         </div>
         <div className="min-w-0">
-          <p className="font-medium">{record.title}</p>
-          <p className="text-sm text-muted-foreground">{record.artist}</p>
+          <p className="font-medium">{title}</p>
+          <p className="text-sm text-muted-foreground">{artist}</p>
           <div className="flex flex-wrap gap-1 mt-1" data-testid="card-meta-pills">
             {variantText && <VariantTag variant={variantText} linkTo={variantLink(record)} />}
             {(record.edition_number || post.edition_number) && <EditionTag number={record.edition_number || post.edition_number} />}
@@ -600,22 +663,34 @@ const WeeklyWrapCard = ({ post }) => {
 
 // VINYL_MOOD card body
 const VinylMoodCard = ({ post, onAlbumClick, imgPriority }) => {
-  const record = post.record;
+  const record = post.record || {};
+  // Fallback: use post-level fields when record object is missing
+  const coverUrl = record.cover_url || post.cover_url;
+  const title = record.title || post.record_title || '';
+  const artist = record.artist || post.record_artist || '';
   const mood = post.mood || '';
   const emoji = MOOD_EMOJI_MAP[mood] || '';
   const color = MOOD_COLOR_MAP[mood] || '#7e22ce';
+  const linkRecord = record.id ? record : { title, artist, cover_url: coverUrl };
+  const hasAlbum = coverUrl || title;
   return (
     <div data-testid="vinyl-mood-card">
       <div className="inline-block px-4 py-2 rounded-full text-lg font-heading mb-2" style={{ backgroundColor: color + '26', color }}>
         {emoji} {mood}
       </div>
-      {record && (
-        <AlbumLink record={record} onAlbumClick={onAlbumClick}>
+      {hasAlbum && (
+        <AlbumLink record={linkRecord} onAlbumClick={onAlbumClick}>
           <div className="flex gap-3 items-center mt-2 rounded-lg p-2" style={{ backgroundColor: color + '15' }}>
-            <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${record.color_variant ? ` ${record.color_variant}` : ''} vinyl record`} className="w-10 h-10 rounded object-cover" priority={imgPriority} isUnofficial={record.is_unofficial} />
+            {coverUrl ? (
+              <AlbumArt src={coverUrl} alt={`${artist} ${title}${record.color_variant ? ` ${record.color_variant}` : ''} vinyl record`} className="w-10 h-10 rounded object-cover" priority={imgPriority} isUnofficial={record.is_unofficial} />
+            ) : (
+              <div className="w-10 h-10 rounded flex items-center justify-center" style={{ backgroundColor: color + '20' }}>
+                <Moon className="w-5 h-5" style={{ color }} />
+              </div>
+            )}
             <div>
-              <p className="text-sm font-medium">{record.title}</p>
-              <p className="text-xs text-muted-foreground">{record.artist}</p>
+              <p className="text-sm font-medium">{title}</p>
+              <p className="text-xs text-muted-foreground">{artist}</p>
             </div>
           </div>
         </AlbumLink>
@@ -745,22 +820,33 @@ const PostCardBody = ({ post, onAlbumClick, imgPriority }) => {
     case 'listing_sale': return <ListingPostCard post={post} />;
     case 'listing_trade': return <ListingPostCard post={post} />;
     default:
-      return (
-        <div>
-          {post.record && (
-            <AlbumLink record={post.record} onAlbumClick={onAlbumClick}>
-              <div className="flex gap-3 items-center mb-2">
-                <AlbumArt src={post.record.cover_url} alt={`${post.record.artist} ${post.record.title}${post.record.color_variant ? ` ${post.record.color_variant}` : ''} vinyl record`} className="w-14 h-14 rounded object-cover" isUnofficial={post.record.is_unofficial} />
-                <div>
-                  <p className="font-medium">{post.record.title}</p>
-                  <p className="text-sm text-muted-foreground">{post.record.artist}</p>
+      {
+        const defRecord = post.record || {};
+        const defCover = defRecord.cover_url || post.cover_url;
+        const defTitle = defRecord.title || post.record_title || '';
+        const defArtist = defRecord.artist || post.record_artist || '';
+        const defLink = defRecord.id ? defRecord : { title: defTitle, artist: defArtist, cover_url: defCover };
+        return (
+          <div>
+            {(defCover || defTitle) && (
+              <AlbumLink record={defLink} onAlbumClick={onAlbumClick}>
+                <div className="flex gap-3 items-center mb-2">
+                  {defCover ? (
+                    <AlbumArt src={defCover} alt={`${defArtist} ${defTitle} vinyl record`} className="w-14 h-14 rounded object-cover" isUnofficial={defRecord.is_unofficial} />
+                  ) : (
+                    <div className="w-14 h-14 rounded bg-stone-100 flex items-center justify-center"><Disc className="w-6 h-6 text-stone-400" /></div>
+                  )}
+                  <div>
+                    <p className="font-medium">{defTitle}</p>
+                    <p className="text-sm text-muted-foreground">{defArtist}</p>
+                  </div>
                 </div>
-              </div>
-            </AlbumLink>
-          )}
-          <p className="text-sm"><MentionText text={post.caption || post.content} /></p>
-        </div>
-      );
+              </AlbumLink>
+            )}
+            <p className="text-sm"><MentionText text={post.caption || post.content} /></p>
+          </div>
+        );
+      }
   }
 };
 

@@ -7,7 +7,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://honey-deploy.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://honeygroove-fix.preview.emergentagent.com')
 
 # Admin credentials
 ADMIN_EMAIL = "kmklodnicki@gmail.com"
