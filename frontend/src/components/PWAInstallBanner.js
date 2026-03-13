@@ -1,65 +1,128 @@
-import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { X, Share, PlusSquare } from 'lucide-react';
+
+const isStandalone = () =>
+  window.matchMedia('(display-mode: standalone)').matches ||
+  window.navigator.standalone === true;
+
+const isIOS = () =>
+  /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
 const PWAInstallBanner = () => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
-  const [dismissed, setDismissed] = useState(() => {
-    try { return localStorage.getItem('honey_groove_installed') === 'true'; } catch { return false; }
-  });
+  const [showBanner, setShowBanner] = useState(false);
+  const [showIOSGuide, setShowIOSGuide] = useState(false);
 
   useEffect(() => {
+    if (isStandalone()) return;
+    try { if (localStorage.getItem('pwa_installed') === 'true') return; } catch { /* noop */ }
+
+    if (isIOS()) {
+      setShowBanner(true);
+      return;
+    }
+
     const handler = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
-      window.__pwaPrompt = e;
+      setShowBanner(true);
     };
     window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+
+    // Fallback: show banner on mobile browsers after short delay even without the event
+    const isMobile = /Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    let fallbackTimer;
+    if (isMobile) {
+      fallbackTimer = setTimeout(() => setShowBanner(true), 2000);
+    }
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+      clearTimeout(fallbackTimer);
+    };
   }, []);
 
-  const handleInstall = async () => {
+  const handleInstall = useCallback(async () => {
+    if (isIOS()) {
+      setShowIOSGuide((prev) => !prev);
+      return;
+    }
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === 'accepted') {
-      try { localStorage.setItem('honey_groove_installed', 'true'); } catch {}
-      setDeferredPrompt(null);
+      try { localStorage.setItem('pwa_installed', 'true'); } catch { /* noop */ }
+      setShowBanner(false);
     }
-  };
+  }, [deferredPrompt]);
 
-  const handleDismiss = () => {
-    setDismissed(true);
-    try { localStorage.setItem('honey_groove_installed', 'true'); } catch {}
-  };
+  const handleDismiss = useCallback(() => {
+    setShowBanner(false);
+    try { localStorage.setItem('pwa_installed', 'true'); } catch { /* noop */ }
+  }, []);
 
-  if (!deferredPrompt || dismissed) return null;
+  if (!showBanner) return null;
 
   return (
-    <div
-      className="sticky top-0 z-[999999] w-full flex items-center justify-center gap-3 px-4 py-2.5"
-      style={{ background: '#FDE68A' }}
-      data-testid="pwa-install-banner"
-    >
-      <span className="text-sm font-medium" style={{ color: '#915527' }}>
-        Download The Honey Groove App!
-      </span>
-      <button
-        onClick={handleInstall}
-        className="px-3 py-1 rounded-full text-xs font-bold transition-transform hover:scale-105"
-        style={{ background: '#915527', color: '#FDE68A' }}
-        data-testid="pwa-install-btn"
+    <>
+      {/* Spacer to push content below the fixed banner */}
+      <div style={{ height: showIOSGuide ? '80px' : '40px' }} data-testid="pwa-banner-spacer" />
+
+      <div
+        className="fixed top-0 left-0 right-0 w-full"
+        style={{ zIndex: 9999, paddingTop: 'env(safe-area-inset-top, 0px)' }}
+        data-testid="pwa-install-banner"
       >
-        Install
-      </button>
-      <button
-        onClick={handleDismiss}
-        className="ml-1 transition-colors"
-        style={{ color: 'rgba(145,85,39,0.5)' }}
-        data-testid="pwa-dismiss-btn"
-      >
-        <X className="w-4 h-4" />
-      </button>
-    </div>
+        <div
+          className="flex items-center justify-center gap-3 px-4 py-2.5"
+          style={{ background: '#FDE68A', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
+        >
+          <span className="text-sm font-medium" style={{ color: '#915527' }}>
+            Add The Honey Groove to your home screen!
+          </span>
+          <button
+            onClick={handleInstall}
+            className="px-3 py-1 rounded-full text-xs font-bold transition-transform hover:scale-105 active:scale-95"
+            style={{ background: '#915527', color: '#FDE68A' }}
+            data-testid="pwa-install-btn"
+          >
+            {isIOS() ? (showIOSGuide ? 'Got it' : 'How?') : 'Install'}
+          </button>
+          <button
+            onClick={handleDismiss}
+            className="ml-1 transition-colors"
+            style={{ color: 'rgba(145,85,39,0.5)' }}
+            aria-label="Dismiss install banner"
+            data-testid="pwa-dismiss-btn"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* iOS Add-to-Home-Screen guide */}
+        {showIOSGuide && (
+          <div
+            className="px-5 py-3 flex items-start gap-3 text-xs leading-relaxed"
+            style={{ background: '#FEF3C7', color: '#915527', borderTop: '1px solid rgba(145,85,39,0.15)' }}
+            data-testid="pwa-ios-guide"
+          >
+            <div className="flex flex-col gap-1.5 flex-1">
+              <p className="flex items-center gap-1.5">
+                <span className="font-bold">1.</span> Tap the
+                <Share className="w-3.5 h-3.5 inline" style={{ color: '#915527' }} />
+                <span className="font-semibold">Share</span> button below
+              </p>
+              <p className="flex items-center gap-1.5">
+                <span className="font-bold">2.</span> Scroll down and tap
+                <PlusSquare className="w-3.5 h-3.5 inline" style={{ color: '#915527' }} />
+                <span className="font-semibold">Add to Home Screen</span>
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 };
 
