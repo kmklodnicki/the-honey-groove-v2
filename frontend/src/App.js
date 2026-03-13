@@ -15,6 +15,7 @@ import Navbar from "./components/Navbar";
 import DiscogsSecurityModal from "./components/DiscogsSecurityModal";
 import PWAInstallBanner from "./components/PWAInstallBanner";
 import PullToRefresh from "./components/PullToRefresh";
+import VinylShield from "./components/VinylShield";
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -390,6 +391,7 @@ function App() {
 
   return (
     <HelmetProvider>
+      <VinylShield>
       <BrowserRouter>
         <ScrollToTop />
         <AuthProvider>
@@ -404,6 +406,7 @@ function App() {
           </SWRConfig>
         </AuthProvider>
       </BrowserRouter>
+      </VinylShield>
     </HelmetProvider>
   );
 }
