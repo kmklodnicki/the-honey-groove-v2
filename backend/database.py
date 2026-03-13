@@ -64,9 +64,11 @@ def hash_password(password: str) -> str:
 def verify_password(password: str, hashed: str) -> bool:
     return bcrypt.checkpw(password.encode(), hashed.encode())
 
-def create_token(user_id: str) -> str:
+def create_token(user_id: str, username: str = "", email: str = "") -> str:
     payload = {
         "sub": user_id,
+        "username": username,
+        "email": email,
         "exp": datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRATION_HOURS),
         "iat": datetime.now(timezone.utc),
     }

@@ -30,13 +30,12 @@ function initUserFromToken(token) {
   if (!token) return null;
   const payload = decodeTokenPayload(token);
   if (!payload) return null;
-  // Return a minimal user object from JWT claims
-  // The real user data will be fetched in the background
   return {
     id: payload.user_id || payload.sub || payload.id,
     email: payload.email || '',
     username: payload.username || '',
-    _fromToken: true, // flag: this is partial data from JWT
+    _fromToken: true,
+    _hydrated: !!(payload.username), // true if JWT has full data
   };
 }
 
@@ -62,6 +61,10 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (token) {
       fetchUserBackground();
+    }
+    // Request persistent storage for PWA standalone mode
+    if (navigator.storage && navigator.storage.persist) {
+      navigator.storage.persist().catch(() => {});
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

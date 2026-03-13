@@ -146,7 +146,7 @@ async def register(user_data: UserCreate):
         "subscribed_at": now,
     })
 
-    token = create_token(user_id)
+    token = create_token(user_id, username=username, email=normalized_email)
     
     return TokenResponse(
         access_token=token,
@@ -218,8 +218,8 @@ async def login(credentials: UserLogin, request: Request):
         logger.warning(f"LOGIN FAIL [wrong_password]: user='{user.get('username')}' email='{user.get('email')}' hash_prefix={stored_hash[:7]} hash_len={len(stored_hash)}")
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
-    token = create_token(user["id"])
-    logger.info(f"LOGIN SUCCESS: user='{user.get('username')}' email='{user.get('email')}' found_via={lookup_method}")
+    token = create_token(user["id"], username=user.get("username", ""), email=user.get("email", ""))
+    logger.info(f"LOGIN SUCCESS: user='{user.get('username')}' email='{user.get('email')}'")
     return TokenResponse(access_token=token, user=await _build_user_response(user))
 
 @router.post("/admin/login-diagnostic")
@@ -426,7 +426,7 @@ async def claim_invite(data: dict):
     await db.invite_tokens.delete_one({"token": token})
 
     # Issue JWT
-    jwt_token = create_token(user["id"])
+    jwt_token = create_token(user["id"], username=user.get("username", ""), email=user.get("email", ""))
     logger.info(f"Invite claimed by {email} (user {user.get('username')})")
 
     return {

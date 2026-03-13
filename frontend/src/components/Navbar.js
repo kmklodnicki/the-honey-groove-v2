@@ -175,7 +175,7 @@ const Navbar = () => {
                     <BeeAvatar user={user} className="h-8 w-8" />
                     <div className="flex flex-col">
                       <p className="text-sm font-medium flex items-center gap-1">
-                        @{user.username}
+                        {user.username ? `@${user.username}` : <span className="w-16 h-3 rounded bg-stone-200 animate-pulse inline-block" />}
                         {(user.golden_hive_verified || user.is_admin || user.id === KATIE_ID) && (
                           <VerifiedShield size={14} isFounder={user.is_admin || user.id === KATIE_ID} />
                         )}
@@ -400,7 +400,7 @@ const MobileProfileMenu = ({ user, onLogout }) => {
               <BeeAvatar user={user} className="h-8 w-8" />
               <div className="flex flex-col min-w-0">
                 <p className="text-sm font-medium truncate flex items-center gap-1">
-                  @{user.username}
+                  {user.username ? `@${user.username}` : <span className="w-16 h-3 rounded bg-stone-200 animate-pulse inline-block" />}
                   {(user.golden_hive_verified || user.is_admin || user.id === KATIE_ID) && (
                     <VerifiedShield size={14} isFounder={user.is_admin || user.id === KATIE_ID} />
                   )}
