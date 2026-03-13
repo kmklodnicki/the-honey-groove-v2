@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { X, Share, PlusSquare } from 'lucide-react';
 
 const isStandalone = () =>
@@ -9,10 +9,31 @@ const isIOS = () =>
   /iPad|iPhone|iPod/.test(navigator.userAgent) ||
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
+const setBannerHeight = (px) => {
+  document.documentElement.style.setProperty('--pwa-banner-h', `${px}px`);
+};
+
 const PWAInstallBanner = () => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showBanner, setShowBanner] = useState(false);
   const [showIOSGuide, setShowIOSGuide] = useState(false);
+  const bannerRef = useRef(null);
+
+  // Sync CSS variable with actual rendered banner height
+  useEffect(() => {
+    if (!showBanner) {
+      setBannerHeight(0);
+      return;
+    }
+    const measure = () => {
+      if (bannerRef.current) setBannerHeight(bannerRef.current.offsetHeight);
+    };
+    measure();
+    // Re-measure when iOS guide toggles
+    const ro = new ResizeObserver(measure);
+    if (bannerRef.current) ro.observe(bannerRef.current);
+    return () => ro.disconnect();
+  }, [showBanner, showIOSGuide]);
 
   useEffect(() => {
     if (isStandalone()) return;
@@ -30,7 +51,6 @@ const PWAInstallBanner = () => {
     };
     window.addEventListener('beforeinstallprompt', handler);
 
-    // Fallback: show banner on mobile browsers after short delay even without the event
     const isMobile = /Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     let fallbackTimer;
     if (isMobile) {
@@ -59,6 +79,7 @@ const PWAInstallBanner = () => {
 
   const handleDismiss = useCallback(() => {
     setShowBanner(false);
+    setBannerHeight(0);
     try { localStorage.setItem('pwa_installed', 'true'); } catch { /* noop */ }
   }, []);
 
@@ -66,12 +87,16 @@ const PWAInstallBanner = () => {
 
   return (
     <>
-      {/* Spacer to push content below the fixed banner */}
-      <div style={{ height: showIOSGuide ? '80px' : '40px' }} data-testid="pwa-banner-spacer" />
+      {/* Spacer — height matches the fixed banner via CSS variable */}
+      <div style={{ height: 'var(--pwa-banner-h, 0px)' }} data-testid="pwa-banner-spacer" />
 
       <div
-        className="fixed top-0 left-0 right-0 w-full"
-        style={{ zIndex: 50, paddingTop: 'env(safe-area-inset-top, 0px)' }}
+        ref={bannerRef}
+        className="fixed top-0 left-0 w-full"
+        style={{
+          zIndex: 101,
+          paddingTop: 'env(safe-area-inset-top, 0px)',
+        }}
         data-testid="pwa-install-banner"
       >
         <div

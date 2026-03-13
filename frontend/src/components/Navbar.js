@@ -76,7 +76,7 @@ const Navbar = () => {
 
   return (
     <>
-    <nav className="hidden md:block sticky top-0 z-[1000] glass border-b border-honey/30" style={{ overflow: 'visible', contain: 'none' }}>
+    <nav className="hidden md:block sticky top-0 z-[100] glass border-b border-honey/30" style={{ overflow: 'visible', contain: 'none' }}>
       <div className="max-w-6xl mx-auto px-4 md:px-8">
         <div className="flex items-center justify-between h-[88px]">
           {/* Logo */}
@@ -237,9 +237,9 @@ const Navbar = () => {
 
     </nav>
 
-    {/* Mobile Slim Top Bar */}
+    {/* Mobile Slim Top Bar — sits below PWA banner via CSS var */}
     {user && (
-      <div className="md:hidden sticky top-0 z-[1000] h-[52px] bg-[#FAF6EE] border-b border-[#C8861A]/10" data-testid="mobile-top-bar" style={{ overflow: 'visible', contain: 'none' }}>
+      <div className="md:hidden sticky h-[52px] bg-[#FAF6EE] border-b border-[#C8861A]/10" data-testid="mobile-top-bar" style={{ top: 'var(--pwa-banner-h, 0px)', zIndex: 100, transition: 'top 0.3s ease', overflow: 'visible', contain: 'none' }}>
         <div className="flex items-center h-full px-3">
           <Link to="/hive" className="shrink-0 mr-auto overflow-visible">
             <img src="/logo-wordmark.png" alt="the Honey Groove" style={{minWidth: '120px', width: '120px'}} className="object-contain" />

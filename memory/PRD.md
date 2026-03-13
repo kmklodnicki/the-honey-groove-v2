@@ -29,7 +29,8 @@ A premium social platform for vinyl collectors. React frontend + FastAPI backend
 - **P0 DONE**: "So Sorry" Re-engagement Campaign — 46 emails resent with FIXED CTA link
 - **P0 FIXED (Mar 13)**: Admin prompts sorted descending (newest first) in `/api/prompts/admin/all`
 - **P0 FIXED (Mar 13)**: Honeypot page bottom padding increased to pb-32 for bottom nav clearance
-- **P0 FIXED (Mar 13)**: FRONTEND_URL hard-coded to `https://www.thehoneygroove.com` in `database.py` to prevent broken email links from env misconfiguration
+- **P0 FIXED (Mar 13)**: FRONTEND_URL hard-coded to `https://www.thehoneygroove.com` in `database.py`
+- **P0 FIXED (Mar 13)**: Sticky top banner hierarchy — PWA banner (z:101) stacks above mobile nav (z:100) with CSS variable coordination and smooth dismiss transition
 - Database migration from `the_honey_groove` to `groove-social-beta-test_database`
 - Seeded 54 posts, 27 follows, 31 likes for 23 real users
 - Fixed broken Discogs CDN image URLs
@@ -63,6 +64,8 @@ A premium social platform for vinyl collectors. React frontend + FastAPI backend
 
 ## Key Files
 - `frontend/src/components/PostCards.js` — All post card components
+- `frontend/src/components/PWAInstallBanner.js` — PWA install banner with CSS var coordination
+- `frontend/src/components/Navbar.js` — Top/bottom nav, reads --pwa-banner-h CSS var
 - `backend/routes/hive.py` — Feed API, build_post_response
 - `backend/server.py` — Main FastAPI app
 - `backend/database.py` — DB config, FRONTEND_URL, auth helpers
