@@ -270,6 +270,8 @@ async def get_todays_prompt(user: Dict = Depends(require_auth)):
     )
     # Get user streak
     streak = await _calculate_streak(user["id"])
+    # Check if user missed yesterday's prompt
+    missed_yesterday = await _check_missed_yesterday(user["id"])
     # Count how many buzzed in today
     buzz_count = await db.prompt_responses.count_documents({"prompt_id": prompt["id"]})
     return {
@@ -277,6 +279,7 @@ async def get_todays_prompt(user: Dict = Depends(require_auth)):
         "has_buzzed_in": response is not None,
         "response": response,
         "streak": streak,
+        "missed_yesterday": missed_yesterday,
         "buzz_count": buzz_count,
     }
 
@@ -365,6 +368,30 @@ async def _calculate_streak(user_id: str) -> int:
         else:
             break
     return streak
+
+
+async def _check_missed_yesterday(user_id: str) -> bool:
+    """Check if user missed yesterday's prompt (gap > 24hrs from last buzz-in)."""
+    today_start, _ = _get_today_range()
+    yesterday_start = today_start - timedelta(days=1)
+    yesterday_end = today_start
+    had_response = await db.prompt_responses.find_one({
+        "user_id": user_id,
+        "created_at": {"$gte": yesterday_start.isoformat(), "$lt": yesterday_end.isoformat()},
+    })
+    if had_response:
+        return False
+    # Check if user has ever buzzed in (if never, don't show repollinate)
+    any_response = await db.prompt_responses.find_one({"user_id": user_id})
+    if not any_response:
+        return False
+    # Check within 72hr grace period (missed yesterday but not more than 2 days ago)
+    two_days_ago_start = today_start - timedelta(days=2)
+    had_recent = await db.prompt_responses.find_one({
+        "user_id": user_id,
+        "created_at": {"$gte": two_days_ago_start.isoformat(), "$lt": yesterday_start.isoformat()},
+    })
+    return had_recent is not None
 
 
 # ─────────── Buzz In ───────────

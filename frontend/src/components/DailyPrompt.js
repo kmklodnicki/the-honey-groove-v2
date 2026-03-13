@@ -27,6 +27,7 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
   const [hasBuzzedIn, setHasBuzzedIn] = useState(false);
   const [buzzResponse, setBuzzResponse] = useState(null);
   const [streak, setStreak] = useState(0);
+  const [missedYesterday, setMissedYesterday] = useState(false);
   const [buzzCount, setBuzzCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -58,6 +59,7 @@ useEffect(() => {
       setHasBuzzedIn(r.data.has_buzzed_in || false);
       setBuzzResponse(r.data.response || null);
       setStreak(r.data.streak || 0);
+      setMissedYesterday(r.data.missed_yesterday || false);
       setBuzzCount(r.data.buzz_count || 0);
     } catch {
       setPrompt(null);
@@ -239,13 +241,9 @@ useEffect(() => {
         )}
 
         {/* Centered archive link — secondary explore action */}
-        {/* Re-pollinate: only show when spin streak is broken but within 48hr grace */}
+        {/* Re-pollinate: only show when user missed yesterday's prompt */}
         {(() => {
-          const lastSpin = user?.last_spin_date;
-          if (!lastSpin) return null;
-          const gap = (Date.now() - new Date(lastSpin).getTime()) / (1000 * 60 * 60);
-          // Show only if streak broken (>24hrs) but within grace period (<72hrs = 24hr miss + 48hr grace)
-          if (gap <= 24 || gap >= 72) return null;
+          if (!missedYesterday) return null;
           return (
             <div className="flex justify-center mt-3">
               <TooltipProvider>

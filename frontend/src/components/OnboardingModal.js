@@ -18,10 +18,16 @@ const MOOD_OPTIONS = [
 ];
 
 const OnboardingModal = ({ open, onComplete }) => {
-  const { token, API, updateUser } = useAuth();
+  const { token, API, updateUser, user: authUser } = useAuth();
   const navigate = useNavigate();
-  const [step, setStep] = useState(1);
+  // If user needs first_name, start at step 0 (first name), else step 1
+  const needsFirstName = !authUser?.first_name;
+  const [step, setStep] = useState(needsFirstName ? 0 : 1);
+  const totalSteps = needsFirstName ? 4 : 3;
   const [submitting, setSubmitting] = useState(false);
+
+  // Step 0: First Name
+  const [onboardFirstName, setOnboardFirstName] = useState('');
 
   // Step 1: Build collection (manual search)
   const [searchQuery, setSearchQuery] = useState('');
@@ -169,20 +175,53 @@ const OnboardingModal = ({ open, onComplete }) => {
 
         {/* Progress */}
         <div className="flex items-center justify-center gap-2 mb-4" data-testid="onboarding-progress">
-          {[1, 2, 3].map(s => (
+          {Array.from({ length: totalSteps }, (_, i) => i + (needsFirstName ? 0 : 1)).map(s => (
             <div key={s} className="flex items-center gap-1">
               <div className={`w-10 h-1 rounded-full transition-colors ${s <= step ? 'bg-amber-500' : 'bg-stone-200'}`} />
             </div>
           ))}
-          <span className="text-xs text-muted-foreground ml-2">Step {step} of 3</span>
+          <span className="text-xs text-muted-foreground ml-2">Step {step - (needsFirstName ? 0 : 1) + 1} of {totalSteps}</span>
         </div>
+
+        {/* Step 0: First Name (only if needed) */}
+        {step === 0 && needsFirstName && (
+          <div className="space-y-4" data-testid="onboarding-step-firstname">
+            <div className="text-center">
+              <h2 className="font-heading text-2xl italic" style={{ fontFamily: '"Playfair Display", serif' }}>What should we call you? 🐝</h2>
+              <p className="text-sm text-muted-foreground mt-1">Private. This is only used to address you in community emails.</p>
+            </div>
+            <Input
+              placeholder="Your first name"
+              value={onboardFirstName}
+              onChange={e => setOnboardFirstName(e.target.value.slice(0, 50))}
+              className="border-amber-200 text-center text-lg"
+              data-testid="onboarding-first-name-input"
+              autoFocus
+            />
+            <Button
+              onClick={async () => {
+                if (!onboardFirstName.trim()) return;
+                try {
+                  await axios.put(`${API}/auth/me`, { first_name: onboardFirstName.trim() }, { headers: { Authorization: `Bearer ${token}` } });
+                  updateUser(prev => ({ ...prev, first_name: onboardFirstName.trim() }));
+                  setStep(1);
+                } catch { toast.error('Could not save. Try again.'); }
+              }}
+              disabled={!onboardFirstName.trim()}
+              className="w-full rounded-full bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-40"
+              data-testid="onboarding-firstname-next"
+            >
+              Next <ChevronRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
+        )}
 
         {/* Step 1: Build Collection */}
         {step === 1 && (
           <div className="space-y-4" data-testid="onboarding-step-1">
             <div className="text-center">
-              <h2 className="font-heading text-2xl italic" style={{ fontFamily: '"Playfair Display", serif' }}>connect your collection.</h2>
-              <p className="text-sm text-muted-foreground mt-1">import your vinyl collection from Discogs in one tap.</p>
+              <h2 className="font-heading text-2xl italic" style={{ fontFamily: '"Playfair Display", serif' }}>connect your vault.</h2>
+              <p className="text-sm text-muted-foreground mt-1">import your vinyl vault from Discogs in one tap.</p>
             </div>
 
             {/* Prominent Discogs OAuth Button */}

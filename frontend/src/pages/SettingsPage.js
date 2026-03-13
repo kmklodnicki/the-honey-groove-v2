@@ -24,6 +24,7 @@ const SettingsPage = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [username, setUsername] = useState(user?.username || '');
+  const [firstName, setFirstName] = useState(user?.first_name || '');
   const [bio, setBio] = useState(user?.bio || '');
   const [setup, setSetup] = useState(user?.setup || '');
   const [location, setLocation] = useState(user?.location || '');
@@ -93,10 +94,15 @@ const SettingsPage = () => {
       toast.error('username is required.');
       return;
     }
+    if (!firstName.trim()) {
+      toast.error('first name is required.');
+      return;
+    }
     setSaving(true);
     try {
       const payload = {
         username: username !== user.username ? username : undefined,
+        first_name: firstName.trim(),
         bio: bio || '',
         setup: setup || '',
         location: country === 'US' && stateUS ? `${stateUS}, USA` : (country || ''),
@@ -329,6 +335,20 @@ const SettingsPage = () => {
                 {uploading ? 'Uploading...' : 'Change photo'}
               </button>
             </div>
+          </div>
+
+          {/* First Name */}
+          <div className="space-y-2">
+            <Label htmlFor="first_name">First Name <span className="text-red-500">*</span></Label>
+            <Input
+              id="first_name"
+              placeholder="Your first name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value.slice(0, 50))}
+              className="border-honey/50"
+              data-testid="settings-first-name"
+            />
+            <p className="text-xs text-muted-foreground">Private. Used only for community emails.</p>
           </div>
 
           {/* Username */}

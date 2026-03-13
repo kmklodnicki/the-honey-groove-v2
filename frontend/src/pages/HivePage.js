@@ -461,12 +461,12 @@ const HivePage = () => {
   }, [promptFilter, API, token]);
 
   const FEED_FILTERS = [
-    { key: 'all', label: '\u{1F36F} All' },
-    { key: 'NOW_SPINNING', label: '\u{1F41D} Now Spinning' },
-    { key: 'ISO', label: '\u{1F50D} ISO' },
-    { key: 'NEW_HAUL', label: '\u{1F4E6} Haul' },
-    { key: 'NOTE', label: '\u{1F4DD} Notes' },
-    { key: 'listing', label: '\u{1F3F7}\uFE0F For Sale/Trade' },
+    { key: 'all', label: 'All \u{1F36F}' },
+    { key: 'NOW_SPINNING', label: 'Now Spinning \u{1F41D}' },
+    { key: 'ISO', label: 'ISO \u{1F50D}' },
+    { key: 'NEW_HAUL', label: 'Haul \u{1F4E6}' },
+    { key: 'NOTE', label: 'Notes \u{1F4DD}' },
+    { key: 'listing', label: 'For Sale/Trade \u{1F3F7}\uFE0F' },
   ];
 
   const headers = { Authorization: `Bearer ${token}` };

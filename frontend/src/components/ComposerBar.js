@@ -540,86 +540,29 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                     <span style={{ color: '#8A6B4A' }}>Loading tracklist...</span>
                   </div>
                 ) : spinTracks.length > 0 ? (
-                  <>
-                    <div
-                      className="flex items-center gap-2 px-3 py-2 rounded-md text-sm cursor-pointer transition-colors"
-                      style={{
-                        border: '1px solid rgba(200,134,26,0.5)',
-                        background: '#FFFDF5',
-                        color: spinTrack ? '#1a1a1a' : '#8A6B4A',
-                      }}
-                      onClick={() => setSpinTrackDropdownOpen(!spinTrackDropdownOpen)}
-                      data-testid="spin-track-dropdown-trigger"
-                    >
-                      <Music className="w-4 h-4 shrink-0" style={{ color: '#C8861A' }} />
-                      <span className="flex-1 truncate">{spinTrack || 'Select a track (optional)'}</span>
-                      {spinTrack ? (
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setSpinTrack(''); setSpinTrackSearch(''); }}
-                          className="p-0.5 rounded-full hover:bg-black/10"
-                          data-testid="spin-track-clear"
-                        >
-                          <X className="w-3.5 h-3.5" style={{ color: '#8A6B4A' }} />
-                        </button>
-                      ) : (
-                        <ChevronDown className="w-4 h-4 shrink-0 transition-transform" style={{ color: '#8A6B4A', transform: spinTrackDropdownOpen ? 'rotate(180deg)' : 'rotate(0)' }} />
-                      )}
-                    </div>
-                    {spinTrackDropdownOpen && (
-                      <div className="absolute z-50 left-0 right-0 mt-1 rounded-lg shadow-lg overflow-hidden" style={{ border: '1px solid rgba(200,134,26,0.3)', background: '#FFFDF5' }}>
-                        <div className="p-2 border-b" style={{ borderColor: 'rgba(200,134,26,0.15)' }}>
-                          <Input
-                            placeholder="Search tracks..."
-                            value={spinTrackSearch}
-                            onChange={e => setSpinTrackSearch(e.target.value)}
-                            className="h-8 text-sm border-honey/40"
-                            data-testid="spin-track-search-input"
-                            autoFocus
-                          />
-                        </div>
-                        <div className="max-h-48 overflow-y-auto">
-                          {spinTracks
-                            .filter(t => {
-                              if (!spinTrackSearch) return true;
-                              const q = spinTrackSearch.toLowerCase();
-                              return (t.title || '').toLowerCase().includes(q) || (t.position || '').toLowerCase().includes(q);
-                            })
-                            .map((t, idx) => {
-                              const label = t.position ? `${t.position} — ${t.title}` : t.title;
-                              return (
-                                <button
-                                  key={idx}
-                                  className="w-full text-left px-3 py-2 text-sm transition-colors flex items-center gap-2"
-                                  style={{
-                                    background: spinTrack === label ? 'rgba(255,184,0,0.15)' : 'transparent',
-                                    color: '#1a1a1a',
-                                  }}
-                                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,184,0,0.1)'}
-                                  onMouseLeave={e => e.currentTarget.style.background = spinTrack === label ? 'rgba(255,184,0,0.15)' : 'transparent'}
-                                  onClick={() => {
-                                    setSpinTrack(label);
-                                    setSpinTrackDropdownOpen(false);
-                                    setSpinTrackSearch('');
-                                  }}
-                                  data-testid={`spin-track-option-${idx}`}
-                                >
-                                  {t.position && <span className="text-xs font-mono shrink-0 w-7" style={{ color: '#C8861A' }}>{t.position}</span>}
-                                  <span className="truncate">{t.title}</span>
-                                  {t.duration && <span className="text-xs ml-auto shrink-0" style={{ color: '#8A6B4A' }}>{t.duration}</span>}
-                                </button>
-                              );
-                            })}
-                          {spinTracks.filter(t => {
-                            if (!spinTrackSearch) return true;
-                            const q = spinTrackSearch.toLowerCase();
-                            return (t.title || '').toLowerCase().includes(q) || (t.position || '').toLowerCase().includes(q);
-                          }).length === 0 && (
-                            <p className="text-xs text-center py-3" style={{ color: '#8A6B4A' }}>No tracks match "{spinTrackSearch}"</p>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </>
+                  <select
+                    value={spinTrack}
+                    onChange={e => setSpinTrack(e.target.value)}
+                    className="w-full rounded-md text-sm px-3 py-2 appearance-none cursor-pointer"
+                    style={{
+                      border: '1px solid rgba(200,134,26,0.5)',
+                      background: '#FFFDF5',
+                      color: spinTrack ? '#1a1a1a' : '#8A6B4A',
+                      backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath d=\'M2 4l4 4 4-4\' fill=\'none\' stroke=\'%23C8861A\' stroke-width=\'1.5\'/%3E%3C/svg%3E")',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundPosition: 'right 10px center',
+                      paddingRight: '30px',
+                    }}
+                    data-testid="spin-track-select"
+                  >
+                    <option value="">Select a track...</option>
+                    {spinTracks.map((t, idx) => {
+                      const label = t.position ? `${t.position} — ${t.title}` : t.title;
+                      return (
+                        <option key={idx} value={label}>{label}{t.duration ? ` (${t.duration})` : ''}</option>
+                      );
+                    })}
+                  </select>
                 ) : (
                   <div className="flex items-center gap-1.5">
                     <Input
