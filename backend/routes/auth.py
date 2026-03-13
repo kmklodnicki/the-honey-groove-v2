@@ -375,10 +375,14 @@ async def validate_invite(token: str = Query(...)):
     Read-only — does NOT burn the token. Token is only burned on successful claim."""
     doc = await _find_invite_token(token)
     if not doc:
+        logger.warning(f"INVITE TOKEN ERROR [Token Not Found]: token='{token[:12]}...' — no match in DB (tried exact, lowercase, regex)")
         raise HTTPException(status_code=400, detail="Invalid or expired invite link.")
     created = datetime.fromisoformat(doc["created_at"])
-    if datetime.now(timezone.utc) - created > timedelta(days=7):
+    age = datetime.now(timezone.utc) - created
+    if age > timedelta(days=7):
+        logger.warning(f"INVITE TOKEN ERROR [Token Expired]: token='{token[:12]}...' email='{doc['email']}' created={doc['created_at']} age={age.days}d")
         raise HTTPException(status_code=400, detail="This invite link has expired. Request a fresh one below.")
+    logger.info(f"INVITE TOKEN VALID: token='{token[:12]}...' email='{doc['email']}' age={age.days}d{age.seconds//3600}h")
     return {"email": doc["email"], "is_existing": doc.get("is_existing", False)}
 
 
@@ -421,13 +425,13 @@ async def resend_invite(data: dict):
 <tr><td style="padding:32px 28px 12px;">
 <h1 style="font-size:22px;font-weight:700;color:#915527;margin:0 0 20px;line-height:1.3;">Here's your fresh invite link!</h1>
 <p style="font-size:15px;line-height:1.7;color:#333;margin:0 0 16px;">
-You requested a new invite link for <strong>The Honey Groove</strong>. Click the button below to {'reset your password and sign' if is_existing else 'set your password and join'} in:
+You requested a new invite link for <strong>The Honey Groove</strong>. Click the button below to {'reset your password and sign in' if is_existing else 'join the hive'}:
 </p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
 <tr><td align="center" style="padding:8px 0 28px;">
 <a href="{claim_url}" target="_blank"
    style="display:inline-block;background-color:#915527;color:#FDE68A;font-size:16px;font-weight:700;text-decoration:none;padding:14px 36px;border-radius:999px;letter-spacing:0.3px;">
-{'Reset Password & Sign In' if is_existing else 'Set Password & Join'}
+{'Reset Password & Sign In' if is_existing else 'Join Now'}
 </a>
 </td></tr>
 </table>
@@ -463,9 +467,12 @@ async def claim_invite(data: dict):
 
     doc = await _find_invite_token(token)
     if not doc:
+        logger.warning(f"INVITE CLAIM ERROR [Token Not Found]: token='{token[:12]}...' — no match in DB")
         raise HTTPException(status_code=400, detail="Invalid or expired invite link.")
     created = datetime.fromisoformat(doc["created_at"])
-    if datetime.now(timezone.utc) - created > timedelta(days=7):
+    age = datetime.now(timezone.utc) - created
+    if age > timedelta(days=7):
+        logger.warning(f"INVITE CLAIM ERROR [Token Expired]: token='{token[:12]}...' email='{doc['email']}' age={age.days}d")
         raise HTTPException(status_code=400, detail="This invite link has expired. Request a fresh one below.")
 
     email = doc["email"].lower().strip()

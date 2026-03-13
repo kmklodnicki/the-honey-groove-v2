@@ -14,6 +14,7 @@ const JoinPage = () => {
   usePageTitle('Join the Hive');
   const [searchParams] = useSearchParams();
   const inviteCode = searchParams.get('code') || '';
+  const emailParam = searchParams.get('email') || '';
   const navigate = useNavigate();
   const { setToken, setUser } = useAuth();
 
@@ -21,10 +22,40 @@ const JoinPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [codeInvalid, setCodeInvalid] = useState(!inviteCode);
+  const [resendEmail, setResendEmail] = useState(emailParam);
+  const [resendStatus, setResendStatus] = useState('');
 
   useEffect(() => {
-    if (!inviteCode) setCodeInvalid(true);
+    if (!inviteCode) {
+      console.error('Invite Token Error: No invite code found in URL params');
+      setCodeInvalid(true);
+    }
   }, [inviteCode]);
+
+  const handleResendInvite = async () => {
+    if (!resendEmail || !resendEmail.includes('@')) {
+      setResendStatus('Please enter a valid email address.');
+      return;
+    }
+    setResendStatus('sending');
+    try {
+      const res = await fetch(`${API}/api/auth/resend-invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resendEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        console.error('Invite Token Error: Resend failed —', data.detail);
+        setResendStatus(data.detail || 'Failed to send. Please try again.');
+        return;
+      }
+      setResendStatus('sent');
+    } catch (err) {
+      console.error('Invite Token Error: Network error on resend —', err);
+      setResendStatus('Network error. Please try again.');
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,6 +89,7 @@ const JoinPage = () => {
       navigate('/hive');
     } catch (err) {
       const detail = err.response?.data?.detail || 'Registration failed';
+      console.error('Invite Token Error:', detail, '| Code:', inviteCode, '| Email:', form.email);
       if (detail.includes('invite code')) {
         setCodeInvalid(true);
       }
@@ -88,10 +120,49 @@ const JoinPage = () => {
               hmm, that didn't work.
             </h1>
             <p
-              className="mb-8"
+              className="mb-6"
               style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: '22px', color: '#8A6B4A', lineHeight: 1.5 }}
             >
-              this invite code is invalid or has already been used. join the waitlist at{' '}
+              this invite code is invalid or has already been used.
+            </p>
+
+            {/* Resend invite fallback */}
+            <div className="bg-white rounded-2xl p-6 mb-6 text-left" style={{ border: '1px solid rgba(200,134,26,0.15)' }}>
+              <p className="text-center mb-4" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', color: '#915527', fontWeight: 600 }}>
+                no worries — we'll send you a fresh link.
+              </p>
+              <input
+                type="email"
+                value={resendEmail}
+                onChange={e => setResendEmail(e.target.value)}
+                placeholder="enter your email"
+                className="w-full bg-[#FAF6EE] border border-[#C8861A]/20 rounded-xl px-4 py-3.5 font-serif text-base text-[#2A1A06] placeholder:text-[#8A6B4A]/50 focus:outline-none focus:border-[#C8861A] transition-colors mb-3"
+                data-testid="join-resend-email"
+              />
+              {resendStatus === 'sent' ? (
+                <div className="bg-green-50 rounded-xl px-4 py-3 text-center" data-testid="join-resend-success">
+                  <p className="text-sm text-green-700 font-medium">fresh invite sent! check your inbox.</p>
+                </div>
+              ) : (
+                <button
+                  onClick={handleResendInvite}
+                  disabled={resendStatus === 'sending'}
+                  className="w-full bg-[#915527] text-[#FDE68A] font-serif text-base font-medium rounded-2xl transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                  style={{ height: '52px' }}
+                  data-testid="join-resend-btn"
+                >
+                  {resendStatus === 'sending' ? <Loader2 className="w-5 h-5 animate-spin" /> : 'send me a fresh invite link'}
+                </button>
+              )}
+              {resendStatus && resendStatus !== 'sending' && resendStatus !== 'sent' && (
+                <p className="text-sm text-red-500 text-center mt-2" data-testid="join-resend-error">{resendStatus}</p>
+              )}
+            </div>
+
+            <p
+              style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: '18px', color: '#8A6B4A', lineHeight: 1.5 }}
+            >
+              or join the waitlist at{' '}
               <Link to="/beta" className="text-[#C8861A] underline">thehoneygroove.com/beta</Link>
             </p>
           </div>

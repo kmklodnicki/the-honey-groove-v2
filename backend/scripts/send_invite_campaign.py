@@ -177,7 +177,7 @@ Click below to set your password and claim your profile:
 <tr><td align="center" style="padding:0 0 28px;">
 <a href="{claim_url}" target="_blank"
    style="display:inline-block;background-color:#915527;color:#FDE68A;font-size:16px;font-weight:700;text-decoration:none;padding:14px 36px;border-radius:999px;letter-spacing:0.3px;">
-Set Your Password &amp; Sign In
+Set Your Password &amp; Join Now
 </a>
 </td></tr>
 </table>

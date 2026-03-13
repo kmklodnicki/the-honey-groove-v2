@@ -21,17 +21,17 @@ export default function ClaimInvitePage() {
   const [resendStatus, setResendStatus] = useState('');
 
   useEffect(() => {
-    if (!token) { setStatus('error'); setError('No invite token found.'); return; }
+    if (!token) { console.error('Invite Token Error: No token in URL params'); setStatus('error'); setError('No invite token found.'); return; }
     fetch(`${API}/api/auth/validate-invite?token=${encodeURIComponent(token)}`)
-      .then(r => r.json().then(d => ({ ok: r.ok, data: d })))
-      .then(({ ok, data }) => {
-        if (!ok) { setStatus('error'); setError(data.detail || 'Invalid invite link.'); return; }
+      .then(r => r.json().then(d => ({ ok: r.ok, status: r.status, data: d })))
+      .then(({ ok, status, data }) => {
+        if (!ok) { console.error('Invite Token Error:', data.detail, '| HTTP', status, '| token:', token.slice(0, 12) + '...'); setStatus('error'); setError(data.detail || 'Invalid invite link.'); return; }
         setEmail(data.email);
         setResendEmail(data.email);
         setIsExisting(data.is_existing);
         setStatus('ready');
       })
-      .catch(() => { setStatus('error'); setError('Could not validate invite. Please try again.'); });
+      .catch((err) => { console.error('Invite Token Error: Network failure —', err); setStatus('error'); setError('Could not validate invite. Please try again.'); });
   }, [token]);
 
   const handleSubmit = async (e) => {
