@@ -479,13 +479,14 @@ async def claim_invite(data: dict):
     user = await db.users.find_one({"email": email}, {"_id": 0})
 
     if user:
-        # Existing user: update password & mark verified
+        # Existing user: update password, mark verified, & force onboarding
         new_hash = hash_password(password)
         await db.users.update_one(
             {"id": user["id"]},
-            {"$set": {"password_hash": new_hash, "is_verified": True}},
+            {"$set": {"password_hash": new_hash, "is_verified": True, "onboarding_completed": False}},
         )
         user["is_verified"] = True
+        user["onboarding_completed"] = False
     else:
         # New user: create account
         user_id = str(uuid.uuid4())
