@@ -40,6 +40,7 @@ import { resolveImageUrl } from '../utils/imageUrl';
 import { PostTypeBadge, PostCardBody, NewFeatureBadge, PILL_STYLES } from '../components/PostCards';
 import { TitleBadge } from '../components/TitleBadge';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { DailyPromptCard } from '../components/DailyPrompt';
 import OnboardingModal from '../components/OnboardingModal';
 import AlbumArt from '../components/AlbumArt';
@@ -459,13 +460,28 @@ const HivePage = () => {
       .catch(() => setPromptFilterText('a daily prompt'));
   }, [promptFilter, API, token]);
 
-  const FEED_FILTERS = [
+  const MOBILE_FILTERS = [
     { key: 'all', label: 'All' },
     { key: 'NOW_SPINNING', label: '\u{1F41D} Now Spinning' },
     { key: 'ISO', label: '\u{1F50D} ISO' },
     { key: 'NEW_HAUL', label: '\u{1F4E6} Haul' },
     { key: 'NOTE', label: '\u{1F4DD} Notes' },
     { key: 'listing', label: '\u{1F3F7}\uFE0F For Sale/Trade' },
+  ];
+
+  const DESKTOP_FILTERS = [
+    { key: 'all', label: 'All' },
+    { key: 'NOW_SPINNING', label: '\u{1F41D} Now Spinning' },
+    { key: 'ISO', label: '\u{1F50D} ISO' },
+    { key: 'NEW_HAUL', label: '\u{1F4E6} Haul' },
+    { key: 'NOTE', label: '\u{1F4DD} Notes' },
+    { key: 'listing_sale', label: '\u{1F3F7}\uFE0F For Sale' },
+    { key: 'listing_trade', label: '\u{1F91D} For Trade' },
+    { key: 'RANDOMIZER', label: '\u{1F3B2} Randomizer' },
+    { key: 'DAILY_PROMPT', label: '\u{1F4AC} Daily Prompt' },
+    { key: 'VINYL_MOOD', label: '\u{1F3B5} Vinyl Mood' },
+    { key: 'WEEKLY_WRAP', label: '\u{1F4CA} Weekly Wrap' },
+    { key: 'ADDED_TO_COLLECTION', label: '\u2795 Added' },
   ];
 
   const headers = { Authorization: `Bearer ${token}` };
@@ -528,6 +544,11 @@ const HivePage = () => {
       setRecords(response.data);
     } catch { /* ignore */ }
   }, [API, token]);
+
+  // Pull-to-refresh
+  const { PullIndicator } = usePullToRefresh(useCallback(async () => {
+    await Promise.all([fetchFeed(), fetchRecords()]);
+  }, [fetchFeed, fetchRecords]));
 
   useEffect(() => {
     fetchFeed();
@@ -597,6 +618,8 @@ const HivePage = () => {
     // Now Spinning includes Randomizer posts
     if (activeFilter === 'NOW_SPINNING') return result.filter(p => p.post_type === 'NOW_SPINNING' || p.post_type === 'RANDOMIZER');
     if (activeFilter === 'listing') return result.filter(p => p.post_type === 'listing_sale' || p.post_type === 'listing_trade');
+    if (activeFilter === 'listing_sale') return result.filter(p => p.post_type === 'listing_sale');
+    if (activeFilter === 'listing_trade') return result.filter(p => p.post_type === 'listing_trade');
     return result.filter(p => p.post_type === activeFilter);
   }, [posts, feedMode, activeFilter, followingIds, user?.id, promptFilter]);
 
@@ -716,6 +739,7 @@ const HivePage = () => {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 pt-3 md:pt-2 pb-24 md:pb-8 honey-fade-in">
+      <PullIndicator />
       <SEOHead
         title="The Hive — Vinyl Social Feed"
         description="See what collectors are spinning, buying, and trading. The Hive is the social feed for vinyl lovers on The Honey Groove."
@@ -787,9 +811,32 @@ const HivePage = () => {
       {/* Daily Prompt */}
       <DailyPromptCard records={records} onPostCreated={handlePostCreated} />
 
-      {/* 6 Action Filters — 3 per row on mobile, centered flex on desktop */}
-      <div className="flex flex-wrap justify-center items-center gap-1.5 sm:gap-2 mb-4 w-full mx-auto px-2" style={{ maxWidth: '520px' }} data-testid="feed-filter-bar">
-        {FEED_FILTERS.map(f => {
+      {/* 6 Action Filters — 2 rows of 3 on mobile, centered */}
+      <div className="md:hidden grid grid-cols-3 gap-1.5 mb-4 mx-auto px-3" style={{ maxWidth: '400px' }} data-testid="feed-filter-bar-mobile">
+        {MOBILE_FILTERS.map(f => {
+          const isActive = activeFilter === f.key;
+          return (
+            <button
+              key={f.key}
+              onClick={() => setActiveFilter(f.key)}
+              className={`rounded-full text-xs px-3 py-1 font-medium border whitespace-nowrap text-center transition-colors duration-200 ${
+                isActive ? 'font-semibold shadow-sm' : ''
+              }`}
+              style={isActive
+                ? { background: '#FFB800', borderColor: '#FFB800', color: '#000' }
+                : { background: 'transparent', borderColor: 'rgba(200,134,26,0.3)', color: 'rgba(120,80,20,0.7)' }
+              }
+              data-testid={`filter-${f.key}`}
+            >
+              {f.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* 12 Filters — single row on desktop, centered */}
+      <div className="hidden md:flex flex-nowrap justify-center gap-2 mb-4 w-full" data-testid="feed-filter-bar-desktop">
+        {DESKTOP_FILTERS.map(f => {
           const isActive = activeFilter === f.key;
           return (
             <button
@@ -857,10 +904,10 @@ const HivePage = () => {
             {feedMode === 'following' && activeFilter === 'all'
               ? 'nothing here yet. follow some collectors to see their posts.'
               : feedMode === 'following'
-                ? `no ${FEED_FILTERS.find(f => f.key === activeFilter)?.label || ''} posts from people you follow yet.`
+                ? `no ${[...MOBILE_FILTERS, ...DESKTOP_FILTERS].find(f => f.key === activeFilter)?.label || ''} posts from people you follow yet.`
                 : activeFilter === 'all'
                   ? 'the hive is just getting started. be the first to post.'
-                  : `no ${FEED_FILTERS.find(f => f.key === activeFilter)?.label || ''} posts yet.`}
+                  : `no ${[...MOBILE_FILTERS, ...DESKTOP_FILTERS].find(f => f.key === activeFilter)?.label || ''} posts yet.`}
           </p>
           {feedMode === 'following' ? (
             <Button onClick={() => navigate('/nectar')} className="bg-amber-500 text-white hover:bg-amber-600 rounded-full" data-testid="find-collectors-btn">

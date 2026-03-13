@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import axios from "axios";
 import Navbar from "./components/Navbar";
 import DiscogsSecurityModal from "./components/DiscogsSecurityModal";
+import PWAInstallBanner from "./components/PWAInstallBanner";
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -193,6 +194,7 @@ const AppLayout = ({ children }) => {
   
   return (
     <div className="min-h-screen relative" style={{ background: 'transparent', overflow: 'visible' }}>
+      <PWAInstallBanner />
       {/* BLOCK 585/587: Golden Glassy Banner — Discogs Import (relative: pushes navbar + content down) */}
       {showOAuthBanner && (
         <div className="relative w-full px-4 py-2.5 flex items-center justify-center gap-3 flex-wrap z-[200000]"

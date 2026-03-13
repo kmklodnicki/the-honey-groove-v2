@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Award, Diamond, ArrowLeft, X } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { usePullToRefresh } from '../hooks/usePullToRefresh';
 
 const HONEY_SHOP_ITEMS = [
   {
@@ -353,6 +354,10 @@ const EssentialsPage = () => {
   const [gatewayItem, setGatewayItem] = useState(null);
   const [terminalItem, setTerminalItem] = useState(null);
 
+  const { PullIndicator } = usePullToRefresh(useCallback(async () => {
+    window.location.reload();
+  }, []));
+
   const handleAcquire = useCallback((item) => {
     if (item.partner === 'amazon') {
       setGatewayItem(item);
@@ -363,6 +368,7 @@ const EssentialsPage = () => {
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-[#FDFAF5]">
+      <PullIndicator />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 pt-3 md:pt-2 pb-24 md:pb-8">
         <div className="text-center mb-10 sm:mb-14 space-y-3" data-testid="essentials-header">
           <h1 className="font-heading text-4xl sm:text-5xl text-stone-900 tracking-tight">
