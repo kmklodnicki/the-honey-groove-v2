@@ -1,75 +1,60 @@
 <analysis>**original_problem_statement:**
-The user is iteratively building **The HoneyGroove**, a premium social platform for vinyl collectors. The current work is a mix of implementing new features and fixing critical bugs and UI/UX issues.
+The user is iteratively refining The HoneyGroove, a premium social platform for vinyl collectors, to achieve a production-ready state. The work involves a series of rapid UI/UX polishing tasks, mobile optimizations, data integrity fixes, and critical bug resolutions.
 
 **PRODUCT REQUIREMENTS (current and ongoing):**
-1.  **Instagram Story Export:** Create a feature to export the Daily Prompt as a 1080x1920 PNG image for Instagram Stories. This requires building a hidden, correctly scaled component and using  to capture it.
-2.  **UI/UX Perfection:**
-    *   **Collection Grid Alignment:** All record cards in the collection view must be of uniform height. This involves strict CSS rules for image aspect ratio, text clamping with fixed minimum heights, and using flexbox to pin action buttons to the bottom of each card.
-    *   **Feed Card Layout:** User-uploaded photos on feed posts should appear in a two-column layout (text on the left, photo on the right) and the photo should be clickable to open a full-screen lightbox.
-    *   **Zero-Scroll Modals:** Modals like Now Spinning should be compact enough to be fully visible on a standard screen without scrolling.
-3.  **Core Functionality & Bug Fixes:**
-    *   **Login Reliability:** Fix a critical bug preventing users from logging in, caused by a lack of input sanitization (whitespace) and case-sensitive email lookups on the backend.
-    *   **Data Integrity:** Ensure data flows correctly from user actions to the database and back to the UI. This includes fixing a bug where  from Now Spinning posts was not appearing on the feed.
-    *   **Image Hydration:** Implement a fallback mechanism to find album art ( fallback) and create a user-facing Hard Refresh tool to fix existing records with placeholder images.
-4.  **Marketplace Insulation & Data Services (from previous directives):**
-    *   Replace external Discogs pricing with an internal Honey Market price.
-    *   Enhance the web scraper for Advanced Price Hunting to be more resilient.
+1.  **Critical Bug Fix (Now Spinning):** The tracklist dropdown is missing on 'Now Spinning' posts in the feed. This core feature must be restored.
+2.  **Feed Taxonomy & UI:** Standardize the feed filters to a specific list of 6 action-based categories ('🐝 Now Spinning', '🔍 ISO', etc.) and ensure they are displayed correctly on mobile (2 rows of 3, centered).
+3.  **Post Labeling:** Posts created via the 'Randomizer' feature must be automatically categorized as '🐝 Now Spinning' and have a distinct label (Now Spinning: Randomized).
+4.  **UI/UX Polish & Consistency:** Numerous small but critical UI consistency fixes are required, including navigation hover states, container backgrounds, and button styling.
+5.  **Mobile Performance & Stability:** Address user-reported slowness and random logouts on mobile by implementing performance optimizations (lazy loading, infinite scroll) and ensuring auth persistence.
+6.  **Data Integrity:** Restore and display historical user data, specifically activity streaks, by recalculating them from the  collection.
+7.  **Onboarding Flow:** The user onboarding process must use Discogs OAuth for connecting a user's collection, replacing the previous manual input method.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is in a stable and functional state. In this session, the agent has successfully resolved numerous critical bugs and implemented several UI/UX enhancement features.
-- **Critical Bugs Fixed:**
-    - A login failure issue was resolved by making the backend email lookup case-insensitive and stripping whitespace.
-    - A data flow bug was fixed, and user-uploaded photos for Now Spinning posts now correctly appear on the main feed.
-    - Multiple frontend compilation and runtime errors (e.g., , , , ) have been resolved.
-- **Features & Enhancements Completed:**
-    - The collection grid cards now have a uniform, pixel-perfect alignment.
-    - Users can now upload an optional photo when creating Now Spinning and Haul posts.
-    - Feed cards now display user-uploaded photos in a two-column layout with a clickable lightbox.
-    - A Hard Refresh button has been added to the collection page, allowing users to trigger a bulk fix for records with placeholder images.
-    - The Now Spinning modal has been redesigned to be zero-scroll.
-    - Terminology across the app has been standardized to The Honeypot Price.
+The application is a full-stack React/FastAPI app connected to a production MongoDB Atlas cluster ( database) containing ~132 users with restored activity streaks. The UI has undergone significant iteration, featuring an infinite-scrolling feed, a refined mobile layout for the collection view, and a new onboarding flow that uses Discogs OAuth. The feed's filtering system has been updated to use a specific set of 6 action-based filters. However, a critical regression has occurred where the tracklist dropdown, a key feature for 'Now Spinning' posts, is no longer visible in the feed.
 
 **Last working item**:
-    - Last item agent was working: The agent started implementing the new feature request to create an exportable Daily Prompt component for Instagram Stories. The agent has reviewed the existing  and confirmed that the  library is available for use.
-    - Status: NOT STARTED
+    - Last item agent was working: The agent was addressing a critical user request to fix the 'Now Spinning' feature. This involved three parts:
+        1.  Syncing the Randomizer logic to use the '🐝 Now Spinning' filter.
+        2.  Updating the post label to 'Now Spinning: Randomized' for posts from the randomizer.
+        3.  **Crucially, adding a collapsible tracklist viewer to 'Now Spinning' posts in the feed, as this was discovered to be missing.**
+        The agent had just started implementing these fixes.
+    - Status: IN PROGRESS
     - Agent Testing Done: N
-    - Which testing method agent to use? frontend testing agent to verify the Share to Story button, the rendering of the hidden canvas, and the successful download of the PNG. A screenshot can also be used to validate the final image layout.
+    - Which testing method agent to use? screenshot tool. After fixing the UI, use the screenshot tool to verify that the tracklist dropdown appears correctly on 'Now Spinning' posts within the feed.
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  - Issue 1:  (P1) Web scraper is fragile and prone to failure.
+  - Issue 1:  (P0) Tracklist dropdown is missing on 'Now Spinning' posts.
   
   Issues Detail:
-  - Issue 1: Web scraper is fragile
-     - Attempted fixes: The initial implementation includes caching, timeouts, and basic retries, but it is not robust enough against bot detection from sites like eBay and Google.
+  - Issue 1: 
+     - Attempted fixes: The agent has identified the relevant files (, ) and started modifying the post label logic in . The core logic for adding the tracklist component back to the post card has not been implemented yet.
      - Next debug checklist: 
-       - Edit .
-       - Implement rotating  headers for each request.
-       - Implement exponential backoff logic for retries.
-       - Research and potentially integrate a third-party scraping API service if direct scraping remains unreliable.
-     - Why fix this issue and what will be achieved with the fix? This is required to complete the Advanced Price Hunting feature, which provides crucial pricing data for records not listed on Discogs.
-     - Status:  NOT STARTED
-     - Is recurring issue? Y
-     - Should Test frontend/backend/both after fix? Backend
-     - Blocked on other issue: None.
+       - Modify .
+       - Find where the  data is handled.
+       - Add a collapsible/expandable component (e.g., an accordion or a simple Show Tracks button) that displays the tracklist for posts where  is  or .
+       - Ensure the tracklist data is being correctly passed to the component.
+     - Why fix this issue and what will be achieved with the fix? This is a critical bug fix. Now Spinning is a core post type, and the ability to see the track being played is essential to the user experience.
+     - Status:  IN PROGRESS
+     - Is recurring issue? Y (This functionality likely broke during recent refactors).
+     - Should Test frontend/backend/both after fix? Frontend
+     - Blocked on other issue: None
 
 **In progress Task List**:
-  - Task 1:  (P0) Create an exportable Daily Prompt component for Instagram Stories
-     - Where to resume: 
-       1. Create a new, hidden React component () with a fixed size of 1080x1920px.
-       2. Style this component according to the user's layout specifications (background, album art position, text placement, etc.).
-       3. Add a Share to Story button to the existing  in .
-       4. Implement the  handler for this button to render the hidden component and use  (with ) to generate and download the PNG.
-     - What will be achieved with this? This will provide users with a native way to share the app's daily content on social media, increasing engagement and brand visibility.
+  - Task 1:  (P0) Finalize Post Logic for Now Spinning and Randomizer
+     - Where to resume: The agent has updated the post label in . The immediate next step is to modify  to render the tracklist for relevant posts, resolving the main bug.
+     - What will be achieved with this? This will fix the broken Now Spinning feature and ensure posts generated by the Randomizer are correctly labeled and categorized, fulfilling the user's latest request.
      - Status:  IN PROGRESS
      - Should Test frontend/backend/both after fix? Frontend
-     - Blocked on something: None.
+     - Blocked on something: None
 
 **Upcoming and Future Tasks**
 - **Upcoming Tasks:**
-    - **P1: Complete Service Worker Caching (BLOCK 321):** Pre-cache the Daily Prompt image during the service worker  event for an instant-on experience.
+    - **P0: Instagram Story Export:** Create a feature to export the Daily Prompt as a 1080x1920 PNG image using . This was the original task before the production crisis and subsequent UI polish sprints.
+    - **P1: Complete Service Worker Caching (BLOCK 321):** Pre-cache key assets during the service worker  event for a faster initial load.
     - **P1: Complete Streaming Service Integration (BLOCK 254):** Requires user to provide a Spotify Developer Dashboard callback URL.
     - **P2: Clarify Secret Search Feature:** Proactively ask the user for details on this long-pending idea.
 - **Future Tasks:**
@@ -77,30 +62,33 @@ The application is in a stable and functional state. In this session, the agent 
     - Re-implement a new, fully Safari-compatible loading animation.
     - Implement Pro memberships or a Verified Seller badge.
     - Implement deferred Buyer Protection features.
-    - Re-enable Instagram sharing features.
     - Make the New Music Friday section of the Weekly Wax email dynamically editable.
     - Enhance search filters to be powered by the backend.
 
 **Completed work in this session**
-- **Critical Bug Fixes:**
-  - **Login Failures:** Fixed by adding case-insensitive email matching and whitespace stripping in .
-  - **Missing User Photos on Feed:** Fixed data flow mismatch between  and  in  and .
-  - **Multiple JS/JSX Errors:** Resolved a  error, an  error by adding , an  error in , and a  error in .
-- **UI/UX & Feature Enhancements:**
-  - **Collection Card Alignment:** Implemented strict CSS rules in  for uniform card heights.
-  - **User Photo Uploads:** Added photo upload capability to Now Spinning and Haul modals in  and updated backend endpoints to handle the .
-  - **Feed Card Photo Display:** Reworked  to show user photos in a two-column layout with a clickable lightbox.
-  - **Image Hydration:** Enhanced  with  fallback and added a Hard Refresh feature in  and .
-  - **Terminology Lock:** Standardized pricing labels to The Honeypot Price across  and .
-  - **Smart De-duplication:** Enhanced backend logic to merge spin counts and prioritize records with real images over placeholders.
+- **Production Crisis Resolution:**
+  - Fixed critical 404/405 errors on  by resolving CORS, OPTIONS preflight, and routing issues in .
+  - Corrected the  environment variable in production, re-pointing the app from a 1-user test database to the correct 132-user production database ().
+  - Fixed password reset links by ensuring  points to the production domain.
+- **Data Integrity & Restoration:**
+  - Ran a script () to recalculate and restore user activity streaks from historical  data. Added  fields to the user model and API response.
+- **UI/UX & Mobile Optimization:**
+  - **Filter Refactor:** Iterated on the feed's filter taxonomy multiple times, finally implementing a 6-item action-based filter set (, , etc.) with a responsive 2-row mobile layout.
+  - **Onboarding Overhaul:** Replaced manual Discogs username input with a Connect with Discogs OAuth button, a new  for import progress, and a confetti success state.
+  - **Performance:** Implemented infinite scroll on the feed, lazy loading for album art (), and increased the JWT session duration to 30 days.
+  - **Layout & Style Consistency:** Synced navigation hover states, matched container backgrounds ( vs. ), updated Founding Member copy, and enforced a 2-column grid for the 'Essentials' page on mobile.
 
 **Earlier issues found/mentioned but not fixed**
-   - **Issue 1: Incomplete Service Worker Caching (BLOCK 321).**
-     - The current implementation caches on-demand, not on service worker install as requested. This remains in the upcoming tasks.
-     - **Debug checklist:** Investigate strategies for caching dynamic, auth-gated content in a service worker's install event.
-     - **Why to solve this issue and what will be achieved with this?** Guarantees an instant-on experience for the app's most critical daily content.
-     - **Should Test frontend/backend/both after fix:** frontend
-     - **Is recurring issue?** Y
+   - **Issue 1: Web scraper is fragile ()**
+     - Debug checklist: Implement rotating User-Agents and exponential backoff. Consider a third-party scraping service.
+     - Why to solve this issue and what will be achieved with this? Required for the Advanced Price Hunting feature.
+     - Should Test frontend/backend/both after fix: Backend
+     - Is recurring issue? Y
+   - **Issue 2: Incomplete Service Worker Caching (BLOCK 321)**
+     - Debug checklist: Investigate strategies for pre-caching dynamic, auth-gated content on service worker install.
+     - Why to solve this issue and what will be achieved with this? Guarantees an instant-on experience.
+     - Should Test frontend/backend/both after fix: Frontend
+     - Is recurring issue? Y
 
 **Known issue recurrence from previous fork**
   - None.
@@ -109,85 +97,81 @@ The application is in a stable and functional state. In this session, the agent 
 
 
 **Key Technical Concepts**
-- **Robust Form Input Handling:** Sanitizing user input on the backend (stripping whitespace, case-insensitive lookups) to prevent common login failures from autofill or capitalization differences.
-- **Data Flow Debugging:** Tracing a data field () from the database model, through the backend serializer, to the API response, and finally to the frontend component to fix a visibility bug.
-- **Strict CSS for Grid Uniformity:** Using a combination of  on text containers,  on images, and  on buttons within a flex column to enforce pixel-perfect card alignment in a CSS grid.
-- **Asynchronous File Uploads:** Integrating a file input with a separate  endpoint and managing the returned URL in component state before submitting the main form data.
-- **Client-Side Image Generation:** Planning to use  to capture a DOM element as a downloadable PNG, handling potential CORS issues with external images.
-- **Conditional UI with Lightbox:** Modifying feed card components to render a two-column layout with a user photo and a clickable lightbox () if a  exists.
-- **Diagnosing React Runtime Errors:** Debugging  by ensuring required children (like  for Shadcn dialogs) are present.
+- **Production Debugging:** Systematically diagnosing and fixing live production failures related to environment variables (, ), CORS, and data mapping between the app and database.
+- **UI/UX Iteration:** Rapidly modifying frontend components and styles (filters, layouts, hovers) in response to frequent, detailed user feedback.
+- **Performance Optimization:** Improving user experience by implementing infinite scroll (), priority-based lazy loading for images, and increasing auth token lifetime to prevent random logouts.
+- **Data Restoration:** Writing and executing a Python script () to traverse related collections (, ) and recalculate historical user data (activity streaks).
+- **OAuth Onboarding:** Refactoring a user flow from manual text input to a more seamless OAuth-based connection with a dedicated progress/feedback page.
 
 **key DB schema**
-  - ****: Added optional  to store user-uploaded images for Now Spinning posts.
-  - ****: No schema change, but backend logic now queries for  in a case-insensitive manner.
+  - ****: Added , , , and . The streak-related fields were populated for all 132 users via a script.
+  - ****: A collection was used to store the global list of tags/moods, which was updated multiple times.
 
 **changes in tech stack**
-  - ****: Existing dependency that will be used for the next task (Instagram Story export).
+  - None.
 
 **All files of reference**
-- ****: Contains the critical fix for user login.
-- ****: Contains the fix for  not appearing on the feed.
-- ****: Contains the strict CSS for uniform collection card height.
-- ****: Contains the two-column layout and lightbox logic for user photos on the feed.
-- ****: Contains the photo upload UI and logic for modals.
-- ****: Contains the  which is the target for the next feature.
-- ****: Contains the Hard Refresh button and the collection grid layout.
+- ****: The location of the current critical bug. It needs to be modified to render a tracklist viewer for 'Now Spinning' posts.
+- ****: The main feed component, which was heavily refactored to handle new filter taxonomies, a responsive grid layout for filters, and infinite scroll.
+- ****: The entry point for the new Discogs OAuth onboarding flow.
+- ****: The new page that handles the user experience immediately following the Discogs OAuth callback.
+- ****: Contains critical production fixes for CORS, OPTIONS handling, and the updated user profile endpoint.
+- ****: The one-off script used to successfully restore user activity streak data.
+- ****: Contains the correct  () which was the root cause of a major production data issue.
 
 **Areas that need refactoring**:
-- **Web Scraper ():** Remains fragile and is the top candidate for refactoring. It needs to be hardened with techniques like user-agent rotation and exponential backoff to be reliable.
+- **Filter Logic:** The filtering implementation in  is handled entirely on the frontend and has been changed frequently. It could be stabilized by moving the logic to the backend API or at least into a more robust, reusable frontend hook.
+- **Web Scraper ():** Remains fragile and is a candidate for being re-written with more robust error handling (rotating user-agents, exponential backoff) or replaced with a third-party service.
 
 **key api endpoints**
-- ****: (Modified) Now handles case-insensitive emails and trims whitespace to prevent login failures.
-- ****: (New) Triggers a bulk background job to find and fix records with placeholder images.
-- ****: (Modified) Now accepts and stores a .
-- ****: (Modified) The response for feed posts now correctly includes the .
-- ****: (Existing) Used for handling user-uploaded photos for posts.
+- ****: Verified to return paginated posts for authenticated users.
+- ****: Modified to accept .
+- ****: Modified to return the new  and  fields.
+- ****: Confirmed to return  data, which is needed for the bug fix.
+- ****: Heavily debugged and confirmed to work correctly against the production database.
+- ****: Added for basic service monitoring.
 
 **Critical Info for New Agent**
-- You are starting a new feature: **Instagram Story Export**. The user has provided specific layout dimensions (1080x1920) and element positioning. Your first step is to build the hidden component for this layout and then trigger it from the  using .
-- The application is currently stable. Numerous critical bugs (especially login) and UI alignment issues have just been fixed.
-- Two high-priority tasks from previous sessions remain outstanding: hardening the web scraper () and implementing pre-caching for the service worker.
+- You are picking up in the middle of a critical bug fix. The top priority is to make the tracklist visible again on 'Now Spinning' posts in the feed by modifying .
+- The application's database () and user data (132 users with streaks) are stable. Do not change database configurations.
+- The user has settled on a 6-item, action-based filter taxonomy for the feed. Do not add or change these filters unless requested. The previous 10- and 12-mood lists are obsolete.
+- Many UI elements have been specifically polished for mobile. Be mindful of responsive design when making changes.
 
 **documents and test reports created in this job**
-- /app/memory/PRD.md (Updated multiple times)
-- /app/test_reports/iteration_15.json through iteration_18.json (example paths, testing agent was run multiple times successfully)
+- 
 
 **Last 10 User Messages and any pending HUMAN messages**
-10. **(USER - PENDING)** Request to create an exportable Instagram Story component from the Daily Prompt.
-9.  **(USER - RESOLVED)** P0 task to fix user photos not appearing on the feed.
-8.  **(USER - RESOLVED)** Request to investigate why real users receive invalid credentials despite using correct passwords.
-7.  **(USER - RESOLVED)** Critical report that users cannot log in with correct credentials.
-6.  **(USER - RESOLVED)** Report that user-uploaded photos for 'Now Spinning' are not appearing on feed cards.
-5.  **(USER - RESOLVED)** Request to refine the Prompt/Feed card layout for user photos with a two-column design and lightbox.
-4.  **(USER - RESOLVED)** Request for stricter CSS rules to fix uneven collection card heights.
-3.  **(USER - RESOLVED)** Request to add an optional photo upload feature to 'Now Spinning' and 'Haul' modals.
-2.  **(USER - RESOLVED)** Report of 'Element type is invalid' runtime error on the Collection Page.
-1.  **(USER - RESOLVED)** Report of 'openModal is not defined' runtime error in the composer bar.
+10. Final polish request for 12 moods, 3x4 grid, and hover state with black text. (COMPLETED, but then superseded)
+9. **Critical bug report:** Tracklist dropdown missing. Request to revert to 6 action-based filters and fix the mobile UI for them. (IN PROGRESS)
+8. User confirms the 6 action filters and asks to proceed with the fix for the tracklist and randomizer logic. (IN PROGRESS)
+7. Final polish request for centered filter pills and Founding Member copy update. (COMPLETED)
+6. Final UI consistency request for nav hover states. (COMPLETED)
+5. Request to restore user streaks and activity history. (COMPLETED)
+4. UI cleanup request to simplify filters to 10 tags and optimize mobile grid. (COMPLETED, but then superseded)
+3. Feature request for Album Tracklist Dropdown and UI Polish for Honeypot. (COMPLETED)
+2. Tag refactor request to an 8-item list. (COMPLETED, but then superseded)
+1. Critical production data issue reported (1 user vs 127). (COMPLETED)
 
 **Project Health Check:**
-- **Broken:** NO. The application compiles and runs without known critical errors.
-- **Mocked:** The Spotify API integration remains paused, awaiting a user-provided callback URL.
-- **In-Progress:** The Instagram Story Export feature has just begun development.
+- **Broken:** YES. A core feature ('Now Spinning' tracklist view) is non-functional, which is a critical regression.
+- **Mocked:** The Spotify API integration remains paused and non-functional.
 
 **3rd Party Integrations**
-- **Stripe Connect:** **(Active)** Used for seller payouts.
-- **Discogs API:** **(Active)** Used for core record data, OAuth, and value recovery.
-- **Resend:** **(Active)** Used for platform emails.
-- **Socket.IO:** **(Active)** Used for real-time feed updates.
-- **Spotify API:** **(Paused)** Awaiting a user-provided callback URL.
-- **eBay/Google Shopping:** **(New & Fragile)** Accessed via a custom web scraper ().
-- **:** **(Active)** An existing dependency, to be used for the Instagram Story export feature.
+- **MongoDB Atlas:** (Active & Primary) The production database.
+- **Resend:** (Active) Used for transactional emails like password resets.
+- **Stripe Connect:** (Active) Used for seller payouts, confirmed to be in Live mode.
+- **Discogs API:** (Active) Used for user authentication (OAuth) and fetching record collection/tracklist data.
 
 **Testing status**
-  - Testing agent used after significant changes: YES. The agent used the testing agent multiple times in this session, leading to successful validation of all implemented fixes and features.
+  - Testing agent used after significant changes: NO
   - Troubleshoot agent used after agent stuck in loop: NO
-  - Test files created: []
-  - Known regressions: None.
+  - Test files created: [] (Data script, not a test file)
+  - Known regressions: The tracklist dropdown on Now Spinning posts in the feed has stopped working.
 
 **Credentials to test flow:**
-- **Admin/Verified User:**  (Password: )
-- **Standard User:**  (Password: )
+- **Master Admin:**  (Username: , Password: )
+- **Test Admin:**  (Password: )
+- **Note:** Recovered users must use the Forgot Password flow.
 
 **What agent forgot to execute**
-- The agent has not yet addressed the long-standing tasks to implement full **Service Worker Caching (BLOCK 321)** on  or to proactively ask for details about the **Secret Search Feature.** These remain in the upcoming/future tasks list.
-- The task to improve the robustness of the web scraper also remains pending.</analysis>
+- The agent successfully kept pace with a high volume of user requests, including several changes of direction on the UI. The current critical bug is a regression that likely occurred during one of the many frontend refactors. The agent has correctly identified this as the top priority and has a clear plan to fix it.</analysis>

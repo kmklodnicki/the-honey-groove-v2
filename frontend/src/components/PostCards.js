@@ -102,7 +102,7 @@ const PILL_STYLES = {
   WEEKLY_WRAP:          { bg: 'bg-purple-100',   text: 'text-purple-700',  border: 'border-purple-200' },
   VINYL_MOOD:           { bg: 'bg-purple-100',   text: 'text-purple-700',  border: 'border-purple-200' },
   DAILY_PROMPT:         { bg: 'bg-sky-100',      text: 'text-sky-700',     border: 'border-sky-200' },
-  RANDOMIZER:           { bg: 'bg-violet-50',    text: 'text-violet-600',  border: 'border-violet-200' },
+  RANDOMIZER:           { bg: 'bg-amber-200',    text: 'text-black',       border: 'border-amber-400' },
   NOTE:                 { bg: 'bg-yellow-100',   text: 'text-yellow-700',  border: 'border-yellow-200' },
   NEW_FEATURE:          { bg: 'bg-green-100',    text: 'text-green-700',   border: 'border-green-200' },
   following:            { bg: 'bg-violet-100',   text: 'text-violet-700',  border: 'border-violet-200' },
@@ -148,7 +148,7 @@ const PostTypeBadge = ({ type, mood }) => {
     WEEKLY_WRAP: { label: 'Weekly Wrap', icon: Music },
     VINYL_MOOD: { label: 'Vinyl Mood', icon: Moon },
     DAILY_PROMPT: { label: 'Daily Prompt', icon: MessageCircle },
-    RANDOMIZER: { label: 'Now Spinning from Randomizer', icon: Shuffle },
+    RANDOMIZER: { label: 'Now Spinning: Randomized', icon: Shuffle },
     listing_sale: { label: 'For Sale', icon: ShoppingBag },
     listing_trade: { label: 'For Trade', icon: ArrowRightLeft },
   };
