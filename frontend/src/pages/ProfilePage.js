@@ -629,6 +629,11 @@ const ProfilePage = () => {
                   {promptStreak.streak} day streak
                 </span>
               )}
+              {profile.current_streak > 0 && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-700 text-xs font-bold mt-1" data-testid="profile-spin-streak-pill">
+                  {profile.current_streak} day spin streak
+                </span>
+              )}
               {profile.golden_hive_status === 'pending' && isOwnProfile && (
                 <div className="mt-1.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-100 border border-stone-200" data-testid="golden-hive-pending">
                   <Clock className="w-3 h-3 text-stone-500" />

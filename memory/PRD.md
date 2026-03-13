@@ -79,6 +79,11 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - **Image Lazy Loading:** AlbumArt now uses `loading="lazy"` for non-priority images.
 - **Mobile Collection Grid:** Essentials `grid-cols-2` on mobile. RecordCard padding tightened (`p-2 sm:p-3`).
 - **Honeypot Background Sync:** ISOPage glass header matches Collection page exactly.
+- **Final Feed Taxonomy:** 6 action-based filters: Now Spinning, ISO, Haul, Notes, For Sale, For Trade. Randomizer posts already show "Now Spinning from Randomizer" badge. Old mood/tag filters removed.
+- **Streak Recalculation:** Recalculated streaks for 3 users with spins (Katie: 6-day streak). Fields `current_streak`, `longest_streak`, `total_spin_days` added to user model and API response. Spin streak pill added to profile page.
+- **AlbumArt Priority Loading:** First 4 images eager (LCP), rest lazy. Changed from 12→4 priority threshold.
+- **Nav Hover States:** Essentials nav button changed from `variant="outline"` to `variant="ghost"` to match all other nav items. Mobile nav already consistent.
+- **Essentials 2-Col Grid:** Mobile grid updated from `grid-cols-1` to `grid-cols-2` for Essentials page. Collection page tighter padding (`p-2 sm:p-3`).
 
 ## Recently Completed (2026-03-12)
 - **P0 Login Fix v2 (Comprehensive):** Removed dangerous `password.strip()`, added username-based login (4-step lookup: exact email → regex email → exact username → regex username), fixed regex injection (re.escape), email normalization on registration, detailed server-side login logging, admin login-diagnostic endpoint, frontend updated to accept "Email or Username". All 15 tests passed.

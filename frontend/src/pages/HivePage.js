@@ -461,16 +461,12 @@ const HivePage = () => {
 
   const FEED_FILTERS = [
     { key: 'all', label: 'All' },
-    { key: 'tag:New Arrival', label: '\u{1F4E6} New Arrival' },
-    { key: 'tag:Deep Listening', label: '\u{1F9D8} Deep Listening' },
-    { key: 'tag:High Fidelity', label: '\u{1F50A} High Fidelity' },
-    { key: 'tag:Solo Session', label: '\u{1F56F}\uFE0F Solo Session' },
-    { key: 'tag:Cleaning Session', label: '\u{1F9FC} Cleaning Session' },
-    { key: 'tag:Spin Party', label: '\u{1F379} Spin Party' },
-    { key: 'tag:Limited Edition', label: '\u{1F48E} Limited Edition' },
-    { key: 'tag:Vibe Check', label: '\u2728 Vibe Check' },
-    { key: 'tag:Late Night', label: '\u{1F319} Late Night' },
-    { key: 'tag:Background Wax', label: '\u2615 Background Wax' },
+    { key: 'NOW_SPINNING', label: '\u{1F41D} Now Spinning' },
+    { key: 'ISO', label: '\u{1F50D} ISO' },
+    { key: 'NEW_HAUL', label: '\u{1F4E6} Haul' },
+    { key: 'NOTE', label: '\u{1F4DD} Notes' },
+    { key: 'listing_sale', label: '\u{1F3F7}\uFE0F For Sale' },
+    { key: 'listing_trade', label: '\u{1F91D} For Trade' },
   ];
 
   const headers = { Authorization: `Bearer ${token}` };
@@ -599,14 +595,9 @@ const HivePage = () => {
     }
     // Apply content type filter
     if (activeFilter === 'all') return result;
-    if (activeFilter === 'listing') return result.filter(p => p.post_type === 'listing_sale' || p.post_type === 'listing_trade');
-    if (activeFilter === 'NEW_FEATURE') return result.filter(p => p.is_new_feature);
     if (activeFilter === 'NOW_SPINNING') return result.filter(p => p.post_type === 'NOW_SPINNING' || p.post_type === 'RANDOMIZER');
-    // Tag-based filters (mood field)
-    if (activeFilter.startsWith('tag:')) {
-      const tagName = activeFilter.slice(4);
-      return result.filter(p => p.mood === tagName);
-    }
+    if (activeFilter === 'listing_sale') return result.filter(p => p.post_type === 'listing_sale');
+    if (activeFilter === 'listing_trade') return result.filter(p => p.post_type === 'listing_trade');
     return result.filter(p => p.post_type === activeFilter);
   }, [posts, feedMode, activeFilter, followingIds, user?.id, promptFilter]);
 
@@ -797,22 +788,21 @@ const HivePage = () => {
       {/* Daily Prompt */}
       <DailyPromptCard records={records} onPostCreated={handlePostCreated} />
 
-      {/* Content Filter Bar — mobile: 2 rows of 5+1 */}
-      <div className="flex flex-wrap justify-center items-center gap-1.5 sm:gap-2.5 mb-4 w-full mx-auto px-1" style={{ maxWidth: '640px' }} data-testid="feed-filter-bar">
+      {/* Action Filter Bar — mobile: 2 rows of 3-4 */}
+      <div className="grid grid-cols-4 sm:flex sm:flex-wrap sm:justify-center items-center gap-1.5 sm:gap-2 mb-4 w-full mx-auto px-1" style={{ maxWidth: '580px' }} data-testid="feed-filter-bar">
         {FEED_FILTERS.map(f => {
           const isActive = activeFilter === f.key;
           return (
             <button
               key={f.key}
               onClick={() => setActiveFilter(f.key)}
-              className={`shrink-0 rounded-full text-[11px] sm:text-xs font-medium transition-all border whitespace-nowrap ${
+              className={`rounded-full text-[11px] sm:text-xs font-medium transition-all border whitespace-nowrap text-center ${
                 isActive
                   ? 'text-black shadow-sm font-semibold'
                   : 'bg-transparent hover:bg-amber-50'
               }`}
               style={{
-                padding: '4px 8px',
-                fontSize: window.innerWidth < 640 ? '11px' : '12px',
+                padding: '5px 10px',
                 ...(isActive
                   ? { background: '#FFB800', borderColor: '#FFB800', color: '#000' }
                   : { borderColor: 'rgba(200,134,26,0.3)', color: 'rgba(120,80,20,0.7)' }),

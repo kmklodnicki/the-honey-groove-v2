@@ -50,6 +50,9 @@ class UserResponse(BaseModel):
     discogs_migration_dismissed: bool = False
     discogs_import_intent: str = "PENDING"  # PENDING | LATER | DECLINED | CONNECTED
     has_connected_discogs: bool = False
+    current_streak: int = 0
+    longest_streak: int = 0
+    total_spin_days: int = 0
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None

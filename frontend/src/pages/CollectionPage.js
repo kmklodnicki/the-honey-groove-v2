@@ -1048,7 +1048,7 @@ const CollectionPage = () => {
                     onToggleSelect={toggleSelect}
                     blurData={record.cover_url ? blurMap[record.cover_url] : null}
                     isFading={fadingIds.has(record.id)}
-                    priority={idx < 12}
+                    priority={idx < 4}
                   />
               ))}
             </div>

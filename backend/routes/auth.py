@@ -84,6 +84,9 @@ async def _build_user_response(user: dict) -> UserResponse:
         discogs_migration_dismissed=user.get("discogs_migration_dismissed", False),
         discogs_import_intent=user.get("discogs_import_intent", "PENDING"),
         has_connected_discogs=user.get("has_connected_discogs", False),
+        current_streak=user.get("current_streak", 0),
+        longest_streak=user.get("longest_streak", 0),
+        total_spin_days=user.get("total_spin_days", 0),
     )
 
 # ============== AUTH ROUTES ==============
