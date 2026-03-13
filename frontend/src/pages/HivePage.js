@@ -38,6 +38,7 @@ import { formatDistanceToNow } from 'date-fns';
 import ComposerBar from '../components/ComposerBar';
 import { resolveImageUrl } from '../utils/imageUrl';
 import { PostTypeBadge, PostCardBody, NewFeatureBadge, PILL_STYLES } from '../components/PostCards';
+import { StandaloneRefreshButton } from '../components/PullToRefresh';
 import { TitleBadge } from '../components/TitleBadge';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
@@ -758,7 +759,7 @@ const HivePage = () => {
       </div>
 
       {/* Feed Mode Toggle: All | Following */}
-      <div className="flex items-center mb-3" data-testid="feed-mode-toggle">
+      <div className="flex items-center justify-between mb-3" data-testid="feed-mode-toggle">
         <div className="flex w-52 bg-stone-100 rounded-full p-1">
           <button
             onClick={() => setFeedMode('all')}
@@ -785,6 +786,7 @@ const HivePage = () => {
             Following
           </button>
         </div>
+        <StandaloneRefreshButton />
       </div>
 
       {/* Composer Bar */}

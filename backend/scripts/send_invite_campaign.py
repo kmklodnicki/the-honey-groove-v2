@@ -55,6 +55,10 @@ GROUP_B = [
 
 FRONTEND_URL = "https://www.thehoneygroove.com"
 
+# URL pattern: /invite/TOKEN (not query param)
+def claim_url_for(token):
+    return f"{FRONTEND_URL}/invite/{token}"
+
 # ── Email templates ──
 
 def existing_user_html(claim_url):
@@ -271,7 +275,7 @@ async def main():
 
     for i, (email, is_existing, subject) in enumerate(all_emails, 1):
         token = all_tokens[email]
-        claim_url = f"{FRONTEND_URL}/claim-invite?token={token}"
+        claim_url = claim_url_for(token)
 
         if is_existing:
             html = existing_user_html(claim_url)

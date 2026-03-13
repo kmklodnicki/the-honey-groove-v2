@@ -14,6 +14,7 @@ import axios from "axios";
 import Navbar from "./components/Navbar";
 import DiscogsSecurityModal from "./components/DiscogsSecurityModal";
 import PWAInstallBanner from "./components/PWAInstallBanner";
+import PullToRefresh from "./components/PullToRefresh";
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -195,6 +196,7 @@ const AppLayout = ({ children }) => {
   const hasInlineBack = location.pathname.startsWith('/record/') || location.pathname.startsWith('/vinyl/');
   
   return (
+    <PullToRefresh>
     <div className="min-h-screen relative" style={{ background: 'transparent', overflow: 'visible' }}>
       <PWAInstallBanner />
       {/* BLOCK 585/587: Golden Glassy Banner — Discogs Import (relative: pushes navbar + content down) */}
@@ -248,6 +250,7 @@ const AppLayout = ({ children }) => {
       </main>
       <DiscogsSecurityModal open={showMigration} onClose={() => setShowMigration(false)} />
     </div>
+    </PullToRefresh>
   );
 };
 
@@ -258,9 +261,13 @@ const LandingWrapper = () => {
   return <LandingPage />;
 };
 
-// Invite redirect — /invite/:code → /join?code=:code
+// Invite redirect — /invite/:code can be a claim-invite token OR a join invite code
 const InviteRedirect = () => {
   const { code } = useParams();
+  // UUID-shaped tokens (36 chars with dashes) go to claim-invite flow
+  if (code && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(code)) {
+    return <Navigate to={`/claim-invite?token=${code}`} replace />;
+  }
   return <Navigate to={`/join?code=${code}`} replace />;
 };
 
