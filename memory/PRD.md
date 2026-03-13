@@ -23,14 +23,13 @@ A premium social platform for vinyl collectors. React frontend + FastAPI backend
 - Listing (sale/trade) cards
 
 ## Completed — March 2026
-- **P0 FIXED**: PostCards fallback logic — all card components now handle missing nested objects
-- **FIXED**: PWA Smart App Banner — visible on iOS/Android, hidden on desktop/standalone, z-index 9999, safe-area-inset
-- **P0 DONE**: Beta Welcome Email Campaign — 49 emails resent with FIXED CTA link (/forgot-password)
-  - Original send had broken /set-password link (route doesn't exist in production build)
-  - Emergency resend: all 49 recipients received corrected email
-- **P0 DONE**: "So Sorry" Re-engagement Campaign — 46 emails resent with FIXED CTA link (/forgot-password)
-  - Original send had same broken /set-password link
-  - Emergency resend: all 46 real users received corrected email
+- **P0 FIXED**: PostCards fallback logic — all card components handle missing nested objects
+- **FIXED**: PWA Smart App Banner — visible on iOS/Android, hidden on desktop/standalone
+- **P0 DONE**: Beta Welcome Email Campaign — 49 emails resent with FIXED CTA link
+- **P0 DONE**: "So Sorry" Re-engagement Campaign — 46 emails resent with FIXED CTA link
+- **P0 FIXED (Mar 13)**: Admin prompts sorted descending (newest first) in `/api/prompts/admin/all`
+- **P0 FIXED (Mar 13)**: Honeypot page bottom padding increased to pb-32 for bottom nav clearance
+- **P0 FIXED (Mar 13)**: FRONTEND_URL hard-coded to `https://www.thehoneygroove.com` in `database.py` to prevent broken email links from env misconfiguration
 - Database migration from `the_honey_groove` to `groove-social-beta-test_database`
 - Seeded 54 posts, 27 follows, 31 likes for 23 real users
 - Fixed broken Discogs CDN image URLs
@@ -38,10 +37,13 @@ A premium social platform for vinyl collectors. React frontend + FastAPI backend
 - Daily Prompts restored
 - Onboarding flag fixed for all users
 - Test data cleanup
+- Token-based "Claim Invite" system
+- Enriched JWT tokens for frontend hydration
+- Resend click-tracking disabled at domain level
 
 ## P0 — Next Priority
-1. **"So Sorry" Email Campaign** — Re-engagement email to 97 dormant users (awaiting user confirmation that feed is visually stable)
-2. **Instagram Story Export** — Export Daily Prompt as 1080x1920 PNG
+1. **Instagram Story Export** — Export Daily Prompt as 1080x1920 PNG
+2. **CRITICAL: User must redeploy production** after the FRONTEND_URL hard-code to take effect
 
 ## P1 — Upcoming
 - Service Worker Caching (BLOCK 321) — pre-cache key assets
@@ -57,11 +59,15 @@ A premium social platform for vinyl collectors. React frontend + FastAPI backend
 ## Known Issues
 - Web scraper fragile (backend/services/scraper.py) — needs rotating User-Agents
 - Service Worker caching incomplete
+- server.py monolith should be broken into route files (already partially done)
 
 ## Key Files
 - `frontend/src/components/PostCards.js` — All post card components
 - `backend/routes/hive.py` — Feed API, build_post_response
 - `backend/server.py` — Main FastAPI app
+- `backend/database.py` — DB config, FRONTEND_URL, auth helpers
+- `backend/routes/daily_prompts.py` — Daily Prompts system + admin endpoints
+- `frontend/src/pages/ISOPage.js` — The Honeypot marketplace page
 
 ## Credentials
 - Admin: kmklodnicki@gmail.com / HoneyGroove2026!
