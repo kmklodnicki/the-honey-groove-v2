@@ -214,6 +214,8 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
       setSpinTracks(normalized);
       setSpinTracksLoading(false);
       setSpinTracksFetched(true);
+      // Auto-open the dropdown so user sees tracks immediately
+      if (normalized.length > 0) setSpinTrackDropdownOpen(true);
     }).catch(err => {
       console.warn('[Tracklist] Fetch failed for', discogsId, err.message, isRetry ? '(retry)' : '');
       clearTimeout(timeout);
