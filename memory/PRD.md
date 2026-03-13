@@ -25,15 +25,12 @@ A premium social platform for vinyl collectors. React frontend + FastAPI backend
 ## Completed — March 2026
 - **P0 FIXED**: PostCards fallback logic — all card components now handle missing nested objects
 - **FIXED**: PWA Smart App Banner — visible on iOS/Android, hidden on desktop/standalone, z-index 9999, safe-area-inset
-- **P0 DONE**: Beta Welcome Email Campaign — 49/49 emails sent via Resend to beta signups who haven't joined
-  - Subject: "You're in! Welcome to the Beta Hive"
-  - CTA: "Set Your Password & Sign In" → thehoneygroove.com/set-password
-  - Added `/set-password` route alias in App.js
-  - Skipped `katie@test.com` (test email), fixed `caroline.dissing@hotmail.con` → `.com`
-- **P0 DONE**: "So Sorry" Re-engagement Campaign — 46/46 emails sent to existing real users
-  - Subject: "So sorry! Let's get you back into the groove"
-  - Filtered 37 test/demo accounts from 83 total, sent to 46 real users
-  - CTA: "Reset Your Password & Sign In" → thehoneygroove.com/set-password
+- **P0 DONE**: Beta Welcome Email Campaign — 49 emails resent with FIXED CTA link (/forgot-password)
+  - Original send had broken /set-password link (route doesn't exist in production build)
+  - Emergency resend: all 49 recipients received corrected email
+- **P0 DONE**: "So Sorry" Re-engagement Campaign — 46 emails resent with FIXED CTA link (/forgot-password)
+  - Original send had same broken /set-password link
+  - Emergency resend: all 46 real users received corrected email
 - Database migration from `the_honey_groove` to `groove-social-beta-test_database`
 - Seeded 54 posts, 27 follows, 31 likes for 23 real users
 - Fixed broken Discogs CDN image URLs
