@@ -6,6 +6,20 @@
 
 .card-title, .card-artist { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+/* Force all dialog modals to respect viewport height on mobile */
+[role="dialog"] {
+  max-height: 90vh !important;
+  max-height: 90dvh !important;
+  overflow: hidden !important;
+}
+@media (max-width: 640px) {
+  [role="dialog"] {
+    max-height: 85vh !important;
+    max-height: 85dvh !important;
+    max-width: 95vw !important;
+  }
+}
+
 html, body {
     /* iOS Safari: ensure touch scrolling works reliably */
     -webkit-overflow-scrolling: touch;

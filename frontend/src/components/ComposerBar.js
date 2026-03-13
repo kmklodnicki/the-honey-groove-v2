@@ -461,8 +461,8 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
 
       {/* ═══ Now Spinning Modal (merged with Mood) ═══ */}
       <Dialog open={activeModal === 'NOW_SPINNING'} onOpenChange={(open) => !open && closeModal()}>
-        <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col overflow-hidden p-0">
-          <div className="px-6 pt-6 pb-2 shrink-0">
+        <DialogContent className="sm:max-w-md max-h-[90dvh] flex flex-col overflow-hidden p-0 max-sm:max-w-[95vw] max-sm:max-h-[88dvh]">
+          <div className="px-6 max-sm:px-4 pt-6 max-sm:pt-4 pb-2 shrink-0">
             <DialogHeader>
               <DialogTitle className="font-heading flex items-center gap-2" style={{ color: '#D98C2F' }}>
                 <Disc className="w-5 h-5" /> Now Spinning
@@ -475,7 +475,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
           </div>
 
           {/* Scrollable content area */}
-          <div className="flex-1 overflow-y-auto px-6 min-h-0">
+          <div className="flex-1 overflow-y-auto px-6 max-sm:px-4 min-h-0">
             <div className="space-y-3 pb-2">
               <div>
                 <label className="text-sm font-medium mb-1 block">Record</label>
@@ -659,7 +659,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               <input type="file" accept="image/*" ref={postPhotoInputRef} onChange={handlePhotoSelect} className="hidden" data-testid="spin-photo-input" />
               {postPhotoPreview ? (
                 <div className="relative inline-block rounded-lg overflow-hidden border border-honey/30" data-testid="spin-photo-preview">
-                  <img src={postPhotoPreview} alt="Upload preview" className="h-20 w-20 object-cover" />
+                  <img src={postPhotoPreview} alt="Upload preview" className="h-20 w-20 object-cover max-sm:h-16 max-sm:w-16" />
                   <button onClick={clearPostPhoto} className="absolute top-0.5 right-0.5 bg-black/60 text-white rounded-full p-0.5" data-testid="spin-photo-remove">
                     <X className="w-3 h-3" />
                   </button>
@@ -677,7 +677,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
           </div>
 
           {/* Sticky footer — always visible */}
-          <div className="shrink-0 px-6 pb-5 pt-3 border-t border-honey/15 bg-white">
+          <div className="shrink-0 px-6 max-sm:px-4 pb-5 max-sm:pb-3 pt-3 max-sm:pt-2 border-t border-honey/15 bg-white">
             <Button onClick={submitNowSpinning} disabled={submitting || !spinRecordId || !spinCaption.trim()}
               className="w-full rounded-full transition-all duration-200 text-white"
               style={{ background: 'linear-gradient(135deg, #FFB300, #FFA000)' }}
@@ -694,14 +694,14 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
 
       {/* ═══ New Haul Modal ═══ */}
       <Dialog open={activeModal === 'NEW_HAUL'} onOpenChange={(open) => !open && closeModal()}>
-        <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col overflow-hidden p-0">
-          <div className="px-6 pt-6 pb-2 shrink-0">
+        <DialogContent className="sm:max-w-lg max-h-[90dvh] flex flex-col overflow-hidden p-0 max-sm:max-w-[95vw] max-sm:max-h-[88dvh]">
+          <div className="px-6 max-sm:px-4 pt-6 max-sm:pt-4 pb-2 shrink-0">
             <DialogHeader>
               <DialogTitle className="font-heading flex items-center gap-2"><Package className="w-5 h-5 text-amber-600" /> New Haul</DialogTitle>
               <DialogDescription>Share your latest finds</DialogDescription>
             </DialogHeader>
           </div>
-          <div className="flex-1 overflow-y-auto px-6 min-h-0">
+          <div className="flex-1 overflow-y-auto px-6 max-sm:px-4 min-h-0">
           <div className="space-y-4 pt-2 pb-4">
             <Input placeholder="Where'd you find them? (store, thrift, eBay...)" value={haulStoreName} onChange={e => setHaulStoreName(e.target.value)} className="border-honey/50" data-testid="haul-store-input" />
             <div>
@@ -778,14 +778,14 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
 
       {/* ═══ ISO Modal ═══ */}
       <Dialog open={activeModal === 'ISO'} onOpenChange={(open) => !open && closeModal()}>
-        <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col overflow-hidden p-0">
-          <div className="px-6 pt-6 pb-2 shrink-0">
+        <DialogContent className="sm:max-w-md max-h-[90dvh] flex flex-col overflow-hidden p-0 max-sm:max-w-[95vw] max-sm:max-h-[88dvh]">
+          <div className="px-6 max-sm:px-4 pt-6 max-sm:pt-4 pb-2 shrink-0">
             <DialogHeader>
               <DialogTitle className="font-heading flex items-center gap-2"><Search className="w-5 h-5 text-blue-600" /> In Search Of</DialogTitle>
               <DialogDescription>Let the community know what you're looking for</DialogDescription>
             </DialogHeader>
           </div>
-          <div className="flex-1 overflow-y-auto px-6 min-h-0">
+          <div className="flex-1 overflow-y-auto px-6 max-sm:px-4 min-h-0">
           <div className="space-y-4 pt-2 pb-4">
             {/* Step 1: Intent Selection */}
             {!isoIntent ? (
@@ -910,8 +910,8 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
 
       {/* ═══ A Note Modal ═══ */}
       <Dialog open={activeModal === 'NOTE'} onOpenChange={(open) => !open && closeModal()}>
-        <DialogContent className="sm:max-w-md max-h-[90vh] flex flex-col overflow-hidden p-0">
-          <div className="px-6 pt-6 pb-2 shrink-0">
+        <DialogContent className="sm:max-w-md max-h-[90dvh] flex flex-col overflow-hidden p-0 max-sm:max-w-[95vw] max-sm:max-h-[88dvh]">
+          <div className="px-6 max-sm:px-4 pt-6 max-sm:pt-4 pb-2 shrink-0">
             <DialogHeader>
               <DialogTitle className="sr-only">A Note</DialogTitle>
             </DialogHeader>
@@ -1018,8 +1018,8 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
 
       {/* ═══ Randomizer Modal ═══ */}
       <Dialog open={activeModal === 'RANDOMIZER'} onOpenChange={(open) => !open && closeModal()}>
-        <DialogContent className="sm:max-w-sm max-h-[90vh] flex flex-col overflow-hidden p-0">
-          <div className="px-6 pt-6 pb-2 shrink-0">
+        <DialogContent className="sm:max-w-sm max-h-[90dvh] flex flex-col overflow-hidden p-0 max-sm:max-w-[95vw] max-sm:max-h-[88dvh]">
+          <div className="px-6 max-sm:px-4 pt-6 max-sm:pt-4 pb-2 shrink-0">
             <DialogHeader>
               <DialogTitle className="font-heading flex items-center gap-2 text-amber-700">
                 <Shuffle className="w-5 h-5" /> Randomizer
