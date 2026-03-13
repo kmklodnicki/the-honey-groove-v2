@@ -634,6 +634,32 @@ const ProfilePage = () => {
                   {profile.current_streak} day spin streak
                 </span>
               )}
+              {isOwnProfile && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={async () => {
+                          try {
+                            const res = await axios.post(`${API}/repollinate/checkout`, {}, { headers: { Authorization: `Bearer ${token}` } });
+                            window.location.href = res.data.url;
+                          } catch (e) {
+                            toast.error('Could not start checkout.');
+                          }
+                        }}
+                        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold mt-1 transition-colors hover:opacity-80"
+                        style={{ background: '#FDE68A', color: '#915527', border: '1px solid #E5C76B' }}
+                        data-testid="repollinate-btn"
+                      >
+                        Re-pollinate 🐝
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="max-w-xs text-xs">
+                      Lost your streak? No worries, just re-pollinate! You have 48 hours to save your daily spin. ($1.99 per transaction)
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
               {profile.golden_hive_status === 'pending' && isOwnProfile && (
                 <div className="mt-1.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-100 border border-stone-200" data-testid="golden-hive-pending">
                   <Clock className="w-3 h-3 text-stone-500" />

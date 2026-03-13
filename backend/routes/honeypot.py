@@ -857,6 +857,81 @@ async def stripe_disconnect(user: Dict = Depends(require_auth)):
 
 
 
+# ============== RE-POLLINATE (STREAK RECOVERY) ==============
+
+@router.post("/repollinate/checkout")
+async def repollinate_checkout(user: Dict = Depends(require_auth)):
+    """Create a Stripe Checkout session for $1.99 streak recovery."""
+    stripe_sdk.api_key = STRIPE_API_KEY
+    frontend_url = FRONTEND_URL
+
+    session = stripe_sdk.checkout.Session.create(
+        mode="payment",
+        payment_method_types=["card"],
+        line_items=[{
+            "price_data": {
+                "currency": "usd",
+                "unit_amount": 199,
+                "product_data": {
+                    "name": "Re-pollinate - Streak Recovery",
+                    "description": "Save your daily spin streak! 48-hour grace period.",
+                },
+            },
+            "quantity": 1,
+        }],
+        metadata={"user_id": user["id"], "type": "repollinate"},
+        success_url=f"{frontend_url}/repollinate/success?session_id={{CHECKOUT_SESSION_ID}}",
+        cancel_url=f"{frontend_url}/profile/{user.get('username', '')}",
+    )
+    return {"url": session.url, "session_id": session.id}
+
+
+@router.get("/repollinate/success")
+async def repollinate_success(session_id: str, user: Dict = Depends(require_auth)):
+    """Verify Stripe payment and restore the user's streak."""
+    stripe_sdk.api_key = STRIPE_API_KEY
+    try:
+        session = stripe_sdk.checkout.Session.retrieve(session_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid session")
+
+    if session.payment_status != "paid":
+        raise HTTPException(status_code=402, detail="Payment not completed")
+
+    meta_user_id = session.metadata.get("user_id")
+    if meta_user_id != user["id"]:
+        raise HTTPException(status_code=403, detail="Session does not belong to this user")
+
+    # Check if already redeemed
+    existing = await db.repollinate_transactions.find_one({"session_id": session_id})
+    if existing:
+        return {"restored": True, "message": "Streak already restored for this transaction."}
+
+    # Restore streak: set last_spin_date to today so the streak isn't broken
+    now = datetime.now(timezone.utc)
+    u = await db.users.find_one({"id": user["id"]}, {"_id": 0})
+    current_streak = u.get("current_streak", 0)
+    restored_streak = max(current_streak, 1)
+
+    await db.users.update_one({"id": user["id"]}, {"$set": {
+        "last_spin_date": now.isoformat(),
+        "current_streak": restored_streak,
+    }})
+
+    # Record the transaction
+    await db.repollinate_transactions.insert_one({
+        "user_id": user["id"],
+        "session_id": session_id,
+        "amount": 199,
+        "restored_streak": restored_streak,
+        "created_at": now.isoformat(),
+    })
+
+    return {"restored": True, "streak": restored_streak}
+
+
+
+
 @router.post("/payments/checkout")
 async def create_payment_checkout(request: Request, body: Dict, user: Dict = Depends(require_auth)):
     listing_id = body.get("listing_id")

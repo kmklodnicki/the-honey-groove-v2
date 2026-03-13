@@ -4,7 +4,7 @@ import { X } from 'lucide-react';
 const PWAInstallBanner = () => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [dismissed, setDismissed] = useState(() => {
-    try { return localStorage.getItem('hg_pwa_dismissed') === '1'; } catch { return false; }
+    try { return localStorage.getItem('honey_groove_installed') === 'true'; } catch { return false; }
   });
 
   useEffect(() => {
@@ -20,12 +20,15 @@ const PWAInstallBanner = () => {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') setDeferredPrompt(null);
+    if (outcome === 'accepted') {
+      try { localStorage.setItem('honey_groove_installed', 'true'); } catch {}
+      setDeferredPrompt(null);
+    }
   };
 
   const handleDismiss = () => {
     setDismissed(true);
-    try { localStorage.setItem('hg_pwa_dismissed', '1'); } catch {}
+    try { localStorage.setItem('honey_groove_installed', 'true'); } catch {}
   };
 
   if (!deferredPrompt || dismissed) return null;
