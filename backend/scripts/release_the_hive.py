@@ -33,7 +33,7 @@ EXCLUDE_PATTERNS = [
     "feeduser", "navtest", "pricetest", "checkouttest",
     "albumtest", "discoveryb", "demo@", "feat1@",
     "invitetest", "regtest", "noverify", "fta@test",
-    "katie@test.com",
+    "caroline.dissing@hotmail.con", "katie@test.com",
 ]
 
 def is_test_email(email: str) -> bool:
@@ -208,6 +208,9 @@ async def main():
     # Deduplicate
     group_a = list(dict.fromkeys(group_a))
     group_b = list(dict.fromkeys(group_b))
+
+    # Typo fix: caroline.dissing@hotmail.con → .com
+    group_b = [e.replace("@hotmail.con", "@hotmail.com") if e.endswith("@hotmail.con") else e for e in group_b]
 
     excluded_a = len(group_a_raw) - len(group_a)
     excluded_b = len(group_b_raw) - len(group_b)
