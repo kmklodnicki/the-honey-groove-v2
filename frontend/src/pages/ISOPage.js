@@ -66,6 +66,8 @@ const ISOPage = () => {
   const [filter, setFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [marketSearch, setMarketSearch] = useState('');
+  const HONEYPOT_PAGE_SIZE = 24;
+  const [visibleListings, setVisibleListings] = useState(HONEYPOT_PAGE_SIZE);
   const [tradeTarget, setTradeTarget] = useState(null);
   const [offerTarget, setOfferTarget] = useState(null);
   const [offerAmount, setOfferAmount] = useState('');
@@ -177,7 +179,7 @@ const ISOPage = () => {
       const [isoRes, communityRes, listingsRes, myListRes, matchesRes, tradesRes, statsRes] = await Promise.all([
         axios.get(`${API}/iso`, { headers }),
         axios.get(`${API}/iso/community`, { headers }),
-        axios.get(`${API}/listings?limit=50`),
+        axios.get(`${API}/listings?limit=200`),
         axios.get(`${API}/listings/my`, { headers }),
         axios.get(`${API}/listings/iso-matches`, { headers }),
         axios.get(`${API}/trades`, { headers }),
@@ -731,12 +733,26 @@ const ISOPage = () => {
               </Button>
             </Card>
           ) : (
-            <div className="divide-y divide-[#C8861A]/10 border border-honey/20 rounded-xl overflow-hidden bg-white">
-              {shopListings.map(listing => (
-                <ListingCard key={listing.id} listing={listing} currentUserId={user?.id}
-                  onBuyNow={handleBuyNow} onMakeOffer={(l) => setOfferTarget(l)}
-                  onClick={() => setSelectedListingId(listing.id)} />
-              ))}
+            <div>
+              <div className="divide-y divide-[#C8861A]/10 border border-honey/20 rounded-xl overflow-hidden bg-white">
+                {shopListings.slice(0, visibleListings).map(listing => (
+                  <ListingCard key={listing.id} listing={listing} currentUserId={user?.id}
+                    onBuyNow={handleBuyNow} onMakeOffer={(l) => setOfferTarget(l)}
+                    onClick={() => setSelectedListingId(listing.id)} />
+                ))}
+              </div>
+              {shopListings.length > visibleListings && (
+                <div className="flex justify-center mt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setVisibleListings(prev => prev + HONEYPOT_PAGE_SIZE)}
+                    className="rounded-full border-honey/40 text-honey-amber hover:bg-honey/10 gap-2"
+                    data-testid="load-more-listings"
+                  >
+                    Show More ({shopListings.length - visibleListings} remaining)
+                  </Button>
+                </div>
+              )}
             </div>
           )}
 
@@ -844,11 +860,25 @@ const ISOPage = () => {
               <p className="text-muted-foreground text-sm">No trade listings yet. Be the first!</p>
             </Card>
           ) : (
-            <div className="divide-y divide-[#C8861A]/10 border border-honey/20 rounded-xl overflow-hidden bg-white">
-              {tradeListings.map(listing => (
-                <ListingCard key={listing.id} listing={listing} currentUserId={user?.id} onProposeTrade={(l) => { if (!user?.country) { setShowCountryGate(true); return; } setTradeTarget(l); }}
-                  onClick={() => setSelectedListingId(listing.id)} />
-              ))}
+            <div>
+              <div className="divide-y divide-[#C8861A]/10 border border-honey/20 rounded-xl overflow-hidden bg-white">
+                {tradeListings.slice(0, visibleListings).map(listing => (
+                  <ListingCard key={listing.id} listing={listing} currentUserId={user?.id} onProposeTrade={(l) => { if (!user?.country) { setShowCountryGate(true); return; } setTradeTarget(l); }}
+                    onClick={() => setSelectedListingId(listing.id)} />
+                ))}
+              </div>
+              {tradeListings.length > visibleListings && (
+                <div className="flex justify-center mt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setVisibleListings(prev => prev + HONEYPOT_PAGE_SIZE)}
+                    className="rounded-full border-honey/40 text-honey-amber hover:bg-honey/10 gap-2"
+                    data-testid="load-more-trades"
+                  >
+                    Show More ({tradeListings.length - visibleListings} remaining)
+                  </Button>
+                </div>
+              )}
             </div>
           )}
 

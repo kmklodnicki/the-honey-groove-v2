@@ -353,8 +353,8 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <p className="font-heading text-lg leading-tight">{title}</p>
-                <p className="text-sm text-muted-foreground">{artist}</p>
+                <p className="font-heading text-lg leading-tight truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{title}</p>
+                <p className="text-sm text-muted-foreground truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{artist}</p>
                 <div className="flex flex-wrap gap-1 mt-1" data-testid="card-meta-pills">
                   {variantText && <VariantTag variant={variantText} linkTo={variantLink(record)} />}
                   {(record.edition_number || post.edition_number) && <EditionTag number={record.edition_number || post.edition_number} />}
@@ -492,8 +492,8 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <p className="font-heading text-lg leading-tight">{title}</p>
-                <p className="text-sm text-muted-foreground">{artist}</p>
+                <p className="font-heading text-lg leading-tight truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{title}</p>
+                <p className="text-sm text-muted-foreground truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{artist}</p>
                 {post.caption && <p className="text-sm mt-2"><MentionText text={post.caption} /></p>}
               </div>
             </div>
@@ -638,8 +638,8 @@ const AddedToCollectionCard = ({ post, onAlbumClick, imgPriority }) => {
           </AlbumWithVinyl>
         </div>
         <div className="min-w-0">
-          <p className="font-medium">{title}</p>
-          <p className="text-sm text-muted-foreground">{artist}</p>
+          <p className="font-medium truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{title}</p>
+          <p className="text-sm text-muted-foreground truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{artist}</p>
           <div className="flex flex-wrap gap-1 mt-1" data-testid="card-meta-pills">
             {variantText && <VariantTag variant={variantText} linkTo={variantLink(record)} />}
             {(record.edition_number || post.edition_number) && <EditionTag number={record.edition_number || post.edition_number} />}
@@ -688,9 +688,9 @@ const VinylMoodCard = ({ post, onAlbumClick, imgPriority }) => {
                 <Moon className="w-5 h-5" style={{ color }} />
               </div>
             )}
-            <div>
-              <p className="text-sm font-medium">{title}</p>
-              <p className="text-xs text-muted-foreground">{artist}</p>
+            <div className="min-w-0">
+              <p className="text-sm font-medium truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{title}</p>
+              <p className="text-xs text-muted-foreground truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{artist}</p>
             </div>
           </div>
         </AlbumLink>
@@ -722,8 +722,8 @@ const DailyPromptPostCard = ({ post, imgPriority }) => (
         <div className="w-20 h-20 rounded-lg bg-amber-100 flex items-center justify-center"><Disc className="w-8 h-8 text-amber-300" /></div>
       )}
       <div className="flex-1 min-w-0">
-        <p className="font-heading text-lg leading-tight">{post.record_title}</p>
-        <p className="text-sm text-muted-foreground">{post.record_artist}</p>
+        <p className="font-heading text-lg leading-tight truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{post.record_title}</p>
+        <p className="text-sm text-muted-foreground truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{post.record_artist}</p>
         <div className="flex flex-wrap gap-1 mt-1" data-testid="card-meta-pills">
           {(post.color_variant || post.pressing_variant) && <VariantTag variant={post.color_variant || post.pressing_variant} linkTo={variantLink(post.record)} />}
         </div>
@@ -836,9 +836,9 @@ const PostCardBody = ({ post, onAlbumClick, imgPriority }) => {
                   ) : (
                     <div className="w-14 h-14 rounded bg-stone-100 flex items-center justify-center"><Disc className="w-6 h-6 text-stone-400" /></div>
                   )}
-                  <div>
-                    <p className="font-medium">{defTitle}</p>
-                    <p className="text-sm text-muted-foreground">{defArtist}</p>
+                  <div className="min-w-0">
+                    <p className="font-medium truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{defTitle}</p>
+                    <p className="text-sm text-muted-foreground truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{defArtist}</p>
                   </div>
                 </div>
               </AlbumLink>
