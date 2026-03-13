@@ -51,7 +51,7 @@ STRIPE_API_KEY = os.environ.get("STRIPE_API_KEY")
 STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 PLATFORM_FEE_PERCENT = 6.0  # Default, overridden by platform_settings collection
-FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://thehoneygroove.com")
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "https://www.thehoneygroove.com")
 
 # Auth
 security = HTTPBearer(auto_error=False)
