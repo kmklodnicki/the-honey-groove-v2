@@ -46,6 +46,26 @@ import AlbumArt from '../components/AlbumArt';
 import SEOHead from '../components/SEOHead';
 import { useVariantModal } from '../context/VariantModalContext';
 
+// Infinite scroll sentinel — fires loadMore when scrolled into view
+const InfiniteScrollSentinel = ({ onIntersect, loading }) => {
+  const sentinelRef = useRef(null);
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting && !loading) onIntersect(); },
+      { rootMargin: '200px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [onIntersect, loading]);
+  return (
+    <div ref={sentinelRef} className="flex justify-center py-6" data-testid="infinite-scroll-sentinel">
+      {loading && <Loader2 className="w-5 h-5 animate-spin text-[#C8861A]" />}
+    </div>
+  );
+};
+
 // Bee Avatar Component
 const BeeAvatar = ({ user, className = "h-10 w-10" }) => {
   const firstLetter = user?.username?.charAt(0).toUpperCase() || '?';
@@ -887,33 +907,9 @@ const HivePage = () => {
         </div>
       )}
 
-      {/* Show Older Posts — Diamond Glass Bar */}
+      {/* Infinite Scroll Sentinel */}
       {filteredPosts.length > 0 && hasMore && activeFilter === 'all' && feedMode === 'all' && (
-        <div className="flex justify-center pt-6 pb-2">
-          <button
-            onClick={loadMore}
-            disabled={loadingMore}
-            className="w-full max-w-md py-3 px-6 rounded-xl border border-honey/40 backdrop-blur-md transition-all duration-300 hover:shadow-[0_0_20px_rgba(244,185,66,0.2)] hover:border-honey/60 disabled:opacity-60"
-            style={{
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.7) 0%, rgba(244,185,66,0.08) 50%, rgba(255,255,255,0.7) 100%)',
-            }}
-            data-testid="load-more-btn"
-          >
-            <span className="flex items-center justify-center gap-2 font-medium text-sm" style={{ color: '#C8861A' }}>
-              {loadingMore ? (
-                <>
-                  <Disc className="w-4 h-4 animate-spin" />
-                  loading...
-                </>
-              ) : (
-                <>
-                  <ChevronDown className="w-4 h-4" />
-                  show older posts
-                </>
-              )}
-            </span>
-          </button>
-        </div>
+        <InfiniteScrollSentinel onIntersect={loadMore} loading={loadingMore} />
       )}
       {filteredPosts.length > 0 && !hasMore && activeFilter === 'all' && feedMode === 'all' && (
         <p className="text-center text-sm text-muted-foreground pt-6 pb-2 italic">you've reached the beginning of the hive.</p>

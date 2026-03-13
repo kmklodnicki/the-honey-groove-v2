@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }) => {
       console.log('AUTH: background user fetch');
       const response = await axios.get(`${API}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
-        timeout: 8000,
+        timeout: 15000, // 15s for mobile network latency
       });
       if (response.data.email_verified === false) {
         // Email verification disabled — allow full access
@@ -79,9 +79,13 @@ export const AuthProvider = ({ children }) => {
       setUser(response.data);
       console.log('AUTH: user data refreshed');
     } catch (error) {
-      console.error('AUTH: background fetch failed', error);
-      // Token is invalid or expired — clear session
-      logout();
+      // Only logout on explicit 401/403 — NOT on timeout or network errors
+      if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+        console.error('AUTH: token rejected, logging out');
+        logout();
+      } else {
+        console.warn('AUTH: background fetch failed (network), keeping session', error.message);
+      }
     }
   };
 

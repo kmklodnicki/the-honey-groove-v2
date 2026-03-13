@@ -376,7 +376,7 @@ const EssentialsPage = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8" data-testid="product-grid">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6" data-testid="product-grid">
           {HONEY_SHOP_ITEMS.map(item => (
             <ProductCard key={item.id} item={item} onAcquire={handleAcquire} />
           ))}

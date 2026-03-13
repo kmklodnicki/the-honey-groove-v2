@@ -49,6 +49,7 @@ class UserResponse(BaseModel):
     needs_discogs_migration: bool = False
     discogs_migration_dismissed: bool = False
     discogs_import_intent: str = "PENDING"  # PENDING | LATER | DECLINED | CONNECTED
+    has_connected_discogs: bool = False
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None
@@ -67,6 +68,7 @@ class UserUpdate(BaseModel):
     tiktok_username: Optional[str] = None
     is_private: Optional[bool] = None
     dm_setting: Optional[str] = None  # "everyone" | "following" | "requests"
+    has_connected_discogs: Optional[bool] = None
 
 class TokenResponse(BaseModel):
     access_token: str

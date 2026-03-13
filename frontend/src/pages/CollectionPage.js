@@ -1461,10 +1461,10 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
         </div>
       </Link>
 
-      <div className="p-3 flex flex-col flex-grow gap-1">
-        <div className="min-h-[2.5rem]">
+      <div className="p-2 sm:p-3 flex flex-col flex-grow gap-0.5 sm:gap-1">
+        <div className="min-h-[2rem] sm:min-h-[2.5rem]">
           <Link to={`/record/${record.id}`} className="block">
-            <h4 className="font-medium text-sm line-clamp-2 hover:text-honey-amber transition-colors leading-tight" data-testid={`record-title-${record.id}`}>
+            <h4 className="font-medium text-xs sm:text-sm line-clamp-2 hover:text-honey-amber transition-colors leading-tight" data-testid={`record-title-${record.id}`}>
               {record.title}
             </h4>
           </Link>

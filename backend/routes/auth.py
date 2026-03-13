@@ -83,6 +83,7 @@ async def _build_user_response(user: dict) -> UserResponse:
         needs_discogs_migration=_check_needs_migration(user),
         discogs_migration_dismissed=user.get("discogs_migration_dismissed", False),
         discogs_import_intent=user.get("discogs_import_intent", "PENDING"),
+        has_connected_discogs=user.get("has_connected_discogs", False),
     )
 
 # ============== AUTH ROUTES ==============
@@ -377,6 +378,8 @@ async def update_me(update_data: UserUpdate, user: Dict = Depends(require_auth))
             update_fields[field] = val
     if update_data.onboarding_completed is not None:
         update_fields["onboarding_completed"] = update_data.onboarding_completed
+    if update_data.has_connected_discogs is not None:
+        update_fields["has_connected_discogs"] = update_data.has_connected_discogs
     if update_data.is_private is not None:
         update_fields["is_private"] = update_data.is_private
     if update_data.dm_setting is not None and update_data.dm_setting in ("everyone", "following", "requests"):

@@ -165,7 +165,7 @@ const AlbumArt = ({
           }}
           draggable={false}
           decoding={priority ? 'sync' : 'auto'}
-          loading="eager"
+          loading={priority ? "eager" : "lazy"}
           {...(priority ? { fetchPriority: 'high' } : {})}
         />
       ) : null}

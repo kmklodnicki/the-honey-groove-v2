@@ -73,6 +73,12 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - **Honeypot Background Sync:** Updated ISOPage glass header to match Collection page styling exactly (`rgba(252,248,232,0.5)`, `blur(12px)`, `saturate(180%)`, matching gradient overlay).
 - **Album Tracklist Dropdown:** Already fully implemented in ComposerBar.js — auto-fetches from `/api/discogs/release/{id}`, searchable dropdown, loading spinner, manual entry fallback.
 - **Mobile Filter Optimization:** Tighter padding/font for mobile (`11px`), wraps naturally into 2-3 rows on small screens.
+- **OAuth Success State & Confetti:** BuildingHivePage shows full-screen confetti + "Collection Connected!" popup with record count + "Start Spinning" CTA. Sets `has_connected_discogs` flag.
+- **Auth Persistence (30-day JWT):** JWT from 7→30 days. AuthContext no longer logs out on network timeout — only on 401/403. Timeout increased to 15s for mobile.
+- **Infinite Scroll Feed:** Replaced "Load More" with IntersectionObserver infinite scroll (200px rootMargin).
+- **Image Lazy Loading:** AlbumArt now uses `loading="lazy"` for non-priority images.
+- **Mobile Collection Grid:** Essentials `grid-cols-2` on mobile. RecordCard padding tightened (`p-2 sm:p-3`).
+- **Honeypot Background Sync:** ISOPage glass header matches Collection page exactly.
 
 ## Recently Completed (2026-03-12)
 - **P0 Login Fix v2 (Comprehensive):** Removed dangerous `password.strip()`, added username-based login (4-step lookup: exact email → regex email → exact username → regex username), fixed regex injection (re.escape), email normalization on registration, detailed server-side login logging, admin login-diagnostic endpoint, frontend updated to accept "Email or Username". All 15 tests passed.

@@ -24,7 +24,7 @@ db = client[os.environ['DB_NAME']]
 # JWT
 JWT_SECRET = os.environ.get('JWT_SECRET', 'default_secret')
 JWT_ALGORITHM = os.environ.get('JWT_ALGORITHM', 'HS256')
-JWT_EXPIRATION_HOURS = int(os.environ.get('JWT_EXPIRATION_HOURS', 168))
+JWT_EXPIRATION_HOURS = int(os.environ.get('JWT_EXPIRATION_HOURS', 720))
 
 # Discogs
 DISCOGS_TOKEN = os.environ.get('DISCOGS_TOKEN', '')
