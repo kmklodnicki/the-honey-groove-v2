@@ -128,7 +128,7 @@ HTML_B = f"""<!DOCTYPE html>
 </tr>
 </table>
 
-<p style="font-size:15px;line-height:1.7;color:#333;margin:0 0 16px;">Things aren't perfect yet, so your feedback on our Discord is encouraged: <a href="https://discord.gg/rMZFGw6CPf" target="_blank" style="color:#915527;font-weight:600;text-decoration:underline;">discord.gg/rMZFGw6CPf</a>. Come join the daily prompt!</p>
+<p style="font-size:15px;line-height:1.7;color:#333;margin:0 0 16px;">Things aren't perfect yet, so your feedback on our Discord is encouraged: <a href="https://discord.gg/rMZFGw6CPf" target="_blank" style="color:#915527;font-weight:600;text-decoration:underline;">discord.gg/rMZFGw6CPf</a>. Come join The Hive.</p>
 
 <p style="font-size:15px;line-height:1.7;color:#333;margin:0;">Best,<br><strong style="color:#915527;">Katie</strong><br><span style="font-size:13px;color:#888;">Founder, The Honey Groove&#8482;</span></p>
 </td>
