@@ -348,7 +348,7 @@ const SettingsPage = () => {
               className="border-honey/50"
               data-testid="settings-first-name"
             />
-            <p className="text-xs text-muted-foreground">Private. Used only for community emails.</p>
+            <p className="text-xs text-muted-foreground">Private. Used for communications.</p>
           </div>
 
           {/* Username */}
@@ -367,6 +367,7 @@ const SettingsPage = () => {
           <div className="space-y-2">
             <Label>Email</Label>
             {!editingEmail ? (
+              <>
               <div className="flex items-center gap-2">
                 <p className="text-sm break-all flex-1" data-testid="settings-email-display">{user?.email}</p>
                 <button
@@ -377,6 +378,8 @@ const SettingsPage = () => {
                   change
                 </button>
               </div>
+              <p className="text-xs text-muted-foreground mt-1">Private. Used for communications.</p>
+              </>
             ) : (
               <div className="space-y-2">
                 <Input
