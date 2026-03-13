@@ -338,6 +338,13 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   position: relative;
   overflow: visible;
 }
+.nav-honey-link button {
+  transition: background-color 0.2s, color 0.2s;
+}
+.nav-honey-link:hover button {
+  background-color: #C8861A !important;
+  color: #FFFFFF !important;
+}
 .nav-honey-link::after {
   content: '';
   position: absolute;

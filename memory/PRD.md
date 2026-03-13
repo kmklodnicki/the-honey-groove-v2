@@ -84,6 +84,9 @@ Build **The HoneyGroove**, a premium social platform for vinyl collectors.
 - **AlbumArt Priority Loading:** First 4 images eager (LCP), rest lazy. Changed from 12→4 priority threshold.
 - **Nav Hover States:** Essentials nav button changed from `variant="outline"` to `variant="ghost"` to match all other nav items. Mobile nav already consistent.
 - **Essentials 2-Col Grid:** Mobile grid updated from `grid-cols-1` to `grid-cols-2` for Essentials page. Collection page tighter padding (`p-2 sm:p-3`).
+- **Founding Member Copy:** Replaced "First 50 members" / "founding member spots. limited." with "Limited Founding Members. join the hive." on landing page and beta signup page.
+- **Nav Hover States (Final):** Added CSS hover rule: Dark Honey (#C8861A) background with White (#FFF) text on hover for ALL nav links via `.nav-honey-link:hover button`. Smooth `transition: 0.2s`.
+- **Filter Pills Polish:** 6 action filters centered via `flex-wrap justify-center`, `padding: 6px 14px`, `whitespace-nowrap`, `text-xs`. 2-row layout on mobile with comfortable sizing.
 
 ## Recently Completed (2026-03-12)
 - **P0 Login Fix v2 (Comprehensive):** Removed dangerous `password.strip()`, added username-based login (4-step lookup: exact email → regex email → exact username → regex username), fixed regex injection (re.escape), email normalization on registration, detailed server-side login logging, admin login-diagnostic endpoint, frontend updated to accept "Email or Username". All 15 tests passed.

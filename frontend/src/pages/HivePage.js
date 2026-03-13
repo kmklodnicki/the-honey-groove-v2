@@ -788,24 +788,24 @@ const HivePage = () => {
       {/* Daily Prompt */}
       <DailyPromptCard records={records} onPostCreated={handlePostCreated} />
 
-      {/* Action Filter Bar — mobile: 2 rows of 3-4 */}
-      <div className="grid grid-cols-4 sm:flex sm:flex-wrap sm:justify-center items-center gap-1.5 sm:gap-2 mb-4 w-full mx-auto px-1" style={{ maxWidth: '580px' }} data-testid="feed-filter-bar">
+      {/* Action Filter Bar — centered, 2 rows on mobile */}
+      <div className="flex flex-wrap justify-center items-center gap-2 mb-4 w-full mx-auto px-2" style={{ maxWidth: '580px' }} data-testid="feed-filter-bar">
         {FEED_FILTERS.map(f => {
           const isActive = activeFilter === f.key;
           return (
             <button
               key={f.key}
               onClick={() => setActiveFilter(f.key)}
-              className={`rounded-full text-[11px] sm:text-xs font-medium transition-all border whitespace-nowrap text-center ${
+              className={`rounded-full text-xs font-medium transition-all duration-200 border whitespace-nowrap ${
                 isActive
-                  ? 'text-black shadow-sm font-semibold'
-                  : 'bg-transparent hover:bg-amber-50'
+                  ? 'font-semibold shadow-sm'
+                  : 'hover:bg-amber-50'
               }`}
               style={{
-                padding: '5px 10px',
+                padding: '6px 14px',
                 ...(isActive
                   ? { background: '#FFB800', borderColor: '#FFB800', color: '#000' }
-                  : { borderColor: 'rgba(200,134,26,0.3)', color: 'rgba(120,80,20,0.7)' }),
+                  : { background: 'transparent', borderColor: 'rgba(200,134,26,0.3)', color: 'rgba(120,80,20,0.7)' }),
               }}
               data-testid={`filter-${f.key}`}
             >

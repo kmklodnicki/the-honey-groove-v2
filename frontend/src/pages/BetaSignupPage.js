@@ -93,7 +93,7 @@ const BetaSignupPage = () => {
               {/* Subhead */}
               <div className="text-center mb-6" style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: '28px', lineHeight: 1.4, color: '#C8861A' }}>
                 <p>the Honey Groove<sup style={{ fontSize: '0.6em' }}>&trade;</sup> is almost ready.</p>
-                <p>We're looking for founding members to test it first.</p>
+                <p>We're looking for Limited Founding Members to shape it.</p>
               </div>
 
               {/* Body copy */}
@@ -101,7 +101,7 @@ const BetaSignupPage = () => {
                 className="text-center mb-8 mx-auto"
                 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '20px', lineHeight: 1.6, color: '#8A6B4A', maxWidth: '420px', padding: '0 12px' }}
               >
-                founding members get early access before public launch, a permanent founding member badge on their profile that never goes away, and a direct line to the founder during beta. spots are limited.
+                Limited Founding Members get early access before public launch, a permanent founding member badge on their profile that never goes away, and a direct line to the founder during beta.
               </p>
 
               {/* Divider */}

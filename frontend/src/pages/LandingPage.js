@@ -145,7 +145,7 @@ const LandingPage = () => {
               { num: '6%', label: 'transaction fee. lower than everywhere else.' },
               { num: 'Free', label: 'to join. always.' },
               { num: '100%', label: 'of trade holds reversed on confirmed delivery.' },
-              { num: '50', label: 'founding member spots. limited.' },
+              { num: '\u2728', label: 'Limited Founding Members. join the hive.' },
             ].map((stat, i) => (
               <div key={i} className={`text-center ${i < 3 ? 'lg:border-r lg:border-[#C8861A]/20' : ''}`} data-testid={`stat-${i}`}>
                 <div className="text-5xl md:text-[64px] font-bold leading-none mb-3" style={{ fontFamily: "'Playfair Display', serif", color: '#996012' }}>
