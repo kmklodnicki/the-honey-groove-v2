@@ -4,11 +4,53 @@ import { Button } from '../components/ui/button';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 
-const HONEY_SHOP_ITEMS = [
+const VINYL_CHARMS = [
+  {
+    id: 'mirrorball-charm',
+    honeyLabel: 'The Mirrorball',
+    name: 'Mirrorball / Disco Ball Charm',
+    descriptor: 'A tiny disco ball that sits on top of your spinning record, catching the light and setting the mood.',
+    url: 'https://vinylcharms.com/products/mirrorball-disco-ball-charm-for-record-collectors-or-accessorizing-your-vinyl-collection?ref=KATIE',
+    partner: 'vinylcharms',
+    partnerLabel: 'VinylCharms',
+    image: 'https://static.prod-images.emergentagent.com/jobs/9fb17d67-a974-4652-b57c-8e9a0febaeaf/images/5d272650a6aac7feddcdc0024b29d0d758df360346ed083713907f3cc9fca78a.png',
+  },
+  {
+    id: 'ts-charms',
+    honeyLabel: 'The Eras',
+    name: 'TS Inspired Charms',
+    descriptor: 'Stars, hearts, and pastel sparkle for the Swiftie collection that deserves the full era treatment.',
+    url: 'https://vinylcharms.com/products/ts-charms?ref=KATIE',
+    partner: 'vinylcharms',
+    partnerLabel: 'VinylCharms',
+    image: 'https://static.prod-images.emergentagent.com/jobs/9fb17d67-a974-4652-b57c-8e9a0febaeaf/images/fd3ffd3cfc150c91a63d021a30263a3ba23738da5b77738b01d64c088ce327c6.png',
+  },
+  {
+    id: 'sabrina-charms',
+    honeyLabel: 'The Espresso',
+    name: 'Sabrina Charms',
+    descriptor: 'Espresso cups and sweet candy charms for the Short n\' Sweet era — because your vinyl deserves the vibe.',
+    url: 'https://vinylcharms.com/products/sabrina-charms-for-record-collectors-or-accessorizing-sabrina-carpenter-fans-espresso-and-short-n-sweet?ref=KATIE',
+    partner: 'vinylcharms',
+    partnerLabel: 'VinylCharms',
+    image: 'https://static.prod-images.emergentagent.com/jobs/9fb17d67-a974-4652-b57c-8e9a0febaeaf/images/b1c03b1f454eba05004e97c52013d3a601ffa1f172173090fe613ef3f87355e3.png',
+  },
+];
+
+const VINYL_PROTECTION = [
+  {
+    id: 'cleaning-kit',
+    honeyLabel: 'The Polish',
+    name: 'Vinyl Record Cleaning Kit',
+    descriptor: 'A complete care kit for records that deserve a little extra love. Keep your audio sounding crisp.',
+    url: 'https://amzn.to/4setivM',
+    partner: 'amazon',
+    image: 'https://customer-assets.emergentagent.com/job_088a9581-bbfd-42c2-ad31-f5535df4814c/artifacts/obo7sks1_image3.jpg',
+  },
   {
     id: 'shield',
     honeyLabel: 'The Shield',
-    name: 'Outer Sleeves (4mil Clarity)',
+    name: 'Premium Outer Sleeves',
     descriptor: 'Crystal-clear outer protection for the records worth showing off.',
     url: 'https://amzn.to/40ERkEd',
     partner: 'amazon',
@@ -17,64 +59,23 @@ const HONEY_SHOP_ITEMS = [
   {
     id: 'vault',
     honeyLabel: 'The Vault',
-    name: 'Inner Sleeves (Antistatic Rice Paper)',
+    name: 'Anti-Static Inner Sleeves',
     descriptor: 'Antistatic inner sleeves that keep your vinyl clean and properly tucked away.',
     url: 'https://amzn.to/4bfoyP4',
     partner: 'amazon',
     image: 'https://customer-assets.emergentagent.com/job_088a9581-bbfd-42c2-ad31-f5535df4814c/artifacts/6g7drwvn_product2.jpg',
   },
-  {
-    id: 'polish',
-    honeyLabel: 'The Polish',
-    name: 'Complete Cleaning Kit',
-    descriptor: 'A complete care kit for records that deserve a little extra love.',
-    url: 'https://amzn.to/4unqpdG',
-    partner: 'amazon',
-    image: 'https://customer-assets.emergentagent.com/job_088a9581-bbfd-42c2-ad31-f5535df4814c/artifacts/obo7sks1_image3.jpg',
-  },
-  {
-    id: 'cracked-ice',
-    honeyLabel: 'The Prism',
-    name: 'Holographic Outer Sleeves - Cracked Ice',
-    descriptor: 'Iridescent protection that makes your shelf shimmer like a disco ball.',
-    url: 'https://vinylsupplyco.com/products/holographic-outer-sleeves?ref=KATHRYNKLODNICKI',
-    partner: 'vinylsupplyco',
-    image: 'https://customer-assets.emergentagent.com/job_088a9581-bbfd-42c2-ad31-f5535df4814c/artifacts/1rzzzzu9_1.webp',
-  },
-  {
-    id: 'lovely',
-    honeyLabel: 'The Sweetheart',
-    name: 'Holographic Outer Sleeves - Lovely',
-    descriptor: 'Heart-patterned holographic sleeves for the records you love most.',
-    url: 'https://vinylsupplyco.com/collections/holographic-sleeves/products/holographic-outer-sleeves-lovely?ref=KATHRYNKLODNICKI',
-    partner: 'vinylsupplyco',
-    image: 'https://customer-assets.emergentagent.com/job_088a9581-bbfd-42c2-ad31-f5535df4814c/artifacts/5vhwif93_2.webp',
-  },
-  {
-    id: 'pearl-shimmer',
-    honeyLabel: 'The Glow',
-    name: 'Holographic Outer Sleeves - Pearl Shimmer',
-    descriptor: 'Soft pearl iridescence that gives your vault an ethereal glow.',
-    url: 'https://vinylsupplyco.com/collections/holographic-sleeves/products/holographic-outer-sleeves-pearl-shimmer?ref=KATHRYNKLODNICKI',
-    partner: 'vinylsupplyco',
-    image: 'https://customer-assets.emergentagent.com/job_088a9581-bbfd-42c2-ad31-f5535df4814c/artifacts/tvavxlin_3.webp',
-  },
-  {
-    id: 'essential-protection',
-    honeyLabel: 'The Armor',
-    name: 'Premium Vinyl Outer Sleeves',
-    descriptor: 'Crystal clear, archival-grade protection for your rarest variants.',
-    url: 'https://amzn.to/4uruqOc',
-    partner: 'amazon',
-    image: 'https://m.media-amazon.com/images/I/712YTwiIBdL._AC_SL1500_.jpg',
-  },
+];
+
+const LIGHT_UP = [
   {
     id: 'led-turntable',
     honeyLabel: 'The Stage',
-    name: 'LED Turntable Kit',
-    descriptor: 'Transform your setup with a neon glow ring that turns every spin into a light show.',
+    name: 'LED Platter Light Kit',
+    descriptor: 'Transform your setup with a neon glow ring that turns every spin into a light show. Remote control included.',
     url: 'https://vinylsupplyco.com/products/led-turntable-kit?ref=KATHRYNKLODNICKI',
     partner: 'vinylsupplyco',
+    partnerLabel: 'VinylSupplyCo',
     image: 'https://images.unsplash.com/photo-1746127609033-78c30b79038e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2OTV8MHwxfHNlYXJjaHwzfHx0dXJudGFibGUlMjBMRUQlMjBsaWdodCUyMGtpdCUyMHZpbnlsJTIwZ2xvdyUyMG5lb258ZW58MHx8fHwxNzczMTc2Mjg0fDA&ixlib=rb-4.1.0&q=85',
   },
 ];
@@ -227,7 +228,7 @@ const GrooveTerminalModal = ({ item, open, onClose }) => {
           <div className="flex items-center gap-2">
             <span className="text-sm font-heading text-vinyl-black tracking-tight">The Honey Groove</span>
             <span className="text-[#DAA520] text-sm font-light mx-0.5">&times;</span>
-            <span className="text-sm font-heading text-[#C8861A] tracking-tight">VinylSupplyCo</span>
+            <span className="text-sm font-heading text-[#C8861A] tracking-tight">{item?.partnerLabel || 'Partner'}</span>
           </div>
           <button
             onClick={onClose}
@@ -292,7 +293,7 @@ const GrooveTerminalModal = ({ item, open, onClose }) => {
                 data-testid="groove-terminal-purchase-btn"
               >
                 <Diamond className="w-4 h-4 inline-block mr-2 -mt-0.5" />
-                Complete Purchase on VinylSupplyCo
+                Complete Purchase on {item?.partnerLabel || 'Partner'}
               </button>
 
               <p className="text-[10px] text-muted-foreground mt-3">Secured by The Honey Groove</p>
@@ -349,6 +350,14 @@ const ProductCard = ({ item, onAcquire }) => {
   );
 };
 
+/* ─── Section Header ─── */
+const SectionHeader = ({ title, subtext, testId }) => (
+  <div className="text-center mb-6 sm:mb-8 space-y-2" data-testid={testId}>
+    <h2 className="font-heading text-2xl sm:text-3xl text-stone-900 tracking-tight">{title}</h2>
+    <p className="text-sm text-stone-500 max-w-lg mx-auto leading-relaxed">{subtext}</p>
+  </div>
+);
+
 const EssentialsPage = () => {
   usePageTitle('Honey Essentials');
   const [gatewayItem, setGatewayItem] = useState(null);
@@ -382,8 +391,38 @@ const EssentialsPage = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6" data-testid="product-grid">
-          {HONEY_SHOP_ITEMS.map(item => (
+        {/* Section 1: Vinyl Charms */}
+        <SectionHeader
+          title="Vinyl Charms"
+          subtext="Enhance your spin experience by putting a vinyl charm on top of your record while it's spinning to match the vibe."
+          testId="section-vinyl-charms"
+        />
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6 mb-14" data-testid="charms-grid">
+          {VINYL_CHARMS.map(item => (
+            <ProductCard key={item.id} item={item} onAcquire={handleAcquire} />
+          ))}
+        </div>
+
+        {/* Section 2: Vinyl Protection */}
+        <SectionHeader
+          title="Vinyl Protection"
+          subtext="Protect your investments. Sleeves prevent scratches, dust, and provide anti-static protection. Regular cleaning helps keep your audio sounding crisp."
+          testId="section-vinyl-protection"
+        />
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6 mb-14" data-testid="protection-grid">
+          {VINYL_PROTECTION.map(item => (
+            <ProductCard key={item.id} item={item} onAcquire={handleAcquire} />
+          ))}
+        </div>
+
+        {/* Section 3: Light Up Your Records */}
+        <SectionHeader
+          title="Light Up Your Records"
+          subtext="This LED light kit goes underneath your record player platter and comes with a remote control to adjust the light color from neutral white, solid colors, and moving rainbow colors."
+          testId="section-light-up"
+        />
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6 mb-8" data-testid="lightup-grid">
+          {LIGHT_UP.map(item => (
             <ProductCard key={item.id} item={item} onAcquire={handleAcquire} />
           ))}
         </div>
