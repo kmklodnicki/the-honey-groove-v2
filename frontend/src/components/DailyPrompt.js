@@ -428,7 +428,31 @@ const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
       trackEvent('daily_prompt_answered');
       toast.success(postToHive ? 'Buzzed in & posted to The Hive!' : 'Buzzed in!');
       onSuccess?.(r.data);
-    } catch (err) { toast.error(err.response?.data?.detail || 'Failed'); }
+    } catch (err) {
+      // Retry once if prompt_id is stale (cleanup replaced it)
+      if (err.response?.status === 404 && err.response?.data?.detail?.includes('not found')) {
+        try {
+          const fresh = await axios.get(`${API}/prompts/today`, { headers: { Authorization: `Bearer ${token}` } });
+          const freshPrompt = fresh.data.prompt;
+          if (freshPrompt && freshPrompt.id !== prompt.id) {
+            setPrompt(freshPrompt);
+            const retry = await axios.post(`${API}/prompts/buzz-in`, {
+              prompt_id: freshPrompt.id,
+              record_id: selectedRecordId,
+              caption,
+              post_to_hive: postToHive,
+            }, { headers: { Authorization: `Bearer ${token}` } });
+            setResponseData(retry.data);
+            trackEvent('daily_prompt_answered');
+            toast.success(postToHive ? 'Buzzed in & posted to The Hive!' : 'Buzzed in!');
+            onSuccess?.(retry.data);
+            setSubmitting(false);
+            return;
+          }
+        } catch { /* retry failed — fall through to original error */ }
+      }
+      toast.error(err.response?.data?.detail || 'Failed');
+    }
     finally { setSubmitting(false); }
   };
 

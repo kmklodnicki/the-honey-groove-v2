@@ -599,6 +599,32 @@ async def get_record_values(user: Dict = Depends(require_auth)):
     return result
 
 
+@router.get("/valuation/record-values/{username}")
+async def get_user_record_values(username: str):
+    """Return a map of record_id -> median_value for any user's collection (public, global price cache)."""
+    target = await db.users.find_one({"username": username.lower()}, {"_id": 0})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+    records = await db.records.find(
+        {"user_id": target["id"], "discogs_id": {"$ne": None}},
+        {"_id": 0, "id": 1, "discogs_id": 1}
+    ).to_list(5000)
+    if not records:
+        return {}
+    discogs_ids = list({r["discogs_id"] for r in records if r.get("discogs_id")})
+    values = await db.collection_values.find(
+        {"release_id": {"$in": discogs_ids}}, {"_id": 0}
+    ).to_list(5000)
+    val_map = {v["release_id"]: v.get("median_value", 0) for v in values}
+    result = {}
+    for r in records:
+        v = val_map.get(r.get("discogs_id"))
+        if v:
+            result[r["id"]] = v
+    return result
+
+
+
 @router.get("/valuation/hidden-gems/{username}")
 async def get_user_hidden_gems(username: str, limit: int = 3):
     """Public hidden gems for any user."""

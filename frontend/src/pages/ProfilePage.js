@@ -214,9 +214,9 @@ const ProfilePage = () => {
   const { data: swrCollectionValue } = useAPI(!profileLocked ? `/valuation/collection/${username}` : null);
   const { data: swrPromptStreak } = useAPI(!profileLocked ? `/prompts/streak/${username}` : null);
   const { data: swrDreamValue } = useAPI(!profileLocked ? `/valuation/dreamlist/${username}` : null);
-  // BLOCK 483: Fetch per-record values for price overlay badges (own profile only)
+  // BLOCK 483: Fetch per-record values for price overlay badges (any user)
   const isOwnProfile = user?.username === username;
-  const { data: swrRecordValues } = useAPI(isOwnProfile && !profileLocked ? `/valuation/record-values` : null);
+  const { data: swrRecordValues } = useAPI(!profileLocked ? `/valuation/record-values/${username}` : null);
   const [followLoading, setFollowLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('collection');
   const [followListType, setFollowListType] = useState(null);
