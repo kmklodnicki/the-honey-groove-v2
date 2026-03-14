@@ -357,7 +357,7 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
                 <p className="font-heading text-lg leading-tight truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{title}</p>
                 <p className="text-sm text-muted-foreground truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{artist}</p>
                 <div className="flex flex-wrap gap-1 mt-1" data-testid="card-meta-pills">
-                  {variantText && <VariantTag variant={variantText} linkTo={variantLink(record)} />}
+                  {variantText && <VariantTag variant={variantText} prefix="Pressing" linkTo={variantLink(record)} />}
                   {(record.edition_number || post.edition_number) && <EditionTag number={record.edition_number || post.edition_number} />}
                   {!variantText && record.format && record.format !== 'Vinyl' && (
                     <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border border-stone-200 text-stone-500 bg-stone-50" data-testid="format-pill">
@@ -520,7 +520,7 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-medium truncate">{item.title}</p>
                     <p className="text-xs text-muted-foreground truncate">{item.artist}</p>
-                    <VariantTag variant={item.color_variant} linkTo={item.discogs_id ? `/variant/${item.discogs_id}` : undefined} />
+                    <VariantTag variant={item.color_variant} prefix="Pressing" linkTo={item.discogs_id ? `/variant/${item.discogs_id}` : undefined} />
                   </div>
                 </div>
               </AlbumLink>
@@ -603,7 +603,7 @@ const ISOCard = ({ post, onAlbumClick }) => {
             </div>
             {isoData.color_variant && (
               <div className="mt-1.5" data-testid="iso-pressing">
-                <VariantTag variant={isoData.color_variant} linkTo={isoData.discogs_id ? `/variant/${isoData.discogs_id}` : undefined} />
+                <VariantTag variant={isoData.color_variant} prefix="Pressing" linkTo={isoData.discogs_id ? `/variant/${isoData.discogs_id}` : undefined} />
               </div>
             )}
             {isoData.pressing_notes && !(/^(mint|near mint|nm|m|vg|vg\+|g\+|g|f|p|nm\/m|near mint \/ mint)/i.test(isoData.pressing_notes.trim())) && (
@@ -739,7 +739,7 @@ const DailyPromptPostCard = ({ post, imgPriority }) => (
         <p className="font-heading text-lg leading-tight truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{post.record_title}</p>
         <p className="text-sm text-muted-foreground truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{post.record_artist}</p>
         <div className="flex flex-wrap gap-1 mt-1" data-testid="card-meta-pills">
-          {(post.color_variant || post.pressing_variant) && <VariantTag variant={post.color_variant || post.pressing_variant} linkTo={variantLink(post.record)} />}
+          {(post.color_variant || post.pressing_variant) && <VariantTag variant={post.color_variant || post.pressing_variant} prefix="Pressing" linkTo={variantLink(post.record)} />}
         </div>
       </div>
     </div>
