@@ -10,13 +10,12 @@ The HoneyGroove is a social platform for vinyl record collectors built with Reac
 - **3rd Party:** Resend (email), Stripe Connect (payments), Discogs API (album metadata)
 
 ## Core Features (Completed)
-- Feed with SWR-like caching (useFeed.js), optimistic UI for likes/comments/follows
+- Feed with SWR-like caching, optimistic UI for likes/comments/follows
 - Daily Prompt with SWR caching, buzz-in with retry logic, streak tracking
+- **Polls** — 6th composition type with blind voting, Honey Gold branding, persistence
 - Admin panel with temp password, user management, beta invites, reports
 - Threaded comment replies, follow/unfollow with optimistic UI
-- Password reset (dynamic URL from Origin header)
-- Record data hydration for ghost records in feed
-- Custom "Honeypot" branded login animation
+- Password reset (dynamic URL), record data hydration for ghost records
 - Global price cache visible to all profile viewers
 
 ## Key Credentials
@@ -24,12 +23,16 @@ The HoneyGroove is a social platform for vinyl record collectors built with Reac
 
 ## Completed Work
 
+### Session 3 (Mar 14, 2026) — Polls Feature
+- **Full Poll Implementation:** Backend (PollCreate model, `POST /composer/poll`, `POST /polls/{post_id}/vote`, poll_votes collection, per-option results in build_post_response) + Frontend (PollCard with blind voting UX, Poll composer in ComposerBar with dynamic options min 2/max 6, 500 char limit)
+- **Honey Gold Branding (#DAA520):** Gold progress bars with slide animation, gold circle checkmark for "My Vote" indicator, 📊 emoji in filter pills/badge/composer, amber PILL_STYLES
+- **Responsive Layout:** Feed filter bar wraps into clean rows (flex-wrap, max-width 580px desktop). ComposerBar supports 6 chips with wrap on mobile. 📊 Poll filter visible in both layouts
+- **Blind Voting:** Pre-vote shows clickable buttons without percentages. Post-vote reveals gold percentage bars and "X people responded" count. Persistence: refresh shows results for users who already voted
+
 ### Session 2 (Mar 14, 2026)
-- **Daily Prompt Submission Fix:** Added retry logic in `handleSubmit` — if buzz-in returns 404 "not found" (stale/deleted prompt_id), the component re-fetches `/prompts/today` and retries with the fresh prompt_id.
-- **Discogs Pricing Bug Fix:** Created new public endpoint `GET /valuation/record-values/{username}` that returns median values for ANY user's collection. Updated `ProfilePage.js` to fetch values for any profile (not just own). Verified 147 priced records for katie, 86 for travis.
-- **Ghost Records Fix:** Backend `build_post_response()` hydrates missing record_title/cover_url from records collection; skips posts where record was deleted.
-- **DailyPrompt Skeleton Fix:** Added SWR-like localStorage caching for instant render; AbortController for StrictMode cleanup.
-- **Admin Panel Layout Fix:** Changed nav button container from `overflow-x-auto` to `flex-wrap`.
+- Daily Prompt submission retry on stale prompt_id
+- Discogs pricing fix: public `GET /valuation/record-values/{username}` endpoint
+- Ghost records hydration, DailyPrompt SWR caching, Admin layout flex-wrap
 
 ### Session 1 (Previous)
 - Performance: SWR-like feed caching, optimistic UI, lazy loading
@@ -42,35 +45,33 @@ The HoneyGroove is a social platform for vinyl record collectors built with Reac
 ├── backend/
 │   ├── server.py
 │   ├── routes/
-│   │   ├── hive.py           # Feed, ghost record hydration
+│   │   ├── hive.py           # Feed, posts, ghost record hydration, POLL composer + vote
 │   │   ├── daily_prompts.py  # Prompt CRUD, buzz-in, streak
-│   │   ├── valuation.py      # NEW: /record-values/{username} public endpoint
-│   │   └── collection.py     # Record CRUD, user collections
-│   ├── database.py
-│   └── models.py
+│   │   ├── valuation.py      # /record-values/{username} public endpoint
+│   │   └── collection.py     # Record CRUD
+│   ├── models.py             # PollCreate, PostResponse with poll_* fields
+│   └── database.py
 ├── frontend/
 │   └── src/
-│       ├── api/apiBase.js
 │       ├── components/
-│       │   ├── DailyPrompt.js  # SWR cached + retry on stale prompt_id
-│       │   └── ...
-│       ├── context/AuthContext.js
-│       ├── hooks/useFeed.js, useAPI.js
+│       │   ├── PostCards.js    # PollCard (blind voting, gold bars), PostTypeBadge with 📊
+│       │   ├── ComposerBar.js  # 6 chips incl. Poll, Poll modal with gold theme
+│       │   └── DailyPrompt.js  # SWR cached + retry on stale prompt_id
 │       └── pages/
-│           ├── HivePage.js
-│           ├── ProfilePage.js  # Fixed: fetches values for any user
-│           ├── CollectionPage.js
-│           └── AdminPage.js    # Fixed: flex-wrap nav
+│           ├── HivePage.js     # 7 filter pills incl. "Polls 📊"
+│           └── ProfilePage.js  # Fetches values for any user
 ```
 
 ## Key API Endpoints
-- `POST /api/auth/login` → returns `access_token`
-- `GET /api/prompts/today` → today's prompt with buzz_count, streak
-- `POST /api/prompts/buzz-in` → submit daily prompt answer
-- `GET /api/feed` → hydrated feed with record data
-- `GET /api/valuation/record-values/{username}` → (NEW) public median values for any user
-- `GET /api/valuation/record-values` → median values for authenticated user
-- `GET /api/users/{username}/records` → user's collection list
+- `POST /api/composer/poll` — Create poll (question, options[2-6])
+- `POST /api/polls/{post_id}/vote` — Cast vote (option_index), returns results
+- `GET /api/feed` — Includes POLL posts with poll_question/options/results/user_vote
+- `GET /api/valuation/record-values/{username}` — Public median values
+- `POST /api/prompts/buzz-in` — Daily prompt answer
+
+## DB Collections
+- `poll_votes` — {id, post_id, user_id, option_index, created_at}
+- `posts` — POLL type: {poll_question, poll_options: string[]}
 
 ## Prioritized Backlog
 
@@ -85,12 +86,12 @@ The HoneyGroove is a social platform for vinyl record collectors built with Reac
 - Safari-compatible loading animation
 - Pro memberships / Verified Seller badge
 - Secret Search Feature
-- New Music Friday dynamic editing in Weekly Wax email
+- New Music Friday dynamic editing
 
 ### Refactoring
 - Break down monolithic server.py into route modules
 - Split PostCards.js into type-specific card components
 
 ## Known Issues
-- Discogs CDN returns 503 for some album images (external, not our bug)
-- Web scraper needs rotating User-Agents (backend/services/scraper.py)
+- Discogs CDN returns 503 for some album images (external)
+- Web scraper needs rotating User-Agents
