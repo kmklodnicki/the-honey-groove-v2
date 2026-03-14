@@ -38,7 +38,7 @@ const HoneypotLoader = () => (
       {/* Handle */}
       <path d="M20 20 Q20 12 28 12 Q36 12 36 20" stroke="#DAA520" strokeWidth="2.5" fill="none" opacity="0.5" />
     </svg>
-    <p className="text-sm font-medium animate-pulse" style={{ color: '#C8861A' }}>Warming up the hive...</p>
+    <p className="text-sm font-medium animate-pulse" style={{ color: '#C8861A' }}>Warming up the honey...</p>
   </div>
 );
 

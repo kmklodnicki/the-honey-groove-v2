@@ -519,7 +519,7 @@ const HivePage = () => {
 
   const FEED_FILTERS = [
     { key: 'all', label: 'All \u{1F36F}' },
-    { key: 'NOW_SPINNING', label: 'Now Spinning \u{1F41D}' },
+    { key: 'NOW_SPINNING', label: 'Now Spinning \u{1F3B5}' },
     { key: 'ISO', label: 'ISO \u{1F50D}' },
     { key: 'NEW_HAUL', label: 'Haul \u{1F4E6}' },
     { key: 'NOTE', label: 'Notes \u{1F4DD}' },
@@ -884,7 +884,7 @@ const HivePage = () => {
       <DailyPromptCard records={records} onPostCreated={handlePostCreated} />
 
       {/* Feed Filter — Dropdown */}
-      <div className="mb-4 flex justify-center" data-testid="feed-filter-bar">
+      <div className="mb-4 flex justify-center lg:justify-start" data-testid="feed-filter-bar">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
@@ -897,7 +897,7 @@ const HivePage = () => {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            align="center"
+            align="start"
             className="min-w-[200px] w-[var(--radix-dropdown-menu-trigger-width)] rounded-xl border-2 p-1"
             style={{ borderColor: '#DAA520', backdropFilter: 'blur(12px)', background: 'rgba(255,255,255,0.95)' }}
           >

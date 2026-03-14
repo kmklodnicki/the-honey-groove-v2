@@ -145,7 +145,7 @@ const PostTypeBadge = ({ type, mood }) => {
     );
   }
   const config = {
-    NOW_SPINNING: { label: 'Now Spinning', icon: Disc },
+    NOW_SPINNING: { label: 'Now Spinning', icon: Disc, emoji: '🎵' },
     NEW_HAUL: { label: 'New Haul', icon: Package },
     ISO: { label: 'ISO', icon: Gem },
     ADDED_TO_COLLECTION: { label: 'Added', icon: Plus },
@@ -514,7 +514,7 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
     <div data-testid="new-haul-card">
       <div className="flex justify-between items-start gap-3">
         <div className={`${photoUrl ? 'flex-1 mr-2' : 'w-full'} min-w-0`}>
-          {haul.store_name && <p className="text-sm text-amber-700 font-medium mb-2">Found at {haul.store_name}</p>}
+          {haul.store_name && <p className="text-sm text-amber-700 font-medium mb-2">📍 {haul.store_name}</p>}
           {post.caption && <p className="text-sm mb-3"><MentionText text={post.caption} /></p>}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {items.slice(0, 6).map((item, idx) => (

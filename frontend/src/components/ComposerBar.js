@@ -449,7 +449,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const noteRecord = records.find(r => r.id === noteRecordId);
 
   const spectrum = [
-    { key: 'NOW_SPINNING', label: 'Now Spinning', icon: Disc },
+    { key: 'NOW_SPINNING', label: 'Now Spinning', icon: Disc, emoji: '🎵' },
     { key: 'NEW_HAUL', label: 'Haul', icon: Package },
     { key: 'ISO', label: 'ISO', icon: Search },
     { key: 'NOTE', label: 'Note', icon: Feather },
@@ -471,13 +471,13 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                 key={chip.key}
                 onClick={() => chip.key === 'RANDOMIZER' ? openRandomizer() : openModal(chip.key)}
                 className="h-10 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all hover:scale-[1.03] hover:shadow-md"
-                style={{ background: '#FDE68A', color: '#78350F', border: '1px solid rgba(0,0,0,0.05)', minWidth: '140px' }}
+                style={{ background: '#FDE68A', color: '#78350F', border: '1px solid rgba(0,0,0,0.05)', padding: '0 10px' }}
                 onMouseEnter={e => { e.currentTarget.style.background = '#FBBF24'; e.currentTarget.style.borderColor = '#DAA520'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = '#FDE68A'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.05)'; }}
                 data-testid={`composer-chip-${chip.key.toLowerCase()}`}
               >
-                <Icon className="w-4 h-4 shrink-0" />
-                <span className="text-xs sm:text-sm">{chip.label}</span>
+                {chip.emoji ? <span className="text-sm shrink-0 leading-none">{chip.emoji}</span> : <Icon className="w-4 h-4 shrink-0" />}
+                <span className="text-xs sm:text-sm" style={{ whiteSpace: 'nowrap' }}>{chip.label}</span>
               </button>
             );
           })}
@@ -490,7 +490,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
           <div className="px-6 max-sm:px-4 pt-6 max-sm:pt-4 pb-2 shrink-0">
             <DialogHeader>
               <DialogTitle className="font-heading flex items-center gap-2 shrink" style={{ color: '#D98C2F' }}>
-                <Disc className="w-5 h-5 shrink-0" /> <span className="shrink">Now Spinning</span>
+                <span className="text-lg shrink-0">🎵</span> <span className="shrink">Now Spinning</span>
                 {spinMood && <span className="text-sm font-normal ml-1">· {MOOD_CONFIG[spinMood].emoji} {spinMood}</span>}
               </DialogTitle>
               <DialogDescription>
@@ -728,13 +728,14 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
           </div>
           <div className="flex-1 overflow-y-auto px-6 max-sm:px-4 min-h-0">
           <div className="space-y-4 pt-2 pb-4">
-            <Input placeholder="Where'd you find them? (store, thrift, eBay...)" value={haulStoreName} onChange={e => setHaulStoreName(e.target.value)} className="border-honey/50" data-testid="haul-store-input" />
+            {/* 1. Records found — primary focus */}
             <div>
               <label className="text-sm font-medium mb-1 block">Records found</label>
               <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input placeholder="Search Discogs to add records..." value={haulSearch}
                   onChange={e => { setHaulSearch(e.target.value); searchDiscogs(e.target.value); }}
-                  className="border-honey/50" data-testid="haul-search-input" />
+                  className="pl-9 border-honey/50" data-testid="haul-search-input" />
                 {searchLoading && <Loader2 className="w-4 h-4 animate-spin absolute right-3 top-3 text-muted-foreground" />}
               </div>
               {haulResults.length > 0 && (
@@ -745,53 +746,60 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                 </div>
               )}
             </div>
+            {/* Selected items with prominent album art */}
             {haulItems.length > 0 && (
               <div className="space-y-2">
                 {haulItems.map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-2 bg-honey/10 rounded-lg px-3 py-2">
-                    <AlbumArt src={item.cover_url} alt={`${item.artist} ${item.title} vinyl record`} className="w-8 h-8 rounded object-cover" />
-                    <span className="flex-1 text-sm truncate">{item.artist} · {item.title}</span>
-                    <button onClick={() => setHaulItems(prev => prev.filter((_, i) => i !== idx))} className="text-muted-foreground hover:text-red-500"><X className="w-4 h-4" /></button>
+                  <div key={idx} className="flex items-center gap-3 rounded-lg p-2" style={{ background: 'rgba(244,185,66,0.1)' }}>
+                    <AlbumArt src={item.cover_url} alt={`${item.artist} ${item.title} vinyl record`} className="w-12 h-12 rounded-md object-cover shadow-sm" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{item.title}</p>
+                      <p className="text-xs truncate" style={{ color: '#8A6B4A' }}>{item.artist}</p>
+                    </div>
+                    <button onClick={() => setHaulItems(prev => prev.filter((_, i) => i !== idx))} className="p-1 rounded-full hover:bg-black/10 text-muted-foreground hover:text-red-500"><X className="w-4 h-4" /></button>
                   </div>
                 ))}
                 <p className="text-xs text-muted-foreground">{haulItems.length} record{haulItems.length !== 1 ? 's' : ''}</p>
               </div>
             )}
+            {/* 2. Location — optional */}
+            <div>
+              <label className="text-xs font-medium mb-1 block" style={{ color: '#8A6B4A' }}>📍 Where'd you find them? <span className="text-muted-foreground font-normal">(optional)</span></label>
+              <Input placeholder="Record store, thrift shop, eBay..." value={haulStoreName} onChange={e => setHaulStoreName(e.target.value)} className="border-honey/50" data-testid="haul-store-input" />
+            </div>
+            {/* 3. Caption */}
             <MentionTextarea placeholder="I just got..." value={haulCaption} onChange={setHaulCaption} className="border-honey/50 resize-none" rows={2} data-testid="haul-caption-input" />
-            {/* Photo Upload Section */}
-            <div className="mt-2 mb-4 px-1">
+            {/* 4. Photo Upload */}
+            <div className="px-1">
               <input 
                 type="file" 
                 ref={postPhotoInputRef} 
                 className="hidden" 
                 accept="image/*" 
                 onChange={handlePhotoSelect} 
-            />
-  
-            {!postPhotoPreview ? (
-              <button 
-                type="button"
-                onClick={() => postPhotoInputRef.current.click()}
-                className="flex items-center gap-2 text-stone-500 hover:text-amber-600 transition text-sm font-medium border border-dashed border-stone-300 rounded-lg p-3 w-full justify-center"
-              >
-                <ImagePlus size={18} />
-                Add a photo of your haul (Optional)
-              </button>
-            ) : (
-              <div className="relative w-full aspect-video group">
-                <img 
-        src={postPhotoPreview} 
-        className="w-full h-full object-cover rounded-xl border border-stone-200 shadow-sm" 
-      />
-      <button 
-        onClick={clearPostPhoto}
-        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 shadow-md hover:bg-red-600 transition"
-      >
-        <X size={14} />
-      </button>
-    </div>
-  )}
-</div>
+              />
+              {!postPhotoPreview ? (
+                <button 
+                  type="button"
+                  onClick={() => postPhotoInputRef.current.click()}
+                  className="flex items-center gap-2 text-stone-500 hover:text-amber-600 transition text-sm font-medium border border-dashed border-stone-300 rounded-lg p-3 w-full justify-center"
+                >
+                  <ImagePlus size={18} />
+                  Add a photo of your haul (Optional)
+                </button>
+              ) : (
+                <div className="relative w-full aspect-video group">
+                  <img src={postPhotoPreview} className="w-full h-full object-cover rounded-xl border border-stone-200 shadow-sm" alt="Haul preview" />
+                  <button 
+                    onClick={clearPostPhoto}
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 shadow-md hover:bg-red-600 transition"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              )}
+            </div>
+            {/* 5. Submit */}
             <Button onClick={submitNewHaul} disabled={submitting || haulItems.length === 0 || !haulCaption.trim()} className="w-full bg-amber-100 text-amber-800 hover:bg-amber-200 rounded-full" data-testid="haul-submit-btn">
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Package className="w-4 h-4 mr-2" />}
               Post Haul ({haulItems.length} record{haulItems.length !== 1 ? 's' : ''})
