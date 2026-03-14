@@ -148,27 +148,65 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
     e.preventDefault();
     if (!newComment.trim()) return;
     setSubmitting(true);
+    const content = newComment.trim();
+    const parentId = replyTo?.id || null;
+
+    // Optimistic: show comment instantly
+    const optimisticId = `opt_${Date.now()}`;
+    const optimisticComment = {
+      id: optimisticId,
+      post_id: post.id,
+      user_id: currentUserId,
+      content,
+      parent_id: parentId,
+      created_at: new Date().toISOString(),
+      user: { id: currentUserId, username: 'you' },
+      likes_count: 0,
+      is_liked: false,
+      replies: [],
+      _optimistic: true,
+    };
+
+    if (parentId) {
+      setComments(prev => prev.map(c => {
+        if (c.id === parentId) return { ...c, replies: [...(c.replies || []), optimisticComment] };
+        return c;
+      }));
+    } else {
+      setComments(prev => [...prev, optimisticComment]);
+    }
+    setNewComment('');
+    setReplyTo(null);
+    setShowMentions(false);
+    onCommentCountChange(post.id, 1);
+
     try {
       const response = await axios.post(`${API}/posts/${post.id}/comments`,
-        { post_id: post.id, content: newComment.trim(), parent_id: replyTo?.id || null },
+        { post_id: post.id, content, parent_id: parentId },
         { headers: { Authorization: `Bearer ${token}` }}
       );
-      if (replyTo) {
-        // Add reply nested under parent
+      // Replace optimistic with real comment
+      if (parentId) {
         setComments(prev => prev.map(c => {
-          if (c.id === replyTo.id) {
-            return { ...c, replies: [...(c.replies || []), response.data] };
+          if (c.id === parentId) {
+            return { ...c, replies: (c.replies || []).map(r => r.id === optimisticId ? { ...response.data, replies: [] } : r) };
           }
           return c;
         }));
       } else {
-        setComments(prev => [...prev, { ...response.data, replies: [] }]);
+        setComments(prev => prev.map(c => c.id === optimisticId ? { ...response.data, replies: [] } : c));
       }
-      setNewComment('');
-      setReplyTo(null);
-      setShowMentions(false);
-      onCommentCountChange(post.id, 1);
     } catch (error) {
+      // Revert optimistic comment on failure
+      if (parentId) {
+        setComments(prev => prev.map(c => {
+          if (c.id === parentId) return { ...c, replies: (c.replies || []).filter(r => r.id !== optimisticId) };
+          return c;
+        }));
+      } else {
+        setComments(prev => prev.filter(c => c.id !== optimisticId));
+      }
+      onCommentCountChange(post.id, -1);
       toast.error('something went wrong. please try again.');
     } finally {
       setSubmitting(false);
@@ -178,23 +216,37 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
   const handleReply = (comment) => {
     setReplyTo({ id: comment.id, username: comment.user?.username });
     setNewComment(`@${comment.user?.username} `);
-    setTimeout(() => commentInputRef.current?.focus(), 50);
+    setTimeout(() => {
+      if (commentInputRef.current) {
+        commentInputRef.current.focus();
+        commentInputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 50);
   };
 
   const handleCommentLike = async (commentId, isLiked) => {
+    // Optimistic update
+    const updateLike = (list) => list.map(c => {
+      if (c.id === commentId) return { ...c, is_liked: !isLiked, likes_count: isLiked ? Math.max(0, c.likes_count - 1) : c.likes_count + 1 };
+      if (c.replies?.length) return { ...c, replies: updateLike(c.replies) };
+      return c;
+    });
+    setComments(prev => updateLike(prev));
     try {
       if (isLiked) {
         await axios.delete(`${API}/comments/${commentId}/like`, { headers: { Authorization: `Bearer ${token}` } });
       } else {
         await axios.post(`${API}/comments/${commentId}/like`, {}, { headers: { Authorization: `Bearer ${token}` } });
       }
-      const updateLike = (list) => list.map(c => {
-        if (c.id === commentId) return { ...c, is_liked: !isLiked, likes_count: isLiked ? c.likes_count - 1 : c.likes_count + 1 };
-        if (c.replies?.length) return { ...c, replies: updateLike(c.replies) };
+    } catch {
+      // Revert on failure
+      const revertLike = (list) => list.map(c => {
+        if (c.id === commentId) return { ...c, is_liked: isLiked, likes_count: isLiked ? c.likes_count + 1 : Math.max(0, c.likes_count - 1) };
+        if (c.replies?.length) return { ...c, replies: revertLike(c.replies) };
         return c;
       });
-      setComments(prev => updateLike(prev));
-    } catch { /* ignore */ }
+      setComments(prev => revertLike(prev));
+    }
   };
 
   const handleCommentInputChange = (e) => {
@@ -478,6 +530,9 @@ const HivePage = () => {
 
   const FEED_LIMIT = 20;
 
+  // Feed cache key for sessionStorage
+  const FEED_CACHE_KEY = 'hg_feed_cache';
+
   const fetchFeed = useCallback(async () => {
     try {
       setFeedError(false);
@@ -498,6 +553,8 @@ const HivePage = () => {
         } catch { /* post might be deleted */ }
       }
       setPosts(feedPosts);
+      // Cache feed for instant return visits
+      try { sessionStorage.setItem(FEED_CACHE_KEY, JSON.stringify(feedPosts)); } catch { /* quota */ }
     } catch (error) {
       console.error('Feed fetch failed:', error?.message, error?.response?.status);
       setFeedError(true);
@@ -545,6 +602,17 @@ const HivePage = () => {
   }, [fetchFeed, fetchRecords]));
 
   useEffect(() => {
+    // Hydrate from cache for instant display, then fetch fresh in background
+    try {
+      const cached = sessionStorage.getItem(FEED_CACHE_KEY);
+      if (cached) {
+        const cachedPosts = JSON.parse(cached);
+        if (cachedPosts?.length) {
+          setPosts(cachedPosts);
+          setLoading(false);
+        }
+      }
+    } catch { /* corrupt cache */ }
     fetchFeed();
     fetchRecords();
     // Fetch following list for the "Following" filter
@@ -815,14 +883,15 @@ const HivePage = () => {
       <DailyPromptCard records={records} onPostCreated={handlePostCreated} />
 
       {/* THE ESSENTIAL SIX — 2 rows of 3 on mobile, 1 row on desktop */}
-      <div className="grid grid-cols-3 md:flex md:flex-nowrap md:justify-center gap-1.5 md:gap-2 mb-4 mx-auto px-3" style={{ maxWidth: '420px' }} data-testid="feed-filter-bar">
+      <div className="grid grid-cols-3 md:flex md:flex-nowrap md:justify-center gap-1.5 md:gap-2 mb-4 mx-auto px-3" style={{ maxWidth: '480px' }} data-testid="feed-filter-bar">
         {FEED_FILTERS.map(f => {
           const isActive = activeFilter === f.key;
+          const [text, emoji] = f.label.includes(' ') ? [f.label.slice(0, f.label.lastIndexOf(' ')), f.label.slice(f.label.lastIndexOf(' ') + 1)] : [f.label, ''];
           return (
             <button
               key={f.key}
               onClick={() => setActiveFilter(f.key)}
-              className={`rounded-full text-xs px-3 py-1 font-medium border text-center transition-colors duration-200 ${
+              className={`inline-flex items-center justify-center gap-1.5 rounded-full text-xs px-4 py-1.5 font-medium border transition-colors duration-200 ${
                 isActive ? 'font-semibold shadow-sm' : ''
               }`}
               style={{
@@ -835,7 +904,8 @@ const HivePage = () => {
               onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(120,80,20,0.7)'; e.currentTarget.style.borderColor = 'rgba(200,134,26,0.3)'; } }}
               data-testid={`filter-${f.key}`}
             >
-              {f.label}
+              <span>{text}</span>
+              {emoji && <span className="flex-shrink-0 leading-none">{emoji}</span>}
             </button>
           );
         })}

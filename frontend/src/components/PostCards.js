@@ -611,7 +611,7 @@ const ISOCard = ({ post, onAlbumClick }) => {
             )}
             {isoData.condition_pref && <p className="text-xs text-[#8A6B4A]" data-testid="iso-condition">Condition: {isoData.condition_pref}</p>}
             {(isoData.target_price_min || isoData.target_price_max) && (
-              <p className="text-xs text-[#8A6B4A] mt-0.5">Budget: {isoData.target_price_min ? `$${isoData.target_price_min}` : '?'} – {isoData.target_price_max ? `$${isoData.target_price_max}` : '?'}</p>
+              <p className="text-xs text-[#8A6B4A] mt-0.5">Budget: {isoData.target_price_min && isoData.target_price_max ? `$${isoData.target_price_min} – $${isoData.target_price_max}` : isoData.target_price_max ? `Up to $${isoData.target_price_max}` : isoData.target_price_min ? `From $${isoData.target_price_min}` : ''}</p>
             )}
             {isoData.is_unofficial && <UnofficialPill variant="inline" className="mt-1.5" />}
           </div>

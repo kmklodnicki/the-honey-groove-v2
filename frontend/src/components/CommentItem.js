@@ -57,17 +57,42 @@ const SingleComment = ({ comment, onReply, onLike, isReply }) => (
   </div>
 );
 
-const CommentThread = ({ comment, onReply, onLike }) => (
-  <div>
-    <SingleComment comment={comment} onReply={onReply} onLike={onLike} isReply={false} />
-    {comment.replies && comment.replies.length > 0 && (
-      <div className="space-y-2 mt-2">
-        {comment.replies.map(reply => (
-          <SingleComment key={reply.id} comment={reply} onReply={onReply} onLike={onLike} isReply />
-        ))}
-      </div>
-    )}
-  </div>
-);
+const CommentThread = ({ comment, onReply, onLike }) => {
+  const [showReplies, setShowReplies] = React.useState(false);
+  const replies = comment.replies || [];
+  const hasMany = replies.length > 3;
+  const visibleReplies = hasMany && !showReplies ? replies.slice(0, 2) : replies;
+
+  return (
+    <div>
+      <SingleComment comment={comment} onReply={onReply} onLike={onLike} isReply={false} />
+      {replies.length > 0 && (
+        <div className="space-y-2 mt-2">
+          {visibleReplies.map(reply => (
+            <SingleComment key={reply.id} comment={reply} onReply={onReply} onLike={onLike} isReply />
+          ))}
+          {hasMany && !showReplies && (
+            <button
+              onClick={() => setShowReplies(true)}
+              className="ml-8 text-xs text-honey-amber hover:underline transition-colors"
+              data-testid={`view-replies-${comment.id}`}
+            >
+              View {replies.length - 2} more {replies.length - 2 === 1 ? 'reply' : 'replies'}
+            </button>
+          )}
+          {hasMany && showReplies && (
+            <button
+              onClick={() => setShowReplies(false)}
+              className="ml-8 text-xs text-muted-foreground hover:underline transition-colors"
+              data-testid={`hide-replies-${comment.id}`}
+            >
+              Hide replies
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default CommentThread;
