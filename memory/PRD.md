@@ -37,6 +37,9 @@ The HoneyGroove is a social platform for vinyl record collectors built with Reac
 - **Mini Groove Hidden:** "See what the Hive said yesterday" button and PromptArchiveDrawer hidden with `{false && ...}` — underlying logic and DB queries retained.
 - **Composer Width Sync:** Removed hardcoded `maxWidth: 600px`. Composer now fills same `max-w-2xl` container as post cards (640px on desktop). Matched `shadow` class and `border-honey/30` for visual consistency.
 - **Mobile Filter Dropdown:** Fixed width to 280px / max 80vw, centered text with `justify-center`, centered menu on screen, increased padding to `py-2.5` for thumb-friendly tapping.
+- **Filter Dropdown Emoji-First:** Emoji moved to left of text labels (🍯 All, 🎵 Now Spinning, etc.), 8px gap, checkmark on far right. Subtle honey-gold dividers between items (not after last).
+- **Now Spinning SVG Icon:** Replaced emoji with lucide-react `Music` SVG icon in dark honey (#78350F), matching stroke weight of other composer icons. Modal title also uses SVG.
+- **Collection Buttons Mobile:** Changed from vertical stack to horizontal `flex-row` with condensed labels on mobile (Dupes, Fix), uniform h-9 height, no horizontal overflow.
 
 ### Session 3 (Mar 14, 2026) — Polls Feature
 - **Full Poll Implementation:** Backend (PollCreate model, `POST /composer/poll`, `POST /polls/{post_id}/vote`, poll_votes collection, per-option results in build_post_response) + Frontend (PollCard with blind voting UX, Poll composer in ComposerBar with dynamic options min 2/max 6, 500 char limit)
