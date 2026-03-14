@@ -697,6 +697,7 @@ const HivePage = () => {
       variant: record.color_variant || record.variant || '',
       discogs_id: record.discogs_id,
       cover_url: record.cover_url,
+      record_id: record.id || record.record_id,
     });
   };
 

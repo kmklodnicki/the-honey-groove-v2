@@ -1,50 +1,82 @@
-# The HoneyGroove — Product Requirements Document
+# The HoneyGroove - Product Requirements Document
 
-## Overview
-A premium social platform for vinyl collectors. React frontend + FastAPI backend + MongoDB Atlas.
+## Original Problem Statement
+Social platform for vinyl record collectors. The admin reported production stability issues, UI bugs, and data mapping errors on the live site (`thehoneygroove.com`).
 
-## Active Database
-- **DB_NAME**: `groove-social-beta-test_database` on Atlas
-- **Stats**: 132 users, 2,589 records, 155 posts
+## Tech Stack
+- Frontend: React (CRA) + Tailwind + Shadcn UI
+- Backend: FastAPI + MongoDB Atlas
+- Deployment: Emergent Platform → custom domain `thehoneygroove.com`
 
-## Completed — March 13, 2026
+## Core Requirements
+1. **Production Stability (P0):** Live app must be stable with working auth, feed, and collection
+2. **UI/UX Integrity (P0):** Fix critical UI bugs (modals, layouts, data display)
+3. **Instagram Story Export (P1):** Export Daily Prompt as 1080x1920 PNG
+4. **Service Worker Caching (P1):** Pre-cache assets for faster loads
 
-### Session 4 — Critical Auth Fix
-- **GET /auth/me endpoint**: Added missing `@router.get("/auth/me")` — was only PUT, frontend GET returned 405. Root cause of PFP/admin disappearing after refresh.
-- **Password reset 500 fix**: Null-check on user lookup after password update in `reset_password()`
-- **Admin password re-hash**: Password hash was stale from data merge; re-hashed to match `HoneyGroove2026!`
+## What's Been Implemented
 
-### Session 3 — Variant Bug Fix
-- Discogs rate limit retry with backoff (2 retries)
-- Internal records fallback when Discogs API fails
-- "Try Again" button on Variant Not Found page
+### Session 1 (Previous Fork)
+- Auth overhaul (GET /api/auth/me, password reset, JWT enrichment)
+- Modal overflow fixes for mobile
+- Text truncation fixes on feed/honeypot cards
+- Infinite scroll fix on HivePage
+- VinylShield error boundary
+- Discogs API resilience (retry + cache fallback)
 
-### Session 2 — Data Export & UI Fixes
-- 23 collections exported to `/app/export/` with download endpoints
-- CSS truncation on all artist/album labels + global `.card-title, .card-artist` rule
-- Honeypot pagination: 24-item limit with "Show More"
-- Variant pill max-width capped at all breakpoints (320px desktop, 220px tablet, 150px mobile)
-- Password reset token for swiftlylyrical@gmail.com
+### Session 2 (Current - March 14, 2026)
+- **Centralized API URL resolution** (`apiBase.js`) — all 17+ files now use single source
+- **VinylShield fix** — removed overly aggressive health check that blocked app (8s timeout vs 21s prod latency)
+- **Global 30s axios timeout** — prevents production proxy latency from killing requests
+- **ISO card data mapping fix** — "Pressing" now shows `color_variant`, not `pressing_notes`/grade
+- **Backend variant fallback removed** — `build_post_response` no longer falls back to `pressing_notes`
+- **AlbumLink fix** — now handles `record_id` from bundle records for correct linking
+- **"Recover Values" button resilience** — shows even when valuation API is slow
+- **Service worker cache bump** (v2 → v3)
+- **MongoDB password update** for Atlas user `katie`
+- **Manual password reset** for user `usahoyt@aol.com`
 
-### Session 1 — Auth & Campaign
-- Auth flow with resend-invite fallback
-- PWA banner / nav layout fixes
-- 95-user email campaign sent
+## Known Issues
+- Production custom domain has ~21s proxy latency (vs 0.24s on preview URL)
+- Some ISO items in DB have grade info in `pressing_notes` field (data quality issue)
+- Web scraper (`services/scraper.py`) is fragile — needs rotating User-Agents
 
-## P0 — Outstanding
-- **Ash's Data**: Not in any accessible data source
+## Prioritized Backlog
 
-## P1 — Upcoming
-- Instagram Story Export (1080x1920 PNG for Daily Prompt)
-- Service Worker Caching (BLOCK 321)
+### P0 - Complete
+- [x] Production stability
+- [x] VinylShield blocking fix
+- [x] Feed skeleton loader fix
+- [x] ISO card data mapping
+- [x] Record linking fix
 
-## P2 — Future/Backlog
-- Streaming Service Integration (BLOCK 254)
-- Record Store Day Proxy Network
-- Safari loading animation
-- "Pro" memberships / "Verified Seller" badge
-- Secret Search Feature
-- Dynamic "New Music Friday" in Weekly Wax
+### P1 - Upcoming
+- [ ] Instagram Story Export (Daily Prompt as 1080x1920 PNG)
+- [ ] Service Worker Caching improvements
+- [ ] Streaming Service Integration (needs Spotify callback URL)
+
+### P2 - Future
+- [ ] Record Store Day Proxy Network
+- [ ] Safari-compatible loading animation
+- [ ] Pro memberships / Verified Seller badge
+- [ ] Secret Search Feature
+- [ ] New Music Friday dynamic editing
+- [ ] Web scraper hardening
+
+### Refactoring
+- [ ] Break down monolithic `server.py` into route modules
+- [ ] Deployment configuration hardening
 
 ## Credentials
-- Admin: kmklodnicki@gmail.com / HoneyGroove2026!
+- Admin: `kmklodnicki@gmail.com` / `HoneyGroove2026!`
+- Atlas: `katie` / `HoneyGroove2026`
+
+## Key Files
+- `frontend/src/utils/apiBase.js` — Single source of truth for API URL
+- `frontend/src/context/AuthContext.js` — Auth + session management
+- `frontend/src/components/PostCards.js` — Feed card rendering
+- `frontend/src/pages/CollectionPage.js` — Collection/Vault page
+- `frontend/src/components/VinylShield.js` — Error boundary
+- `backend/routes/hive.py` — Feed/post endpoints
+- `backend/routes/collection.py` — Collection/record endpoints
+- `backend/routes/auth.py` — Authentication endpoints

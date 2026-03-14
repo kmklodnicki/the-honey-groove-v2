@@ -62,7 +62,8 @@ const MOOD_COLOR_MAP = {
 
 // Clickable album card wrapper — calls onAlbumClick if provided, otherwise navigates to record detail
 const AlbumLink = ({ record, children, className = '', onAlbumClick }) => {
-  if (record?.id || record?.discogs_id) {
+  const rid = record?.id || record?.record_id;
+  if (rid || record?.discogs_id) {
     if (onAlbumClick) {
       return (
         <div
@@ -71,15 +72,15 @@ const AlbumLink = ({ record, children, className = '', onAlbumClick }) => {
           onClick={(e) => { e.stopPropagation(); onAlbumClick(record); }}
           onKeyDown={(e) => e.key === 'Enter' && onAlbumClick(record)}
           className={`block hover:opacity-80 active:scale-[0.98] transition-all cursor-pointer ${className}`}
-          data-testid={`album-link-${record.id || record.discogs_id}`}
+          data-testid={`album-link-${rid || record.discogs_id}`}
         >
           {children}
         </div>
       );
     }
-    if (record.id) {
+    if (rid) {
       return (
-        <Link to={`/record/${record.id}`} className={`block hover:opacity-80 transition-opacity cursor-pointer ${className}`} data-testid={`album-link-${record.id}`}>
+        <Link to={`/record/${rid}`} className={`block hover:opacity-80 transition-opacity cursor-pointer ${className}`} data-testid={`album-link-${rid}`}>
           {children}
         </Link>
       );
@@ -324,7 +325,7 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
   const title = record.title || post.record_title || '';
   const artist = record.artist || post.record_artist || '';
   if (!coverUrl && !title && !post.caption) return null;
-  const variantText = post.color_variant || record.color_variant || post.pressing_variant || record.pressing_notes;
+  const variantText = post.color_variant || record.color_variant || post.pressing_variant;
   const linkRecord = record.id ? record : { title, artist, cover_url: coverUrl };
   return (
     <AlbumLink record={linkRecord} onAlbumClick={onAlbumClick}>
@@ -623,7 +624,7 @@ const AddedToCollectionCard = ({ post, onAlbumClick, imgPriority }) => {
   const title = record.title || post.record_title || '';
   const artist = record.artist || post.record_artist || '';
   if (!coverUrl && !title && !post.caption) return null;
-  const variantText = post.color_variant || record.color_variant || record.pressing_notes;
+  const variantText = post.color_variant || record.color_variant;
   const linkRecord = record.id ? record : { title, artist, cover_url: coverUrl };
   return (
     <AlbumLink record={linkRecord} onAlbumClick={onAlbumClick}>
