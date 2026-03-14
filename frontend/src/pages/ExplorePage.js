@@ -249,7 +249,7 @@ const ExplorePage = () => {
                       variant="outline"
                       size="sm"
                       onClick={(e) => { e.preventDefault(); handleKindaUnfollow(p.username); }}
-                      className="mt-2 w-full text-xs rounded-full border-transparent text-white hover:bg-red-50 hover:text-red-600 hover:border-red-300 transition-all"
+                      className="mt-2 w-full text-xs rounded-full border-transparent text-white hover:opacity-90 transition-all"
                       style={{ background: '#C8861A' }}
                       data-testid={`following-btn-${p.username}`}
                     >
