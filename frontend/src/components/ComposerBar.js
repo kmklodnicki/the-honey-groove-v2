@@ -460,7 +460,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   return (
     <>
       {/* Composer Bar — Command Center */}
-      <div className="bg-white rounded-xl border border-honey/30 p-4 max-sm:p-3 mb-6 shadow-sm" style={{ maxWidth: '600px', margin: '0 auto 1.5rem' }} data-testid="composer-bar">
+      <div className="bg-white rounded-xl border border-honey/30 p-4 max-sm:p-3 mb-6 shadow" data-testid="composer-bar">
         <p className="text-sm text-muted-foreground mb-1">What's on the turntable?</p>
         <p className="text-[10px] text-muted-foreground/70 mb-3 italic">Only posts with comments will be shared in The Hive.</p>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">

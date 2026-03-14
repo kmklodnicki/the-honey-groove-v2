@@ -306,6 +306,8 @@ useEffect(() => {
             </div>
           );
         })()}
+        {/* Mini Groove — temporarily hidden */}
+        {false && (
         <div className="text-center mt-4">
           <button
             onClick={() => setArchiveOpen(true)}
@@ -315,6 +317,7 @@ useEffect(() => {
             See what the Hive said yesterday <span className="text-[10px]">&rarr;</span>
           </button>
         </div>
+        )}
       </Card>
 
       <BuzzInModal
@@ -331,7 +334,8 @@ useEffect(() => {
         }}
       />
 
-      <PromptArchiveDrawer open={archiveOpen} onOpenChange={setArchiveOpen} />
+      {/* Mini Groove drawer — temporarily hidden */}
+      {false && <PromptArchiveDrawer open={archiveOpen} onOpenChange={setArchiveOpen} />}
     </>
   );
 };

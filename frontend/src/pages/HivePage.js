@@ -888,8 +888,8 @@ const HivePage = () => {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
-              className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium border transition-colors w-full sm:w-auto justify-between sm:justify-center"
-              style={{ background: '#FFF8E7', borderColor: '#DAA520', color: '#78350F', maxWidth: '320px' }}
+              className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium border transition-colors w-auto justify-center"
+              style={{ background: '#FFF8E7', borderColor: '#DAA520', color: '#78350F' }}
               data-testid="feed-filter-trigger"
             >
               <span>{FEED_FILTERS.find(f => f.key === activeFilter)?.label || 'All'}</span>
@@ -897,19 +897,19 @@ const HivePage = () => {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            align="start"
-            className="min-w-[200px] w-[var(--radix-dropdown-menu-trigger-width)] rounded-xl border-2 p-1"
-            style={{ borderColor: '#DAA520', backdropFilter: 'blur(12px)', background: 'rgba(255,255,255,0.95)' }}
+            align="center"
+            className="rounded-xl border-2 p-1"
+            style={{ borderColor: '#DAA520', backdropFilter: 'blur(12px)', background: 'rgba(255,255,255,0.95)', width: '280px', maxWidth: '80vw' }}
           >
             {FEED_FILTERS.map(f => (
               <DropdownMenuItem
                 key={f.key}
                 onClick={() => setActiveFilter(f.key)}
-                className="rounded-lg px-3 py-2 cursor-pointer flex items-center justify-between gap-3 text-sm font-medium transition-colors hover:bg-amber-50"
+                className="rounded-lg px-3 py-2.5 cursor-pointer flex items-center justify-center gap-3 text-sm font-medium transition-colors hover:bg-amber-50"
                 style={{ color: '#78350F' }}
                 data-testid={`filter-${f.key}`}
               >
-                <span>{f.label}</span>
+                <span className="text-center">{f.label}</span>
                 {activeFilter === f.key && <Check className="w-4 h-4 shrink-0" style={{ color: '#DAA520' }} />}
               </DropdownMenuItem>
             ))}
