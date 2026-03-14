@@ -230,6 +230,9 @@ const ExplorePage = () => {
                       {p.avatar_url ? <img src={p.avatar_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Users className="w-6 h-6 text-honey" /></div>}
                     </div>
                     <p className="text-sm font-medium truncate hover:underline" style={{ color: '#C8861A' }}>@{p.username}</p>
+                    {p.follows_me && !isFollowed && (
+                      <span className="inline-block text-[10px] font-medium mt-0.5 px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(218,165,32,0.12)', color: '#C8861A' }} data-testid={`follows-you-${p.username}`}>Follows you</span>
+                    )}
                     <p className="text-xs font-bold mt-0.5" style={{ color: '#C8861A' }}>{p.common_count || 0} {(p.common_count || 0) === 1 ? 'record' : 'records'} in common</p>
                     {p.shared_covers?.length > 0 && (
                       <div className="flex justify-center gap-1 mt-2">
@@ -246,7 +249,8 @@ const ExplorePage = () => {
                       variant="outline"
                       size="sm"
                       onClick={(e) => { e.preventDefault(); handleKindaUnfollow(p.username); }}
-                      className="mt-2 w-full text-xs rounded-full border-honey bg-honey/10 text-[#C8861A] hover:bg-red-50 hover:text-red-600 hover:border-red-300 transition-all"
+                      className="mt-2 w-full text-xs rounded-full border-transparent text-white hover:bg-red-50 hover:text-red-600 hover:border-red-300 transition-all"
+                      style={{ background: '#C8861A' }}
                       data-testid={`following-btn-${p.username}`}
                     >
                       <Check className="w-3 h-3 mr-1" /> Following
