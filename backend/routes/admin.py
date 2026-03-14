@@ -533,6 +533,65 @@ async def remove_user(user_id: str, user: Dict = Depends(require_admin)):
     return {"detail": f"User @{username} and all associated data have been removed."}
 
 
+@router.post("/admin/users/{user_id}/temp-password")
+async def admin_temp_password(user_id: str, user: Dict = Depends(require_admin)):
+    """Generate a temporary password for a user, hash it, email it, and log the action."""
+    from database import hash_password
+    from templates.base import wrap_email
+
+    target = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not target:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user_id == user["id"]:
+        raise HTTPException(status_code=400, detail="Use the Settings page to change your own password.")
+
+    # Generate HG-XXXX-XX temp password
+    digits = ''.join(random.choices(string.digits, k=4))
+    suffix = ''.join(random.choices(string.ascii_uppercase, k=2))
+    temp_pw = f"HG-{digits}-{suffix}"
+
+    # Hash and save
+    from database import hash_password
+    hashed = hash_password(temp_pw)
+    await db.users.update_one({"id": user_id}, {"$set": {"password_hash": hashed}})
+
+    # Send email
+    body = f"""
+    <p style="font-size:16px;color:#2A1A06;line-height:1.6;">
+      Hi <strong>{target.get('username', '')}</strong>,
+    </p>
+    <p style="font-size:15px;color:#2A1A06;line-height:1.6;">
+      We've generated a temporary password to get you back into the hive:
+    </p>
+    <div style="text-align:center;margin:24px 0;">
+      <span style="display:inline-block;padding:14px 28px;background:#FFF6E6;border:2px solid #DAA520;border-radius:12px;font-family:monospace;font-size:22px;font-weight:700;color:#2A1A06;letter-spacing:2px;">
+        {temp_pw}
+      </span>
+    </div>
+    <p style="font-size:14px;color:#5a4a3a;line-height:1.6;">
+      Please log in and update your password in <strong>Settings</strong> immediately.
+    </p>
+    """
+    html = wrap_email(body)
+    await send_email_fire_and_forget(target["email"], "Your Honey Groove Temporary Password", html)
+
+    # Audit log
+    now = datetime.now(timezone.utc).isoformat()
+    await db.admin_audit_log.insert_one({
+        "id": str(uuid.uuid4()),
+        "action": "temp_password_reset",
+        "admin_id": user["id"],
+        "admin_username": user.get("username"),
+        "target_user_id": user_id,
+        "target_username": target.get("username"),
+        "target_email": target.get("email"),
+        "created_at": now,
+    })
+
+    logger.info(f"Admin @{user.get('username')} sent temp password to @{target.get('username')} ({target.get('email')})")
+    return {"detail": f"Temporary password sent to {target.get('email')}"}
+
+
 # ============== GOLDEN HIVE ID ADMIN ==============
 
 

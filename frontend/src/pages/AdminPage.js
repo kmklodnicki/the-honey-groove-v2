@@ -7,7 +7,7 @@ import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import {
-  Loader2, Copy, Download, Plus, Users, Key, Check, X, Trash2,
+  Loader2, Copy, Download, Plus, Users, Key, KeyRound, Check, X, Trash2,
   MessageSquare, Grid3X3, Flag, Settings, ChevronRight, Search,
   ToggleLeft, ToggleRight, Pencil, Calendar, Hash, Shield, DollarSign, ArrowRightLeft, AlertTriangle, Flame, Heart, Clock
 } from 'lucide-react';
@@ -1384,6 +1384,20 @@ const UserManagementSection = ({ API, headers }) => {
                   {u.is_admin ? 'Admin' : 'User'}
                 </span>
                 <div className="flex items-center gap-1.5 justify-end min-w-[100px]">
+                  <button
+                    onClick={async () => {
+                      if (!window.confirm(`Send a temporary password to @${u.username} (${u.email})?`)) return;
+                      try {
+                        const res = await axios.post(`${API}/admin/users/${u.id}/temp-password`, {}, { headers });
+                        toast.success(res.data.detail || `Temp password sent to @${u.username}`);
+                      } catch (err) { toast.error(err.response?.data?.detail || 'Failed to send temp password'); }
+                    }}
+                    className="p-1.5 rounded-full text-[#C8861A] hover:bg-[#C8861A]/10 transition-colors"
+                    title="Send temp password"
+                    data-testid={`temp-pw-${u.username}`}
+                  >
+                    <KeyRound className="w-3.5 h-3.5" />
+                  </button>
                   {u.is_admin ? (
                     <Button size="sm" variant="outline"
                       onClick={() => setConfirmModal({ userId: u.id, username: u.username, action: 'revoke' })}

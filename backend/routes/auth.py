@@ -376,6 +376,26 @@ async def reset_password(data: dict):
     return {"status": "ok", "message": "Password reset successfully. You can now log in."}
 
 
+@router.put("/auth/update-password")
+async def update_password(data: dict, user: Dict = Depends(require_auth)):
+    """Let a logged-in user change their password (requires current password)."""
+    current_pw = data.get("current_password", "")
+    new_pw = data.get("new_password", "")
+    if not current_pw or not new_pw:
+        raise HTTPException(status_code=400, detail="Both current and new password are required.")
+    if len(new_pw) < 6:
+        raise HTTPException(status_code=400, detail="New password must be at least 6 characters.")
+
+    full_user = await db.users.find_one({"id": user["id"]})
+    if not full_user or not verify_password(current_pw, full_user.get("password_hash", "")):
+        raise HTTPException(status_code=400, detail="Current password is incorrect.")
+
+    hashed = hash_password(new_pw)
+    await db.users.update_one({"id": user["id"]}, {"$set": {"password_hash": hashed}})
+    logger.info(f"User @{user.get('username')} updated their password")
+    return {"status": "ok", "message": "Password updated successfully."}
+
+
 # ── Claim-Invite: token-based account claim (bypasses forgot-password) ──────
 
 async def _find_invite_token(token: str):

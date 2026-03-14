@@ -752,6 +752,46 @@ const SettingsPage = () => {
         </CardContent>
       </Card>
 
+      {/* Update Password */}
+      <Card className="border-honey/30">
+        <CardHeader>
+          <CardTitle>Update Password</CardTitle>
+          <CardDescription>Change your password</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const current = form.currentPw.value;
+            const newPw = form.newPw.value;
+            const confirm = form.confirmPw.value;
+            if (newPw !== confirm) { toast.error('New passwords do not match.'); return; }
+            if (newPw.length < 6) { toast.error('Password must be at least 6 characters.'); return; }
+            try {
+              await axios.put(`${API}/auth/update-password`, { current_password: current, new_password: newPw }, { headers: { Authorization: `Bearer ${token}` } });
+              toast.success('Password updated successfully.');
+              form.reset();
+            } catch (err) { toast.error(err.response?.data?.detail || 'Failed to update password.'); }
+          }} className="space-y-3" data-testid="update-password-form">
+            <div>
+              <Label htmlFor="currentPw">Current Password</Label>
+              <Input id="currentPw" name="currentPw" type="password" required className="border-honey/50" data-testid="current-password-input" />
+            </div>
+            <div>
+              <Label htmlFor="newPw">New Password</Label>
+              <Input id="newPw" name="newPw" type="password" required minLength={6} className="border-honey/50" data-testid="new-password-input" />
+            </div>
+            <div>
+              <Label htmlFor="confirmPw">Confirm New Password</Label>
+              <Input id="confirmPw" name="confirmPw" type="password" required minLength={6} className="border-honey/50" data-testid="confirm-password-input" />
+            </div>
+            <Button type="submit" className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full" data-testid="update-password-btn">
+              Update Password
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
       {/* Account Actions */}
       <Card className="border-red-200">
         <CardHeader>
