@@ -13,6 +13,7 @@ import { Disc, Users, Search, TrendingUp, Lock, Play, UserPlus, MessageCircle, M
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
 import AlbumArt from '../components/AlbumArt';
+import BeeAvatar from '../components/BeeAvatar';
 import { resolveImageUrl } from '../utils/imageUrl';
 import { ListingTypeBadge } from '../components/PostCards';
 import ScrollRow from '../components/ScrollRow';
@@ -226,8 +227,8 @@ const ExplorePage = () => {
               <div key={p.username} className="flex-shrink-0 w-40 group" data-testid={`kinda-${p.username}`}>
                 <Card className={`p-3 border-honey/30 hover:shadow-honey transition-all text-center ${p.follows_me ? 'ring-1 ring-honey/40' : ''}`}>
                   <Link to={`/profile/${p.username}?tab=in-common`}>
-                    <div className="w-14 h-14 mx-auto rounded-full overflow-hidden bg-honey/10 mb-2">
-                      {p.avatar_url ? <img src={p.avatar_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Users className="w-6 h-6 text-honey" /></div>}
+                    <div className="w-14 h-14 mx-auto mb-2">
+                      <BeeAvatar user={p} className="h-14 w-14" />
                     </div>
                     <p className="text-sm font-medium truncate hover:underline" style={{ color: '#C8861A' }}>@{p.username}</p>
                     {p.follows_me && !isFollowed && (
