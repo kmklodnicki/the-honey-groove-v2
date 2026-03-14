@@ -65,8 +65,8 @@ const InfiniteScrollSentinel = ({ onIntersect, loading }) => {
     return () => observer.disconnect();
   }, [loading]);
   return (
-    <div ref={sentinelRef} className="flex justify-center py-6" data-testid="infinite-scroll-sentinel">
-      {loading && <Loader2 className="w-5 h-5 animate-spin text-[#C8861A]" />}
+    <div ref={sentinelRef} className="flex justify-center py-4" data-testid="infinite-scroll-sentinel">
+      {loading && <LoadingHoney size="sm" text="" className="py-2" />}
     </div>
   );
 };
@@ -91,6 +91,7 @@ const BeeAvatar = ({ user, className = "h-10 w-10" }) => {
 };
 
 import CommentThread from '../components/CommentItem';
+import LoadingHoney from '../components/LoadingHoney';
 
 const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, onPin, onToggleFeature, token, API, currentUserId, isAdmin, highlighted, autoOpenComments, imgPriority }) => {
   const [showComments, setShowComments] = useState(!!autoOpenComments);
@@ -100,6 +101,7 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
   const [submitting, setSubmitting] = useState(false);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState(null);
   const [replyTo, setReplyTo] = useState(null); // { id, username }
   const [mentionQuery, setMentionQuery] = useState('');
   const [mentionResults, setMentionResults] = useState([]);
@@ -250,6 +252,32 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
     }
   };
 
+  const handleDeleteComment = (comment) => {
+    setCommentToDelete(comment);
+  };
+
+  const confirmDeleteComment = async () => {
+    if (!commentToDelete) return;
+    const cid = commentToDelete.id;
+    // Optimistic: mark as deleted in UI
+    const markDeleted = (list) => list.map(c => {
+      if (c.id === cid) return { ...c, is_deleted: true, content: '[deleted]' };
+      if (c.replies?.length) return { ...c, replies: markDeleted(c.replies) };
+      return c;
+    }).filter(c => !c.is_deleted || (c.replies?.length > 0));
+    setComments(prev => markDeleted(prev));
+    setCommentToDelete(null);
+    if (onCommentCountChange) onCommentCountChange(post.id, -1);
+    try {
+      await axios.delete(`${API}/comments/${cid}`, { headers: { Authorization: `Bearer ${token}` } });
+    } catch {
+      // Revert on failure — refetch
+      fetchComments();
+    }
+  };
+
+
+
   const handleCommentInputChange = (e) => {
     const val = e.target.value;
     setNewComment(val);
@@ -396,7 +424,7 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
       {showComments && (
         <div className="px-4 pb-4 border-t border-honey/20 bg-honey/5">
           {loadingComments ? (
-            <div className="py-4 text-center text-sm text-muted-foreground">Loading comments...</div>
+            <LoadingHoney size="sm" />
           ) : (
             <>
               <div className="py-3 space-y-3 max-h-80 overflow-y-auto">
@@ -404,7 +432,7 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
                   <p className="text-center text-sm text-muted-foreground py-2">No comments yet. Be the first!</p>
                 ) : (
                   comments.map(comment => (
-                    <CommentThread key={comment.id} comment={comment} onReply={handleReply} onLike={handleCommentLike} />
+                    <CommentThread key={comment.id} comment={comment} onReply={handleReply} onLike={handleCommentLike} onDelete={handleDeleteComment} currentUserId={currentUserId} isAdmin={isAdmin} />
                   ))
                 )}
               </div>
@@ -469,6 +497,26 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
               onClick={() => onDelete(post.id)}
               className="bg-red-600 text-white hover:bg-red-700"
               data-testid={`confirm-delete-${post.id}`}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete comment confirmation */}
+      <AlertDialog open={!!commentToDelete} onOpenChange={(open) => !open && setCommentToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-heading">Delete Comment?</AlertDialogTitle>
+            <AlertDialogDescription>Are you sure you want to remove this? This action cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="cancel-delete-comment">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteComment}
+              className="bg-red-600 text-white hover:bg-red-700"
+              data-testid="confirm-delete-comment"
             >
               Delete
             </AlertDialogAction>
@@ -793,18 +841,8 @@ const HivePage = () => {
             </Button>
           </Card>
         ) : (
-          [1, 2, 3].map(i => (
-          <Card key={i} className="mb-4 p-6">
-            <div className="flex items-start gap-4">
-              <Skeleton className="w-12 h-12 rounded-full" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-32 w-full rounded-lg" />
-              </div>
-            </div>
-          </Card>
-        )))}
+          <LoadingHoney />
+        )}
       </div>
     );
   }

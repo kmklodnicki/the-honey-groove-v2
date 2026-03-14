@@ -7,6 +7,7 @@ import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Skeleton } from '../components/ui/skeleton';
+import LoadingHoney from '../components/LoadingHoney';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
@@ -481,9 +482,7 @@ const ProfilePage = () => {
   if (isFirstLoad) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-8 pt-3 md:pt-2">
-        <Skeleton className="h-48 w-full rounded-xl mb-6" />
-        <Skeleton className="h-12 w-64 mb-4" />
-        <Skeleton className="h-64 w-full" />
+        <LoadingHoney />
       </div>
     );
   }

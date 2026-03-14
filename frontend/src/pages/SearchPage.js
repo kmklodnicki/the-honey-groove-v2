@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, TrendingUp, Gem, Heart, Clock, ChevronRight, Loader2, SlidersHorizontal, X, ChevronDown, Users } from 'lucide-react';
+import LoadingHoney from '../components/LoadingHoney';
 import { Card } from '../components/ui/card';
 import AlbumArt from '../components/AlbumArt';
 import ScrollRow from '../components/ScrollRow';
@@ -434,9 +435,7 @@ export default function SearchPage() {
       <div className="max-w-2xl mx-auto px-4 pt-3 pb-6">
         {/* Loading */}
         {loading && (
-          <div className="flex justify-center py-6">
-            <Loader2 className="w-5 h-5 animate-spin text-honey-amber" />
-          </div>
+          <LoadingHoney size="sm" />
         )}
 
         {/* Search Results */}

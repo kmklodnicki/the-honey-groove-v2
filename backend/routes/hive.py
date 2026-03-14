@@ -1111,6 +1111,7 @@ async def get_comments(post_id: str, current_user: Optional[Dict] = Depends(get_
             "user": user_data,
             "likes_count": likes_count,
             "is_liked": is_liked,
+            "is_deleted": comment.get("is_deleted", False),
             "replies": [],
         }
         comment_map[comment["id"]] = resp
@@ -1124,7 +1125,31 @@ async def get_comments(post_id: str, current_user: Optional[Dict] = Depends(get_
         else:
             top_level.append(c)
     
+    # Filter: remove top-level deleted comments with no replies; keep deleted parents that have replies
+    top_level = [c for c in top_level if not c.get("is_deleted") or len(c.get("replies", [])) > 0]
+    
     return top_level
+
+
+
+# ============== COMMENT DELETION (SOFT-DELETE) ==============
+
+@router.delete("/comments/{comment_id}")
+async def delete_comment(comment_id: str, user: Dict = Depends(require_auth)):
+    comment = await db.comments.find_one({"id": comment_id}, {"_id": 0})
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    # Only author or admin can delete
+    if comment.get("user_id") != user["id"] and not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Not authorized to delete this comment")
+    # Soft-delete: mark as deleted, preserve for threading
+    await db.comments.update_one(
+        {"id": comment_id},
+        {"$set": {"is_deleted": True, "content": "[deleted]", "deleted_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    # Decrement comment count on the post
+    await db.posts.update_one({"id": comment.get("post_id")}, {"$inc": {"comments_count": -1}})
+    return {"message": "Comment deleted"}
 
 
 # ============== COMMENT LIKES ==============
