@@ -518,13 +518,13 @@ const HivePage = () => {
   }, [promptFilter, API, token]);
 
   const FEED_FILTERS = [
-    { key: 'all', label: 'All \u{1F36F}' },
-    { key: 'NOW_SPINNING', label: 'Now Spinning \u{1F3B5}' },
-    { key: 'ISO', label: 'ISO \u{1F50D}' },
-    { key: 'NEW_HAUL', label: 'Haul \u{1F4E6}' },
-    { key: 'NOTE', label: 'Notes \u{1F4DD}' },
-    { key: 'POLL', label: 'Polls \u{1F4CA}' },
-    { key: 'listing', label: 'For Sale/Trade \u{1F3F7}\uFE0F' },
+    { key: 'all', emoji: '\u{1F36F}', text: 'All' },
+    { key: 'NOW_SPINNING', emoji: '\u{1F3B5}', text: 'Now Spinning' },
+    { key: 'ISO', emoji: '\u{1F50D}', text: 'ISO' },
+    { key: 'NEW_HAUL', emoji: '\u{1F4E6}', text: 'Haul' },
+    { key: 'NOTE', emoji: '\u{1F4DD}', text: 'Notes' },
+    { key: 'POLL', emoji: '\u{1F4CA}', text: 'Polls' },
+    { key: 'listing', emoji: '\u{1F3F7}\uFE0F', text: 'For Sale/Trade' },
   ];
 
   const headers = { Authorization: `Bearer ${token}` };
@@ -892,7 +892,7 @@ const HivePage = () => {
               style={{ background: '#FFF8E7', borderColor: '#DAA520', color: '#78350F' }}
               data-testid="feed-filter-trigger"
             >
-              <span>{FEED_FILTERS.find(f => f.key === activeFilter)?.label || 'All'}</span>
+              <span>{(() => { const f = FEED_FILTERS.find(f => f.key === activeFilter); return f ? `${f.emoji} ${f.text}` : 'All'; })()}</span>
               <ChevronDown className="w-4 h-4 shrink-0" style={{ color: '#DAA520' }} />
             </button>
           </DropdownMenuTrigger>
@@ -901,17 +901,22 @@ const HivePage = () => {
             className="rounded-xl border-2 p-1"
             style={{ borderColor: '#DAA520', backdropFilter: 'blur(12px)', background: 'rgba(255,255,255,0.95)', width: '280px', maxWidth: '80vw' }}
           >
-            {FEED_FILTERS.map(f => (
-              <DropdownMenuItem
-                key={f.key}
-                onClick={() => setActiveFilter(f.key)}
-                className="rounded-lg px-3 py-2.5 cursor-pointer flex items-center justify-center gap-3 text-sm font-medium transition-colors hover:bg-amber-50"
-                style={{ color: '#78350F' }}
-                data-testid={`filter-${f.key}`}
-              >
-                <span className="text-center">{f.label}</span>
-                {activeFilter === f.key && <Check className="w-4 h-4 shrink-0" style={{ color: '#DAA520' }} />}
-              </DropdownMenuItem>
+            {FEED_FILTERS.map((f, idx) => (
+              <React.Fragment key={f.key}>
+                <DropdownMenuItem
+                  onClick={() => setActiveFilter(f.key)}
+                  className="rounded-lg px-3 py-2.5 cursor-pointer flex items-center justify-center gap-2 text-sm font-medium transition-colors hover:bg-amber-50"
+                  style={{ color: '#78350F' }}
+                  data-testid={`filter-${f.key}`}
+                >
+                  <span className="shrink-0">{f.emoji}</span>
+                  <span>{f.text}</span>
+                  {activeFilter === f.key && <Check className="w-4 h-4 shrink-0 ml-auto" style={{ color: '#DAA520' }} />}
+                </DropdownMenuItem>
+                {idx < FEED_FILTERS.length - 1 && (
+                  <div className="mx-3 my-0.5" style={{ borderBottom: '1px solid rgba(218, 165, 32, 0.12)' }} />
+                )}
+              </React.Fragment>
             ))}
           </DropdownMenuContent>
         </DropdownMenu>

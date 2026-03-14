@@ -449,7 +449,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const noteRecord = records.find(r => r.id === noteRecordId);
 
   const spectrum = [
-    { key: 'NOW_SPINNING', label: 'Now Spinning', icon: Disc, emoji: '🎵' },
+    { key: 'NOW_SPINNING', label: 'Now Spinning', icon: Music },
     { key: 'NEW_HAUL', label: 'Haul', icon: Package },
     { key: 'ISO', label: 'ISO', icon: Search },
     { key: 'NOTE', label: 'Note', icon: Feather },
@@ -476,7 +476,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                 onMouseLeave={e => { e.currentTarget.style.background = '#FDE68A'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.05)'; }}
                 data-testid={`composer-chip-${chip.key.toLowerCase()}`}
               >
-                {chip.emoji ? <span className="text-sm shrink-0 leading-none">{chip.emoji}</span> : <Icon className="w-4 h-4 shrink-0" />}
+                {chip.emoji ? <span className="text-sm shrink-0 leading-none">{chip.emoji}</span> : <Icon className="w-4 h-4 shrink-0" style={{ color: '#78350F' }} />}
                 <span className="text-xs sm:text-sm" style={{ whiteSpace: 'nowrap' }}>{chip.label}</span>
               </button>
             );
@@ -490,7 +490,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
           <div className="px-6 max-sm:px-4 pt-6 max-sm:pt-4 pb-2 shrink-0">
             <DialogHeader>
               <DialogTitle className="font-heading flex items-center gap-2 shrink" style={{ color: '#D98C2F' }}>
-                <span className="text-lg shrink-0">🎵</span> <span className="shrink">Now Spinning</span>
+                <Music className="w-5 h-5 shrink-0" /> <span className="shrink">Now Spinning</span>
                 {spinMood && <span className="text-sm font-normal ml-1">· {MOOD_CONFIG[spinMood].emoji} {spinMood}</span>}
               </DialogTitle>
               <DialogDescription>

@@ -954,38 +954,42 @@ const CollectionPage = () => {
                 ))}
               </SelectContent>
             </Select>
-            <Button
-              variant={selectMode ? "default" : "outline"}
-              size="sm"
-              onClick={selectMode ? exitSelectMode : () => setSelectMode(true)}
-              className={`gap-1.5 shrink-0 ${selectMode ? 'bg-honey text-vinyl-black hover:bg-honey-amber' : 'border-honey/50 text-stone-600'}`}
-              data-testid="select-mode-btn"
-            >
-              <ListChecks className="w-4 h-4" />
-              {selectMode ? 'Cancel' : 'Select'}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCheckDuplicates}
-              disabled={dupeLoading}
-              className="gap-1.5 shrink-0 border-honey/50 text-stone-600"
-              data-testid="remove-duplicates-btn"
-            >
-              {dupeLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Copy className="w-4 h-4" />}
-              Duplicates
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleHardRefreshImages}
-              disabled={imageRefreshing}
-              className="gap-1.5 shrink-0 border-honey/50 text-stone-600"
-              data-testid="hard-refresh-images-btn"
-            >
-              {imageRefreshing ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageDown className="w-4 h-4" />}
-              Fix Images
-            </Button>
+            <div className="flex flex-row gap-2">
+              <Button
+                variant={selectMode ? "default" : "outline"}
+                size="sm"
+                onClick={selectMode ? exitSelectMode : () => setSelectMode(true)}
+                className={`gap-1 shrink-0 flex-1 sm:flex-none h-9 text-xs sm:text-sm px-2 sm:px-3 ${selectMode ? 'bg-honey text-vinyl-black hover:bg-honey-amber' : 'border-honey/50 text-stone-600'}`}
+                data-testid="select-mode-btn"
+              >
+                <ListChecks className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span>{selectMode ? 'Cancel' : 'Select'}</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCheckDuplicates}
+                disabled={dupeLoading}
+                className="gap-1 shrink-0 flex-1 sm:flex-none h-9 text-xs sm:text-sm px-2 sm:px-3 border-honey/50 text-stone-600"
+                data-testid="remove-duplicates-btn"
+              >
+                {dupeLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                <span className="hidden sm:inline">Duplicates</span>
+                <span className="sm:hidden">Dupes</span>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleHardRefreshImages}
+                disabled={imageRefreshing}
+                className="gap-1 shrink-0 flex-1 sm:flex-none h-9 text-xs sm:text-sm px-2 sm:px-3 border-honey/50 text-stone-600"
+                data-testid="hard-refresh-images-btn"
+              >
+                {imageRefreshing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImageDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                <span className="hidden sm:inline">Fix Images</span>
+                <span className="sm:hidden">Fix</span>
+              </Button>
+            </div>
           </div>
 
           {/* Multi-select action bar */}
