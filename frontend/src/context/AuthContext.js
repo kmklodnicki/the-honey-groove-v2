@@ -119,7 +119,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (email, password) => {
-    const response = await axios.post(`${API}/auth/login`, { email, password });
+    const response = await axios.post(`${API}/auth/login`, { email, password }, { timeout: 15000 });
     const { access_token, user: userData } = response.data;
     safeStorage.setItem('honeygroove_token', access_token);
     setToken(access_token);
