@@ -58,15 +58,17 @@ async def seed_prompts():
     count = await db.prompts.count_documents({})
     if count > 0:
         return
-    today = datetime.now(ET).replace(hour=0, minute=0, second=0, microsecond=0).astimezone(timezone.utc)
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     docs = []
     for i, text in enumerate(SEED_PROMPTS):
+        sched = (datetime.now(timezone.utc) + timedelta(days=i)).strftime("%Y-%m-%d")
         docs.append({
             "id": str(uuid.uuid4()),
             "text": text,
-            "scheduled_date": (today + timedelta(days=i)).isoformat(),
+            "scheduled_date": sched,
             "active": True,
             "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
         })
     await db.prompts.insert_many(docs)
     logger.info(f"Seeded {len(docs)} daily prompts")
@@ -238,30 +240,26 @@ from zoneinfo import ZoneInfo
 
 ET = ZoneInfo("America/New_York")
 
-def _get_today_range():
-    """Return (start, end) of today in Eastern Time, as UTC datetimes."""
-    now_et = datetime.now(ET)
-    start_et = now_et.replace(hour=0, minute=0, second=0, microsecond=0)
-    end_et = start_et + timedelta(days=1)
-    start_utc = start_et.astimezone(timezone.utc)
-    end_utc = end_et.astimezone(timezone.utc)
-    return start_utc, end_utc
+def _get_today_utc_date():
+    """Return today's date as a UTC YYYY-MM-DD string."""
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
 
 @router.get("/prompts/today")
 async def get_todays_prompt(user: Dict = Depends(require_auth)):
-    today_start, today_end = _get_today_range()
+    today = _get_today_utc_date()
     prompt = await db.prompts.find_one(
-        {"scheduled_date": {"$gte": today_start.isoformat(), "$lt": today_end.isoformat()}, "active": True},
+        {"scheduled_date": today, "active": True},
         {"_id": 0},
+        sort=[("updated_at", -1)],
     )
     if not prompt:
-        # Fallback: pick the prompt for today based on day-of-year cycling
+        # Fallback: cycle through all active prompts by day-of-year
         all_prompts = await db.prompts.find({"active": True}, {"_id": 0}).sort("scheduled_date", 1).to_list(1000)
         if not all_prompts:
             return {"prompt": None}
-        day_index = (datetime.now(ET).replace(hour=0, minute=0, second=0, microsecond=0) - datetime.fromisoformat(all_prompts[0]["scheduled_date"].replace("Z", "+00:00") if "Z" in all_prompts[0]["scheduled_date"] else all_prompts[0]["scheduled_date"]).astimezone(ET).replace(hour=0, minute=0, second=0, microsecond=0)).days % len(all_prompts)
-        prompt = all_prompts[day_index]
+        day_of_year = datetime.now(timezone.utc).timetuple().tm_yday
+        prompt = all_prompts[day_of_year % len(all_prompts)]
 
     # Check if user already buzzed in today
     response = await db.prompt_responses.find_one(
@@ -289,10 +287,10 @@ async def get_todays_prompt(user: Dict = Depends(require_auth)):
 @router.get("/prompts/archive")
 async def get_prompt_archive(user: Dict = Depends(require_auth)):
     """Return the last 14 prompts (excluding today) with featured responses for mini-cards."""
-    today_start, _ = _get_today_range()
+    today = _get_today_utc_date()
 
     prompts = await db.prompts.find(
-        {"scheduled_date": {"$lt": today_start.isoformat()}, "active": True},
+        {"scheduled_date": {"$lt": today}, "active": True},
         {"_id": 0},
     ).sort("scheduled_date", -1).to_list(14)
 
@@ -352,10 +350,10 @@ async def get_prompt_archive(user: Dict = Depends(require_auth)):
 
 async def _calculate_streak(user_id: str) -> int:
     """Calculate consecutive days the user has buzzed in."""
-    today_start, _ = _get_today_range()
+    today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
     streak = 0
     for i in range(365):
-        day = today_start - timedelta(days=i)
+        day = today - timedelta(days=i)
         day_end = day + timedelta(days=1)
         has_response = await db.prompt_responses.find_one({
             "user_id": user_id,
@@ -372,9 +370,9 @@ async def _calculate_streak(user_id: str) -> int:
 
 async def _check_missed_yesterday(user_id: str) -> bool:
     """Check if user missed yesterday's prompt (gap > 24hrs from last buzz-in)."""
-    today_start, _ = _get_today_range()
-    yesterday_start = today_start - timedelta(days=1)
-    yesterday_end = today_start
+    today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    yesterday_start = today - timedelta(days=1)
+    yesterday_end = today
     had_response = await db.prompt_responses.find_one({
         "user_id": user_id,
         "created_at": {"$gte": yesterday_start.isoformat(), "$lt": yesterday_end.isoformat()},
@@ -386,7 +384,7 @@ async def _check_missed_yesterday(user_id: str) -> bool:
     if not any_response:
         return False
     # Check within 72hr grace period (missed yesterday but not more than 2 days ago)
-    two_days_ago_start = today_start - timedelta(days=2)
+    two_days_ago_start = today - timedelta(days=2)
     had_recent = await db.prompt_responses.find_one({
         "user_id": user_id,
         "created_at": {"$gte": two_days_ago_start.isoformat(), "$lt": yesterday_start.isoformat()},
@@ -732,7 +730,8 @@ async def send_streak_nudge_notifications():
     - 10pm: Users with streak >= 7 who haven't buzzed in today (urgent)
     """
     now = datetime.now(timezone.utc)
-    today_start, today_end = _get_today_range()
+    today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    today_end = today + timedelta(days=1)
 
     # Find all users who have buzzed in within the last 30 days
     recent_responders = await db.prompt_responses.distinct(
@@ -748,7 +747,7 @@ async def send_streak_nudge_notifications():
         # Check if they've already buzzed in today
         today_response = await db.prompt_responses.find_one({
             "user_id": user_id,
-            "created_at": {"$gte": today_start.isoformat(), "$lt": today_end.isoformat()},
+            "created_at": {"$gte": today.isoformat(), "$lt": today_end.isoformat()},
         })
         if today_response:
             continue  # Already buzzed in today
@@ -757,7 +756,7 @@ async def send_streak_nudge_notifications():
         existing_nudge = await db.notifications.find_one({
             "user_id": user_id,
             "type": "streak_nudge",
-            "created_at": {"$gte": today_start.isoformat()},
+            "created_at": {"$gte": today.isoformat()},
         })
 
         if not existing_nudge and streak >= 3:
@@ -772,7 +771,7 @@ async def send_streak_nudge_notifications():
             nudge_user = await db.users.find_one({"id": user_id}, {"_id": 0})
             if nudge_user and nudge_user.get("email"):
                 today_prompt = await db.daily_prompts.find_one(
-                    {"active_date": {"$gte": today_start.isoformat(), "$lt": today_end.isoformat()}},
+                    {"active_date": {"$gte": today.isoformat(), "$lt": today_end.isoformat()}},
                     {"_id": 0}
                 )
                 prompt_text = today_prompt.get("prompt_text", "check the hive") if today_prompt else "check the hive"
@@ -782,7 +781,7 @@ async def send_streak_nudge_notifications():
         if existing_nudge and not await db.notifications.find_one({
             "user_id": user_id,
             "type": "streak_nudge_urgent",
-            "created_at": {"$gte": today_start.isoformat()},
+            "created_at": {"$gte": today.isoformat()},
         }) and streak >= 7:
             # Second urgent nudge (10pm style)
             await create_notification(
@@ -825,13 +824,30 @@ async def admin_get_all_prompts(user: Dict = Depends(require_auth)):
 async def admin_create_prompt(data: dict, user: Dict = Depends(require_auth)):
     if not user.get("is_admin"):
         raise HTTPException(status_code=403, detail="Admin only")
+    # Normalize date to YYYY-MM-DD
+    raw_date = data["scheduled_date"]
+    try:
+        sched_date = datetime.fromisoformat(raw_date.replace("Z", "+00:00")).strftime("%Y-%m-%d") if "T" in raw_date else raw_date[:10]
+    except Exception:
+        sched_date = raw_date[:10]
+    now = datetime.now(timezone.utc).isoformat()
+    # Upsert: update if date exists, insert if new
+    existing = await db.prompts.find_one({"scheduled_date": sched_date}, {"_id": 0})
+    if existing:
+        await db.prompts.update_one(
+            {"scheduled_date": sched_date},
+            {"$set": {"text": data["text"], "active": data.get("active", True), "updated_at": now}}
+        )
+        updated = await db.prompts.find_one({"scheduled_date": sched_date}, {"_id": 0})
+        return updated
     prompt_id = str(uuid.uuid4())
     doc = {
         "id": prompt_id,
         "text": data["text"],
-        "scheduled_date": data["scheduled_date"],
+        "scheduled_date": sched_date,
         "active": data.get("active", True),
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": now,
+        "updated_at": now,
     }
     await db.prompts.insert_one({k: v for k, v in doc.items()})
     return doc
@@ -841,15 +857,18 @@ async def admin_create_prompt(data: dict, user: Dict = Depends(require_auth)):
 async def admin_update_prompt(prompt_id: str, data: dict, user: Dict = Depends(require_auth)):
     if not user.get("is_admin"):
         raise HTTPException(status_code=403, detail="Admin only")
-    update = {}
+    update = {"updated_at": datetime.now(timezone.utc).isoformat()}
     if "text" in data:
         update["text"] = data["text"]
     if "scheduled_date" in data:
-        update["scheduled_date"] = data["scheduled_date"]
+        raw = data["scheduled_date"]
+        try:
+            update["scheduled_date"] = datetime.fromisoformat(raw.replace("Z", "+00:00")).strftime("%Y-%m-%d") if "T" in raw else raw[:10]
+        except Exception:
+            update["scheduled_date"] = raw[:10]
     if "active" in data:
         update["active"] = data["active"]
-    if update:
-        await db.prompts.update_one({"id": prompt_id}, {"$set": update})
+    await db.prompts.update_one({"id": prompt_id}, {"$set": update})
     prompt = await db.prompts.find_one({"id": prompt_id}, {"_id": 0})
     return prompt
 
@@ -859,9 +878,13 @@ async def admin_reorder_prompts(data: dict, user: Dict = Depends(require_auth)):
     if not user.get("is_admin"):
         raise HTTPException(status_code=403, detail="Admin only")
     ordered_ids = data.get("prompt_ids", [])
-    base_date = datetime.fromisoformat(data.get("start_date", datetime.now(timezone.utc).isoformat()))
+    raw_start = data.get("start_date", datetime.now(timezone.utc).strftime("%Y-%m-%d"))
+    try:
+        base_date = datetime.fromisoformat(raw_start.replace("Z", "+00:00")) if "T" in raw_start else datetime.strptime(raw_start[:10], "%Y-%m-%d")
+    except Exception:
+        base_date = datetime.now(timezone.utc)
     for i, pid in enumerate(ordered_ids):
-        new_date = (base_date + timedelta(days=i)).isoformat()
+        new_date = (base_date + timedelta(days=i)).strftime("%Y-%m-%d")
         await db.prompts.update_one({"id": pid}, {"$set": {"scheduled_date": new_date}})
     return {"reordered": len(ordered_ids)}
 
