@@ -13,7 +13,7 @@ const VINYL_CHARMS = [
     url: 'https://vinylcharms.com/products/mirrorball-disco-ball-charm-for-record-collectors-or-accessorizing-your-vinyl-collection?ref=KATIE',
     partner: 'vinylcharms',
     partnerLabel: 'VinylCharms',
-    image: 'https://static.prod-images.emergentagent.com/jobs/9fb17d67-a974-4652-b57c-8e9a0febaeaf/images/5d272650a6aac7feddcdc0024b29d0d758df360346ed083713907f3cc9fca78a.png',
+    image: 'https://customer-assets.emergentagent.com/job_9fb17d67-a974-4652-b57c-8e9a0febaeaf/artifacts/rbk1l11x_mirrorball.webp',
   },
   {
     id: 'ts-charms',
@@ -23,7 +23,7 @@ const VINYL_CHARMS = [
     url: 'https://vinylcharms.com/products/ts-charms?ref=KATIE',
     partner: 'vinylcharms',
     partnerLabel: 'VinylCharms',
-    image: 'https://static.prod-images.emergentagent.com/jobs/9fb17d67-a974-4652-b57c-8e9a0febaeaf/images/fd3ffd3cfc150c91a63d021a30263a3ba23738da5b77738b01d64c088ce327c6.png',
+    image: 'https://customer-assets.emergentagent.com/job_9fb17d67-a974-4652-b57c-8e9a0febaeaf/artifacts/gzlfqygu_opalite.webp',
   },
   {
     id: 'sabrina-charms',
@@ -33,7 +33,7 @@ const VINYL_CHARMS = [
     url: 'https://vinylcharms.com/products/sabrina-charms-for-record-collectors-or-accessorizing-sabrina-carpenter-fans-espresso-and-short-n-sweet?ref=KATIE',
     partner: 'vinylcharms',
     partnerLabel: 'VinylCharms',
-    image: 'https://static.prod-images.emergentagent.com/jobs/9fb17d67-a974-4652-b57c-8e9a0febaeaf/images/b1c03b1f454eba05004e97c52013d3a601ffa1f172173090fe613ef3f87355e3.png',
+    image: 'https://customer-assets.emergentagent.com/job_9fb17d67-a974-4652-b57c-8e9a0febaeaf/artifacts/p4rrq9a0_sabrina.webp',
   },
 ];
 
