@@ -272,7 +272,7 @@ const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamL
           <InfoBubble text="Quick Sync: Refresh current market prices." side="bottom" testId="refresh-tooltip" />
 
           {/* Recover Values button + info */}
-          {totalCount > 0 && valuedCount != null && totalCount > valuedCount && (!recoveryStatus || recoveryStatus.status !== 'in_progress') && (
+          {totalCount > 0 && (!recoveryStatus || recoveryStatus.status !== 'in_progress') && (
             <>
               <div className="w-px h-4 bg-[#C8861A]/20 mx-1" />
               <button
