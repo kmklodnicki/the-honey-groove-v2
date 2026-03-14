@@ -75,7 +75,7 @@ async def download_archive():
 cors_origins = [
     "https://thehoneygroove.com",
     "https://www.thehoneygroove.com",
-    "https://pressing-polish.preview.emergentagent.com",
+    "https://feed-skeleton-issue.preview.emergentagent.com",
     "https://honey-groove-backend.vercel.app",
     "http://localhost:3000",
 ]

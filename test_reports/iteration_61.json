@@ -31,8 +31,8 @@
     "resolveImageUrl": {
       "status": "WORKING",
       "test_case": "katieintheafterglow's avatar_url in DB points to 'collector-beta.preview.emergentagent.com' but frontend renders it as 'wax-preview.preview.emergentagent.com'",
-      "db_value": "https://pressing-polish.preview.emergentagent.com/api/files/serve/honeygroove/uploads/4072aaa7-1171-4cd2-9c8f-20dfca8fdc58/819ab9c1-b7b9-4055-881e-096d064e36f8.png",
-      "rendered_src": "https://pressing-polish.preview.emergentagent.com/api/files/serve/honeygroove/uploads/4072aaa7-1171-4cd2-9c8f-20dfca8fdc58/819ab9c1-b7b9-4055-881e-096d064e36f8.png",
+      "db_value": "https://feed-skeleton-issue.preview.emergentagent.com/api/files/serve/honeygroove/uploads/4072aaa7-1171-4cd2-9c8f-20dfca8fdc58/819ab9c1-b7b9-4055-881e-096d064e36f8.png",
+      "rendered_src": "https://feed-skeleton-issue.preview.emergentagent.com/api/files/serve/honeygroove/uploads/4072aaa7-1171-4cd2-9c8f-20dfca8fdc58/819ab9c1-b7b9-4055-881e-096d064e36f8.png",
       "http_status": 200
     },
     "demo_user_filtering": {
