@@ -934,3 +934,4 @@ async def delete_account(user: Dict = Depends(require_auth)):
 
     return {"detail": "account deleted"}
 
+    # Force redeploy for login fix
