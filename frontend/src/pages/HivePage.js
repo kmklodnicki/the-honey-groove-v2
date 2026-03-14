@@ -8,7 +8,7 @@ import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Skeleton } from '../components/ui/skeleton';
-import { Heart, MessageCircle, Share2, Disc, Send, ChevronDown, ChevronUp, MoreVertical, Trash2, Play, Plus, Loader2, Pin, Reply, ArrowUp, Sparkles } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Disc, Send, ChevronDown, ChevronUp, MoreVertical, Trash2, Play, Plus, Loader2, Pin, Reply, ArrowUp, Sparkles, Check } from 'lucide-react';
 import VerifiedShield from '../components/VerifiedShield';
 import {
   Dialog,
@@ -883,33 +883,38 @@ const HivePage = () => {
       {/* Daily Prompt */}
       <DailyPromptCard records={records} onPostCreated={handlePostCreated} />
 
-      {/* THE ESSENTIAL SEVEN — 2 rows on mobile (4+3), 1 row on desktop */}
-      <div className="flex flex-wrap justify-center gap-1.5 md:gap-2 mb-4 mx-auto px-3" style={{ maxWidth: '580px' }} data-testid="feed-filter-bar">
-        {FEED_FILTERS.map(f => {
-          const isActive = activeFilter === f.key;
-          const [text, emoji] = f.label.includes(' ') ? [f.label.slice(0, f.label.lastIndexOf(' ')), f.label.slice(f.label.lastIndexOf(' ') + 1)] : [f.label, ''];
-          return (
+      {/* Feed Filter — Dropdown */}
+      <div className="mb-4 flex justify-center" data-testid="feed-filter-bar">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
             <button
-              key={f.key}
-              onClick={() => setActiveFilter(f.key)}
-              className={`inline-flex items-center justify-center gap-1.5 rounded-full text-xs px-4 py-1.5 font-medium border transition-colors duration-200 ${
-                isActive ? 'font-semibold shadow-sm' : ''
-              }`}
-              style={{
-                whiteSpace: 'nowrap',
-                ...(isActive
-                  ? { background: '#FFB800', borderColor: '#FFB800', color: '#000' }
-                  : { background: 'transparent', borderColor: 'rgba(200,134,26,0.3)', color: 'rgba(120,80,20,0.7)' }),
-              }}
-              onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = '#C8861A'; e.currentTarget.style.color = '#000'; e.currentTarget.style.borderColor = '#C8861A'; } }}
-              onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(120,80,20,0.7)'; e.currentTarget.style.borderColor = 'rgba(200,134,26,0.3)'; } }}
-              data-testid={`filter-${f.key}`}
+              className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium border transition-colors w-full sm:w-auto justify-between sm:justify-center"
+              style={{ background: '#FFF8E7', borderColor: '#DAA520', color: '#78350F', maxWidth: '320px' }}
+              data-testid="feed-filter-trigger"
             >
-              <span>{text}</span>
-              {emoji && <span className="flex-shrink-0 leading-none">{emoji}</span>}
+              <span>{FEED_FILTERS.find(f => f.key === activeFilter)?.label || 'All'}</span>
+              <ChevronDown className="w-4 h-4 shrink-0" style={{ color: '#DAA520' }} />
             </button>
-          );
-        })}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="center"
+            className="min-w-[200px] w-[var(--radix-dropdown-menu-trigger-width)] rounded-xl border-2 p-1"
+            style={{ borderColor: '#DAA520', backdropFilter: 'blur(12px)', background: 'rgba(255,255,255,0.95)' }}
+          >
+            {FEED_FILTERS.map(f => (
+              <DropdownMenuItem
+                key={f.key}
+                onClick={() => setActiveFilter(f.key)}
+                className="rounded-lg px-3 py-2 cursor-pointer flex items-center justify-between gap-3 text-sm font-medium transition-colors hover:bg-amber-50"
+                style={{ color: '#78350F' }}
+                data-testid={`filter-${f.key}`}
+              >
+                <span>{f.label}</span>
+                {activeFilter === f.key && <Check className="w-4 h-4 shrink-0" style={{ color: '#DAA520' }} />}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Prompt Filter Banner */}

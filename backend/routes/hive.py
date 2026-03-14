@@ -859,6 +859,25 @@ async def vote_on_poll(post_id: str, body: dict, user: Dict = Depends(require_au
     return {"total_votes": total, "user_vote": option_index, "results": results}
 
 
+@router.get("/polls/{post_id}/results")
+async def get_poll_results(post_id: str, user: Dict = Depends(require_auth)):
+    """Get poll results without voting (creator view)."""
+    post = await db.posts.find_one({"id": post_id, "post_type": "POLL"}, {"_id": 0})
+    if not post:
+        raise HTTPException(status_code=404, detail="Poll not found")
+    pipeline = [
+        {"$match": {"post_id": post_id}},
+        {"$group": {"_id": "$option_index", "count": {"$sum": 1}}},
+    ]
+    agg = await db.poll_votes.aggregate(pipeline).to_list(20)
+    vote_map = {r["_id"]: r["count"] for r in agg}
+    total = sum(vote_map.values())
+    results = []
+    for i, opt in enumerate(post.get("poll_options", [])):
+        c = vote_map.get(i, 0)
+        results.append({"option": opt, "count": c, "percentage": round(c / total * 100) if total else 0})
+    return {"total_votes": total, "results": results}
+
 
 
 @router.get("/search/posts")

@@ -460,22 +460,24 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   return (
     <>
       {/* Composer Bar — Command Center */}
-      <div className="bg-white rounded-xl border border-honey/30 p-4 mb-6 shadow-sm" data-testid="composer-bar">
+      <div className="bg-white rounded-xl border border-honey/30 p-4 max-sm:p-3 mb-6 shadow-sm" style={{ maxWidth: '600px', margin: '0 auto 1.5rem' }} data-testid="composer-bar">
         <p className="text-sm text-muted-foreground mb-1">What's on the turntable?</p>
         <p className="text-[10px] text-muted-foreground/70 mb-3 italic">Only posts with comments will be shared in The Hive.</p>
-        <div className="flex flex-wrap gap-1.5 justify-center w-full md:flex-nowrap md:justify-between">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {spectrum.map(chip => {
             const Icon = chip.icon;
             return (
               <button
                 key={chip.key}
                 onClick={() => chip.key === 'RANDOMIZER' ? openRandomizer() : openModal(chip.key)}
-                className="h-9 w-9 aspect-square md:w-auto md:aspect-auto md:px-4 md:py-2 rounded-full text-sm font-semibold flex items-center justify-center gap-1.5 whitespace-nowrap transition-all hover:scale-105 hover:shadow-md"
-                style={{ background: '#FDE68A', color: '#78350F', border: '1px solid rgba(0,0,0,0.05)' }}
+                className="h-10 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all hover:scale-[1.03] hover:shadow-md"
+                style={{ background: '#FDE68A', color: '#78350F', border: '1px solid rgba(0,0,0,0.05)', minWidth: '140px' }}
+                onMouseEnter={e => { e.currentTarget.style.background = '#FBBF24'; e.currentTarget.style.borderColor = '#DAA520'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = '#FDE68A'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.05)'; }}
                 data-testid={`composer-chip-${chip.key.toLowerCase()}`}
               >
                 <Icon className="w-4 h-4 shrink-0" />
-                <span className="hidden md:inline">{chip.label}</span>
+                <span className="text-xs sm:text-sm">{chip.label}</span>
               </button>
             );
           })}
@@ -487,8 +489,8 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
         <DialogContent className="sm:max-w-md max-h-[90dvh] flex flex-col overflow-hidden p-0 max-sm:max-w-[95vw] max-sm:max-h-[88dvh]">
           <div className="px-6 max-sm:px-4 pt-6 max-sm:pt-4 pb-2 shrink-0">
             <DialogHeader>
-              <DialogTitle className="font-heading flex items-center gap-2" style={{ color: '#D98C2F' }}>
-                <Disc className="w-5 h-5" /> Now Spinning
+              <DialogTitle className="font-heading flex items-center gap-2 shrink" style={{ color: '#D98C2F' }}>
+                <Disc className="w-5 h-5 shrink-0" /> <span className="shrink">Now Spinning</span>
                 {spinMood && <span className="text-sm font-normal ml-1">· {MOOD_CONFIG[spinMood].emoji} {spinMood}</span>}
               </DialogTitle>
               <DialogDescription>
@@ -499,7 +501,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
 
           {/* Scrollable content area */}
           <div className="flex-1 overflow-y-auto px-6 max-sm:px-4 min-h-0">
-            <div className="space-y-3 pb-2">
+            <div className="space-y-3 max-sm:space-y-2 pb-2">
               <div>
                 <label className="text-sm font-medium mb-1 block">Record</label>
                 {!spinSelectedRecord ? (
@@ -535,9 +537,9 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                 ) : (
                   <div className="flex items-center gap-3 rounded-lg p-2" style={{ background: 'rgba(244,185,66,0.1)' }}>
                     {spinSelectedRecord.cover_url ? (
-                      <AlbumArt src={spinSelectedRecord.cover_url} alt={`${spinSelectedRecord.artist} ${spinSelectedRecord.title} vinyl record`} className="w-10 h-10 rounded-md object-cover shadow-sm" />
+                      <AlbumArt src={spinSelectedRecord.cover_url} alt={`${spinSelectedRecord.artist} ${spinSelectedRecord.title} vinyl record`} className="w-10 h-10 max-sm:w-8 max-sm:h-8 rounded-md object-cover shadow-sm" />
                     ) : (
-                      <div className="w-10 h-10 rounded-md bg-stone-100 flex items-center justify-center"><Disc className="w-5 h-5 text-stone-400" /></div>
+                      <div className="w-10 h-10 max-sm:w-8 max-sm:h-8 rounded-md bg-stone-100 flex items-center justify-center"><Disc className="w-5 h-5 text-stone-400" /></div>
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{spinSelectedRecord.title}</p>
@@ -700,7 +702,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
           </div>
 
           {/* Sticky footer — always visible */}
-          <div className="shrink-0 px-6 max-sm:px-4 pb-5 max-sm:pb-3 pt-3 max-sm:pt-2 border-t border-honey/15 bg-white">
+          <div className="shrink-0 px-6 max-sm:px-4 pt-3 max-sm:pt-2 border-t border-honey/15 bg-white" style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom, 0.75rem))' }}>
             <Button onClick={submitNowSpinning} disabled={submitting || !spinRecordId || !spinCaption.trim()}
               className="w-full rounded-full transition-all duration-200 text-white"
               style={{ background: 'linear-gradient(135deg, #FFB300, #FFA000)' }}

@@ -1,56 +1,87 @@
 <analysis>**original_problem_statement:**
-The user, the admin of The HoneyGroove social platform, has been reporting a series of critical, cascading bugs on the live production site () that prevent users from using the app effectively. Initial issues included login failures and empty data states (skeleton screens). The core of the problem has been traced to a combination of extreme latency on the production domain's proxy and environmental differences between the preview and live sites after deployment.
+The user, the admin of The HoneyGroove social platform, is guiding the application's development. The initial focus was on production stability, performance, and UI/UX polish. The scope has recently expanded to include a new Polls feature and significant UI refinements for mobile and desktop usability.
 
-The user's ongoing goal is to achieve production stability and fix a series of specific UI/UX bugs as they are discovered on the live application.
-
-**PRODUCT REQUIREMENTS (current and ongoing):**
-1.  **Production Stability (P0 - BLOCKER):** Ensure the live application is stable, with all features working correctly despite environmental challenges.
-2.  **UI/UX Integrity (P0):** Fix critical UI bugs related to data display, layout, and user interaction as they arise.
-3.  **Aesthetic Polish (P1):** Unify UI components and apply a consistent visual theme across the application.
-4.  **Instagram Story Export (P1):** Implement a feature to export the Daily Prompt as a 1080x1920 PNG image. (Not Started)
-5.  **Complete Service Worker Caching (P1):** Pre-cache key assets for a faster initial load. (Not Started)
+**PRODUCT REQUIREMENTS (from recent interactions):**
+1.  **Polls Feature (P0):** Implement a full-stack poll creation and voting feature with a blind voting UX.
+2.  **UI/UX Refinements (P0):**
+    *   Fix the mobile layout for the  modal.
+    *   Consolidate crowded feed filters into a dropdown menu on mobile.
+    *   Fix the overflowing post composition options in the composer modal.
+    *   Add a Creator View to polls, allowing the creator to see results without voting.
+3.  **Data Integrity & Bug Fixes (P0):**
+    *   Fix the Submission Failed error when replying to the Daily Prompt.
+    *   Fix a bug where Discogs pricing information was not showing on other users' profiles.
+    *   Fix Ghost Records appearing as empty skeletons in the feed.
+4.  **Production Readiness (P0):** Ensure the application is free of hardcoded URLs and is ready for deployment.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A full-stack React/FastAPI/MongoDB application. The agent has performed a massive overhaul to stabilize the application against production environment issues. Key architectural changes include:
--   **Hardcoded API URL:**  is now configured to always use the fast, internal preview URL for all API calls, permanently bypassing a slow (~20 second) production domain proxy that was causing timeouts.
--   **Global Timeouts:** A global 30-second  timeout has been implemented to make the frontend resilient to slow network responses.
--   **Resilient Backend:** The backend now features a 3-attempt retry logic with exponential backoff for the initial MongoDB connection.
--   **Resilient Auth:** The user's  status and  are now embedded in the JWT and cached in , ensuring admin controls are available instantly on page load without waiting for a slow background API call.
--   Numerous UI bugs related to data mapping (e.g., showing  instead of ), component visibility, and layout have been fixed. The app has also received an aesthetic update with a new background color and pattern.
+A full-stack React/FastAPI/MongoDB social media application for music lovers. Key features include an activity feed, user profiles, threaded comments, admin tools, and a newly implemented Polls feature. The application uses an SWR-like caching strategy for the main feed, optimistic UI for interactions, and has undergone several rounds of bug fixing and performance optimization.
 
 **Last working item**:
-    - Last item agent was working: The user requested to unify the design of the In Search Of (ISO) feed cards with the Daily Prompt cards. This involves ensuring the 'Pressing' information on ISO cards uses the exact same  pill component (gold border, blur effect, disc icon) as other cards for visual consistency. The agent was investigating  and  to implement this change.
+    - Last item agent was working: The user requested four simultaneous UI/UX fixes. The agent was implementing them in parallel. After applying changes for the post composition modal, a screenshot revealed that the desktop layout was broken, with button labels being truncated. The agent was about to fix this layout issue.
     - Status: IN PROGRESS
     - Agent Testing Done: N
-    - Which testing method agent to use? Screenshot tool to verify the UI change on the ISO card in the feed.
+    - Which testing method agent to use? Frontend testing agent. The changes affect multiple modals and responsive layouts (filters, composer, ), making it a perfect use case for comprehensive frontend validation.
     - User Testing Done: N
 
 **All Pending/In progress Issue list**:
-  - Issue 1:  (P0) Unify ISO Card and Daily Prompt Card Design
+  - Issue 1:  (P0) Post composition modal layout is broken on desktop.
+  - Issue 2:  (P0) Poll Creator View feature is incomplete.
+  - Issue 3:  (P0) Application is not deployable due to a hardcoded URL.
 
   Issues Detail:
   - Issue 1: 
-     - Attempted fixes: The agent has previously corrected the data mapping for ISO cards to display  and used a  pill. However, the user wants the styling to *exactly* match the pill on the Daily Prompt card, including the icon, border, and position.
+     - Attempted fixes: The agent applied  to the composer button container, but this resulted in truncated labels on desktop.
      - Next debug checklist: 
-        1. View  to identify the JSX for both the Daily Prompt card and the ISO card.
-        2. Compare how the  (or a similar component) is used in the Daily Prompt card.
-        3. Modify the ISO card's JSX to use the exact same component with the same props (e.g., icon, prefix) and place it in the same relative position to achieve visual symmetry.
-        4. Verify that if an ISO item has no  data, the pill does not render.
-     - Why fix this issue and what will be achieved with the fix? To create a visually consistent and polished user interface across different feed item types, fulfilling a direct aesthetic requirement from the user.
+        1.  Edit .
+        2.  Change the composer options container to use a  layout on desktop screens () instead of flex.
+        3.  Ensure the buttons have a consistent  to look uniform when they wrap or are in a grid.
+     - Why fix this issue and what will be achieved with the fix? The primary composition UI is unusable on desktop, preventing users from creating posts.
      - Status:  IN PROGRESS
      - Is recurring issue? N
      - Should Test frontend/backend/both after fix? Frontend
      - Blocked on other issue: None
 
+  - Issue 2: 
+     - Attempted fixes: The agent added a backend endpoint () to fetch poll results without voting. However, the frontend implementation is not complete.
+     - Next debug checklist: 
+        1.  Edit the  component in .
+        2.  Add a See Results button that is only visible if the current user's ID matches .
+        3.  Create a new state (e.g., ) to track if the creator has clicked the button.
+        4.  On click, call the new  endpoint, update the state to show the results, but do not cast a vote.
+     - Why fix this issue and what will be achieved with the fix? This is a required feature from the user spec, providing special privileges to the content creator.
+     - Status:  IN PROGRESS
+     - Is recurring issue? N
+     - Should Test frontend/backend/both after fix? Frontend
+     - Blocked on other issue: None
+
+  - Issue 3: 
+     - Attempted fixes: A previous attempt to use  in  broke the preview environment, forcing a revert to a hardcoded URL. This was never properly resolved.
+     - Next debug checklist: 
+        1.  Investigate why the environment variable is not being correctly resolved in the agent's container. Check the platform's build and variable injection process.
+        2.  Re-apply the change in  to use the environment variable.
+        3.  Thoroughly test all API calls after the change.
+     - Why fix this issue and what will be achieved with the fix? This is a critical blocker for production deployment. The app cannot be shipped with a hardcoded preview URL.
+     - Status:  NOT STARTED
+     - Is recurring issue? Y
+     - Should Test frontend/backend/both after fix? Both
+     - Blocked on other issue: None
+
 **In progress Task List**:
-- None, the last working item is an issue fix.
+  - Task 1:  (P0) Complete UI/UX Refinement Batch
+     - Where to resume: The task is partially complete. The remaining work involves fixing the composition modal layout (Issue 1), completing the Poll Creator View (Issue 2), and then verifying all four requested UI changes (Now Spinning modal, feed filter dropdown, composer modal, creator view).
+     - What will be achieved with this? A polished, responsive, and fully functional UI for key user flows across mobile and desktop.
+     - Status:  IN PROGRESS
+     - Should Test frontend/backend/both after fix? Frontend
+     - Blocked on something: None
 
 **Upcoming and Future Tasks**
 - **Upcoming Tasks:**
     - **P1: Instagram Story Export:** Create a feature to export the Daily Prompt as a 1080x1920 PNG image.
 - **Future Tasks:**
+    - **P1: Login Pre-fetching:** Pre-fetch user profile and feed data while the login loading animation is running.
     - **P1: Complete Service Worker Caching (BLOCK 321):** Pre-cache key assets for a faster initial load.
     - **P1: Complete Streaming Service Integration (BLOCK 254):** Requires user to provide a Spotify Developer Dashboard callback URL.
     - Implement a Record Store Day Proxy Network.
@@ -60,21 +91,15 @@ A full-stack React/FastAPI/MongoDB application. The agent has performed a massiv
     - Make the New Music Friday section of the Weekly Wax email dynamically editable.
 
 **Completed work in this session**
-- **Critical Production Stability Overhaul:**
-  - Permanently fixed API timeouts by hardcoding the fast preview URL in .
-  - Implemented a global 30-second  timeout in .
-  - Added a 3-retry connection logic for MongoDB in .
-  - Enriched JWT with  and  () and cached it in  () for instant UI state.
-- **Critical UI/UX & Bug Fixes:**
-  - Fixed the Recover Values button on the Collection page, which was often hidden due to API timeouts ().
-  - Fixed incorrect record linking from feed posts, ensuring clicks lead to the correct detail page ().
-  - Corrected data mapping on ISO cards to prioritize  for the Pressing field and filter out grade-like data from  ().
-  - Fixed a double proxy bug where image URLs were being wrapped multiple times ().
-  - Added Discogs authentication to the backend image proxy to prevent rate-limiting ().
-  - Removed redundant UI elements: Trades tab from profiles () and duplicate back arrows ().
-- **Aesthetic Polish:**
-  - Implemented a new global background theme with color  and a subtle honeycomb pattern in .
-  - Standardized the variant pill label to Pressing: across different card types ().
+- **Polls Feature (P0):** Implemented the full-stack feature, including backend models (, ), API endpoints for creation and voting, and a frontend  with a blind voting UX and custom Honey Gold () styling.
+- **Discogs Pricing Bug Fix (P0):** Created a new public backend endpoint () and updated  to fetch and display pricing for any user's public profile, not just the logged-in user. (USER VERIFICATION PENDING)
+- **Daily Prompt Submission Fix (P0):** Implemented retry logic in  to automatically fetch the latest  if a submission fails, resolving errors caused by stale IDs. (USER VERIFICATION PENDING)
+- **Ghost Records Fix (P0):** Updated the backend feed logic () to hydrate missing record data and filter out posts linked to deleted records, eliminating empty skeleton posts.
+- ** Skeleton Fix (P0):** Implemented a  cache in  to show data instantly on subsequent loads, improving perceived performance.
+- **UI Refinements (Partial):**
+    - Implemented mobile-responsive styles for the  modal.
+    - Replaced the feed filter pills with a dropdown menu on mobile in .
+    - Applied  to the  layout.
 
 **Earlier issues found/mentioned but not fixed**
    - **Issue 1: Fragile Web Scraper ()**
@@ -84,81 +109,90 @@ A full-stack React/FastAPI/MongoDB application. The agent has performed a massiv
      - Is recurring issue? Y
 
 **Known issue recurrence from previous fork**
-  - **Issue recurrence in previous fork:** Production deployment instability.
+  - **Issue recurrence in previous fork:** Production deployment instability due to hardcoded URLs.
   - **Recurrence count:** High
-  - **Status:** IN PROGRESS. The latest set of fixes (hardcoding API URL, increasing timeouts, caching auth state) are the most robust attempts yet to solve this systemic issue.
+  - **Status:** IN PROGRESS. The core issue in  remains unresolved and is a critical deployment blocker.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- **Production Latency Mitigation:** The main strategy shifted to bypassing the slow production domain proxy by hardcoding the fast preview URL for all frontend API calls.
-- **Defensive Frontend Architecture:** Making the UI resilient to network failures and slow load times by implementing global timeouts and caching critical user state (, ) in .
-- **Resilient Backend Connection:** Implementing a retry-with-backoff mechanism for the database connection to handle transient network issues or IP whitelist delays.
-- **JWT Enrichment:** Adding non-critical but UI-relevant data to the JWT payload to improve the initial rendering experience and reduce the number of required bootstrap API calls.
-- **Centralized Configuration:** Using  and  to control API configuration (URL, timeouts) for the entire application from a single place.
+- **Blind Voting UX:** Implemented in , where results are hidden until the user casts their vote.
+- **Conditional UI Rendering:** Used to show vote indicators and manage the (incomplete) Creator View for polls.
+- **Local Caching ():** Used in  to cache API responses and provide an instant-loading experience on subsequent page views.
+- **API-Driven State Management:** The frontend components heavily rely on data and state (like , ) provided directly by the backend API responses.
+- **Responsive UI with Tailwind CSS:** Used ,  prefixes to create different layouts for mobile and desktop, notably for the new filter dropdown.
 
 **key DB schema**
-  - No schema changes were made. All work focused on correctly fetching and rendering data from existing schemas, particularly distinguishing between  and .
+  - **polls:** (NEW) 
+  - **poll_votes:** (NEW) 
 
 **changes in tech stack**
   - None.
 
 **All files of reference**
--   : The most critical file for production stability, as it now hardcodes the API URL.
--   : The component most frequently modified to address user-reported UI bugs on the feed.
--   : Contains the logic for the critical  caching fix.
--   : Contains the new database connection retry logic.
--   : Contains the JWT enrichment logic.
--   : Contains the new application-wide background theme.
+-   : Contains the broken desktop layout for post composition options.
+-   : Contains the  which needs the Creator View feature to be completed.
+-   : Contains the hardcoded URL deployment blocker.
+-   : Contains the new filter dropdown that needs verification.
+-   : Contains the mobile UI fixes that need verification.
+-   : Contains all new backend logic for Polls, Valuation, and feed generation.
 
 **Areas that need refactoring**:
-- **Monolithic :** This file handles auth, core app logic, and third-party integrations. It should be broken into separate route files.
-- **Complex :** This component contains rendering logic for many different post types. It's becoming large and could be split into smaller, type-specific card components.
+- **Monolithic :** Continues to grow and should be broken into separate route files (e.g., , ).
+- **Complex :** Logic for all post types is in one file. Splitting into type-specific components would improve maintainability.
+- **Crowded :** The user's request highlights that adding more composition types is making the UI unwieldy, suggesting a need for a more scalable layout.
 
 **key api endpoints**
-- ****: Hardened with a global try/except block on the backend and longer timeouts on the frontend.
-- ****: Hardened with authentication for Discogs requests to prevent rate-limiting.
+-   : Creates a new poll post.
+-   : Submits a vote for a poll option.
+-   : (NEW) Fetches poll results without voting (for creator view).
+-   : (NEW) Fetches record valuation for any user.
 
 **Critical Info for New Agent**
-- **The production domain is slow.** Do not change the hardcoded API URL in . All API calls must go through the fast preview URL to avoid timeouts. This is the single most important fix from this session.
-- **The user deploys often, which can reveal new issues.** Be prepared to diagnose discrepancies between the preview environment and the live site.  is your best friend for this.
-- **There is a known data quality issue** where record  or user  are stored in the  field for some ISO items. The agent added frontend logic to filter these out, but the underlying data is still messy.
-- **The database connection can fail after a fork** due to the new container IP not being whitelisted in MongoDB Atlas. The user is aware and can add the IP. The new backend retry logic should make this smoother.
+-   You are in the middle of a multi-part UI refinement task. Your immediate priority (P0) is fixing the broken desktop layout in the  component.
+-   After fixing the layout, you must complete the Poll Creator View feature in . A backend endpoint already exists for this.
+-   Once the implementation is done, you must verify all four recent UI changes work as expected on both mobile and desktop.
+-   A critical deployment blocker from a previous session—a hardcoded URL in —still exists and must be properly resolved.
 
 **documents and test reports created in this job**
-- None.
+  - /app/memory/PRD.md
+  - /app/test_reports/iteration_3.json
+  - /app/test_reports/iteration_4.json
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **Request:** Unify the design of ISO and Daily Prompt cards for aesthetic polish. (IN PROGRESS)
-2.  **Request:** Change the Color Variant label to Pressing and apply a new background theme ( with honeycomb pattern). (Completed)
-3.  **Request:** Fix ISO cards not using a pill for the variant info. (Completed)
-4.  **Request:** Remove double back arrows on the Nectar - See All page. (Completed)
-5.  **Request:** Fix a double proxy image URL bug and re-verify ISO field mapping. (Completed)
-6.  **Request:** Address production failures by adding a retry button and hardening the backend feed route. (Completed)
-7.  **Request:** Prevent deployment failures by hardcoding the API URL, adding DB retries, and caching . (Completed)
-8.  **Request:** Fix production failure by adding DB logs, hardcoding fast URL, and fixing  resilience. (Completed)
-9.  **Request:** Restore the Report a Problem button to the main navbar after it was mistakenly removed; also fix the missing Recover Values button. (Completed)
-10. **Request:** Test DB connection, remove Report a Problem from the *Settings menu*, and remove the Trades tab from user profiles. (Completed)
+1.  **Request:** Add Creator View to polls, fix Now Spinning modal, consolidate feed filters, and fix composer layout. (IN PROGRESS)
+2.  **Request:** Add styling and branding to the Polls feature (Honey Gold colors, animations, icons). (Completed)
+3.  **Request:** Implement the full-stack Polls feature. (Completed)
+4.  **Request:** Fix Daily Prompt submission errors and Discogs pricing bug. (Completed, pending user verification)
+5.  **Report:** Critical bug with Daily Prompt submission and data linkage.
+6.  **Report:** Discogs pricing is showing empty values.
+7.  **Confirmation:** All tests passed after the first round of bug fixes (Ghost records, Admin layout, DailyPrompt cache).
+8.  **Report:** User provided details on three critical bugs: Daily Prompt engagement loss, Ghost Records, and Admin Layout issues.
 
 **Project Health Check:**
--   **Broken:** The production deployment process remains fragile, and the live environment has inherent latency issues. While the codebase is now much more resilient, the root cause is environmental, making future production-only bugs possible.
+-   **Broken:**
+    *   The post composition modal has a broken desktop layout, preventing users from seeing all post types.
+    *   The application is **not deployable** due to the hardcoded URL in .
+    *   The Poll Creator View feature is incomplete.
+
 -   **Mocked:** N/A
 
 **3rd Party Integrations**
 -   **MongoDB Atlas:** Primary production database.
 -   **Resend:** Used for transactional emails.
 -   **Stripe Connect:** Integrated for payments.
--   **Discogs API:** Used for fetching album art/metadata and requires authentication on proxied image requests.
+-   **Discogs API:** Used for fetching album art/metadata.
 
 **Testing status**
-  - Testing agent used after significant changes: NO
+  - Testing agent used after significant changes: YES
   - Troubleshoot agent used after agent stuck in loop: NO
   - Test files created: []
-  - Known regressions: None in the current codebase. The primary source of regression is the deployment process itself.
+  - Known regressions: The composer modal layout on desktop has regressed into a broken state.
 
 **Credentials to test flow:**
-- **Master Admin:**  (Password: )
+-   **Master Admin:**  (Password: )
 
 **What agent forgot to execute**
-- Given the relentless focus on critical production fires, the agent correctly prioritized immediate bug fixes over the long-term roadmap items (e.g., Instagram export). Nothing was forgotten or overlooked in the context of the session's priorities.</analysis>
+-   **Login Pre-fetching:** A user request from a previous session to pre-fetch feed/profile data during the login animation has still not been implemented.
+-   **Complete UI Fixes:** The agent has not finished implementing and verifying the four UI fixes requested by the user in their last message.</analysis>

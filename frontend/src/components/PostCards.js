@@ -794,17 +794,20 @@ const NoteCard = ({ post, onAlbumClick }) => {
 
 // POLL card body — "Blind" voting UX with Honey Gold branding
 const PollCard = ({ post }) => {
-  const { token, API } = useAuth();
+  const { user, token, API } = useAuth();
   const [userVote, setUserVote] = useState(post.poll_user_vote);
   const [results, setResults] = useState(post.poll_results || null);
   const [totalVotes, setTotalVotes] = useState(post.poll_total_votes || 0);
   const [voting, setVoting] = useState(false);
   const [justVoted, setJustVoted] = useState(false);
+  const [peeking, setPeeking] = useState(false); // creator peek at results without voting
   const hasVoted = userVote !== null && userVote !== undefined;
+  const isCreator = user?.id === post.user_id;
+  const showResults = hasVoted || results || peeking;
   const options = post.poll_options || [];
 
   const handleVote = async (idx) => {
-    if (hasVoted || voting) return;
+    if (hasVoted || voting || peeking) return;
     setVoting(true);
     try {
       const r = await axios.post(`${API}/polls/${post.id}/vote`, { option_index: idx }, {
@@ -814,12 +817,27 @@ const PollCard = ({ post }) => {
       setResults(r.data.results);
       setTotalVotes(r.data.total_votes);
       setJustVoted(true);
+      setPeeking(false);
     } catch (e) {
-      if (e.response?.status === 409) {
-        setUserVote(idx);
-      }
+      if (e.response?.status === 409) setUserVote(idx);
     }
     setVoting(false);
+  };
+
+  const handlePeek = async () => {
+    setPeeking(true);
+    try {
+      const r = await axios.get(`${API}/polls/${post.id}/results`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setResults(r.data.results);
+      setTotalVotes(r.data.total_votes);
+    } catch { /* silent */ }
+  };
+
+  const handleBackToVote = () => {
+    setPeeking(false);
+    setResults(null);
   };
 
   return (
@@ -827,7 +845,7 @@ const PollCard = ({ post }) => {
       <p className="font-heading text-base leading-snug" style={{ color: '#3A2A0A' }}>{post.poll_question}</p>
       <div className="space-y-1.5 pt-0.5">
         {options.map((opt, i) => {
-          const voted = hasVoted || results;
+          const voted = showResults;
           const r = results?.[i];
           const pct = r?.percentage ?? (voted ? 0 : null);
           const isMyChoice = userVote === i;
@@ -838,35 +856,26 @@ const PollCard = ({ post }) => {
               disabled={voted || voting}
               onClick={() => handleVote(i)}
               className={`w-full text-left relative rounded-lg px-3.5 py-2.5 text-sm transition-all overflow-hidden ${
-                voted
-                  ? 'cursor-default'
-                  : 'cursor-pointer active:scale-[0.99]'
+                voted ? 'cursor-default' : 'cursor-pointer active:scale-[0.99]'
               }`}
               style={
                 voted
-                  ? {
-                      border: isMyChoice ? '2px solid #DAA520' : '1px solid #E7E5E4',
-                      background: isMyChoice ? 'rgba(218,165,32,0.06)' : '#FAFAF9',
-                    }
-                  : {
-                      border: '1px solid #E7E5E4',
-                      background: '#FAFAF9',
-                    }
+                  ? { border: isMyChoice ? '2px solid #DAA520' : '1px solid #E7E5E4', background: isMyChoice ? 'rgba(218,165,32,0.06)' : '#FAFAF9' }
+                  : { border: '1px solid #E7E5E4', background: '#FAFAF9' }
               }
               onMouseEnter={e => { if (!voted) { e.currentTarget.style.borderColor = '#DAA520'; e.currentTarget.style.background = 'rgba(218,165,32,0.06)'; } }}
               onMouseLeave={e => { if (!voted) { e.currentTarget.style.borderColor = '#E7E5E4'; e.currentTarget.style.background = '#FAFAF9'; } }}
             >
-              {/* Honey Gold progress bar with slide animation */}
+              {/* Honey Gold progress bar */}
               {voted && (
                 <div
                   className="absolute inset-y-0 left-0 rounded-l-lg"
                   style={{
-                    width: justVoted ? `${pct || 0}%` : `${pct || 0}%`,
+                    width: `${pct || 0}%`,
                     background: isMyChoice
                       ? 'linear-gradient(90deg, rgba(218,165,32,0.25), rgba(218,165,32,0.15))'
                       : 'linear-gradient(90deg, rgba(218,165,32,0.12), rgba(218,165,32,0.06))',
                     transition: 'width 0.7s cubic-bezier(0.22, 1, 0.36, 1)',
-                    animation: justVoted ? 'none' : undefined,
                   }}
                 />
               )}
@@ -879,21 +888,43 @@ const PollCard = ({ post }) => {
                   )}
                   {opt}
                 </span>
-                {voted && (
-                  <span className="text-xs font-semibold shrink-0 tabular-nums" style={{ color: '#8B6914' }}>
-                    {pct ?? 0}%
-                  </span>
-                )}
+                {voted && <span className="text-xs font-semibold shrink-0 tabular-nums" style={{ color: '#8B6914' }}>{pct ?? 0}%</span>}
               </div>
             </button>
           );
         })}
       </div>
-      {(hasVoted || results) && (
-        <p className="text-xs pt-0.5" style={{ color: '#A8A29E' }} data-testid="poll-total-votes">
-          {totalVotes} {totalVotes === 1 ? 'person' : 'people'} responded
-        </p>
-      )}
+      <div className="flex items-center justify-between pt-0.5">
+        {showResults ? (
+          <p className="text-xs" style={{ color: '#A8A29E' }} data-testid="poll-total-votes">
+            {totalVotes} {totalVotes === 1 ? 'person' : 'people'} responded
+          </p>
+        ) : (
+          <span />
+        )}
+        {/* Creator-only: See Results / Back to Vote */}
+        {isCreator && !hasVoted && (
+          peeking ? (
+            <button
+              onClick={handleBackToVote}
+              className="text-xs font-medium transition-opacity hover:opacity-80"
+              style={{ color: '#DAA520' }}
+              data-testid="poll-back-to-vote"
+            >
+              Back to vote
+            </button>
+          ) : (
+            <button
+              onClick={handlePeek}
+              className="text-xs font-medium transition-opacity hover:opacity-80"
+              style={{ color: '#DAA520' }}
+              data-testid="poll-see-results"
+            >
+              See results
+            </button>
+          )
+        )}
+      </div>
     </div>
   );
 };
