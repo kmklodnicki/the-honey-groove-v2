@@ -34,6 +34,34 @@ const ExplorePage = () => {
   const [loading, setLoading] = useState(true);
   const [myKindaPeople, setMyKindaPeople] = useState([]);
   const { openVariantModal } = useVariantModal();
+  // Track optimistic follow state per username
+  const [followedUsers, setFollowedUsers] = useState(new Set());
+
+  const handleKindaFollow = async (username) => {
+    // Optimistic: mark as followed instantly
+    setFollowedUsers(prev => new Set(prev).add(username));
+    try {
+      await axios.post(`${API}/follow/${username}`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success(`now following @${username}`);
+    } catch {
+      // Revert on failure
+      setFollowedUsers(prev => { const n = new Set(prev); n.delete(username); return n; });
+      toast.error('could not follow.');
+    }
+  };
+
+  const handleKindaUnfollow = async (username) => {
+    // Optimistic: mark as unfollowed instantly
+    setFollowedUsers(prev => { const n = new Set(prev); n.delete(username); return n; });
+    try {
+      await axios.delete(`${API}/follow/${username}`, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success(`unfollowed @${username}`);
+    } catch {
+      // Revert on failure
+      setFollowedUsers(prev => new Set(prev).add(username));
+      toast.error('could not unfollow.');
+    }
+  };
 
   // BLOCK 450: SWR cache for explore sections — instant back-nav
   const { data: swrTrending } = useAPI('/explore/trending?limit=10');
@@ -192,7 +220,9 @@ const ExplorePage = () => {
           </div>
         ) : (
           <ScrollRow>
-            {myKindaPeople.map(p => (
+            {myKindaPeople.map(p => {
+              const isFollowed = followedUsers.has(p.username);
+              return (
               <div key={p.username} className="flex-shrink-0 w-40 group" data-testid={`kinda-${p.username}`}>
                 <Card className={`p-3 border-honey/30 hover:shadow-honey transition-all text-center ${p.follows_me ? 'ring-1 ring-honey/40' : ''}`}>
                   <Link to={`/profile/${p.username}?tab=in-common`}>
@@ -211,26 +241,31 @@ const ExplorePage = () => {
                       </div>
                     )}
                   </Link>
-                  {p.follows_me && (
-                    <button
-                      onClick={async (e) => {
-                        e.preventDefault();
-                        try {
-                          await axios.post(`${API}/follow/${p.username}`, {}, { headers: { Authorization: `Bearer ${token}` }});
-                          toast.success(`now following @${p.username}`);
-                          setMyKindaPeople(prev => prev.filter(u => u.username !== p.username));
-                        } catch { toast.error('could not follow.'); }
-                      }}
-                      className="mt-2 w-full text-xs font-semibold py-1.5 px-2 rounded-full bg-honey text-vinyl-black hover:bg-honey-amber transition-all"
-                      style={{ animation: 'honeyPulse 2s ease-in-out infinite' }}
-                      data-testid={`follow-back-${p.username}`}
+                  {isFollowed ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => { e.preventDefault(); handleKindaUnfollow(p.username); }}
+                      className="mt-2 w-full text-xs rounded-full border-honey bg-honey/10 text-[#C8861A] hover:bg-red-50 hover:text-red-600 hover:border-red-300 transition-all"
+                      data-testid={`following-btn-${p.username}`}
                     >
-                      Follow Back
-                    </button>
+                      <Check className="w-3 h-3 mr-1" /> Following
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={(e) => { e.preventDefault(); handleKindaFollow(p.username); }}
+                      className="mt-2 w-full text-xs rounded-full border-honey/40 text-[#C8861A] hover:bg-honey hover:text-vinyl-black transition-all"
+                      data-testid={`follow-btn-${p.username}`}
+                    >
+                      <UserPlus className="w-3 h-3 mr-1" /> {p.follows_me ? 'Follow Back' : 'Follow'}
+                    </Button>
                   )}
                 </Card>
               </div>
-            ))}
+              );
+            })}
           </ScrollRow>
         )}
       </section>
