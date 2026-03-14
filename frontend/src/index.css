@@ -31,7 +31,7 @@ body {
     font-family: "Inter", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #F8E9E4;
+    background-color: #FFF6E6;
     color: #1F1F1F;
 }
 
@@ -46,7 +46,7 @@ body::before {
     pointer-events: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='100' viewBox='0 0 56 100'%3E%3Cpath d='M28 66L0 50L0 16L28 0L56 16L56 50L28 66Z' fill='none' stroke='%23c4956a' stroke-width='1'/%3E%3Cpath d='M28 100L0 84L0 50L28 34L56 50L56 84L28 100Z' fill='none' stroke='%23c4956a' stroke-width='1'/%3E%3C/svg%3E");
     background-size: 56px 100px;
-    opacity: 0.04;
+    opacity: 0.08;
     z-index: 0;
 }
 
@@ -61,7 +61,7 @@ h1, h2, h3, h4, h5, h6 {
 
 @layer base {
     :root {
-        --background: 14 52% 94%;
+        --background: 40 100% 95%;
         --foreground: 0 0% 12%;
         --card: 0 0% 100%;
         --card-foreground: 0 0% 12%;

@@ -294,6 +294,7 @@ class ISOPostCreate(BaseModel):
     artist: str
     album: str
     pressing_notes: Optional[str] = None
+    color_variant: Optional[str] = None
     condition_pref: Optional[str] = None
     tags: Optional[List[str]] = None
     target_price_min: Optional[float] = None

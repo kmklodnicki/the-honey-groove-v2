@@ -157,6 +157,37 @@ async def _backfill_color_variants():
         logger.error(f"Variant backfill error: {e}")
 
 
+async def _backfill_iso_color_variants():
+    """Background task: backfill color_variant for ISO items missing it."""
+    from database import get_discogs_release
+    await asyncio.sleep(20)  # Stagger after records backfill
+    try:
+        isos = await db.iso_items.find(
+            {"discogs_id": {"$ne": None}, "$or": [{"color_variant": None}, {"color_variant": {"$exists": False}}]},
+            {"_id": 0, "id": 1, "discogs_id": 1, "album": 1}
+        ).limit(200).to_list(200)
+        if not isos:
+            logger.info("ISO variant backfill: no items need updating")
+            return
+        logger.info(f"ISO variant backfill: processing {len(isos)} items")
+        updated = 0
+        for iso in isos:
+            try:
+                release_data = await asyncio.to_thread(get_discogs_release, iso["discogs_id"])
+                if release_data and release_data.get("color_variant"):
+                    await db.iso_items.update_one(
+                        {"id": iso["id"]},
+                        {"$set": {"color_variant": release_data["color_variant"]}}
+                    )
+                    updated += 1
+                await asyncio.sleep(1.1)  # Respect Discogs rate limit
+            except Exception as e:
+                logger.debug(f"ISO variant backfill skip {iso.get('album')}: {e}")
+        logger.info(f"ISO variant backfill complete: {updated}/{len(isos)} updated")
+    except Exception as e:
+        logger.error(f"ISO variant backfill error: {e}")
+
+
 @app.on_event("startup")
 async def startup_event():
     # Verify database connection first
@@ -311,6 +342,7 @@ async def startup_event():
     logger.info(f"Routes: {[r.path for r in app.routes if hasattr(r, 'path')]}")
     # Start background variant backfill
     asyncio.create_task(_backfill_color_variants())
+    asyncio.create_task(_backfill_iso_color_variants())
     # BLOCK 476: Start nightly value recovery scheduler
     from services.value_recovery import schedule_nightly_recovery
     asyncio.create_task(schedule_nightly_recovery())

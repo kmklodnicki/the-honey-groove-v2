@@ -645,10 +645,15 @@ async def composer_iso(data: ISOPostCreate, user: Dict = Depends(require_auth)):
 
     # BLOCK 592: Check Discogs for "Unofficial Release" format
     is_unofficial = False
+    discogs_color_variant = None
     if data.discogs_id:
         release_info = get_discogs_release(data.discogs_id)
         if release_info:
             is_unofficial = "Unofficial Release" in release_info.get("format_descriptions", [])
+            discogs_color_variant = release_info.get("color_variant")
+
+    # Resolve color_variant: explicit from user > Discogs > None
+    resolved_color_variant = data.color_variant or discogs_color_variant
 
     iso_doc = {
         "id": iso_id,
@@ -658,6 +663,7 @@ async def composer_iso(data: ISOPostCreate, user: Dict = Depends(require_auth)):
         "discogs_id": data.discogs_id,
         "cover_url": data.cover_url,
         "year": data.year,
+        "color_variant": resolved_color_variant,
         "pressing_notes": data.pressing_notes,
         "condition_pref": data.condition_pref,
         "tags": data.tags or [],

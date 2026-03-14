@@ -185,7 +185,7 @@ const VariantTag = ({ variant, glass, ghost, gold, prefix, linkTo }) => {
   const key = variant.toLowerCase().trim();
   const match = Object.keys(VARIANT_PILL_STYLES).find(k => key.includes(k));
   const style = match ? VARIANT_PILL_STYLES[match] : VARIANT_DEFAULT;
-  const label = prefix ? `${prefix} ${variant}` : variant;
+  const label = prefix ? `${prefix}: ${variant}` : variant;
 
   const linkClass = linkTo ? 'cursor-pointer transition-transform duration-150 hover:scale-105 active:scale-100' : '';
   // Mobile-only truncation: expand full on desktop (>1024px), truncate on mobile (<480px)
