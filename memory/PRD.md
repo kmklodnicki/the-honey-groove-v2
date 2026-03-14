@@ -26,9 +26,14 @@ The HoneyGroove is a social platform for vinyl record collectors built with Reac
 ### Session 4 (Mar 14, 2026) — P0 UI/UX Fixes & Deployment Readiness
 - **Composer Bar Layout Fix:** Verified 3-column grid on desktop, 2-column on mobile. All 6 chips render without truncation.
 - **Poll Creator View (Complete):** Backend `GET /api/polls/{post_id}/results` + frontend "See Results"/"Back to vote" buttons for poll creators who haven't voted. Tested end-to-end.
-- **Feed Filter Dropdown:** Unified dropdown for all viewports with Honey Gold styling.
+- **Feed Filter Dropdown:** Unified dropdown for all viewports with Honey Gold styling. Left-aligned on desktop (1024px+), centered on mobile.
 - **Now Spinning Modal Mobile:** Responsive layout with sticky footer, scrollable content.
 - **Hardcoded URL Fix:** Removed hardcoded preview URL from backend CORS origins. Dynamic CORS via `FRONTEND_URL` env var.
+- **Haul Modal Restructure:** Records search moved to top (primary), location field below marked optional with 📍 emoji, prominent album art on selection.
+- **Composer Chip Styling:** Added `white-space: nowrap` to labels, reduced horizontal padding, icon-text center alignment.
+- **Now Spinning Emoji:** Updated to 🎵 across composer chip, modal title, feed filter, and PostTypeBadge.
+- **Login Loading Text:** Changed "Warming up the hive..." to "Warming up the honey..."
+- **Haul Post Display:** Store name now shows with 📍 prefix instead of "Found at".
 
 ### Session 3 (Mar 14, 2026) — Polls Feature
 - **Full Poll Implementation:** Backend (PollCreate model, `POST /composer/poll`, `POST /polls/{post_id}/vote`, poll_votes collection, per-option results in build_post_response) + Frontend (PollCard with blind voting UX, Poll composer in ComposerBar with dynamic options min 2/max 6, 500 char limit)
