@@ -13,11 +13,10 @@ import {
   DropdownMenuTrigger,
 } from '../components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog';
-import { Home, Search, User, LogOut, Settings, Library, ShoppingBag, ArrowRightLeft, Bell, Check, MessageCircle, Globe, HelpCircle, Package, AlertTriangle, Sparkles, Loader2 } from 'lucide-react';
+import { Home, Search, User, LogOut, Settings, Library, ShoppingBag, ArrowRightLeft, Bell, Check, MessageCircle, Globe, HelpCircle, Package, Sparkles, Loader2 } from 'lucide-react';
 import VerifiedShield from './VerifiedShield';
 const KATIE_ID = '4072aaa7-1171-4cd2-9c8f-20dfca8fdc58';
 import { formatDistanceToNow } from 'date-fns';
-import ReportModal from './ReportModal';
 import { resolveImageUrl } from '../utils/imageUrl';
 import { prefetchAPI } from '../hooks/useAPI';
 
@@ -54,7 +53,6 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchOpen, setSearchOpen] = useState(false); // kept for legacy, unused
-  const [reportOpen, setReportOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -152,17 +150,6 @@ const Navbar = () => {
           <div className="flex items-center gap-2">
             {user && <DMBadge />}
             {user && <NotificationBell />}
-            {user && (
-              <Button
-                variant="ghost"
-                className="relative h-9 w-9 rounded-full"
-                onClick={() => setReportOpen(true)}
-                data-testid="nav-report-btn"
-                title="Report a Problem"
-              >
-                <AlertTriangle className="h-5 w-5 text-vinyl-black" />
-              </Button>
-            )}
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -255,15 +242,6 @@ const Navbar = () => {
             </button>
             <DMBadge />
             <NotificationBell />
-            <Button
-              variant="ghost"
-              className="relative h-8 w-8 rounded-full p-0"
-              onClick={() => setReportOpen(true)}
-              data-testid="mobile-report-btn"
-              title="Report a Problem"
-            >
-              <AlertTriangle className="h-5 w-5 text-vinyl-black" />
-            </Button>
             <MobileProfileMenu user={user} onLogout={handleLogout} />
           </div>
         </div>
@@ -307,13 +285,6 @@ const Navbar = () => {
       </div>
     )}
 
-    {/* Report a Problem Modal */}
-    <ReportModal
-      open={reportOpen}
-      onOpenChange={setReportOpen}
-      targetType="bug"
-      targetId={null}
-    />
     </>
   );
 };

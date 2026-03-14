@@ -749,17 +749,6 @@ const SettingsPage = () => {
             </div>
             <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-honey-amber transition-colors" />
           </a>
-          <button
-            onClick={() => navigate('/hive')}
-            className="flex items-center justify-between p-3 rounded-xl border border-honey/20 hover:bg-honey/5 transition-colors group w-full text-left"
-            data-testid="help-report-link"
-          >
-            <div className="flex items-center gap-3">
-              <Flag className="w-4 h-4 text-honey-amber" />
-              <span className="text-sm font-medium">Report a Problem</span>
-            </div>
-            <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-honey-amber transition-colors" />
-          </button>
         </CardContent>
       </Card>
 

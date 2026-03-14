@@ -139,7 +139,6 @@ const ProfilePage = () => {
   const [records, setRecords] = useState([]);
   const [spins, setSpins] = useState([]);
   const [isos, setIsos] = useState([]);
-  const [trades, setTrades] = useState([]);
   const [userListings, setUserListings] = useState([]);
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -311,11 +310,6 @@ const ProfilePage = () => {
         .then(r => setIsos(r.data))
         .catch(() => {});
     }
-    if (activeTab === 'trades' && trades.length === 0) {
-      axios.get(`${API}/users/${username}/trades`)
-        .then(r => setTrades(r.data))
-        .catch(() => {});
-    }
     if (activeTab === 'dreaming' && dreamingItems.length === 0) {
       axios.get(`${API}/users/${username}/dreaming`)
         .then(r => setDreamingItems(r.data))
@@ -327,7 +321,7 @@ const ProfilePage = () => {
         .then(r => setUserListings(Array.isArray(r.data) ? r.data : r.data?.listings || []))
         .catch(() => {});
     }
-  }, [activeTab, API, username, spins.length, isos.length, trades.length, dreamingItems.length, userListings.length]);
+  }, [activeTab, API, username, spins.length, isos.length, dreamingItems.length, userListings.length]);
 
   const handleFollow = async () => {
     if (followLoading) return; // <--- ADD THIS GATEKEEPER LINE
@@ -909,9 +903,6 @@ const ProfilePage = () => {
           <TabsTrigger value="iso" className="data-[state=active]:bg-honey text-xs sm:text-sm shrink-0 px-3" data-testid="tab-iso">
             ISO
           </TabsTrigger>
-          <TabsTrigger value="trades" className="data-[state=active]:bg-honey text-xs sm:text-sm shrink-0 px-3" data-testid="tab-trades">
-            Trades
-          </TabsTrigger>
         </TabsList>
 
         {/* Collection Tab */}
@@ -1336,75 +1327,6 @@ const ProfilePage = () => {
                 </Card>
               ))}
             </div>
-          )}
-        </TabsContent>
-
-        {/* Trades Tab */}
-        <TabsContent value="trades">
-          {trades.length === 0 ? (
-            <EmptyState icon={ArrowRightLeft} title="No trades yet" sub={isOwnProfile ? 'Propose a trade from The Honeypot!' : `@${username} hasn't completed any trades yet`} />
-          ) : (
-            <div className="space-y-3">
-              {trades.map(trade => {
-                const isInit = trade.initiator_id === profile.id;
-                const otherUser = isInit ? trade.responder : trade.initiator;
-                const statusColors = {
-                  ACCEPTED: 'bg-green-100 text-green-700',
-                  COMPLETED: 'bg-green-100 text-green-700',
-                  SHIPPING: 'bg-purple-100 text-purple-700',
-                  CONFIRMING: 'bg-cyan-100 text-cyan-700',
-                };
-                return (
-                  <Card key={trade.id} className="p-4 border-honey/30" data-testid={`profile-trade-${trade.id}`}>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${statusColors[trade.status] || 'bg-gray-100 text-gray-600'}`}>
-                        {trade.status}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(trade.updated_at), { addSuffix: true })}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        {trade.offered_record?.cover_url ? (
-                          <AlbumArt src={trade.offered_record.cover_url} alt={`${trade.offered_record.artist} ${trade.offered_record.title} vinyl record`} className="w-10 h-10 rounded object-cover" isUnofficial={trade.offered_record.is_unofficial} />
-                        ) : (
-                          <div className="w-10 h-10 rounded bg-honey/20 flex items-center justify-center"><Disc className="w-4 h-4 text-honey" /></div>
-                        )}
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium truncate">{trade.offered_record?.title || 'Unknown'}</p>
-                          <p className="text-xs text-muted-foreground truncate">{trade.offered_record?.artist}</p>
-                        </div>
-                      </div>
-                      <ArrowRightLeft className="w-4 h-4 text-honey shrink-0" />
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        {trade.listing_record?.cover_url ? (
-                          <AlbumArt src={trade.listing_record.cover_url} alt={`${trade.listing_record.artist} ${trade.listing_record.title} vinyl record`} className="w-10 h-10 rounded object-cover" isUnofficial={trade.listing_record.is_unofficial} />
-                        ) : (
-                          <div className="w-10 h-10 rounded bg-honey/20 flex items-center justify-center"><Disc className="w-4 h-4 text-honey" /></div>
-                        )}
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium truncate">{trade.listing_record?.album || 'Unknown'}</p>
-                          <p className="text-xs text-muted-foreground truncate">{trade.listing_record?.artist}</p>
-                        </div>
-                      </div>
-                    </div>
-                    {otherUser && (
-                      <p className="text-xs text-muted-foreground mt-2">
-                        Trade with <Link to={`/profile/${otherUser.username}`} className="text-honey-amber hover:underline">@{otherUser.username}</Link>
-                      </p>
-                    )}
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-          {isOwnProfile && (
-            <Link to="/trades" className="block mt-4">
-              <Button variant="outline" className="w-full rounded-full border-honey/30 text-honey-amber hover:bg-honey/10" data-testid="view-all-trades-btn">
-                View All Trades
-              </Button>
-            </Link>
           )}
         </TabsContent>
 
