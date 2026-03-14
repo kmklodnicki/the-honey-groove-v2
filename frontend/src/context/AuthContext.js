@@ -6,6 +6,9 @@ import { API_BASE, API as SHARED_API } from '../utils/apiBase';
 const BACKEND_URL = API_BASE;
 const API = SHARED_API;
 
+// Global timeout for all axios requests — production custom domain has high latency
+axios.defaults.timeout = 30000;
+
 const AuthContext = createContext(null);
 
 export const useAuth = () => useContext(AuthContext);
@@ -74,7 +77,7 @@ export const AuthProvider = ({ children }) => {
       console.log('AUTH: background user fetch');
       const response = await axios.get(`${API}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
-        timeout: 15000,
+        timeout: 30000,
       });
       setUser(response.data);
       console.log('AUTH: user data refreshed');
@@ -90,7 +93,7 @@ export const AuthProvider = ({ children }) => {
           if (currentUser?.username) {
             const fallback = await axios.get(`${API}/users/${currentUser.username}`, {
               headers: { Authorization: `Bearer ${token}` },
-              timeout: 10000,
+              timeout: 30000,
             });
             if (fallback.data) {
               setUser(prev => ({ ...prev, ...fallback.data }));

@@ -484,7 +484,7 @@ const HivePage = () => {
       const response = await axios.get(`${API}/feed`, {
         params: { limit: FEED_LIMIT },
         headers: { Authorization: `Bearer ${token}` },
-        timeout: 15000,
+        timeout: 30000,
       });
       let feedPosts = response.data;
       setHasMore(feedPosts.length >= FEED_LIMIT);

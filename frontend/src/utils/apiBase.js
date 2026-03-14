@@ -1,17 +1,6 @@
 // Single source of truth for API base URL.
-// On custom domains (e.g. thehoneygroove.com), uses same-origin to avoid CORS.
-// On preview/localhost, uses the env variable.
-const BASE = (() => {
-  const envUrl = process.env.REACT_APP_BACKEND_URL;
-  if (!envUrl) return window.location.origin;
-  try {
-    const envHost = new URL(envUrl).hostname;
-    const currentHost = window.location.hostname;
-    if (currentHost !== 'localhost' && currentHost !== '127.0.0.1' && currentHost !== envHost) {
-      return window.location.origin;
-    }
-  } catch {}
-  return envUrl;
-})();
+// Always uses the build-time env URL (fast preview endpoint) for API calls.
+// The production custom domain adds significant proxy latency, so we bypass it.
+const BASE = process.env.REACT_APP_BACKEND_URL || window.location.origin;
 export const API_BASE = BASE;
 export const API = `${BASE}/api`;

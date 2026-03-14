@@ -379,11 +379,11 @@ const CollectionPage = () => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
       const [recordsRes, spinsRes, valueRes, gemsRes, valMapRes] = await Promise.all([
-        axios.get(`${API}/records`, { headers }),
-        axios.get(`${API}/spins`, { headers }),
-        axios.get(`${API}/valuation/collection`, { headers }).catch(() => ({ data: null })),
-        axios.get(`${API}/valuation/hidden-gems`, { headers }).catch(() => ({ data: [] })),
-        axios.get(`${API}/valuation/record-values`, { headers }).catch(() => ({ data: {} })),
+        axios.get(`${API}/records`, { headers, timeout: 30000 }),
+        axios.get(`${API}/spins`, { headers, timeout: 30000 }),
+        axios.get(`${API}/valuation/collection`, { headers, timeout: 30000 }).catch(() => ({ data: null })),
+        axios.get(`${API}/valuation/hidden-gems`, { headers, timeout: 30000 }).catch(() => ({ data: [] })),
+        axios.get(`${API}/valuation/record-values`, { headers, timeout: 30000 }).catch(() => ({ data: {} })),
       ]);
       setRecords(recordsRes.data);
       setSpins(spinsRes.data);
@@ -402,8 +402,8 @@ const CollectionPage = () => {
       }
       // Fetch wishlist (WISHLIST ISO items) and dream value
       Promise.all([
-        axios.get(`${API}/iso/dreamlist`, { headers }).then(r => setWishlistItems(r.data || [])),
-        axios.get(`${API}/valuation/dreamlist`, { headers }).then(r => setDreamlistValue(r.data)),
+        axios.get(`${API}/iso/dreamlist`, { headers, timeout: 30000 }).then(r => setWishlistItems(r.data || [])),
+        axios.get(`${API}/valuation/dreamlist`, { headers, timeout: 30000 }).then(r => setDreamlistValue(r.data)),
       ]).catch(() => {});
     } catch (error) {
       console.error('Failed to fetch records:', error);
@@ -869,8 +869,8 @@ const CollectionPage = () => {
             dreamLoading={dreamlistValue === null}
             collectionTab={collectionTab}
             onTabChange={handleTabChange}
-            valuedCount={collectionValue?.valued_count}
-            totalCount={collectionValue?.total_count}
+            valuedCount={collectionValue?.valued_count ?? 0}
+            totalCount={collectionValue?.total_count ?? records.length}
             onRefresh={handleRefreshValues}
             refreshing={refreshing}
             onPendingClick={() => { setValuationFocusItem(null); setValuationModalOpen(true); }}
