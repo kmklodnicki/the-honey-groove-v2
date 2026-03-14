@@ -601,7 +601,11 @@ const ISOCard = ({ post, onAlbumClick }) => {
               <p className="font-heading text-lg truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{isoData.album}</p>
               <p className="text-sm text-muted-foreground truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{isoData.artist}</p>
             </div>
-            {isoData.color_variant && <p className="text-xs mt-1 text-[#8A6B4A]" data-testid="iso-pressing">Pressing: {isoData.color_variant}</p>}
+            {isoData.color_variant && (
+              <div className="mt-1.5" data-testid="iso-pressing">
+                <VariantTag variant={isoData.color_variant} linkTo={isoData.discogs_id ? `/variant/${isoData.discogs_id}` : undefined} />
+              </div>
+            )}
             {isoData.pressing_notes && !(/^(mint|near mint|nm|m|vg|vg\+|g\+|g|f|p|nm\/m|near mint \/ mint)/i.test(isoData.pressing_notes.trim())) && (
               <p className="text-xs text-[#8A6B4A]" data-testid="iso-notes">Notes: {isoData.pressing_notes}</p>
             )}
