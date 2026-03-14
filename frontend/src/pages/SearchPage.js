@@ -61,8 +61,10 @@ const VariantCard = ({ v, onOpen }) => (
             </span>
           );
         })}
-        {v.collectors > 0 && (
+        {v.collectors > 0 ? (
           <span className="text-[10px] text-muted-foreground">{v.collectors} have</span>
+        ) : (
+          <span className="text-[10px] italic text-honey-amber/70" data-testid="first-crate-cta">Be the first to crate this!</span>
         )}
       </div>
     </div>

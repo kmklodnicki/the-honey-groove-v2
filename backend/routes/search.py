@@ -6,7 +6,7 @@ import asyncio
 import os
 import requests as req
 
-from database import db, require_auth, get_current_user, search_discogs, get_hidden_user_ids, logger
+from database import db, require_auth, get_current_user, search_discogs, get_hidden_user_ids, logger, get_discogs_release
 
 router = APIRouter()
 
@@ -539,16 +539,40 @@ async def search_variants(
         raw_label = r.get("label")
         label_str = ", ".join(raw_label) if isinstance(raw_label, list) else (raw_label or "")
 
+        # Hydrate cover: fallback to Discogs API if cover_url is missing
+        cover = r.get("cover_url")
+        if not cover and r.get("discogs_id"):
+            try:
+                release_data = await asyncio.to_thread(get_discogs_release, r["discogs_id"])
+                if release_data and release_data.get("cover_url"):
+                    cover = release_data["cover_url"]
+            except Exception:
+                pass
+        # Last resort: find a sibling record with the same artist+title that has a cover
+        if not cover:
+            sibling = await db.records.find_one(
+                {"artist": r.get("artist"), "title": r.get("title"), "cover_url": {"$ne": None, "$ne": ""}},
+                {"_id": 0, "cover_url": 1}
+            )
+            if sibling and sibling.get("cover_url"):
+                cover = sibling["cover_url"]
+
+        # Count local platform collectors (users who have this record)
+        local_collectors = 0
+        did = r.get("discogs_id")
+        if did:
+            local_collectors = await db.records.count_documents({"discogs_id": did})
+
         variants_out.append({
-            "discogs_id": r.get("discogs_id"),
+            "discogs_id": did,
             "artist": artist,
             "album": title,
             "variant": variant or "Standard Black Vinyl",
-            "cover_url": r.get("cover_url"),
+            "cover_url": cover,
             "year": r.get("year"),
             "label": label_str,
             "catno": r.get("catno"),
-            "collectors": r.get("community_have", 0),
+            "collectors": local_collectors or r.get("community_have", 0),
             "wantlist": r.get("community_want", 0),
             "tags": tags,
             "slug": f"/vinyl/{slug_artist}/{slug_album}/{slug_variant}",
