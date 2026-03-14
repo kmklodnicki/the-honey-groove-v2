@@ -194,7 +194,7 @@ const AppLayout = ({ children }) => {
   }, [user]);
 
   const isHome = location.pathname === '/' || location.pathname === '/hive';
-  const hasInlineBack = location.pathname.startsWith('/record/') || location.pathname.startsWith('/vinyl/');
+  const hasInlineBack = location.pathname.startsWith('/record/') || location.pathname.startsWith('/vinyl/') || location.pathname.startsWith('/nectar/');
   
   return (
     <PullToRefresh>
