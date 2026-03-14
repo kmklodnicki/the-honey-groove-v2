@@ -40,6 +40,7 @@ The HoneyGroove is a social platform for vinyl record collectors built with Reac
 - **Filter Dropdown Emoji-First:** Emoji moved to left of text labels (🍯 All, 🎵 Now Spinning, etc.), 8px gap, checkmark on far right. Subtle honey-gold dividers between items (not after last).
 - **Now Spinning SVG Icon:** Replaced emoji with lucide-react `Music` SVG icon in dark honey (#78350F), matching stroke weight of other composer icons. Modal title also uses SVG.
 - **Collection Buttons Mobile:** Changed from vertical stack to horizontal `flex-row` with condensed labels on mobile (Dupes, Fix), uniform h-9 height, no horizontal overflow.
+- **iOS Zoom Fix:** Added `maximum-scale=1, user-scalable=0` to viewport meta, `-webkit-text-size-adjust: 100%` on html, `overflow-x: hidden` on body/#root, 16px font-size for selects on mobile, all modals use `max-sm:max-w-[95vw]`.
 
 ### Session 3 (Mar 14, 2026) — Polls Feature
 - **Full Poll Implementation:** Backend (PollCreate model, `POST /composer/poll`, `POST /polls/{post_id}/vote`, poll_votes collection, per-option results in build_post_response) + Frontend (PollCard with blind voting UX, Poll composer in ComposerBar with dynamic options min 2/max 6, 500 char limit)
