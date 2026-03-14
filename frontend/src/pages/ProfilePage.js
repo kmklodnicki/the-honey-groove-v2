@@ -736,13 +736,22 @@ const ProfilePage = () => {
           <div className="mt-6 lg:mt-0 lg:pl-6 lg:border-l flex flex-col gap-2.5 justify-center items-stretch" style={{ borderColor: 'rgba(200,134,26,0.15)' }} data-testid="profile-control-panel">
             {/* Taste Match — other user only */}
             {!isOwnProfile && token && tasteMatch && !tasteLoading && (
-              <button onClick={() => setCommonGroundOpen(true)}
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all hover:scale-105 w-full"
-                style={{ background: 'linear-gradient(135deg, #FFD700 0%, #FDB931 100%)', color: '#3E2723', border: '1px solid rgba(253,185,49,0.3)', boxShadow: '0 2px 10px rgba(253,185,49,0.25)' }}
-                data-testid="taste-match-pill">
-                <Sparkles className="w-3.5 h-3.5" style={{ color: '#C8861A' }} />
-                {tasteMatch.score}% Taste Match
-              </button>
+              <div className="relative group w-full">
+                <button onClick={() => setCommonGroundOpen(true)}
+                  className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all hover:scale-105 w-full"
+                  style={{ background: 'linear-gradient(135deg, #FFD700 0%, #FDB931 100%)', color: '#3E2723', border: '1px solid rgba(253,185,49,0.3)', boxShadow: '0 2px 10px rgba(253,185,49,0.25)' }}
+                  data-testid="taste-match-pill">
+                  <Sparkles className="w-3.5 h-3.5" style={{ color: '#C8861A' }} />
+                  {tasteMatch.score}% Taste Match
+                </button>
+                <div className="absolute z-50 left-1/2 -translate-x-1/2 top-full mt-2 w-72 rounded-xl p-3.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 pointer-events-none group-hover:pointer-events-auto"
+                  style={{ background: 'rgba(255,252,240,0.92)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '1.5px solid #DAA520', boxShadow: '0 8px 32px rgba(218,165,32,0.18)' }}
+                  data-testid="taste-match-tooltip">
+                  <p className="font-heading text-sm font-bold text-vinyl-black mb-1.5">Your Groove Sync</p>
+                  <p className="text-xs text-[#5a4a3a] leading-relaxed mb-2">This score is calculated by comparing your vinyl collection and ISOs with this user. We look at shared genres, overlapping artists, and similar era preferences to see how much your record crates have in common.</p>
+                  <p className="text-[11px] font-medium italic" style={{ color: '#C8861A' }}>The higher the percentage, the deeper the shared groove.</p>
+                </div>
+              </div>
             )}
             {/* Own profile controls */}
             {isOwnProfile && (
