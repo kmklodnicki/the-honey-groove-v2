@@ -196,10 +196,6 @@ const Navbar = () => {
                     <Package className="mr-2 h-4 w-4" />
                     Orders
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/essentials')} data-testid="menu-essentials">
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    Honey Essentials
-                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => window.open('https://thehoneygroove.com/faq', '_blank')} data-testid="menu-help">
                     <HelpCircle className="mr-2 h-4 w-4" />
                     Help
@@ -344,7 +340,6 @@ const MobileProfileMenu = ({ user, onLogout }) => {
     { icon: User, label: 'Profile', action: () => go(`/profile/${user.username}`), testId: 'mobile-menu-profile' },
     { icon: Settings, label: 'Settings', action: () => go('/settings'), testId: 'mobile-menu-settings' },
     { icon: Package, label: 'Orders', action: () => go('/orders'), testId: 'mobile-menu-orders' },
-    { icon: Sparkles, label: 'Honey Essentials', action: () => go('/essentials'), testId: 'mobile-menu-essentials' },
     { icon: ArrowRightLeft, label: 'Trades', action: () => go('/trades'), testId: 'mobile-menu-trades' },
   ];
 

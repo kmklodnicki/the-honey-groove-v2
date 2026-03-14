@@ -18,8 +18,8 @@ const VINYL_CHARMS = [
   {
     id: 'ts-charms',
     honeyLabel: 'The Eras',
-    name: 'TS Inspired Charms',
-    descriptor: 'Stars, hearts, and pastel sparkle for the Swiftie collection that deserves the full era treatment.',
+    name: 'TS Charms',
+    descriptor: 'There\'s a perfect charm for every era.',
     url: 'https://vinylcharms.com/products/ts-charms?ref=KATIE',
     partner: 'vinylcharms',
     partnerLabel: 'VinylCharms',
@@ -29,7 +29,7 @@ const VINYL_CHARMS = [
     id: 'sabrina-charms',
     honeyLabel: 'The Espresso',
     name: 'Sabrina Charms',
-    descriptor: 'Espresso cups and sweet candy charms for the Short n\' Sweet era — because your vinyl deserves the vibe.',
+    descriptor: 'From espresso cups to pretty girl avenue, Vinyl Charms has you covered.',
     url: 'https://vinylcharms.com/products/sabrina-charms-for-record-collectors-or-accessorizing-sabrina-carpenter-fans-espresso-and-short-n-sweet?ref=KATIE',
     partner: 'vinylcharms',
     partnerLabel: 'VinylCharms',
@@ -64,6 +64,36 @@ const VINYL_PROTECTION = [
     url: 'https://amzn.to/4bfoyP4',
     partner: 'amazon',
     image: 'https://customer-assets.emergentagent.com/job_088a9581-bbfd-42c2-ad31-f5535df4814c/artifacts/6g7drwvn_product2.jpg',
+  },
+  {
+    id: 'cracked-ice',
+    honeyLabel: 'The Prism',
+    name: 'Holographic Outer Sleeves - Cracked Ice',
+    descriptor: 'Iridescent protection that makes your shelf shimmer like a disco ball.',
+    url: 'https://vinylsupplyco.com/products/holographic-outer-sleeves?ref=KATHRYNKLODNICKI',
+    partner: 'vinylsupplyco',
+    partnerLabel: 'VinylSupplyCo',
+    image: 'https://customer-assets.emergentagent.com/job_088a9581-bbfd-42c2-ad31-f5535df4814c/artifacts/1rzzzzu9_1.webp',
+  },
+  {
+    id: 'lovely',
+    honeyLabel: 'The Sweetheart',
+    name: 'Holographic Outer Sleeves - Lovely',
+    descriptor: 'Heart-patterned holographic sleeves for the records you love most.',
+    url: 'https://vinylsupplyco.com/collections/holographic-sleeves/products/holographic-outer-sleeves-lovely?ref=KATHRYNKLODNICKI',
+    partner: 'vinylsupplyco',
+    partnerLabel: 'VinylSupplyCo',
+    image: 'https://customer-assets.emergentagent.com/job_088a9581-bbfd-42c2-ad31-f5535df4814c/artifacts/5vhwif93_2.webp',
+  },
+  {
+    id: 'pearl-shimmer',
+    honeyLabel: 'The Glow',
+    name: 'Holographic Outer Sleeves - Pearl Shimmer',
+    descriptor: 'Soft pearl iridescence that gives your vault an ethereal glow.',
+    url: 'https://vinylsupplyco.com/collections/holographic-sleeves/products/holographic-outer-sleeves-pearl-shimmer?ref=KATHRYNKLODNICKI',
+    partner: 'vinylsupplyco',
+    partnerLabel: 'VinylSupplyCo',
+    image: 'https://customer-assets.emergentagent.com/job_088a9581-bbfd-42c2-ad31-f5535df4814c/artifacts/tvavxlin_3.webp',
   },
 ];
 
@@ -351,11 +381,16 @@ const ProductCard = ({ item, onAcquire }) => {
 };
 
 /* ─── Section Header ─── */
-const SectionHeader = ({ title, subtext, testId }) => (
-  <div className="text-center mb-6 sm:mb-8 space-y-2" data-testid={testId}>
-    <h2 className="font-heading text-2xl sm:text-3xl text-stone-900 tracking-tight">{title}</h2>
-    <p className="text-sm text-stone-500 max-w-lg mx-auto leading-relaxed">{subtext}</p>
-  </div>
+const SectionHeader = ({ title, subtext, testId, showDivider }) => (
+  <>
+    {showDivider && (
+      <div className="mt-10 sm:mt-14 mb-10 sm:mb-14 mx-auto" style={{ maxWidth: '120px', borderTop: '1px solid rgba(218, 165, 32, 0.2)' }} />
+    )}
+    <div className="text-center mb-6 sm:mb-8 space-y-2" data-testid={testId}>
+      <h2 className="font-heading text-2xl sm:text-3xl text-stone-900 tracking-tight">{title}</h2>
+      <p className="text-sm text-stone-500 max-w-lg mx-auto leading-relaxed">{subtext}</p>
+    </div>
+  </>
 );
 
 const EssentialsPage = () => {
@@ -376,7 +411,7 @@ const EssentialsPage = () => {
   }, []);
 
   return (
-    <div className="min-h-[calc(100vh-80px)] bg-[#FDFAF5]">
+    <div className="min-h-[calc(100vh-80px)]">
       <PullIndicator />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 pt-3 md:pt-2 pb-24 md:pb-8">
         <div className="text-center mb-10 sm:mb-14 space-y-3" data-testid="essentials-header">
@@ -386,9 +421,6 @@ const EssentialsPage = () => {
           <p className="text-base text-stone-500 max-w-md mx-auto">
             The curated essentials that keep your vault sweet.
           </p>
-          <p className="text-sm text-stone-400 italic">
-            Preserve the pressings. Protect the hive.
-          </p>
         </div>
 
         {/* Section 1: Vinyl Charms */}
@@ -397,7 +429,7 @@ const EssentialsPage = () => {
           subtext="Enhance your spin experience by putting a vinyl charm on top of your record while it's spinning to match the vibe."
           testId="section-vinyl-charms"
         />
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6 mb-14" data-testid="charms-grid">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6" data-testid="charms-grid">
           {VINYL_CHARMS.map(item => (
             <ProductCard key={item.id} item={item} onAcquire={handleAcquire} />
           ))}
@@ -408,8 +440,9 @@ const EssentialsPage = () => {
           title="Vinyl Protection"
           subtext="Protect your investments. Sleeves prevent scratches, dust, and provide anti-static protection. Regular cleaning helps keep your audio sounding crisp."
           testId="section-vinyl-protection"
+          showDivider
         />
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6 mb-14" data-testid="protection-grid">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6" data-testid="protection-grid">
           {VINYL_PROTECTION.map(item => (
             <ProductCard key={item.id} item={item} onAcquire={handleAcquire} />
           ))}
@@ -420,6 +453,7 @@ const EssentialsPage = () => {
           title="Light Up Your Records"
           subtext="This LED light kit goes underneath your record player platter and comes with a remote control to adjust the light color from neutral white, solid colors, and moving rainbow colors."
           testId="section-light-up"
+          showDivider
         />
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6 mb-8" data-testid="lightup-grid">
           {LIGHT_UP.map(item => (
