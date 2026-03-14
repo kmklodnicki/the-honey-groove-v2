@@ -12,7 +12,7 @@ The HoneyGroove is a social platform for vinyl record collectors built with Reac
 ## Core Features (Completed)
 - Feed with SWR-like caching, optimistic UI for likes/comments/follows
 - Daily Prompt with SWR caching, buzz-in with retry logic, streak tracking
-- **Polls** — 6th composition type with blind voting, Honey Gold branding, persistence
+- **Polls** — 6th composition type with blind voting, Honey Gold branding, persistence, Creator View
 - Admin panel with temp password, user management, beta invites, reports
 - Threaded comment replies, follow/unfollow with optimistic UI
 - Password reset (dynamic URL), record data hydration for ghost records
@@ -23,10 +23,16 @@ The HoneyGroove is a social platform for vinyl record collectors built with Reac
 
 ## Completed Work
 
+### Session 4 (Mar 14, 2026) — P0 UI/UX Fixes & Deployment Readiness
+- **Composer Bar Layout Fix:** Verified 3-column grid on desktop, 2-column on mobile. All 6 chips render without truncation.
+- **Poll Creator View (Complete):** Backend `GET /api/polls/{post_id}/results` + frontend "See Results"/"Back to vote" buttons for poll creators who haven't voted. Tested end-to-end.
+- **Feed Filter Dropdown:** Unified dropdown for all viewports with Honey Gold styling.
+- **Now Spinning Modal Mobile:** Responsive layout with sticky footer, scrollable content.
+- **Hardcoded URL Fix:** Removed hardcoded preview URL from backend CORS origins. Dynamic CORS via `FRONTEND_URL` env var.
+
 ### Session 3 (Mar 14, 2026) — Polls Feature
 - **Full Poll Implementation:** Backend (PollCreate model, `POST /composer/poll`, `POST /polls/{post_id}/vote`, poll_votes collection, per-option results in build_post_response) + Frontend (PollCard with blind voting UX, Poll composer in ComposerBar with dynamic options min 2/max 6, 500 char limit)
-- **Honey Gold Branding (#DAA520):** Gold progress bars with slide animation, gold circle checkmark for "My Vote" indicator, 📊 emoji in filter pills/badge/composer, amber PILL_STYLES
-- **Responsive Layout:** Feed filter bar wraps into clean rows (flex-wrap, max-width 580px desktop). ComposerBar supports 6 chips with wrap on mobile. 📊 Poll filter visible in both layouts
+- **Honey Gold Branding (#DAA520):** Gold progress bars with slide animation, gold circle checkmark for "My Vote" indicator
 - **Blind Voting:** Pre-vote shows clickable buttons without percentages. Post-vote reveals gold percentage bars and "X people responded" count. Persistence: refresh shows results for users who already voted
 
 ### Session 2 (Mar 14, 2026)
@@ -43,28 +49,31 @@ The HoneyGroove is a social platform for vinyl record collectors built with Reac
 ```
 /app/
 ├── backend/
-│   ├── server.py
+│   ├── server.py          # Main app, CORS, middleware
 │   ├── routes/
-│   │   ├── hive.py           # Feed, posts, ghost record hydration, POLL composer + vote
-│   │   ├── daily_prompts.py  # Prompt CRUD, buzz-in, streak
-│   │   ├── valuation.py      # /record-values/{username} public endpoint
-│   │   └── collection.py     # Record CRUD
-│   ├── models.py             # PollCreate, PostResponse with poll_* fields
+│   │   ├── hive.py        # Feed, posts, ghost record hydration, POLL composer + vote + results
+│   │   ├── daily_prompts.py
+│   │   ├── valuation.py   # /record-values/{username} public endpoint
+│   │   └── collection.py
+│   ├── models.py
 │   └── database.py
 ├── frontend/
 │   └── src/
 │       ├── components/
-│       │   ├── PostCards.js    # PollCard (blind voting, gold bars), PostTypeBadge with 📊
-│       │   ├── ComposerBar.js  # 6 chips incl. Poll, Poll modal with gold theme
-│       │   └── DailyPrompt.js  # SWR cached + retry on stale prompt_id
-│       └── pages/
-│           ├── HivePage.js     # 7 filter pills incl. "Polls 📊"
-│           └── ProfilePage.js  # Fetches values for any user
+│       │   ├── PostCards.js    # PollCard (blind voting, gold bars, creator view)
+│       │   ├── ComposerBar.js  # 6 chips incl. Poll, grid layout
+│       │   └── DailyPrompt.js
+│       ├── pages/
+│       │   ├── HivePage.js     # Feed filter dropdown
+│       │   └── ProfilePage.js
+│       └── utils/
+│           └── apiBase.js      # Uses process.env.REACT_APP_BACKEND_URL
 ```
 
 ## Key API Endpoints
 - `POST /api/composer/poll` — Create poll (question, options[2-6])
 - `POST /api/polls/{post_id}/vote` — Cast vote (option_index), returns results
+- `GET /api/polls/{post_id}/results` — Poll results without voting (creator view)
 - `GET /api/feed` — Includes POLL posts with poll_question/options/results/user_vote
 - `GET /api/valuation/record-values/{username}` — Public median values
 - `POST /api/prompts/buzz-in` — Daily prompt answer
@@ -89,9 +98,10 @@ The HoneyGroove is a social platform for vinyl record collectors built with Reac
 - New Music Friday dynamic editing
 
 ### Refactoring
-- Break down monolithic server.py into route modules
 - Split PostCards.js into type-specific card components
+- Break down remaining monolithic files
 
 ## Known Issues
 - Discogs CDN returns 503 for some album images (external)
 - Web scraper needs rotating User-Agents
+- Feed filter `post_type` param not strictly filtering on backend (frontend handles it)
