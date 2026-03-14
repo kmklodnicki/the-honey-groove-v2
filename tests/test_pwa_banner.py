@@ -6,7 +6,7 @@ import asyncio
 import os
 from playwright.async_api import async_playwright
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://vinyl-shield-prod.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://pressing-polish.preview.emergentagent.com')
 TEST_EMAIL = 'kmklodnicki@gmail.com'
 TEST_PASSWORD = 'HoneyGroove2026!'
 
