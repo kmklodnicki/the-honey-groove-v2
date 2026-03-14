@@ -8,7 +8,7 @@ import socketio
 import os
 import logging
 
-from database import db, client, init_storage, logger, hash_password
+from database import db, client, init_storage, logger, hash_password, verify_db_connection
 from live_hive import sio
 
 from routes.auth import router as auth_router
@@ -158,6 +158,10 @@ async def _backfill_color_variants():
 
 @app.on_event("startup")
 async def startup_event():
+    # Verify database connection first
+    db_ok = await verify_db_connection()
+    if not db_ok:
+        logger.error("STARTUP WARNING: Database connection failed — some features may not work")
     await db.users.create_index("email", unique=True)
     await db.users.create_index("username", unique=True)
     await db.users.create_index("id", unique=True)

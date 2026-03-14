@@ -38,8 +38,10 @@ function initUserFromToken(token) {
     id: payload.user_id || payload.sub || payload.id,
     email: payload.email || '',
     username: payload.username || '',
+    is_admin: payload.is_admin || false,
+    avatar_url: payload.avatar_url || '',
     _fromToken: true,
-    _hydrated: !!(payload.username), // true if JWT has full data
+    _hydrated: !!(payload.username),
   };
 }
 

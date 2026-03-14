@@ -21,6 +21,19 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
+logger = logging.getLogger("database")
+
+async def verify_db_connection():
+    """Called at startup to verify and log database connectivity."""
+    try:
+        await client.admin.command('ping')
+        count = await db.users.estimated_document_count()
+        logger.info(f"DATABASE CONNECTED — cluster: {mongo_url.split('@')[1].split('/')[0]}, db: {os.environ['DB_NAME']}, users: {count}")
+        return True
+    except Exception as e:
+        logger.error(f"DATABASE CONNECTION FAILED — {type(e).__name__}: {e}")
+        return False
+
 # JWT
 JWT_SECRET = os.environ.get('JWT_SECRET', 'default_secret')
 JWT_ALGORITHM = os.environ.get('JWT_ALGORITHM', 'HS256')
@@ -65,11 +78,14 @@ def hash_password(password: str) -> str:
 def verify_password(password: str, hashed: str) -> bool:
     return bcrypt.checkpw(password.encode(), hashed.encode())
 
-def create_token(user_id: str, username: str = "", email: str = "") -> str:
+def create_token(user_id: str, username: str = "", email: str = "", is_admin: bool = False, avatar_url: str = "") -> str:
     payload = {
         "sub": user_id,
+        "user_id": user_id,
         "username": username,
         "email": email,
+        "is_admin": is_admin,
+        "avatar_url": avatar_url,
         "exp": datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRATION_HOURS),
         "iat": datetime.now(timezone.utc),
     }

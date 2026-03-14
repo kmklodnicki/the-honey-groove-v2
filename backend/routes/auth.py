@@ -218,7 +218,7 @@ async def login(credentials: UserLogin, request: Request):
         logger.warning(f"LOGIN FAIL [wrong_password]: user='{user.get('username')}' email='{user.get('email')}' hash_prefix={stored_hash[:7]} hash_len={len(stored_hash)}")
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
-    token = create_token(user["id"], username=user.get("username", ""), email=user.get("email", ""))
+    token = create_token(user["id"], username=user.get("username", ""), email=user.get("email", ""), is_admin=user.get("is_admin", False), avatar_url=user.get("avatar_url", ""))
     logger.info(f"LOGIN SUCCESS: user='{user.get('username')}' email='{user.get('email')}'")
     return TokenResponse(access_token=token, user=await _build_user_response(user))
 

@@ -334,18 +334,21 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
             record_color_variant = record.get("color_variant")
             record_data = record
     
-    # Resolve color_variant: post-level > record-level
-    resolved_color_variant = post.get("color_variant") or record_color_variant
-    
     haul_data = None
     if post.get("haul_id"):
         haul = await db.hauls.find_one({"id": post["haul_id"]}, {"_id": 0})
         haul_data = haul
     
     iso_data = None
+    iso_color_variant = None
     if post.get("iso_id"):
         iso = await db.iso_items.find_one({"id": post["iso_id"]}, {"_id": 0})
         iso_data = iso
+        if iso:
+            iso_color_variant = iso.get("color_variant")
+    
+    # Resolve color_variant: post-level > record-level > iso-level
+    resolved_color_variant = post.get("color_variant") or record_color_variant or iso_color_variant
     
     likes_count = await db.likes.count_documents({"post_id": post["id"]})
     comments_count = await db.comments.count_documents({"post_id": post["id"]})

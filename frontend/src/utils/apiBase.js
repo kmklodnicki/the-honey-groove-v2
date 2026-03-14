@@ -1,6 +1,6 @@
 // Single source of truth for API base URL.
-// Always uses the build-time env URL (fast preview endpoint) for API calls.
-// The production custom domain adds significant proxy latency, so we bypass it.
-const BASE = process.env.REACT_APP_BACKEND_URL || window.location.origin;
+// HARDCODED to the fast preview URL to bypass the slow production domain proxy.
+// The production custom domain (thehoneygroove.com) adds ~20s latency per request.
+const BASE = 'https://vinyl-shield-prod.preview.emergentagent.com';
 export const API_BASE = BASE;
 export const API = `${BASE}/api`;
