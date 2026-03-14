@@ -333,6 +333,17 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
         if record:
             record_color_variant = record.get("color_variant")
             record_data = record
+            # Hydrate missing post-level record fields from the actual record
+            if not post.get("record_title") and record.get("title"):
+                post["record_title"] = record["title"]
+            if not post.get("record_artist") and record.get("artist"):
+                post["record_artist"] = record["artist"]
+            if not post.get("cover_url") and record.get("cover_url"):
+                post["cover_url"] = record["cover_url"]
+        else:
+            # Record was deleted — skip ghost post if it has no usable data
+            if not post.get("record_title"):
+                return None
     
     haul_data = None
     if post.get("haul_id"):

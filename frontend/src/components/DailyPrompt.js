@@ -21,15 +21,29 @@ import PromptArchiveDrawer from './PromptArchiveDrawer';
 
 // ─── Daily Prompt Card (top of Hive feed) ───
 
+// Hydrate from cache for instant render (SWR pattern)
+const cachedPrompt = (() => {
+  try {
+    const raw = localStorage.getItem('hg_daily_prompt_cache');
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    // Only use cache from today (UTC)
+    const today = new Date().toISOString().slice(0, 10);
+    if (data.date !== today) return null;
+    return data;
+  } catch { return null; }
+})();
+
 export const DailyPromptCard = ({ records, onPostCreated }) => {
   const { user, token, API } = useAuth();
-  const [prompt, setPrompt] = useState(null);
-  const [hasBuzzedIn, setHasBuzzedIn] = useState(false);
-  const [buzzResponse, setBuzzResponse] = useState(null);
-  const [streak, setStreak] = useState(0);
+  const [prompt, setPrompt] = useState(cachedPrompt?.prompt || null);
+  const [hasBuzzedIn, setHasBuzzedIn] = useState(cachedPrompt?.has_buzzed_in || false);
+  const [buzzResponse, setBuzzResponse] = useState(cachedPrompt?.response || null);
+  const [streak, setStreak] = useState(cachedPrompt?.streak || 0);
   const [missedYesterday, setMissedYesterday] = useState(false);
-  const [buzzCount, setBuzzCount] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [buzzCount, setBuzzCount] = useState(cachedPrompt?.buzz_count || 0);
+  const [loading, setLoading] = useState(!cachedPrompt);
+  const hasFetchedRef = useRef(!!cachedPrompt);
   const [modalOpen, setModalOpen] = useState(false);
   // Carousel state
   const [responses, setResponses] = useState([]);
@@ -51,23 +65,44 @@ useEffect(() => {
     }
   }, [highlightId, responses]);
 
-  const fetchPrompt = useCallback(async () => {
-    setLoading(true);
+  const fetchPrompt = useCallback(async (signal) => {
+    if (!hasFetchedRef.current) setLoading(true);
     try {
-      const r = await axios.get(`${API}/prompts/today`, { headers: { Authorization: `Bearer ${token}` } });
+      const r = await axios.get(`${API}/prompts/today`, {
+        headers: { Authorization: `Bearer ${token}` },
+        signal,
+      });
       setPrompt(r.data.prompt || null);
       setHasBuzzedIn(r.data.has_buzzed_in || false);
       setBuzzResponse(r.data.response || null);
       setStreak(r.data.streak || 0);
       setMissedYesterday(r.data.missed_yesterday || false);
       setBuzzCount(r.data.buzz_count || 0);
-    } catch {
+      hasFetchedRef.current = true;
+      // Cache for instant render on next visit (SWR pattern)
+      try {
+        const today = new Date().toISOString().slice(0, 10);
+        localStorage.setItem('hg_daily_prompt_cache', JSON.stringify({
+          date: today,
+          prompt: r.data.prompt || null,
+          has_buzzed_in: r.data.has_buzzed_in || false,
+          response: r.data.response || null,
+          streak: r.data.streak || 0,
+          buzz_count: r.data.buzz_count || 0,
+        }));
+      } catch { /* quota exceeded — ignore */ }
+    } catch (e) {
+      if (e?.name === 'CanceledError' || e?.name === 'AbortError') return;
       setPrompt(null);
     }
     setLoading(false);
   }, [API, token]);
 
-  useEffect(() => { fetchPrompt(); }, [fetchPrompt]);
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchPrompt(controller.signal);
+    return () => controller.abort();
+  }, [fetchPrompt]);
 
   // Fetch carousel responses after buzzing in
   const fetchResponses = useCallback(async () => {

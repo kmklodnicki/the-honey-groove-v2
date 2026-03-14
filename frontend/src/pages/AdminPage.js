@@ -48,7 +48,7 @@ const AdminPage = () => {
       <h1 className="font-heading text-3xl text-vinyl-black mb-6">Admin Panel</h1>
 
       {/* Tab nav */}
-      <div className="flex gap-2 mb-6 overflow-x-auto pb-1 scrollbar-hide">
+      <div className="flex flex-wrap gap-2 mb-6 pb-1">
         {NAV.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
