@@ -5,7 +5,7 @@ import httpx
 import hashlib
 import logging
 
-from database import put_object, get_object, storage_key
+from database import put_object, get_object, storage_key, DISCOGS_CONSUMER_KEY, DISCOGS_CONSUMER_SECRET, DISCOGS_USER_AGENT
 
 router = APIRouter()
 logger = logging.getLogger("database")
@@ -75,8 +75,14 @@ async def proxy_image(url: str = Query(..., description="External image URL to p
 
     # 3. Fetch upstream
     try:
+        # Use Discogs auth headers for Discogs image CDN to avoid rate-limiting
+        fetch_headers = {"User-Agent": DISCOGS_USER_AGENT or "Mozilla/5.0 (compatible; HoneyGroove/1.0)"}
+        if "discogs.com" in url or "discogss" in url:
+            if DISCOGS_CONSUMER_KEY and DISCOGS_CONSUMER_SECRET:
+                fetch_headers["Authorization"] = f"Discogs key={DISCOGS_CONSUMER_KEY}, secret={DISCOGS_CONSUMER_SECRET}"
+
         async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
-            resp = await client.get(url, headers={"User-Agent": "Mozilla/5.0 (compatible; HoneyGroove/1.0)"})
+            resp = await client.get(url, headers=fetch_headers)
             if resp.status_code != 200:
                 raise HTTPException(status_code=resp.status_code, detail="Upstream image fetch failed")
             content_type = resp.headers.get("content-type", "image/jpeg")

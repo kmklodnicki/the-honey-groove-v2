@@ -554,12 +554,17 @@ const ISOCard = ({ post, onAlbumClick }) => {
   const intent = post.intent;
 
   // Fallback: build iso-like data from flat post fields when iso object is missing
-  const isoData = iso || {
+  const rawIso = iso || {
     album: post.record_title || '',
     artist: post.record_artist || '',
     cover_url: post.cover_url,
     color_variant: post.color_variant,
     pressing_notes: post.pressing_notes,
+  };
+  // Merge: prefer iso.color_variant, fall back to post.color_variant
+  const isoData = {
+    ...rawIso,
+    color_variant: rawIso.color_variant || post.color_variant || '',
   };
 
   if (!iso && !post.cover_url && !post.record_title && !post.caption) {
@@ -596,9 +601,11 @@ const ISOCard = ({ post, onAlbumClick }) => {
               <p className="font-heading text-lg truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{isoData.album}</p>
               <p className="text-sm text-muted-foreground truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{isoData.artist}</p>
             </div>
-            {isoData.color_variant && <p className="text-xs mt-1 text-[#8A6B4A]">Pressing: {isoData.color_variant}</p>}
-            {isoData.pressing_notes && <p className="text-xs text-[#8A6B4A]">Notes: {isoData.pressing_notes}</p>}
-            {isoData.condition_pref && <p className="text-xs text-[#8A6B4A]">Condition: {isoData.condition_pref}</p>}
+            {isoData.color_variant && <p className="text-xs mt-1 text-[#8A6B4A]" data-testid="iso-pressing">Pressing: {isoData.color_variant}</p>}
+            {isoData.pressing_notes && !(/^(mint|near mint|nm|m|vg|vg\+|g\+|g|f|p|nm\/m|near mint \/ mint)/i.test(isoData.pressing_notes.trim())) && (
+              <p className="text-xs text-[#8A6B4A]" data-testid="iso-notes">Notes: {isoData.pressing_notes}</p>
+            )}
+            {isoData.condition_pref && <p className="text-xs text-[#8A6B4A]" data-testid="iso-condition">Condition: {isoData.condition_pref}</p>}
             {(isoData.target_price_min || isoData.target_price_max) && (
               <p className="text-xs text-[#8A6B4A] mt-0.5">Budget: {isoData.target_price_min ? `$${isoData.target_price_min}` : '?'} – {isoData.target_price_max ? `$${isoData.target_price_max}` : '?'}</p>
             )}

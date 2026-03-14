@@ -397,68 +397,73 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
         bundle_records=post.get("bundle_records")
     )
 
-@router.get("/feed", response_model=List[PostResponse])
+@router.get("/feed")
 async def get_feed(user: Dict = Depends(require_auth), limit: int = 20, skip: int = 0, before: Optional[str] = None):
-    hidden_ids = await get_hidden_user_ids()
-    blocked_ids = await get_all_blocked_ids(user["id"])
-    exclude_ids = list(set(hidden_ids + blocked_ids))
+    try:
+        hidden_ids = await get_hidden_user_ids()
+        blocked_ids = await get_all_blocked_ids(user["id"])
+        exclude_ids = list(set(hidden_ids + blocked_ids))
 
-    # Fetch pinned post first (if any)
-    pinned_post = await db.posts.find_one({"is_pinned": True}, {"_id": 0})
-    pinned_resp = None
-    if pinned_post and pinned_post.get("user_id") not in exclude_ids:
-        pinned_resp = await build_post_response(pinned_post, user["id"])
+        # Fetch pinned post first (if any)
+        pinned_post = await db.posts.find_one({"is_pinned": True}, {"_id": 0})
+        pinned_resp = None
+        if pinned_post and pinned_post.get("user_id") not in exclude_ids:
+            pinned_resp = await build_post_response(pinned_post, user["id"])
 
-    query = {"is_pinned": {"$ne": True}, "source": {"$ne": "discogs_import"}}
-    if exclude_ids:
-        query["user_id"] = {"$nin": exclude_ids}
-    if before:
-        query["created_at"] = {"$lt": before}
+        query = {"is_pinned": {"$ne": True}, "source": {"$ne": "discogs_import"}}
+        if exclude_ids:
+            query["user_id"] = {"$nin": exclude_ids}
+        if before:
+            query["created_at"] = {"$lt": before}
 
-    # Allowed post types in the Hive feed
-    ALLOWED_TYPES = {"NOW_SPINNING", "NEW_HAUL", "ISO", "RANDOMIZER", "DAILY_PROMPT", "NOTE"}
+        # Allowed post types in the Hive feed
+        ALLOWED_TYPES = {"NOW_SPINNING", "NEW_HAUL", "ISO", "RANDOMIZER", "DAILY_PROMPT", "NOTE"}
 
-    # Over-fetch to compensate for Python-side filtering, then trim to limit
-    result = []
-    if pinned_resp and not before and skip == 0:
-        result.append(pinned_resp)
+        # Over-fetch to compensate for Python-side filtering, then trim to limit
+        result = []
+        if pinned_resp and not before and skip == 0:
+            result.append(pinned_resp)
 
-    batch_size = limit * 4
-    current_skip = skip
-    max_iterations = 5
-    for _ in range(max_iterations):
-        if len(result) >= limit:
-            break
-        posts = await db.posts.find(
-            query, {"_id": 0}
-        ).sort("created_at", -1).skip(current_skip).limit(batch_size).to_list(batch_size)
-        if not posts:
-            break
-        for post in posts:
-            if len(result) >= limit + 1:
+        batch_size = limit * 4
+        current_skip = skip
+        max_iterations = 5
+        for _ in range(max_iterations):
+            if len(result) >= limit:
                 break
-            try:
-                pt = (post.get("post_type") or "").upper()
-                caption = (post.get("caption") or post.get("content") or "").strip()
-                if pt and pt not in ALLOWED_TYPES:
-                    continue
-                if pt in ("NOW_SPINNING", "NEW_HAUL", "RANDOMIZER") and not caption:
-                    continue
-                resp = await build_post_response(post, user["id"])
-                if resp:
-                    result.append(resp)
-            except Exception as e:
-                logger.error(f"build_post_response failed for post {post.get('id', '?')}: {e}")
-        current_skip += batch_size
-        if len(posts) < batch_size:
-            break
+            posts = await db.posts.find(
+                query, {"_id": 0}
+            ).sort("created_at", -1).skip(current_skip).limit(batch_size).to_list(batch_size)
+            if not posts:
+                break
+            for post in posts:
+                if len(result) >= limit + 1:
+                    break
+                try:
+                    pt = (post.get("post_type") or "").upper()
+                    caption = (post.get("caption") or post.get("content") or "").strip()
+                    if pt and pt not in ALLOWED_TYPES:
+                        continue
+                    if pt in ("NOW_SPINNING", "NEW_HAUL", "RANDOMIZER") and not caption:
+                        continue
+                    resp = await build_post_response(post, user["id"])
+                    if resp:
+                        result.append(resp)
+                except Exception as e:
+                    logger.error(f"build_post_response failed for post {post.get('id', '?')}: {e}")
+            current_skip += batch_size
+            if len(posts) < batch_size:
+                break
 
-    # If we collected more than limit, there are more posts available
-    # Trim to exactly limit
-    if len(result) > limit:
-        result = result[:limit]
+        # If we collected more than limit, there are more posts available
+        # Trim to exactly limit
+        if len(result) > limit:
+            result = result[:limit]
 
-    return result
+        return result
+    except Exception as e:
+        logger.error(f"GET /feed FATAL: {type(e).__name__}: {e}")
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=503, content={"error": "DB_CONNECTION_LOST", "detail": str(e)[:200]})
 
 @router.get("/explore", response_model=List[PostResponse])
 async def get_explore_feed(current_user: Optional[Dict] = Depends(get_current_user), limit: int = 50, skip: int = 0):

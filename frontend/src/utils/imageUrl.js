@@ -18,6 +18,9 @@ const enforceHttps = (url) => {
  */
 export function proxyImageUrl(src) {
   if (!src || typeof src !== 'string') return null;
+  // Prevent double-wrapping: if URL is already proxied, return as-is
+  if (src.includes('image-proxy')) return src;
+  // Only proxy external image URLs (discogs, etc.)
   return `${API}/image-proxy?url=${encodeURIComponent(enforceHttps(src))}`;
 }
 
@@ -29,9 +32,11 @@ export function proxyImageUrl(src) {
  */
 export function resolveImageUrl(src) {
   if (!src) return null;
-  // Type safety: handle objects (e.g. {url: "..."}) and non-strings gracefully
   if (typeof src === 'object') return resolveImageUrl(src.url || src.src || null);
   if (typeof src !== 'string') return null;
+
+  // Already proxied — return as-is
+  if (src.includes('image-proxy')) return src;
 
   // Case 2: Old URL containing our serve path but pointing to a different domain
   const serveIdx = src.indexOf(SERVE_PATH);

@@ -76,6 +76,7 @@ cors_origins = [
     "https://thehoneygroove.com",
     "https://www.thehoneygroove.com",
     "https://vinyl-shield-prod.preview.emergentagent.com",
+    "https://honey-groove-backend.vercel.app",
     "http://localhost:3000",
 ]
 # Also include FRONTEND_URL if it's a real URL and not already listed
