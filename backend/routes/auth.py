@@ -265,7 +265,7 @@ async def login_diagnostic(data: dict, user: Dict = Depends(require_auth)):
 # ============== PASSWORD RESET ==============
 
 @router.post("/auth/forgot-password")
-async def forgot_password(data: dict):
+async def forgot_password(data: dict, request: Request):
     """Send a password reset link to the user's email."""
     from services.rate_limiter import rate_limiter
     identifier = (data.get("email") or "").strip().lower()
@@ -302,7 +302,25 @@ async def forgot_password(data: dict):
         "created_at": now,
     })
 
-    reset_url = f"{FRONTEND_URL}/reset-password/{token}"
+    # Derive frontend base from request origin for correct environment targeting
+    # Priority: request Origin header > Referer header > FRONTEND_URL env > hardcoded production
+    origin = request.headers.get("origin") or ""
+    referer = request.headers.get("referer") or ""
+    if origin and "thehoneygroove" in origin:
+        base_url = origin.rstrip("/")
+    elif referer and "thehoneygroove" in referer:
+        from urllib.parse import urlparse
+        parsed = urlparse(referer)
+        base_url = f"{parsed.scheme}://{parsed.netloc}"
+    elif FRONTEND_URL and "preview.emergentagent" not in FRONTEND_URL:
+        base_url = FRONTEND_URL.rstrip("/")
+    else:
+        # Absolute fallback: always point to production, never to a preview URL
+        base_url = "https://www.thehoneygroove.com"
+
+    reset_url = f"{base_url}/reset-password/{token}"
+    logger.info(f"PASSWORD RESET URL GENERATED: {reset_url} (origin={origin}, FRONTEND_URL={FRONTEND_URL})")
+
     from templates.base import wrap_email
     body = f"""
     <p style="font-size:16px;color:#2A1A06;line-height:1.6;">
