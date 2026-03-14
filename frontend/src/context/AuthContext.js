@@ -29,17 +29,21 @@ function decodeTokenPayload(token) {
   }
 }
 
-// Initialize user from token without any network call
+// Initialize user from token without any network call.
+// Also reads cached admin/avatar from localStorage for instant hydration.
 function initUserFromToken(token) {
   if (!token) return null;
   const payload = decodeTokenPayload(token);
   if (!payload) return null;
+  // JWT is primary source; fall back to cached values from previous sessions
+  const cachedAdmin = safeStorage.getItem('honeygroove_is_admin');
+  const cachedAvatar = safeStorage.getItem('honeygroove_avatar_url');
   return {
     id: payload.user_id || payload.sub || payload.id,
     email: payload.email || '',
     username: payload.username || '',
-    is_admin: payload.is_admin || false,
-    avatar_url: payload.avatar_url || '',
+    is_admin: payload.is_admin === true || payload.is_admin === 'true' || cachedAdmin === 'true',
+    avatar_url: payload.avatar_url || cachedAvatar || '',
     _fromToken: true,
     _hydrated: !!(payload.username),
   };
@@ -82,6 +86,9 @@ export const AuthProvider = ({ children }) => {
         timeout: 30000,
       });
       setUser(response.data);
+      // Cache admin status and avatar for instant hydration on next visit
+      if (response.data.is_admin != null) safeStorage.setItem('honeygroove_is_admin', String(response.data.is_admin));
+      if (response.data.avatar_url) safeStorage.setItem('honeygroove_avatar_url', response.data.avatar_url);
       console.log('AUTH: user data refreshed');
     } catch (error) {
       if (error.response && (error.response.status === 401 || error.response.status === 403)) {
@@ -131,6 +138,8 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     safeStorage.removeItem('honeygroove_token');
+    safeStorage.removeItem('honeygroove_is_admin');
+    safeStorage.removeItem('honeygroove_avatar_url');
     setToken(null);
     setUser(null);
   };

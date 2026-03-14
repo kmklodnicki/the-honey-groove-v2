@@ -16,23 +16,32 @@ from datetime import datetime, timezone, timedelta
 ROOT_DIR = Path(__file__).parent
 load_dotenv()
 
-# MongoDB
+# MongoDB — connect with retry
+import asyncio as _asyncio
+
 mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+_db_name = os.environ['DB_NAME']
+client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=10000, connectTimeoutMS=10000)
+db = client[_db_name]
 
 logger = logging.getLogger("database")
 
 async def verify_db_connection():
-    """Called at startup to verify and log database connectivity."""
-    try:
-        await client.admin.command('ping')
-        count = await db.users.estimated_document_count()
-        logger.info(f"DATABASE CONNECTED — cluster: {mongo_url.split('@')[1].split('/')[0]}, db: {os.environ['DB_NAME']}, users: {count}")
-        return True
-    except Exception as e:
-        logger.error(f"DATABASE CONNECTION FAILED — {type(e).__name__}: {e}")
-        return False
+    """Called at startup — retries 3 times with backoff before giving up."""
+    for attempt in range(1, 4):
+        try:
+            await client.admin.command('ping')
+            count = await db.users.estimated_document_count()
+            logger.info(f"DATABASE CONNECTED (attempt {attempt}) — cluster: {mongo_url.split('@')[1].split('/')[0]}, db: {_db_name}, users: {count}")
+            return True
+        except Exception as e:
+            logger.error(f"DATABASE CONNECTION ATTEMPT {attempt}/3 FAILED — {type(e).__name__}: {e}")
+            if attempt < 3:
+                wait = attempt * 3
+                logger.info(f"Retrying in {wait}s...")
+                await _asyncio.sleep(wait)
+    logger.error("DATABASE CONNECTION FAILED after 3 attempts — app may not function correctly")
+    return False
 
 # JWT
 JWT_SECRET = os.environ.get('JWT_SECRET', 'default_secret')
