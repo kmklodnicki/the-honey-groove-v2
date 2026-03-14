@@ -187,8 +187,8 @@ const ExplorePage = () => {
             data-testid="kinda-people-empty"
           >
             <Search className="w-8 h-8 mx-auto mb-3" style={{ color: '#DAA520', animation: 'nectarPulse 2s ease-in-out infinite' }} />
-            <p className="font-heading text-lg text-vinyl-black mb-1">You've Found Your Tribe.</p>
-            <p className="text-sm text-muted-foreground max-w-xs mx-auto">You are already following all the top collectors in this groove. Check back soon for new arrivals.</p>
+            <p className="font-heading text-lg text-vinyl-black mb-1">You've reached the edge of the hive.</p>
+            <p className="text-sm text-muted-foreground max-w-xs mx-auto">Check back soon for more fresh collectors.</p>
           </div>
         ) : (
           <ScrollRow>
