@@ -523,6 +523,7 @@ const HivePage = () => {
     { key: 'ISO', label: 'ISO \u{1F50D}' },
     { key: 'NEW_HAUL', label: 'Haul \u{1F4E6}' },
     { key: 'NOTE', label: 'Notes \u{1F4DD}' },
+    { key: 'POLL', label: 'Polls \u{1F4CA}' },
     { key: 'listing', label: 'For Sale/Trade \u{1F3F7}\uFE0F' },
   ];
 
@@ -882,8 +883,8 @@ const HivePage = () => {
       {/* Daily Prompt */}
       <DailyPromptCard records={records} onPostCreated={handlePostCreated} />
 
-      {/* THE ESSENTIAL SIX — 2 rows of 3 on mobile, 1 row on desktop */}
-      <div className="grid grid-cols-3 md:flex md:flex-nowrap md:justify-center gap-1.5 md:gap-2 mb-4 mx-auto px-3" style={{ maxWidth: '480px' }} data-testid="feed-filter-bar">
+      {/* THE ESSENTIAL SEVEN — 2 rows on mobile (4+3), 1 row on desktop */}
+      <div className="flex flex-wrap justify-center gap-1.5 md:gap-2 mb-4 mx-auto px-3" style={{ maxWidth: '580px' }} data-testid="feed-filter-bar">
         {FEED_FILTERS.map(f => {
           const isActive = activeFilter === f.key;
           const [text, emoji] = f.label.includes(' ') ? [f.label.slice(0, f.label.lastIndexOf(' ')), f.label.slice(f.label.lastIndexOf(' ') + 1)] : [f.label, ''];

@@ -370,7 +370,29 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
     
     # Normalize post type
     pt = normalize_post_type(post.get("post_type", ""))
-    
+
+    # Poll vote data
+    poll_total = 0
+    poll_user_vote = None
+    poll_results = None
+    if pt == "POLL":
+        poll_total = await db.poll_votes.count_documents({"post_id": post["id"]})
+        if current_user_id:
+            my_vote = await db.poll_votes.find_one({"post_id": post["id"], "user_id": current_user_id}, {"_id": 0, "option_index": 1})
+            if my_vote:
+                poll_user_vote = my_vote["option_index"]
+                # Include per-option results for voters
+                pipeline = [
+                    {"$match": {"post_id": post["id"]}},
+                    {"$group": {"_id": "$option_index", "count": {"$sum": 1}}},
+                ]
+                agg = await db.poll_votes.aggregate(pipeline).to_list(20)
+                vote_map = {r["_id"]: r["count"] for r in agg}
+                poll_results = []
+                for i, opt in enumerate(post.get("poll_options", [])):
+                    c = vote_map.get(i, 0)
+                    poll_results.append({"option": opt, "count": c, "percentage": round(c / poll_total * 100) if poll_total else 0})
+
     return PostResponse(
         id=post["id"],
         user_id=post["user_id"],
@@ -405,7 +427,12 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
         is_new_feature=post.get("is_new_feature", False),
         content=post.get("content"),
         intent=post.get("intent"),
-        bundle_records=post.get("bundle_records")
+        bundle_records=post.get("bundle_records"),
+        poll_question=post.get("poll_question"),
+        poll_options=post.get("poll_options"),
+        poll_total_votes=poll_total,
+        poll_user_vote=poll_user_vote,
+        poll_results=poll_results,
     )
 
 @router.get("/feed")
@@ -428,7 +455,7 @@ async def get_feed(user: Dict = Depends(require_auth), limit: int = 20, skip: in
             query["created_at"] = {"$lt": before}
 
         # Allowed post types in the Hive feed
-        ALLOWED_TYPES = {"NOW_SPINNING", "NEW_HAUL", "ISO", "RANDOMIZER", "DAILY_PROMPT", "NOTE"}
+        ALLOWED_TYPES = {"NOW_SPINNING", "NEW_HAUL", "ISO", "RANDOMIZER", "DAILY_PROMPT", "NOTE", "POLL"}
 
         # Over-fetch to compensate for Python-side filtering, then trim to limit
         result = []
@@ -484,7 +511,7 @@ async def get_explore_feed(current_user: Optional[Dict] = Depends(get_current_us
     query = {"user_id": {"$nin": exclude_ids}, "source": {"$ne": "discogs_import"}} if exclude_ids else {"source": {"$ne": "discogs_import"}}
     posts = await db.posts.find(query, {"_id": 0}).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
     
-    ALLOWED_TYPES = {"NOW_SPINNING", "NEW_HAUL", "ISO", "RANDOMIZER", "DAILY_PROMPT", "NOTE"}
+    ALLOWED_TYPES = {"NOW_SPINNING", "NEW_HAUL", "ISO", "RANDOMIZER", "DAILY_PROMPT", "NOTE", "POLL"}
     
     result = []
     for post in posts:
@@ -759,7 +786,80 @@ async def composer_note(data: NoteCreate, user: Dict = Depends(require_auth)):
     return await _emit_and_return(await build_post_response(post_doc, user["id"]), user["id"])
 
 
-# ============== SEARCH ROUTES ==============
+# ============== POLL ROUTES ==============
+
+@router.post("/composer/poll", response_model=PostResponse)
+async def composer_poll(data: PollCreate, user: Dict = Depends(require_auth)):
+    """Create a Poll post"""
+    question = data.question.strip()
+    if not question:
+        raise HTTPException(status_code=400, detail="Question is required")
+    if len(question) > 500:
+        raise HTTPException(status_code=400, detail="Question must be 500 characters or less")
+    options = [o.strip() for o in data.options if o.strip()]
+    if len(options) < 2:
+        raise HTTPException(status_code=400, detail="At least 2 options are required")
+    if len(options) > 6:
+        raise HTTPException(status_code=400, detail="Maximum 6 options allowed")
+
+    now = datetime.now(timezone.utc).isoformat()
+    post_id = str(uuid.uuid4())
+    post_doc = {
+        "id": post_id,
+        "user_id": user["id"],
+        "post_type": "POLL",
+        "caption": question,
+        "poll_question": question,
+        "poll_options": options,
+        "created_at": now,
+    }
+    await db.posts.insert_one(post_doc)
+    await _shadow_flag_post(post_doc, user)
+    return await _emit_and_return(await build_post_response(post_doc, user["id"]), user["id"])
+
+
+@router.post("/polls/{post_id}/vote")
+async def vote_on_poll(post_id: str, body: dict, user: Dict = Depends(require_auth)):
+    """Cast a vote on a poll. Body: { option_index: int }"""
+    option_index = body.get("option_index")
+    if option_index is None or not isinstance(option_index, int):
+        raise HTTPException(status_code=400, detail="option_index is required")
+
+    post = await db.posts.find_one({"id": post_id, "post_type": "POLL"}, {"_id": 0})
+    if not post:
+        raise HTTPException(status_code=404, detail="Poll not found")
+    if option_index < 0 or option_index >= len(post.get("poll_options", [])):
+        raise HTTPException(status_code=400, detail="Invalid option index")
+
+    existing = await db.poll_votes.find_one({"post_id": post_id, "user_id": user["id"]}, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=409, detail="Already voted")
+
+    await db.poll_votes.insert_one({
+        "id": str(uuid.uuid4()),
+        "post_id": post_id,
+        "user_id": user["id"],
+        "option_index": option_index,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    })
+
+    # Build results to return
+    pipeline = [
+        {"$match": {"post_id": post_id}},
+        {"$group": {"_id": "$option_index", "count": {"$sum": 1}}},
+    ]
+    agg = await db.poll_votes.aggregate(pipeline).to_list(20)
+    vote_map = {r["_id"]: r["count"] for r in agg}
+    total = sum(vote_map.values())
+    results = []
+    for i, opt in enumerate(post.get("poll_options", [])):
+        c = vote_map.get(i, 0)
+        results.append({"option": opt, "count": c, "percentage": round(c / total * 100) if total else 0})
+
+    return {"total_votes": total, "user_vote": option_index, "results": results}
+
+
+
 
 @router.get("/search/posts")
 async def search_posts(q: str = Query(..., min_length=2), user: Dict = Depends(require_auth)):

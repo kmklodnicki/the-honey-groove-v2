@@ -224,6 +224,11 @@ class PostResponse(BaseModel):
     content: Optional[str] = None
     intent: Optional[str] = None
     bundle_records: Optional[List[Dict[str, Any]]] = None
+    poll_question: Optional[str] = None
+    poll_options: Optional[List[str]] = None
+    poll_total_votes: int = 0
+    poll_user_vote: Optional[int] = None  # option_index the viewer voted for, or None
+    poll_results: Optional[List[Dict[str, Any]]] = None  # [{option, count, percentage}, ...]
 
 # Comment Models
 class CommentCreate(BaseModel):
@@ -314,6 +319,10 @@ class NoteCreate(BaseModel):
     text: str
     record_id: Optional[str] = None
     image_url: Optional[str] = None
+
+class PollCreate(BaseModel):
+    question: str
+    options: List[str]
 
 # Marketplace Listing Models
 LISTING_TYPES = ["BUY_NOW", "MAKE_OFFER", "TRADE"]

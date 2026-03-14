@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Disc, Package, Search, Moon, Plus, Music, Feather, ShoppingBag, ArrowRightLeft, Shuffle, Gem, MessageCircle, BookOpen, Sparkles } from 'lucide-react';
+import { Disc, Package, Search, Moon, Plus, Music, Feather, ShoppingBag, ArrowRightLeft, Shuffle, Gem, MessageCircle, BookOpen, Sparkles, BarChart3, Check } from 'lucide-react';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 import AlbumArt from './AlbumArt';
 import { resolveImageUrl } from '../utils/imageUrl';
 import PhotoLightbox from './PhotoLightbox';
@@ -105,6 +107,7 @@ const PILL_STYLES = {
   DAILY_PROMPT:         { bg: 'bg-sky-100',      text: 'text-sky-700',     border: 'border-sky-200' },
   RANDOMIZER:           { bg: 'bg-amber-200',    text: 'text-black',       border: 'border-amber-400' },
   NOTE:                 { bg: 'bg-yellow-100',   text: 'text-yellow-700',  border: 'border-yellow-200' },
+  POLL:                 { bg: 'bg-amber-100',    text: 'text-amber-800',   border: 'border-amber-200' },
   NEW_FEATURE:          { bg: 'bg-green-100',    text: 'text-green-700',   border: 'border-green-200' },
   following:            { bg: 'bg-violet-100',   text: 'text-violet-700',  border: 'border-violet-200' },
   all:                  { bg: 'bg-stone-100',    text: 'text-stone-600',   border: 'border-stone-200' },
@@ -149,6 +152,7 @@ const PostTypeBadge = ({ type, mood }) => {
     WEEKLY_WRAP: { label: 'Weekly Wrap', icon: Music },
     VINYL_MOOD: { label: 'Vinyl Mood', icon: Moon },
     DAILY_PROMPT: { label: 'Daily Prompt', icon: MessageCircle },
+    POLL: { label: 'Poll', icon: BarChart3, emoji: '📊' },
     RANDOMIZER: { label: 'Now Spinning: Randomized', icon: Shuffle },
     listing_sale: { label: 'For Sale', icon: ShoppingBag },
     listing_trade: { label: 'For Trade', icon: ArrowRightLeft },
@@ -159,7 +163,7 @@ const PostTypeBadge = ({ type, mood }) => {
   return (
     <span className="inline-flex items-center gap-1.5">
       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${s.bg} ${s.text} ${s.border}`}>
-        <Icon className="w-3 h-3" />
+        {c.emoji ? <span className="text-xs leading-none">{c.emoji}</span> : <Icon className="w-3 h-3" />}
         {c.label}
       </span>
       {type === 'NOW_SPINNING' && mood && <MoodPill mood={mood} />}
@@ -788,6 +792,113 @@ const NoteCard = ({ post, onAlbumClick }) => {
   );
 };
 
+// POLL card body — "Blind" voting UX with Honey Gold branding
+const PollCard = ({ post }) => {
+  const { token, API } = useAuth();
+  const [userVote, setUserVote] = useState(post.poll_user_vote);
+  const [results, setResults] = useState(post.poll_results || null);
+  const [totalVotes, setTotalVotes] = useState(post.poll_total_votes || 0);
+  const [voting, setVoting] = useState(false);
+  const [justVoted, setJustVoted] = useState(false);
+  const hasVoted = userVote !== null && userVote !== undefined;
+  const options = post.poll_options || [];
+
+  const handleVote = async (idx) => {
+    if (hasVoted || voting) return;
+    setVoting(true);
+    try {
+      const r = await axios.post(`${API}/polls/${post.id}/vote`, { option_index: idx }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUserVote(r.data.user_vote);
+      setResults(r.data.results);
+      setTotalVotes(r.data.total_votes);
+      setJustVoted(true);
+    } catch (e) {
+      if (e.response?.status === 409) {
+        setUserVote(idx);
+      }
+    }
+    setVoting(false);
+  };
+
+  return (
+    <div data-testid="poll-card" className="space-y-2.5">
+      <p className="font-heading text-base leading-snug" style={{ color: '#3A2A0A' }}>{post.poll_question}</p>
+      <div className="space-y-1.5 pt-0.5">
+        {options.map((opt, i) => {
+          const voted = hasVoted || results;
+          const r = results?.[i];
+          const pct = r?.percentage ?? (voted ? 0 : null);
+          const isMyChoice = userVote === i;
+          return (
+            <button
+              key={i}
+              data-testid={`poll-option-${i}`}
+              disabled={voted || voting}
+              onClick={() => handleVote(i)}
+              className={`w-full text-left relative rounded-lg px-3.5 py-2.5 text-sm transition-all overflow-hidden ${
+                voted
+                  ? 'cursor-default'
+                  : 'cursor-pointer active:scale-[0.99]'
+              }`}
+              style={
+                voted
+                  ? {
+                      border: isMyChoice ? '2px solid #DAA520' : '1px solid #E7E5E4',
+                      background: isMyChoice ? 'rgba(218,165,32,0.06)' : '#FAFAF9',
+                    }
+                  : {
+                      border: '1px solid #E7E5E4',
+                      background: '#FAFAF9',
+                    }
+              }
+              onMouseEnter={e => { if (!voted) { e.currentTarget.style.borderColor = '#DAA520'; e.currentTarget.style.background = 'rgba(218,165,32,0.06)'; } }}
+              onMouseLeave={e => { if (!voted) { e.currentTarget.style.borderColor = '#E7E5E4'; e.currentTarget.style.background = '#FAFAF9'; } }}
+            >
+              {/* Honey Gold progress bar with slide animation */}
+              {voted && (
+                <div
+                  className="absolute inset-y-0 left-0 rounded-l-lg"
+                  style={{
+                    width: justVoted ? `${pct || 0}%` : `${pct || 0}%`,
+                    background: isMyChoice
+                      ? 'linear-gradient(90deg, rgba(218,165,32,0.25), rgba(218,165,32,0.15))'
+                      : 'linear-gradient(90deg, rgba(218,165,32,0.12), rgba(218,165,32,0.06))',
+                    transition: 'width 0.7s cubic-bezier(0.22, 1, 0.36, 1)',
+                    animation: justVoted ? 'none' : undefined,
+                  }}
+                />
+              )}
+              <div className="relative flex items-center justify-between gap-2">
+                <span className="flex items-center gap-2 font-medium truncate" style={{ color: '#3A2A0A' }}>
+                  {voted && isMyChoice && (
+                    <span className="inline-flex items-center justify-center w-4 h-4 rounded-full shrink-0" style={{ background: '#DAA520' }}>
+                      <Check className="w-2.5 h-2.5 text-white" />
+                    </span>
+                  )}
+                  {opt}
+                </span>
+                {voted && (
+                  <span className="text-xs font-semibold shrink-0 tabular-nums" style={{ color: '#8B6914' }}>
+                    {pct ?? 0}%
+                  </span>
+                )}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+      {(hasVoted || results) && (
+        <p className="text-xs pt-0.5" style={{ color: '#A8A29E' }} data-testid="poll-total-votes">
+          {totalVotes} {totalVotes === 1 ? 'person' : 'people'} responded
+        </p>
+      )}
+    </div>
+  );
+};
+
+
 // Main renderer
 // Listing post card (auto-created when a listing is made)
 const ListingPostCard = ({ post }) => {
@@ -830,6 +941,7 @@ const PostCardBody = ({ post, onAlbumClick, imgPriority }) => {
     case 'WEEKLY_WRAP': return <WeeklyWrapCard post={post} />;
     case 'VINYL_MOOD': return <VinylMoodCard post={post} onAlbumClick={onAlbumClick} imgPriority={imgPriority} />;
     case 'DAILY_PROMPT': return <DailyPromptPostCard post={post} imgPriority={imgPriority} />;
+    case 'POLL': return <PollCard post={post} />;
     case 'RANDOMIZER': return <NowSpinningCard post={post} onAlbumClick={onAlbumClick} imgPriority={imgPriority} />;
     case 'listing_sale': return <ListingPostCard post={post} />;
     case 'listing_trade': return <ListingPostCard post={post} />;

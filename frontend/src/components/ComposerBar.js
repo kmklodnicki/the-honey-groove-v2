@@ -11,7 +11,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '../components/ui/select';
-import { Disc, Package, Search, Loader2, X, Feather, ImagePlus, Tag, Shuffle, ChevronDown, Music, RefreshCw, Camera } from 'lucide-react';
+import { Disc, Package, Search, Loader2, X, Feather, ImagePlus, Tag, Shuffle, ChevronDown, Music, RefreshCw, Camera, BarChart3, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import AlbumArt from './AlbumArt';
@@ -97,6 +97,10 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const [randLoading, setRandLoading] = useState(false);
   const [randAnimating, setRandAnimating] = useState(false);
 
+  // Poll
+  const [pollQuestion, setPollQuestion] = useState('');
+  const [pollOptions, setPollOptions] = useState(['', '']);
+
   const resetAll = () => {
     setSpinRecordId(''); setSpinTrack(''); setSpinCaption(''); setSpinMood('');
     setSpinSearch(''); setSpinSearchResults([]); setSpinSelectedRecord(null);
@@ -107,6 +111,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     setIsoDiscogsQuery(''); setIsoDiscogsResults([]); setIsoSelectedRelease(null); setIsoManualMode(false); setIsoIntent(null);
     setNoteText(''); setNoteRecordId(''); setNoteShowRecordPicker(false); setNoteImageUrl(''); setNoteUploading(false);
     setRandRecord(null); setRandCaption(''); setRandLoading(false); setRandAnimating(false);
+    setPollQuestion(''); setPollOptions(['', '']);
     setPostPhoto(null); setPostPhotoPreview(null);
     if (postPhotoInputRef.current) postPhotoInputRef.current.value = '';
   };
@@ -423,6 +428,23 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     finally { setSubmitting(false); }
   };
 
+  const submitPoll = async () => {
+    const q = pollQuestion.trim();
+    if (!q) { toast.error('write a question first.'); return; }
+    if (q.length > 500) { toast.error('question must be 500 characters or less.'); return; }
+    const opts = pollOptions.map(o => o.trim()).filter(Boolean);
+    if (opts.length < 2) { toast.error('add at least 2 options.'); return; }
+    setSubmitting(true);
+    try {
+      await axios.post(`${API}/composer/poll`, { question: q, options: opts }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success('poll posted!');
+      closeModal(); onPostCreated?.();
+    } catch (err) { toast.error(err.response?.data?.detail || 'Failed to post poll'); }
+    finally { setSubmitting(false); }
+  };
+
   const moodCfg = spinMood ? MOOD_CONFIG[spinMood] : null;
   const noteRecord = records.find(r => r.id === noteRecordId);
 
@@ -432,6 +454,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     { key: 'ISO', label: 'ISO', icon: Search },
     { key: 'NOTE', label: 'Note', icon: Feather },
     { key: 'RANDOMIZER', label: 'Randomizer', icon: Shuffle },
+    { key: 'POLL', label: 'Poll', icon: BarChart3 },
   ];
 
   return (
@@ -440,7 +463,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
       <div className="bg-white rounded-xl border border-honey/30 p-4 mb-6 shadow-sm" data-testid="composer-bar">
         <p className="text-sm text-muted-foreground mb-1">What's on the turntable?</p>
         <p className="text-[10px] text-muted-foreground/70 mb-3 italic">Only posts with comments will be shared in The Hive.</p>
-        <div className="flex flex-row gap-1.5 justify-between w-full">
+        <div className="flex flex-wrap gap-1.5 justify-center w-full md:flex-nowrap md:justify-between">
           {spectrum.map(chip => {
             const Icon = chip.icon;
             return (
@@ -1092,6 +1115,85 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               </>
             )}
           </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ═══ Poll Modal ═══ */}
+      <Dialog open={activeModal === 'POLL'} onOpenChange={(o) => !o && closeModal()}>
+        <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-lg font-heading" style={{ color: '#8B6914' }}>
+              <span className="text-lg">📊</span> Create a Poll
+            </DialogTitle>
+            <DialogDescription>Ask the hive a question.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div>
+              <label className="text-xs font-medium text-stone-500 mb-1 block">Question</label>
+              <Textarea
+                placeholder="What's your question?"
+                value={pollQuestion}
+                onChange={(e) => setPollQuestion(e.target.value.slice(0, 500))}
+                className="resize-none focus:border-amber-400"
+                style={{ borderColor: 'rgba(218,165,32,0.3)' }}
+                rows={2}
+                data-testid="poll-question-input"
+              />
+              <span className="text-xs text-stone-400 float-right mt-0.5">{pollQuestion.length}/500</span>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-stone-500">Options</label>
+              {pollOptions.map((opt, i) => (
+                <div key={i} className="flex gap-2 items-center">
+                  <Input
+                    placeholder={`Option ${i + 1}`}
+                    value={opt}
+                    onChange={(e) => {
+                      const next = [...pollOptions];
+                      next[i] = e.target.value;
+                      setPollOptions(next);
+                    }}
+                    className="flex-1 focus:border-amber-400"
+                    style={{ borderColor: 'rgba(218,165,32,0.2)' }}
+                    data-testid={`poll-option-input-${i}`}
+                  />
+                  {pollOptions.length > 2 && (
+                    <button
+                      type="button"
+                      onClick={() => setPollOptions(pollOptions.filter((_, j) => j !== i))}
+                      className="p-1.5 rounded-full hover:bg-red-50 text-stone-400 hover:text-red-500 transition-colors"
+                      data-testid={`poll-remove-option-${i}`}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              ))}
+              {pollOptions.length < 6 && (
+                <button
+                  type="button"
+                  onClick={() => setPollOptions([...pollOptions, ''])}
+                  className="flex items-center gap-1.5 text-xs hover:opacity-80 font-medium py-1"
+                  style={{ color: '#DAA520' }}
+                  data-testid="poll-add-option-btn"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add option
+                </button>
+              )}
+            </div>
+
+            <Button
+              onClick={submitPoll}
+              disabled={submitting || !pollQuestion.trim() || pollOptions.filter(o => o.trim()).length < 2}
+              className="w-full rounded-full text-white hover:opacity-90"
+              style={{ background: '#DAA520' }}
+              data-testid="poll-post-btn"
+            >
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <span className="mr-2">📊</span>}
+              Post Poll
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
