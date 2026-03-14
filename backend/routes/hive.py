@@ -1056,6 +1056,13 @@ async def add_comment(post_id: str, comment_data: CommentCreate, user: Dict = De
             await create_notification(parent["user_id"], "COMMENT_REPLY", "Someone replied to your comment",
                                       f"@{user.get('username','?')} replied to your comment",
                                       {"post_id": post_id, "comment_id": comment_id})
+        # Smart threading: if parent is itself a reply, also notify the thread owner (top-level comment author)
+        if parent and parent.get("parent_id"):
+            thread_owner = await db.comments.find_one({"id": parent["parent_id"]}, {"_id": 0})
+            if thread_owner and thread_owner.get("user_id") != user["id"] and thread_owner.get("user_id") != parent.get("user_id"):
+                await create_notification(thread_owner["user_id"], "COMMENT_REPLY", "New reply in your thread",
+                                          f"@{user.get('username','?')} replied in your comment thread",
+                                          {"post_id": post_id, "comment_id": comment_id})
 
     # Parse @mentions and notify mentioned users (if not self or already notified)
     mentions = set(re.findall(r'@(\w+)', comment_data.content))
@@ -1064,6 +1071,11 @@ async def add_comment(post_id: str, comment_data: CommentCreate, user: Dict = De
         notified_ids.add(post["user_id"])
     if comment_data.parent_id and parent and parent.get("user_id") != user["id"]:
         notified_ids.add(parent["user_id"])
+    # Include thread owner in already-notified set
+    if comment_data.parent_id and parent and parent.get("parent_id"):
+        thread_owner_comment = await db.comments.find_one({"id": parent["parent_id"]}, {"_id": 0, "user_id": 1})
+        if thread_owner_comment:
+            notified_ids.add(thread_owner_comment["user_id"])
     for username in mentions:
         mentioned_user = await db.users.find_one({"username": username.lower()}, {"_id": 0, "id": 1, "username": 1})
         if mentioned_user and mentioned_user["id"] != user["id"] and mentioned_user["id"] not in notified_ids:

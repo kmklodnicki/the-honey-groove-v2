@@ -214,7 +214,8 @@ const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, 
   };
 
   const handleReply = (comment) => {
-    setReplyTo({ id: comment.id, username: comment.user?.username });
+    const parentId = comment._replyParentId || comment.id;
+    setReplyTo({ id: parentId, username: comment.user?.username });
     setNewComment(`@${comment.user?.username} `);
     setTimeout(() => {
       if (commentInputRef.current) {

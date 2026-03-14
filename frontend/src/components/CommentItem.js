@@ -16,8 +16,15 @@ const renderMentions = (text) => {
   });
 };
 
-const SingleComment = ({ comment, onReply, onLike, isReply }) => (
-  <div className={isReply ? 'ml-8' : ''} data-testid={`comment-${comment.id}`}>
+const SingleComment = ({ comment, onReply, onLike, isReply, topLevelId }) => (
+  <div className={isReply ? 'ml-8 pl-3 relative' : ''} data-testid={`comment-${comment.id}`}>
+    {isReply && (
+      <div
+        className="absolute left-0 top-0 bottom-0"
+        style={{ width: '2px', background: 'rgba(218, 165, 32, 0.2)', borderRadius: '1px' }}
+        data-testid={`thread-line-${comment.id}`}
+      />
+    )}
     <div className="flex gap-2">
       <Link to={`/profile/${comment.user?.username}`}>
         <BeeAvatar user={comment.user} className={isReply ? 'h-6 w-6' : 'h-8 w-8'} />
@@ -42,15 +49,16 @@ const SingleComment = ({ comment, onReply, onLike, isReply }) => (
             <Heart className={`w-3 h-3 ${comment.is_liked ? 'fill-current' : ''}`} />
             {comment.likes_count > 0 && <span>{comment.likes_count}</span>}
           </button>
-          {!isReply && (
-            <button
-              onClick={() => onReply(comment)}
-              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-honey-amber transition-colors"
-              data-testid={`comment-reply-${comment.id}`}
-            >
-              <Reply className="w-3 h-3" /> reply
-            </button>
-          )}
+          <button
+            onClick={() => onReply({
+              ...comment,
+              _replyParentId: isReply ? topLevelId : comment.id,
+            })}
+            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-honey-amber transition-colors"
+            data-testid={`comment-reply-${comment.id}`}
+          >
+            <Reply className="w-3 h-3" /> reply
+          </button>
         </div>
       </div>
     </div>
@@ -69,12 +77,12 @@ const CommentThread = ({ comment, onReply, onLike }) => {
       {replies.length > 0 && (
         <div className="space-y-2 mt-2">
           {visibleReplies.map(reply => (
-            <SingleComment key={reply.id} comment={reply} onReply={onReply} onLike={onLike} isReply />
+            <SingleComment key={reply.id} comment={reply} onReply={onReply} onLike={onLike} isReply topLevelId={comment.id} />
           ))}
           {hasMany && !showReplies && (
             <button
               onClick={() => setShowReplies(true)}
-              className="ml-8 text-xs text-honey-amber hover:underline transition-colors"
+              className="ml-8 pl-3 text-xs text-honey-amber hover:underline transition-colors"
               data-testid={`view-replies-${comment.id}`}
             >
               View {replies.length - 2} more {replies.length - 2 === 1 ? 'reply' : 'replies'}
@@ -83,7 +91,7 @@ const CommentThread = ({ comment, onReply, onLike }) => {
           {hasMany && showReplies && (
             <button
               onClick={() => setShowReplies(false)}
-              className="ml-8 text-xs text-muted-foreground hover:underline transition-colors"
+              className="ml-8 pl-3 text-xs text-muted-foreground hover:underline transition-colors"
               data-testid={`hide-replies-${comment.id}`}
             >
               Hide replies
