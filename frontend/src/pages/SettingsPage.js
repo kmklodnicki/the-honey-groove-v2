@@ -427,7 +427,7 @@ const SettingsPage = () => {
                   className="text-sm text-honey-amber hover:underline whitespace-nowrap flex items-center gap-1"
                   data-testid="update-password-btn"
                 >
-                  <Key className="w-3 h-3 shrink-0" />password
+                  <Key className="w-3 h-3 shrink-0" />update password
                 </button>
               </div>
               <p className="text-xs text-muted-foreground mt-1">Private. Used for communications.</p>
