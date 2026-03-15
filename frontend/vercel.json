@@ -1,6 +1,6 @@
 {
-  "installCommand": "echo skip",
-  "buildCommand": "npm install --legacy-peer-deps && ./node_modules/.bin/craco build",
+  "installCommand": "npm install --legacy-peer-deps",
+  "buildCommand": "craco build",
   "outputDirectory": "build",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.py" },
