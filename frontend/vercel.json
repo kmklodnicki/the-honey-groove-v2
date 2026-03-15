@@ -1,6 +1,8 @@
 {
-  "buildCommand": "CI=false npm install --legacy-peer-deps && CI=false npx craco build",
+  "framework": null,
+  "buildCommand": "CI=false npm run build",
   "outputDirectory": "build",
+  "installCommand": "npm install --legacy-peer-deps",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.py" },
     { "source": "/(.*)", "destination": "/index.html" }
