@@ -2,11 +2,6 @@
   "installCommand": "cd frontend && npm install --legacy-peer-deps",
   "buildCommand": "cd frontend && craco build",
   "outputDirectory": "frontend/build",
-  "functions": {
-    "api/index.py": {
-      "runtime": "@vercel/python@latest"
-    }
-  },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.py" },
     { "source": "/(.*)", "destination": "/index.html" }
