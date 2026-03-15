@@ -3,8 +3,8 @@ const API = SHARED_API;
 
 const SERVE_PATH = '/api/files/serve/';
 
-// Emergent storage proxy — serves old images that predate Cloudinary migration
-const EMERGENT_STORAGE_PROXY = 'https://migration-staging-4.preview.emergentagent.com/api/files/serve/';
+// Use app's own API for serving legacy images (dynamic per environment)
+const EMERGENT_STORAGE_PROXY = `${API}/files/serve/`;
 
 const enforceHttps = (url) => {
   if (!url || typeof url !== 'string') return url;
@@ -33,9 +33,6 @@ export function resolveImageUrl(src) {
 
   // Cloudinary URLs — always work, return as-is
   if (src.includes('res.cloudinary.com')) return enforceHttps(src);
-
-  // Emergent storage proxy — already pointing to working proxy
-  if (src.includes('migration-staging-4.preview.emergentagent.com')) return enforceHttps(src);
 
   // Old URL containing /api/files/serve/ from ANY domain → rewrite to working Emergent proxy
   const serveIdx = src.indexOf(SERVE_PATH);

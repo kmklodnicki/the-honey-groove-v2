@@ -969,8 +969,11 @@ async def upload_file(file: UploadFile = File(...), user: Dict = Depends(require
             })
             return {"file_id": file_id, "path": result["public_id"], "url": public_url}
         except Exception as e:
-            logger.error(f"Cloudinary upload failed, trying fallback: {e}")
-            cloudinary_error = str(e)
+            logger.error(f"Cloudinary upload failed: {e}")
+            # Don't fall through silently — if Cloudinary is configured but failing, report it clearly
+            if not storage_key:
+                raise HTTPException(status_code=500, detail=f"Image upload failed: Cloudinary error — {str(e)}")
+            logger.info("Falling back to Emergent object storage")
 
     # Fallback: Emergent object storage
     path = f"{APP_NAME}/uploads/{user['id']}/{file_id}.{final_ext}"

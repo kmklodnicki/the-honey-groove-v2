@@ -67,7 +67,7 @@ class TestSafariBugFix:
         response = requests.options(
             f"{BASE_URL}/api/auth/me",
             headers={
-                "Origin": "https://migration-staging-4.preview.emergentagent.com",
+                "Origin": "https://production-bugs-2.preview.emergentagent.com",
                 "Access-Control-Request-Method": "GET"
             }
         )

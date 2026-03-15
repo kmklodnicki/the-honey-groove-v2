@@ -58,7 +58,7 @@ class TestBlock480OAuthDynamicOrigin:
         """Test that OAuth start returns a valid authorization_url"""
         # Use a realistic frontend origin
         resp = requests.get(
-            f"{BASE_URL}/api/discogs/oauth/start?frontend_origin=https://migration-staging-4.preview.emergentagent.com",
+            f"{BASE_URL}/api/discogs/oauth/start?frontend_origin=https://production-bugs-2.preview.emergentagent.com",
             headers=auth_headers
         )
         

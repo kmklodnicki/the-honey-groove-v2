@@ -87,6 +87,9 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const [noteImageUrl, setNoteImageUrl] = useState('');
   const [noteUploading, setNoteUploading] = useState(false);
   const noteFileRef = useRef(null);
+  const [noteSearch, setNoteSearch] = useState('');
+  const [noteSearchResults, setNoteSearchResults] = useState([]);
+  const noteSearchTimerRef = useRef(null);
   // Dedicated photo state for Spinning/Haul
   const [postPhoto, setPostPhoto] = useState(null);
   const [postPhotoPreview, setPostPhotoPreview] = useState(null);
@@ -109,7 +112,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     setIsoArtist(''); setIsoAlbum(''); setIsoPressing(''); setIsoCondition('');
     setIsoPriceMin(''); setIsoPriceMax(''); setIsoCaption('');
     setIsoDiscogsQuery(''); setIsoDiscogsResults([]); setIsoSelectedRelease(null); setIsoManualMode(false); setIsoIntent(null);
-    setNoteText(''); setNoteRecordId(''); setNoteShowRecordPicker(false); setNoteImageUrl(''); setNoteUploading(false);
+    setNoteText(''); setNoteRecordId(''); setNoteShowRecordPicker(false); setNoteImageUrl(''); setNoteUploading(false); setNoteSearch(''); setNoteSearchResults([]);
     setRandRecord(null); setRandCaption(''); setRandLoading(false); setRandAnimating(false);
     setPollQuestion(''); setPollOptions(['', '']);
     setPostPhoto(null); setPostPhotoPreview(null);
@@ -136,6 +139,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
       if (haulSearchTimer.current) clearTimeout(haulSearchTimer.current);
       if (isoSearchTimer.current) clearTimeout(isoSearchTimer.current);
       if (spinSearchTimer.current) clearTimeout(spinSearchTimer.current);
+      if (noteSearchTimerRef.current) clearTimeout(noteSearchTimerRef.current);
     };
   }, []);
 
@@ -177,6 +181,33 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
         })
         .sort((a, b) => b._score - a._score);
       setSpinSearchResults(scored);
+    }, 300);
+  }, [records]);
+
+  // Local collection search for Note record tagging
+  const searchCollectionForNote = useCallback((query) => {
+    if (noteSearchTimerRef.current) clearTimeout(noteSearchTimerRef.current);
+    if (!query || query.length < 2) { setNoteSearchResults([]); return; }
+    noteSearchTimerRef.current = setTimeout(() => {
+      const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+      const scored = records
+        .filter(r => {
+          const hay = `${r.artist} ${r.title}`.toLowerCase();
+          return words.every(w => hay.includes(w));
+        })
+        .map(r => {
+          const hay = `${r.artist} ${r.title}`.toLowerCase();
+          let score = 0;
+          for (const w of words) {
+            if (hay === w) score += 100;
+            else if (hay.startsWith(w)) score += 60;
+            else if (hay.includes(` ${w}`)) score += 40;
+            else if (hay.includes(w)) score += 20;
+          }
+          return { ...r, _score: score };
+        })
+        .sort((a, b) => b._score - a._score);
+      setNoteSearchResults(scored);
     }, 300);
   }, [records]);
 
@@ -992,18 +1023,31 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
               </div>
             </div>
 
-            {/* Record picker dropdown */}
+            {/* Record search picker */}
             {noteShowRecordPicker && (
-              <Select value={noteRecordId} onValueChange={v => { setNoteRecordId(v); setNoteShowRecordPicker(false); }}>
-                <SelectTrigger className="border-stone-200" data-testid="note-record-select">
-                  <SelectValue placeholder="Choose from your vault" />
-                </SelectTrigger>
-                <SelectContent>
-                  {records.map(r => (
-                    <SelectItem key={r.id} value={r.id}>{r.artist} · {r.title}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="search your vault..."
+                  value={noteSearch}
+                  onChange={e => { setNoteSearch(e.target.value); searchCollectionForNote(e.target.value); }}
+                  className="pl-9 border-stone-200"
+                  data-testid="note-record-search"
+                  autoFocus
+                />
+                {noteSearchResults.length > 0 && (
+                  <div className="absolute z-50 left-0 right-0 mt-1 border rounded-lg max-h-52 overflow-y-auto shadow-lg bg-white" style={{ borderColor: 'rgba(200,134,26,0.3)' }}>
+                    {noteSearchResults.map(r => (
+                      <RecordSearchResult key={r.id} record={r} onClick={() => { setNoteRecordId(r.id); setNoteShowRecordPicker(false); setNoteSearch(''); setNoteSearchResults([]); }} size="sm" testId={`note-result-${r.id}`} />
+                    ))}
+                  </div>
+                )}
+                {noteSearch.length >= 2 && noteSearchResults.length === 0 && (
+                  <div className="absolute z-50 left-0 right-0 mt-1 border rounded-lg p-3 text-center shadow-lg bg-white" style={{ borderColor: 'rgba(200,134,26,0.3)' }}>
+                    <p className="text-sm" style={{ color: '#8A6B4A' }}>no results in your vault</p>
+                  </div>
+                )}
+              </div>
             )}
 
             {/* Tagged record preview */}
