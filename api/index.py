@@ -10,4 +10,6 @@ backend_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 if backend_dir not in sys.path:
     sys.path.insert(0, backend_dir)
 
-from server import combined_app as app
+# Export the FastAPI app directly (not the Socket.IO wrapper)
+# Vercel serverless doesn't support WebSockets
+from server import app
