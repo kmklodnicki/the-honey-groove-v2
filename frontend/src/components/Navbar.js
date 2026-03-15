@@ -474,7 +474,8 @@ const NotificationBell = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [open, setOpen] = useState(false);
-  const prevCountRef = React.useRef(0);
+  const prevCountRef = React.useRef(-1); // -1 = skip first render to prevent initial notification flood
+  const shownNotifIds = React.useRef(new Set()); // track shown browser notifications
   const hasNotificationAPI = typeof Notification !== 'undefined';
   const [pushEnabled, setPushEnabled] = React.useState(hasNotificationAPI && Notification.permission === 'granted');
 
@@ -489,24 +490,32 @@ const NotificationBell = () => {
     try {
       const resp = await axios.get(`${API}/notifications/unread-count`, { headers: { Authorization: `Bearer ${token}` } });
       const newCount = resp.data.count;
-      // Show browser notification if count increased
-      if (hasNotificationAPI && pushEnabled && newCount > prevCountRef.current && prevCountRef.current >= 0) {
+      // Show browser notification only if count increased and not on first load
+      if (hasNotificationAPI && pushEnabled && prevCountRef.current >= 0 && newCount > prevCountRef.current) {
         try {
           const latest = await axios.get(`${API}/notifications?limit=1`, { headers: { Authorization: `Bearer ${token}` } });
           if (latest.data.length > 0 && !latest.data[0].read) {
             const n = latest.data[0];
-            new Notification('The HoneyGroove', {
-              body: n.body || n.title || 'You have a new notification',
-              icon: '/favicon.png',
-              tag: n.id,
-            });
+            // Skip if we already showed this notification
+            if (!shownNotifIds.current.has(n.id)) {
+              shownNotifIds.current.add(n.id);
+              // Cap memory
+              if (shownNotifIds.current.size > 50) {
+                shownNotifIds.current.delete(shownNotifIds.current.values().next().value);
+              }
+              new Notification('The HoneyGroove', {
+                body: n.body || n.title || 'You have a new notification',
+                icon: '/favicon.png',
+                tag: n.id,
+              });
+            }
           }
         } catch { /* ignore */ }
       }
       prevCountRef.current = newCount;
       setUnreadCount(newCount);
     } catch { /* ignore */ }
-  }, [API, token, pushEnabled]);
+  }, [API, token, pushEnabled, hasNotificationAPI]);
 
   const fetchNotifications = useCallback(async () => {
     try {
@@ -535,7 +544,7 @@ const NotificationBell = () => {
     fetchCount();
     const interval = setInterval(fetchCount, 15000);
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchCount]);
 
   useEffect(() => { if (open) fetchNotifications(); }, [open, fetchNotifications]);
 

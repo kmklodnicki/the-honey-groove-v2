@@ -66,21 +66,37 @@ async def submit_verification(
     # Upload original
     from database import put_object, FRONTEND_URL, APP_NAME
     from routes.collection import process_image
+    from utils.cloudinary_upload import is_cloudinary_configured, upload_image_buffer
 
     try:
         processed_data, final_ct, final_ext = process_image(contents, id_photo.content_type or "image/jpeg", id_photo.filename)
     except Exception:
         processed_data, final_ct, final_ext = contents, "image/jpeg", "jpg"
 
-    orig_path = f"{APP_NAME}/verification/{user['id']}/original_{uuid.uuid4().hex}.{final_ext}"
-    result = put_object(orig_path, processed_data, final_ct)
-    original_url = f"{FRONTEND_URL}/api/files/serve/{result['path']}"
-
-    # Generate and upload blurred version
+    # Generate blurred version
     blurred_bytes = _generate_blurred(processed_data)
-    blur_path = f"{APP_NAME}/verification/{user['id']}/blurred_{uuid.uuid4().hex}.jpg"
-    blur_result = put_object(blur_path, blurred_bytes, "image/jpeg")
-    blurred_url = f"{FRONTEND_URL}/api/files/serve/{blur_result['path']}"
+
+    if is_cloudinary_configured():
+        try:
+            orig_result = upload_image_buffer(processed_data, folder=f"honeygroove/verification/{user['id']}")
+            original_url = orig_result["secure_url"]
+            blur_result = upload_image_buffer(blurred_bytes, folder=f"honeygroove/verification/{user['id']}/blurred")
+            blurred_url = blur_result["secure_url"]
+        except Exception as e:
+            logger.error(f"Cloudinary verification upload failed, using fallback: {e}")
+            orig_path = f"{APP_NAME}/verification/{user['id']}/original_{uuid.uuid4().hex}.{final_ext}"
+            result = put_object(orig_path, processed_data, final_ct)
+            original_url = f"{FRONTEND_URL}/api/files/serve/{result['path']}"
+            blur_path = f"{APP_NAME}/verification/{user['id']}/blurred_{uuid.uuid4().hex}.jpg"
+            blur_result = put_object(blur_path, blurred_bytes, "image/jpeg")
+            blurred_url = f"{FRONTEND_URL}/api/files/serve/{blur_result['path']}"
+    else:
+        orig_path = f"{APP_NAME}/verification/{user['id']}/original_{uuid.uuid4().hex}.{final_ext}"
+        result = put_object(orig_path, processed_data, final_ct)
+        original_url = f"{FRONTEND_URL}/api/files/serve/{result['path']}"
+        blur_path = f"{APP_NAME}/verification/{user['id']}/blurred_{uuid.uuid4().hex}.jpg"
+        blur_result = put_object(blur_path, blurred_bytes, "image/jpeg")
+        blurred_url = f"{FRONTEND_URL}/api/files/serve/{blur_result['path']}"
 
     request_id = uuid.uuid4().hex[:16]
     doc = {

@@ -293,3 +293,42 @@ h1, h2, h3, h4, h5, h6 {
   background-size: 200% 100%;
   animation: silkSweep 1.8s ease-in-out infinite;
 }
+
+/* ── Global Mobile Modal Scaling ── */
+/* Ensures all Radix Dialog modals fit small screens without overflow or zoom */
+@media (max-width: 640px) {
+  .modal-mobile-scale {
+    transform: translate(-50%, -50%) scale(0.92) !important;
+    max-height: 85vh !important;
+    overflow-y: auto !important;
+    width: calc(100% - 1.5rem) !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .modal-mobile-scale {
+    transform: translate(-50%, -50%) scale(0.85) !important;
+    max-height: 82vh !important;
+    padding: 0.75rem !important;
+  }
+}
+
+/* ── Migration Placeholder ── */
+.migration-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  text-align: center;
+  min-height: 80px;
+}
+
+.migration-placeholder-text {
+  font-size: 0.75rem;
+  color: #92400e;
+  font-weight: 500;
+  margin-top: 0.25rem;
+}

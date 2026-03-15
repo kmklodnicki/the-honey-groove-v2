@@ -46,7 +46,24 @@ const sheetVariants = cva(
 const SheetContent = React.forwardRef(({ side = "right", className, children, ...props }, ref) => (
   <SheetPortal>
     <SheetOverlay />
-    <SheetPrimitive.Content ref={ref} className={cn(sheetVariants({ side }), className)} {...props}>
+    <SheetPrimitive.Content
+      ref={ref}
+      className={cn(sheetVariants({ side }), className)}
+      onCloseAutoFocus={(e) => {
+        const body = document.body;
+        body.style.overflow = '';
+        body.style.paddingRight = '';
+        body.style.position = '';
+        body.style.top = '';
+        body.style.left = '';
+        body.style.right = '';
+        body.style.width = '';
+        if (body.hasAttribute('data-scroll-locked')) {
+          body.removeAttribute('data-scroll-locked');
+        }
+        document.documentElement.style.overflow = '';
+      }}
+      {...props}>
       <SheetPrimitive.Close
         className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
         <X className="h-4 w-4" />

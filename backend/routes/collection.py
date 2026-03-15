@@ -945,13 +945,37 @@ async def upload_file(file: UploadFile = File(...), user: Dict = Depends(require
         logger.error(f"Image processing failed: {e}")
         raise HTTPException(status_code=400, detail="Could not process image. Please upload a jpg, png, or webp file.")
 
-    path = f"{APP_NAME}/uploads/{user['id']}/{uuid.uuid4()}.{final_ext}"
+    # Try Cloudinary first, fallback to Emergent object storage
+    from utils.cloudinary_upload import is_cloudinary_configured, upload_image_buffer
 
+    file_id = str(uuid.uuid4())
+
+    if is_cloudinary_configured():
+        try:
+            folder = f"honeygroove/{user['id']}"
+            result = upload_image_buffer(processed_data, folder=folder, public_id=file_id)
+            public_url = result["secure_url"]
+
+            await db.files.insert_one({
+                "id": file_id,
+                "user_id": user["id"],
+                "storage_path": result["public_id"],
+                "original_filename": file.filename,
+                "content_type": final_ct,
+                "size": len(processed_data),
+                "url": public_url,
+                "storage_type": "cloudinary",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            })
+            return {"file_id": file_id, "path": result["public_id"], "url": public_url}
+        except Exception as e:
+            logger.error(f"Cloudinary upload failed, trying fallback: {e}")
+
+    # Fallback: Emergent object storage
+    path = f"{APP_NAME}/uploads/{user['id']}/{file_id}.{final_ext}"
     try:
         result = put_object(path, processed_data, final_ct)
-        
-        # Store file reference
-        file_id = str(uuid.uuid4())
+        public_url = f"{FRONTEND_URL}/api/files/serve/{result['path']}"
         await db.files.insert_one({
             "id": file_id,
             "user_id": user["id"],
@@ -959,12 +983,10 @@ async def upload_file(file: UploadFile = File(...), user: Dict = Depends(require
             "original_filename": file.filename,
             "content_type": final_ct,
             "size": result.get("size", len(processed_data)),
-            "created_at": datetime.now(timezone.utc).isoformat()
+            "url": public_url,
+            "storage_type": "emergent",
+            "created_at": datetime.now(timezone.utc).isoformat(),
         })
-        
-        # Build a public URL that routes through our proxy endpoint
-        public_url = f"{FRONTEND_URL}/api/files/serve/{result['path']}"
-        
         return {"file_id": file_id, "path": result["path"], "url": public_url}
     except Exception as e:
         logger.error(f"Upload failed: {e}")

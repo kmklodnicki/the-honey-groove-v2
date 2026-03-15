@@ -4,7 +4,7 @@ import { Disc, Package, Search, Moon, Plus, Music, Feather, ShoppingBag, ArrowRi
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import AlbumArt from './AlbumArt';
-import { resolveImageUrl } from '../utils/imageUrl';
+import { resolveImageUrl, isLegacyUploadUrl } from '../utils/imageUrl';
 import PhotoLightbox from './PhotoLightbox';
 import MentionText from './MentionText';
 import UnofficialPill from './UnofficialPill';
@@ -380,12 +380,20 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
           {post.photo_url && (
             <div className="shrink-0">
               <img
-                src={post.photo_url}
+                src={resolveImageUrl(post.photo_url)}
                 alt="User photo"
                 className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity border border-stone-200/60 shadow-sm"
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLightboxOpen(true); }}
                 loading="lazy"
                 data-testid="user-photo-thumb"
+                onError={(e) => {
+                  if (isLegacyUploadUrl(post.photo_url)) {
+                    e.target.style.display = 'none';
+                    e.target.parentElement.innerHTML = '<div class="migration-placeholder w-20 h-20 sm:w-24 sm:h-24 rounded-lg"><span class="migration-placeholder-text">migration in progress</span></div>';
+                  } else {
+                    e.target.style.display = 'none';
+                  }
+                }}
               />
             </div>
           )}
@@ -454,12 +462,18 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
           {photoUrl && (
             <div className="shrink-0">
               <img
-                src={photoUrl}
+                src={resolveImageUrl(photoUrl)}
                 alt="Haul photo"
                 className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity border border-stone-200/60 shadow-sm"
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLightboxOpen(true); }}
                 loading="lazy"
                 data-testid="user-photo-thumb"
+                onError={(e) => {
+                  if (isLegacyUploadUrl(photoUrl)) {
+                    e.target.style.display = 'none';
+                    e.target.parentElement.innerHTML = '<div class="migration-placeholder w-20 h-20 sm:w-24 sm:h-24 rounded-lg"><span class="migration-placeholder-text">migration in progress</span></div>';
+                  } else { e.target.style.display = 'none'; }
+                }}
               />
             </div>
           )}
@@ -535,12 +549,18 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
         {photoUrl && (
           <div className="shrink-0">
             <img
-              src={photoUrl}
+              src={resolveImageUrl(photoUrl)}
               alt="Haul photo"
               className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity border border-stone-200/60 shadow-sm"
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLightboxOpen(true); }}
               loading="lazy"
               data-testid="user-photo-thumb"
+              onError={(e) => {
+                if (isLegacyUploadUrl(photoUrl)) {
+                  e.target.style.display = 'none';
+                  e.target.parentElement.innerHTML = '<div class="migration-placeholder w-20 h-20 sm:w-24 sm:h-24 rounded-lg"><span class="migration-placeholder-text">migration in progress</span></div>';
+                } else { e.target.style.display = 'none'; }
+              }}
             />
           </div>
         )}
@@ -778,7 +798,13 @@ const NoteCard = ({ post, onAlbumClick }) => {
             src={resolveImageUrl(post.image_url)} alt={`${post.record_artist || 'User'} ${post.record_title || 'post'} vinyl record`}
             className="w-full rounded-lg mt-3 object-cover max-h-80 cursor-pointer"
             onClick={() => setLightboxOpen(true)}
-            onError={(e) => { e.target.style.display = 'none'; }}
+            onError={(e) => {
+              if (isLegacyUploadUrl(post.image_url)) {
+                e.target.outerHTML = '<div class="migration-placeholder w-full rounded-lg mt-3"><span class="migration-placeholder-text">migration in progress</span></div>';
+              } else {
+                e.target.style.display = 'none';
+              }
+            }}
           />
           <PhotoLightbox
             photos={[post.image_url]}

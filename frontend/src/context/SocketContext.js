@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
@@ -10,11 +10,19 @@ export const SocketProvider = ({ children }) => {
   const { token, API } = useAuth();
   const socketRef = useRef(null);
   const [connected, setConnected] = useState(false);
-  const processedIds = useRef(new Set()); // <-- INSERT THIS LINE
+  const processedIds = useRef(new Set());
+  const reconnectCount = useRef(0);
+
   useEffect(() => {
     if (!token || !API) return;
 
-    // Derive the WebSocket base URL from API URL (strip /api suffix if present)
+    // Clean up any existing socket before creating new one
+    if (socketRef.current) {
+      socketRef.current.removeAllListeners();
+      socketRef.current.disconnect();
+      socketRef.current = null;
+    }
+
     const wsBase = API.replace(/\/api$/, '');
 
     const socket = io(wsBase, {
@@ -23,11 +31,13 @@ export const SocketProvider = ({ children }) => {
       reconnection: true,
       reconnectionAttempts: 10,
       reconnectionDelay: 2000,
+      forceNew: true,
     });
 
     socket.on('connect', () => {
       console.log('[LiveHive] Connected:', socket.id);
       setConnected(true);
+      reconnectCount.current = 0;
     });
 
     socket.on('disconnect', (reason) => {
@@ -36,29 +46,30 @@ export const SocketProvider = ({ children }) => {
     });
 
     socket.on('connect_error', (err) => {
-      console.warn('[LiveHive] Connection error:', err.message);
+      reconnectCount.current += 1;
+      if (reconnectCount.current <= 3) {
+        console.warn('[LiveHive] Connection error:', err.message);
+      }
+    });
+
+    // Deduplicated notification handler
+    socket.on('notification', (data) => {
+      if (!data?.id) return;
+      if (processedIds.current.has(data.id)) return;
+      processedIds.current.add(data.id);
+      // Cap memory usage
+      if (processedIds.current.size > 200) {
+        const iter = processedIds.current.values();
+        processedIds.current.delete(iter.next().value);
+      }
     });
 
     socketRef.current = socket;
-    // Block duplicate notifications
-    socket.on('notification', (data) => {
-      if (processedIds.current.has(data.id)) return;
 
-      processedIds.current.add(data.id);
-        
-      // Safety: Keep the memory light
-      if (processedIds.current.size > 100) {
-        const firstValue = processedIds.current.values().next().value;
-        processedIds.current.delete(firstValue);
-      }
-
-      // Trigger your visual alert here
-      console.log('Unique notification received:', data);
-      // If you have a toast function (like showToast), add it here!
-    });
     return () => {
-      socket.off('notification'); // Add this to stop the listener
+      socket.removeAllListeners();
       socket.disconnect();
+      socketRef.current = null;
       setConnected(false);
     };
   }, [token, API]);

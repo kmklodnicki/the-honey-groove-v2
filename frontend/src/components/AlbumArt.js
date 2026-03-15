@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Disc } from 'lucide-react';
-import { resolveImageUrl, proxyImageUrl } from '../utils/imageUrl';
+import { resolveImageUrl, proxyImageUrl, isLegacyUploadUrl } from '../utils/imageUrl';
 import UnofficialPill from './UnofficialPill';
 
 const FALLBACK = '/vinyl-placeholder.svg';
@@ -128,12 +128,19 @@ const AlbumArt = ({
 
       {/* Error state: charcoal vinyl icon — BLOCK 572: never show browser broken icon */}
       {status === 'error' ? (
+        isLegacyUploadUrl(src) ? (
+          <div className="migration-placeholder w-full h-full">
+            <Disc className="w-8 h-8 text-amber-700 opacity-60" />
+            <span className="migration-placeholder-text">migration in progress</span>
+          </div>
+        ) : (
         <div
           className="w-full h-full flex items-center justify-center honey-fade-in"
           style={{ background: 'rgba(245, 243, 238, 1)' }}
         >
           <Disc className="w-10 h-10" style={{ color: '#4A4A4A', opacity: 0.35 }} />
         </div>
+        )
       ) : status !== 'shimmer' ? (
         <img
           ref={imgRef}
