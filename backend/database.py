@@ -194,7 +194,15 @@ def put_object(path: str, data: bytes, content_type: str) -> dict:
     return {}
 
 
+def _ensure_storage():
+    """Lazy init: call init_storage if not yet done."""
+    global storage_key
+    if storage_key is None and EMERGENT_KEY:
+        init_storage()
+
+
 def get_object(path: str) -> tuple:
+    _ensure_storage()
     if not storage_key:
         raise Exception("Storage not initialized")
     resp = requests.get(
