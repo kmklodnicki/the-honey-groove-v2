@@ -980,7 +980,9 @@ const ProfilePage = () => {
               )}
             </div>
           )}
-          {records.length === 0 ? (
+          {loading || (!swrRecords && !profileLocked) ? (
+            <LoadingHoney />
+          ) : records.length === 0 ? (
             <EmptyState icon={Disc} title="No records yet" sub={isOwnProfile ? 'Start building your vault!' : `@${username} hasn't added any records yet`} />
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
