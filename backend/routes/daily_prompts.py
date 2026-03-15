@@ -241,8 +241,8 @@ from zoneinfo import ZoneInfo
 ET = ZoneInfo("America/New_York")
 
 def _get_today_utc_date():
-    """Return today's date as a UTC YYYY-MM-DD string."""
-    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    """Return today's date as YYYY-MM-DD in Eastern Time (refreshes at midnight ET)."""
+    return datetime.now(ET).strftime("%Y-%m-%d")
 
 
 @router.get("/prompts/today")
@@ -258,7 +258,7 @@ async def get_todays_prompt(user: Dict = Depends(require_auth)):
         all_prompts = await db.prompts.find({"active": True}, {"_id": 0}).sort("scheduled_date", 1).to_list(1000)
         if not all_prompts:
             return {"prompt": None}
-        day_of_year = datetime.now(timezone.utc).timetuple().tm_yday
+        day_of_year = datetime.now(ET).timetuple().tm_yday
         prompt = all_prompts[day_of_year % len(all_prompts)]
 
     # Check if user already buzzed in today
