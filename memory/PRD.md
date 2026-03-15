@@ -1,121 +1,64 @@
 # The HoneyGroove - Product Requirements Document
 
 ## Original Problem Statement
-The HoneyGroove is a social platform for vinyl record collectors built with React/FastAPI/MongoDB. The admin has been guiding development through bug reports and feature requests, focusing on production stability, UI/UX polish, performance optimization, and admin capabilities.
+Social platform for vinyl collectors and music lovers. Features include activity feed, user profiles with record collections, threaded comments, polls, marketplace (Honeypot), and daily engagement prompts ("Buzz In").
 
-## Tech Stack
-- **Frontend:** React (CRA), Shadcn/UI, Tailwind CSS
-- **Backend:** FastAPI (Python), Motor (async MongoDB)
+## Core Architecture
+- **Frontend:** React + Tailwind CSS + shadcn/ui
+- **Backend:** FastAPI + Socket.IO (real-time)
 - **Database:** MongoDB Atlas
-- **3rd Party:** Resend (email), Stripe Connect (payments), Discogs API (album metadata)
+- **Image Storage:** Cloudinary (primary, production) with Emergent Object Storage fallback
+- **Email:** Resend
+- **Payments:** Stripe Connect
+- **Music Data:** Discogs API
 
-## Core Features (Completed)
-- Feed with SWR-like caching, optimistic UI for likes/comments/follows
-- Daily Prompt with SWR caching, buzz-in with retry logic, streak tracking
-- **Polls** — 6th composition type with blind voting, Honey Gold branding, persistence, Creator View
-- Admin panel with temp password, user management, beta invites, reports
-- Threaded comment replies, follow/unfollow with optimistic UI
-- Password reset (dynamic URL), record data hydration for ghost records
-- Global price cache visible to all profile viewers
+## What's Been Implemented
 
-## Key Credentials
-- Admin: `kmklodnicki@gmail.com` / `HoneyGroove2026!`
+### P0 Sprint - Production Migration (March 2026)
+- **Cloudinary Integration:** `backend/utils/cloudinary_upload.py` utility streams image buffers to Cloudinary. Upload endpoints in `routes/collection.py` and `routes/verification.py` try Cloudinary first, fallback to Emergent storage. Env vars: `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`.
+- **Global Mobile Modal Fix:** All Radix dialog components (`dialog.jsx`, `sheet.jsx`, `alert-dialog.jsx`) updated with `max-height: 85vh`, `overflow-y: auto`, responsive scaling via `modal-mobile-scale` CSS class, and `onCloseAutoFocus` scroll-lock fix.
+- **Notification Deduplication:** SocketContext rewritten with proper cleanup, `processedIds` Set for dedup. Navbar `prevCountRef` starts at -1 (skips initial flood), `shownNotifIds` prevents duplicate browser notifications.
+- **Broken Image Fallback:** `isLegacyUploadUrl()` in `imageUrl.js` detects old `/uploads` paths. AlbumArt and PostCards show "migration in progress" placeholder for failed legacy images.
+- **Localhost Cleanup:** Removed `http://localhost:3000` from CORS origins in `server.py`. Dynamic CORS via `FRONTEND_URL` and `CORS_ORIGINS` env vars.
 
-## Completed Work
-
-### Session 4 (Mar 14, 2026) — P0 UI/UX Fixes & Deployment Readiness
-- **Composer Bar Layout Fix:** Verified 3-column grid on desktop, 2-column on mobile. All 6 chips render without truncation.
-- **Poll Creator View (Complete):** Backend `GET /api/polls/{post_id}/results` + frontend "See Results"/"Back to vote" buttons for poll creators who haven't voted. Tested end-to-end.
-- **Feed Filter Dropdown:** Unified dropdown for all viewports with Honey Gold styling. Left-aligned on desktop (1024px+), centered on mobile.
-- **Now Spinning Modal Mobile:** Responsive layout with sticky footer, scrollable content.
-- **Hardcoded URL Fix:** Removed hardcoded preview URL from backend CORS origins. Dynamic CORS via `FRONTEND_URL` env var.
-- **Haul Modal Restructure:** Records search moved to top (primary), location field below marked optional with 📍 emoji, prominent album art on selection.
-- **Composer Chip Styling:** Added `white-space: nowrap` to labels, reduced horizontal padding, icon-text center alignment.
-- **Now Spinning Emoji:** Updated to 🎵 across composer chip, modal title, feed filter, and PostTypeBadge.
-- **Login Loading Text:** Changed "Warming up the hive..." to "Warming up the honey..."
-- **Haul Post Display:** Store name now shows with 📍 prefix instead of "Found at".
-- **Mini Groove Hidden:** "See what the Hive said yesterday" button and PromptArchiveDrawer hidden with `{false && ...}` — underlying logic and DB queries retained.
-- **Composer Width Sync:** Removed hardcoded `maxWidth: 600px`. Composer now fills same `max-w-2xl` container as post cards (640px on desktop). Matched `shadow` class and `border-honey/30` for visual consistency.
-- **Mobile Filter Dropdown:** Fixed width to 280px / max 80vw, centered text with `justify-center`, centered menu on screen, increased padding to `py-2.5` for thumb-friendly tapping.
-- **Filter Dropdown Emoji-First:** Emoji moved to left of text labels (🍯 All, 🎵 Now Spinning, etc.), 8px gap, checkmark on far right. Subtle honey-gold dividers between items (not after last).
-- **Now Spinning SVG Icon:** Replaced emoji with lucide-react `Music` SVG icon in dark honey (#78350F), matching stroke weight of other composer icons. Modal title also uses SVG.
-- **Collection Buttons Mobile:** Changed from vertical stack to horizontal `flex-row` with condensed labels on mobile (Dupes, Fix), uniform h-9 height, no horizontal overflow.
-- **iOS Zoom Fix:** Added `maximum-scale=1, user-scalable=0` to viewport meta, `-webkit-text-size-adjust: 100%` on html, `overflow-x: hidden` on body/#root, 16px font-size for selects on mobile, all modals use `max-sm:max-w-[95vw]`.
-- **Honey Essentials Reorganization:** Restructured page into 3 sections (Vinyl Charms, Vinyl Protection, Light Up Your Records). Added 3 new Vinyl Charm products with vinylcharms.com affiliate links. Updated Cleaning Kit URL. Dynamic partner labels in GrooveTerminalModal. Re-added holographic sleeves (Cracked Ice, Lovely, Pearl Shimmer) to Protection. Section dividers with gold hr. Removed subtitle. TS Charms renamed. Essentials removed from profile dropdown (kept in navbar). Honeycomb background.
-- **Threaded Comments Enhancement:** Reply button on ALL comments (including sub-comments). Visual gold thread line connecting parent to children. 1-level flat nesting (replies to replies stack under top-level). "Replying to @username" indicator with cancel. Smart notifications: thread owner + direct parent both notified. "View X more replies" toggle at 3+ replies.
-
-### Session 3 (Mar 14, 2026) — Polls Feature
-- **Full Poll Implementation:** Backend (PollCreate model, `POST /composer/poll`, `POST /polls/{post_id}/vote`, poll_votes collection, per-option results in build_post_response) + Frontend (PollCard with blind voting UX, Poll composer in ComposerBar with dynamic options min 2/max 6, 500 char limit)
-- **Honey Gold Branding (#DAA520):** Gold progress bars with slide animation, gold circle checkmark for "My Vote" indicator
-- **Blind Voting:** Pre-vote shows clickable buttons without percentages. Post-vote reveals gold percentage bars and "X people responded" count. Persistence: refresh shows results for users who already voted
-
-### Session 2 (Mar 14, 2026)
-- Daily Prompt submission retry on stale prompt_id
-- Discogs pricing fix: public `GET /valuation/record-values/{username}` endpoint
-- Ghost records hydration, DailyPrompt SWR caching, Admin layout flex-wrap
-
-### Session 1 (Previous)
-- Performance: SWR-like feed caching, optimistic UI, lazy loading
-- Password reset URL fix, Daily Prompt sync fix, threaded comments
-- Admin temp password feature, change password in settings
-
-## Architecture
-```
-/app/
-├── backend/
-│   ├── server.py          # Main app, CORS, middleware
-│   ├── routes/
-│   │   ├── hive.py        # Feed, posts, ghost record hydration, POLL composer + vote + results
-│   │   ├── daily_prompts.py
-│   │   ├── valuation.py   # /record-values/{username} public endpoint
-│   │   └── collection.py
-│   ├── models.py
-│   └── database.py
-├── frontend/
-│   └── src/
-│       ├── components/
-│       │   ├── PostCards.js    # PollCard (blind voting, gold bars, creator view)
-│       │   ├── ComposerBar.js  # 6 chips incl. Poll, grid layout
-│       │   └── DailyPrompt.js
-│       ├── pages/
-│       │   ├── HivePage.js     # Feed filter dropdown
-│       │   └── ProfilePage.js
-│       └── utils/
-│           └── apiBase.js      # Uses process.env.REACT_APP_BACKEND_URL
-```
-
-## Key API Endpoints
-- `POST /api/composer/poll` — Create poll (question, options[2-6])
-- `POST /api/polls/{post_id}/vote` — Cast vote (option_index), returns results
-- `GET /api/polls/{post_id}/results` — Poll results without voting (creator view)
-- `GET /api/feed` — Includes POLL posts with poll_question/options/results/user_vote
-- `GET /api/valuation/record-values/{username}` — Public median values
-- `POST /api/prompts/buzz-in` — Daily prompt answer
-
-## DB Collections
-- `poll_votes` — {id, post_id, user_id, option_index, created_at}
-- `posts` — POLL type: {poll_question, poll_options: string[]}
+### Previously Completed
+- Threaded comments with one-level-deep reply limit
+- Comment deletion (soft-delete with placeholder)
+- Global "Fetching the honey..." loading state (`LoadingHoney.jsx`)
+- iOS zoom bug fix (viewport meta, 16px input fonts)
+- Honey Essentials page overhaul
+- Poll creator view
+- Haul post composer restructure
+- Filter dropdowns with emoji-first styling
+- Now Spinning icon sync
 
 ## Prioritized Backlog
 
 ### P1 - Upcoming
-- Instagram Story Export (1080x1920 PNG from Daily Prompt)
-- Login Pre-fetching (pre-fetch feed/profile during login animation)
-- Service Worker Caching (pre-cache key assets)
+- Instagram Story Export (Daily Prompt as 1080x1920 PNG)
+- Re-enable "Mini Groove" feature
+- Login pre-fetching during animation
+- Crown Jewels sorting logic
+- Service Worker Caching
 
 ### P2 - Future
-- Spotify Integration (needs callback URL from user)
+- Streaming Service Integration (Spotify)
 - Record Store Day Proxy Network
 - Safari-compatible loading animation
 - Pro memberships / Verified Seller badge
 - Secret Search Feature
-- New Music Friday dynamic editing
+- Weekly Wax dynamic editing
+- Fragile Web Scraper improvement (rotating User-Agents, backoff)
 
-### Refactoring
-- Split PostCards.js into type-specific card components
-- Break down remaining monolithic files
+## Key Files
+- `backend/server.py` - Main app entry, CORS, startup
+- `backend/utils/cloudinary_upload.py` - Cloudinary upload utility
+- `backend/routes/collection.py` - Upload endpoint, records, collection
+- `backend/routes/verification.py` - Golden Hive verification uploads
+- `frontend/src/components/ui/dialog.jsx` - Dialog with mobile fixes
+- `frontend/src/context/SocketContext.js` - Socket with dedup
+- `frontend/src/utils/imageUrl.js` - Image URL resolution + legacy detection
+- `frontend/src/components/AlbumArt.js` - Album art with migration fallback
 
-## Known Issues
-- Discogs CDN returns 503 for some album images (external)
-- Web scraper needs rotating User-Agents
-- Feed filter `post_type` param not strictly filtering on backend (frontend handles it)
+## Test Credentials
+- Admin: kmklodnicki@gmail.com / HoneyGroove2026!
