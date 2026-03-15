@@ -1,8 +1,8 @@
-"""Cloudinary upload utility. Streams image buffers directly to Cloudinary.
-Falls back to Emergent object storage when Cloudinary is not configured."""
+"""Cloudinary upload utility. Streams image buffers directly to Cloudinary."""
 import os
 import io
 import uuid
+import re
 import logging
 import cloudinary
 import cloudinary.uploader
@@ -11,20 +11,22 @@ logger = logging.getLogger("cloudinary_upload")
 
 _configured = False
 
-# Method 1: CLOUDINARY_URL (SDK auto-configures from this)
+# Parse CLOUDINARY_URL if available: cloudinary://API_KEY:API_SECRET@CLOUD_NAME
 cloud_url = os.environ.get("CLOUDINARY_URL", "")
-# Fix common mistake: value contains "CLOUDINARY_URL=" prefix
 if cloud_url.startswith("CLOUDINARY_URL="):
     cloud_url = cloud_url.replace("CLOUDINARY_URL=", "", 1)
-    os.environ["CLOUDINARY_URL"] = cloud_url
 
-if cloud_url and cloud_url.startswith("cloudinary://"):
-    # SDK reads CLOUDINARY_URL automatically on first use
+match = re.match(r'cloudinary://(\d+):([^@]+)@(.+)', cloud_url)
+if match:
+    cloudinary.config(
+        cloud_name=match.group(3),
+        api_key=match.group(1),
+        api_secret=match.group(2),
+        secure=True,
+    )
     _configured = True
-    logger.info("Cloudinary configured via CLOUDINARY_URL")
-
-# Method 2: Individual env vars
-if not _configured:
+    logger.info(f"Cloudinary configured from CLOUDINARY_URL: cloud={match.group(3)}")
+else:
     CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME") or os.environ.get("CLOUDINARY_NAME", "")
     API_KEY = os.environ.get("CLOUDINARY_API_KEY", "")
     API_SECRET = os.environ.get("CLOUDINARY_API_SECRET", "")
@@ -36,10 +38,10 @@ if not _configured:
             secure=True,
         )
         _configured = True
-        logger.info(f"Cloudinary configured: cloud={CLOUD_NAME[:6]}...")
+        logger.info(f"Cloudinary configured from individual env vars: cloud={CLOUD_NAME}")
 
 if not _configured:
-    logger.warning("Cloudinary credentials missing — uploads will use fallback storage")
+    logger.warning("Cloudinary credentials missing")
 
 
 def is_cloudinary_configured() -> bool:
