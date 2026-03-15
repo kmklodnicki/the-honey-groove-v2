@@ -536,6 +536,7 @@ async def wizard_save_value(discogs_id: int, body: ManualValueInput, user: Dict 
 
 
 # ===================== HIDDEN GEMS =====================
+@router.get("/valuation/hidden-gems")
 async def get_hidden_gems(user: Dict = Depends(require_auth), limit: int = 3):
     """Top N most valuable records in the user's collection."""
     records = await db.records.find(
