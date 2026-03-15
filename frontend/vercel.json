@@ -3,7 +3,7 @@
   "buildCommand": "craco build",
   "outputDirectory": "build",
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index.py" },
+    { "source": "/api/(.*)", "destination": "/api/index" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
