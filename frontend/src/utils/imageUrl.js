@@ -18,7 +18,14 @@ const enforceHttps = (url) => {
  */
 export function isLegacyUploadUrl(src) {
   if (!src || typeof src !== 'string') return false;
-  return src.includes('/uploads/') || src.includes('/api/files/serve/');
+  // Only flag as legacy if the URL fails AND points to our current domain's serve path
+  // Full URLs to other domains (like Emergent preview) still work
+  if (src.startsWith('http://') || src.startsWith('https://')) {
+    // Only legacy if it's pointing to the current domain's broken proxy
+    const currentDomain = API.replace(/\/api$/, '');
+    return src.startsWith(currentDomain) && src.includes('/api/files/serve/');
+  }
+  return src.includes('/uploads/');
 }
 
 /**
@@ -48,9 +55,13 @@ export function resolveImageUrl(src) {
   // Cloudinary URLs — return as-is
   if (src.includes('res.cloudinary.com')) return enforceHttps(src);
 
-  // Case 3: Old URL containing our serve path but pointing to a different domain
+  // Case 3: Old URL containing our serve path from a different domain
+  // If it already has a full URL (http/https), keep the original domain — it still serves the image
   const serveIdx = src.indexOf(SERVE_PATH);
   if (serveIdx !== -1) {
+    if (src.startsWith('http://') || src.startsWith('https://')) {
+      return enforceHttps(src);
+    }
     const storagePath = src.substring(serveIdx + SERVE_PATH.length);
     return enforceHttps(`${API}/files/serve/${storagePath}`);
   }
