@@ -35,6 +35,8 @@ import WaxReportPin from '../components/WaxReportPin';
 import BackToTop from '../components/BackToTop';
 import { useAPI } from '../hooks/useAPI';
 import ReactDOM from 'react-dom';
+import { PostCard, InfiniteScrollSentinel } from '../components/HivePostCard';
+import { PostCardBody } from '../components/PostCards';
 
 // BLOCK 559/561: Golden Hive Shield — prominent badge with portal tooltip
 const GoldenHiveShield = () => {
@@ -246,6 +248,13 @@ const ProfilePage = () => {
   const [goldenHiveCheckoutLoading, setGoldenHiveCheckoutLoading] = useState(false);
   const [deleteSpinTarget, setDeleteSpinTarget] = useState(null);
 
+  // Posts tab state
+  const [userPosts, setUserPosts] = useState([]);
+  const [userPostsLoading, setUserPostsLoading] = useState(false);
+  const [userPostsHasMore, setUserPostsHasMore] = useState(true);
+  const [userPostsLoadingMore, setUserPostsLoadingMore] = useState(false);
+  const POST_PAGE_SIZE = 20;
+
   const handleDeleteSpin = async () => {
     if (!deleteSpinTarget) return;
     try {
@@ -292,6 +301,60 @@ const ProfilePage = () => {
     });
   };
 
+  // Posts tab handlers
+  const loadMorePosts = useCallback(async () => {
+    if (userPostsLoadingMore || !userPostsHasMore) return;
+    setUserPostsLoadingMore(true);
+    try {
+      const lastPost = userPosts[userPosts.length - 1];
+      const params = { limit: POST_PAGE_SIZE };
+      if (lastPost?.created_at) params.before = lastPost.created_at;
+      const response = await axios.get(`${API}/users/${username}/posts`, {
+        params, headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
+      setUserPostsHasMore(response.data.length >= POST_PAGE_SIZE);
+      setUserPosts(prev => [...prev, ...response.data]);
+    } catch { toast.error('could not load more posts.'); }
+    finally { setUserPostsLoadingMore(false); }
+  }, [userPostsLoadingMore, userPostsHasMore, userPosts, API, username, token]);
+
+  const handlePostLike = async (postId, isLiked) => {
+    setUserPosts(prev => prev.map(p => p.id === postId ? { ...p, is_liked: !isLiked, likes_count: isLiked ? Math.max(0, p.likes_count - 1) : p.likes_count + 1 } : p));
+    try {
+      if (isLiked) await axios.delete(`${API}/posts/${postId}/like`, { headers: { Authorization: `Bearer ${token}` } });
+      else await axios.post(`${API}/posts/${postId}/like`, {}, { headers: { Authorization: `Bearer ${token}` } });
+    } catch {
+      setUserPosts(prev => prev.map(p => p.id === postId ? { ...p, is_liked: isLiked, likes_count: isLiked ? p.likes_count + 1 : Math.max(0, p.likes_count - 1) } : p));
+    }
+  };
+
+  const handlePostCommentCount = (postId, delta) => {
+    setUserPosts(prev => prev.map(p => p.id === postId ? { ...p, comments_count: Math.max(0, (p.comments_count || 0) + delta) } : p));
+  };
+
+  const handlePostDelete = async (postId) => {
+    try {
+      await axios.delete(`${API}/posts/${postId}`, { headers: { Authorization: `Bearer ${token}` } });
+      setUserPosts(prev => prev.filter(p => p.id !== postId));
+      toast.success('post deleted.');
+    } catch { toast.error('could not delete post.'); }
+  };
+
+  const handlePostPin = async (postId, isPinned) => {
+    try {
+      if (isPinned) await axios.delete(`${API}/posts/${postId}/pin`, { headers: { Authorization: `Bearer ${token}` } });
+      else await axios.post(`${API}/posts/${postId}/pin`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      setUserPosts(prev => prev.map(p => ({ ...p, is_pinned: p.id === postId ? !isPinned : false })));
+    } catch { toast.error('could not pin post.'); }
+  };
+
+  const handlePostToggleFeature = async (postId, isFeature) => {
+    try {
+      await axios.post(`${API}/posts/${postId}/new-feature`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      setUserPosts(prev => prev.map(p => p.id === postId ? { ...p, is_new_feature: !isFeature } : p));
+    } catch { toast.error('could not toggle feature.'); }
+  };
+
   const fetchProfile = useCallback(async () => {
     try {
       setProfileUnavailable(false);
@@ -322,9 +385,6 @@ const ProfilePage = () => {
           axios.get(`${API}/users/${username}/taste-match`, { headers: { Authorization: `Bearer ${token}` }})
             .then(r => {
               setTasteMatch(r.data);
-              if (r.data.score >= 90 && !new URLSearchParams(window.location.search).get('tab')) {
-                setActiveTab('in-common');
-              }
             })
             .catch(() => {})
             .finally(() => setTasteLoading(false));
@@ -348,6 +408,8 @@ const ProfilePage = () => {
     setShowCommonOnly(false);
     setCommonGroundOpen(false);
     setDreamingItems([]);
+    setUserPosts([]);
+    setUserPostsHasMore(true);
     fetchProfile();
 
     // Handle Golden Hive redirect
@@ -384,7 +446,15 @@ const ProfilePage = () => {
         .then(r => setUserListings(Array.isArray(r.data) ? r.data : r.data?.listings || []))
         .catch(() => {});
     }
-  }, [activeTab, API, username, spins.length, isos.length, dreamingItems.length, userListings.length]);
+    // Fetch user's posts for "Posts" tab
+    if (activeTab === 'posts' && userPosts.length === 0) {
+      setUserPostsLoading(true);
+      axios.get(`${API}/users/${username}/posts`, { params: { limit: POST_PAGE_SIZE }, headers: token ? { Authorization: `Bearer ${token}` } : {} })
+        .then(r => { setUserPosts(r.data); setUserPostsHasMore(r.data.length >= POST_PAGE_SIZE); })
+        .catch(() => {})
+        .finally(() => setUserPostsLoading(false));
+    }
+  }, [activeTab, API, username, token, spins.length, isos.length, dreamingItems.length, userListings.length, userPosts.length]);
 
   const handleFollow = async () => {
     if (followLoading) return; // <--- ADD THIS GATEKEEPER LINE
@@ -944,17 +1014,15 @@ const ProfilePage = () => {
           <TabsTrigger value="collection" className="data-[state=active]:bg-honey text-xs sm:text-sm shrink-0 px-3" data-testid="tab-collection">
             Collection
           </TabsTrigger>
+          <TabsTrigger value="posts" className="data-[state=active]:bg-honey text-xs sm:text-sm shrink-0 px-3" data-testid="tab-posts">
+            Posts
+          </TabsTrigger>
           <TabsTrigger value="for-sale" className="data-[state=active]:bg-honey text-xs sm:text-sm shrink-0 px-3" data-testid="tab-for-sale">
             For Sale
           </TabsTrigger>
           <TabsTrigger value="dreaming" className="data-[state=active]:bg-honey text-xs sm:text-sm shrink-0 px-3" data-testid="tab-dreaming">
             Dream List
           </TabsTrigger>
-          {!isOwnProfile && tasteMatch && (
-            <TabsTrigger value="in-common" className="data-[state=active]:bg-honey text-xs sm:text-sm shrink-0 px-3" data-testid="tab-in-common">
-              In Common
-            </TabsTrigger>
-          )}
           <TabsTrigger value="iso" className="data-[state=active]:bg-honey text-xs sm:text-sm shrink-0 px-3" data-testid="tab-iso">
             ISO
           </TabsTrigger>
@@ -1201,73 +1269,40 @@ const ProfilePage = () => {
           )}
         </TabsContent>
 
-        {/* In Common Tab (only when viewing another user with taste match) */}
-        {!isOwnProfile && tasteMatch && (
-          <TabsContent value="in-common">
-            <div className="space-y-8" data-testid="in-common-tab">
-              {/* Shared Realities */}
-              <div>
-                <h3 className="font-heading text-lg mb-1">Shared Realities</h3>
-                <p className="text-xs text-muted-foreground mb-3">You both own these specific records.</p>
-                {tasteMatch.shared_reality.length === 0 ? (
-                  <p className="text-sm text-stone-400 italic py-4" data-testid="no-shared-reality">No matching records yet. Maybe you're the first with this specific taste!</p>
-                ) : (
-                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3" data-testid="shared-realities-grid">
-                    {tasteMatch.shared_reality.map((r, i) => (
-                      <button key={i} className="group text-left" style={{ boxShadow: '0 0 12px rgba(255,215,0,0.3)' }} onClick={() => openRecordVariant(r)}>
-                        <div className="aspect-square rounded-lg overflow-hidden bg-vinyl-black">
-                          {r.cover_url ? <AlbumArt src={r.cover_url} alt={r.title} className="w-full h-full object-cover" isUnofficial={r.is_unofficial} /> : <div className="w-full h-full flex items-center justify-center"><Disc className="w-8 h-8 text-honey" /></div>}
-                        </div>
-                        <p className="text-xs font-medium truncate mt-1">{r.title}</p>
-                        <p className="text-[10px] text-muted-foreground truncate">{r.artist}</p>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              {/* Shared Visions */}
-              <div>
-                <h3 className="font-heading text-lg mb-1">Shared Visions</h3>
-                <p className="text-xs text-muted-foreground mb-3">You both have these on your Dream List.</p>
-                {tasteMatch.shared_dreams.length === 0 ? (
-                  <p className="text-sm text-stone-400 italic py-4" data-testid="no-shared-dreams">No shared dreams yet.</p>
-                ) : (
-                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3" data-testid="shared-visions-grid">
-                    {tasteMatch.shared_dreams.map((r, i) => (
-                      <button key={i} className="text-left" onClick={() => openRecordVariant(r)}>
-                        <div className="aspect-square rounded-lg overflow-hidden bg-vinyl-black">
-                          {r.cover_url ? <AlbumArt src={r.cover_url} alt={r.title} className="w-full h-full object-cover" isUnofficial={r.is_unofficial} /> : <div className="w-full h-full flex items-center justify-center"><Disc className="w-8 h-8 text-honey" /></div>}
-                        </div>
-                        <p className="text-xs font-medium truncate mt-1">{r.title}</p>
-                        <p className="text-[10px] text-muted-foreground truncate">{r.artist}</p>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              {/* The Cross-Over */}
-              <div>
-                <h3 className="font-heading text-lg mb-1">The Cross-Over</h3>
-                <p className="text-xs text-muted-foreground mb-3">Records they own that you want, and vice-versa.</p>
-                {tasteMatch.swap_potential.length === 0 ? (
-                  <p className="text-sm text-stone-400 italic py-4" data-testid="no-crossover">No cross-over matches right now.</p>
-                ) : (
-                  <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3" data-testid="crossover-grid">
-                    {tasteMatch.swap_potential.map((r, i) => (
-                      <button key={i} className="text-left" style={{ boxShadow: '0 0 12px rgba(200,134,26,0.3)' }} onClick={() => openRecordVariant(r)}>
-                        <div className="aspect-square rounded-lg overflow-hidden bg-vinyl-black ring-1 ring-honey/40">
-                          {r.cover_url ? <AlbumArt src={r.cover_url} alt={r.title} className="w-full h-full object-cover" isUnofficial={r.is_unofficial} /> : <div className="w-full h-full flex items-center justify-center"><Disc className="w-8 h-8 text-honey" /></div>}
-                        </div>
-                        <p className="text-xs font-medium truncate mt-1">{r.title}</p>
-                        <p className="text-[10px] text-muted-foreground truncate">{r.artist}</p>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+        {/* Posts Tab */}
+        <TabsContent value="posts" data-testid="posts-tab">
+          {userPostsLoading ? (
+            <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-honey" /></div>
+          ) : userPosts.length === 0 ? (
+            <EmptyState icon={MessageCircle} title="No posts yet" sub={isOwnProfile ? 'Your Hive posts will show up here.' : `@${username} hasn't posted to the Hive yet.`} subStyle={{ color: '#4A4A4A', fontSize: '16px' }} />
+          ) : (
+            <div className="space-y-4">
+              {userPosts.map((post, idx) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  onLike={handlePostLike}
+                  onCommentCountChange={handlePostCommentCount}
+                  onDelete={handlePostDelete}
+                  onAlbumClick={(record) => openRecordVariant(record)}
+                  onPin={handlePostPin}
+                  onToggleFeature={handlePostToggleFeature}
+                  token={token}
+                  API={API}
+                  currentUserId={user?.id}
+                  isAdmin={user?.is_admin}
+                  imgPriority={idx < 3}
+                />
+              ))}
+              {userPostsHasMore && (
+                <InfiniteScrollSentinel onIntersect={loadMorePosts} loading={userPostsLoadingMore} />
+              )}
+              {!userPostsHasMore && userPosts.length > 0 && (
+                <p className="text-center text-sm text-muted-foreground pt-4 pb-2 italic">you've seen all of {isOwnProfile ? 'your' : `@${username}'s`} posts.</p>
+              )}
             </div>
-          </TabsContent>
-        )}
+          )}
+        </TabsContent>
 
         {/* ISO Tab */}
         <TabsContent value="iso">

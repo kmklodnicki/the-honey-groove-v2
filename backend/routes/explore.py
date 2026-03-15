@@ -18,6 +18,7 @@ from database import DISCOGS_TOKEN, DISCOGS_USER_AGENT, DISCOGS_CONSUMER_KEY, DI
 from database import DISCOGS_REQUEST_TOKEN_URL, DISCOGS_AUTHORIZE_URL, DISCOGS_ACCESS_TOKEN_URL, DISCOGS_API_BASE
 from database import oauth_request_tokens, import_progress, EMERGENT_KEY
 from models import *
+from routes.hive import build_post_response
 
 
 router = APIRouter()
@@ -472,18 +473,22 @@ async def get_user_dreaming(username: str, current_user: Optional[Dict] = Depend
     return items
 
 @router.get("/users/{username}/posts")
-async def get_user_posts(username: str, current_user: Optional[Dict] = Depends(get_current_user), limit: int = 50):
+async def get_user_posts(username: str, current_user: Optional[Dict] = Depends(get_current_user), limit: int = 20, before: Optional[str] = None):
     target = await db.users.find_one({"username": username.lower()}, {"_id": 0})
     if not target:
         raise HTTPException(status_code=404, detail="User not found")
     await _check_profile_access(target, current_user)
     
-    posts = await db.posts.find({"user_id": target["id"]}, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+    query = {"user_id": target["id"]}
+    if before:
+        query["created_at"] = {"$lt": before}
+    posts = await db.posts.find(query, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
     result = []
     uid = current_user["id"] if current_user else None
     for post in posts:
         resp = await build_post_response(post, uid)
-        result.append(resp)
+        if resp:
+            result.append(resp)
     return result
 
 

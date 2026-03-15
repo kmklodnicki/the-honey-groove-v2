@@ -23,7 +23,7 @@ const UnofficialPill = ({ variant = 'overlay', className = '' }) => {
 
   return (
     <div
-      className={`absolute top-2 right-2 z-[6] text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full backdrop-blur-sm ${className}`}
+      className={`absolute bottom-2 right-2 z-[6] text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full backdrop-blur-sm ${className}`}
       style={{
         background: 'rgba(74,74,74,0.85)',
         backdropFilter: 'blur(12px)',

@@ -436,23 +436,43 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
     )
 
 @router.get("/feed")
-async def get_feed(user: Dict = Depends(require_auth), limit: int = 20, skip: int = 0, before: Optional[str] = None):
+async def get_feed(user: Dict = Depends(require_auth), limit: int = 20, skip: int = 0, before: Optional[str] = None, post_type: Optional[str] = None):
     try:
         hidden_ids = await get_hidden_user_ids()
         blocked_ids = await get_all_blocked_ids(user["id"])
         exclude_ids = list(set(hidden_ids + blocked_ids))
 
-        # Fetch pinned post first (if any)
+        # Fetch pinned post first (if any) — only include if it matches the filter
         pinned_post = await db.posts.find_one({"is_pinned": True}, {"_id": 0})
         pinned_resp = None
         if pinned_post and pinned_post.get("user_id") not in exclude_ids:
-            pinned_resp = await build_post_response(pinned_post, user["id"])
+            if not post_type:
+                pinned_resp = await build_post_response(pinned_post, user["id"])
+            else:
+                pt_upper = post_type.upper()
+                pinned_pt = (pinned_post.get("post_type") or "").upper()
+                if pt_upper == "NOW_SPINNING" and pinned_pt in ("NOW_SPINNING", "RANDOMIZER"):
+                    pinned_resp = await build_post_response(pinned_post, user["id"])
+                elif pt_upper == "LISTING" and pinned_pt in ("listing_sale", "listing_trade"):
+                    pinned_resp = await build_post_response(pinned_post, user["id"])
+                elif pinned_pt == pt_upper:
+                    pinned_resp = await build_post_response(pinned_post, user["id"])
 
         query = {"is_pinned": {"$ne": True}, "source": {"$ne": "discogs_import"}}
         if exclude_ids:
             query["user_id"] = {"$nin": exclude_ids}
         if before:
             query["created_at"] = {"$lt": before}
+
+        # Server-side post_type filtering
+        if post_type:
+            pt_upper = post_type.upper()
+            if pt_upper == "NOW_SPINNING":
+                query["post_type"] = {"$in": ["NOW_SPINNING", "RANDOMIZER"]}
+            elif pt_upper == "LISTING":
+                query["post_type"] = {"$in": ["listing_sale", "listing_trade"]}
+            else:
+                query["post_type"] = pt_upper
 
         # Allowed post types in the Hive feed
         ALLOWED_TYPES = {"NOW_SPINNING", "NEW_HAUL", "ISO", "RANDOMIZER", "DAILY_PROMPT", "NOTE", "POLL"}
