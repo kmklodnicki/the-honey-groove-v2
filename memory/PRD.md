@@ -12,25 +12,28 @@ The HoneyGroove is a vinyl record collector social platform. The admin has direc
 ## Core Features (Implemented)
 - User auth (register/login/invite codes)
 - Collection management (add/remove records, Discogs import via OAuth)
-- Social feed (Now Spinning, Hauls, ISOs, Notes, Polls) with server-side filtering
+- Social feed with server-side filtering (Now Spinning, Hauls, ISOs, Notes, Polls)
+- Collapsible pinned posts (localStorage persisted)
+- Notification preferences (all/following/none) with sender_id filtering
 - Marketplace (The Honeypot - listings, trades, payments)
 - Valuation system (Discogs market data, community valuations)
 - Weekly Wax reports, Daily Prompts, Bingo cards
 - DMs, notifications, follow system, blocking
 - Profile page with tabs: Collection, Posts, For Sale, Dream List, ISO
+- Settings: password update modal, notification prefs, privacy controls
 
-## Recent Changes (March 2026)
-- Moved UnofficialPill overlay from top-right to bottom-right of album art
-- Feed filters now use server-side filtering (post_type param) with infinite scroll
-- Profile page: removed 'In Common' tab, added 'Posts' tab with full interactivity
-- Note Composer: changed record selector from dropdown to search input
-- Image URL proxy: made dynamic (uses app's own API URL)
-- Cloudinary upload: improved error diagnostics
-- PostCard component extracted to shared HivePostCard.js
+## Recent Changes (March 2026 - Session 2)
+- Collapsible pinned post: X button, localStorage persistence, expand/collapse
+- Notification preferences: User model field + backend filtering logic
+- Settings: Notification card (All/Following/None radio buttons)
+- Settings: Password update moved to modal, button next to email
+- UnofficialPill moved to bottom-right
+- Feed filters: server-side filtering with infinite scroll
+- Profile Posts tab with cursor pagination
 
 ## P0 Issues (Vercel Production)
-1. **Cloudinary uploads** - "Invalid Signature" on Vercel (credential config issue) - Code improvements done, needs Vercel env var verification by admin
-2. **Old image display** - Code fixed to use dynamic API URL; needs EMERGENT_LLM_KEY on Vercel
+1. Cloudinary uploads - "Invalid Signature" on Vercel (credential config)
+2. Old image display - needs EMERGENT_LLM_KEY on Vercel
 
 ## P1 Issues
 - Notification email CTAs - needs user verification
@@ -38,17 +41,8 @@ The HoneyGroove is a vinyl record collector social platform. The admin has direc
 - Re-enable "Mini Groove" feature
 
 ## P2 / Future
-- Discogs API SSL resilience
-- Login pre-fetching
-- Service Worker caching
-- Streaming Service integration
-- Record Store Day Proxy Network
-- Safari loading animation
+- Discogs API SSL resilience, Login pre-fetching
+- Service Worker caching, Streaming Service integration
+- Record Store Day Proxy Network, Safari loading animation
 - Pro memberships / Verified Seller badge
-- Secret Search Feature
-- Editable "New Music Friday" in Weekly Wax
-- Update Crown Jewels logic
-
-## Key Credentials
-- Admin: kmklodnicki@gmail.com
-- DB: MongoDB Atlas (cluster0.abcipnu.mongodb.net)
+- Secret Search Feature, Editable Weekly Wax, Crown Jewels logic
