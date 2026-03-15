@@ -25,7 +25,10 @@ from services.email_service import send_email_fire_and_forget
 from database import hash_password, verify_password, create_token, search_discogs, get_discogs_release
 from database import put_object, get_object, init_storage, storage_key
 from database import STRIPE_API_KEY, STRIPE_WEBHOOK_SECRET, PLATFORM_FEE_PERCENT, FRONTEND_URL
-from emergentintegrations.payments.stripe import StripeCheckout
+try:
+    from emergentintegrations.payments.stripe import StripeCheckout
+except ImportError:
+    StripeCheckout = None
 from database import DISCOGS_TOKEN, DISCOGS_USER_AGENT, DISCOGS_CONSUMER_KEY, DISCOGS_CONSUMER_SECRET
 from database import DISCOGS_REQUEST_TOKEN_URL, DISCOGS_AUTHORIZE_URL, DISCOGS_ACCESS_TOKEN_URL, DISCOGS_API_BASE
 from database import oauth_request_tokens, import_progress, EMERGENT_KEY
