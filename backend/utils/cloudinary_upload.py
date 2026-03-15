@@ -9,23 +9,36 @@ import cloudinary.uploader
 
 logger = logging.getLogger("cloudinary_upload")
 
-# Read credentials from environment
-CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME") or os.environ.get("CLOUDINARY_NAME", "")
-API_KEY = os.environ.get("CLOUDINARY_API_KEY", "")
-API_SECRET = os.environ.get("CLOUDINARY_API_SECRET", "")
-
 _configured = False
 
-if CLOUD_NAME and API_KEY and API_SECRET:
-    cloudinary.config(
-        cloud_name=CLOUD_NAME,
-        api_key=API_KEY,
-        api_secret=API_SECRET,
-        secure=True,
-    )
+# Method 1: CLOUDINARY_URL (SDK auto-configures from this)
+cloud_url = os.environ.get("CLOUDINARY_URL", "")
+# Fix common mistake: value contains "CLOUDINARY_URL=" prefix
+if cloud_url.startswith("CLOUDINARY_URL="):
+    cloud_url = cloud_url.replace("CLOUDINARY_URL=", "", 1)
+    os.environ["CLOUDINARY_URL"] = cloud_url
+
+if cloud_url and cloud_url.startswith("cloudinary://"):
+    # SDK reads CLOUDINARY_URL automatically on first use
     _configured = True
-    logger.info(f"Cloudinary configured: cloud={CLOUD_NAME[:6]}...")
-else:
+    logger.info("Cloudinary configured via CLOUDINARY_URL")
+
+# Method 2: Individual env vars
+if not _configured:
+    CLOUD_NAME = os.environ.get("CLOUDINARY_CLOUD_NAME") or os.environ.get("CLOUDINARY_NAME", "")
+    API_KEY = os.environ.get("CLOUDINARY_API_KEY", "")
+    API_SECRET = os.environ.get("CLOUDINARY_API_SECRET", "")
+    if CLOUD_NAME and API_KEY and API_SECRET:
+        cloudinary.config(
+            cloud_name=CLOUD_NAME,
+            api_key=API_KEY,
+            api_secret=API_SECRET,
+            secure=True,
+        )
+        _configured = True
+        logger.info(f"Cloudinary configured: cloud={CLOUD_NAME[:6]}...")
+
+if not _configured:
     logger.warning("Cloudinary credentials missing — uploads will use fallback storage")
 
 
@@ -34,14 +47,8 @@ def is_cloudinary_configured() -> bool:
 
 
 def upload_image_buffer(data: bytes, folder: str = "uploads", public_id: str = None) -> dict:
-    """Upload an image buffer to Cloudinary.
-
-    Returns dict with 'secure_url' and 'public_id'.
-    Raises Exception if Cloudinary is not configured.
-    """
     if not _configured:
         raise RuntimeError("Cloudinary not configured")
-
     pid = public_id or str(uuid.uuid4())
     result = cloudinary.uploader.upload(
         io.BytesIO(data),
@@ -59,7 +66,6 @@ def upload_image_buffer(data: bytes, folder: str = "uploads", public_id: str = N
 
 
 def delete_image(public_id: str) -> bool:
-    """Delete an image from Cloudinary by public_id."""
     if not _configured:
         return False
     try:
