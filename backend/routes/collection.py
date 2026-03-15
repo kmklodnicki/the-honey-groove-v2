@@ -970,6 +970,7 @@ async def upload_file(file: UploadFile = File(...), user: Dict = Depends(require
             return {"file_id": file_id, "path": result["public_id"], "url": public_url}
         except Exception as e:
             logger.error(f"Cloudinary upload failed, trying fallback: {e}")
+            cloudinary_error = str(e)
 
     # Fallback: Emergent object storage
     path = f"{APP_NAME}/uploads/{user['id']}/{file_id}.{final_ext}"
@@ -990,7 +991,7 @@ async def upload_file(file: UploadFile = File(...), user: Dict = Depends(require
         return {"file_id": file_id, "path": result["path"], "url": public_url}
     except Exception as e:
         logger.error(f"Upload failed: {e}")
-        raise HTTPException(status_code=500, detail="Upload failed")
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
 
 @router.post("/admin/reprocess-heic")
