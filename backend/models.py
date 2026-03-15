@@ -46,6 +46,7 @@ class UserResponse(BaseModel):
     golden_hive_status: Optional[str] = None
     is_private: bool = False
     dm_setting: str = "everyone"  # "everyone" | "following" | "requests"
+    notification_preference: str = "all"  # "all" | "following" | "none"
     discogs_oauth_verified: bool = False
     needs_discogs_migration: bool = False
     discogs_migration_dismissed: bool = False
@@ -74,6 +75,7 @@ class UserUpdate(BaseModel):
     tiktok_username: Optional[str] = None
     is_private: Optional[bool] = None
     dm_setting: Optional[str] = None  # "everyone" | "following" | "requests"
+    notification_preference: Optional[str] = None  # "all" | "following" | "none"
     has_connected_discogs: Optional[bool] = None
 
 class TokenResponse(BaseModel):

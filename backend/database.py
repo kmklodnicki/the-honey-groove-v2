@@ -422,7 +422,19 @@ def get_discogs_market_data(release_id: int) -> Optional[Dict]:
     return None
 
 
-async def create_notification(user_id: str, ntype: str, title: str, body: str, data: Dict = None):
+async def create_notification(user_id: str, ntype: str, title: str, body: str, data: Dict = None, sender_id: str = None):
+    # Check recipient's notification preference
+    recipient = await db.users.find_one({"id": user_id}, {"_id": 0, "notification_preference": 1, "following": 1})
+    pref = (recipient or {}).get("notification_preference", "all")
+    if pref == "none":
+        return  # User opted out of all notifications
+    if pref == "following":
+        sid = sender_id or (data or {}).get("sender_id") or (data or {}).get("user_id") or (data or {}).get("from_user_id")
+        if sid:
+            following_list = (recipient or {}).get("following", [])
+            if sid not in following_list:
+                return  # User only wants notifications from people they follow
+
     now = datetime.now(timezone.utc).isoformat()
     doc = {
         "id": str(uuid.uuid4()),

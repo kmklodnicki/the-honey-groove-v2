@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Input } from './ui/input';
-import { Heart, MessageCircle, MoreVertical, Trash2, Pin, Reply, Send, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
+import { Heart, MessageCircle, MoreVertical, Trash2, Pin, Reply, Send, ChevronDown, ChevronUp, Sparkles, X } from 'lucide-react';
 import VerifiedShield from './VerifiedShield';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -77,6 +77,18 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
   const commentInputRef = React.useRef(null);
   const mentionTimerRef = React.useRef(null);
   const cardRef = useRef(null);
+
+  // Collapsible pinned post — persisted in localStorage
+  const pinnedKey = post.is_pinned ? `hg_pin_collapsed_${post.id}` : null;
+  const [pinnedCollapsed, setPinnedCollapsed] = useState(() => {
+    if (!post.is_pinned) return false;
+    try { return localStorage.getItem(`hg_pin_collapsed_${post.id}`) === '1'; } catch { return false; }
+  });
+  const togglePinnedCollapse = () => {
+    const next = !pinnedCollapsed;
+    setPinnedCollapsed(next);
+    try { if (next) localStorage.setItem(pinnedKey, '1'); else localStorage.removeItem(pinnedKey); } catch {}
+  };
 
   const isOwner = post.user_id === currentUserId;
   const timeAgo = formatDistanceToNow(new Date(post.created_at), { addSuffix: true });
@@ -240,9 +252,20 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
     <Card ref={cardRef} className={`border-honey/30 overflow-hidden hover:shadow-honey transition-all ${highlighted ? 'ring-2 ring-honey shadow-lg shadow-honey/20' : ''} ${post.is_new_feature ? 'shadow-md' : ''}`} style={post.is_new_feature ? { backgroundColor: '#f3faf5' } : undefined} data-testid={`post-${post.id}`}>
       {post.is_pinned && (
         <div className="px-4 py-1.5 bg-honey/10 border-b border-honey/20 flex items-center gap-1.5 text-xs text-honey-amber" data-testid={`pinned-${post.id}`}>
-          <Pin className="w-3 h-3" /> pinned
+          <Pin className="w-3 h-3" />
+          <span className="flex-1">{pinnedCollapsed ? 'pinned post' : 'pinned'}</span>
+          <button
+            onClick={(e) => { e.stopPropagation(); togglePinnedCollapse(); }}
+            className="p-0.5 rounded hover:bg-honey/20 transition-colors"
+            data-testid={`pinned-toggle-${post.id}`}
+            aria-label={pinnedCollapsed ? 'Expand pinned post' : 'Collapse pinned post'}
+          >
+            {pinnedCollapsed ? <ChevronDown className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />}
+          </button>
         </div>
       )}
+      {/* If pinned and collapsed, hide the rest of the card */}
+      {!(post.is_pinned && pinnedCollapsed) && (<>
       <div className="p-4 pb-2">
         <div className="flex items-center gap-3">
           <Link to={`/profile/${post.user?.username}`}>
@@ -356,6 +379,7 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
           )}
         </div>
       )}
+      </>)}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>

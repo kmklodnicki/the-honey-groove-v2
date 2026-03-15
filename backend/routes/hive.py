@@ -1023,7 +1023,7 @@ async def like_post(post_id: str, user: Dict = Depends(require_auth)):
                 await send_email_fire_and_forget(post_owner["email"], tpl["subject"], tpl["html"])
         await create_notification(post["user_id"], "POST_LIKED", "Someone liked your post",
                                   f"@{u.get('username','?')} liked your post",
-                                  {"post_id": post_id})
+                                  {"post_id": post_id}, sender_id=u["id"])
 
     return {"message": "Post liked"}
 
@@ -1062,7 +1062,7 @@ async def add_comment(post_id: str, comment_data: CommentCreate, user: Dict = De
     if post.get("user_id") != user["id"]:
         await create_notification(post["user_id"], "NEW_COMMENT", "New comment on your post",
                                   f"@{user.get('username','?')} commented on your post",
-                                  {"post_id": post_id})
+                                  {"post_id": post_id}, sender_id=user["id"])
         post_owner = await db.users.find_one({"id": post["user_id"]}, {"_id": 0})
         if post_owner and post_owner.get("email"):
             post_type = post.get("post_type", "post").replace("_", " ").title()
@@ -1075,14 +1075,14 @@ async def add_comment(post_id: str, comment_data: CommentCreate, user: Dict = De
         if parent and parent.get("user_id") != user["id"]:
             await create_notification(parent["user_id"], "COMMENT_REPLY", "Someone replied to your comment",
                                       f"@{user.get('username','?')} replied to your comment",
-                                      {"post_id": post_id, "comment_id": comment_id})
+                                      {"post_id": post_id, "comment_id": comment_id}, sender_id=user["id"])
         # Smart threading: if parent is itself a reply, also notify the thread owner (top-level comment author)
         if parent and parent.get("parent_id"):
             thread_owner = await db.comments.find_one({"id": parent["parent_id"]}, {"_id": 0})
             if thread_owner and thread_owner.get("user_id") != user["id"] and thread_owner.get("user_id") != parent.get("user_id"):
                 await create_notification(thread_owner["user_id"], "COMMENT_REPLY", "New reply in your thread",
                                           f"@{user.get('username','?')} replied in your comment thread",
-                                          {"post_id": post_id, "comment_id": comment_id})
+                                          {"post_id": post_id, "comment_id": comment_id}, sender_id=user["id"])
 
     # Parse @mentions and notify mentioned users (if not self or already notified)
     mentions = set(re.findall(r'@(\w+)', comment_data.content))
@@ -1101,7 +1101,7 @@ async def add_comment(post_id: str, comment_data: CommentCreate, user: Dict = De
         if mentioned_user and mentioned_user["id"] != user["id"] and mentioned_user["id"] not in notified_ids:
             await create_notification(mentioned_user["id"], "MENTION", "You were mentioned in a comment",
                                       f"@{user.get('username','?')} mentioned you in a comment",
-                                      {"post_id": post_id, "comment_id": comment_id})
+                                      {"post_id": post_id, "comment_id": comment_id}, sender_id=user["id"])
             notified_ids.add(mentioned_user["id"])
 
     user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url"), "title_label": user.get("title_label")}
@@ -1193,7 +1193,7 @@ async def like_comment(comment_id: str, user: Dict = Depends(require_auth)):
     if comment.get("user_id") != user["id"]:
         await create_notification(comment["user_id"], "COMMENT_LIKED", "Someone liked your comment",
                                   f"@{user.get('username','?')} liked your comment",
-                                  {"post_id": comment.get("post_id"), "comment_id": comment_id})
+                                  {"post_id": comment.get("post_id"), "comment_id": comment_id}, sender_id=user["id"])
     return {"message": "Comment liked"}
 
 @router.delete("/comments/{comment_id}/like")
@@ -1225,7 +1225,7 @@ async def parse_and_notify_mentions(text: str, post_id: str, author_id: str):
             mentioned_ids.append(u["id"])
             await create_notification(u["id"], "MENTION", "You were mentioned",
                                       f"@{author_name} mentioned you in a post",
-                                      {"post_id": post_id, "from_username": author_name})
+                                      {"post_id": post_id, "from_username": author_name}, sender_id=author_id)
     if mentioned_ids:
         await db.posts.update_one({"id": post_id}, {"$set": {"mentions": unique_usernames}})
     return unique_usernames

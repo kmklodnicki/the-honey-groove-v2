@@ -9,7 +9,7 @@ import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar';
 import { Switch } from '../components/ui/switch';
-import { ArrowLeft, Save, LogOut, Camera, Loader2, Mail, HelpCircle, ExternalLink, MessageSquare, Flag, Trash2, CreditCard, CheckCircle2, Shield, Bug, Lock, Globe, Users, MessageCircleMore, Download } from 'lucide-react';
+import { ArrowLeft, Save, LogOut, Camera, Loader2, Mail, HelpCircle, ExternalLink, MessageSquare, Flag, Trash2, CreditCard, CheckCircle2, Shield, Bug, Lock, Globe, Users, MessageCircleMore, Download, Bell, BellOff, Key } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
 import {
@@ -56,6 +56,10 @@ const SettingsPage = () => {
   const [bugReportOpen, setBugReportOpen] = useState(false);
   const [isPrivate, setIsPrivate] = useState(user?.is_private || false);
   const [dmSetting, setDmSetting] = useState(user?.dm_setting || 'everyone');
+  const [notifPref, setNotifPref] = useState(user?.notification_preference || 'all');
+  const [notifSaving, setNotifSaving] = useState(false);
+  const [showPwModal, setShowPwModal] = useState(false);
+  const [pwSaving, setPwSaving] = useState(false);
 
   useEffect(() => {
     axios.get(`${API}/newsletter/status`, { headers: { Authorization: `Bearer ${token}` } })
@@ -265,6 +269,39 @@ const SettingsPage = () => {
     }
   };
 
+  const handleNotifPrefChange = async (value) => {
+    const prev = notifPref;
+    setNotifPref(value);
+    setNotifSaving(true);
+    try {
+      await axios.put(`${API}/auth/me`, { notification_preference: value }, { headers: { Authorization: `Bearer ${token}` } });
+      updateUser({ ...user, notification_preference: value });
+      toast.success('notification preference updated.');
+    } catch {
+      setNotifPref(prev);
+      toast.error('could not update preference.');
+    } finally { setNotifSaving(false); }
+  };
+
+  const handlePasswordUpdate = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const current = form.currentPw.value;
+    const newPw = form.newPw.value;
+    const confirm = form.confirmPw.value;
+    if (newPw !== confirm) { toast.error('new passwords do not match.'); return; }
+    if (newPw.length < 6) { toast.error('password must be at least 6 characters.'); return; }
+    setPwSaving(true);
+    try {
+      await axios.put(`${API}/auth/update-password`, { current_password: current, new_password: newPw }, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success('password updated.');
+      setShowPwModal(false);
+      form.reset();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'failed to update password.');
+    } finally { setPwSaving(false); }
+  };
+
   const firstLetter = user?.username?.charAt(0).toUpperCase() || '?';
   const hasCustomAvatar = avatarPreview && !avatarPreview.includes('dicebear');
 
@@ -371,7 +408,7 @@ const SettingsPage = () => {
             />
           </div>
 
-          {/* Email */}
+          {/* Email & Password */}
           <div className="space-y-2">
             <Label>Email</Label>
             {!editingEmail ? (
@@ -384,6 +421,13 @@ const SettingsPage = () => {
                   data-testid="settings-email-edit-btn"
                 >
                   change
+                </button>
+                <button
+                  onClick={() => setShowPwModal(true)}
+                  className="text-sm text-honey-amber hover:underline whitespace-nowrap flex items-center gap-1"
+                  data-testid="update-password-btn"
+                >
+                  <Key className="w-3 h-3" /> password
                 </button>
               </div>
               <p className="text-xs text-muted-foreground mt-1">Private. Used for communications.</p>
@@ -610,6 +654,42 @@ const SettingsPage = () => {
         </CardContent>
       </Card>
 
+      {/* Notification Preferences */}
+      <Card className="border-honey/30 mb-6" data-testid="notification-prefs-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Bell className="w-5 h-5 text-amber-500" /> Notifications</CardTitle>
+          <CardDescription>control which notifications you receive.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {[
+              { value: 'all', label: 'All Notifications', desc: 'Receive notifications for all activity', icon: Bell },
+              { value: 'following', label: 'Only People I Follow', desc: 'Only get notified when someone you follow interacts', icon: Users },
+              { value: 'none', label: 'None', desc: 'Turn off all in-app notifications', icon: BellOff },
+            ].map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => handleNotifPrefChange(opt.value)}
+                disabled={notifSaving}
+                className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-all text-left ${
+                  notifPref === opt.value
+                    ? 'border-amber-400 bg-amber-50/50'
+                    : 'border-stone-200/50 bg-stone-50/40 hover:bg-stone-50/80'
+                }`}
+                data-testid={`notif-pref-${opt.value}`}
+              >
+                <opt.icon className={`w-4 h-4 shrink-0 ${notifPref === opt.value ? 'text-amber-600' : 'text-stone-400'}`} />
+                <div className="flex-1 min-w-0">
+                  <p className={`text-sm font-medium ${notifPref === opt.value ? 'text-amber-800' : 'text-stone-700'}`}>{opt.label}</p>
+                  <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                </div>
+                {notifPref === opt.value && <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />}
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Newsletter - original */}
       <Card className="border-honey/30 mb-6" data-testid="newsletter-settings-card">
         <CardHeader>
@@ -749,46 +829,6 @@ const SettingsPage = () => {
             </div>
             <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-honey-amber transition-colors" />
           </a>
-        </CardContent>
-      </Card>
-
-      {/* Update Password */}
-      <Card className="border-honey/30">
-        <CardHeader>
-          <CardTitle>Update Password</CardTitle>
-          <CardDescription>Change your password</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={async (e) => {
-            e.preventDefault();
-            const form = e.target;
-            const current = form.currentPw.value;
-            const newPw = form.newPw.value;
-            const confirm = form.confirmPw.value;
-            if (newPw !== confirm) { toast.error('New passwords do not match.'); return; }
-            if (newPw.length < 6) { toast.error('Password must be at least 6 characters.'); return; }
-            try {
-              await axios.put(`${API}/auth/update-password`, { current_password: current, new_password: newPw }, { headers: { Authorization: `Bearer ${token}` } });
-              toast.success('Password updated successfully.');
-              form.reset();
-            } catch (err) { toast.error(err.response?.data?.detail || 'Failed to update password.'); }
-          }} className="space-y-3" data-testid="update-password-form">
-            <div>
-              <Label htmlFor="currentPw">Current Password</Label>
-              <Input id="currentPw" name="currentPw" type="password" required className="border-honey/50" data-testid="current-password-input" />
-            </div>
-            <div>
-              <Label htmlFor="newPw">New Password</Label>
-              <Input id="newPw" name="newPw" type="password" required minLength={6} className="border-honey/50" data-testid="new-password-input" />
-            </div>
-            <div>
-              <Label htmlFor="confirmPw">Confirm New Password</Label>
-              <Input id="confirmPw" name="confirmPw" type="password" required minLength={6} className="border-honey/50" data-testid="confirm-password-input" />
-            </div>
-            <Button type="submit" className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full" data-testid="update-password-btn">
-              Update Password
-            </Button>
-          </form>
         </CardContent>
       </Card>
 
@@ -988,6 +1028,37 @@ const SettingsPage = () => {
         imageSrc={cropSrc}
         onCropComplete={handleCropComplete}
       />
+
+      {/* Update Password Modal */}
+      <Dialog open={showPwModal} onOpenChange={setShowPwModal}>
+        <DialogContent className="sm:max-w-md bg-[#FAF6EE] border-honey/30 rounded-2xl" data-testid="password-modal">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-xl text-vinyl-black">Update Password</DialogTitle>
+            <DialogDescription className="text-sm text-vinyl-black/60">Enter your current password and choose a new one.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handlePasswordUpdate} className="space-y-4 mt-2" data-testid="update-password-form">
+            <div className="space-y-1.5">
+              <Label htmlFor="currentPw">Current Password</Label>
+              <Input id="currentPw" name="currentPw" type="password" required className="border-honey/50" data-testid="current-password-input" />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="newPw">New Password</Label>
+              <Input id="newPw" name="newPw" type="password" required minLength={6} className="border-honey/50" data-testid="new-password-input" />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="confirmPw">Confirm New Password</Label>
+              <Input id="confirmPw" name="confirmPw" type="password" required minLength={6} className="border-honey/50" data-testid="confirm-password-input" />
+            </div>
+            <div className="flex gap-2 pt-2">
+              <Button type="submit" disabled={pwSaving} className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full flex-1" data-testid="submit-password-btn">
+                {pwSaving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : null}
+                {pwSaving ? 'Updating...' : 'Update Password'}
+              </Button>
+              <Button type="button" variant="ghost" onClick={() => setShowPwModal(false)} className="rounded-full">Cancel</Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

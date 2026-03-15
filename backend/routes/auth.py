@@ -80,6 +80,7 @@ async def _build_user_response(user: dict) -> UserResponse:
         golden_hive_status=user.get("golden_hive_status"),
         is_private=user.get("is_private", False),
         dm_setting=user.get("dm_setting", "everyone"),
+        notification_preference=user.get("notification_preference", "all"),
         discogs_oauth_verified=user.get("discogs_oauth_verified", False),
         needs_discogs_migration=_check_needs_migration(user),
         discogs_migration_dismissed=user.get("discogs_migration_dismissed", False),
@@ -611,6 +612,8 @@ async def update_me(update_data: UserUpdate, user: Dict = Depends(require_auth))
         update_fields["is_private"] = update_data.is_private
     if update_data.dm_setting is not None and update_data.dm_setting in ("everyone", "following", "requests"):
         update_fields["dm_setting"] = update_data.dm_setting
+    if update_data.notification_preference is not None and update_data.notification_preference in ("all", "following", "none"):
+        update_fields["notification_preference"] = update_data.notification_preference
     if update_fields:
         await db.users.update_one({"id": user["id"]}, {"$set": update_fields})
     updated = await db.users.find_one({"id": user["id"]}, {"_id": 0, "password_hash": 0})

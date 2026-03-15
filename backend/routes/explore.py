@@ -98,7 +98,7 @@ async def follow_user(username: str, user: Dict = Depends(require_auth)):
         u = await db.users.find_one({"id": user["id"]}, {"_id": 0})
         await create_notification(target_user["id"], "FOLLOW_REQUEST", "Follow request",
                                   f"@{u.get('username','?')} requested to follow you",
-                                  {"from_username": u.get("username"), "from_id": user["id"]})
+                                  {"from_username": u.get("username"), "from_id": user["id"]}, sender_id=user["id"])
         
         return {"message": "Follow request sent", "status": "requested"}
     
@@ -117,7 +117,7 @@ async def follow_user(username: str, user: Dict = Depends(require_auth)):
     u = await db.users.find_one({"id": user["id"]}, {"_id": 0})
     await create_notification(target_user["id"], "NEW_FOLLOWER", "New follower",
                               f"@{u.get('username','?')} started following you",
-                              {"follower_username": u.get("username")})
+                              {"follower_username": u.get("username")}, sender_id=user["id"])
     if target_user.get("email"):
         tpl = email_tpl.new_follow(u.get("username", "?"), f"{FRONTEND_URL}/profile/{u.get('username','')}")
         await send_email_fire_and_forget(target_user["email"], tpl["subject"], tpl["html"])
