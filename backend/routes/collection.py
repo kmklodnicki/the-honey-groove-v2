@@ -1059,6 +1059,7 @@ async def serve_file(path: str):
     try:
         data, content_type = get_object(path)
         if data is None:
+            logger.error(f"Serve file: get_object returned None for path={path}, storage_key={'set' if storage_key else 'NOT SET'}, EMERGENT_KEY={'set' if EMERGENT_KEY else 'NOT SET'}")
             raise HTTPException(status_code=404, detail="File not found")
         return Response(
             content=data,
@@ -1068,7 +1069,7 @@ async def serve_file(path: str):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Serve file failed: {e}")
+        logger.error(f"Serve file failed: {e}, storage_key={'set' if storage_key else 'NOT SET'}")
         raise HTTPException(status_code=500, detail="File not found")
 
 

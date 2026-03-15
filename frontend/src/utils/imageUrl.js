@@ -56,12 +56,9 @@ export function resolveImageUrl(src) {
   if (src.includes('res.cloudinary.com')) return enforceHttps(src);
 
   // Case 3: Old URL containing our serve path from a different domain
-  // If it already has a full URL (http/https), keep the original domain — it still serves the image
+  // Rewrite to current API domain so the proxy can serve from Emergent storage
   const serveIdx = src.indexOf(SERVE_PATH);
   if (serveIdx !== -1) {
-    if (src.startsWith('http://') || src.startsWith('https://')) {
-      return enforceHttps(src);
-    }
     const storagePath = src.substring(serveIdx + SERVE_PATH.length);
     return enforceHttps(`${API}/files/serve/${storagePath}`);
   }
