@@ -168,7 +168,7 @@ def _variant_score_v2(rec: dict, original_words: list[str], expanded_words: list
         label = " ".join(raw_label).lower()
     elif isinstance(raw_label, str):
         label = raw_label.lower()
-    catno = (rec.get("catno") or "").lower()
+    catno = (rec.get("catno") or "").lower()  # noqa: F841
     year_str = str(rec.get("year") or "")
 
     # Detect collector-intent words in the query
@@ -336,6 +336,21 @@ def _build_expanded_regex(expanded_words: list[str]) -> list:
     return patterns
 
 
+def _build_and_filter(words: list[str], fields: list[str]) -> dict:
+    """Build an AND filter: each word must appear in at least one field.
+    This is much more accurate than OR-across-all-words for multi-word queries.
+    For single-word queries, falls back to OR across fields (same behavior)."""
+    if not words:
+        return {}
+    per_word = []
+    for w in words:
+        pat = {"$regex": _re_module.escape(w), "$options": "i"}
+        per_word.append({"$or": [{f: pat} for f in fields]})
+    if len(per_word) == 1:
+        return per_word[0]
+    return {"$and": per_word}
+
+
 def _slugify(text: str) -> str:
     return _re_module.sub(r"[^a-z0-9]+", "-", (text or "").lower()).strip("-")
 
@@ -363,33 +378,17 @@ async def search_variants(
         return {"variants": [], "albums": [], "artists": [], "has_more": False, "total": 0}
 
     expanded_words = _expand_synonyms(original_words)
-    regex_orig = _build_regex_filter(q)
-    regex_expanded = _build_expanded_regex(expanded_words)
 
-    def field_or(field: str, patterns: list):
-        return [{field: p} for p in patterns]
+    # ── Build AND filter: each word must match at least one field ──
+    rec_and_filter = _build_and_filter(original_words, ["artist", "title", "color_variant", "catno", "notes"])
 
     # ── Search records collection (user collections) ──
-    rec_filter = {"$or":
-        field_or("artist", regex_orig)
-        + field_or("title", regex_orig)
-        + field_or("color_variant", regex_expanded)
-        + field_or("catno", regex_orig)
-        + field_or("notes", regex_expanded)
-    }
     fetch_limit = skip + limit + 200
-    raw_records = await db.records.find(rec_filter, {"_id": 0}).limit(fetch_limit).to_list(fetch_limit)
+    raw_records = await db.records.find(rec_and_filter, {"_id": 0}).limit(fetch_limit).to_list(fetch_limit)
 
     # ── Search discogs_releases collection (rich metadata) ──
-    discogs_filter = {"$or":
-        field_or("artist", regex_orig)
-        + field_or("title", regex_orig)
-        + field_or("color_variant", regex_expanded)
-        + field_or("catno", regex_orig)
-        + field_or("notes", regex_expanded)
-        + field_or("label", regex_orig)
-    }
-    raw_discogs = await db.discogs_releases.find(discogs_filter, {"_id": 0}).limit(fetch_limit).to_list(fetch_limit)
+    discogs_and_filter = _build_and_filter(original_words, ["artist", "title", "color_variant", "catno", "notes", "label"])
+    raw_discogs = await db.discogs_releases.find(discogs_and_filter, {"_id": 0}).limit(fetch_limit).to_list(fetch_limit)
 
     # ── Merge & deduplicate by discogs_id (prefer discogs_releases for richer data) ──
     merged = {}
@@ -414,61 +413,53 @@ async def search_variants(
     unique = list(merged.values())
     scored = sorted(unique, key=lambda r: _variant_score_v2(r, original_words, expanded_words), reverse=True)
 
-    # ── Discogs API fallback: enrich results when local data is sparse ──
-    # Triggers when: few local results, collector-intent keywords, year in query, or possible self-titled
+    # ── Discogs API fallback: always enrich with external results for better coverage ──
     collector_words = [w for w in original_words if w in COLLECTOR_KEYWORDS or w in SYNONYMS]
     year_words = [w for w in original_words if w.isdigit() and len(w) == 4]
-    # Check if query might be a self-titled album (all non-year words = artist name)
-    non_year_words = [w for w in original_words if not (w.isdigit() and len(w) == 4)]
-    need_discogs = len(unique) < 15 or len(collector_words) > 0 or len(year_words) > 0 or len(non_year_words) <= 3
 
-    if need_discogs:
-        try:
-            # Multi-query strategy for broader Discogs coverage
-            queries_to_try = [q]
+    try:
+        queries_to_try = [q]
 
-            # If query looks like "Artist + keywords", also search for self-titled album
-            non_collector_non_year = [w for w in original_words
-                                      if w not in COLLECTOR_KEYWORDS
-                                      and w not in SYNONYMS
-                                      and not (w.isdigit() and len(w) == 4)]
-            if non_collector_non_year and (collector_words or year_words):
-                artist_part = " ".join(non_collector_non_year)
-                # Search for self-titled: "Artist Artist vinyl"
-                queries_to_try.append(f"{artist_part} {artist_part} vinyl")
-                # Search for artist + format keywords
-                if year_words:
-                    queries_to_try.append(f"{artist_part} {' '.join(year_words)} vinyl")
+        # If query looks like "Artist + keywords", also search for self-titled album
+        non_collector_non_year = [w for w in original_words
+                                  if w not in COLLECTOR_KEYWORDS
+                                  and w not in SYNONYMS
+                                  and not (w.isdigit() and len(w) == 4)]
+        if non_collector_non_year and (collector_words or year_words):
+            artist_part = " ".join(non_collector_non_year)
+            queries_to_try.append(f"{artist_part} {artist_part} vinyl")
+            if year_words:
+                queries_to_try.append(f"{artist_part} {' '.join(year_words)} vinyl")
 
-            seen_dids = {r.get("discogs_id") for r in unique if r.get("discogs_id")}
-            all_new_discogs = []
+        seen_dids = {r.get("discogs_id") for r in unique if r.get("discogs_id")}
+        all_new_discogs = []
 
-            for dq in queries_to_try:
-                discogs_raw = await asyncio.to_thread(search_discogs, dq)
-                for dr in (discogs_raw or [])[:20]:
-                    did = dr.get("discogs_id")
-                    if did and did not in seen_dids:
-                        seen_dids.add(did)
-                        all_new_discogs.append(dr)
+        for dq in queries_to_try:
+            discogs_raw = await asyncio.to_thread(search_discogs, dq)
+            for dr in (discogs_raw or [])[:20]:
+                did = dr.get("discogs_id")
+                if did and did not in seen_dids:
+                    seen_dids.add(did)
+                    all_new_discogs.append(dr)
 
-            if all_new_discogs:
-                # Cache new Discogs releases for future searches
-                for dr in all_new_discogs:
-                    did = dr.get("discogs_id")
-                    if did:
-                        await db.discogs_releases.update_one(
-                            {"discogs_id": did},
-                            {"$setOnInsert": {
-                                **dr,
-                                "cached_at": datetime.now(timezone.utc).isoformat(),
-                            }},
-                            upsert=True,
-                        )
+        if all_new_discogs:
+            # Cache new Discogs releases for future searches
+            for dr in all_new_discogs:
+                did = dr.get("discogs_id")
+                if did:
+                    await db.discogs_releases.update_one(
+                        {"discogs_id": did},
+                        {"$setOnInsert": {
+                            **dr,
+                            "cached_at": datetime.now(timezone.utc).isoformat(),
+                        }},
+                        upsert=True,
+                    )
 
-                scored.extend(all_new_discogs)
-                scored = sorted(scored, key=lambda r: _variant_score_v2(r, original_words, expanded_words), reverse=True)
-        except Exception as e:
-            logger.error(f"Discogs fallback search error: {e}")
+            scored.extend(all_new_discogs)
+            scored = sorted(scored, key=lambda r: _variant_score_v2(r, original_words, expanded_words), reverse=True)
+    except Exception as e:
+        logger.error(f"Discogs fallback search error: {e}")
 
     # ── Build output: variants, albums, artists ──
     variants_out = []
@@ -551,7 +542,7 @@ async def search_variants(
         # Last resort: find a sibling record with the same artist+title that has a cover
         if not cover:
             sibling = await db.records.find_one(
-                {"artist": r.get("artist"), "title": r.get("title"), "cover_url": {"$ne": None, "$ne": ""}},
+                {"artist": r.get("artist"), "title": r.get("title"), "cover_url": {"$nin": [None, ""]}},
                 {"_id": 0, "cover_url": 1}
             )
             if sibling and sibling.get("cover_url"):
@@ -736,8 +727,8 @@ async def unified_search(q: str = Query(..., min_length=2), user: Dict = Depends
     def field_or(field: str):
         return [{ field: p } for p in regex_patterns]
 
-    # --- Records (from user collections) ---
-    rec_filter = {"$or": field_or("artist") + field_or("title")}
+    # --- Records (from user collections) --- AND logic: each word must match somewhere
+    rec_filter = _build_and_filter(words, ["artist", "title"])
     records_cursor = db.records.find(rec_filter, {"_id": 0}).limit(50)
     raw_records = await records_cursor.to_list(50)
 
@@ -822,11 +813,10 @@ async def unified_search(q: str = Query(..., min_length=2), user: Dict = Depends
         reverse=True
     )
 
-    # --- Posts ---
-    post_or = field_or("caption") + field_or("content")
-    post_filter = {"$or": post_or}
+    # --- Posts --- AND logic: each word must appear in caption or content
+    post_filter = _build_and_filter(words, ["caption", "content"])
     if hidden_ids:
-        post_filter["user_id"] = {"$nin": hidden_ids}
+        post_filter = {"$and": [post_filter, {"user_id": {"$nin": hidden_ids}}]} if post_filter else {"user_id": {"$nin": hidden_ids}}
     raw_posts = await db.posts.find(
         post_filter, {"_id": 0}
     ).sort("created_at", -1).limit(30).to_list(30)
@@ -848,11 +838,11 @@ async def unified_search(q: str = Query(..., min_length=2), user: Dict = Depends
         "user": authors.get(p.get("user_id")),
     } for p in scored_posts]
 
-    # --- Listings ---
-    listing_or = field_or("artist") + field_or("album") + field_or("description")
-    listing_filter = {"status": "ACTIVE", "$or": listing_or}
+    # --- Listings --- AND logic: each word must appear across listing fields
+    listing_filter = _build_and_filter(words, ["artist", "album", "description"])
+    listing_filter = {"$and": [listing_filter, {"status": "ACTIVE"}]} if listing_filter else {"status": "ACTIVE"}
     if hidden_ids:
-        listing_filter["user_id"] = {"$nin": hidden_ids}
+        listing_filter = {"$and": [listing_filter, {"user_id": {"$nin": hidden_ids}}]}
     raw_listings = await db.listings.find(
         listing_filter, {"_id": 0}
     ).sort("created_at", -1).limit(30).to_list(30)
@@ -917,13 +907,9 @@ async def search_records_paginated(
     if not words:
         return {"records": [], "has_more": False}
 
-    regex_patterns = _build_regex_filter(q)
-    def field_or(field: str):
-        return [{field: p} for p in regex_patterns]
-
-    # Fetch more than needed for scoring then paginate
+    # Fetch more than needed for scoring then paginate — AND logic
     fetch_limit = skip + limit + 50
-    rec_filter = {"$or": field_or("artist") + field_or("title")}
+    rec_filter = _build_and_filter(words, ["artist", "title"])
     raw_records = await db.records.find(rec_filter, {"_id": 0}).limit(fetch_limit).to_list(fetch_limit)
 
     # Deduplicate by discogs_id
@@ -991,7 +977,6 @@ async def search_users(
     ).limit(limit).to_list(limit)
 
     # Get record counts for matched users
-    user_ids = [u["id"] for u in users_raw]
     results = []
 
     # Viewer's discogs_ids for "records in common" (only if logged in)

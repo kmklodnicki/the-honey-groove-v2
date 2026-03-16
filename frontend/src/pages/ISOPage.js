@@ -137,6 +137,7 @@ const ISOPage = () => {
   const [discogsQuery, setDiscogsQuery] = useState('');
   const [discogsResults, setDiscogsResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [discogsShowCount, setDiscogsShowCount] = useState(6);
   const [selectedRelease, setSelectedRelease] = useState(null);
   const [manualMode, setManualMode] = useState(false);
 
@@ -226,20 +227,21 @@ const ISOPage = () => {
   const searchTimerRef = useRef(null);
   const searchDiscogs = (query) => {
     setDiscogsQuery(query);
-    if (!query || query.length < 2) { setDiscogsResults([]); return; }
+    if (!query || query.length < 2) { setDiscogsResults([]); setDiscogsShowCount(6); return; }
     if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
     searchTimerRef.current = setTimeout(async () => {
       setSearchLoading(true);
       try {
         const resp = await axios.get(`${API}/discogs/search?q=${encodeURIComponent(query)}`, { headers: { Authorization: `Bearer ${token}` } });
-        setDiscogsResults(resp.data.slice(0, 10));
+        setDiscogsResults(resp.data || []);
+        setDiscogsShowCount(6);
       } catch { setDiscogsResults([]); }
       finally { setSearchLoading(false); }
     }, 350);
   };
 
   const selectRelease = (release) => {
-    setSelectedRelease(release); setDiscogsResults([]); setDiscogsQuery('');
+    setSelectedRelease(release); setDiscogsResults([]); setDiscogsQuery(''); setDiscogsShowCount(6);
     if (showCreate === 'iso') { setIsoArtist(release.artist); setIsoAlbum(release.title); }
     else if (showCreate === 'listing') {
       setListArtist(release.artist); setListAlbum(release.title);
@@ -258,7 +260,7 @@ const ISOPage = () => {
   };
 
   const resetForm = () => {
-    setSelectedRelease(null); setManualMode(false); setDiscogsQuery(''); setDiscogsResults([]);
+    setSelectedRelease(null); setManualMode(false); setDiscogsQuery(''); setDiscogsResults([]); setDiscogsShowCount(6);
     setIsoArtist(''); setIsoAlbum(''); setIsoPressing(''); setIsoCondition('');
     setIsoPriceMin(''); setIsoPriceMax(''); setIsoTags([]); setIsoCaption('');
     setListArtist(''); setListAlbum(''); setListCondition(''); setListPressing('');
@@ -586,10 +588,19 @@ const ISOPage = () => {
             {searchLoading && <Loader2 className="w-4 h-4 animate-spin absolute right-3 top-3 text-muted-foreground" />}
           </div>
           {discogsResults.length > 0 && (
-            <div className="border border-honey/30 rounded-lg max-h-48 overflow-y-auto bg-white">
-              {discogsResults.map(r => (
+            <div className="border border-honey/30 rounded-lg max-h-60 overflow-y-auto bg-white">
+              {discogsResults.slice(0, discogsShowCount).map(r => (
                 <RecordSearchResult key={r.discogs_id} record={r} onClick={() => selectRelease(r)} size="sm" testId={`discogs-result-${r.discogs_id}`} />
               ))}
+              {discogsResults.length > discogsShowCount && (
+                <button
+                  onClick={() => setDiscogsShowCount(prev => prev + 6)}
+                  className="w-full py-2 text-sm font-medium text-honey-amber hover:bg-honey/10 border-t border-honey/20 transition-colors"
+                  data-testid="discogs-view-more-btn"
+                >
+                  View More ({discogsResults.length - discogsShowCount} remaining)
+                </button>
+              )}
             </div>
           )}
           <button onClick={() => setManualMode(true)} className="text-sm text-honey-amber hover:underline" data-testid="manual-entry-btn">Or enter manually</button>

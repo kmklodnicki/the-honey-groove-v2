@@ -9,6 +9,7 @@ import os
 from database import db, require_auth, get_current_user, security, logger, create_notification
 from database import hash_password, verify_password, create_token, search_discogs, get_discogs_release
 from database import put_object, get_object, init_storage, storage_key
+from database import DISCOGS_TOKEN as _DISCOGS_TOKEN
 from database import STRIPE_API_KEY, PLATFORM_FEE_PERCENT, FRONTEND_URL
 from database import DISCOGS_TOKEN, DISCOGS_USER_AGENT, DISCOGS_CONSUMER_KEY, DISCOGS_CONSUMER_SECRET
 from database import DISCOGS_REQUEST_TOKEN_URL, DISCOGS_AUTHORIZE_URL, DISCOGS_ACCESS_TOKEN_URL, DISCOGS_API_BASE
@@ -26,7 +27,91 @@ router = APIRouter()
 
 @router.get("/discogs/search", response_model=List[DiscogsSearchResult])
 async def search_records_discogs(q: str = Query(..., min_length=2), user: Dict = Depends(require_auth)):
+    import re as _re
+    import requests as _req
+
+    words = q.strip().split()
+    words_lower = [w.lower().rstrip('!?.') for w in words]
+
+    def _results_match_all_words(recs, w_check):
+        """Check if any result contains ALL query words across artist+title."""
+        for r in recs:
+            combined = f"{r.get('artist','')} {r.get('title','')}".lower()
+            if all(w in combined for w in w_check):
+                return True
+        return False
+
+    def _parse_discogs_raw(items):
+        """Parse raw Discogs API results into our format."""
+        parsed = []
+        for item in items:
+            parts = item.get("title", "").split(" - ", 1)
+            artist = parts[0].strip() if len(parts) > 1 else "Unknown"
+            title = parts[1].strip() if len(parts) > 1 else parts[0].strip()
+            color_variant = None
+            format_name = None
+            descriptions = []
+            for fmt in item.get("formats", []):
+                fname = fmt.get("name", "")
+                if fname and fname not in ("All Media",):
+                    format_name = fname
+                ftext = fmt.get("text", "")
+                if ftext:
+                    color_variant = ftext
+                descriptions.extend(fmt.get("descriptions", []))
+            format_str = format_name or ""
+            if descriptions:
+                unique_descs = list(dict.fromkeys(d for d in descriptions if d not in ("Album", "Compilation")))
+                if unique_descs:
+                    format_str = f"{format_name} ({', '.join(unique_descs[:2])})" if format_name else ", ".join(unique_descs[:2])
+            labels = item.get("label", [])
+            parsed.append({
+                "discogs_id": item.get("id"),
+                "artist": artist, "title": title,
+                "year": item.get("year"),
+                "genre": item.get("genre", []),
+                "cover_url": item.get("cover_image"),
+                "format": format_str or (item.get("format", [None])[0] if item.get("format") else None),
+                "label": labels[0] if labels else None,
+                "catno": item.get("catno"),
+                "country": item.get("country"),
+                "color_variant": color_variant,
+            })
+        return parsed
+
+    # Step 1: Standard search
     results = search_discogs(q)
+
+    # Step 2: If results don't contain matches for ALL query words, try structured search
+    if len(words) >= 2 and not _results_match_all_words(results, words_lower):
+        headers = {"User-Agent": "WaxLog/1.0"}
+        for i, word in enumerate(words):
+            remaining = " ".join(w for j, w in enumerate(words) if j != i)
+            params = {"release_title": word, "artist": remaining, "type": "release", "per_page": 20}
+            if _DISCOGS_TOKEN:
+                params["token"] = _DISCOGS_TOKEN
+            try:
+                resp = _req.get("https://api.discogs.com/database/search", params=params, headers=headers, timeout=8)
+                if resp.status_code == 200:
+                    raw = resp.json().get("results", [])
+                    if raw:
+                        structured = _parse_discogs_raw(raw)
+                        # Merge: structured results first, then original
+                        seen_ids = {r.get("discogs_id") for r in structured}
+                        for r in results:
+                            if r.get("discogs_id") not in seen_ids:
+                                structured.append(r)
+                                seen_ids.add(r.get("discogs_id"))
+                        return [DiscogsSearchResult(**r) for r in structured]
+            except Exception:
+                pass
+
+    # Step 3: If still no results at all, try cleaned query
+    if not results:
+        cleaned = _re.sub(r'[^\w\s]', '', q).strip()
+        if cleaned and cleaned != q:
+            results = search_discogs(cleaned)
+
     return [DiscogsSearchResult(**r) for r in results]
 
 @router.get("/discogs/release/{release_id}")
