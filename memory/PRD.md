@@ -11,29 +11,28 @@ The HoneyGroove is a vinyl record collector social platform with collection mana
 
 ## Core Features (Implemented)
 - User auth, collection management, Discogs import via OAuth
-- **Smart Match**: Auto-links manual album entries to Discogs (cover art, tracklist, community data)
-- **Rarity System**: Grail/Ultra Rare/Very Rare/Rare/Uncommon/Common/Obscure/Unknown tiers from Discogs community have/want data
+- Smart Match: Auto-links manual album entries to Discogs
+- Rarity System: Grail/Ultra Rare/Very Rare/Rare/Uncommon/Common/Obscure/Unknown tiers
 - Social feed with server-side filtering, collapsible pinned posts
 - Notification preferences (all/following/none)
 - Marketplace, valuation system, weekly reports, daily prompts
 - Profile page: Collection, Posts, For Sale, Dream List, ISO tabs
 - Collection sort: Artist, Title, Newest, Spins, Value, Rarest First, Most Common
-- **Format submenu**: Collection page filters by Vinyl/CD/Cassette with counts
-- **Format pills on feed**: Every feed post shows Vinyl/CD/Cassette format pill
-- **Compact variant modal**: Scaled down to 300px max-width with ultra-compact layout
-- **Haul variant pills**: Color variant pills overlaid on album covers in haul posts
+- Format submenu: Collection page + profile page filters by Vinyl/CD/Cassette with counts
+- Format pills on feed: Posts with records show Vinyl/CD/Cassette pill (Notes/Discussions excluded)
+- Ultra-compact variant modal (280px, 5-col unified stats grid, compact buttons)
+- Compact ListingDetailModal (sm:max-w-md, reduced padding/art/CTA)
+- Compact TradeDetailModal (sm:max-w-md, tighter spacing)
+- Haul variant pills: Color variant pills overlaid on album covers in haul posts
+- CommunityISOCard: Clickable to open variant modal, shows variant pill on album art
 
 ## Recent Changes (March 2026)
-- Compact variant modal (300px max-width, 14x14 album art, 9px metadata)
-- Haul variant pills on album covers in auto-bundle haul posts
-- Format pill on every feed post (Vinyl/CD/Cassette)
-- Collection format filter submenu (All/Vinyl/CD/Cassette with counts)
-- Smart Match on manual add (high-confidence Discogs auto-linking)
-- Rarity badge logic: "Unknown" for no discogs_id
-- Collection sort by rarity
-- ISO auto-populate from Discogs
-- Collapsible pinned posts, notification preferences, password modal
-- Feed server-side filtering, Profile Posts tab
+- Ultra-compact variant modal (280px max-width, unified 5-col stats: Own|ISO|Posts|Med|High, h-7 buttons)
+- Compact ListingDetailModal and TradeDetailModal with reduced sizes
+- Format pill only on posts with records (not Notes/Discussions)
+- Format submenu on user profile collection tab
+- CommunityISOCard clickable with variant modal + variant pill
+- Previous: Smart Match, rarity sorting, ISO fixes, collapsible pinned posts, notification prefs
 
 ## Upcoming
 - Instagram Story Export (P1)
