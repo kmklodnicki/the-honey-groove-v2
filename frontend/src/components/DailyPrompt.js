@@ -18,6 +18,7 @@ import { prefetchImages } from '../utils/imagePrefetch';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Link, useSearchParams } from 'react-router-dom';
 import PromptArchiveDrawer from './PromptArchiveDrawer';
+import { useVariantModal } from '../context/VariantModalContext';
 
 // ─── Daily Prompt Card (top of Hive feed) ───
 
@@ -36,6 +37,7 @@ const cachedPrompt = (() => {
 
 export const DailyPromptCard = ({ records, onPostCreated }) => {
   const { user, token, API } = useAuth();
+  const { openVariantModal } = useVariantModal();
   const [prompt, setPrompt] = useState(cachedPrompt?.prompt || null);
   const [hasBuzzedIn, setHasBuzzedIn] = useState(cachedPrompt?.has_buzzed_in || false);
   const [buzzResponse, setBuzzResponse] = useState(cachedPrompt?.response || null);
@@ -239,8 +241,22 @@ useEffect(() => {
                       )
                     ) : <div className="w-full h-full flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>}
                     {currentResp.color_variant && (
-                      <div className="absolute bottom-0.5 right-0.5 max-w-[90%] truncate uppercase text-[8px] font-bold px-1 py-0.5 rounded-full"
-                        style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}>
+                      <div
+                        className="absolute bottom-0.5 right-0.5 max-w-[90%] truncate uppercase text-[8px] font-bold px-1 py-0.5 rounded-full cursor-pointer hover:scale-105 transition-transform"
+                        style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          openVariantModal({
+                            artist: currentResp.record_artist,
+                            album: currentResp.record_title,
+                            variant: currentResp.color_variant || 'Standard',
+                            discogs_id: currentResp.discogs_id,
+                            cover_url: currentResp.cover_url,
+                          });
+                        }}
+                        data-testid="prompt-variant-pill"
+                      >
                         {currentResp.color_variant}
                       </div>
                     )}

@@ -651,7 +651,7 @@ async def composer_new_haul(data: NewHaulCreate, user: Dict = Depends(require_au
             "artist": item.artist,
             "cover_url": item.cover_url,
             "year": item.year,
-            "format": "Vinyl",
+            "format": getattr(item, 'format', None) or "Vinyl",
             "notes": item.notes,
             "source": "haul",
             "created_at": now

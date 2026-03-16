@@ -31,6 +31,7 @@ const AddRecordPage = () => {
   const [notes, setNotes] = useState('');
   const [colorVariant, setColorVariant] = useState('');
   const [editionNumber, setEditionNumber] = useState('');
+  const [recordFormat, setRecordFormat] = useState('Vinyl');
   const [adding, setAdding] = useState(false);
 
   // Duplicate detection state
@@ -80,6 +81,11 @@ const AddRecordPage = () => {
   const handleSelectRecord = (record) => {
     setSelectedRecord(record);
     setColorVariant(record.color_variant || '');
+    // Pre-fill format from Discogs data
+    const fmt = (record.format || '').toLowerCase();
+    if (fmt.includes('cd')) setRecordFormat('CD');
+    else if (fmt.includes('cassette')) setRecordFormat('Cassette');
+    else setRecordFormat('Vinyl');
     setSearchResults([]);
     setSearchQuery('');
   };
@@ -165,13 +171,14 @@ const AddRecordPage = () => {
           notes: notes || null,
           color_variant: colorVariant || null,
           edition_number: editionNumber ? parseInt(editionNumber) : null,
+          format: recordFormat,
         } : {
           discogs_id: selectedRecord.discogs_id,
           title: selectedRecord.title,
           artist: selectedRecord.artist,
           cover_url: selectedRecord.cover_url,
           year: selectedRecord.year,
-          format: selectedRecord.format,
+          format: recordFormat,
           notes: notes || null,
           color_variant: colorVariant || selectedRecord.color_variant || null,
           edition_number: editionNumber ? parseInt(editionNumber) : null,
@@ -306,6 +313,29 @@ const AddRecordPage = () => {
               />
             </div>
 
+            {/* Format Picker */}
+            <div>
+              <Label>Format</Label>
+              <div className="flex items-center gap-2 mt-2" data-testid="format-picker">
+                {['Vinyl', 'CD', 'Cassette'].map(fmt => (
+                  <button
+                    key={fmt}
+                    type="button"
+                    onClick={() => setRecordFormat(fmt)}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all border ${
+                      recordFormat === fmt
+                        ? 'bg-vinyl-black text-white border-vinyl-black shadow-sm'
+                        : 'bg-white text-stone-500 border-stone-200 hover:border-stone-300'
+                    }`}
+                    data-testid={`format-pick-${fmt.toLowerCase()}`}
+                  >
+                    {fmt === 'Vinyl' && <Disc className="w-3.5 h-3.5" />}
+                    {fmt}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <Button
               onClick={handleAddRecord}
               disabled={adding}
@@ -393,6 +423,29 @@ const AddRecordPage = () => {
                 onChange={(e) => setNotes(e.target.value)}
                 className="mt-2 border-honey/50"
               />
+            </div>
+
+            {/* Format Picker (manual entry) */}
+            <div>
+              <Label>Format</Label>
+              <div className="flex items-center gap-2 mt-2" data-testid="manual-format-picker">
+                {['Vinyl', 'CD', 'Cassette'].map(fmt => (
+                  <button
+                    key={fmt}
+                    type="button"
+                    onClick={() => setRecordFormat(fmt)}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all border ${
+                      recordFormat === fmt
+                        ? 'bg-vinyl-black text-white border-vinyl-black shadow-sm'
+                        : 'bg-white text-stone-500 border-stone-200 hover:border-stone-300'
+                    }`}
+                    data-testid={`manual-format-pick-${fmt.toLowerCase()}`}
+                  >
+                    {fmt === 'Vinyl' && <Disc className="w-3.5 h-3.5" />}
+                    {fmt}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="flex gap-3">

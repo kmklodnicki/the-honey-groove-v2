@@ -152,6 +152,7 @@ class HaulItemCreate(BaseModel):
     cover_url: Optional[str] = None
     year: Optional[int] = None
     notes: Optional[str] = None
+    format: Optional[str] = "Vinyl"
 
 class HaulCreate(BaseModel):
     title: str

@@ -63,7 +63,12 @@ const CreateHaulPage = () => {
       toast.error('Record already added to haul');
       return;
     }
-    setItems([...items, record]);
+    // Auto-detect format from Discogs data
+    const fmt = (record.format || '').toLowerCase();
+    let format = 'Vinyl';
+    if (fmt.includes('cd')) format = 'CD';
+    else if (fmt.includes('cassette')) format = 'Cassette';
+    setItems([...items, { ...record, itemFormat: format }]);
     setSearchQuery('');
     setSearchResults([]);
     toast.success(`Added ${record.title}`);
@@ -71,6 +76,10 @@ const CreateHaulPage = () => {
 
   const removeItem = (discogsId) => {
     setItems(items.filter(item => item.discogs_id !== discogsId));
+  };
+
+  const updateItemFormat = (discogsId, format) => {
+    setItems(items.map(item => item.discogs_id === discogsId ? { ...item, itemFormat: format } : item));
   };
 
   const handleCreateHaul = async () => {
@@ -94,7 +103,8 @@ const CreateHaulPage = () => {
           title: item.title,
           artist: item.artist,
           cover_url: item.cover_url,
-          year: item.year
+          year: item.year,
+          format: item.itemFormat || 'Vinyl',
         }))
       };
 
@@ -179,6 +189,24 @@ const CreateHaulPage = () => {
                 <div className="flex-1 min-w-0">
                   <h4 className="font-medium text-sm truncate">{item.title}</h4>
                   <p className="text-xs text-muted-foreground truncate">{item.artist}</p>
+                  {/* Format pills */}
+                  <div className="flex items-center gap-1 mt-1">
+                    {['Vinyl', 'CD', 'Cassette'].map(fmt => (
+                      <button
+                        key={fmt}
+                        type="button"
+                        onClick={() => updateItemFormat(item.discogs_id, fmt)}
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-medium transition-all border ${
+                          (item.itemFormat || 'Vinyl') === fmt
+                            ? 'bg-vinyl-black text-white border-vinyl-black'
+                            : 'bg-white text-stone-400 border-stone-200 hover:border-stone-300'
+                        }`}
+                        data-testid={`haul-format-${item.discogs_id}-${fmt.toLowerCase()}`}
+                      >
+                        {fmt}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 <Button
                   variant="ghost"

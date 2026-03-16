@@ -564,7 +564,8 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
+      <DialogContent className="p-0 overflow-hidden rounded-2xl" style={{ minWidth: '340px', maxWidth: 'min(420px, 95vw)' }}>
+        <div className="overflow-y-auto max-h-[85vh] p-4">
         <DialogHeader>
           <DialogTitle className="font-heading flex items-center gap-2 text-sm">
             <ArrowRightLeft className="w-4 h-4 text-honey" /> Trade Details
@@ -1007,6 +1008,7 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
               )}
             </div>
           )}
+        </div>
         </div>
       </DialogContent>
     </Dialog>
