@@ -180,43 +180,54 @@ return (
   return (
     <>
       <Card className="border-honey/30" data-testid="discogs-import-card">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-vinyl-black rounded-lg flex items-center justify-center">
-                <Disc className="w-5 h-5 text-honey" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <CardTitle className="text-base">Import from Discogs</CardTitle>
-                  {status?.oauth_verified && (
-                    <span className="text-[10px] font-semibold text-green-700 bg-green-50 px-1.5 py-0.5 rounded-full border border-green-200" data-testid="oauth-verified-badge">
-                      Verified
-                    </span>
-                  )}
-                  {status?.needs_migration && (
-                    <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200" data-testid="needs-migration-badge">
-                      Re-verify
-                    </span>
-                  )}
-                </div>
-                <CardDescription>
-                  {status?.connected
-                    ? `Connected as @${status.discogs_username}`
-                    : 'Connect your Discogs account securely via OAuth'}
-                </CardDescription>
-              </div>
-            </div>
+        <div className="flex items-center gap-3 px-4 py-3">
+          <div className="w-8 h-8 bg-vinyl-black rounded-lg flex items-center justify-center shrink-0">
+            <Disc className="w-4 h-4 text-honey" />
+          </div>
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <span className="text-sm font-semibold whitespace-nowrap">Import from Discogs</span>
+            {status?.oauth_verified && (
+              <span className="text-[10px] font-semibold text-green-700 bg-green-50 px-1.5 py-0.5 rounded-full border border-green-200 shrink-0" data-testid="oauth-verified-badge">
+                Verified
+              </span>
+            )}
+            {status?.needs_migration && (
+              <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200 shrink-0" data-testid="needs-migration-badge">
+                Re-verify
+              </span>
+            )}
+            {status?.connected && (
+              <span className="text-xs text-muted-foreground truncate hidden sm:inline">@{status.discogs_username}</span>
+            )}
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {status?.connected && !status?.needs_migration && !importing && (
+              <>
+                <Button onClick={handleImport} size="sm"
+                  className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-1.5 h-8 text-xs px-3"
+                  data-testid="discogs-sync-btn">
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  {status?.last_synced ? 'Sync' : 'Import'}
+                </Button>
+                {status?.last_synced && (
+                  <span className="text-[10px] text-muted-foreground whitespace-nowrap hidden sm:inline">
+                    {new Date(status.last_synced).toLocaleDateString()}
+                  </span>
+                )}
+              </>
+            )}
             {status?.connected && (
               <Button variant="ghost" size="sm" onClick={() => setShowDisconnect(true)}
-                className="text-muted-foreground hover:text-red-500" data-testid="discogs-disconnect-btn">
-                <Unplug className="w-4 h-4" />
+                className="text-muted-foreground hover:text-red-500 h-8 w-8 p-0" data-testid="discogs-disconnect-btn">
+                <Unplug className="w-3.5 h-3.5" />
               </Button>
             )}
           </div>
-        </CardHeader>
+        </div>
 
-        <CardContent>
+        {/* Expandable content: connect, progress, errors */}
+        {(!status?.connected || status?.needs_migration || importing || (progress?.status === 'completed' && progress.imported > 0) || progress?.status === 'error') && (
+        <CardContent className="pt-0 pb-3">
           {!status?.connected ? (
             <Button onClick={handleConnect}
               className="rounded-full gap-2 w-full sm:w-auto font-bold text-sm transition-all hover:shadow-lg animate-pulse-subtle"
@@ -228,74 +239,58 @@ return (
               Connect to Discogs
             </Button>
           ) : status?.needs_migration ? (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 px-3 py-2 rounded-lg" data-testid="migration-needed-msg">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg" data-testid="migration-needed-msg">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
-                <span>Your connection needs re-verification via secure OAuth login.</span>
+                <span>Re-verification needed via secure OAuth.</span>
               </div>
               <Button onClick={handleConnect}
-                className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2"
+                className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2 h-8 text-xs"
                 data-testid="discogs-reconnect-btn">
                 <ExternalLink className="w-4 h-4" />
-                Reconnect via OAuth
+                Reconnect
               </Button>
             </div>
           ) : importing && progress ? (
-            <div className="space-y-3" data-testid="discogs-import-progress">
+            <div className="space-y-2" data-testid="discogs-import-progress">
               <div className="flex items-center justify-between text-sm">
                 <span className="font-medium flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin text-honey-amber" />
-                  Importing collection...
+                  Importing...
                 </span>
-                <span className="text-muted-foreground">
+                <span className="text-muted-foreground text-xs">
                   {progress.imported + progress.skipped} / {progress.total || '...'}
                 </span>
               </div>
-              <Progress value={progressPercent} className="h-2" />
+              <Progress value={progressPercent} className="h-1.5" />
               <div className="flex gap-4 text-xs text-muted-foreground">
                 <span className="text-green-600">{progress.imported} imported</span>
                 <span>{progress.skipped} skipped</span>
               </div>
             </div>
           ) : (
-            <div className="space-y-3">
-              {progress?.status === 'completed' && (progress.imported > 0 || progress.skipped > 0) && (
+            <div className="space-y-2">
+              {progress?.status === 'completed' && progress.imported > 0 && (
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 px-3 py-2 rounded-lg flex-1" data-testid="import-complete-msg">
-                    <CheckCircle2 className="w-4 h-4 shrink-0" />
-                    <span>
-                      {progress.imported > 0
-                        ? `Last import: ${progress.imported} records imported${progress.skipped > 0 ? `, ${progress.skipped} skipped (duplicates)` : ''}`
-                        : `Collection in sync · ${progress.skipped} records already imported`}
-                    </span>
+                  <div className="flex items-center gap-2 text-xs text-green-600 bg-green-50 px-2.5 py-1.5 rounded-lg flex-1" data-testid="import-complete-msg">
+                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                    <span>{progress.imported} records imported</span>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={fetchSummary} className="text-xs text-honey-amber ml-2" data-testid="view-summary-btn">
-                    View Summary
+                  <Button variant="ghost" size="sm" onClick={fetchSummary} className="text-xs text-honey-amber ml-2 h-7" data-testid="view-summary-btn">
+                    Summary
                   </Button>
                 </div>
               )}
               {progress?.status === 'error' && (
-                <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
+                <div className="flex items-center gap-2 text-xs text-red-600 bg-red-50 px-2.5 py-1.5 rounded-lg">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                   <span>{progress.error_message || 'Import failed'}</span>
                 </div>
               )}
-              <div className="flex items-center gap-3">
-                <Button onClick={handleImport}
-                  className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2"
-                  data-testid="discogs-sync-btn">
-                  <RefreshCw className="w-4 h-4" />
-                  {status?.last_synced ? 'Sync Now' : 'Import Collection'}
-                </Button>
-                {status?.last_synced && (
-                  <span className="text-xs text-muted-foreground">
-                    Last synced: {new Date(status.last_synced).toLocaleDateString()}
-                  </span>
-                )}
-              </div>
             </div>
           )}
         </CardContent>
+        )}
       </Card>
 
       {/* Import Summary Modal */}
