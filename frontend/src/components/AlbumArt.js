@@ -168,7 +168,7 @@ const AlbumArt = ({
           <Disc className="w-10 h-10" style={{ color: '#4A4A4A', opacity: 0.35 }} />
         </div>
         )
-      ) : status !== 'shimmer' ? (
+      ) : (
         <img
           ref={imgRef}
           src={displaySrc || FALLBACK}
@@ -202,7 +202,7 @@ const AlbumArt = ({
           loading={priority ? 'eager' : 'lazy'}
           {...(priority ? { fetchPriority: 'high' } : {})}
         />
-      ) : null}
+      )}
       {isUnofficial && <UnofficialPill variant="overlay" />}
       {!isUnofficial && formatText && /unofficial/i.test(formatText) && <UnofficialPill variant="overlay" />}
     </div>

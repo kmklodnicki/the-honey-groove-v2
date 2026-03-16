@@ -830,7 +830,6 @@ const ISOPage = () => {
                   discogs_id: iso.discogs_id, cover_url: iso.cover_url,
                 }) : null} />
               ))}
-              ))}
             </div>
           )}
         </TabsContent>

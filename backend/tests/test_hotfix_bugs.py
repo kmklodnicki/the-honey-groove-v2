@@ -9,7 +9,7 @@ import requests
 import os
 from datetime import datetime
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://vinyl-image-bugs.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://record-search-ui.preview.emergentagent.com')
 
 class TestHealthAndAuth:
     """Basic health and authentication tests"""

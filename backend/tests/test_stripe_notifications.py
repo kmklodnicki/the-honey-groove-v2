@@ -13,7 +13,7 @@ from datetime import datetime
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 if not BASE_URL:
-    BASE_URL = "https://vinyl-image-bugs.preview.emergentagent.com"
+    BASE_URL = "https://record-search-ui.preview.emergentagent.com"
 
 # Test credentials
 DEMO_EMAIL = "demo@example.com"
@@ -155,7 +155,7 @@ class TestPaymentCheckout:
         # Trader attempts to buy (should work or fail with Stripe error)
         resp = requests.post(f"{BASE_URL}/api/payments/checkout", json={
             "listing_id": listing["id"],
-            "origin_url": "https://vinyl-image-bugs.preview.emergentagent.com"
+            "origin_url": "https://record-search-ui.preview.emergentagent.com"
         }, headers={"Authorization": f"Bearer {self.trader_token}"})
         
         # May fail due to test Stripe key, but structure should be correct
@@ -177,7 +177,7 @@ class TestPaymentCheckout:
         resp = requests.post(f"{BASE_URL}/api/payments/checkout", json={
             "listing_id": listing["id"],
             "offer_amount": 60.00,
-            "origin_url": "https://vinyl-image-bugs.preview.emergentagent.com"
+            "origin_url": "https://record-search-ui.preview.emergentagent.com"
         }, headers={"Authorization": f"Bearer {self.trader_token}"})
         
         if resp.status_code == 200:
@@ -197,7 +197,7 @@ class TestPaymentCheckout:
         # Demo tries to buy their own listing
         resp = requests.post(f"{BASE_URL}/api/payments/checkout", json={
             "listing_id": listing["id"],
-            "origin_url": "https://vinyl-image-bugs.preview.emergentagent.com"
+            "origin_url": "https://record-search-ui.preview.emergentagent.com"
         }, headers={"Authorization": f"Bearer {self.demo_token}"})
         
         assert resp.status_code == 400, f"Expected 400, got {resp.status_code}: {resp.text}"
@@ -208,7 +208,7 @@ class TestPaymentCheckout:
         """POST /api/payments/checkout - fails for non-existent listing"""
         resp = requests.post(f"{BASE_URL}/api/payments/checkout", json={
             "listing_id": "non-existent-id-12345",
-            "origin_url": "https://vinyl-image-bugs.preview.emergentagent.com"
+            "origin_url": "https://record-search-ui.preview.emergentagent.com"
         }, headers={"Authorization": f"Bearer {self.trader_token}"})
         
         assert resp.status_code == 404, f"Expected 404, got {resp.status_code}: {resp.text}"
