@@ -20,19 +20,16 @@ The HoneyGroove is a vinyl record collector social platform with collection mana
 - Collection sort: Artist, Title, Newest, Spins, Value, Rarest First, Most Common
 - Format submenu: Collection page + profile page filters by Vinyl/CD/Cassette with counts
 - Format pills on feed: Posts with records show Vinyl/CD/Cassette pill (Notes/Discussions excluded)
-- Ultra-compact variant modal (280px, 5-col unified stats grid, compact buttons)
-- Compact ListingDetailModal (sm:max-w-md, reduced padding/art/CTA)
-- Compact TradeDetailModal (sm:max-w-md, tighter spacing)
-- Haul variant pills: Color variant pills overlaid on album covers in haul posts
-- CommunityISOCard: Clickable to open variant modal, shows variant pill on album art
+- **Optimal Density Variant Modal**: min-width 340px, max-width 420px/95vw, two horizontal stats rows, min-h-[40px] touch targets, scrollable variant tracker
+- Compact ListingDetailModal (sm:max-w-md) and TradeDetailModal (sm:max-w-md)
+- Haul variant pills on album covers, CommunityISOCard clickable with variant modal
 
 ## Recent Changes (March 2026)
-- Ultra-compact variant modal (280px max-width, unified 5-col stats: Own|ISO|Posts|Med|High, h-7 buttons)
-- Compact ListingDetailModal and TradeDetailModal with reduced sizes
+- Variant Modal Optimal Density redesign: 340px min, 420px max, text-base title, horizontal justify-between stats, 40px touch targets, scrollable tracker
 - Format pill only on posts with records (not Notes/Discussions)
-- Format submenu on user profile collection tab
+- Format submenu on collection page and user profile collection tab
 - CommunityISOCard clickable with variant modal + variant pill
-- Previous: Smart Match, rarity sorting, ISO fixes, collapsible pinned posts, notification prefs
+- Compact ListingDetailModal and TradeDetailModal
 
 ## Upcoming
 - Instagram Story Export (P1)
