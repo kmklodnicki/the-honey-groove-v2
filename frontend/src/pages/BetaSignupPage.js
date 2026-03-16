@@ -67,7 +67,13 @@ const BetaSignupPage = () => {
           style={{ height: '120px', marginTop: '-1px', backgroundColor: '#FEF6E6' }}
           data-testid="beta-drip"
         >
-          {[0,1,2].map(i => (
+          {[0,1,2].map(i => {
+            const mask = i === 0
+              ? 'linear-gradient(to right, black 85%, transparent 100%)'
+              : i === 2
+                ? 'linear-gradient(to left, black 85%, transparent 100%)'
+                : 'linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%)';
+            return (
             <video
               key={i}
               autoPlay
@@ -78,15 +84,20 @@ const BetaSignupPage = () => {
               poster="/honey-drip.png"
               className="block h-full flex-shrink-0"
               style={{
-                width: 'calc(100vw / 3)',
+                width: 'calc(100vw / 3 + 20px)',
+                marginLeft: i === 0 ? 0 : '-10px',
+                marginRight: i === 2 ? 0 : '-10px',
                 objectFit: 'cover',
                 objectPosition: 'top center',
                 mixBlendMode: 'multiply',
+                WebkitMaskImage: mask,
+                maskImage: mask,
               }}
             >
               <source src="/honey-drip.mp4" type="video/mp4" />
             </video>
-          ))}
+            );
+          })}
         </div>
 
         <div className="w-full max-w-lg mx-auto px-6 relative z-10" style={{ paddingTop: '160px' }}>

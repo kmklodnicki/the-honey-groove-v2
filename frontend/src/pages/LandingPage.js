@@ -90,7 +90,13 @@ const LandingPage = () => {
           style={{ height: '120px', marginTop: '-1px', backgroundColor: '#FEF6E6' }}
           data-testid="hero-drip"
         >
-          {[0,1,2].map(i => (
+          {[0,1,2].map(i => {
+            const mask = i === 0
+              ? 'linear-gradient(to right, black 85%, transparent 100%)'
+              : i === 2
+                ? 'linear-gradient(to left, black 85%, transparent 100%)'
+                : 'linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%)';
+            return (
             <video
               key={i}
               autoPlay
@@ -101,16 +107,21 @@ const LandingPage = () => {
               poster="/honey-drip.png"
               className="block h-full flex-shrink-0"
               style={{
-                width: 'calc(100vw / 3)',
+                width: 'calc(100vw / 3 + 20px)',
+                marginLeft: i === 0 ? 0 : '-10px',
+                marginRight: i === 2 ? 0 : '-10px',
                 objectFit: 'cover',
                 objectPosition: 'top center',
                 mixBlendMode: 'multiply',
+                WebkitMaskImage: mask,
+                maskImage: mask,
               }}
               {...(i === 0 ? { 'data-testid': 'hero-drip-video' } : {})}
             >
               <source src="/honey-drip.mp4" type="video/mp4" />
             </video>
-          ))}
+            );
+          })}
         </div>
         {/* Gold line · bottom of drip */}
         <div className="absolute left-0 w-screen z-10" style={{ top: '120px', height: '2px', background: 'linear-gradient(90deg, #D4A017, #E8B923, #D4A017)' }} />
