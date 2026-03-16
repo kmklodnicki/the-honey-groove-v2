@@ -78,11 +78,9 @@ const BetaSignupPage = () => {
               poster="/honey-drip.png"
               className="block h-full flex-shrink-0"
               style={{
-                width: '34vw',
+                width: 'calc(100vw / 3)',
                 objectFit: 'cover',
                 objectPosition: 'top center',
-                transform: 'scale(1.05)',
-                transformOrigin: 'top center',
                 mixBlendMode: 'multiply',
               }}
             >
