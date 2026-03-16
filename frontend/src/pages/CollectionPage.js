@@ -908,6 +908,118 @@ const CollectionPage = () => {
           </TabsTrigger>
         </TabsList>
 
+        {/* Discogs Import — above search */}
+        {collectionTab === 'owned' && (
+          <div className="mb-4">
+            <DiscogsImport onImportComplete={fetchData} />
+          </div>
+        )}
+
+        {/* Search and Sort Controls — persistent across tabs */}
+        <div className="flex flex-col sm:flex-row gap-3 mb-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder={collectionTab === 'wishlist' ? "Search your dreams..." : "Search vault..."}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 border-honey/50"
+              data-testid="collection-search"
+            />
+          </div>
+          {collectionTab === 'owned' && (
+            <>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-full sm:w-[200px] border-honey/50" data-testid="sort-select">
+                  <ArrowUpDown className="w-4 h-4 mr-2" />
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SORT_OPTIONS.map(option => (
+                    <SelectItem key={option.value} value={option.value} data-testid={`sort-${option.value}`}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="flex flex-row gap-2">
+                <Button
+                  variant={selectMode ? "default" : "outline"}
+                  size="sm"
+                  onClick={selectMode ? exitSelectMode : () => setSelectMode(true)}
+                  className={`gap-1 shrink-0 flex-1 sm:flex-none h-9 text-xs sm:text-sm px-2 sm:px-3 ${selectMode ? 'bg-honey text-vinyl-black hover:bg-honey-amber' : 'border-honey/50 text-stone-600'}`}
+                  data-testid="select-mode-btn"
+                >
+                  <ListChecks className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span>{selectMode ? 'Cancel' : 'Select'}</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCheckDuplicates}
+                  disabled={dupeLoading}
+                  className="gap-1 shrink-0 flex-1 sm:flex-none h-9 text-xs sm:text-sm px-2 sm:px-3 border-honey/50 text-stone-600"
+                  data-testid="remove-duplicates-btn"
+                >
+                  {dupeLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                  <span className="hidden sm:inline">Duplicates</span>
+                  <span className="sm:hidden">Dupes</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleHardRefreshImages}
+                  disabled={imageRefreshing}
+                  className="gap-1 shrink-0 flex-1 sm:flex-none h-9 text-xs sm:text-sm px-2 sm:px-3 border-honey/50 text-stone-600"
+                  data-testid="hard-refresh-images-btn"
+                >
+                  {imageRefreshing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImageDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                  <span className="hidden sm:inline">Fix Images</span>
+                  <span className="sm:hidden">Fix</span>
+                </Button>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Format submenu pills — vault only */}
+        {collectionTab === 'owned' && (
+          <div className="flex items-center gap-2 mb-4" data-testid="format-filter-bar">
+            {[
+              { value: 'all', label: 'All', icon: null },
+              { value: 'vinyl', label: 'Vinyl', icon: Disc },
+              { value: 'cd', label: 'CD', icon: null },
+              { value: 'cassette', label: 'Cassette', icon: null },
+            ].map(({ value, label, icon: Icon }) => {
+              const count = value === 'all' ? records.length : records.filter(r => {
+                const fmt = (r.format || 'Vinyl').toLowerCase();
+                if (value === 'vinyl') return fmt.includes('vinyl') || fmt === 'lp' || (!fmt.includes('cd') && !fmt.includes('cassette'));
+                if (value === 'cd') return fmt.includes('cd');
+                if (value === 'cassette') return fmt.includes('cassette');
+                return false;
+              }).length;
+              const active = formatFilter === value;
+              return (
+                <button
+                  key={value}
+                  onClick={() => setFormatFilter(value)}
+                  className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
+                    active
+                      ? 'bg-vinyl-black text-white border-vinyl-black shadow-sm'
+                      : 'bg-white text-stone-500 border-stone-200 hover:border-stone-300 hover:text-stone-700'
+                  }`}
+                  data-testid={`format-filter-${value}`}
+                >
+                  {Icon && <Icon className="w-3 h-3" />}
+                  {value === 'cassette' && <span className="text-[10px]">&#x1F4FC;</span>}
+                  {label}
+                  <span className={`text-[10px] ${active ? 'text-white/70' : 'text-stone-400'}`}>({count})</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         {/* ====== COLLECTION (OWNED) TAB ====== */}
         <TabsContent value="owned">
 
@@ -948,105 +1060,6 @@ const CollectionPage = () => {
             </div>
           )}
 
-          {/* Search and Sort Controls */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search vault..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 border-honey/50"
-                data-testid="collection-search"
-              />
-            </div>
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-full sm:w-[200px] border-honey/50" data-testid="sort-select">
-                <ArrowUpDown className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                {SORT_OPTIONS.map(option => (
-                  <SelectItem key={option.value} value={option.value} data-testid={`sort-${option.value}`}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <div className="flex flex-row gap-2">
-              <Button
-                variant={selectMode ? "default" : "outline"}
-                size="sm"
-                onClick={selectMode ? exitSelectMode : () => setSelectMode(true)}
-                className={`gap-1 shrink-0 flex-1 sm:flex-none h-9 text-xs sm:text-sm px-2 sm:px-3 ${selectMode ? 'bg-honey text-vinyl-black hover:bg-honey-amber' : 'border-honey/50 text-stone-600'}`}
-                data-testid="select-mode-btn"
-              >
-                <ListChecks className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span>{selectMode ? 'Cancel' : 'Select'}</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleCheckDuplicates}
-                disabled={dupeLoading}
-                className="gap-1 shrink-0 flex-1 sm:flex-none h-9 text-xs sm:text-sm px-2 sm:px-3 border-honey/50 text-stone-600"
-                data-testid="remove-duplicates-btn"
-              >
-                {dupeLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-                <span className="hidden sm:inline">Duplicates</span>
-                <span className="sm:hidden">Dupes</span>
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleHardRefreshImages}
-                disabled={imageRefreshing}
-                className="gap-1 shrink-0 flex-1 sm:flex-none h-9 text-xs sm:text-sm px-2 sm:px-3 border-honey/50 text-stone-600"
-                data-testid="hard-refresh-images-btn"
-              >
-                {imageRefreshing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImageDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-                <span className="hidden sm:inline">Fix Images</span>
-                <span className="sm:hidden">Fix</span>
-              </Button>
-            </div>
-          </div>
-
-          {/* Format submenu pills */}
-          <div className="flex items-center gap-2 mb-4" data-testid="format-filter-bar">
-            {[
-              { value: 'all', label: 'All', icon: null },
-              { value: 'vinyl', label: 'Vinyl', icon: Disc },
-              { value: 'cd', label: 'CD', icon: null },
-              { value: 'cassette', label: 'Cassette', icon: null },
-            ].map(({ value, label, icon: Icon }) => {
-              const count = value === 'all' ? records.length : records.filter(r => {
-                const fmt = (r.format || 'Vinyl').toLowerCase();
-                if (value === 'vinyl') return fmt.includes('vinyl') || fmt === 'lp' || (!fmt.includes('cd') && !fmt.includes('cassette'));
-                if (value === 'cd') return fmt.includes('cd');
-                if (value === 'cassette') return fmt.includes('cassette');
-                return false;
-              }).length;
-              const active = formatFilter === value;
-              return (
-                <button
-                  key={value}
-                  onClick={() => setFormatFilter(value)}
-                  className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
-                    active
-                      ? 'bg-vinyl-black text-white border-vinyl-black shadow-sm'
-                      : 'bg-white text-stone-500 border-stone-200 hover:border-stone-300 hover:text-stone-700'
-                  }`}
-                  data-testid={`format-filter-${value}`}
-                >
-                  {Icon && <Icon className="w-3 h-3" />}
-                  {value === 'cassette' && <span className="text-[10px]">&#x1F4FC;</span>}
-                  {label}
-                  <span className={`text-[10px] ${active ? 'text-white/70' : 'text-stone-400'}`}>({count})</span>
-                </button>
-              );
-            })}
-          </div>
-
           {/* Multi-select action bar */}
           {selectMode && (
             <div className="flex items-center gap-3 mb-4 p-3 rounded-xl bg-honey/10 border border-honey/30" data-testid="bulk-action-bar">
@@ -1066,11 +1079,6 @@ const CollectionPage = () => {
               </div>
             </div>
           )}
-
-          {/* Discogs Import */}
-          <div className="mb-6">
-            <DiscogsImport onImportComplete={fetchData} />
-          </div>
 
           {records.length === 0 ? (
             <Card className="p-12 text-center border-honey/30">
@@ -1134,7 +1142,13 @@ const CollectionPage = () => {
             </Card>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {wishlistItems.map(item => (
+              {wishlistItems
+                .filter(item => {
+                  if (!searchQuery) return true;
+                  const q = searchQuery.toLowerCase();
+                  return (item.album || '').toLowerCase().includes(q) || (item.artist || '').toLowerCase().includes(q);
+                })
+                .map(item => (
                 <WishlistCard key={item.id} item={item} onPromote={handleWishlistToISO} onAddToCollection={handleWishlistToCollection} onDelete={handleDeleteWishlistItem} />
               ))}
             </div>
