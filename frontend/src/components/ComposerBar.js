@@ -124,15 +124,9 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     if (file) {
       const err = validateImageFile(file);
       if (err) { toast.error(err); e.target.value = ''; return; }
-      try {
-        const prepared = await prepareImageForUpload(file);
-        setPostPhoto(prepared);
-        setPostPhotoPreview(URL.createObjectURL(prepared));
-      } catch (convErr) {
-        console.error('Image conversion failed:', convErr);
-        toast.error('could not process this image. try a jpg or png.');
-        e.target.value = '';
-      }
+      const prepared = await prepareImageForUpload(file);
+      setPostPhoto(prepared);
+      setPostPhotoPreview(URL.createObjectURL(prepared));
     }
   };
 
@@ -457,7 +451,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
       });
       setNoteImageUrl(r.data.url);
-    } catch { toast.error('upload failed. try again.'); }
+    } catch (uploadErr) { toast.error(uploadErr.response?.data?.detail || 'upload failed. try again.'); }
     finally { setNoteUploading(false); }
   };
 

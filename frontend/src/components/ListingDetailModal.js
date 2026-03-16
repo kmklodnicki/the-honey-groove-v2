@@ -131,10 +131,8 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
     for (const file of files.slice(0, remaining)) {
       const err = validateImageFile(file);
       if (err) { toast.error(err); continue; }
-      try {
-        const prepared = await prepareImageForUpload(file);
-        valid.push({ file: prepared, preview: URL.createObjectURL(prepared), url: null });
-      } catch { toast.error('could not process image.'); }
+      const prepared = await prepareImageForUpload(file);
+      valid.push({ file: prepared, preview: URL.createObjectURL(prepared), url: null });
     }
     if (valid.length) setEditPhotos(prev => [...prev, ...valid]);
   };
