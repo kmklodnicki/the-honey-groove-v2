@@ -1,7 +1,7 @@
 # The HoneyGroove - Product Requirements Document
 
 ## Original Problem Statement
-The HoneyGroove is a vinyl record collector social platform. The admin has directed the project through multiple phases of UI/UX refinement, feature implementation (Polls, Threaded Comments), and bug fixing. The application was migrated to a Vercel production deployment with Cloudinary for image storage.
+The HoneyGroove is a vinyl record collector social platform with collection management, social feed, marketplace, and valuation features. Deployed on Vercel with Cloudinary for images.
 
 ## Tech Stack
 - **Frontend**: React (CRA + Craco), TailwindCSS, Shadcn/UI
@@ -10,39 +10,32 @@ The HoneyGroove is a vinyl record collector social platform. The admin has direc
 - **Integrations**: Cloudinary (images), Stripe Connect (payments), Discogs API (record metadata), Resend (emails)
 
 ## Core Features (Implemented)
-- User auth (register/login/invite codes)
-- Collection management (add/remove records, Discogs import via OAuth)
-- Social feed with server-side filtering (Now Spinning, Hauls, ISOs, Notes, Polls)
-- Collapsible pinned posts (localStorage persisted)
-- Notification preferences (all/following/none) with sender_id filtering
-- Marketplace (The Honeypot - listings, trades, payments)
-- Valuation system (Discogs market data, community valuations)
-- Weekly Wax reports, Daily Prompts, Bingo cards
-- DMs, notifications, follow system, blocking
-- Profile page with tabs: Collection, Posts, For Sale, Dream List, ISO
-- Settings: password update modal, notification prefs, privacy controls
+- User auth, collection management, Discogs import via OAuth
+- **Smart Match**: Auto-links manual album entries to Discogs (cover art, tracklist, community data)
+- **Rarity System**: Grail/Ultra Rare/Very Rare/Rare/Uncommon/Common/Obscure/Unknown tiers from Discogs community have/want data. "Unknown" for records without Discogs link.
+- Social feed with server-side filtering, collapsible pinned posts
+- Notification preferences (all/following/none)
+- Marketplace, valuation system, weekly reports, daily prompts
+- Profile page: Collection, Posts, For Sale, Dream List, ISO tabs
+- Collection sort: Artist, Title, Newest, Spins, Value, **Rarest First**, **Most Common**
 
-## Recent Changes (March 2026 - Session 2)
-- Collapsible pinned post: X button, localStorage persistence, expand/collapse
-- Notification preferences: User model field + backend filtering logic
-- Settings: Notification card (All/Following/None radio buttons)
-- Settings: Password update moved to modal, button next to email
-- UnofficialPill moved to bottom-right
-- Feed filters: server-side filtering with infinite scroll
-- Profile Posts tab with cursor pagination
+## Recent Changes (March 2026)
+- Smart Match on manual add (high-confidence Discogs auto-linking)
+- Rarity badge logic: "Unknown" for no discogs_id, "Very Rare" tier added
+- Collection sort by rarity (most common / rarest first)
+- ISO auto-populate from Discogs (backfilled 59 of 63 ISOs)
+- Collapsible pinned posts, notification preferences, password modal
+- Feed server-side filtering, Profile Posts tab
 
 ## P0 Issues (Vercel Production)
-1. Cloudinary uploads - "Invalid Signature" on Vercel (credential config)
+1. Cloudinary uploads - "Invalid Signature" (credential config on Vercel)
 2. Old image display - needs EMERGENT_LLM_KEY on Vercel
 
-## P1 Issues
-- Notification email CTAs - needs user verification
-- Instagram Story Export feature
-- Re-enable "Mini Groove" feature
+## Upcoming
+- Instagram Story Export (P1), Re-enable Mini Groove (P1)
+- Login pre-fetching, Service Worker caching
 
-## P2 / Future
-- Discogs API SSL resilience, Login pre-fetching
-- Service Worker caching, Streaming Service integration
-- Record Store Day Proxy Network, Safari loading animation
-- Pro memberships / Verified Seller badge
-- Secret Search Feature, Editable Weekly Wax, Crown Jewels logic
+## Future/Backlog
+- Pro memberships, Secret Search, Crown Jewels logic
+- Streaming integration, Record Store Day Proxy
+- Editable Weekly Wax, Safari animation
