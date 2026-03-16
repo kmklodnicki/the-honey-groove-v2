@@ -32,17 +32,17 @@ export default function VariantActions({ variant }) {
   }, [discogs_id, token]);
 
   if (!user) return (
-    <div className="flex items-center gap-2 mt-1.5 p-2 rounded-xl border border-honey/20 bg-white/60" data-testid="variant-actions-login">
-      <p className="text-[10px] text-muted-foreground flex-1">Sign in to add this variant</p>
-      <Button onClick={() => navigate('/login')} className="h-7 rounded-full bg-honey text-vinyl-black hover:bg-honey-amber text-[11px] px-3 font-semibold shadow-sm shrink-0">
+    <div className="flex items-center gap-3 mt-2 p-3 rounded-xl border border-honey/20 bg-white/60" data-testid="variant-actions-login">
+      <p className="text-sm text-muted-foreground flex-1">Sign in to add this variant</p>
+      <Button onClick={() => navigate('/login')} className="min-h-[40px] rounded-full bg-honey text-vinyl-black hover:bg-honey-amber text-sm px-5 font-semibold shadow-sm shrink-0">
         Sign In
       </Button>
     </div>
   );
 
   if (loading) return (
-    <div className="flex justify-center p-2">
-      <Loader2 className="w-4 h-4 animate-spin text-honey-amber" />
+    <div className="flex justify-center p-3">
+      <Loader2 className="w-5 h-5 animate-spin text-honey-amber" />
     </div>
   );
 
@@ -126,13 +126,13 @@ export default function VariantActions({ variant }) {
   const owned = ownership?.owned;
   const isoStatus = ownership?.iso_status;
 
-  const btnBase = 'h-7 rounded-full text-[11px] gap-1 px-2.5';
+  const btnBase = 'min-h-[40px] rounded-full text-sm gap-1.5 px-4';
   const btnSecondary = `${btnBase} border-honey/30 hover:bg-honey/10`;
-  const btnPrimary = `${btnBase} bg-honey text-vinyl-black hover:bg-honey-amber px-3 font-semibold shadow-sm`;
+  const btnPrimary = `${btnBase} bg-honey text-vinyl-black hover:bg-honey-amber px-5 font-semibold shadow-sm`;
 
   return (
     <>
-    <div className="flex flex-wrap items-center gap-1.5 mt-1.5" data-testid="variant-actions">
+    <div className="flex items-center gap-2 mt-2" data-testid="variant-actions">
       {!owned ? (
         <>
           <Button
@@ -142,9 +142,9 @@ export default function VariantActions({ variant }) {
             className={btnSecondary}
             data-testid="action-wishlist"
           >
-            {actionLoading === 'wishlist' ? <Loader2 className="w-3 h-3 animate-spin" /> :
-              isoStatus === 'WISHLIST' ? <Check className="w-3 h-3 text-emerald-500" /> :
-              <Heart className="w-3 h-3" />}
+            {actionLoading === 'wishlist' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> :
+              isoStatus === 'WISHLIST' ? <Check className="w-3.5 h-3.5 text-emerald-500" /> :
+              <Heart className="w-3.5 h-3.5" />}
             {isoStatus === 'WISHLIST' ? 'Dream List' : 'Dream List'}
           </Button>
           <Button
@@ -154,9 +154,9 @@ export default function VariantActions({ variant }) {
             className={btnSecondary}
             data-testid="action-iso"
           >
-            {actionLoading === 'iso' ? <Loader2 className="w-3 h-3 animate-spin" /> :
-              isoStatus === 'OPEN' ? <Check className="w-3 h-3 text-emerald-500" /> :
-              <Search className="w-3 h-3" />}
+            {actionLoading === 'iso' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> :
+              isoStatus === 'OPEN' ? <Check className="w-3.5 h-3.5 text-emerald-500" /> :
+              <Search className="w-3.5 h-3.5" />}
             {isoStatus === 'OPEN' ? 'Seeking' : 'Seeking'}
           </Button>
           <Button
@@ -165,8 +165,8 @@ export default function VariantActions({ variant }) {
             className={btnPrimary}
             data-testid="action-add-collection"
           >
-            {actionLoading === 'collection' ? <Loader2 className="w-3 h-3 animate-spin" /> :
-              <Plus className="w-3 h-3" />}
+            {actionLoading === 'collection' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> :
+              <Plus className="w-3.5 h-3.5" />}
             Add
           </Button>
         </>
@@ -178,14 +178,14 @@ export default function VariantActions({ variant }) {
             className={btnSecondary}
             data-testid="action-trade"
           >
-            <ArrowRightLeft className="w-3 h-3" /> Trade
+            <ArrowRightLeft className="w-3.5 h-3.5" /> Trade
           </Button>
           <Button
             onClick={goToSell}
             className={btnPrimary}
             data-testid="action-sell"
           >
-            <DollarSign className="w-3 h-3" /> Sell
+            <DollarSign className="w-3.5 h-3.5" /> Sell
           </Button>
         </>
       )}
