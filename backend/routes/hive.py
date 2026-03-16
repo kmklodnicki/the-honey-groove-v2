@@ -459,7 +459,7 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
     )
 
 @router.get("/feed")
-async def get_feed(user: Dict = Depends(require_auth), limit: int = 20, skip: int = 0, before: Optional[str] = None, post_type: Optional[str] = None):
+async def get_feed(user: Dict = Depends(require_auth), limit: int = 20, skip: int = 0, before: Optional[str] = None, after: Optional[str] = None, post_type: Optional[str] = None):
     try:
         hidden_ids = await get_hidden_user_ids()
         blocked_ids = await get_all_blocked_ids(user["id"])
@@ -486,6 +486,9 @@ async def get_feed(user: Dict = Depends(require_auth), limit: int = 20, skip: in
             query["user_id"] = {"$nin": exclude_ids}
         if before:
             query["created_at"] = {"$lt": before}
+        if after:
+            query.setdefault("created_at", {})
+            query["created_at"]["$gt"] = after
 
         # Server-side post_type filtering
         if post_type:

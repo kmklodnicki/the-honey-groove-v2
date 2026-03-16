@@ -8,11 +8,12 @@ import { Progress } from '../components/ui/progress';
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from '../components/ui/dialog';
-import { ExternalLink, RefreshCw, CheckCircle2, AlertCircle, Loader2, Unplug, Disc, ArrowRight, XCircle, ChevronDown, ChevronUp, Ban, Copy, AlertTriangle } from 'lucide-react';
+import { ExternalLink, RefreshCw, CheckCircle2, AlertCircle, Loader2, Unplug, Disc, ArrowRight, XCircle, ChevronDown, ChevronUp, Ban, Copy, AlertTriangle, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import AlbumArt from './AlbumArt';
 import PureGoldModal from './PureGoldModal';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
 
 const DiscogsImport = ({ onImportComplete, compact = false }) => {
   const { token, API } = useAuth();
@@ -186,6 +187,17 @@ return (
           </div>
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <span className="text-sm font-semibold whitespace-nowrap">Import from Discogs</span>
+            <TooltipProvider delayDuration={200}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="w-3.5 h-3.5 text-muted-foreground cursor-help shrink-0" />
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-[260px] text-xs leading-relaxed">
+                  <p>One-way sync from your Discogs collection to The Honey Groove. Two-way sync is on the roadmap.</p>
+                  <p className="mt-1 text-muted-foreground">Hit Sync again anytime you add records to your Discogs.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             {status?.oauth_verified && (
               <span className="text-[10px] font-semibold text-green-700 bg-green-50 px-1.5 py-0.5 rounded-full border border-green-200 shrink-0" data-testid="oauth-verified-badge">
                 Verified

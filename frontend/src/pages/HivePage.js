@@ -218,9 +218,7 @@ const HivePage = () => {
     if (!socket) return;
     const handleNewPost = (data) => {
       const { post, author_id } = data;
-      // Don't queue our own posts (we already see them via handlePostCreated)
       if (author_id === user?.id) return;
-      // Don't queue duplicates
       setNewPostsQueue(prev => {
         if (prev.some(p => p.id === post.id)) return prev;
         return [post, ...prev];
@@ -229,6 +227,35 @@ const HivePage = () => {
     socket.on('NEW_POST', handleNewPost);
     return () => socket.off('NEW_POST', handleNewPost);
   }, [socket, user?.id]);
+
+  // Polling fallback: check for new posts every 20s when WS is not connected
+  const latestPostTs = useRef(null);
+  useEffect(() => {
+    if (posts.length > 0 && posts[0]?.created_at) {
+      latestPostTs.current = posts[0].created_at;
+    }
+  }, [posts]);
+
+  useEffect(() => {
+    if (connected) return; // WS is live, no need to poll
+    const interval = setInterval(async () => {
+      if (!latestPostTs.current || !token) return;
+      try {
+        const params = { limit: 10, after: latestPostTs.current };
+        if (activeFilter && activeFilter !== 'all') params.post_type = activeFilter;
+        const res = await axios.get(`${API}/feed`, { params, headers: { Authorization: `Bearer ${token}` } });
+        const fresh = (res.data || []).filter(p => p.author_id !== user?.id);
+        if (fresh.length > 0) {
+          setNewPostsQueue(prev => {
+            const ids = new Set(prev.map(p => p.id));
+            const unique = fresh.filter(p => !ids.has(p.id));
+            return unique.length ? [...unique, ...prev] : prev;
+          });
+        }
+      } catch { /* silent */ }
+    }, 20000);
+    return () => clearInterval(interval);
+  }, [connected, API, token, activeFilter, user?.id]);
 
   // Flush queued posts into the feed
   const showNewPosts = () => {
@@ -413,8 +440,8 @@ const HivePage = () => {
       <div className="flex items-center justify-between mb-6">
         <h1 className="font-heading text-3xl text-vinyl-black">The Hive</h1>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <div className={`w-2 h-2 rounded-full ${connected ? 'bg-honey animate-pulse' : 'bg-stone-300'}`} />
-          {connected ? 'Live Feed' : 'Feed'}
+          <div className="w-2 h-2 rounded-full bg-honey animate-pulse" />
+          Live Feed
         </div>
       </div>
 
