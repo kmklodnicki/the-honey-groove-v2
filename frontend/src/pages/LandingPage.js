@@ -159,6 +159,9 @@ const LandingPage = () => {
         </div>
       </section>
 
+      {/* Gold separator line */}
+      <div className="w-full" style={{ height: '2px', background: 'linear-gradient(90deg, #D4A017, #E8B923, #D4A017)' }} />
+
       {/* SECTION 1 · Stats Strip */}
       <section className="py-12 md:py-16 relative" style={{ background: '#F0E8D8' }} data-testid="stats-strip">
         <div className="max-w-5xl mx-auto px-4 md:px-8">
