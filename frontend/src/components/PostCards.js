@@ -137,8 +137,8 @@ const PostTypeBadge = ({ type, mood }) => {
     const s = PILL_STYLES.NOTE;
     return (
       <span className="inline-flex items-center gap-1.5">
-        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${s.bg} ${s.text} ${s.border}`}>
-          <BookOpen className="w-3 h-3" />
+        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border whitespace-nowrap ${s.bg} ${s.text} ${s.border}`}>
+          <BookOpen className="w-3 h-3 shrink-0" />
           Note
         </span>
       </span>
@@ -162,8 +162,8 @@ const PostTypeBadge = ({ type, mood }) => {
   const Icon = c.icon;
   return (
     <span className="inline-flex items-center gap-1.5">
-      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${s.bg} ${s.text} ${s.border}`}>
-        {c.emoji ? <span className="text-xs leading-none">{c.emoji}</span> : <Icon className="w-3 h-3" />}
+      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border whitespace-nowrap ${s.bg} ${s.text} ${s.border}`}>
+        {c.emoji ? <span className="text-xs leading-none">{c.emoji}</span> : <Icon className="w-3 h-3 shrink-0" />}
         {c.label}
       </span>
       {type === 'NOW_SPINNING' && mood && <MoodPill mood={mood} />}
@@ -176,7 +176,7 @@ const MoodPill = ({ mood }) => {
   const color = MOOD_COLOR_MAP[mood] || '#7e22ce';
   if (!mood) return null;
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap"
       style={{ backgroundColor: color + '20', color }}
       data-testid="mood-pill-badge">
       {emoji} {mood}
@@ -209,7 +209,7 @@ const VariantTag = ({ variant, glass, ghost, gold, prefix, linkTo }) => {
       <span className={`inline-flex items-center gap-1 text-[10px] sm:text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${truncClass}`}
         style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
         data-testid="variant-pill-glass">
-        {label}
+        <span className="truncate">{label}</span>
       </span>,
       'variant-pill-glass'
     );
@@ -1105,7 +1105,7 @@ const FormatPill = ({ format }) => {
   const Icon = FORMAT_ICONS[key];
   const label = key;
   return (
-    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium border ${style}`} data-testid="format-type-pill">
+    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium border whitespace-nowrap ${style}`} data-testid="format-type-pill">
       {Icon && <Icon className="w-2.5 h-2.5" />}
       {!Icon && <span className="text-[9px]">&#x1F4FC;</span>}
       {label}

@@ -628,15 +628,15 @@ main {
 
 /* BLOCK 412/415/442: Responsive variant pill — truncate at all sizes */
 .variant-pill-responsive {
-  white-space: nowrap;
+  white-space: nowrap !important;
   max-width: 280px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 @media (max-width: 480px) {
   .variant-pill-responsive {
-    max-width: 150px;
-    font-size: 11px !important;
+    max-width: 180px;
+    font-size: 10px !important;
   }
 }
 @media (min-width: 481px) and (max-width: 1024px) {
