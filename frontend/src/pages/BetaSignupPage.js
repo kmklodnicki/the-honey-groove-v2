@@ -69,10 +69,10 @@ const BetaSignupPage = () => {
         >
           {[0,1,2].map(i => {
             const mask = i === 0
-              ? 'linear-gradient(to right, black 85%, transparent 100%)'
+              ? 'linear-gradient(to right, black 92%, transparent 100%)'
               : i === 2
-                ? 'linear-gradient(to left, black 85%, transparent 100%)'
-                : 'linear-gradient(to right, transparent 0%, black 15%, black 85%, transparent 100%)';
+                ? 'linear-gradient(to left, black 92%, transparent 100%)'
+                : 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)';
             return (
             <video
               key={i}
@@ -84,9 +84,9 @@ const BetaSignupPage = () => {
               poster="/honey-drip.png"
               className="block h-full flex-shrink-0"
               style={{
-                width: 'calc(100vw / 3 + 20px)',
-                marginLeft: i === 0 ? 0 : '-10px',
-                marginRight: i === 2 ? 0 : '-10px',
+                width: 'calc(100vw / 3 + 10px)',
+                marginLeft: i === 0 ? 0 : '-5px',
+                marginRight: i === 2 ? 0 : '-5px',
                 objectFit: 'cover',
                 objectPosition: 'top center',
                 mixBlendMode: 'multiply',
