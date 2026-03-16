@@ -126,6 +126,38 @@ const LandingPage = () => {
         {/* Gold line · bottom of drip */}
         <div className="absolute left-0 w-screen z-10" style={{ top: '120px', height: '2px', background: 'linear-gradient(90deg, #D4A017, #E8B923, #D4A017)' }} />
 
+        {/* Organic hero assets · desktop only */}
+        <img
+          src="/hero-left.png"
+          alt=""
+          aria-hidden="true"
+          className="hidden lg:block absolute pointer-events-none"
+          style={{
+            left: 0,
+            top: '25%',
+            width: '20vw',
+            objectFit: 'contain',
+            willChange: 'transform',
+            zIndex: 5,
+          }}
+          data-testid="hero-asset-left"
+        />
+        <img
+          src="/hero-right.png"
+          alt=""
+          aria-hidden="true"
+          className="hidden lg:block absolute pointer-events-none"
+          style={{
+            right: 0,
+            top: 0,
+            width: '20vw',
+            objectFit: 'contain',
+            willChange: 'transform',
+            zIndex: 5,
+          }}
+          data-testid="hero-asset-right"
+        />
+
         <div className="max-w-6xl mx-auto px-4 md:px-8 relative z-10">
           <div className="text-center max-w-4xl mx-auto">
             {/* Logo wordmark · below the drip */}
