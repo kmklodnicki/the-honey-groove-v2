@@ -14,7 +14,7 @@ import {
 import { Disc, Package, Search, Loader2, X, Feather, ImagePlus, Tag, Shuffle, ChevronDown, Music, RefreshCw, Camera, BarChart3, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
-import { validateImageFile } from '../utils/imageUpload';
+import { validateImageFile, prepareImageForUpload } from '../utils/imageUpload';
 import AlbumArt from './AlbumArt';
 import RecordSearchResult from './RecordSearchResult';
 
@@ -119,13 +119,20 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     setPostPhoto(null); setPostPhotoPreview(null);
     if (postPhotoInputRef.current) postPhotoInputRef.current.value = '';
   };
-  const handlePhotoSelect = (e) => {
+  const handlePhotoSelect = async (e) => {
     const file = e.target.files[0];
     if (file) {
       const err = validateImageFile(file);
       if (err) { toast.error(err); e.target.value = ''; return; }
-      setPostPhoto(file);
-      setPostPhotoPreview(URL.createObjectURL(file));
+      try {
+        const prepared = await prepareImageForUpload(file);
+        setPostPhoto(prepared);
+        setPostPhotoPreview(URL.createObjectURL(prepared));
+      } catch (convErr) {
+        console.error('Image conversion failed:', convErr);
+        toast.error('could not process this image. try a jpg or png.');
+        e.target.value = '';
+      }
     }
   };
 
@@ -438,13 +445,14 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const handleNoteImageUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const { validateImageFile } = await import('../utils/imageUpload');
+    const { validateImageFile, prepareImageForUpload } = await import('../utils/imageUpload');
     const err = validateImageFile(file);
     if (err) { toast.error(err); return; }
     setNoteUploading(true);
     try {
+      const prepared = await prepareImageForUpload(file);
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', prepared);
       const r = await axios.post(`${API}/upload`, formData, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
       });

@@ -122,16 +122,19 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
   };
 
   // Photo handling for edit
-  const handleEditPhotoSelect = (e) => {
+  const handleEditPhotoSelect = async (e) => {
     const files = Array.from(e.target.files || []);
     const remaining = 10 - editPhotos.length;
     if (remaining <= 0) { toast.error('maximum 10 photos.'); return; }
-    const { validateImageFile } = require('../utils/imageUpload');
+    const { validateImageFile, prepareImageForUpload } = require('../utils/imageUpload');
     const valid = [];
     for (const file of files.slice(0, remaining)) {
       const err = validateImageFile(file);
       if (err) { toast.error(err); continue; }
-      valid.push({ file, preview: URL.createObjectURL(file), url: null });
+      try {
+        const prepared = await prepareImageForUpload(file);
+        valid.push({ file: prepared, preview: URL.createObjectURL(prepared), url: null });
+      } catch { toast.error('could not process image.'); }
     }
     if (valid.length) setEditPhotos(prev => [...prev, ...valid]);
   };
