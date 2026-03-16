@@ -37,6 +37,9 @@ The HoneyGroove is a vinyl record social platform where users can track collecti
 - **P0 Fix: Album Art in Haul/ISO Feed** — Added cover_url hydration in build_post_response for bundle_records (via record_id or discogs_id lookup) and haul items (via discogs_id lookup)
 - **Living Landing Page** — Replaced static `honey-drip.png` with looping `honey-drip.mp4` video on both LandingPage and BetaSignupPage. Pixel-perfect edge-to-edge "ooze" effect with overscan fix (scale 1.05), poster fallback for Low Power Mode, proper z-index layering.
 
+### Session 8 (2026-03-16)
+- **P0 Fix: ISO Search Modal Album Artwork** — Fixed Discogs album artwork not appearing in the ISO search modal. Root cause: `AlbumArt` component used `loading="lazy"` which doesn't trigger in modal/scroll containers, plus a shimmer timeout removed the `<img>` tag entirely after 8s. Fix: Added `priority` prop to `RecordSearchResult`→`AlbumArt` for eager loading, and kept img element rendered during shimmer state. Affects all search dropdowns site-wide (ISO, Listings, Hauls, ComposerBar, Onboarding, etc.).
+
 ## Backlog
 
 ### P1 - Upcoming
