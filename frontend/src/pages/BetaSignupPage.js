@@ -60,19 +60,32 @@ const BetaSignupPage = () => {
         <meta property="og:type" content="website" />
       </Helmet>
 
-      <div className="min-h-screen bg-[#FAF6EE] flex flex-col items-center pb-16" data-testid="beta-signup-page">
-        {/* Honey drip · pinned to top */}
-        <div className="w-screen" data-testid="beta-drip"
-          style={{
-            backgroundImage: 'url(/honey-drip.png)',
-            backgroundRepeat: 'repeat-x',
-            backgroundPosition: 'top center',
-            backgroundSize: 'auto 100%',
-            height: '200px',
-          }}
-        />
+      <div className="min-h-screen bg-[#FAF6EE] flex flex-col items-center pb-16 relative" data-testid="beta-signup-page">
+        {/* Honey drip · living video pinned flush to top */}
+        <div
+          className="absolute top-0 left-0 w-screen overflow-hidden z-0"
+          style={{ height: '200px', marginTop: '-1px' }}
+          data-testid="beta-drip"
+        >
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            disablePictureInPicture
+            poster="/honey-drip.png"
+            className="block w-full h-full"
+            style={{
+              objectFit: 'cover',
+              transform: 'scale(1.05)',
+              transformOrigin: 'top center',
+            }}
+          >
+            <source src="/honey-drip.mp4" type="video/mp4" />
+          </video>
+        </div>
 
-        <div className="w-full max-w-lg mx-auto px-6" style={{ paddingTop: '40px' }}>
+        <div className="w-full max-w-lg mx-auto px-6 relative z-10" style={{ paddingTop: '240px' }}>
           {/* Logo */}
           <div className="flex justify-center mb-4">
             <a href="/" data-testid="beta-logo-link">

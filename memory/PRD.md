@@ -35,6 +35,7 @@ The HoneyGroove is a vinyl record social platform where users can track collecti
 - **P0 Fix: HEIC Image Uploads** — Added file validation to ComposerBar's handlePhotoSelect, improved backend error logging in process_image, expanded upload endpoint to accept HEIC via extension even with generic content types
 - **P0 Fix: Now Spinning Image Uploads** — Added try/catch with user-friendly error messages in uploadPostPhoto, improved backend error detail
 - **P0 Fix: Album Art in Haul/ISO Feed** — Added cover_url hydration in build_post_response for bundle_records (via record_id or discogs_id lookup) and haul items (via discogs_id lookup)
+- **Living Landing Page** — Replaced static `honey-drip.png` with looping `honey-drip.mp4` video on both LandingPage and BetaSignupPage. Pixel-perfect edge-to-edge "ooze" effect with overscan fix (scale 1.05), poster fallback for Low Power Mode, proper z-index layering.
 
 ## Backlog
 
