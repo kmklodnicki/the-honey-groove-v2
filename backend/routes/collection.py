@@ -146,6 +146,7 @@ async def add_record(record_data: RecordCreate, user: Dict = Depends(require_aut
         "color_variant": resolved_color_variant,
         "discogs_id": resolved_discogs_id,
         "is_unofficial": is_unofficial,
+        "format": record_data.format or "Vinyl",
     }
     
     if existing_bundle:

@@ -322,6 +322,7 @@ const CollectionPage = () => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('newest');
+  const [formatFilter, setFormatFilter] = useState('all');
   const [spinningRecordId, setSpinningRecordId] = useState(null);
   const [collectionValue, setCollectionValue] = useState(null);
   const [hiddenGems, setHiddenGems] = useState([]);
@@ -743,6 +744,17 @@ const CollectionPage = () => {
       record.artist.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    // Filter by format
+    if (formatFilter !== 'all') {
+      filtered = filtered.filter(record => {
+        const fmt = (record.format || 'Vinyl').toLowerCase();
+        if (formatFilter === 'vinyl') return fmt.includes('vinyl') || fmt === 'lp' || (!fmt.includes('cd') && !fmt.includes('cassette'));
+        if (formatFilter === 'cd') return fmt.includes('cd');
+        if (formatFilter === 'cassette') return fmt.includes('cassette');
+        return true;
+      });
+    }
+
     // Then sort
     switch (sortBy) {
       case 'artist_asc':
@@ -807,7 +819,7 @@ const CollectionPage = () => {
     }
 
     return filtered;
-  }, [records, searchQuery, sortBy, spins, valueMap]);
+  }, [records, searchQuery, sortBy, formatFilter, spins, valueMap]);
 
   // BLOCK 567: Predictive prefetch — observe grid rows, prefetch 2 rows ahead
   useEffect(() => {
@@ -997,6 +1009,42 @@ const CollectionPage = () => {
                 <span className="sm:hidden">Fix</span>
               </Button>
             </div>
+          </div>
+
+          {/* Format submenu pills */}
+          <div className="flex items-center gap-2 mb-4" data-testid="format-filter-bar">
+            {[
+              { value: 'all', label: 'All', icon: null },
+              { value: 'vinyl', label: 'Vinyl', icon: Disc },
+              { value: 'cd', label: 'CD', icon: null },
+              { value: 'cassette', label: 'Cassette', icon: null },
+            ].map(({ value, label, icon: Icon }) => {
+              const count = value === 'all' ? records.length : records.filter(r => {
+                const fmt = (r.format || 'Vinyl').toLowerCase();
+                if (value === 'vinyl') return fmt.includes('vinyl') || fmt === 'lp' || (!fmt.includes('cd') && !fmt.includes('cassette'));
+                if (value === 'cd') return fmt.includes('cd');
+                if (value === 'cassette') return fmt.includes('cassette');
+                return false;
+              }).length;
+              const active = formatFilter === value;
+              return (
+                <button
+                  key={value}
+                  onClick={() => setFormatFilter(value)}
+                  className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
+                    active
+                      ? 'bg-vinyl-black text-white border-vinyl-black shadow-sm'
+                      : 'bg-white text-stone-500 border-stone-200 hover:border-stone-300 hover:text-stone-700'
+                  }`}
+                  data-testid={`format-filter-${value}`}
+                >
+                  {Icon && <Icon className="w-3 h-3" />}
+                  {value === 'cassette' && <span className="text-[10px]">&#x1F4FC;</span>}
+                  {label}
+                  <span className={`text-[10px] ${active ? 'text-white/70' : 'text-stone-400'}`}>({count})</span>
+                </button>
+              );
+            })}
           </div>
 
           {/* Multi-select action bar */}

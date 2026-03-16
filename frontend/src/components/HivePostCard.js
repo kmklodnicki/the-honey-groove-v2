@@ -17,7 +17,7 @@ import {
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { resolveImageUrl } from '../utils/imageUrl';
-import { PostTypeBadge, PostCardBody, NewFeatureBadge } from './PostCards';
+import { PostTypeBadge, PostCardBody, NewFeatureBadge, FormatPill } from './PostCards';
 import { TitleBadge } from './TitleBadge';
 import CommentThread from './CommentItem';
 import LoadingHoney from './LoadingHoney';
@@ -281,6 +281,7 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
               )}
               {post.user?.title_label && <TitleBadge label={post.user.title_label} />}
               <PostTypeBadge type={post.post_type} mood={post.mood} />
+              <FormatPill format={post.record_format || post.record?.format || (post.post_type !== 'DISCUSSION' && post.post_type !== 'POLL' ? 'Vinyl' : null)} />
               {post.is_new_feature && <NewFeatureBadge />}
             </div>
             <p className="text-xs text-muted-foreground">{timeAgo}</p>

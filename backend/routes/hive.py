@@ -433,6 +433,7 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
         poll_total_votes=poll_total,
         poll_user_vote=poll_user_vote,
         poll_results=poll_results,
+        record_format=record_data.get("format") if record_data else post.get("record_format"),
     )
 
 @router.get("/feed")

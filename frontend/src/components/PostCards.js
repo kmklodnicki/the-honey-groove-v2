@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Disc, Package, Search, Moon, Plus, Music, Feather, ShoppingBag, ArrowRightLeft, Shuffle, Gem, MessageCircle, BookOpen, Sparkles, BarChart3, Check } from 'lucide-react';
+import { Disc, Package, Search, Moon, Plus, Music, Feather, ShoppingBag, ArrowRightLeft, Shuffle, Gem, MessageCircle, BookOpen, Sparkles, BarChart3, Check, Circle } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import AlbumArt from './AlbumArt';
@@ -433,6 +433,15 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
                   <div className="relative group/cover">
                     <AlbumArt src={item.cover_url} alt={`${item.artist} - ${item.title}`} 
                       className="w-full aspect-square rounded-lg object-cover border border-stone-200/60" isUnofficial={item.is_unofficial} />
+                    {item.color_variant && (
+                      <div className="absolute bottom-1 left-1 right-1 z-[6]">
+                        <span className="inline-block max-w-full truncate text-[8px] font-bold uppercase tracking-wide px-1.5 py-px rounded-full"
+                          style={{ background: 'rgba(255,215,0,0.25)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)', border: '1.5px solid rgba(218,165,32,0.6)', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}
+                          data-testid={`haul-variant-pill-${idx}`}>
+                          {item.color_variant}
+                        </span>
+                      </div>
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-lg opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-end p-1.5">
                       <div className="min-w-0">
                         <p className="text-[10px] font-medium text-white truncate">{item.title}</p>
@@ -1076,4 +1085,32 @@ const NewFeatureBadge = () => {
   );
 };
 
-export { PostTypeBadge, PostCardBody, ListingTypeBadge, TagPill, NewFeatureBadge, VariantTag, PILL_STYLES };
+const FORMAT_ICONS = {
+  Vinyl: Disc,
+  CD: Circle,
+  Cassette: null,
+};
+
+const FORMAT_STYLES = {
+  Vinyl: 'bg-stone-100 text-stone-600 border-stone-200',
+  CD: 'bg-blue-50 text-blue-600 border-blue-200',
+  Cassette: 'bg-orange-50 text-orange-600 border-orange-200',
+};
+
+const FormatPill = ({ format }) => {
+  if (!format) return null;
+  const normalized = format.charAt(0).toUpperCase() + format.slice(1).toLowerCase();
+  const key = Object.keys(FORMAT_STYLES).find(k => normalized.toLowerCase().includes(k.toLowerCase())) || 'Vinyl';
+  const style = FORMAT_STYLES[key] || FORMAT_STYLES.Vinyl;
+  const Icon = FORMAT_ICONS[key];
+  const label = key;
+  return (
+    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium border ${style}`} data-testid="format-type-pill">
+      {Icon && <Icon className="w-2.5 h-2.5" />}
+      {!Icon && <span className="text-[9px]">&#x1F4FC;</span>}
+      {label}
+    </span>
+  );
+};
+
+export { PostTypeBadge, PostCardBody, ListingTypeBadge, TagPill, NewFeatureBadge, VariantTag, PILL_STYLES, FormatPill };

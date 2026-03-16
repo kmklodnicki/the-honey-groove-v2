@@ -231,6 +231,7 @@ class PostResponse(BaseModel):
     poll_total_votes: int = 0
     poll_user_vote: Optional[int] = None  # option_index the viewer voted for, or None
     poll_results: Optional[List[Dict[str, Any]]] = None  # [{option, count, percentage}, ...]
+    record_format: Optional[str] = None  # "Vinyl" | "CD" | "Cassette" etc.
 
 # Comment Models
 class CommentCreate(BaseModel):
