@@ -135,7 +135,7 @@ const LandingPage = () => {
           style={{
             left: 0,
             top: '25%',
-            width: '20vw',
+            width: '25vw',
             objectFit: 'contain',
             willChange: 'transform',
             zIndex: 5,
@@ -149,8 +149,8 @@ const LandingPage = () => {
           className="hidden lg:block absolute pointer-events-none"
           style={{
             right: 0,
-            top: 0,
-            width: '20vw',
+            top: '45%',
+            width: '25vw',
             objectFit: 'contain',
             willChange: 'transform',
             zIndex: 5,
