@@ -930,3 +930,115 @@ async def admin_db_stats(user: dict = Depends(require_auth)):
     stats["_db_name"] = db.name
     return stats
 
+
+
+# ─── Mass Email ───
+
+class MassEmailRequest(BaseModel):
+    test_email: Optional[str] = None  # If set, only send to this email
+
+@router.post("/admin/send-update-email")
+async def send_update_email(req: MassEmailRequest, user=Depends(require_auth)):
+    """Send the platform update email. If test_email is provided, sends only to that address."""
+    if user.get("role") != "admin" and not user.get("is_admin"):
+        raise HTTPException(403, "Admin only")
+
+    from templates.base import wrap_email
+
+    FRONTEND = os.environ.get("FRONTEND_URL", "https://thehoneygroove.com")
+    AMBER = "color:#C8861A;"
+    MUTED = "color:#8A6B4A;font-size:13px;"
+    GREETING = "color:#2A1A06;font-size:15px;"
+    BTN = "display:inline-block;padding:14px 28px;background:#E8A820;color:#2A1A06;text-decoration:none;border-radius:50px;font-size:14px;font-weight:700;font-family:Georgia,serif;"
+    SIG = f'<p style="margin:24px 0 0 0;{MUTED}">— Katie, founder of the Honey Groove<sup style="font-size:0.6em">™</sup></p>'
+    SECTION_HEADING = "font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:20px;color:#2A1A06;margin:28px 0 12px 0;"
+    FEATURE_TITLE = f"font-weight:700;{AMBER}"
+
+    subject = "Faster, smoother, and better: The new Honey Groove is here. \U0001F36F"
+
+    def build_email_body(name: str) -> str:
+        return f"""
+        <p style="{GREETING}">Hi {name},</p>
+
+        <p>First things first: I know the last few days have been a bit of a whirlwind. \U0001F32A\uFE0F</p>
+
+        <p>Between migrating to our brand-new hosting environment and live-patching bugs at all hours of the day and night, the "launch" of this new phase has been a little bumpy. If you've had trouble getting back into your account during the transition, I sincerely apologize for the friction!</p>
+
+        <div style="padding:16px 20px;background:#FFF8EE;border-radius:12px;border:1px solid #F5E6CC;margin:20px 0;">
+            <p style="margin:0 0 8px 0;font-weight:700;color:#2A1A06;">Still having trouble logging in?</p>
+            <p style="margin:0;">Please try a <a href="{FRONTEND}/forgot-password" style="{AMBER}text-decoration:underline;font-weight:600;">Password Reset here</a>. This will refresh your credentials on our new, faster servers and should get you right back into the Hive.</p>
+        </div>
+
+        <p>If you hit any other snags or things don't look quite right, please don't hesitate to reply to this email or reach out. I'm monitoring everything personally and I'm here to help you get back to your collection! \U0001F91D</p>
+
+        <p style="{SECTION_HEADING}">Now for the fun part! What's New:</p>
+
+        <p><strong style="{FEATURE_TITLE}">The "Posts" Tab:</strong> Your profile is now a true social home! \U0001F3E0 We've added a dedicated Posts Tab to every profile so you can revisit your own history or binge-read a fellow collector's past Hive posts. \U0001F4DC</p>
+
+        <p><strong style="{FEATURE_TITLE}">Interactive Community Cards:</strong> Our new CommunityISOCard is now fully clickable! \U0001F5B1\uFE0F Jump straight to the variant modal from the card to see exactly which version you're looking at. \U0001F48E</p>
+
+        <p><strong style="{FEATURE_TITLE}">Collection Format Submenu:</strong> Finding your favorites just got easier. \U0001F50D Use new filter pills to sort by Vinyl, CD, or Cassette, plus see the format pill directly on the feed posts! \U0001F4BF\U0001F4FC</p>
+
+        <p><strong style="{FEATURE_TITLE}">Sleek Variant Modals:</strong> We've scaled down the Variant Modal size. \U0001F4CF It's now much more compact and mobile-friendly — no more endless scrolling! \u2728</p>
+
+        <p><strong style="{FEATURE_TITLE}">Haul Auto-Bundle Upgrades:</strong> See exactly which pressing is in your "Haul" grids with Variant Pills overlaid right on the album art. \U0001F3A8\U0001F4E6</p>
+
+        <p><strong style="{FEATURE_TITLE}">Smarter Manual Adding:</strong> Manual adds now attempt to link to Discogs automatically to pull in official data! \U0001F916\U0001F4BF</p>
+
+        <p><strong style="{FEATURE_TITLE}">Fair Rarity Badges:</strong> To keep things accurate, manual records that aren't linked to Discogs will now show as "Unknown" rarity instead of "Ultra Rare." \U0001F50D\U0001F48E</p>
+
+        <p><strong style="{FEATURE_TITLE}">Bug Squashing:</strong> We've cleared out a swarm of bugs, including fixes for image loading and mobile scrolling. \U0001F6E0\uFE0F\U0001F6AB\U0001FAB2</p>
+
+        <p style="{SECTION_HEADING}">The Big Move \U0001F3D7\uFE0F</p>
+
+        <p>Behind the scenes, we've completely rebuilt our infrastructure to be more secure, lightning-fast, and stable. \u26A1 It was a heavy lift — think of it as moving a whole record store to a better neighborhood in a single afternoon — but it ensures the Hive can grow without breaking. \U0001F3E2\U0001F4E6</p>
+
+        <p>I now have access to real-time server logs, which means I can triage bugs and see the "root cause" in the code immediately, rather than hunting for a needle in a haystack. \U0001F575\uFE0F\u200D\u2642\uFE0F\U0001F4BB</p>
+
+        <p style="{SECTION_HEADING}">A Note from the Founder \u2764\uFE0F</p>
+
+        <p>Just a reminder that I am doing all of this as one person, not a team of developers. \U0001F64B\u200D\u2642\uFE0F Your support and patience during these early stages of The Honey Groove mean the world to me. We are building the best place on the internet for collectors, together. \U0001F41D\U0001F4BF</p>
+
+        <p><strong>What would you like to see built next?</strong> \U0001F36F\U0001F447</p>
+
+        <div style="text-align:center;margin:28px 0;">
+            <a href="{FRONTEND}/hive" style="{BTN}">Visit The Honey Groove</a>
+        </div>
+
+        <p style="{MUTED}">P.S. Join our <a href="https://discord.gg/rMZFGw6CPf" style="{AMBER}text-decoration:underline;">Discord</a> for live updates, bug reports, and to bounce ideas off each other! \U0001F41D\U0001F4AC</p>
+
+        {SIG}
+        """
+
+    if req.test_email:
+        # Send test email to single address
+        name = "Katie"
+        html = wrap_email(build_email_body(name))
+        success = await send_email(req.test_email, subject, html, reply_to="hello@thehoneygroove.com")
+        return {"status": "test_sent" if success else "test_failed", "to": req.test_email}
+
+    # Send to all users
+    users = await db.users.find(
+        {"email": {"$exists": True, "$ne": ""}},
+        {"email": 1, "username": 1, "first_name": 1, "_id": 0}
+    ).to_list(None)
+
+    sent = 0
+    failed = 0
+    for u in users:
+        name = u.get("first_name") or u.get("username", "collector")
+        email = u.get("email", "")
+        if not email:
+            continue
+        html = wrap_email(build_email_body(name))
+        try:
+            success = await send_email(email, subject, html, reply_to="hello@thehoneygroove.com")
+            if success:
+                sent += 1
+            else:
+                failed += 1
+        except Exception as e:
+            logger.error(f"Mass email failed for {email}: {e}")
+            failed += 1
+
+    return {"status": "complete", "sent": sent, "failed": failed, "total": len(users)}
