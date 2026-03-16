@@ -148,9 +148,9 @@ const LandingPage = () => {
           aria-hidden="true"
           className="hidden lg:block absolute pointer-events-none"
           style={{
-            right: '-3vw',
-            top: '55%',
-            width: '25vw',
+            right: '5vw',
+            top: '50%',
+            width: '22vw',
             objectFit: 'contain',
             willChange: 'transform',
             zIndex: 5,
