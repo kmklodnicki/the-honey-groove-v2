@@ -82,6 +82,8 @@ const LandingPage = () => {
 
       {/* Hero Section */}
       <section className="relative pb-24 overflow-hidden pt-[120px]">
+        {/* Gold line · top edge */}
+        <div className="absolute top-0 left-0 w-screen z-10" style={{ height: '2px', background: 'linear-gradient(90deg, #D4A017, #E8B923, #D4A017)' }} />
         {/* Honey drip · tiled video strip pinned flush to top */}
         <div
           className="absolute top-0 left-0 w-screen overflow-hidden z-0 flex"
@@ -112,6 +114,8 @@ const LandingPage = () => {
             </video>
           ))}
         </div>
+        {/* Gold line · bottom of drip */}
+        <div className="absolute left-0 w-screen z-10" style={{ top: '120px', height: '2px', background: 'linear-gradient(90deg, #D4A017, #E8B923, #D4A017)' }} />
 
         <div className="max-w-6xl mx-auto px-4 md:px-8 relative z-10">
           <div className="text-center max-w-4xl mx-auto">
