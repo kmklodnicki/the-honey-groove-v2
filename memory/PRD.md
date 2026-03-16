@@ -1,47 +1,67 @@
 # The HoneyGroove - Product Requirements Document
 
 ## Original Problem Statement
-The HoneyGroove is a vinyl record collector social platform with collection management, social feed, marketplace, and valuation features.
+The HoneyGroove is a vinyl record social platform where users can track collections, share hauls, hunt ISOs, and trade with the community. The admin has requested iterative UI/UX refinements, feature additions, bug fixes, and admin tools.
 
-## Tech Stack
-- **Frontend**: React (CRA + Craco), TailwindCSS, Shadcn/UI
-- **Backend**: FastAPI (Python), MongoDB Atlas
-- **Deployment**: Vercel (production), Emergent preview (staging)
-- **Integrations**: Cloudinary (images), Stripe Connect (payments), Discogs API (record metadata), Resend (emails)
+## Architecture
+- **Frontend:** React (port 3000)
+- **Backend:** FastAPI (port 8001)
+- **Database:** MongoDB Atlas
+- **Image Storage:** Cloudinary
+- **Email:** Resend
+- **Payments:** Stripe Connect
+- **Album Data:** Discogs API
+- **Hosting (Production):** Vercel
 
-## Core Features (Implemented)
-- User auth, collection management, Discogs import via OAuth
-- Smart Match: Auto-links manual album entries to Discogs
-- Rarity System with Unknown fallback
-- Social feed with server-side filtering, collapsible pinned posts
-- Notification preferences (all/following/none)
-- Marketplace, valuation system, weekly reports, daily prompts
-- Profile page: Collection, Posts, For Sale, Dream List, ISO tabs
-- Collection sort: Artist, Title, Newest, Spins, Value, Rarest First, Most Common
-- Format submenu (Vinyl/CD/Cassette) on collection + profile pages
-- Format pills on feed for posts with records
-- Format picker on Add Record and Create Haul pages (auto-detects from Discogs)
-- Optimal Density Variant Modal (340px-420px, horizontal stats, 40px touch targets)
-- Compact Listing/Trade modals (340px-420px sizing)
-- Daily prompt variant → variant modal (not page navigation)
-- Haul variant pills on album covers, CommunityISOCard clickable with variant modal
-- **Profile photo fix**: Legacy Emergent storage URLs now resolve to working host across all environments
+## Completed Features & Fixes
 
-## Critical Bug Fixes
-- **Profile photos not loading in production**: Avatar URLs stored with old domain paths (`thehoneygroove.com/api/files/serve/...`, `wax-collector-app.emergent.host/api/files/serve/...`) were being rewritten to the current API which lacks a file-serving endpoint. Fixed `resolveImageUrl` to always rewrite to the canonical working Emergent storage host.
+### Session 1-6 (Prior)
+- "Optimal Density" redesign for VariantOptionsModal, ListingDetailModal, TradeDetailModal
+- "Smart Match" Discogs enrichment for manual albums
+- Collection sorting by rarity and format (Vinyl/CD/Cassette)
+- Format submenu on Collection and Profile pages
+- Format selector on Add Record and Create Haul pages
+- Format pill on feed posts (corrected logic for Note posts)
+- Clickable Community ISO cards and Daily Prompt variants
+- Collapsible admin pinned post
+- User notification preferences
+- Password update modal
+- Posts tab on user profiles with infinite scroll
+- Client-side URL rewriting for broken profile photos (imageUrl.js)
+- Mass email system with rate-limiting and duplicate prevention
+- Sent platform update email to 115 users
 
-## Upcoming
-- Instagram Story Export (P1)
-- Re-enable Mini Groove (P1)
-- Login pre-fetching (P1)
-- Update Crown Jewels Logic (P1)
+### Session 7 (2026-03-16)
+- **P0 Fix: HEIC Image Uploads** — Added file validation to ComposerBar's handlePhotoSelect, improved backend error logging in process_image, expanded upload endpoint to accept HEIC via extension even with generic content types
+- **P0 Fix: Now Spinning Image Uploads** — Added try/catch with user-friendly error messages in uploadPostPhoto, improved backend error detail
+- **P0 Fix: Album Art in Haul/ISO Feed** — Added cover_url hydration in build_post_response for bundle_records (via record_id or discogs_id lookup) and haul items (via discogs_id lookup)
 
-## Future/Backlog
+## Backlog
+
+### P1 - Upcoming
+- Instagram Story Export (Daily Prompt → 1080x1920 PNG)
+- Re-enable "Mini Groove" feature (yesterday's hive posts)
+- Login Pre-fetching (profile + feed during animation)
+- Update "Crown Jewels" Logic
+
+### P2 - Future
 - Record Store Day Proxy Network
 - Safari-compatible loading animation
-- Pro memberships / Verified Seller badge
-- Secret Search Feature
-- New Music Friday dynamic editing
+- "Pro" memberships / "Verified Seller" badge
+- "Secret Search Feature"
+- Editable "New Music Friday" in Weekly Wax email
 - Service Worker Caching
 - Streaming Service Integration
-- Discogs API SSL error resilience (P2)
+- Discogs API SSL error resilience (intermittent, Vercel-specific)
+
+## Key Files
+- `/app/backend/routes/collection.py` — Image upload, process_image
+- `/app/backend/routes/hive.py` — Feed, build_post_response, composer endpoints
+- `/app/backend/routes/honeypot.py` — Listings, trades
+- `/app/frontend/src/components/ComposerBar.js` — Post creation UI
+- `/app/frontend/src/components/PostCards.js` — Feed cards
+- `/app/frontend/src/utils/imageUpload.js` — File validation
+- `/app/frontend/src/utils/imageUrl.js` — URL rewriting for legacy images
+
+## Test Credentials
+- Admin: kmklodnicki@gmail.com / HoneyGroove2026
