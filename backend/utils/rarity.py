@@ -4,15 +4,22 @@
 def calculate_rarity(community_have: int, community_want: int) -> str:
     """Calculate rarity label from Discogs community have/want data.
 
-    Thresholds:
+    Only valid for records with verified Discogs community data.
+    Records without discogs_id should be labelled "Unknown" before calling this.
+
+    Thresholds (ratio = want/have):
       Grail (Purple/Gold): ratio > 20 AND have < 500
-      Ultra Rare (Orange): ratio 8-20
-      Rare (Red): ratio 3-8
-      Uncommon (Blue): ratio 1-3
+      Ultra Rare (Orange): ratio > 20 OR ratio >= 8
+      Very Rare (Rose): ratio >= 5
+      Rare (Red): ratio >= 3
+      Uncommon (Blue): ratio >= 1
       Common (Gray): ratio < 1
 
     Obscure exception: have < 25 AND want < 10 → 'Obscure'
     """
+    if community_have is None:
+        return "Unknown"
+
     have = max(community_have or 0, 1)  # avoid division by zero
     want = community_want or 0
 
@@ -28,6 +35,8 @@ def calculate_rarity(community_have: int, community_want: int) -> str:
         return "Ultra Rare"
     elif ratio >= 8:
         return "Ultra Rare"
+    elif ratio >= 5:
+        return "Very Rare"
     elif ratio >= 3:
         return "Rare"
     elif ratio >= 1:

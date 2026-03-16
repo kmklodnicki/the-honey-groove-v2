@@ -5,20 +5,24 @@ import { toast } from 'sonner';
 const TIER_CONFIG = {
   'Grail':      { label: 'Grail',      color: '#FFF', bg: 'linear-gradient(135deg, #7B2FF2, #C8861A)', border: '#7B2FF2', glow: '0 0 12px rgba(123,47,242,0.4)' },
   'Ultra Rare': { label: 'Ultra Rare', color: '#FFF', bg: 'linear-gradient(135deg, #FF6B00, #FF9500)', border: '#FF6B00', glow: '0 0 10px rgba(255,107,0,0.3)' },
+  'Very Rare':  { label: 'Very Rare',  color: '#FFF', bg: '#E11D48', border: '#E11D48', glow: 'none' },
   'Rare':       { label: 'Rare',       color: '#FFF', bg: '#DC2626', border: '#DC2626', glow: 'none' },
   'Uncommon':   { label: 'Uncommon',   color: '#FFF', bg: '#2563EB', border: '#2563EB', glow: 'none' },
   'Common':     { label: 'Common',     color: '#FFF', bg: '#9CA3AF', border: '#9CA3AF', glow: 'none' },
   'Obscure':    { label: 'Obscure',    color: '#CBD5E1', bg: 'rgba(0,0,0,0.6)', border: '#475569', glow: 'none' },
+  'Unknown':    { label: 'Unknown',    color: '#94A3B8', bg: 'rgba(148,163,184,0.15)', border: '#CBD5E1', glow: 'none' },
 };
 
 // Pill-style tier display used on detail pages
 const PILL_COLOR = {
   'Ultra Rare': '#8B0000',
+  'Very Rare':  '#E11D48',
   'Rare':       '#B8860B',
   'Uncommon':   '#556B2F',
   'Common':     '#555',
   'Grail':      '#7B2FF2',
   'Obscure':    '#475569',
+  'Unknown':    '#94A3B8',
 };
 
 export const RarityPill = ({ tier, size = 'md' }) => {
@@ -53,8 +57,8 @@ export const RarityPill = ({ tier, size = 'md' }) => {
 
 // Compact badge for collection cards — uses vivid color-coded backgrounds
 export const RarityBadge = ({ label, size = 'sm' }) => {
-  if (!label) return null;
-  const cfg = TIER_CONFIG[label] || TIER_CONFIG['Common'];
+  const displayLabel = label || 'Unknown';
+  const cfg = TIER_CONFIG[displayLabel] || TIER_CONFIG['Unknown'];
   const isSmall = size === 'sm';
   return (
     <span
@@ -66,7 +70,7 @@ export const RarityBadge = ({ label, size = 'sm' }) => {
         boxShadow: cfg.glow,
         letterSpacing: '0.5px',
       }}
-      data-testid={`rarity-badge-${label.toLowerCase().replace(/\s/g, '-')}`}
+      data-testid={`rarity-badge-${displayLabel.toLowerCase().replace(/\s/g, '-')}`}
     >
       {cfg.label}
     </span>

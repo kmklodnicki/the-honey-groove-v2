@@ -44,26 +44,82 @@ async def add_record(record_data: RecordCreate, user: Dict = Depends(require_aut
     record_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
 
-    # Image Hydration: if cover_url is missing/placeholder, fetch from Discogs
-    cover_url = record_data.cover_url
-    if (not cover_url or cover_url.endswith("spacer.gif") or "placeholder" in (cover_url or "").lower()) and record_data.discogs_id:
-        release = get_discogs_release(record_data.discogs_id)
-        if release and release.get("cover_url"):
-            cover_url = release["cover_url"]
-    
+    resolved_discogs_id = record_data.discogs_id
+    resolved_cover_url = record_data.cover_url
+    resolved_color_variant = record_data.color_variant
+    is_unofficial = False
+    community_have = None
+    community_want = None
+    rarity_label = None
+
+    # Smart Match: if no discogs_id, auto-lookup from Discogs using artist + title
+    if not resolved_discogs_id and record_data.artist and record_data.title:
+        try:
+            import asyncio
+            results = await asyncio.to_thread(search_discogs, f"{record_data.artist} {record_data.title}")
+            if results:
+                best = results[0]
+                # High-confidence check: artist AND title must fuzzy-match
+                input_artist = (record_data.artist or "").lower().strip()
+                input_title = (record_data.title or "").lower().strip()
+                result_artist = (best.get("artist") or "").lower().strip()
+                result_title = (best.get("title") or best.get("album") or "").lower().strip()
+                artist_match = input_artist in result_artist or result_artist in input_artist
+                title_match = input_title in result_title or result_title in input_title
+                if artist_match and title_match:
+                    resolved_discogs_id = best.get("discogs_id")
+                    if not resolved_cover_url or resolved_cover_url.endswith("spacer.gif") or "placeholder" in (resolved_cover_url or "").lower():
+                        resolved_cover_url = best.get("cover_url") or resolved_cover_url
+                    if not resolved_color_variant and best.get("color_variant"):
+                        resolved_color_variant = best["color_variant"]
+                    logger.info(f"Smart Match: '{record_data.artist} - {record_data.title}' -> discogs_id={resolved_discogs_id}")
+                else:
+                    logger.info(f"Smart Match: no high-confidence match for '{record_data.artist} - {record_data.title}' (best: '{result_artist} - {result_title}')")
+        except Exception as e:
+            logger.warning(f"Smart Match Discogs lookup failed: {e}")
+
+    # Image Hydration: if cover_url is missing/placeholder, fetch from Discogs release
+    if (not resolved_cover_url or resolved_cover_url.endswith("spacer.gif") or "placeholder" in (resolved_cover_url or "").lower()) and resolved_discogs_id:
+        release = get_discogs_release(resolved_discogs_id)
+        if release:
+            if release.get("cover_url"):
+                resolved_cover_url = release["cover_url"]
+            is_unofficial = "Unofficial Release" in release.get("format_descriptions", [])
+            if not resolved_color_variant and release.get("color_variant"):
+                resolved_color_variant = release["color_variant"]
+
+    # Compute rarity from Discogs community data if available
+    if resolved_discogs_id:
+        try:
+            release_info = get_discogs_release(resolved_discogs_id)
+            if release_info:
+                community_have = release_info.get("community_have") or release_info.get("have")
+                community_want = release_info.get("community_want") or release_info.get("want")
+                if community_have is not None:
+                    from utils.rarity import calculate_rarity
+                    rarity_label = calculate_rarity(community_have, community_want or 0)
+        except Exception as e:
+            logger.warning(f"Rarity computation failed: {e}")
+    else:
+        rarity_label = "Unknown"  # No Discogs link = unknown rarity
+
     record_doc = {
         "id": record_id,
         "user_id": user["id"],
-        "discogs_id": record_data.discogs_id,
+        "discogs_id": resolved_discogs_id,
         "instance_id": record_data.instance_id,
         "title": record_data.title,
         "artist": record_data.artist,
-        "cover_url": cover_url,
+        "cover_url": resolved_cover_url,
         "year": record_data.year,
         "format": record_data.format,
         "notes": record_data.notes,
-        "color_variant": record_data.color_variant,
+        "color_variant": resolved_color_variant,
         "edition_number": record_data.edition_number,
+        "is_unofficial": is_unofficial,
+        "community_have": community_have,
+        "community_want": community_want,
+        "rarity_label": rarity_label,
         "created_at": now
     }
     
@@ -86,10 +142,10 @@ async def add_record(record_data: RecordCreate, user: Dict = Depends(require_aut
         "record_id": record_id,
         "title": record_data.title,
         "artist": record_data.artist,
-        "cover_url": record_data.cover_url,
-        "color_variant": record_data.color_variant,
-        "discogs_id": record_data.discogs_id,
-        "is_unofficial": record_doc.get("is_unofficial", False),
+        "cover_url": resolved_cover_url,
+        "color_variant": resolved_color_variant,
+        "discogs_id": resolved_discogs_id,
+        "is_unofficial": is_unofficial,
     }
     
     if existing_bundle:
@@ -124,19 +180,22 @@ async def add_record(record_data: RecordCreate, user: Dict = Depends(require_aut
     
     return RecordResponse(
         id=record_id,
-        discogs_id=record_data.discogs_id,
+        discogs_id=resolved_discogs_id,
         instance_id=record_data.instance_id,
         title=record_data.title,
         artist=record_data.artist,
-        cover_url=cover_url,
+        cover_url=resolved_cover_url,
         year=record_data.year,
         format=record_data.format,
         notes=record_data.notes,
-        color_variant=record_data.color_variant,
+        color_variant=resolved_color_variant,
         edition_number=record_data.edition_number,
         user_id=user["id"],
         created_at=now,
-        spin_count=0
+        spin_count=0,
+        rarity_label=rarity_label,
+        community_have=community_have,
+        community_want=community_want,
     )
 
 
@@ -301,8 +360,14 @@ async def get_record(record_id: str, current_user: Optional[Dict] = Depends(get_
 @router.post("/records/enrich-rarity")
 async def enrich_rarity(user: Dict = Depends(require_auth)):
     """Fetch community have/want from Discogs and compute rarity labels for all records missing them."""
+    # Set records WITHOUT discogs_id to "Unknown" rarity
+    no_discogs = await db.records.update_many(
+        {"user_id": user["id"], "$or": [{"discogs_id": None}, {"discogs_id": ""}], "rarity_label": {"$ne": "Unknown"}},
+        {"$set": {"rarity_label": "Unknown", "community_have": None, "community_want": None}}
+    )
+    # Enrich records WITH discogs_id but missing rarity
     records = await db.records.find(
-        {"user_id": user["id"], "discogs_id": {"$ne": None}, "rarity_label": {"$in": [None, ""]}},
+        {"user_id": user["id"], "discogs_id": {"$ne": None, "$nin": ["", 0]}, "rarity_label": {"$in": [None, ""]}},
         {"_id": 0, "id": 1, "discogs_id": 1}
     ).to_list(500)
     enriched = 0
@@ -321,7 +386,7 @@ async def enrich_rarity(user: Dict = Depends(require_auth)):
             enriched += 1
         except Exception as e:
             logger.warning(f"Rarity enrichment failed for {rec['discogs_id']}: {e}")
-    return {"enriched": enriched, "total": len(records)}
+    return {"enriched": enriched, "total": len(records), "unknown_set": no_discogs.modified_count}
 
 
 @router.post("/records/hard-refresh-images")

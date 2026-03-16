@@ -310,6 +310,8 @@ const SORT_OPTIONS = [
   { value: 'recently_spun', label: 'Recently Spun' },
   { value: 'never_spun', label: 'No Logged Spins' },
   { value: 'highest_value', label: 'Highest Value' },
+  { value: 'rarest_first', label: 'Rarest First' },
+  { value: 'most_common', label: 'Most Common' },
 ];
 
 const CollectionPage = () => {
@@ -790,6 +792,16 @@ const CollectionPage = () => {
       case 'highest_value':
         filtered.sort((a, b) => (valueMap[b.id] || 0) - (valueMap[a.id] || 0));
         break;
+      case 'rarest_first': {
+        const rarityOrder = { 'Ultra Rare': 0, 'Very Rare': 1, 'Rare': 2, 'Uncommon': 3, 'Common': 4, 'Unknown': 5 };
+        filtered.sort((a, b) => (rarityOrder[a.rarity_label] ?? 5) - (rarityOrder[b.rarity_label] ?? 5));
+        break;
+      }
+      case 'most_common': {
+        const rarityOrder2 = { 'Common': 0, 'Uncommon': 1, 'Rare': 2, 'Very Rare': 3, 'Ultra Rare': 4, 'Unknown': 5 };
+        filtered.sort((a, b) => (rarityOrder2[a.rarity_label] ?? 5) - (rarityOrder2[b.rarity_label] ?? 5));
+        break;
+      }
       default:
         break;
     }
