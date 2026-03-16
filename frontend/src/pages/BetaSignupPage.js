@@ -64,7 +64,7 @@ const BetaSignupPage = () => {
         {/* Honey drip · living video pinned flush to top */}
         <div
           className="absolute top-0 left-0 w-screen overflow-hidden z-0"
-          style={{ height: '200px', marginTop: '-1px' }}
+          style={{ height: '200px', marginTop: '-1px', backgroundColor: '#FEF6E6' }}
           data-testid="beta-drip"
         >
           <video
@@ -79,6 +79,7 @@ const BetaSignupPage = () => {
               objectFit: 'cover',
               transform: 'scale(1.05)',
               transformOrigin: 'top center',
+              mixBlendMode: 'multiply',
             }}
           >
             <source src="/honey-drip.mp4" type="video/mp4" />

@@ -85,7 +85,7 @@ const LandingPage = () => {
         {/* Honey drip · living video pinned flush to top of viewport */}
         <div
           className="absolute top-0 left-0 w-screen overflow-hidden z-0"
-          style={{ height: '200px', marginTop: '-1px' }}
+          style={{ height: '200px', marginTop: '-1px', backgroundColor: '#FEF6E6' }}
           data-testid="hero-drip"
         >
           <video
@@ -100,6 +100,7 @@ const LandingPage = () => {
               objectFit: 'cover',
               transform: 'scale(1.05)',
               transformOrigin: 'top center',
+              mixBlendMode: 'multiply',
             }}
             data-testid="hero-drip-video"
           >
