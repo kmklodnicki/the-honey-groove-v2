@@ -1,7 +1,7 @@
 """Admin routes — invite codes, beta signups, platform settings."""
 from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.responses import StreamingResponse
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 from datetime import datetime, timezone
 from pydantic import BaseModel
 import uuid
@@ -935,7 +935,8 @@ async def admin_db_stats(user: dict = Depends(require_auth)):
 # ─── Mass Email ───
 
 class MassEmailRequest(BaseModel):
-    test_email: Optional[str] = None  # If set, only send to this email
+    test_email: Optional[str] = None
+    exclude_emails: Optional[List[str]] = None
 
 @router.post("/admin/send-update-email")
 async def send_update_email(req: MassEmailRequest, user=Depends(require_auth)):
@@ -1018,18 +1019,28 @@ async def send_update_email(req: MassEmailRequest, user=Depends(require_auth)):
         return {"status": "test_sent" if success else "test_failed", "to": req.test_email}
 
     # Send to all users
+    import asyncio as _asyncio
     users = await db.users.find(
         {"email": {"$exists": True, "$ne": ""}},
         {"email": 1, "username": 1, "first_name": 1, "_id": 0}
     ).to_list(None)
 
+    # Skip test/fake emails and already-sent
+    skip_domains = {"test.com", "testuser.com", "testflow.com", "example.com"}
+    exclude_set = set(e.lower() for e in (req.exclude_emails or []))
+
     sent = 0
     failed = 0
+    skipped = 0
     for u in users:
-        name = u.get("first_name") or u.get("username", "collector")
         email = u.get("email", "")
         if not email:
             continue
+        domain = email.split("@")[-1].lower() if "@" in email else ""
+        if domain in skip_domains or email.lower() in exclude_set:
+            skipped += 1
+            continue
+        name = u.get("first_name") or u.get("username", "collector")
         html = wrap_email(build_email_body(name))
         try:
             success = await send_email(email, subject, html, reply_to="hello@thehoneygroove.com")
@@ -1040,5 +1051,7 @@ async def send_update_email(req: MassEmailRequest, user=Depends(require_auth)):
         except Exception as e:
             logger.error(f"Mass email failed for {email}: {e}")
             failed += 1
+        # Respect Resend rate limit: 2 req/s → 0.6s between sends
+        await _asyncio.sleep(0.6)
 
-    return {"status": "complete", "sent": sent, "failed": failed, "total": len(users)}
+    return {"status": "complete", "sent": sent, "failed": failed, "skipped": skipped, "total": len(users)}
