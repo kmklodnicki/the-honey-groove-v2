@@ -3,7 +3,10 @@ import { X, Share, PlusSquare } from 'lucide-react';
 
 const isStandalone = () =>
   window.matchMedia('(display-mode: standalone)').matches ||
-  window.navigator.standalone === true;
+  window.matchMedia('(display-mode: fullscreen)').matches ||
+  window.matchMedia('(display-mode: minimal-ui)').matches ||
+  window.navigator.standalone === true ||
+  document.referrer.includes('android-app://');
 
 const isIOS = () =>
   /iPad|iPhone|iPod/.test(navigator.userAgent) ||
@@ -29,15 +32,27 @@ const PWAInstallBanner = () => {
       if (bannerRef.current) setBannerHeight(bannerRef.current.offsetHeight);
     };
     measure();
-    // Re-measure when iOS guide toggles
     const ro = new ResizeObserver(measure);
     if (bannerRef.current) ro.observe(bannerRef.current);
     return () => ro.disconnect();
   }, [showBanner, showIOSGuide]);
 
   useEffect(() => {
+    // Already running as installed app — never show
     if (isStandalone()) return;
+    // User previously installed or dismissed
     try { if (localStorage.getItem('pwa_installed') === 'true') return; } catch { /* noop */ }
+
+    // Listen for standalone mode changes (user installs while page is open)
+    const mq = window.matchMedia('(display-mode: standalone)');
+    const onStandaloneChange = (e) => {
+      if (e.matches) {
+        setShowBanner(false);
+        setBannerHeight(0);
+        try { localStorage.setItem('pwa_installed', 'true'); } catch { /* noop */ }
+      }
+    };
+    mq.addEventListener('change', onStandaloneChange);
 
     if (isIOS()) {
       setShowBanner(true);
@@ -59,6 +74,7 @@ const PWAInstallBanner = () => {
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handler);
+      mq.removeEventListener('change', onStandaloneChange);
       clearTimeout(fallbackTimer);
     };
   }, []);
