@@ -3,8 +3,8 @@ const API = SHARED_API;
 
 const SERVE_PATH = '/api/files/serve/';
 
-// Use app's own API for serving legacy images (dynamic per environment)
-const EMERGENT_STORAGE_PROXY = `${API}/files/serve/`;
+// The canonical working host for legacy Emergent file storage
+const EMERGENT_FILE_HOST = 'https://wax-collector-app.emergent.host/api/files/serve/';
 
 const enforceHttps = (url) => {
   if (!url || typeof url !== 'string') return url;
@@ -34,11 +34,11 @@ export function resolveImageUrl(src) {
   // Cloudinary URLs — always work, return as-is
   if (src.includes('res.cloudinary.com')) return enforceHttps(src);
 
-  // Old URL containing /api/files/serve/ from ANY domain → rewrite to working Emergent proxy
+  // Old URL containing /api/files/serve/ from ANY domain → rewrite to working Emergent host
   const serveIdx = src.indexOf(SERVE_PATH);
   if (serveIdx !== -1) {
     const storagePath = src.substring(serveIdx + SERVE_PATH.length);
-    return `${EMERGENT_STORAGE_PROXY}${storagePath}`;
+    return `${EMERGENT_FILE_HOST}${storagePath}`;
   }
 
   // External URLs (discogs, dicebear, data URIs)
@@ -47,6 +47,6 @@ export function resolveImageUrl(src) {
   }
   if (src.startsWith('/')) return src;
 
-  // Raw storage path → route through Emergent proxy
-  return `${EMERGENT_STORAGE_PROXY}${src}`;
+  // Raw storage path → route through Emergent file host
+  return `${EMERGENT_FILE_HOST}${src}`;
 }
