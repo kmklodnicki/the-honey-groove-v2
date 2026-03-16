@@ -45,7 +45,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { DailyPromptCard } from '../components/DailyPrompt';
 import OnboardingModal from '../components/OnboardingModal';
-import AlbumArt from '../components/AlbumArt';
+import AlbumArt, { prefetchArt } from '../components/AlbumArt';
 import SEOHead from '../components/SEOHead';
 import { useVariantModal } from '../context/VariantModalContext';
 import LoadingHoney from '../components/LoadingHoney';
@@ -129,6 +129,13 @@ const HivePage = () => {
         } catch { /* post might be deleted */ }
       }
       setPosts(feedPosts);
+      // Prefetch album art for first 15 posts
+      const artUrls = feedPosts.slice(0, 15).flatMap(p => [
+        p.cover_url, p.iso?.cover_url,
+        ...(p.bundle_records || []).map(r => r.cover_url),
+        ...(p.haul?.items || []).map(i => i.cover_url),
+      ]).filter(Boolean);
+      if (artUrls.length) prefetchArt(artUrls);
       // Cache feed for instant return visits
       try { sessionStorage.setItem(FEED_CACHE_KEY, JSON.stringify(feedPosts)); } catch { /* quota */ }
     } catch (error) {
