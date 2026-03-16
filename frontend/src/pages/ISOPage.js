@@ -316,6 +316,7 @@ const ISOPage = () => {
         discogs_id: selectedRelease?.discogs_id || null,
         cover_url: selectedRelease?.cover_url || null,
         year: selectedRelease?.year || null,
+        color_variant: selectedRelease?.color_variant || null,
         pressing_notes: isoPressing || null,
         condition_pref: isoCondition || null,
         tags: isoTags.length > 0 ? isoTags : null,
@@ -588,14 +589,16 @@ const ISOPage = () => {
             {searchLoading && <Loader2 className="w-4 h-4 animate-spin absolute right-3 top-3 text-muted-foreground" />}
           </div>
           {discogsResults.length > 0 && (
-            <div className="border border-honey/30 rounded-lg max-h-60 overflow-y-auto bg-white">
-              {discogsResults.slice(0, discogsShowCount).map(r => (
-                <RecordSearchResult key={r.discogs_id} record={r} onClick={() => selectRelease(r)} size="sm" testId={`discogs-result-${r.discogs_id}`} />
-              ))}
+            <div>
+              <div className="border border-honey/30 rounded-lg max-h-60 overflow-y-auto bg-white">
+                {discogsResults.slice(0, discogsShowCount).map(r => (
+                  <RecordSearchResult key={r.discogs_id} record={r} onClick={() => selectRelease(r)} size="sm" testId={`discogs-result-${r.discogs_id}`} />
+                ))}
+              </div>
               {discogsResults.length > discogsShowCount && (
                 <button
                   onClick={() => setDiscogsShowCount(prev => prev + 6)}
-                  className="w-full py-2 text-sm font-medium text-honey-amber hover:bg-honey/10 border-t border-honey/20 transition-colors"
+                  className="w-full py-2 text-sm font-medium text-honey-amber hover:bg-honey/10 rounded-b-lg border border-t-0 border-honey/20 transition-colors"
                   data-testid="discogs-view-more-btn"
                 >
                   View More ({discogsResults.length - discogsShowCount} remaining)

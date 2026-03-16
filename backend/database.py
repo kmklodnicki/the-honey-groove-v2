@@ -240,6 +240,16 @@ def search_discogs(query: str, search_type: str = "release") -> List[Dict]:
                         color_variant = ftext
                     descs = fmt.get("descriptions", [])
                     descriptions.extend(descs)
+                # If no color_variant from text, check descriptions for variant info
+                if not color_variant and descriptions:
+                    variant_keywords = {"Picture Disc", "Colored", "White", "Red", "Blue", "Green",
+                                        "Yellow", "Orange", "Pink", "Purple", "Clear", "Splatter",
+                                        "Marble", "Gold", "Silver", "Translucent", "Transparent",
+                                        "Glow In The Dark", "Flexi-disc", "Shape", "Etched"}
+                    for d in descriptions:
+                        if d in variant_keywords or any(k.lower() in d.lower() for k in variant_keywords):
+                            color_variant = d
+                            break
                 # Build compact format string
                 format_str = format_name or ""
                 if descriptions:
@@ -313,11 +323,23 @@ def get_discogs_release(release_id: int) -> Optional[Dict]:
             catno = labels_raw[0].get("catno", "") if labels_raw else ""
             # Extract color variant from formats text field
             color_variant = None
+            all_descriptions = []
             for fmt in data.get("formats", []):
                 ftext = fmt.get("text", "")
                 if ftext:
                     color_variant = ftext
                     break
+                all_descriptions.extend(fmt.get("descriptions", []))
+            # If no color_variant from text, check descriptions for variant info
+            if not color_variant and all_descriptions:
+                variant_keywords = {"Picture Disc", "Colored", "White", "Red", "Blue", "Green",
+                                    "Yellow", "Orange", "Pink", "Purple", "Clear", "Splatter",
+                                    "Marble", "Gold", "Silver", "Translucent", "Transparent",
+                                    "Glow In The Dark", "Flexi-disc", "Shape", "Etched"}
+                for d in all_descriptions:
+                    if d in variant_keywords or any(k.lower() in d.lower() for k in variant_keywords):
+                        color_variant = d
+                        break
             community = data.get("community", {})
             # Extract barcode / UPC from identifiers
             barcode = None

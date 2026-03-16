@@ -43,6 +43,10 @@ async def search_records_discogs(q: str = Query(..., min_length=2), user: Dict =
 
     def _parse_discogs_raw(items):
         """Parse raw Discogs API results into our format."""
+        variant_keywords = {"Picture Disc", "Colored", "White", "Red", "Blue", "Green",
+                            "Yellow", "Orange", "Pink", "Purple", "Clear", "Splatter",
+                            "Marble", "Gold", "Silver", "Translucent", "Transparent",
+                            "Glow In The Dark", "Flexi-disc", "Shape", "Etched"}
         parsed = []
         for item in items:
             parts = item.get("title", "").split(" - ", 1)
@@ -59,6 +63,11 @@ async def search_records_discogs(q: str = Query(..., min_length=2), user: Dict =
                 if ftext:
                     color_variant = ftext
                 descriptions.extend(fmt.get("descriptions", []))
+            if not color_variant and descriptions:
+                for d in descriptions:
+                    if d in variant_keywords or any(k.lower() in d.lower() for k in variant_keywords):
+                        color_variant = d
+                        break
             format_str = format_name or ""
             if descriptions:
                 unique_descs = list(dict.fromkeys(d for d in descriptions if d not in ("Album", "Compilation")))

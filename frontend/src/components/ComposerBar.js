@@ -77,6 +77,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const [isoDiscogsQuery, setIsoDiscogsQuery] = useState('');
   const [isoDiscogsResults, setIsoDiscogsResults] = useState([]);
   const [isoSearchLoading, setIsoSearchLoading] = useState(false);
+  const [isoShowCount, setIsoShowCount] = useState(6);
   const [isoSelectedRelease, setIsoSelectedRelease] = useState(null);
   const [isoManualMode, setIsoManualMode] = useState(false);
   const [isoIntent, setIsoIntent] = useState(null);
@@ -301,7 +302,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   }, [API, token]);
 
   const searchDiscogsForISO = useCallback((query) => {
-    if (!query || query.length < 2) { setIsoDiscogsResults([]); setIsoSearchLoading(false); return; }
+    if (!query || query.length < 2) { setIsoDiscogsResults([]); setIsoSearchLoading(false); setIsoShowCount(6); return; }
     if (isoSearchTimer.current) clearTimeout(isoSearchTimer.current);
     isoSearchTimer.current = setTimeout(async () => {
       setIsoSearchLoading(true);
@@ -309,14 +310,15 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
         const resp = await axios.get(`${API}/discogs/search?q=${encodeURIComponent(query)}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setIsoDiscogsResults(resp.data.slice(0, 8));
+        setIsoDiscogsResults(resp.data || []);
+        setIsoShowCount(6);
       } catch { setIsoDiscogsResults([]); }
       finally { setIsoSearchLoading(false); }
     }, 350);
   }, [API, token]);
 
   const selectIsoRelease = (release) => {
-    setIsoSelectedRelease(release); setIsoDiscogsResults([]); setIsoDiscogsQuery('');
+    setIsoSelectedRelease(release); setIsoDiscogsResults([]); setIsoDiscogsQuery(''); setIsoShowCount(6);
     setIsoArtist(release.artist); setIsoAlbum(release.title);
   };
 
@@ -422,6 +424,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
         discogs_id: isoSelectedRelease?.discogs_id || null,
         cover_url: isoSelectedRelease?.cover_url || null,
         year: isoSelectedRelease?.year || null,
+        color_variant: isoSelectedRelease?.color_variant || null,
         pressing_notes: isoPressing || null,
         condition_pref: isoCondition || null,
         target_price_min: isoPriceMin ? parseFloat(isoPriceMin) : null,
@@ -934,10 +937,21 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
                       {isoSearchLoading && <Loader2 className="w-4 h-4 animate-spin absolute right-3 top-3 text-muted-foreground" />}
                     </div>
                     {isoDiscogsResults.length > 0 && (
-                      <div className="border border-honey/30 rounded-lg max-h-48 overflow-y-auto bg-white">
-                        {isoDiscogsResults.map(r => (
-                          <RecordSearchResult key={r.discogs_id} record={r} onClick={() => selectIsoRelease(r)} size="sm" testId={`iso-discogs-result-${r.discogs_id}`} />
-                        ))}
+                      <div>
+                        <div className="border border-honey/30 rounded-lg max-h-48 overflow-y-auto bg-white">
+                          {isoDiscogsResults.slice(0, isoShowCount).map(r => (
+                            <RecordSearchResult key={r.discogs_id} record={r} onClick={() => selectIsoRelease(r)} size="sm" testId={`iso-discogs-result-${r.discogs_id}`} />
+                          ))}
+                        </div>
+                        {isoDiscogsResults.length > isoShowCount && (
+                          <button
+                            onClick={() => setIsoShowCount(prev => prev + 6)}
+                            className="w-full py-2 text-sm font-medium text-honey-amber hover:bg-honey/10 rounded-b-lg border border-t-0 border-honey/20 transition-colors"
+                            data-testid="iso-composer-view-more-btn"
+                          >
+                            View More ({isoDiscogsResults.length - isoShowCount} remaining)
+                          </button>
+                        )}
                       </div>
                     )}
                     <button onClick={() => setIsoManualMode(true)} className="text-sm text-honey-amber hover:underline" data-testid="iso-manual-entry-btn">Or enter manually</button>
