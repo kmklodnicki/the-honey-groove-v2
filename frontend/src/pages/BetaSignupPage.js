@@ -63,30 +63,35 @@ const BetaSignupPage = () => {
       <div className="min-h-screen bg-[#FAF6EE] flex flex-col items-center pb-16 relative" data-testid="beta-signup-page">
         {/* Honey drip · living video pinned flush to top */}
         <div
-          className="absolute top-0 left-0 w-screen overflow-hidden z-0"
-          style={{ height: '200px', marginTop: '-1px', backgroundColor: '#FEF6E6' }}
+          className="absolute top-0 left-0 w-screen overflow-hidden z-0 flex"
+          style={{ height: '120px', marginTop: '-1px', backgroundColor: '#FEF6E6' }}
           data-testid="beta-drip"
         >
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            disablePictureInPicture
-            poster="/honey-drip.png"
-            className="block w-full h-full"
-            style={{
-              objectFit: 'cover',
-              transform: 'scale(1.05)',
-              transformOrigin: 'top center',
-              mixBlendMode: 'multiply',
-            }}
-          >
-            <source src="/honey-drip.mp4" type="video/mp4" />
-          </video>
+          {[0,1,2].map(i => (
+            <video
+              key={i}
+              autoPlay
+              loop
+              muted
+              playsInline
+              disablePictureInPicture
+              poster="/honey-drip.png"
+              className="block h-full flex-shrink-0"
+              style={{
+                width: '34vw',
+                objectFit: 'cover',
+                objectPosition: 'top center',
+                transform: 'scale(1.05)',
+                transformOrigin: 'top center',
+                mixBlendMode: 'multiply',
+              }}
+            >
+              <source src="/honey-drip.mp4" type="video/mp4" />
+            </video>
+          ))}
         </div>
 
-        <div className="w-full max-w-lg mx-auto px-6 relative z-10" style={{ paddingTop: '240px' }}>
+        <div className="w-full max-w-lg mx-auto px-6 relative z-10" style={{ paddingTop: '160px' }}>
           {/* Logo */}
           <div className="flex justify-center mb-4">
             <a href="/" data-testid="beta-logo-link">

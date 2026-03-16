@@ -81,31 +81,36 @@ const LandingPage = () => {
       <HoneycombPattern />
 
       {/* Hero Section */}
-      <section className="relative pb-24 overflow-hidden pt-[200px]">
-        {/* Honey drip · living video pinned flush to top of viewport */}
+      <section className="relative pb-24 overflow-hidden pt-[120px]">
+        {/* Honey drip · tiled video strip pinned flush to top */}
         <div
-          className="absolute top-0 left-0 w-screen overflow-hidden z-0"
-          style={{ height: '200px', marginTop: '-1px', backgroundColor: '#FEF6E6' }}
+          className="absolute top-0 left-0 w-screen overflow-hidden z-0 flex"
+          style={{ height: '120px', marginTop: '-1px', backgroundColor: '#FEF6E6' }}
           data-testid="hero-drip"
         >
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            disablePictureInPicture
-            poster="/honey-drip.png"
-            className="block w-full h-full"
-            style={{
-              objectFit: 'cover',
-              transform: 'scale(1.05)',
-              transformOrigin: 'top center',
-              mixBlendMode: 'multiply',
-            }}
-            data-testid="hero-drip-video"
-          >
-            <source src="/honey-drip.mp4" type="video/mp4" />
-          </video>
+          {[0,1,2].map(i => (
+            <video
+              key={i}
+              autoPlay
+              loop
+              muted
+              playsInline
+              disablePictureInPicture
+              poster="/honey-drip.png"
+              className="block h-full flex-shrink-0"
+              style={{
+                width: '34vw',
+                objectFit: 'cover',
+                objectPosition: 'top center',
+                transform: 'scale(1.05)',
+                transformOrigin: 'top center',
+                mixBlendMode: 'multiply',
+              }}
+              {...(i === 0 ? { 'data-testid': 'hero-drip-video' } : {})}
+            >
+              <source src="/honey-drip.mp4" type="video/mp4" />
+            </video>
+          ))}
         </div>
 
         <div className="max-w-6xl mx-auto px-4 md:px-8 relative z-10">
