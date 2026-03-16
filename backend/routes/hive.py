@@ -701,11 +701,28 @@ async def composer_iso(data: ISOPostCreate, user: Dict = Depends(require_auth)):
     is_dreaming = data.intent == "dreaming"
     iso_id = str(uuid.uuid4())
 
+    # Auto-populate cover_url and discogs_id if missing but artist+album given
+    resolved_cover_url = data.cover_url
+    resolved_discogs_id = data.discogs_id
+    if not resolved_discogs_id and data.artist and data.album:
+        try:
+            import asyncio
+            results = await asyncio.to_thread(search_discogs, f"{data.artist} {data.album}")
+            if results:
+                best = results[0]
+                resolved_discogs_id = best.get("discogs_id")
+                if not resolved_cover_url:
+                    resolved_cover_url = best.get("cover_url")
+                if not data.color_variant and best.get("color_variant"):
+                    data.color_variant = best["color_variant"]
+        except Exception as e:
+            logger.warning(f"Discogs auto-lookup for ISO failed: {e}")
+
     # BLOCK 592: Check Discogs for "Unofficial Release" format
     is_unofficial = False
     discogs_color_variant = None
-    if data.discogs_id:
-        release_info = get_discogs_release(data.discogs_id)
+    if resolved_discogs_id:
+        release_info = get_discogs_release(resolved_discogs_id)
         if release_info:
             is_unofficial = "Unofficial Release" in release_info.get("format_descriptions", [])
             discogs_color_variant = release_info.get("color_variant")
@@ -718,8 +735,8 @@ async def composer_iso(data: ISOPostCreate, user: Dict = Depends(require_auth)):
         "user_id": user["id"],
         "artist": data.artist,
         "album": data.album,
-        "discogs_id": data.discogs_id,
-        "cover_url": data.cover_url,
+        "discogs_id": resolved_discogs_id,
+        "cover_url": resolved_cover_url,
         "year": data.year,
         "color_variant": resolved_color_variant,
         "pressing_notes": data.pressing_notes,
