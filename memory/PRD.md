@@ -39,6 +39,9 @@ The HoneyGroove is a vinyl record social platform where users can track collecti
 
 ### Session 8 (2026-03-16)
 - **P0 Fix: ISO Search Modal Album Artwork** — Fixed Discogs album artwork not appearing in the ISO search modal. Root cause: `AlbumArt` component used `loading="lazy"` which doesn't trigger in modal/scroll containers, plus a shimmer timeout removed the `<img>` tag entirely after 8s. Fix: Added `priority` prop to `RecordSearchResult`→`AlbumArt` for eager loading, and kept img element rendered during shimmer state. Affects all search dropdowns site-wide (ISO, Listings, Hauls, ComposerBar, Onboarding, etc.).
+- **Global Search Accuracy Overhaul** — Rewrote search logic from OR to AND: each query word must match at least one field across the record. "me! taylor swift" now returns 9 ME! variants (was 255 unrelated). Added `_build_and_filter()` helper used by `/search/variants`, `/search/unified`, `/search/records`. Discogs API fallback now always runs for richer coverage.
+- **Discogs Structured Search Fallback** — Enhanced `/api/discogs/search` with smart fallback: when initial results don't contain ALL query words, tries Discogs API's `release_title` + `artist` structured params. This finds exact album matches (e.g., "ME!" by Taylor Swift) that the basic `q` param misses.
+- **ISO Modal "View More" Button** — Added progressive loading to DiscogsPicker: shows 6 results initially with a "View More (N remaining)" button that loads 6 more per click. Increased max-height from 48 to 60 for better UX.
 
 ## Backlog
 
@@ -59,9 +62,13 @@ The HoneyGroove is a vinyl record social platform where users can track collecti
 - Discogs API SSL error resilience (intermittent, Vercel-specific)
 
 ## Key Files
-- `/app/backend/routes/collection.py` — Image upload, process_image
+- `/app/backend/routes/search.py` — Global search (variants, unified, records) with AND-based `_build_and_filter`
+- `/app/backend/routes/collection.py` — Discogs search with structured fallback, image upload, process_image
 - `/app/backend/routes/hive.py` — Feed, build_post_response, composer endpoints
 - `/app/backend/routes/honeypot.py` — Listings, trades
+- `/app/frontend/src/pages/ISOPage.js` — ISO modal with DiscogsPicker and View More button
+- `/app/frontend/src/components/RecordSearchResult.js` — Search result card with priority AlbumArt
+- `/app/frontend/src/components/AlbumArt.js` — Image component with eager/lazy loading
 - `/app/frontend/src/components/ComposerBar.js` — Post creation UI
 - `/app/frontend/src/components/PostCards.js` — Feed cards
 - `/app/frontend/src/utils/imageUpload.js` — File validation
