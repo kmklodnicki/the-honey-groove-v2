@@ -95,8 +95,8 @@ export default function VariantReleasePage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 pt-3 md:pt-2 pb-28" data-testid="variant-release-page">
       <SEOHead
-        title={`${ov.artist} — ${ov.album} (${ov.variant})`}
-        description={`${ov.variant} pressing of ${ov.album} by ${ov.artist}. ${scarcity.discogs_have} global owners.`}
+        title={`${ov.artist} — ${ov.album} (${ov.variant || 'Standard'})`}
+        description={`${ov.variant || 'Standard'} pressing of ${ov.album} by ${ov.artist}. ${scarcity.discogs_have} global owners.`}
         url={`/variant/${releaseId}`}
         image={ov.cover_url}
       />
@@ -135,13 +135,13 @@ export default function VariantReleasePage() {
               }}
               data-testid="variant-pill"
             >
-              {ov.variant}
+              {ov.variant || 'Standard'}
             </div>
           </div>
         </div>
 
         <div className="flex-1 min-w-0">
-          <p className="text-sm text-honey-amber font-medium uppercase tracking-wider mb-1">{ov.variant} Pressing</p>
+          <p className="text-sm text-honey-amber font-medium uppercase tracking-wider mb-1">{ov.variant || 'Standard'} Pressing</p>
           <div className="flex items-center gap-3 flex-wrap mb-1">
             <h1 className="text-3xl sm:text-4xl font-heading font-bold leading-tight" data-testid="variant-title">{ov.album}</h1>
             {ov.is_unofficial && <UnofficialPill variant="inline" className="!text-[11px] !px-2.5 !py-1" />}

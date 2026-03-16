@@ -379,6 +379,26 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
         iso_data = iso
         if iso:
             iso_color_variant = iso.get("color_variant")
+            # Hydrate missing cover_url from Discogs or records collection
+            if not iso.get("cover_url") and iso.get("discogs_id"):
+                try:
+                    from routes.vinyl import _get_cached_discogs_release
+                    discogs = await _get_cached_discogs_release(iso["discogs_id"])
+                    if discogs and discogs.get("cover_url"):
+                        iso["cover_url"] = discogs["cover_url"]
+                        # Persist so we don't re-fetch next time
+                        await db.iso_items.update_one(
+                            {"id": iso["id"]},
+                            {"$set": {"cover_url": discogs["cover_url"]}}
+                        )
+                except Exception as e:
+                    logger.warning(f"ISO cover_url hydration failed for {iso.get('id')}: {e}")
+            if not iso.get("cover_url"):
+                # Fallback: check records collection
+                rec = await db.records.find_one({"discogs_id": iso.get("discogs_id")}, {"_id": 0, "cover_url": 1})
+                if rec and rec.get("cover_url"):
+                    iso["cover_url"] = rec["cover_url"]
+            iso_data = iso
     
     # Resolve color_variant: post-level > record-level > iso-level
     resolved_color_variant = post.get("color_variant") or record_color_variant or iso_color_variant
@@ -752,6 +772,8 @@ async def composer_iso(data: ISOPostCreate, user: Dict = Depends(require_auth)):
         if release_info:
             is_unofficial = "Unofficial Release" in release_info.get("format_descriptions", [])
             discogs_color_variant = release_info.get("color_variant")
+            if not resolved_cover_url and release_info.get("cover_url"):
+                resolved_cover_url = release_info["cover_url"]
 
     # Resolve color_variant: explicit from user > Discogs > None
     resolved_color_variant = data.color_variant or discogs_color_variant
