@@ -81,7 +81,7 @@ const LandingPage = () => {
       <HoneycombPattern />
 
       {/* Hero Section */}
-      <section className="relative pb-24 overflow-visible pt-[120px]">
+      <section className="relative pb-10 overflow-visible pt-[120px]">
         {/* Gold line · top edge */}
         <div className="absolute top-0 left-0 w-screen z-10" style={{ height: '2px', background: 'linear-gradient(90deg, #D4A017, #E8B923, #D4A017)' }} />
         {/* Honey drip · tiled video strip pinned flush to top */}
