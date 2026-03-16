@@ -417,10 +417,10 @@ const SettingsPage = () => {
                 <p className="text-sm break-all flex-1" data-testid="settings-email-display">{user?.email}</p>
                 <button
                   onClick={() => { setEditingEmail(true); setNewEmail(user?.email || ''); }}
-                  className="text-sm text-honey-amber hover:underline whitespace-nowrap"
+                  className="text-sm text-honey-amber hover:underline whitespace-nowrap flex items-center gap-1"
                   data-testid="settings-email-edit-btn"
                 >
-                  change
+                  <Mail className="w-3 h-3 shrink-0" />update email
                 </button>
                 <button
                   onClick={() => setShowPwModal(true)}
