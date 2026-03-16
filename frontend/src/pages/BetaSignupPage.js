@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async';
 import axios from 'axios';
 import { Loader2 } from 'lucide-react';
 import { trackEvent } from '../utils/analytics';
+import CrossfadeVideo from '../components/CrossfadeVideo';
 
 import { API_BASE } from '../utils/apiBase';
 const API = API_BASE;
@@ -74,15 +75,12 @@ const BetaSignupPage = () => {
                 ? 'linear-gradient(to left, black 92%, transparent 100%)'
                 : 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)';
             return (
-            <video
+            <CrossfadeVideo
               key={i}
-              autoPlay
-              loop
-              muted
-              playsInline
-              disablePictureInPicture
+              src="/honey-drip.mp4"
               poster="/honey-drip.png"
-              className="block h-full flex-shrink-0"
+              className="block"
+              mask={mask}
               style={{
                 width: 'calc(100vw / 3 + 10px)',
                 marginLeft: i === 0 ? 0 : '-5px',
@@ -90,12 +88,8 @@ const BetaSignupPage = () => {
                 objectFit: 'cover',
                 objectPosition: 'top center',
                 mixBlendMode: 'multiply',
-                WebkitMaskImage: mask,
-                maskImage: mask,
               }}
-            >
-              <source src="/honey-drip.mp4" type="video/mp4" />
-            </video>
+            />
             );
           })}
         </div>

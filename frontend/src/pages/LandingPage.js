@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 import axios from 'axios';
 import SEOHead from '../components/SEOHead';
+import CrossfadeVideo from '../components/CrossfadeVideo';
 
 const LandingPage = () => {
   usePageTitle();
@@ -97,15 +98,12 @@ const LandingPage = () => {
                 ? 'linear-gradient(to left, black 92%, transparent 100%)'
                 : 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)';
             return (
-            <video
+            <CrossfadeVideo
               key={i}
-              autoPlay
-              loop
-              muted
-              playsInline
-              disablePictureInPicture
+              src="/honey-drip.mp4"
               poster="/honey-drip.png"
-              className="block h-full flex-shrink-0"
+              className="block"
+              mask={mask}
               style={{
                 width: 'calc(100vw / 3 + 10px)',
                 marginLeft: i === 0 ? 0 : '-5px',
@@ -113,13 +111,9 @@ const LandingPage = () => {
                 objectFit: 'cover',
                 objectPosition: 'top center',
                 mixBlendMode: 'multiply',
-                WebkitMaskImage: mask,
-                maskImage: mask,
               }}
               {...(i === 0 ? { 'data-testid': 'hero-drip-video' } : {})}
-            >
-              <source src="/honey-drip.mp4" type="video/mp4" />
-            </video>
+            />
             );
           })}
         </div>
