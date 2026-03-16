@@ -14,6 +14,7 @@ import {
 import { Disc, Package, Search, Loader2, X, Feather, ImagePlus, Tag, Shuffle, ChevronDown, Music, RefreshCw, Camera, BarChart3, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
+import { validateImageFile } from '../utils/imageUpload';
 import AlbumArt from './AlbumArt';
 import RecordSearchResult from './RecordSearchResult';
 
@@ -121,6 +122,8 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const handlePhotoSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
+      const err = validateImageFile(file);
+      if (err) { toast.error(err); e.target.value = ''; return; }
       setPostPhoto(file);
       setPostPhotoPreview(URL.createObjectURL(file));
     }
@@ -357,10 +360,16 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     if (!postPhoto) return null;
     const formData = new FormData();
     formData.append('file', postPhoto);
-    const res = await axios.post(`${API}/upload`, formData, {
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
-    });
-    return res.data.url;
+    try {
+      const res = await axios.post(`${API}/upload`, formData, {
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+      });
+      return res.data.url;
+    } catch (err) {
+      const detail = err.response?.data?.detail || 'image upload failed. try a different photo.';
+      toast.error(detail);
+      throw err;
+    }
   };
 
   // Submit handlers

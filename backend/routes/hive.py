@@ -348,7 +348,29 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
     haul_data = None
     if post.get("haul_id"):
         haul = await db.hauls.find_one({"id": post["haul_id"]}, {"_id": 0})
+        if haul:
+            # Hydrate missing cover_url for haul items from records collection
+            items = haul.get("items", [])
+            for item in items:
+                if not item.get("cover_url") and item.get("discogs_id"):
+                    rec = await db.records.find_one({"discogs_id": item["discogs_id"]}, {"_id": 0, "cover_url": 1})
+                    if rec and rec.get("cover_url"):
+                        item["cover_url"] = rec["cover_url"]
         haul_data = haul
+
+    # Hydrate cover_url for auto-bundle records
+    bundle = post.get("bundle_records")
+    if bundle:
+        for item in bundle:
+            if not item.get("cover_url"):
+                if item.get("record_id"):
+                    rec = await db.records.find_one({"id": item["record_id"]}, {"_id": 0, "cover_url": 1})
+                    if rec and rec.get("cover_url"):
+                        item["cover_url"] = rec["cover_url"]
+                elif item.get("discogs_id"):
+                    rec = await db.records.find_one({"discogs_id": item["discogs_id"]}, {"_id": 0, "cover_url": 1})
+                    if rec and rec.get("cover_url"):
+                        item["cover_url"] = rec["cover_url"]
     
     iso_data = None
     iso_color_variant = None

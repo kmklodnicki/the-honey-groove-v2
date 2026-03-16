@@ -15,7 +15,7 @@ export function validateImageFile(file) {
 
   // HEIC files on some browsers report empty or generic type
   if (!typeOk && !extOk) {
-    return 'please upload a jpg, png, or webp image.';
+    return 'please upload a jpg, png, webp, or heic image.';
   }
 
   if (file.size > MAX_SIZE) {

@@ -965,11 +965,14 @@ def process_image(data: bytes, content_type: str, filename: str) -> tuple:
     ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
     is_heic = ext in ("heic", "heif") or content_type in ("image/heic", "image/heif")
 
+    logger.info(f"process_image: filename={filename}, ct={content_type}, ext={ext}, is_heic={is_heic}, data_size={len(data)}")
+
     if is_heic:
         import pillow_heif
         pillow_heif.register_heif_opener()
 
     img = Image.open(io.BytesIO(data))
+    logger.info(f"process_image: opened image mode={img.mode}, size={img.size}")
 
     # Apply EXIF orientation so photos display correctly regardless of rotation metadata
     img = ImageOps.exif_transpose(img)
@@ -1000,16 +1003,20 @@ async def upload_file(file: UploadFile = File(...), user: Dict = Depends(require
     ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else ""
     ct = (file.content_type or "").lower()
 
-    if ext not in ALLOWED_EXTENSIONS and ct not in ALLOWED_IMAGE_TYPES:
+    # Accept HEIC/HEIF even when browser sends a generic content type
+    is_heic_ext = ext in ("heic", "heif")
+    if ext not in ALLOWED_EXTENSIONS and ct not in ALLOWED_IMAGE_TYPES and not is_heic_ext:
         raise HTTPException(status_code=400, detail="Only image files are allowed (jpg, png, webp, heic)")
 
     data = await file.read()
+    if len(data) > 15 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Image must be less than 15MB.")
 
     try:
         processed_data, final_ct, final_ext = process_image(data, ct, file.filename)
     except Exception as e:
-        logger.error(f"Image processing failed: {e}")
-        raise HTTPException(status_code=400, detail="Could not process image. Please upload a jpg, png, or webp file.")
+        logger.error(f"Image processing failed for {file.filename} (ct={ct}, ext={ext}, size={len(data)}): {e}", exc_info=True)
+        raise HTTPException(status_code=400, detail=f"Could not process image. Please try a jpg or png file. ({type(e).__name__})")
 
     # Try Cloudinary first, fallback to Emergent object storage
     from utils.cloudinary_upload import is_cloudinary_configured, upload_image_buffer
