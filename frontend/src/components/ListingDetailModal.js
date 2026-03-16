@@ -249,7 +249,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
     <>
       <Dialog open={open} onOpenChange={(o) => { if (!o) handleClose(); }}>
         <DialogContent
-          className="sm:max-w-lg max-h-[92vh] overflow-y-auto p-0 gap-0 rounded-2xl [&>button]:hidden"
+          className="sm:max-w-md max-h-[92vh] overflow-y-auto p-0 gap-0 rounded-2xl [&>button]:hidden"
           data-testid="listing-detail-modal"
           aria-describedby="listing-detail-desc"
         >
@@ -444,8 +444,8 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                 /* ========== VIEW MODE ========== */
                 <div>
                   {/* Album Art */}
-                  <div className="flex justify-center bg-stone-50 pt-6 pb-4 px-6">
-                    <div className="relative max-w-[480px] w-full">
+                  <div className="flex justify-center bg-stone-50 pt-3 pb-2 px-4">
+                    <div className="relative max-w-[320px] w-full">
                       <AlbumArt
                         src={photos[0] || listing.cover_url}
                         alt={`${listing.artist} ${listing.album}${listing.pressing_notes || listing.color_variant ? ` ${listing.pressing_notes || listing.color_variant}` : ''} vinyl record`}
@@ -456,11 +456,11 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                   </div>
 
                   {/* Record details */}
-                  <div className="text-center px-6 pt-3 pb-1" data-testid="listing-modal-info">
-                    <h2 className="text-[32px] leading-tight text-[#2A1A06]" style={{ fontFamily: '"Playfair Display", serif', fontWeight: 700 }}>
+                  <div className="text-center px-4 pt-2 pb-1" data-testid="listing-modal-info">
+                    <h2 className="text-xl sm:text-[28px] leading-tight text-[#2A1A06]" style={{ fontFamily: '"Playfair Display", serif', fontWeight: 700 }}>
                       {listing.artist}
                     </h2>
-                    <p className="text-[26px] text-[#C8861A] mt-0.5" style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic' }}>
+                    <p className="text-lg sm:text-[22px] text-[#C8861A] mt-0.5" style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic' }}>
                       {listing.album}
                     </p>
                     {(listing.pressing_notes || listing.year) && (
@@ -475,15 +475,15 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
 
                   {/* Edit button for owner */}
                   {canEdit && (
-                    <div className="px-6 pb-2">
-                      <Button onClick={startEditing} variant="outline" className="w-full rounded-full border-honey/50 text-[#C8861A] hover:bg-honey/10" data-testid="listing-edit-btn">
-                        <Pencil className="w-4 h-4 mr-2" /> Edit Listing
+                    <div className="px-4 pb-1.5">
+                      <Button onClick={startEditing} variant="outline" className="w-full rounded-full border-honey/50 text-[#C8861A] hover:bg-honey/10 h-8 text-xs" data-testid="listing-edit-btn">
+                        <Pencil className="w-3 h-3 mr-1.5" /> Edit Listing
                       </Button>
                     </div>
                   )}
 
                   {/* Condition + Seller row */}
-                  <div className="flex items-center justify-between px-6 py-3 border-t border-stone-100" data-testid="listing-modal-seller-row">
+                  <div className="flex items-center justify-between px-4 py-2 border-t border-stone-100" data-testid="listing-modal-seller-row">
                     {listing.condition && (
                       <GradeLabel condition={listing.condition} variant="pill" />
                     )}
@@ -515,11 +515,11 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
 
                   {/* Seller photos */}
                   {photos.length > 0 && (
-                    <div className="px-6 py-3 border-t border-stone-100" data-testid="listing-photos">
-                      <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+                    <div className="px-4 py-2 border-t border-stone-100" data-testid="listing-photos">
+                      <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
                         {photos.map((url, i) => (
                           <button key={i} onClick={() => setExpandedPhoto(i)}
-                            className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border border-stone-200 hover:border-amber-300 transition-colors"
+                            className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-stone-200 hover:border-amber-300 transition-colors"
                             data-testid={`listing-photo-thumb-${i}`}>
                             <img src={resolveImageUrl(url)} alt={`${listing.artist} ${listing.album} vinyl record photo ${i + 1}`} className="w-full h-full object-cover" />
                           </button>
@@ -529,55 +529,55 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                   )}
 
                   {/* Price */}
-                  <div className="px-6 pt-6 pb-3" data-testid="listing-price-section">
+                  <div className="px-4 pt-3 pb-2" data-testid="listing-price-section">
                     {listing.price && (
-                      <p className="text-[52px] leading-none text-[#996012]" style={{ fontFamily: '"Playfair Display", serif', fontWeight: 700 }} data-testid="listing-price">
+                      <p className="text-4xl sm:text-[42px] leading-none text-[#996012]" style={{ fontFamily: '"Playfair Display", serif', fontWeight: 700 }} data-testid="listing-price">
                         ${listing.price}
                       </p>
                     )}
                     {isMakeOffer && (
-                      <p className="text-xs text-muted-foreground mt-2">or make an offer</p>
+                      <p className="text-[11px] text-muted-foreground mt-1">or make an offer</p>
                     )}
                     {isTrade && (
-                      <p className="text-sm font-medium text-purple-600 mt-2">Open to trades</p>
+                      <p className="text-xs font-medium text-purple-600 mt-1">Open to trades</p>
                     )}
                   </div>
 
                   {/* Honey Pulse — disabled for unofficial releases */}
                   {pulseData?.confident && listing.price && !listing.is_unofficial && (
-                    <div className="mx-6 mt-2 mb-1 bg-amber-50/70 border border-amber-200/60 rounded-xl p-3" data-testid="honey-pulse-module">
-                      <div className="flex items-center gap-1.5 mb-1.5">
-                        <Flame className="w-4 h-4 text-orange-500" />
-                        <span className="text-xs font-bold text-amber-800">Honey Pulse</span>
-                        <span className="text-[10px] text-muted-foreground">90-Day Market Signal</span>
+                    <div className="mx-4 mt-1 mb-1 bg-amber-50/70 border border-amber-200/60 rounded-xl p-2" data-testid="honey-pulse-module">
+                      <div className="flex items-center gap-1 mb-1">
+                        <Flame className="w-3 h-3 text-orange-500" />
+                        <span className="text-[10px] font-bold text-amber-800">Honey Pulse</span>
+                        <span className="text-[9px] text-muted-foreground">90-Day Market</span>
                       </div>
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
                         <span>Median: <span className="font-semibold text-amber-800">${pulseData.median?.toFixed(2)}</span></span>
-                        <span>Hot Range: <span className="font-semibold text-amber-800">${pulseData.hot_low?.toFixed(2)} - ${pulseData.hot_high?.toFixed(2)}</span></span>
+                        <span>Hot: <span className="font-semibold text-amber-800">${pulseData.hot_low?.toFixed(2)}-${pulseData.hot_high?.toFixed(2)}</span></span>
                       </div>
                       {listing.price >= pulseData.hot_low && listing.price <= pulseData.hot_high ? (
-                        <p className="text-xs font-semibold text-orange-600 mt-1.5 flex items-center gap-1" data-testid="pulse-price-signal">
-                          <Flame className="w-3 h-3" /> Priced in the Honey Zone
+                        <p className="text-[10px] font-semibold text-orange-600 mt-1 flex items-center gap-1" data-testid="pulse-price-signal">
+                          <Flame className="w-2.5 h-2.5" /> In Honey Zone
                         </p>
                       ) : listing.price > pulseData.hot_high ? (
-                        <p className="text-xs text-muted-foreground mt-1.5" data-testid="pulse-price-signal">Over Market Range</p>
+                        <p className="text-[10px] text-muted-foreground mt-1" data-testid="pulse-price-signal">Over Range</p>
                       ) : (
-                        <p className="text-xs text-muted-foreground mt-1.5" data-testid="pulse-price-signal">Below Market Range</p>
+                        <p className="text-[10px] text-muted-foreground mt-1" data-testid="pulse-price-signal">Below Range</p>
                       )}
                     </div>
                   )}
 
                   {/* Description */}
                   {listing.description && (
-                    <div className="px-6 py-3" data-testid="listing-description">
-                      <p className={`text-[18px] text-[#8A6B4A] leading-relaxed ${!descExpanded ? 'line-clamp-3' : ''}`}
+                    <div className="px-4 py-2" data-testid="listing-description">
+                      <p className={`text-sm sm:text-base text-[#8A6B4A] leading-relaxed ${!descExpanded ? 'line-clamp-3' : ''}`}
                         style={{ fontFamily: '"Cormorant Garamond", serif' }}>
                         {listing.description}
                       </p>
                       {listing.description.length > 120 && (
                         <button onClick={() => setDescExpanded(!descExpanded)}
-                          className="text-xs text-amber-600 hover:underline mt-1" data-testid="listing-read-more">
-                          {descExpanded ? 'Show less' : 'Read more'}
+                          className="text-[11px] text-amber-600 hover:underline mt-1" data-testid="listing-read-more">
+                          {descExpanded ? 'Less' : 'More'}
                         </button>
                       )}
                     </div>
@@ -585,19 +585,19 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
 
                   {/* Off-platform payment warning */}
                   {listing.offplatform_flagged && (
-                    <div className="mx-6 my-2 bg-yellow-50 border border-yellow-300 rounded-xl px-4 py-3 flex items-start gap-3" data-testid="offplatform-warning">
-                      <AlertTriangle className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
-                      <p className="text-sm text-yellow-800">
-                        This listing mentions an outside payment method. Never pay outside the Honey Groove. All legitimate transactions happen inside the app through Stripe only.
+                    <div className="mx-4 my-1.5 bg-yellow-50 border border-yellow-300 rounded-xl px-3 py-2 flex items-start gap-2" data-testid="offplatform-warning">
+                      <AlertTriangle className="w-4 h-4 text-yellow-600 shrink-0 mt-0.5" />
+                      <p className="text-xs text-yellow-800">
+                        This listing mentions an outside payment method. Never pay outside the Honey Groove.
                       </p>
                     </div>
                   )}
 
                   {/* TEST LISTING safety banner */}
                   {listing.is_test_listing && (
-                    <div className="mx-6 my-2 bg-red-50 border-2 border-red-400 rounded-xl px-4 py-3 flex items-center gap-3" data-testid="test-listing-banner">
-                      <AlertTriangle className="w-5 h-5 text-red-600 shrink-0" />
-                      <p className="text-sm font-bold text-red-700 uppercase tracking-wide">
+                    <div className="mx-4 my-1.5 bg-red-50 border-2 border-red-400 rounded-xl px-3 py-2 flex items-center gap-2" data-testid="test-listing-banner">
+                      <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
+                      <p className="text-xs font-bold text-red-700 uppercase tracking-wide">
                         TEST LISTING — DO NOT PURCHASE
                       </p>
                     </div>
@@ -605,14 +605,14 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
 
                   {/* Shipping insurance indicator */}
                   {listing.insured !== null && listing.insured !== undefined && (
-                    <div className="px-6 py-2" data-testid="listing-insurance-status">
+                    <div className="px-4 py-1.5" data-testid="listing-insurance-status">
                       {listing.insured ? (
-                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-green-700 bg-green-50 border border-green-200 px-3 py-1.5 rounded-full">
-                          <Package className="w-3.5 h-3.5" /> Seller added shipping insurance
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-green-700 bg-green-50 border border-green-200 px-2 py-1 rounded-full">
+                          <Package className="w-3 h-3" /> Insurance included
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-full">
-                          <Package className="w-3.5 h-3.5" /> No shipping insurance
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full">
+                          <Package className="w-3 h-3" /> No insurance
                         </span>
                       )}
                     </div>
@@ -620,49 +620,49 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
 
                   {/* Shipping costs */}
                   {listing.shipping_cost != null && (
-                    <div className="px-6 py-1" data-testid="listing-domestic-shipping">
-                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-stone-600 bg-stone-50 border border-stone-200 px-3 py-1.5 rounded-full">
-                        <Package className="w-3.5 h-3.5" /> Shipping: ${listing.shipping_cost.toFixed(2)}{listing.international_shipping ? ' (Domestic)' : ''}
+                    <div className="px-4 py-0.5" data-testid="listing-domestic-shipping">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-medium text-stone-600 bg-stone-50 border border-stone-200 px-2 py-1 rounded-full">
+                        <Package className="w-3 h-3" /> Ship: ${listing.shipping_cost.toFixed(2)}{listing.international_shipping ? ' (Dom)' : ''}
                       </span>
                     </div>
                   )}
 
                   {/* International shipping indicator */}
                   {listing.international_shipping ? (
-                    <div className="px-6 py-1 space-y-1" data-testid="listing-intl-shipping">
-                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 px-3 py-1.5 rounded-full">
-                        <Package className="w-3.5 h-3.5" /> International Shipping: {listing.international_shipping_cost ? `$${listing.international_shipping_cost.toFixed(2)}` : 'Available'}
+                    <div className="px-4 py-0.5" data-testid="listing-intl-shipping">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-medium text-blue-700 bg-blue-50 border border-blue-200 px-2 py-1 rounded-full">
+                        <Package className="w-3 h-3" /> Intl: {listing.international_shipping_cost ? `$${listing.international_shipping_cost.toFixed(2)}` : 'Available'}
                       </span>
                     </div>
                   ) : (
-                    <div className="px-6 py-1" data-testid="listing-no-intl-shipping">
-                      <span className="inline-flex items-center gap-1.5 text-xs font-medium text-stone-500 bg-stone-50 border border-stone-200 px-3 py-1.5 rounded-full">
-                        <Package className="w-3.5 h-3.5" /> International Shipping: Not Available
+                    <div className="px-4 py-0.5" data-testid="listing-no-intl-shipping">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-medium text-stone-500 bg-stone-50 border border-stone-200 px-2 py-1 rounded-full">
+                        <Package className="w-3 h-3" /> Intl: N/A
                       </span>
                     </div>
                   )}
 
                   {/* Shipping info */}
                   {seller && (seller.city || seller.region) && (
-                    <div className="px-6 py-2 text-xs text-muted-foreground" data-testid="listing-shipping">
+                    <div className="px-4 py-1 text-[10px] text-muted-foreground" data-testid="listing-shipping">
                       Ships from {[seller.city, seller.region].filter(Boolean).join(', ')}
                     </div>
                   )}
 
                   {/* Domestic-only shipping warning */}
                   {!isOwn && !listing.international_shipping && seller?.country && currentUser?.country && seller.country !== currentUser.country && (
-                    <div className="mx-6 mt-2 px-3 py-2.5 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800 flex items-start gap-2" data-testid="domestic-only-warning">
-                      <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
-                      <span>This seller only ships domestically ({seller.country}). International shipping is not available for this listing.</span>
+                    <div className="mx-4 mt-1 px-2 py-1.5 bg-amber-50 border border-amber-200 rounded-lg text-[10px] text-amber-800 flex items-start gap-1.5" data-testid="domestic-only-warning">
+                      <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" />
+                      <span>Domestic shipping only ({seller.country}).</span>
                     </div>
                   )}
 
                   {/* CTA buttons */}
                   {!isOwn && !listing.is_test_listing && (
-                    <div className="px-6 pt-4 pb-3 space-y-2.5" data-testid="listing-cta-section">
+                    <div className="px-4 pt-2 pb-2 space-y-1.5" data-testid="listing-cta-section">
                       {isBuyNow && (
                         <Button onClick={handleBuyNowClick}
-                          className="w-full h-12 rounded-full bg-[#E8A820] hover:bg-[#d49a1a] text-[#2A1A06] text-base font-semibold shadow-md shadow-amber-200/40 active:scale-[0.97] transition-all duration-150"
+                          className="w-full h-10 rounded-full bg-[#E8A820] hover:bg-[#d49a1a] text-[#2A1A06] text-sm font-semibold shadow-md shadow-amber-200/40 active:scale-[0.97] transition-all duration-150"
                           data-testid="listing-buy-now-btn">
                           buy now · ${listing.price}
                         </Button>
@@ -670,49 +670,49 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                       {isMakeOffer && !showOfferInput && (
                         <>
                           <Button onClick={handleBuyNowClick}
-                            className="w-full h-12 rounded-full bg-[#E8A820] hover:bg-[#d49a1a] text-[#2A1A06] text-base font-semibold shadow-md shadow-amber-200/40 active:scale-[0.97] transition-all duration-150"
+                            className="w-full h-10 rounded-full bg-[#E8A820] hover:bg-[#d49a1a] text-[#2A1A06] text-sm font-semibold shadow-md shadow-amber-200/40 active:scale-[0.97] transition-all duration-150"
                             data-testid="listing-buy-asking-btn">
                             buy now · ${listing.price}
                           </Button>
                           <Button onClick={() => setShowOfferInput(true)} variant="outline"
-                            className="w-full h-11 rounded-full border-[#E8A820]/60 text-[#996012] hover:bg-amber-50/60 text-sm font-medium active:scale-[0.97] transition-all duration-150"
+                            className="w-full h-9 rounded-full border-[#E8A820]/60 text-[#996012] hover:bg-amber-50/60 text-xs font-medium active:scale-[0.97] transition-all duration-150"
                             data-testid="listing-make-offer-btn">
                             make an offer
                           </Button>
                         </>
                       )}
                       {isMakeOffer && showOfferInput && (
-                        <div className="space-y-2">
-                          <div className="flex gap-2">
+                        <div className="space-y-1.5">
+                          <div className="flex gap-1.5">
                             <div className="relative flex-1">
-                              <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                              <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
                               <Input type="number" placeholder="Your offer" value={offerAmount}
                                 onChange={(e) => setOfferAmount(e.target.value)}
-                                className="pl-8 border-amber-300" autoFocus
+                                className="pl-7 border-amber-300 h-9 text-sm" autoFocus
                                 data-testid="listing-offer-input" />
                             </div>
                             <Button onClick={handleOfferSubmit} disabled={!offerAmount}
-                              className="bg-[#E8A820] hover:bg-[#d49a1a] text-[#2A1A06] rounded-full px-6"
+                              className="bg-[#E8A820] hover:bg-[#d49a1a] text-[#2A1A06] rounded-full px-4 h-9 text-sm"
                               data-testid="listing-submit-offer-btn">
                               send
                             </Button>
                           </div>
-                          <button onClick={() => setShowOfferInput(false)} className="text-xs text-muted-foreground hover:text-stone-600">cancel</button>
+                          <button onClick={() => setShowOfferInput(false)} className="text-[10px] text-muted-foreground hover:text-stone-600">cancel</button>
                         </div>
                       )}
                       {isTrade && (
                         <Button onClick={handleTradeClick}
-                          className="w-full h-12 rounded-full bg-[#E8A820] hover:bg-[#d49a1a] text-[#2A1A06] text-base font-semibold shadow-md shadow-amber-200/40 active:scale-[0.97] transition-all duration-150"
+                          className="w-full h-10 rounded-full bg-[#E8A820] hover:bg-[#d49a1a] text-[#2A1A06] text-sm font-semibold shadow-md shadow-amber-200/40 active:scale-[0.97] transition-all duration-150"
                           data-testid="listing-trade-btn">
                           propose a trade
                         </Button>
                       )}
                       {!isTrade && onProposeTrade && (
                         <Button onClick={handleTradeClick} variant="outline"
-                          className="w-full h-10 rounded-full border-amber-300/60 text-[#996012] hover:bg-amber-50/60 text-sm active:scale-[0.97] transition-all duration-150"
+                          className="w-full h-8 rounded-full border-amber-300/60 text-[#996012] hover:bg-amber-50/60 text-xs active:scale-[0.97] transition-all duration-150"
                           data-testid="listing-trade-instead-btn">
-                          <ArrowRightLeft className="w-4 h-4 mr-2" />
-                          propose a trade instead
+                          <ArrowRightLeft className="w-3 h-3 mr-1.5" />
+                          propose trade instead
                         </Button>
                       )}
                     </div>

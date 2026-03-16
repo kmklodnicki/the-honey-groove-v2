@@ -38,6 +38,7 @@ import CountryGateModal from '../components/CountryGateModal';
 import { countryFlag } from '../utils/countryFlag';
 import { TitleBadge } from '../components/TitleBadge';
 import { TagPill, ListingTypeBadge } from '../components/PostCards';
+import { useVariantModal } from '../context/VariantModalContext';
 import confetti from 'canvas-confetti';
 import { ISOCard, CommunityISOCard, ActiveTradeCard, ListingCard, STATUS_CONFIG } from '../components/honeypot/HoneypotCards';
 
@@ -53,6 +54,7 @@ const IsoMatchCover = ({ coverUrl }) => {
 const ISOPage = () => {
   usePageTitle('The Honeypot');
   const { user, token, API } = useAuth();
+  const { openVariantModal } = useVariantModal();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('shop');
   const [isos, setIsos] = useState([]);
@@ -821,7 +823,12 @@ const ISOPage = () => {
               {communityIsos.map(iso => (
                 <CommunityISOCard key={iso.id} iso={iso} onHaveThis={(l) => {
                   navigate(`/messages?to=${l.user_id}&contextType=iso&contextRecord=${encodeURIComponent(l.artist + ' · ' + l.album)}&contextAction=I have this`);
-                }} />
+                }} onOpenVariant={iso.discogs_id ? () => openVariantModal({
+                  artist: iso.artist, album: iso.album,
+                  variant: iso.color_variant || 'Standard',
+                  discogs_id: iso.discogs_id, cover_url: iso.cover_url,
+                }) : null} />
+              ))}
               ))}
             </div>
           )}

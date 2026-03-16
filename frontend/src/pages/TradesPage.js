@@ -564,18 +564,18 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-heading flex items-center gap-2">
-            <ArrowRightLeft className="w-5 h-5 text-honey" /> Trade Details
+          <DialogTitle className="font-heading flex items-center gap-2 text-sm">
+            <ArrowRightLeft className="w-4 h-4 text-honey" /> Trade Details
           </DialogTitle>
           <DialogDescription className="flex items-center gap-2">
             <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${sc.color}`}>{sc.label}</span>
-            <span className="text-xs">{formatDistanceToNow(new Date(trade.created_at), { addSuffix: true })}</span>
+            <span className="text-[10px]">{formatDistanceToNow(new Date(trade.created_at), { addSuffix: true })}</span>
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 pt-2">
+        <div className="space-y-3 pt-1">
           {/* Trade Timeline */}
           {['ACCEPTED','HOLD_PENDING','SHIPPING','CONFIRMING','COMPLETED'].includes(trade.status) && (
             <TradeTimeline trade={trade} />
@@ -583,28 +583,28 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
 
           {/* Expired notice */}
           {trade.status === 'EXPIRED' && (
-            <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 text-center" data-testid="trade-expired-notice">
-              <XCircle className="w-6 h-6 text-orange-500 mx-auto mb-1" />
-              <p className="text-sm font-medium text-orange-700">Trade Expired</p>
-              <p className="text-xs text-orange-600 mt-1">
+            <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 text-center" data-testid="trade-expired-notice">
+              <XCircle className="w-4 h-4 text-orange-500 mx-auto mb-1" />
+              <p className="text-xs font-medium text-orange-700">Trade Expired</p>
+              <p className="text-[10px] text-orange-600 mt-0.5">
                 {trade.expired_reason === 'shipping_deadline'
-                  ? 'This trade expired because one or both parties did not ship within the 3-day deadline. Mutual holds have been released.'
+                  ? 'Expired — one or both parties did not ship in time.'
                   : 'This trade has expired.'}
               </p>
             </div>
           )}
 
           {/* THE EXCHANGE */}
-          <div className="bg-honey/5 rounded-xl p-4">
-            <p className="text-xs font-medium text-muted-foreground mb-3">THE EXCHANGE</p>
-            <div className="flex items-start gap-3">
+          <div className="bg-honey/5 rounded-xl p-3">
+            <p className="text-[10px] font-medium text-muted-foreground mb-2">THE EXCHANGE</p>
+            <div className="flex items-start gap-2">
               <div className="flex-1">
-                <p className="text-[10px] text-muted-foreground mb-1">@{trade.initiator?.username} {isInitiator ? '(you)' : ''} offers</p>
+                <p className="text-[9px] text-muted-foreground mb-0.5">@{trade.initiator?.username} {isInitiator ? '(you)' : ''} offers</p>
                 <RecordDetail record={trade.offered_record} condition={trade.offered_condition} photoUrls={trade.offered_photo_urls} />
               </div>
-              <div className="flex flex-col items-center pt-6"><ArrowRightLeft className="w-5 h-5 text-honey" /></div>
+              <div className="flex flex-col items-center pt-5"><ArrowRightLeft className="w-4 h-4 text-honey" /></div>
               <div className="flex-1">
-                <p className="text-[10px] text-muted-foreground mb-1">@{trade.responder?.username} {!isInitiator ? '(you)' : ''} has</p>
+                <p className="text-[9px] text-muted-foreground mb-0.5">@{trade.responder?.username} {!isInitiator ? '(you)' : ''} has</p>
                 <RecordDetail record={trade.listing_record} condition={trade.listing_record?.condition} photoUrls={trade.listing_record?.photo_urls} />
               </div>
             </div>
@@ -612,25 +612,22 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
 
           {/* Boot info */}
           {trade.boot_amount > 0 && (
-            <div className="bg-honey/8 border border-honey/20 rounded-xl p-4" data-testid="trade-sweetener-detail">
-              <div className="flex items-center gap-2 mb-2">
-                <DollarSign className="w-5 h-5 text-honey-amber" />
-                <span className="font-heading text-lg">${trade.boot_amount} Sweetener</span>
+            <div className="bg-honey/8 border border-honey/20 rounded-xl p-3" data-testid="trade-sweetener-detail">
+              <div className="flex items-center gap-1.5 mb-1">
+                <DollarSign className="w-4 h-4 text-honey-amber" />
+                <span className="font-heading text-sm">${trade.boot_amount} Sweetener</span>
               </div>
-              <p className="text-sm text-muted-foreground mb-1">
+              <p className="text-xs text-muted-foreground mb-0.5">
                 {trade.boot_direction === 'TO_SELLER'
                   ? <><strong>@{trade.initiator?.username}</strong> pays <strong>@{trade.responder?.username}</strong></>
                   : <><strong>@{trade.responder?.username}</strong> pays <strong>@{trade.initiator?.username}</strong></>
                 }
               </p>
-              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                <span>{feePct}% platform fee (${(trade.boot_amount * feePct / 100).toFixed(2)})</span>
+              <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                <span>{feePct}% fee (${(trade.boot_amount * feePct / 100).toFixed(2)})</span>
                 <span>&middot;</span>
-                <span>Recipient gets ${(trade.boot_amount * (100 - feePct) / 100).toFixed(2)}</span>
+                <span>Gets ${(trade.boot_amount * (100 - feePct) / 100).toFixed(2)}</span>
               </div>
-              <p className="text-[10px] text-muted-foreground mt-2 italic">
-                A sweetener is cash added to one side of a trade to balance value. Charged via Stripe when both parties accept. {feePct}% platform fee applies.
-              </p>
             </div>
           )}
 

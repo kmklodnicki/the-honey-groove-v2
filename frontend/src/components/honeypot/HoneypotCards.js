@@ -106,10 +106,19 @@ export const ISOCard = ({ iso, isOwn, onMarkFound, onDelete, onSetPriceAlert, on
   );
 };
 
-export const CommunityISOCard = ({ iso, onHaveThis }) => (
-  <Card className="p-4 border-honey/30 hover:shadow-md transition-all" data-testid={`community-iso-${iso.id}`}>
+export const CommunityISOCard = ({ iso, onHaveThis, onOpenVariant }) => (
+  <Card className={`p-4 border-honey/30 hover:shadow-md transition-all ${onOpenVariant ? 'cursor-pointer' : ''}`} data-testid={`community-iso-${iso.id}`} onClick={onOpenVariant || undefined}>
     <div className="flex items-start gap-3">
-      <AlbumArt src={iso.cover_url} alt={`${iso.artist} ${iso.album} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow" isUnofficial={iso.is_unofficial} />
+      <div className="relative shrink-0">
+        <AlbumArt src={iso.cover_url} alt={`${iso.artist} ${iso.album} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow" isUnofficial={iso.is_unofficial} />
+        {iso.color_variant && (
+          <div className="absolute -bottom-1 -right-1 max-w-[90%] truncate uppercase text-[7px] font-bold px-1.5 py-px rounded-full z-[5]"
+            style={{ background: 'rgba(255,215,0,0.25)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', color: '#000', border: '1.5px solid #DAA520' }}
+            data-testid={`community-iso-variant-${iso.id}`}>
+            {iso.color_variant}
+          </div>
+        )}
+      </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <h4 className="font-heading text-base truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{iso.album}</h4>
@@ -117,7 +126,7 @@ export const CommunityISOCard = ({ iso, onHaveThis }) => (
         </div>
         <p className="text-sm text-muted-foreground">{iso.artist}{iso.year ? ` (${iso.year})` : ''}</p>
         {iso.user && (
-          <Link to={`/profile/${iso.user.username}`} className="text-xs text-honey-amber hover:underline">@{iso.user.username}</Link>
+          <Link to={`/profile/${iso.user.username}`} onClick={e => e.stopPropagation()} className="text-xs text-honey-amber hover:underline">@{iso.user.username}</Link>
         )}
         <div className="flex flex-wrap gap-1.5 mt-1">
           {(iso.tags || []).map(tag => <span key={tag} className="px-2 py-0.5 rounded-full text-xs bg-honey/20 text-honey-amber font-medium">{tag}</span>)}
@@ -128,7 +137,7 @@ export const CommunityISOCard = ({ iso, onHaveThis }) => (
           {(iso.target_price_min || iso.target_price_max) && <span>Budget: {iso.target_price_min ? `$${iso.target_price_min}` : ''}{iso.target_price_min && iso.target_price_max ? ' – ' : ''}{iso.target_price_max ? (iso.target_price_min ? `$${iso.target_price_max}` : `up to $${iso.target_price_max}`) : ''}</span>}
         </div>
       </div>
-      <Button size="sm" className="bg-[#E8A820]/15 text-[#C8861A] hover:bg-[#E8A820]/25 rounded-full gap-1 shrink-0" onClick={() => onHaveThis(iso)} data-testid={`i-have-this-${iso.id}`}>
+      <Button size="sm" className="bg-[#E8A820]/15 text-[#C8861A] hover:bg-[#E8A820]/25 rounded-full gap-1 shrink-0" onClick={(e) => { e.stopPropagation(); onHaveThis(iso); }} data-testid={`i-have-this-${iso.id}`}>
         <MessageSquare className="w-3 h-3" /> I have this
       </Button>
     </div>

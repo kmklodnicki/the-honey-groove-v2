@@ -281,7 +281,8 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
               )}
               {post.user?.title_label && <TitleBadge label={post.user.title_label} />}
               <PostTypeBadge type={post.post_type} mood={post.mood} />
-              <FormatPill format={post.record_format || post.record?.format || (post.post_type !== 'DISCUSSION' && post.post_type !== 'POLL' ? 'Vinyl' : null)} />
+              {post.record_id && <FormatPill format={post.record_format || post.record?.format || 'Vinyl'} />}
+              {!post.record_id && post.bundle_records?.length > 0 && <FormatPill format={post.bundle_records[0]?.format || 'Vinyl'} />}
               {post.is_new_feature && <NewFeatureBadge />}
             </div>
             <p className="text-xs text-muted-foreground">{timeAgo}</p>

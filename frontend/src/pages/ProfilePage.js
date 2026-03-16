@@ -222,6 +222,7 @@ const ProfilePage = () => {
   const { data: swrRecordValues } = useAPI(!profileLocked ? `/valuation/record-values/${username}` : null);
   const [followLoading, setFollowLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('collection');
+  const [profileFormatFilter, setProfileFormatFilter] = useState('all');
   const [followListType, setFollowListType] = useState(null);
   const [stripeStatus, setStripeStatus] = useState(null);
   const [stripeLoading, setStripeLoading] = useState(false);
@@ -1030,6 +1031,43 @@ const ProfilePage = () => {
 
         {/* Collection Tab */}
         <TabsContent value="collection">
+          {/* Format filter pills */}
+          {records.length > 0 && (
+            <div className="flex items-center gap-1.5 mb-3" data-testid="profile-format-filter-bar">
+              {[
+                { value: 'all', label: 'All' },
+                { value: 'vinyl', label: 'Vinyl' },
+                { value: 'cd', label: 'CD' },
+                { value: 'cassette', label: 'Cassette' },
+              ].map(({ value, label }) => {
+                const count = value === 'all' ? records.length : records.filter(r => {
+                  const fmt = (r.format || 'Vinyl').toLowerCase();
+                  if (value === 'vinyl') return fmt.includes('vinyl') || fmt === 'lp' || (!fmt.includes('cd') && !fmt.includes('cassette'));
+                  if (value === 'cd') return fmt.includes('cd');
+                  if (value === 'cassette') return fmt.includes('cassette');
+                  return false;
+                }).length;
+                const active = profileFormatFilter === value;
+                return (
+                  <button
+                    key={value}
+                    onClick={() => setProfileFormatFilter(value)}
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all border ${
+                      active
+                        ? 'bg-vinyl-black text-white border-vinyl-black shadow-sm'
+                        : 'bg-white text-stone-500 border-stone-200 hover:border-stone-300'
+                    }`}
+                    data-testid={`profile-format-${value}`}
+                  >
+                    {value === 'vinyl' && <Disc className="w-2.5 h-2.5" />}
+                    {label}
+                    <span className={`text-[9px] ${active ? 'text-white/70' : 'text-stone-400'}`}>({count})</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
           {/* Show Common Records toggle (BLOCK 39.1) */}
           {!isOwnProfile && tasteMatch && records.length > 0 && (
             <div className="flex items-center gap-2 mb-4">
@@ -1055,7 +1093,18 @@ const ProfilePage = () => {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {records
-                .filter(record => !showCommonOnly || (tasteMatch?.shared_reality || []).some(s => s.discogs_id && s.discogs_id === record.discogs_id))
+                .filter(record => {
+                  // Format filter
+                  if (profileFormatFilter !== 'all') {
+                    const fmt = (record.format || 'Vinyl').toLowerCase();
+                    if (profileFormatFilter === 'vinyl' && !(fmt.includes('vinyl') || fmt === 'lp' || (!fmt.includes('cd') && !fmt.includes('cassette')))) return false;
+                    if (profileFormatFilter === 'cd' && !fmt.includes('cd')) return false;
+                    if (profileFormatFilter === 'cassette' && !fmt.includes('cassette')) return false;
+                  }
+                  // Common filter
+                  if (showCommonOnly && !(tasteMatch?.shared_reality || []).some(s => s.discogs_id && s.discogs_id === record.discogs_id)) return false;
+                  return true;
+                })
                 .map(record => {
                   const isCommon = !isOwnProfile && tasteMatch && (tasteMatch.shared_reality || []).some(s => s.discogs_id && s.discogs_id === record.discogs_id);
                   return (
