@@ -51,8 +51,9 @@ The HoneyGroove is a vinyl record social platform where users can track collecti
 - **BLOCK-313: ISO Modal Variant Art Fix** — Implemented batch cover resolution: collects all variants missing `cover_url`, does batch lookups against `records` and `discogs_releases` collections, falls back to Discogs API (max 3 calls). Added cover fallback to variant release endpoint and ISO post builder. Zero blank covers in search results.
 - **Variant Page Market/Community Fallbacks** — When variant has no market data or 0 community stats, falls back to: (1) sibling releases with same `master_id` in local DB, (2) Discogs master release's `main_release`, (3) master's `lowest_price` estimate. Added `get_discogs_master()` function for `/masters/{id}` endpoint. Fixed slug resolution with fuzzy regex to match titles with special chars (e.g., "Speak Now (Taylor's Version)"). Added `scarcity` and `community` sections to slug endpoint response.
 
-### Session 10 (2026-03-17) — BLOCK-314
+### Session 10 (2026-03-17) — BLOCK-314, BLOCK-317
 - **P0 Fix: Mobile Messaging Input Hidden by Keyboard** — Thread container used `height: 100vh` which doesn't account for mobile virtual keyboard. Fix: Added `visualViewport` API hook that listens to `resize` events and dynamically sets container height to `${visualViewport.height}px`. Added `pb-20 md:pb-4` to prevent mobile bottom nav from overlapping the input. Messages auto-scroll to bottom on viewport resize.
+- **P0 Fix: Discogs Sync Connection Aborted (BLOCK-317)** — All Discogs API calls (search, release, master, market data, collection import) now use a shared `_discogs_session()` with `urllib3.Retry` (3 retries, 1.5s exponential backoff, retry on 429/500/502/503/504). Collection import `_run_discogs_import` has an additional `_fetch_with_retry` wrapper (3 retries, 2s linear backoff) for page-level connection errors. User-facing error messages are now friendly instead of raw Python exceptions.
 
 ## Backlog
 

@@ -28,7 +28,7 @@ router = APIRouter()
 @router.get("/discogs/search", response_model=List[DiscogsSearchResult])
 async def search_records_discogs(q: str = Query(..., min_length=2), user: Dict = Depends(require_auth)):
     import re as _re
-    import requests as _req
+    from database import _discogs_session
 
     words = q.strip().split()
     words_lower = [w.lower().rstrip('!?.') for w in words]
@@ -100,7 +100,8 @@ async def search_records_discogs(q: str = Query(..., min_length=2), user: Dict =
             if _DISCOGS_TOKEN:
                 params["token"] = _DISCOGS_TOKEN
             try:
-                resp = _req.get("https://api.discogs.com/database/search", params=params, headers=headers, timeout=8)
+                _s = _discogs_session()
+                resp = _s.get("https://api.discogs.com/database/search", params=params, headers=headers, timeout=15)
                 if resp.status_code == 200:
                     raw = resp.json().get("results", [])
                     if raw:
@@ -1682,6 +1683,23 @@ async def get_import_progress(user: Dict = Depends(require_auth)):
 
 async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret: str, discogs_username: str, auth_type: str = "oauth"):
     """Background task to import Discogs collection"""
+    MAX_PAGE_RETRIES = 3
+
+    def _fetch_with_retry(session, url, params, attempt_label=""):
+        """Fetch a URL with retries for connection errors."""
+        last_err = None
+        for attempt in range(1, MAX_PAGE_RETRIES + 1):
+            try:
+                resp = session.get(url, params=params, timeout=30)
+                return resp
+            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+                last_err = e
+                wait = attempt * 2
+                logger.warning(f"Discogs fetch retry {attempt}/{MAX_PAGE_RETRIES} for {attempt_label}: {type(e).__name__}. Waiting {wait}s...")
+                import time
+                time.sleep(wait)
+        raise last_err
+
     try:
         # Set up the appropriate session based on auth type
         if auth_type == "personal_token":
@@ -1701,7 +1719,7 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
         
         # First, get the total count from folder 0 (All)
         first_page_url = f"{DISCOGS_API_BASE}/users/{discogs_username}/collection/folders/0/releases"
-        first_resp = session.get(first_page_url, params={"page": 1, "per_page": 100})
+        first_resp = _fetch_with_retry(session, first_page_url, {"page": 1, "per_page": 100}, f"page 1 for {discogs_username}")
         
         if first_resp.status_code == 403:
             import_progress[user_id]["status"] = "error"
@@ -1740,17 +1758,19 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
             else:
                 await asyncio.sleep(1.1)
             
-            page_resp = session.get(
-                first_page_url,
-                params={"page": page, "per_page": 100}
-            )
+            try:
+                page_resp = _fetch_with_retry(session, first_page_url, {"page": page, "per_page": 100}, f"page {page}/{total_pages}")
+            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+                logger.error(f"Failed to fetch page {page} after retries: {e}")
+                continue
             
             if page_resp.status_code == 429:
                 await asyncio.sleep(60)
-                page_resp = session.get(
-                    first_page_url,
-                    params={"page": page, "per_page": 100}
-                )
+                try:
+                    page_resp = _fetch_with_retry(session, first_page_url, {"page": page, "per_page": 100}, f"page {page} (rate-limit retry)")
+                except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+                    logger.error(f"Failed to fetch page {page} after rate-limit wait: {e}")
+                    continue
             
             if page_resp.status_code == 200:
                 page_data = page_resp.json()
@@ -1934,7 +1954,13 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
     except Exception as e:
         logger.error(f"Discogs import failed for {user_id}: {e}")
         import_progress[user_id]["status"] = "error"
-        import_progress[user_id]["error_message"] = str(e)
+        err_str = str(e)
+        if "Connection aborted" in err_str or "RemoteDisconnected" in err_str or "ConnectionError" in err_str:
+            import_progress[user_id]["error_message"] = "Discogs connection was interrupted. Please try again in a moment."
+        elif "Timeout" in err_str or "timed out" in err_str:
+            import_progress[user_id]["error_message"] = "Discogs took too long to respond. Please try again."
+        else:
+            import_progress[user_id]["error_message"] = "Import failed. Please try again."
 
 
 async def _post_import_value_refresh(user_id: str, discogs_ids: list):

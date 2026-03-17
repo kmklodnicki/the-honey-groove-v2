@@ -11,6 +11,9 @@ import jwt
 import uuid
 import logging
 import requests
+import time as _time
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 from datetime import datetime, timezone, timedelta
 
 ROOT_DIR = Path(__file__).parent
@@ -68,6 +71,21 @@ DISCOGS_REQUEST_TOKEN_URL = "https://api.discogs.com/oauth/request_token"
 DISCOGS_AUTHORIZE_URL = "https://www.discogs.com/oauth/authorize"
 DISCOGS_ACCESS_TOKEN_URL = "https://api.discogs.com/oauth/access_token"
 DISCOGS_API_BASE = "https://api.discogs.com"
+
+def _discogs_session() -> requests.Session:
+    """Create a requests session with automatic retry for transient errors."""
+    s = requests.Session()
+    retries = Retry(
+        total=3,
+        backoff_factor=1.5,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["GET", "POST"],
+        raise_on_status=False,
+    )
+    adapter = HTTPAdapter(max_retries=retries)
+    s.mount("https://", adapter)
+    s.mount("http://", adapter)
+    return s
 
 # In-memory stores
 oauth_request_tokens: Dict[str, str] = {}
@@ -231,7 +249,8 @@ def search_discogs(query: str, search_type: str = "release") -> List[Dict]:
     if DISCOGS_TOKEN:
         params["token"] = DISCOGS_TOKEN
     try:
-        resp = requests.get(f"{DISCOGS_API_BASE}/database/search", params=params, headers=headers, timeout=10)
+        s = _discogs_session()
+        resp = s.get(f"{DISCOGS_API_BASE}/database/search", params=params, headers=headers, timeout=15)
         if resp.status_code == 200:
             results = []
             for item in resp.json().get("results", []):
@@ -295,7 +314,8 @@ def get_discogs_master_versions(master_id: int, page: int = 1, per_page: int = 1
     if DISCOGS_TOKEN:
         params["token"] = DISCOGS_TOKEN
     try:
-        resp = requests.get(
+        s = _discogs_session()
+        resp = s.get(
             f"{DISCOGS_API_BASE}/masters/{master_id}/versions",
             params=params, headers=headers, timeout=15
         )
@@ -313,9 +333,10 @@ def get_discogs_master(master_id: int) -> Optional[Dict]:
     if DISCOGS_TOKEN:
         params["token"] = DISCOGS_TOKEN
     try:
-        resp = requests.get(
+        s = _discogs_session()
+        resp = s.get(
             f"{DISCOGS_API_BASE}/masters/{master_id}",
-            params=params, headers=headers, timeout=10
+            params=params, headers=headers, timeout=15
         )
         if resp.status_code == 200:
             data = resp.json()
@@ -343,16 +364,16 @@ def get_discogs_release(release_id: int) -> Optional[Dict]:
     params = {}
     if DISCOGS_TOKEN:
         params["token"] = DISCOGS_TOKEN
+    s = _discogs_session()
     max_retries = 2
     for attempt in range(max_retries + 1):
         try:
-            resp = requests.get(f"{DISCOGS_API_BASE}/releases/{release_id}", params=params, headers=headers, timeout=10)
+            resp = s.get(f"{DISCOGS_API_BASE}/releases/{release_id}", params=params, headers=headers, timeout=15)
             if resp.status_code == 429:
                 wait = int(resp.headers.get("Retry-After", 2))
                 logger.warning(f"Discogs rate limit hit for {release_id}, retry {attempt+1}/{max_retries} after {wait}s")
                 if attempt < max_retries:
-                    import time
-                    time.sleep(wait)
+                    _time.sleep(wait)
                     continue
                 return None
             if resp.status_code != 200:
@@ -399,9 +420,9 @@ def get_discogs_release(release_id: int) -> Optional[Dict]:
             # Fallback: fetch master_id image if release has none
             if not cover_url and data.get("master_id"):
                 try:
-                    master_resp = requests.get(
+                    master_resp = s.get(
                         f"{DISCOGS_API_BASE}/masters/{data['master_id']}",
-                        params=params, headers=headers, timeout=10
+                        params=params, headers=headers, timeout=15
                     )
                     if master_resp.status_code == 200:
                         master_data = master_resp.json()
@@ -448,9 +469,10 @@ def get_discogs_market_data(release_id: int) -> Optional[Dict]:
     if DISCOGS_TOKEN:
         params["token"] = DISCOGS_TOKEN
     try:
-        resp = requests.get(
+        s = _discogs_session()
+        resp = s.get(
             f"{DISCOGS_API_BASE}/marketplace/price_suggestions/{release_id}",
-            params=params, headers=headers, timeout=10
+            params=params, headers=headers, timeout=15
         )
         if resp.status_code == 200:
             data = resp.json()
@@ -468,9 +490,9 @@ def get_discogs_market_data(release_id: int) -> Optional[Dict]:
                     "high_value": round(float(high), 2) if high else round(float(median) * 1.5, 2),
                 }
         # Fallback: try community stats from release endpoint
-        resp2 = requests.get(
+        resp2 = s.get(
             f"{DISCOGS_API_BASE}/releases/{release_id}",
-            params=params, headers=headers, timeout=10
+            params=params, headers=headers, timeout=15
         )
         if resp2.status_code == 200:
             data2 = resp2.json()
