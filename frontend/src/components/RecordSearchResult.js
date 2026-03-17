@@ -1,11 +1,21 @@
 import React, { useState } from 'react';
 import { Disc } from 'lucide-react';
+import { API as SHARED_API } from '../utils/apiBase';
 
-// Simple image component for search results — no caching, no WebP, no proxy chain.
-// Discogs CDN images are reliable when loaded as plain <img> tags.
+const proxyDiscogsUrl = (src) => {
+  if (!src || typeof src !== 'string') return src;
+  if (src.includes('discogs') || src.includes('discogs.com')) {
+    return `${SHARED_API}/image-proxy?url=${encodeURIComponent(src)}`;
+  }
+  return src;
+};
+
+// Simple image component for search results — proxies Discogs CDN images
+// to avoid hotlink blocking on production domains.
 const SearchResultImage = ({ src, alt, className }) => {
   const [failed, setFailed] = useState(false);
-  if (failed || !src) {
+  const proxiedSrc = proxyDiscogsUrl(src);
+  if (failed || !proxiedSrc) {
     return (
       <div className={`${className} rounded-md bg-stone-100 flex items-center justify-center`}>
         <Disc className="w-5 h-5 text-stone-400" />
@@ -14,10 +24,12 @@ const SearchResultImage = ({ src, alt, className }) => {
   }
   return (
     <img
-      src={src}
+      src={proxiedSrc}
       alt={alt}
       className={`${className} rounded-md object-cover shadow-sm`}
       loading="eager"
+      referrerPolicy="no-referrer"
+      crossOrigin="anonymous"
       onError={() => setFailed(true)}
       data-testid="search-result-img"
     />
