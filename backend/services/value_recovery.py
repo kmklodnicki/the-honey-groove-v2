@@ -41,6 +41,7 @@ def _get_market_data_with_oauth(release_id: int, oauth_token: str, oauth_token_s
     session.headers.update({"User-Agent": DISCOGS_USER_AGENT})
 
     try:
+        # Strategy 1: price_suggestions — ONLY trust USD values
         resp = session.get(
             f"{DISCOGS_API_BASE}/marketplace/price_suggestions/{release_id}",
             timeout=10,
@@ -50,17 +51,19 @@ def _get_market_data_with_oauth(release_id: int, oauth_token: str, oauth_token_s
             vinyl_price = data.get("Very Good Plus (VG+)", {})
             mint_price = data.get("Mint (M)", {})
             good_price = data.get("Good Plus (G+)", {})
-            median = vinyl_price.get("value") or mint_price.get("value")
-            low = good_price.get("value") or vinyl_price.get("value")
-            high = mint_price.get("value") or vinyl_price.get("value")
-            if median is not None:
-                return {
-                    "median_value": round(float(median), 2),
-                    "low_value": round(float(low), 2) if low else round(float(median) * 0.6, 2),
-                    "high_value": round(float(high), 2) if high else round(float(median) * 1.5, 2),
-                }
+            currency = vinyl_price.get("currency") or mint_price.get("currency") or good_price.get("currency", "USD")
+            if currency == "USD":
+                median = vinyl_price.get("value") or mint_price.get("value")
+                low = good_price.get("value") or vinyl_price.get("value")
+                high = mint_price.get("value") or vinyl_price.get("value")
+                if median is not None and median > 0.5:
+                    return {
+                        "median_value": round(float(median), 2),
+                        "low_value": round(float(low), 2) if low else round(float(median) * 0.6, 2),
+                        "high_value": round(float(high), 2) if high else round(float(median) * 1.5, 2),
+                    }
 
-        # Fallback: release endpoint for lowest_price
+        # Strategy 2: release endpoint lowest_price (always USD)
         resp2 = session.get(
             f"{DISCOGS_API_BASE}/releases/{release_id}",
             timeout=10,
@@ -68,11 +71,12 @@ def _get_market_data_with_oauth(release_id: int, oauth_token: str, oauth_token_s
         if resp2.status_code == 200:
             data2 = resp2.json()
             lowest = data2.get("lowest_price")
-            if lowest is not None:
+            if lowest is not None and float(lowest) > 0.5:
+                lp = float(lowest)
                 return {
-                    "median_value": round(float(lowest) * 1.3, 2),
-                    "low_value": round(float(lowest), 2),
-                    "high_value": round(float(lowest) * 2, 2),
+                    "median_value": round(lp * 2.0, 2),
+                    "low_value": round(lp, 2),
+                    "high_value": round(lp * 3.5, 2),
                 }
     except Exception as e:
         logger.warning(f"OAuth market data fetch failed for {release_id}: {e}")
