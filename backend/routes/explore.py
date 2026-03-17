@@ -27,7 +27,7 @@ router = APIRouter()
 
 @router.get("/buzzing")
 async def get_buzzing_records(current_user: Optional[Dict] = Depends(get_current_user), limit: int = 10):
-    """Get trending/buzzing records based on recent spins"""
+    """Get trending/buzzing records based on recent spins, deduplicated by album."""
     hidden_ids = await get_hidden_user_ids()
     week_ago = (datetime.now(timezone.utc) - timedelta(days=7)).isoformat()
     
@@ -37,16 +37,25 @@ async def get_buzzing_records(current_user: Optional[Dict] = Depends(get_current
     
     pipeline = [
         {"$match": match_filter},
-        {"$group": {"_id": "$record_id", "spin_count": {"$sum": 1}}},
-        {"$sort": {"spin_count": -1}},
-        {"$limit": limit},
+        # Join with records to get album metadata
         {"$lookup": {
             "from": "records",
-            "localField": "_id",
+            "localField": "record_id",
             "foreignField": "id",
             "as": "record"
         }},
         {"$unwind": "$record"},
+        # Group by discogs_id (preferred) or fallback to lowercase artist+title
+        {"$group": {
+            "_id": {"$ifNull": [
+                "$record.discogs_id",
+                {"$concat": [{"$toLower": {"$ifNull": ["$record.artist", ""]}}, "|||", {"$toLower": {"$ifNull": ["$record.title", ""]}}]}
+            ]},
+            "spin_count": {"$sum": 1},
+            "record": {"$first": "$record"},
+        }},
+        {"$sort": {"spin_count": -1}},
+        {"$limit": limit},
         {"$replaceRoot": {
             "newRoot": {
                 "$mergeObjects": ["$record", {"trending_spins": "$spin_count"}]
