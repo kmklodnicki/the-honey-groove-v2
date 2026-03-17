@@ -4,7 +4,7 @@ from typing import List, Optional, Dict, Any
 from datetime import datetime, timezone, timedelta
 import uuid
 
-from database import db, require_auth, get_current_user, security, logger, create_notification
+from database import db, require_auth, get_current_user, security, logger, create_notification, should_send_notification_email
 from services.email_service import send_email_fire_and_forget
 import templates.emails as email_tpl
 from database import hash_password, verify_password, create_token, search_discogs, get_discogs_release
@@ -93,6 +93,14 @@ async def create_or_get_conversation(data: DMCreate, user: Dict = Depends(requir
     notif_title = "Message request" if is_request else "New message"
     await create_notification(data.recipient_id, notif_type, notif_title,
         f"@{user['username']} sent you a message", {"conversation_id": conv["id"], "sender_id": user["id"]})
+
+    # Send email for initial DM (respects user email preferences)
+    if recipient.get("email") and await should_send_notification_email(data.recipient_id, sender_id=user["id"]):
+        context = ""
+        if data.context:
+            context = data.context.get("record_name", "")
+        tpl = email_tpl.new_dm(recipient.get("username", ""), user.get("username", ""), context, f"{FRONTEND_URL}/messages")
+        await send_email_fire_and_forget(recipient["email"], tpl["subject"], tpl["html"])
 
     return {"conversation_id": conv["id"], "status": conv.get("status", "active")}
 
@@ -205,7 +213,7 @@ async def send_message(conversation_id: str, data: DMSend, user: Dict = Depends(
     if other_id:
         await create_notification(other_id[0], "dm", "New message",
             f"@{user['username']}: {data.text[:60]}", {"conversation_id": conversation_id, "sender_id": user["id"]})
-        # Email only on first unread message in this conversation
+        # Email only on first unread message in this conversation (respects user email preferences)
         unread_count = await db.dm_messages.count_documents({
             "conversation_id": conversation_id,
             "sender_id": user["id"],
@@ -213,7 +221,7 @@ async def send_message(conversation_id: str, data: DMSend, user: Dict = Depends(
         })
         if unread_count == 1:
             other_user = await db.users.find_one({"id": other_id[0]}, {"_id": 0})
-            if other_user and other_user.get("email"):
+            if other_user and other_user.get("email") and await should_send_notification_email(other_id[0], sender_id=user["id"]):
                 context = conv.get("context_record", "")
                 tpl = email_tpl.new_dm(other_user.get("username", ""), user.get("username", ""), context, f"{FRONTEND_URL}/messages")
                 await send_email_fire_and_forget(other_user["email"], tpl["subject"], tpl["html"])

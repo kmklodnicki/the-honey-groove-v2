@@ -106,6 +106,9 @@ The HoneyGroove is a vinyl record social platform where users can track collecti
 ### Session 12 (2026-03-17) — P0 Bug Fix: Nectar Page Trending Duplicates
 - **P0 Fix: Duplicate Trending Items on Nectar Page** — Root cause: `/api/explore/trending` grouped spins by `record_id`, so different users' copies of the same album (different pressings with different `discogs_id` values like Lover baby pink vs standard) appeared as separate trending entries. Fix: Rewrote aggregation pipeline to `$lookup` records and group by lowercase `artist|||title` composite key, merging all pressings/variants into one entry with combined spin counts. Applied same fix to `/api/buzzing` endpoint which had the same issue with `discogs_id`-based grouping.
 
+### Session 12 (2026-03-17) — DM Email Notifications
+- **DM Email Notifications with Opt-Out** — Two gaps fixed: (1) `create_or_get_conversation` (first message in a new DM thread) was not sending any email to the recipient. Now sends via `new_dm` email template. (2) `send_message` (follow-up messages) was sending emails without checking user preferences. Both endpoints now gate emails through `should_send_notification_email()`, respecting the user's `notification_pref_email` setting (all/following/none). The "first unread only" throttle remains to avoid email spam for rapid messages.
+
 ## Backlog
 
 ### P1 - Upcoming
