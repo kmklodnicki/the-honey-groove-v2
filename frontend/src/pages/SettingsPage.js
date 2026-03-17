@@ -705,12 +705,12 @@ const SettingsPage = () => {
             <p className="text-sm font-semibold text-vinyl-black mb-1.5 flex items-center gap-1.5">
               <Mail className="w-3.5 h-3.5 text-amber-600" /> Email Notifications
             </p>
-            <p className="text-xs text-muted-foreground mb-2">Weekly Wax, order confirmations, and account emails are always delivered.</p>
+            <p className="text-xs text-muted-foreground mb-2">Order confirmations and account emails are always delivered. Weekly Wax is controlled separately below.</p>
             <div className="space-y-1.5">
               {[
                 { value: 'all', label: 'All Activity Emails', desc: 'New followers, ISO matches, listing alerts' },
                 { value: 'following', label: 'Only People I Follow', desc: 'Only emails triggered by people you follow' },
-                { value: 'none', label: 'None', desc: 'No activity emails (Weekly Wax & orders still sent)' },
+                { value: 'none', label: 'None', desc: 'No activity emails (order confirmations still sent)' },
               ].map(opt => (
                 <button
                   key={opt.value}
