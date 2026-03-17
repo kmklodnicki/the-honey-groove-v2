@@ -950,18 +950,6 @@ const CollectionPage = () => {
                   <span className="hidden sm:inline">Duplicates</span>
                   <span className="sm:hidden">Dupes</span>
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleHardRefreshImages}
-                  disabled={imageRefreshing}
-                  className="gap-1 shrink-0 flex-1 sm:flex-none h-9 text-xs sm:text-sm px-2 sm:px-3 border-honey/50 text-stone-600"
-                  data-testid="hard-refresh-images-btn"
-                >
-                  {imageRefreshing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ImageDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-                  <span className="hidden sm:inline">Fix Images</span>
-                  <span className="sm:hidden">Fix</span>
-                </Button>
               </div>
             </>
           )}
