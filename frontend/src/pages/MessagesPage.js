@@ -28,6 +28,7 @@ const MessagesPage = () => {
   const [msgTab, setMsgTab] = useState('inbox');
   const [acceptLoading, setAcceptLoading] = useState(false);
   const [viewHeight, setViewHeight] = useState(window.visualViewport?.height || window.innerHeight);
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
   const messagesEndRef = useRef(null);
   const pollRef = useRef(null);
   const threadRef = useRef(null);
@@ -37,7 +38,12 @@ const MessagesPage = () => {
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
-    const onResize = () => setViewHeight(vv.height);
+    const fullHeight = window.innerHeight;
+    const onResize = () => {
+      setViewHeight(vv.height);
+      // Keyboard is open if viewport shrunk significantly
+      setKeyboardOpen(vv.height < fullHeight * 0.75);
+    };
     vv.addEventListener('resize', onResize);
     return () => vv.removeEventListener('resize', onResize);
   }, []);
@@ -157,8 +163,14 @@ const MessagesPage = () => {
 
   // Thread view
   if (activeConv) {
+    // On mobile: subtract bottom nav height (h-16 = 64px + safe-area) unless keyboard is open
+    const isMobile = window.innerWidth < 768;
+    const threadStyle = isMobile && !keyboardOpen
+      ? { height: `calc(${viewHeight}px - 4rem - env(safe-area-inset-bottom, 0px))` }
+      : { height: `${viewHeight}px` };
+
     return (
-      <div className="max-w-2xl mx-auto px-4 pt-16 md:pt-28 pb-20 md:pb-4 flex flex-col" style={{ height: `${viewHeight}px` }} ref={threadRef} data-testid="dm-thread">
+      <div className="max-w-2xl mx-auto px-4 pt-16 md:pt-28 pb-2 md:pb-4 flex flex-col" style={threadStyle} ref={threadRef} data-testid="dm-thread">
         {/* Thread header */}
         <div className="flex items-center gap-3 mb-4">
           <Button variant="ghost" size="sm" onClick={() => { setActiveConv(null); setMessages([]); setConvContext(null); fetchConversations(); }} data-testid="dm-back-btn">
