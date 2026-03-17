@@ -19,7 +19,11 @@ export function prefetchImage(url) {
     link.rel = 'prefetch';
     link.as = 'image';
     link.href = url;
-    link.crossOrigin = 'anonymous';
+    // Only set crossOrigin for same-origin or CORS-enabled URLs
+    // Discogs CDN doesn't support CORS, so skip it for those
+    if (!url.includes('discogs.com')) {
+      link.crossOrigin = 'anonymous';
+    }
     document.head.appendChild(link);
   };
 
