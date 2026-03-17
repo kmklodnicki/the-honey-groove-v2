@@ -85,6 +85,11 @@ The HoneyGroove is a vinyl record social platform where users can track collecti
 - **Mood Grid Uniform Sizing** — Set fixed `height: 36px` and `whitespace-nowrap` on mood buttons in `ComposerBar.js`. All 12 labels now fit on a single line on both desktop and mobile.
 - **Spin Party Emoji** — Changed from 🩩 (U+1FA69) to 🪩 disco ball (U+1FAA9).
 
+### Session 11 (2026-03-17) — Bug Fixes: Feed Count, Caption Width, Global BackToTop
+- **New Posts Count Bug** — Fixed inflated "X new posts" count by deduplicating the queue against both the queue AND displayed posts via `postsRef.current`. Both WebSocket and polling fallback now check against the feed.
+- **Mobile Caption Width** — Moved `post.caption` in `NowSpinningCard` outside the inner flex row (album art + metadata), so captions span the full card width instead of being squeezed between album art and user photo.
+- **Global BackToTop** — Moved `BackToTop` component from individual pages to `App.js` (global). Appears on all pages. Mobile: `bottom: 80px` (above nav), Desktop: `bottom: 24px`.
+
 ## Backlog
 
 ### P1 - Upcoming
