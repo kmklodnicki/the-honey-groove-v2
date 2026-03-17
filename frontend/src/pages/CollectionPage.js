@@ -1494,7 +1494,7 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
           )}
 
           {/* BLOCK 487: Smart Valuation Hierarchy — Market > Personal > Dash */}
-          {value > 0 ? (
+          {Math.round(value || 0) >= 1 ? (
             <div className="absolute top-2 right-2 px-2.5 py-1 rounded-full font-bold text-sm z-[5] transition-transform duration-200 hover:scale-110 cursor-default"
               style={{ background: 'rgba(255, 191, 0, 0.85)', color: '#000' }}
               data-testid={`record-value-${record.id}`}>
@@ -1625,8 +1625,8 @@ const WishlistCard = ({ item, onPromote, onAddToCollection, onDelete }) => (
           </div>
         )}
 
-        {/* Value badge — glassy prominent OR "Set Value" button */}
-        {item.median_value > 0 ? (
+        {/* Value badge — glassy prominent OR "Pending" for unvalued/bad-currency records */}
+        {Math.round(item.median_value || 0) >= 1 ? (
           <div className="absolute top-2 right-2 px-2.5 py-1 rounded-full font-black z-[5]"
             style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', fontSize: '18px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
             data-testid={`median-value-${item.id}`}>

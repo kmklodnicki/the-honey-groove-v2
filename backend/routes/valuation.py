@@ -595,8 +595,7 @@ async def get_record_values(user: Dict = Depends(require_auth)):
     result = {}
     for r in records:
         v = val_map.get(r.get("discogs_id"))
-        # Skip sub-$1 values — these are almost certainly wrong currency conversions (e.g. JPY→USD)
-        if v and v >= 1:
+        if v:
             result[r["id"]] = v
     return result
 
@@ -621,7 +620,7 @@ async def get_user_record_values(username: str):
     result = {}
     for r in records:
         v = val_map.get(r.get("discogs_id"))
-        if v and v >= 1:
+        if v:
             result[r["id"]] = v
     return result
 
