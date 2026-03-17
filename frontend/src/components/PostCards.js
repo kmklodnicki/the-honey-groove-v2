@@ -425,7 +425,7 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
             </div>
           )}
         </div>
-        {post.caption && <p className="text-sm mt-2"><MentionText text={post.caption} /></p>}
+        {post.caption && <p className="text-sm mt-2 whitespace-pre-wrap"><MentionText text={post.caption} /></p>}
         {post.photo_url && (
           <PhotoLightbox
             photos={[post.photo_url]}
@@ -454,7 +454,7 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
       <div data-testid="haul-bundle-card">
         <div className="flex justify-between items-start gap-3">
           <div className={`${photoUrl ? 'flex-1 mr-2' : 'w-full'} min-w-0`}>
-            {post.caption && <p className="text-sm mb-3"><MentionText text={post.caption} /></p>}
+            {post.caption && <p className="text-sm mb-3 whitespace-pre-wrap"><MentionText text={post.caption} /></p>}
             <div className="grid grid-cols-4 gap-1.5">
               {shown.map((item, idx) => (
                 <AlbumLink key={idx} record={item} onAlbumClick={onAlbumClick}>
@@ -550,14 +550,14 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
               <div className="flex-1 min-w-0">
                 <p className="font-heading text-lg leading-tight truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{title}</p>
                 <p className="text-sm text-muted-foreground truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{artist}</p>
-                {post.caption && <p className="text-sm mt-2"><MentionText text={post.caption} /></p>}
+                {post.caption && <p className="text-sm mt-2 whitespace-pre-wrap"><MentionText text={post.caption} /></p>}
               </div>
             </div>
           </div>
         </AlbumLink>
       );
     }
-    return <p className="text-sm"><MentionText text={post.caption} /></p>;
+    return <p className="text-sm whitespace-pre-wrap"><MentionText text={post.caption} /></p>;
   }
 
   const items = haul.items || [];
@@ -566,7 +566,7 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
       <div className="flex justify-between items-start gap-3">
         <div className={`${photoUrl ? 'flex-1 mr-2' : 'w-full'} min-w-0`}>
           {haul.store_name && <p className="text-sm text-amber-700 font-medium mb-2">📍 {haul.store_name}</p>}
-          {post.caption && <p className="text-sm mb-3"><MentionText text={post.caption} /></p>}
+          {post.caption && <p className="text-sm mb-3 whitespace-pre-wrap"><MentionText text={post.caption} /></p>}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {items.slice(0, 6).map((item, idx) => (
               <AlbumLink key={idx} record={item} onAlbumClick={onAlbumClick}>
@@ -629,7 +629,7 @@ const ISOCard = ({ post, onAlbumClick }) => {
   };
 
   if (!iso && !post.cover_url && !post.record_title && !post.caption) {
-    return <p className="text-sm"><MentionText text={post.caption} /></p>;
+    return <p className="text-sm whitespace-pre-wrap"><MentionText text={post.caption} /></p>;
   }
 
   const isoRecord = { title: isoData.album, artist: isoData.artist, discogs_id: isoData.discogs_id, cover_url: isoData.cover_url, year: isoData.year };
@@ -677,7 +677,7 @@ const ISOCard = ({ post, onAlbumClick }) => {
             {isoData.is_unofficial && <UnofficialPill variant="inline" className="mt-1.5" />}
           </div>
         </div>
-        {post.caption && <p className="text-sm mt-3"><MentionText text={post.caption} /></p>}
+        {post.caption && <p className="text-sm mt-3 whitespace-pre-wrap"><MentionText text={post.caption} /></p>}
         {isoData.is_unofficial && (
           <div className="mt-3 px-3 py-2 rounded-lg text-[11px] leading-relaxed" style={{ background: 'rgba(74,74,74,0.05)', border: '1px solid rgba(74,74,74,0.1)', color: '#6B6B6B' }} data-testid="unofficial-disclaimer">
             <span className="font-semibold text-stone-500">NOTICE:</span> This release is identified as &lsquo;Unofficial.&rsquo; The Hive facilitates the secondary market trade of these items for archival and collection purposes.
@@ -770,7 +770,7 @@ const VinylMoodCard = ({ post, onAlbumClick, imgPriority }) => {
           </div>
         </AlbumLink>
       )}
-      {post.caption && <p className="text-sm mt-2"><MentionText text={post.caption} /></p>}
+      {post.caption && <p className="text-sm mt-2 whitespace-pre-wrap"><MentionText text={post.caption} /></p>}
     </div>
   );
 };
@@ -814,7 +814,7 @@ const DailyPromptPostCard = ({ post, imgPriority, onAlbumClick }) => {
       </div>
     </div>
     </AlbumLink>
-    {post.caption && <p className="text-sm mt-3"><MentionText text={post.caption} /></p>}
+    {post.caption && <p className="text-sm mt-3 whitespace-pre-wrap"><MentionText text={post.caption} /></p>}
   </div>
   );
 };
@@ -1074,7 +1074,7 @@ const PostCardBody = ({ post, onAlbumClick, imgPriority }) => {
                 </div>
               </AlbumLink>
             )}
-            <p className="text-sm"><MentionText text={post.caption || post.content} /></p>
+            <p className="text-sm whitespace-pre-wrap"><MentionText text={post.caption || post.content} /></p>
           </div>
         );
       }
