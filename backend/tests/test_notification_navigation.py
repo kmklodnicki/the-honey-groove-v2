@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 if not BASE_URL:
-    BASE_URL = "https://record-search-ui.preview.emergentagent.com"
+    BASE_URL = "https://honeygroove-messages.preview.emergentagent.com"
 
 # Test user credentials
 TEST_EMAIL = "testnotif73@test.com"

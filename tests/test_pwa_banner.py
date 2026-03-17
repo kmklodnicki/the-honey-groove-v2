@@ -6,7 +6,7 @@ import asyncio
 import os
 from playwright.async_api import async_playwright
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://record-search-ui.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://honeygroove-messages.preview.emergentagent.com')
 TEST_EMAIL = 'kmklodnicki@gmail.com'
 TEST_PASSWORD = 'HoneyGroove2026!'
 
