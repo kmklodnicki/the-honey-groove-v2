@@ -67,6 +67,13 @@ The HoneyGroove is a vinyl record social platform where users can track collecti
 ### Session 11 (2026-03-17) — BLOCK-324 V2
 - **Spotify Deep-Linking on Hive Feed Cards** — Extended Spotify integration to NOW_SPINNING cards on the Hive feed. Passed `discogsId={record.discogs_id || post.discogs_id}` to `StreamingLinks` in `NowSpinningCard`. Fixed React hooks rules-of-hooks violation by moving `useAuth`, `useState`, `useEffect` above the early return in `StreamingLinks`. All 8 Spotify icons on feed now show green (#1DB954) with direct album links.
 
+### Session 11 (2026-03-17) — BLOCK-325: Resilience & Error Handling
+- **Landing Page Text Fix** — Replaced sparkle emoji with "Limited" text in 4th stat card. Updated subtext to "Founding Members. Join the hive." (capitalized J, removed duplicate "Limited").
+- **Global Error Boundary** — New `ErrorBoundary.js` wraps the entire app. Catches React rendering crashes and displays a turntable "Don't skip a beat!" screen with "Try Again" button instead of a white error page.
+- **API Error Gate (500/503 Interceptor)** — New `ApiErrorGate.js` adds an axios response interceptor. After 2+ consecutive 500/503 errors, shows the turntable error screen. Resets on successful responses to avoid false alarms.
+- **Maintenance Mode** — Admin toggle in Platform Settings (`/admin?section=settings`). Backend: `POST /api/admin/maintenance` with `{enabled: bool}` stores state in `platform_settings` collection. Public `GET /api/status/maintenance` endpoint (no auth). Frontend: `MaintenanceGate` component checks status on load and every 60s. Admin users bypass the gate. Shows "Tuning up the grooves" screen to all non-admin users.
+- **Static 500.html** — Pure HTML/CSS turntable error page at `/frontend/public/500.html` for Vercel-level outages when the server is completely unresponsive.
+
 ## Backlog
 
 ### P1 - Upcoming
@@ -90,13 +97,12 @@ The HoneyGroove is a vinyl record social platform where users can track collecti
 - `/app/backend/routes/collection.py` — Discogs search with structured fallback, image upload, process_image
 - `/app/backend/routes/hive.py` — Feed, build_post_response, composer endpoints
 - `/app/backend/routes/honeypot.py` — Listings, trades
-- `/app/frontend/src/pages/ISOPage.js` — ISO modal with DiscogsPicker and View More button
-- `/app/frontend/src/components/RecordSearchResult.js` — Search result card with priority AlbumArt
-- `/app/frontend/src/components/AlbumArt.js` — Image component with eager/lazy loading
+- `/app/backend/routes/admin.py` — Admin settings, maintenance mode, invite codes
+- `/app/frontend/src/components/ErrorBoundary.js` — React error boundary with TurntableErrorScreen
+- `/app/frontend/src/components/ApiErrorGate.js` — ApiErrorGate (500/503) and MaintenanceGate
+- `/app/frontend/src/components/PostCards.js` — Feed cards, StreamingLinks with Spotify deep-linking
 - `/app/frontend/src/components/ComposerBar.js` — Post creation UI
-- `/app/frontend/src/components/PostCards.js` — Feed cards
-- `/app/frontend/src/utils/imageUpload.js` — File validation
-- `/app/frontend/src/utils/imageUrl.js` — URL rewriting for legacy images
+- `/app/frontend/public/500.html` — Static Vercel fallback page
 
 ## Test Credentials
 - Admin: kmklodnicki@gmail.com / HoneyGroove2026
