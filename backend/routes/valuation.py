@@ -1109,7 +1109,7 @@ async def get_pulse(discogs_id: int, user: Dict = Depends(require_auth)):
     from database import DISCOGS_TOKEN, DISCOGS_USER_AGENT, DISCOGS_API_BASE
     import requests as _req
     headers_d = {"User-Agent": DISCOGS_USER_AGENT}
-    params_d = {}
+    params_d = {"curr_abbr": "USD"}
     if DISCOGS_TOKEN:
         params_d["token"] = DISCOGS_TOKEN
 
@@ -1124,20 +1124,16 @@ async def get_pulse(discogs_id: int, user: Dict = Depends(require_auth)):
     }
 
     try:
-        # Get price suggestions (based on recent sold data)
+        # Get price suggestions (forced USD)
         resp = _req.get(
             f"{DISCOGS_API_BASE}/marketplace/price_suggestions/{discogs_id}",
             params=params_d, headers=headers_d, timeout=10
         )
         if resp.status_code == 200:
             data = resp.json()
-            # Count how many condition tiers have data (proxy for sold comps confidence)
             conditions_with_data = sum(1 for v in data.values() if isinstance(v, dict) and v.get("value"))
             vgp = data.get("Very Good Plus (VG+)", {})
-            mint_p = data.get("Mint (M)", {})
-            # Check currency — only trust USD values (non-USD e.g. JPY returns wrong numbers)
-            currency = vgp.get("currency") or mint_p.get("currency", "USD")
-            median_val = vgp.get("value") if currency == "USD" else None
+            median_val = vgp.get("value")
             if median_val and float(median_val) > 0.5:
                 median_val = round(float(median_val), 2)
                 pulse_doc["median"] = median_val
@@ -1154,24 +1150,6 @@ async def get_pulse(discogs_id: int, user: Dict = Depends(require_auth)):
                     num_sold = community.get("have", 0)
                 pulse_doc["num_sold"] = num_sold
                 pulse_doc["confident"] = conditions_with_data >= 3 and num_sold >= 5
-            elif not median_val or currency != "USD":
-                # Non-USD or no price_suggestions — fallback to lowest_price from release endpoint
-                resp2 = _req.get(
-                    f"{DISCOGS_API_BASE}/releases/{discogs_id}",
-                    params=params_d, headers=headers_d, timeout=10
-                )
-                if resp2.status_code == 200:
-                    r2data = resp2.json()
-                    lowest = r2data.get("lowest_price")
-                    community = r2data.get("community", {})
-                    num_sold = community.get("have", 0)
-                    if lowest and float(lowest) > 0.5:
-                        lp = float(lowest)
-                        pulse_doc["median"] = round(lp * 2.0, 2)
-                        pulse_doc["hot_low"] = round(lp * 1.5, 2)
-                        pulse_doc["hot_high"] = round(lp * 3.5, 2)
-                        pulse_doc["num_sold"] = num_sold
-                        pulse_doc["confident"] = num_sold >= 5
     except Exception as e:
         logger.error(f"Pulse fetch error for {discogs_id}: {e}")
 

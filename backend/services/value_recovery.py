@@ -28,7 +28,7 @@ BATCH_PAUSE_SECS = 1.2  # Discogs rate limit: ~60 req/min
 # ──────────────────── OAuth-Aware Fetch ────────────────────
 
 def _get_market_data_with_oauth(release_id: int, oauth_token: str, oauth_token_secret: str) -> Optional[Dict]:
-    """Fetch Discogs market data using OAuth 1.0a tokens for better rate limits."""
+    """Fetch Discogs market data using OAuth 1.0a tokens. Forces USD via curr_abbr."""
     from requests_oauthlib import OAuth1Session
 
     session = OAuth1Session(
@@ -41,9 +41,9 @@ def _get_market_data_with_oauth(release_id: int, oauth_token: str, oauth_token_s
     session.headers.update({"User-Agent": DISCOGS_USER_AGENT})
 
     try:
-        # Strategy 1: price_suggestions — ONLY trust USD values
         resp = session.get(
             f"{DISCOGS_API_BASE}/marketplace/price_suggestions/{release_id}",
+            params={"curr_abbr": "USD"},
             timeout=10,
         )
         if resp.status_code == 200:
@@ -51,21 +51,19 @@ def _get_market_data_with_oauth(release_id: int, oauth_token: str, oauth_token_s
             vinyl_price = data.get("Very Good Plus (VG+)", {})
             mint_price = data.get("Mint (M)", {})
             good_price = data.get("Good Plus (G+)", {})
-            currency = vinyl_price.get("currency") or mint_price.get("currency") or good_price.get("currency", "USD")
-            if currency == "USD":
-                median = vinyl_price.get("value") or mint_price.get("value")
-                low = good_price.get("value") or vinyl_price.get("value")
-                high = mint_price.get("value") or vinyl_price.get("value")
-                if median is not None and median > 0.5:
-                    return {
-                        "median_value": round(float(median), 2),
-                        "low_value": round(float(low), 2) if low else round(float(median) * 0.6, 2),
-                        "high_value": round(float(high), 2) if high else round(float(median) * 1.5, 2),
-                    }
+            median = vinyl_price.get("value") or mint_price.get("value")
+            low = good_price.get("value") or vinyl_price.get("value")
+            high = mint_price.get("value") or vinyl_price.get("value")
+            if median is not None and float(median) > 0.5:
+                return {
+                    "median_value": round(float(median), 2),
+                    "low_value": round(float(low), 2) if low else round(float(median) * 0.6, 2),
+                    "high_value": round(float(high), 2) if high else round(float(median) * 1.5, 2),
+                }
 
-        # Strategy 2: release endpoint lowest_price (always USD)
         resp2 = session.get(
             f"{DISCOGS_API_BASE}/releases/{release_id}",
+            params={"curr_abbr": "USD"},
             timeout=10,
         )
         if resp2.status_code == 200:
