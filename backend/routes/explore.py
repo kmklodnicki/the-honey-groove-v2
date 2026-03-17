@@ -725,15 +725,15 @@ async def get_crown_jewels(limit: int = 12, user: Dict = Depends(require_auth)):
             logger.warning(f"Crown jewels Discogs fetch error for {discogs_id}: {e}")
             continue
 
-    # Dual-criteria sort: combine scarcity score + value score
-    # Scarcity score: lower have = higher score (invert)
-    # Value score: higher median = higher score
+    # Value-dominant sort: prioritize most expensive items
+    # Value score: higher value = higher score (primary)
+    # Scarcity score: lower have = higher score (secondary tiebreaker)
     max_have = max((j["have"] for j in jewels), default=1) or 1
-    max_val = max((j["estimated_value"] for j in jewels), default=1) or 1
+    max_val = max((max(j["estimated_value"], j.get("high_value") or 0) for j in jewels), default=1) or 1
     for j in jewels:
         scarcity_score = 1 - (j["have"] / max_have)  # 0..1
-        value_score = j["estimated_value"] / max_val   # 0..1
-        j["elite_score"] = (scarcity_score * 0.5) + (value_score * 0.5)
+        value_score = max(j["estimated_value"], j.get("high_value") or 0) / max_val   # 0..1
+        j["elite_score"] = (scarcity_score * 0.2) + (value_score * 0.8)
 
     jewels.sort(key=lambda x: x.get("elite_score", 0), reverse=True)
     jewels = jewels[:limit]

@@ -61,6 +61,7 @@ The HoneyGroove is a vinyl record social platform where users can track collecti
 - **BLOCK-315: Recovery Engine — Japanese Pressing Fix** — Added `derive_variant_tag()` utility that auto-generates variant tags from country ("Japanese Pressing", "German Pressing", etc.) and format descriptions ("Club Edition", "Remastered", "Limited Edition", etc.) when no color/variant info exists. Applied across all 4 Discogs parsing paths: `search_discogs()`, `get_discogs_release()`, collection search parser, and import flow. Also applied to slug-based and ID-based variant page endpoints.
 - **BLOCK-321: Silent Spin & Deletion Decoupling** — Added `post_to_hive` toggle (default ON) to Now Spinning modal. When OFF, spin logs to Vault only (no feed post). Decoupled post deletion from spin deletion — deleting a Hive post preserves the spin in Vault history.
 - **BLOCK-322: Enforce Intentional Posting** — "Spin Now" buttons in the Vault now open the ComposerBar Now Spinning modal (with record pre-selected) instead of auto-posting blank cards. Users must intentionally compose their post with context/comments.
+- **BLOCK-316: Crown Jewels — Value Over Rarity** — Hidden Gems (Vault) now sorted by `max(high_value, median_value)` instead of just median, putting truly most expensive items first. Crown Jewels (Explore) re-weighted from 50/50 (scarcity/value) to 80/20 (value-dominant), also using `max(high, estimated)` for value scoring.
 
 ## Backlog
 

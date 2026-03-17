@@ -565,7 +565,7 @@ async def get_hidden_gems(user: Dict = Depends(require_auth), limit: int = 3):
                 "low_value": v.get("low_value"),
                 "high_value": v.get("high_value"),
             })
-    enriched.sort(key=lambda x: x["median_value"], reverse=True)
+    enriched.sort(key=lambda x: max(x.get("high_value") or 0, x["median_value"]), reverse=True)
     return enriched[:limit]
 
 
@@ -652,7 +652,7 @@ async def get_user_hidden_gems(username: str, limit: int = 3):
                 "year": r.get("year"), "median_value": v["median_value"],
                 "low_value": v.get("low_value"), "high_value": v.get("high_value"),
             })
-    enriched.sort(key=lambda x: x["median_value"], reverse=True)
+    enriched.sort(key=lambda x: max(x.get("high_value") or 0, x["median_value"]), reverse=True)
     return enriched[:limit]
 
 
