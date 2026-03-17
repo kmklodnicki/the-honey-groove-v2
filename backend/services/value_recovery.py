@@ -123,10 +123,10 @@ async def run_value_recovery(user_id: str):
         }
         return
 
-    # 3. Find which are already cached and fresh
+    # 3. Find which are already cached and fresh (sub-$1 values are treated as stale — likely wrong currency data)
     cutoff = (datetime.now(timezone.utc) - timedelta(hours=CACHE_TTL_HOURS)).isoformat()
     fresh_docs = await db.collection_values.find(
-        {"release_id": {"$in": discogs_ids}, "last_updated": {"$gte": cutoff}, "median_value": {"$gt": 0}},
+        {"release_id": {"$in": discogs_ids}, "last_updated": {"$gte": cutoff}, "median_value": {"$gte": 1}},
         {"_id": 0, "release_id": 1},
     ).to_list(10000)
     fresh_ids = {d["release_id"] for d in fresh_docs}
