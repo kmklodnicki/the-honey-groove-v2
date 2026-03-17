@@ -90,6 +90,13 @@ The HoneyGroove is a vinyl record social platform where users can track collecti
 - **Mobile Caption Width** — Moved `post.caption` in `NowSpinningCard` outside the inner flex row (album art + metadata), so captions span the full card width instead of being squeezed between album art and user photo.
 - **Global BackToTop** — Moved `BackToTop` component from individual pages to `App.js` (global). Appears on all pages. Mobile: `bottom: 80px` (above nav), Desktop: `bottom: 24px`.
 
+### Session 11 (2026-03-17) — Bug Fixes Batch
+- **Release Note on Profile** — Added `handlePostToggleReleaseNote` handler and `onToggleReleaseNote` prop to ProfilePage's PostCard. Admin can now promote/demote release notes from profile view.
+- **FOUNDER Badge** — Added `is_founder: bool` to UserResponse model and DB (`katie` user). Golden gradient "FOUNDER" pill badge on profile page for `is_founder` users.
+- **Messages Back Arrow** — Added `/messages` to `hasInlineBack` in App.js so the global back button doesn't duplicate the thread's own back arrow.
+- **Message Input Position** — Reduced thread top padding from `pt-16` to `pt-14` and tightened header/list margins on mobile for more visible content area.
+- **Daily Prompt Clickable** — Wrapped `DailyPromptPostCard` album art section in `AlbumLink` with `onAlbumClick`. Clicking the prompt's album area now opens the variant modal.
+
 ## Backlog
 
 ### P1 - Upcoming
