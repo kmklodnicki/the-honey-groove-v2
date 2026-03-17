@@ -846,7 +846,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
               <Input placeholder="Record store, thrift shop, eBay..." value={haulStoreName} onChange={e => setHaulStoreName(e.target.value)} className="border-honey/50" data-testid="haul-store-input" />
             </div>
             {/* 3. Caption */}
-            <MentionTextarea placeholder="I just got..." value={haulCaption} onChange={setHaulCaption} className="border-honey/50 resize-none" rows={2} data-testid="haul-caption-input" />
+            <MentionTextarea placeholder="I just got..." value={haulCaption} onChange={setHaulCaption} className="border-honey/50 resize-none" rows={2} data-testid="haul-caption-input" style={{ borderColor: 'rgba(200,134,26,0.5)' }} />
             {/* 4. Photo Upload */}
             <div className="px-1">
               <input 
@@ -881,7 +881,10 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
           </div>
           {/* Sticky footer — always visible */}
           <div className="shrink-0 px-6 max-sm:px-4 pt-3 max-sm:pt-2 border-t border-honey/15 bg-white" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 0.75rem))' }}>
-            <Button onClick={submitNewHaul} disabled={submitting || haulItems.length === 0 || !haulCaption.trim()} className="w-full bg-amber-100 text-amber-800 hover:bg-amber-200 rounded-full" data-testid="haul-submit-btn">
+            <Button onClick={() => {
+              if (!haulCaption.trim()) { toast.error('a caption is required to post your haul'); return; }
+              submitNewHaul();
+            }} disabled={submitting || haulItems.length === 0} className="w-full bg-amber-100 text-amber-800 hover:bg-amber-200 rounded-full" data-testid="haul-submit-btn">
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Package className="w-4 h-4 mr-2" />}
               Post Haul ({haulItems.length} record{haulItems.length !== 1 ? 's' : ''})
             </Button>
