@@ -8,6 +8,7 @@ import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Skeleton } from '../components/ui/skeleton';
 import LoadingHoney from '../components/LoadingHoney';
+import ComposerBar from '../components/ComposerBar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import {
   Select,
@@ -572,22 +573,12 @@ const CollectionPage = () => {
     fetchData();
   }, [fetchData]);
 
-  const handleLogSpin = async (record) => {
-    setSpinningRecordId(record.id);
-    try {
-      const resp = await axios.post(`${API}/spins`, 
-        { record_id: record.id },
-        { headers: { Authorization: `Bearer ${token}` }}
-      );
-      toast.success(`now spinning: ${record.title}`);
-      // BLOCK 520: Increment local spin count immediately for real-time update
-      setRecords(prev => prev.map(r => r.id === record.id ? { ...r, spin_count: (r.spin_count || 0) + 1 } : r));
-      fetchData(); // Also refresh from server
-    } catch (error) {
-      console.error('Failed to log spin:', error);
-      toast.error('could not log spin. try again.');
-    } finally {
-      setSpinningRecordId(null);
+  const composerRef = useRef(null);
+
+  const handleLogSpin = (record) => {
+    // BLOCK-322: Force the Now Spinning modal instead of auto-posting
+    if (composerRef.current) {
+      composerRef.current.openSpinWithRecord(record);
     }
   };
 
@@ -1108,7 +1099,7 @@ const CollectionPage = () => {
                     onDelete={handleDeleteRecord}
                     onMoveToWishlist={requestMoveToDreaming}
                     onMoveToISO={requestMoveToHunt}
-                    isSpinning={spinningRecordId === record.id}
+                    isSpinning={false}
                     value={valueMap[record.id]}
                     selectMode={selectMode}
                     isSelected={selectedIds.has(record.id)}
@@ -1347,6 +1338,7 @@ const CollectionPage = () => {
           )}
         </DialogContent>
       </Dialog>
+      <ComposerBar ref={composerRef} onPostCreated={fetchData} records={records} />
     </div>
   );
 };

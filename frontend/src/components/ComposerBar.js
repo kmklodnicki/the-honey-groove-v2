@@ -34,7 +34,7 @@ const MOOD_CONFIG = {
 };
 const MOOD_KEYS = Object.keys(MOOD_CONFIG);
 
-const ComposerBar = ({ onPostCreated, records = [] }) => {
+const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
   const { token, API, user } = useAuth();
   const isAdmin = user?.is_admin === true;
   const [activeModal, setActiveModal] = useState(null);
@@ -57,6 +57,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
   const [spinTrackSearch, setSpinTrackSearch] = useState('');
   const [spinTracksFetched, setSpinTracksFetched] = useState(false);
   const [spinTrackManual, setSpinTrackManual] = useState(false);
+  const [postToHive, setPostToHive] = useState(true);
 
   // New Haul
   const [haulStoreName, setHaulStoreName] = useState('');
@@ -110,6 +111,7 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     setSpinRecordId(''); setSpinTrack(''); setSpinCaption(''); setSpinMood('');
     setSpinSearch(''); setSpinSearchResults([]); setSpinSelectedRecord(null);
     setSpinTracks([]); setSpinTracksLoading(false); setSpinTrackDropdownOpen(false); setSpinTrackSearch(''); setSpinTracksFetched(false);
+    setPostToHive(true);
     setHaulStoreName(''); setHaulCaption(''); setHaulItems([]); setHaulSearch(''); setHaulResults([]);
     setIsoArtist(''); setIsoAlbum(''); setIsoPressing(''); setIsoCondition('');
     setIsoPriceMin(''); setIsoPriceMax(''); setIsoCaption('');
@@ -120,6 +122,17 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
     setPostPhoto(null); setPostPhotoPreview(null);
     if (postPhotoInputRef.current) postPhotoInputRef.current.value = '';
   };
+
+  // Expose openSpinWithRecord to parent components via ref
+  React.useImperativeHandle(ref, () => ({
+    openSpinWithRecord: (record) => {
+      resetAll();
+      setSpinRecordId(record.id);
+      setSpinSelectedRecord(record);
+      setActiveModal('NOW_SPINNING');
+    }
+  }));
+
   const handlePhotoSelect = async (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -388,9 +401,10 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
         caption: spinCaption || null,
         mood: spinMood || null,
         photo_url: photoUrl,
+        post_to_hive: postToHive,
       }, { headers: { Authorization: `Bearer ${token}` }});
-      toast.success('now spinning posted.');
-      trackEvent('now_spinning_posted');
+      toast.success(postToHive ? 'now spinning posted.' : 'spin logged silently.');
+      trackEvent(postToHive ? 'now_spinning_posted' : 'silent_spin_logged');
       closeModal(); onPostCreated?.();
     } catch (err) { toast.error(err.response?.data?.detail || 'Failed to post'); }
     finally { setSubmitting(false); }
@@ -748,14 +762,30 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
 
           {/* Sticky footer — always visible */}
           <div className="shrink-0 px-6 max-sm:px-4 pt-3 max-sm:pt-2 border-t border-honey/15 bg-white" style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom, 0.75rem))' }}>
-            <Button onClick={submitNowSpinning} disabled={submitting || !spinRecordId || !spinCaption.trim()}
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-medium text-stone-600 flex items-center gap-1.5 cursor-pointer" data-testid="post-to-hive-label">
+                Post to Hive
+              </label>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={postToHive}
+                onClick={() => setPostToHive(!postToHive)}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${postToHive ? 'bg-amber-500' : 'bg-stone-300'}`}
+                data-testid="post-to-hive-toggle"
+              >
+                <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${postToHive ? 'translate-x-4' : 'translate-x-0.5'}`} />
+              </button>
+            </div>
+            {!postToHive && <p className="text-xs text-stone-400 mb-2" data-testid="silent-spin-hint">Silent spin — logged to your Vault only, not posted to the feed.</p>}
+            <Button onClick={submitNowSpinning} disabled={submitting || !spinRecordId || (!postToHive ? false : !spinCaption.trim())}
               className="w-full rounded-full transition-all duration-200 text-white"
               style={{ background: 'linear-gradient(135deg, #FFB300, #FFA000)' }}
               data-testid="spin-submit-btn">
               {submitting ? (
                 <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Spinning your record...</>
               ) : (
-                <><Disc className="w-4 h-4 mr-2" /> {spinMood ? `Post Now Spinning · ${MOOD_CONFIG[spinMood].emoji} ${spinMood}` : 'Post Now Spinning'}</>
+                <><Disc className="w-4 h-4 mr-2" /> {postToHive ? (spinMood ? `Post Now Spinning · ${MOOD_CONFIG[spinMood].emoji} ${spinMood}` : 'Post Now Spinning') : 'Log Silent Spin'}</>
               )}
             </Button>
           </div>
@@ -1278,6 +1308,6 @@ const ComposerBar = ({ onPostCreated, records = [] }) => {
       </Dialog>
     </>
   );
-};
+});
 
 export default ComposerBar;

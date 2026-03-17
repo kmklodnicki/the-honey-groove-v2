@@ -666,27 +666,43 @@ async def composer_now_spinning(data: NowSpinningCreate, user: Dict = Depends(re
         "created_at": now
     })
     
-    # Create post
-    post_id = str(uuid.uuid4())
-    post_doc = {
-        "id": post_id,
-        "user_id": user["id"],
-        "post_type": "NOW_SPINNING",
-        "caption": data.caption,
-        "record_id": data.record_id,
-        "track": data.track,
-        "mood": data.mood,
-        "image_url": data.photo_url,
-        "photo_url": data.photo_url,
-        "spin_id": spin_id,
-        "color_variant": record.get("color_variant") or record.get("pressing_notes"),
-        "created_at": now
-    }
-    await db.posts.insert_one(post_doc)
-    await parse_and_notify_mentions(post_doc.get("caption", ""), post_doc["id"], user["id"])
-    await _shadow_flag_post(post_doc, user)
+    # Create post only if user wants to post to Hive
+    post_doc = None
+    if data.post_to_hive:
+        post_id = str(uuid.uuid4())
+        post_doc = {
+            "id": post_id,
+            "user_id": user["id"],
+            "post_type": "NOW_SPINNING",
+            "caption": data.caption,
+            "record_id": data.record_id,
+            "track": data.track,
+            "mood": data.mood,
+            "image_url": data.photo_url,
+            "photo_url": data.photo_url,
+            "spin_id": spin_id,
+            "color_variant": record.get("color_variant") or record.get("pressing_notes"),
+            "created_at": now
+        }
+        await db.posts.insert_one(post_doc)
+        await parse_and_notify_mentions(post_doc.get("caption", ""), post_doc["id"], user["id"])
+        await _shadow_flag_post(post_doc, user)
     
-    return await _emit_and_return(await build_post_response(post_doc, user["id"]), user["id"])
+    if post_doc:
+        return await _emit_and_return(await build_post_response(post_doc, user["id"]), user["id"])
+    else:
+        # Return a minimal response for silent spins
+        return await build_post_response({
+            "id": spin_id,
+            "user_id": user["id"],
+            "post_type": "NOW_SPINNING",
+            "caption": data.caption or f"Spinning {record['title']} by {record['artist']}",
+            "record_id": data.record_id,
+            "spin_id": spin_id,
+            "color_variant": record.get("color_variant") or record.get("pressing_notes"),
+            "created_at": now,
+            "_silent": True,
+        }, user["id"])
 
 @router.post("/composer/randomizer", response_model=PostResponse)
 async def composer_randomizer(data: NowSpinningCreate, user: Dict = Depends(require_auth)):
@@ -1037,23 +1053,16 @@ async def get_post(post_id: str, user: Dict = Depends(require_auth)):
 
 @router.delete("/posts/{post_id}")
 async def delete_post(post_id: str, user: Dict = Depends(require_auth)):
-    """Delete a post owned by the current user, along with its likes, comments, and linked spin."""
+    """Delete a post owned by the current user, along with its likes and comments. Spin history in the Vault is preserved."""
     post = await db.posts.find_one({"id": post_id})
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
     if post["user_id"] != user["id"]:
         raise HTTPException(status_code=403, detail="You can only delete your own posts")
 
-    # Bidirectional: also delete linked spin
+    # Unlink the spin from the post (keep spin in Vault, just clear the post reference)
     if post.get("spin_id"):
-        await db.spins.delete_one({"id": post["spin_id"]})
-    elif post.get("post_type") == "NOW_SPINNING":
-        # Fallback: match by user+record+timestamp
-        await db.spins.delete_one({
-            "user_id": user["id"],
-            "record_id": post.get("record_id"),
-            "created_at": post.get("created_at")
-        })
+        await db.spins.update_one({"id": post["spin_id"]}, {"$unset": {"post_id": ""}})
 
     await db.likes.delete_many({"post_id": post_id})
     await db.comments.delete_many({"post_id": post_id})

@@ -841,17 +841,19 @@ async def log_spin(spin_data: SpinCreate, user: Dict = Depends(require_auth)):
     
     await db.spins.insert_one(spin_doc)
     
-    # Create activity post
-    post_id = str(uuid.uuid4())
-    post_doc = {
-        "id": post_id,
-        "user_id": user["id"],
-        "post_type": "NOW_SPINNING",
-        "caption": f"Spinning {record['title']} by {record['artist']}",
-        "record_id": spin_data.record_id,
-        "created_at": now
-    }
-    await db.posts.insert_one(post_doc)
+    # Only create activity post if user wants to post to Hive
+    if spin_data.post_to_hive:
+        post_id = str(uuid.uuid4())
+        post_doc = {
+            "id": post_id,
+            "user_id": user["id"],
+            "post_type": "NOW_SPINNING",
+            "caption": f"Spinning {record['title']} by {record['artist']}",
+            "record_id": spin_data.record_id,
+            "spin_id": spin_id,
+            "created_at": now
+        }
+        await db.posts.insert_one(post_doc)
     
     return SpinResponse(
         id=spin_id,

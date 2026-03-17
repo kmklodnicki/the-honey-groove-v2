@@ -139,6 +139,7 @@ class DiscogsSearchResult(BaseModel):
 class SpinCreate(BaseModel):
     record_id: str
     notes: Optional[str] = None
+    post_to_hive: bool = True
 
 class SpinResponse(BaseModel):
     id: str
@@ -296,6 +297,7 @@ class NowSpinningCreate(BaseModel):
     caption: Optional[str] = None
     mood: Optional[str] = None
     photo_url: Optional[str] = None
+    post_to_hive: bool = True
 
 class NewHaulCreate(BaseModel):
     store_name: Optional[str] = None
