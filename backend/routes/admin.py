@@ -64,6 +64,29 @@ class PlatformSettingUpdate(BaseModel):
     value: float
 
 
+class MaintenanceToggle(BaseModel):
+    enabled: bool
+
+
+@router.get("/status/maintenance")
+async def get_maintenance_status():
+    """Public endpoint — no auth required. Returns current maintenance mode state."""
+    doc = await db.platform_settings.find_one({"key": "maintenance_mode"}, {"_id": 0})
+    return {"maintenance_mode": bool(doc and doc.get("value"))}
+
+
+@router.post("/admin/maintenance")
+async def set_maintenance_mode(data: MaintenanceToggle, user: Dict = Depends(require_admin)):
+    """Toggle maintenance mode on/off."""
+    await db.platform_settings.update_one(
+        {"key": "maintenance_mode"},
+        {"$set": {"key": "maintenance_mode", "value": data.enabled, "updated_at": datetime.now(timezone.utc).isoformat(), "updated_by": user["id"]}},
+        upsert=True,
+    )
+    logger.info(f"Maintenance mode {'ENABLED' if data.enabled else 'DISABLED'} by {user.get('username', user['id'])}")
+    return {"status": "ok", "maintenance_mode": data.enabled}
+
+
 @router.get("/admin/settings")
 async def get_platform_settings(user: Dict = Depends(require_admin)):
     settings = await db.platform_settings.find({}, {"_id": 0}).to_list(100)

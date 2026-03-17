@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The HoneyGroove — Be Right Back</title>
+<link rel="icon" href="/favicon.ico" />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Cormorant+Garamond:ital@0;1&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, #FFF3D4 0%, #F5D76E 40%, #D4A017 100%);
+  }
+  .container { text-align: center; padding: 2rem; max-width: 420px; }
+  .turntable { position: relative; width: 220px; height: 220px; margin: 0 auto 2rem; }
+  .platter {
+    width: 220px; height: 220px; border-radius: 50%;
+    background: radial-gradient(circle, #E8E8E8 0%, #D0D0D0 60%, #B8B8B8 100%);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2), inset 0 2px 4px rgba(255,255,255,0.3);
+  }
+  .vinyl {
+    position: absolute; top: 10px; left: 10px; width: 200px; height: 200px;
+    animation: spin 3s linear infinite;
+  }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  .tonearm {
+    position: absolute; top: -8px; right: 20px; transform-origin: top right; transform: rotate(25deg);
+  }
+  .tonearm-bar {
+    width: 3px; height: 100px; border-radius: 2px;
+    background: linear-gradient(180deg, #C0C0C0, #808080);
+    box-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+  }
+  .tonearm-head {
+    width: 8px; height: 14px; background: #666; border-radius: 0 0 2px 2px;
+    margin-left: -2.5px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+  .tonearm-pivot {
+    position: absolute; top: -12px; right: 16px; width: 14px; height: 14px; border-radius: 50%;
+    background: radial-gradient(circle, #D0D0D0, #909090);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+  h1 {
+    font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700;
+    color: #3A2A0A; margin-bottom: 0.5rem;
+  }
+  p {
+    font-family: 'Cormorant Garamond', serif; font-size: 1rem;
+    color: #6B5A3A; line-height: 1.5; margin-bottom: 1.5rem;
+  }
+  .btn {
+    display: inline-block; padding: 0.75rem 2rem; border-radius: 999px;
+    background: #9A7520; color: #FFF; font-size: 1rem; font-weight: 600;
+    text-decoration: none; border: none; cursor: pointer;
+    box-shadow: 0 4px 16px rgba(154,117,32,0.4);
+    transition: transform 0.15s;
+  }
+  .btn:hover { transform: scale(1.05); }
+  .btn:active { transform: scale(0.95); }
+  .timestamp { font-size: 0.75rem; color: #9A8A6A; margin-top: 1.5rem; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="turntable">
+      <div class="platter"></div>
+      <svg class="vinyl" viewBox="0 0 200 200">
+        <defs>
+          <radialGradient id="vg" cx="50%" cy="45%" r="50%">
+            <stop offset="0%" stop-color="#2A2A2A" />
+            <stop offset="100%" stop-color="#111" />
+          </radialGradient>
+        </defs>
+        <circle cx="100" cy="100" r="98" fill="url(#vg)" />
+        <circle cx="100" cy="100" r="97" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1" />
+        <circle cx="100" cy="100" r="88" fill="none" stroke="rgba(60,60,60,0.7)" stroke-width="0.8" />
+        <circle cx="100" cy="100" r="82" fill="none" stroke="rgba(40,40,40,0.5)" stroke-width="0.4" />
+        <circle cx="100" cy="100" r="76" fill="none" stroke="rgba(60,60,60,0.7)" stroke-width="0.8" />
+        <circle cx="100" cy="100" r="70" fill="none" stroke="rgba(40,40,40,0.5)" stroke-width="0.4" />
+        <circle cx="100" cy="100" r="64" fill="none" stroke="rgba(60,60,60,0.7)" stroke-width="0.8" />
+        <circle cx="100" cy="100" r="58" fill="none" stroke="rgba(40,40,40,0.5)" stroke-width="0.4" />
+        <circle cx="100" cy="100" r="52" fill="none" stroke="rgba(60,60,60,0.7)" stroke-width="0.8" />
+        <circle cx="100" cy="100" r="46" fill="none" stroke="rgba(40,40,40,0.5)" stroke-width="0.4" />
+        <circle cx="100" cy="100" r="40" fill="none" stroke="rgba(60,60,60,0.7)" stroke-width="0.8" />
+        <circle cx="100" cy="100" r="34" fill="none" stroke="rgba(40,40,40,0.5)" stroke-width="0.4" />
+        <circle cx="100" cy="100" r="28" fill="#1E1E1E" />
+        <circle cx="100" cy="100" r="24" fill="#DAA520" />
+        <text x="100" y="96" text-anchor="middle" fill="#1A1A1A" font-size="5" font-weight="bold" font-family="serif" letter-spacing="0.5">GROOVE STUCK</text>
+        <text x="100" y="104" text-anchor="middle" fill="#1A1A1A" font-size="4" font-family="serif">NEVER SKIP</text>
+        <circle cx="100" cy="100" r="6" fill="#1A1A1A" />
+        <circle cx="100" cy="100" r="3" fill="#333" />
+      </svg>
+      <div class="tonearm">
+        <div class="tonearm-bar"></div>
+        <div class="tonearm-head"></div>
+      </div>
+      <div class="tonearm-pivot"></div>
+    </div>
+    <h1>Don't skip a beat!</h1>
+    <p>Our needle hit a little dust. We're auto-cleaning the grooves right now — try refreshing in a moment!</p>
+    <button class="btn" onclick="window.location.reload()">Try Again</button>
+    <div class="timestamp">thehoneygroove.com</div>
+  </div>
+</body>
+</html>

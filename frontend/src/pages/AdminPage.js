@@ -1048,6 +1048,8 @@ const SettingsSection = ({ API, headers }) => {
   const [fee, setFee] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [togglingMaintenance, setTogglingMaintenance] = useState(false);
   const [runningDisconnect, setRunningDisconnect] = useState(false);
   const [disconnectResult, setDisconnectResult] = useState(null);
 
@@ -1058,6 +1060,8 @@ const SettingsSection = ({ API, headers }) => {
         const feeSetting = res.data.find(s => s.key === 'platform_fee_percent');
         if (feeSetting) setFee(String(feeSetting.value));
         else setFee('6');
+        const maintSetting = res.data.find(s => s.key === 'maintenance_mode');
+        if (maintSetting) setMaintenanceMode(Boolean(maintSetting.value));
       } catch {}
       setLoading(false);
     })();
@@ -1072,6 +1076,23 @@ const SettingsSection = ({ API, headers }) => {
       toast.success(`Platform fee updated to ${val}%`);
     } catch { toast.error('something went wrong.'); }
     setSaving(false);
+  };
+
+  const toggleMaintenance = async () => {
+    const newState = !maintenanceMode;
+    const confirmed = window.confirm(
+      newState
+        ? 'Enable maintenance mode? All non-admin users will see a maintenance screen.'
+        : 'Disable maintenance mode? The site will be live for all users again.'
+    );
+    if (!confirmed) return;
+    setTogglingMaintenance(true);
+    try {
+      await axios.post(`${API}/admin/maintenance`, { enabled: newState }, { headers });
+      setMaintenanceMode(newState);
+      toast.success(newState ? 'Maintenance mode enabled' : 'Maintenance mode disabled');
+    } catch { toast.error('Failed to toggle maintenance mode'); }
+    setTogglingMaintenance(false);
   };
 
   if (loading) return <LoadingSkeleton />;
@@ -1091,6 +1112,35 @@ const SettingsSection = ({ API, headers }) => {
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save'}
           </Button>
         </div>
+      </Card>
+
+      {/* BLOCK-325: Maintenance Mode Toggle */}
+      <Card className={`p-6 max-w-md mt-4 ${maintenanceMode ? 'border-amber-400 bg-amber-50/50' : 'border-honey/30'}`} data-testid="maintenance-mode-section">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="font-heading text-lg mb-1">Maintenance Mode</h3>
+            <p className="text-xs text-muted-foreground">When enabled, all non-admin users see a "tuning up" screen.</p>
+          </div>
+          <button
+            onClick={toggleMaintenance}
+            disabled={togglingMaintenance}
+            className="shrink-0 ml-4 transition-all hover:scale-105"
+            data-testid="maintenance-toggle-btn"
+          >
+            {togglingMaintenance ? (
+              <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+            ) : maintenanceMode ? (
+              <ToggleRight className="w-10 h-10 text-amber-500" />
+            ) : (
+              <ToggleLeft className="w-10 h-10 text-stone-400" />
+            )}
+          </button>
+        </div>
+        {maintenanceMode && (
+          <div className="mt-3 px-3 py-2 rounded-lg text-xs font-medium" style={{ background: 'rgba(218,165,32,0.15)', color: '#92702A', border: '1px solid rgba(218,165,32,0.3)' }} data-testid="maintenance-active-badge">
+            Maintenance mode is ACTIVE — only admins can access the site.
+          </div>
+        )}
       </Card>
 
       {/* BLOCK 473: Great Disconnect Migration */}

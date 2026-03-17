@@ -16,6 +16,8 @@ import DiscogsSecurityModal from "./components/DiscogsSecurityModal";
 import PWAInstallBanner from "./components/PWAInstallBanner";
 import PullToRefresh from "./components/PullToRefresh";
 import VinylShield from "./components/VinylShield";
+import ErrorBoundary from "./components/ErrorBoundary";
+import { ApiErrorGate, MaintenanceGate } from "./components/ApiErrorGate";
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -391,10 +393,13 @@ function App() {
 
   return (
     <HelmetProvider>
+      <ErrorBoundary>
       <VinylShield>
       <BrowserRouter>
         <ScrollToTop />
         <AuthProvider>
+          <MaintenanceGate>
+          <ApiErrorGate>
           <SWRConfig value={{ revalidateOnFocus: false, dedupingInterval: 10000, errorRetryCount: 2 }}>
           <SocketProvider>
           <VariantModalProvider>
@@ -404,9 +409,12 @@ function App() {
           </VariantModalProvider>
           </SocketProvider>
           </SWRConfig>
+          </ApiErrorGate>
+          </MaintenanceGate>
         </AuthProvider>
       </BrowserRouter>
       </VinylShield>
+      </ErrorBoundary>
     </HelmetProvider>
   );
 }
