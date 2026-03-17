@@ -2,17 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   Disc, Users, TrendingUp, DollarSign, BarChart3,
-  Calendar, ArrowLeft, Loader2, Heart, RefreshCw, Store
+  Calendar, ArrowLeft, Loader2, Heart, RefreshCw, Store,
+  Plus, Search, Trash2, X, Send
 } from 'lucide-react';
 import { Card } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
 import AlbumArt from '../components/AlbumArt';
 import UnofficialPill from '../components/UnofficialPill';
 import UnofficialDisclaimer from '../components/UnofficialDisclaimer';
 import SEOHead from '../components/SEOHead';
 import { RarityCard } from '../components/RarityBadge';
+import MentionTextarea from '../components/MentionTextarea';
 import { useAuth } from '../context/AuthContext';
 import { resolveImageUrl } from '../utils/imageUrl';
 import axios from 'axios';
+import { toast } from 'sonner';
 
 import { API_BASE } from '../utils/apiBase';
 const BACKEND_URL = API_BASE;
@@ -37,18 +42,29 @@ export default function VariantReleasePage() {
   const [loading, setLoading] = useState(true);
   const [resyncing, setResyncing] = useState(false);
   const [spotifyLink, setSpotifyLink] = useState(null);
+  const [ownership, setOwnership] = useState({ in_collection: false, record_id: null });
+  const [actionModal, setActionModal] = useState(null); // 'add' | 'dream' | 'seeking' | null
+  const [postToHive, setPostToHive] = useState(true);
+  const [caption, setCaption] = useState('');
+  const [actionLoading, setActionLoading] = useState(false);
+  const [removing, setRemoving] = useState(false);
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
   useEffect(() => {
-    setData(null);  // Clear previous variant data to prevent "ghosting"
+    setData(null);
     setLoading(true);
     setSpotifyLink(null);
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
-    axios.get(`${API}/vinyl/release/${releaseId}`, { headers })
+    setOwnership({ in_collection: false, record_id: null });
+    const hdrs = token ? { Authorization: `Bearer ${token}` } : {};
+    axios.get(`${API}/vinyl/release/${releaseId}`, { headers: hdrs })
       .then(r => {
         setData(r.data);
         if (token) {
           axios.get(`${API}/spotify/link/${releaseId}`, { headers: { Authorization: `Bearer ${token}` } })
             .then(sr => setSpotifyLink(sr.data))
+            .catch(() => {});
+          axios.get(`${API}/records/check-ownership?discogs_id=${releaseId}`, { headers: { Authorization: `Bearer ${token}` } })
+            .then(or => setOwnership(or.data))
             .catch(() => {});
         }
       })
@@ -99,6 +115,62 @@ export default function VariantReleasePage() {
       .then(r => setData(r.data))
       .catch(() => {})
       .finally(() => setResyncing(false));
+  };
+
+  const openAction = (type) => {
+    setActionModal(type);
+    setPostToHive(true);
+    setCaption('');
+  };
+
+  const handleAddToCollection = async () => {
+    setActionLoading(true);
+    try {
+      await axios.post(`${API}/records`, {
+        discogs_id: parseInt(releaseId),
+        title: ov.album, artist: ov.artist,
+        cover_url: ov.cover_url || '', year: ov.year,
+        pressing_notes: ov.variant || '',
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      setOwnership({ in_collection: true, record_id: null });
+      toast.success('added to your vault.');
+      setActionModal(null);
+    } catch (err) { toast.error(err.response?.data?.detail || 'failed to add'); }
+    finally { setActionLoading(false); }
+  };
+
+  const handleDreamOrSeeking = async () => {
+    const intent = actionModal; // 'dream' or 'seeking'
+    if (postToHive && !caption.trim()) { toast.error('a caption is required to share with the hive.'); return; }
+    setActionLoading(true);
+    try {
+      await axios.post(`${API}/composer/iso`, {
+        artist: ov.artist, album: ov.album,
+        discogs_id: parseInt(releaseId),
+        cover_url: ov.cover_url || null,
+        year: ov.year || null,
+        pressing_notes: ov.variant || null,
+        caption: caption || null,
+        intent: intent === 'dream' ? 'dreaming' : 'seeking',
+        post_to_hive: postToHive,
+      }, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success(postToHive
+        ? (intent === 'dream' ? 'dream added & shared.' : 'iso posted to the hive.')
+        : (intent === 'dream' ? 'added to dream list.' : 'iso saved.'));
+      setActionModal(null);
+    } catch (err) { toast.error(err.response?.data?.detail || 'failed'); }
+    finally { setActionLoading(false); }
+  };
+
+  const handleRemove = async () => {
+    if (!ownership.record_id) { toast.error('record not found in your vault.'); return; }
+    setRemoving(true);
+    try {
+      await axios.delete(`${API}/records/${ownership.record_id}`, { headers: { Authorization: `Bearer ${token}` } });
+      setOwnership({ in_collection: false, record_id: null });
+      toast.success('removed from your vault.');
+    } catch (err) { toast.error(err.response?.data?.detail || 'failed to remove'); }
+    finally { setRemoving(false); }
   };
 
   return (
@@ -194,6 +266,36 @@ export default function VariantReleasePage() {
               </a>
             )}
           </div>
+
+          {/* Action buttons */}
+          {token && (
+            <div className="flex flex-wrap gap-2 mb-6" data-testid="variant-actions">
+              {ownership.in_collection ? (
+                <Button variant="outline" size="sm" onClick={handleRemove} disabled={removing}
+                  className="rounded-full border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 h-8 px-3 text-xs"
+                  data-testid="variant-remove-btn">
+                  {removing ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Trash2 className="w-3 h-3 mr-1" />}
+                  Remove from Vault
+                </Button>
+              ) : (
+                <Button size="sm" onClick={() => openAction('add')}
+                  className="rounded-full bg-honey text-vinyl-black hover:bg-honey-amber h-8 px-3 text-xs"
+                  data-testid="variant-add-btn">
+                  <Plus className="w-3 h-3 mr-1" /> Add to Vault
+                </Button>
+              )}
+              <Button variant="outline" size="sm" onClick={() => openAction('dream')}
+                className="rounded-full border-stone-300 hover:bg-stone-50 h-8 px-3 text-xs"
+                data-testid="variant-dream-btn">
+                <Heart className="w-3 h-3 mr-1" /> Dream List
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => openAction('seeking')}
+                className="rounded-full border-amber-300 text-amber-700 hover:bg-amber-50 h-8 px-3 text-xs"
+                data-testid="variant-seeking-btn">
+                <Search className="w-3 h-3 mr-1" /> Seeking (ISO)
+              </Button>
+            </div>
+          )}
 
           {/* Variant-specific quick stats */}
           <div className="flex items-center justify-between mb-2">
@@ -338,6 +440,81 @@ export default function VariantReleasePage() {
           </div>
         </section>
       )}
+
+      {/* Action Dialog — Add / Dream List / Seeking */}
+      <Dialog open={!!actionModal} onOpenChange={(open) => !open && setActionModal(null)}>
+        <DialogContent className="sm:max-w-md p-0 overflow-hidden" data-testid="variant-action-dialog">
+          <DialogHeader className="px-6 pt-6 pb-2">
+            <DialogTitle className="font-heading flex items-center gap-2">
+              {actionModal === 'add' && <><Plus className="w-5 h-5 text-honey-amber" /> Add to Vault</>}
+              {actionModal === 'dream' && <><Heart className="w-5 h-5 text-stone-500" /> Dream List</>}
+              {actionModal === 'seeking' && <><Search className="w-5 h-5 text-amber-600" /> Seeking (ISO)</>}
+            </DialogTitle>
+            <DialogDescription>
+              {actionModal === 'add' ? `Add ${ov.album} to your vault` : `${ov.artist} — ${ov.album}`}
+            </DialogDescription>
+          </DialogHeader>
+
+          {actionModal === 'add' ? (
+            <div className="px-6 pb-6 pt-2 space-y-4">
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-honey/10">
+                {ov.cover_url && <img src={ov.cover_url} alt="" className="w-12 h-12 rounded-md object-cover" />}
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">{ov.album}</p>
+                  <p className="text-xs text-muted-foreground truncate">{ov.artist} · {ov.variant || 'Standard'}</p>
+                </div>
+              </div>
+              <Button onClick={handleAddToCollection} disabled={actionLoading} className="w-full bg-honey text-vinyl-black hover:bg-honey-amber rounded-full" data-testid="variant-add-confirm">
+                {actionLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
+                Add to Vault
+              </Button>
+            </div>
+          ) : (
+            <div className="px-6 pb-2 pt-2 space-y-4">
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-honey/10">
+                {ov.cover_url && <img src={ov.cover_url} alt="" className="w-12 h-12 rounded-md object-cover" />}
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">{ov.album}</p>
+                  <p className="text-xs text-muted-foreground truncate">{ov.artist} · {ov.variant || 'Standard'}</p>
+                </div>
+              </div>
+              {postToHive && (
+                <MentionTextarea
+                  placeholder={actionModal === 'dream' ? "Why is this a grail for you..." : "I'm looking for this because..."}
+                  value={caption} onChange={setCaption}
+                  className="resize-none" rows={2}
+                  style={{ borderColor: 'rgba(200,134,26,0.5)' }}
+                  data-testid="variant-action-caption"
+                />
+              )}
+            </div>
+          )}
+
+          {actionModal && actionModal !== 'add' && (
+            <div className="px-6 pb-6 pt-2 border-t border-honey/15">
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-sm font-medium text-stone-600">Post to Hive</label>
+                <button type="button" role="switch" aria-checked={postToHive} onClick={() => setPostToHive(!postToHive)}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${postToHive ? 'bg-amber-500' : 'bg-stone-300'}`}
+                  data-testid="variant-action-toggle">
+                  <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${postToHive ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                </button>
+              </div>
+              {!postToHive && <p className="text-xs text-stone-400 mb-3">{actionModal === 'dream' ? 'Added to your Dream List only.' : 'Saved privately.'}</p>}
+              <Button onClick={handleDreamOrSeeking} disabled={actionLoading}
+                className="w-full rounded-full"
+                style={actionModal === 'dream' ? { background: '#f3f4f6', color: '#374151' } : { background: 'linear-gradient(135deg, #FFD700, #DAA520)', color: '#2A1A06' }}
+                data-testid="variant-action-submit">
+                {actionLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : actionModal === 'dream' ? <Heart className="w-4 h-4 mr-2" /> : <Search className="w-4 h-4 mr-2" />}
+                {postToHive
+                  ? (actionModal === 'dream' ? 'Add to Dream List & Share' : 'Post ISO to the Hive')
+                  : (actionModal === 'dream' ? 'Add to Dream List' : 'Save ISO Privately')
+                }
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
