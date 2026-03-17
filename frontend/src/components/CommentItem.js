@@ -4,6 +4,7 @@ import { Heart, Reply, Trash2, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import BeeAvatar from './BeeAvatar';
 import { TitleBadge } from './TitleBadge';
+import { resolveImageUrl } from '../utils/imageUrl';
 
 const renderMentions = (text) => {
   const parts = text.split(/(@\w+)/g);
@@ -18,10 +19,11 @@ const renderMentions = (text) => {
 
 const CommentImage = ({ src }) => {
   const [expanded, setExpanded] = useState(false);
+  const resolved = resolveImageUrl(src);
   return (
     <>
       <img
-        src={src}
+        src={resolved}
         alt="Comment attachment"
         className="mt-1.5 rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity border border-stone-200"
         style={{ maxWidth: '180px', maxHeight: '120px' }}
@@ -33,7 +35,7 @@ const CommentImage = ({ src }) => {
           <button className="absolute top-4 right-4 text-white/80 hover:text-white bg-black/40 rounded-full p-2" onClick={() => setExpanded(false)} data-testid="comment-image-close">
             <X className="w-5 h-5" />
           </button>
-          <img src={src} alt="Comment attachment" className="max-w-full max-h-[85vh] rounded-lg object-contain" />
+          <img src={resolved} alt="Comment attachment" className="max-w-full max-h-[85vh] rounded-lg object-contain" />
         </div>
       )}
     </>
