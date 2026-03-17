@@ -48,6 +48,7 @@ The HoneyGroove is a vinyl record social platform where users can track collecti
 - **Picture Disc Detection** — Fixed `search_discogs()`, `get_discogs_release()`, `_parse_discogs_raw()` to detect "Picture Disc" from format descriptions array when text field is empty.
 - **ISO View More Button Fix** — Moved button OUTSIDE scrollable container on both ComposerBar and Honeypot modals. Added `isoShowCount` state to ComposerBar.
 - **ISO Color Variant Storage** — Both `submitISO` functions now send `color_variant` from selected Discogs release.
+- **BLOCK-313: ISO Modal Variant Art Fix** — Implemented batch cover resolution: collects all variants missing `cover_url`, does batch lookups against `records` and `discogs_releases` collections, falls back to Discogs API (max 3 calls). Added cover fallback to variant release endpoint and ISO post builder. Zero blank covers in search results.
 
 ## Backlog
 
