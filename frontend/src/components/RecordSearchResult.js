@@ -1,6 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Disc } from 'lucide-react';
-import AlbumArt from './AlbumArt';
+
+// Simple image component for search results — no caching, no WebP, no proxy chain.
+// Discogs CDN images are reliable when loaded as plain <img> tags.
+const SearchResultImage = ({ src, alt, className }) => {
+  const [failed, setFailed] = useState(false);
+  if (failed || !src) {
+    return (
+      <div className={`${className} rounded-md bg-stone-100 flex items-center justify-center`}>
+        <Disc className="w-5 h-5 text-stone-400" />
+      </div>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={`${className} rounded-md object-cover shadow-sm`}
+      loading="eager"
+      onError={() => setFailed(true)}
+      data-testid="search-result-img"
+    />
+  );
+};
 
 const RecordSearchResult = ({ record, onClick, actions, size = 'md', testId }) => {
   const r = record;
@@ -20,7 +42,7 @@ const RecordSearchResult = ({ record, onClick, actions, size = 'md', testId }) =
     >
       <div className="shrink-0">
         {r.cover_url ? (
-          <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} className={`${imgSize} rounded-md object-cover shadow-sm`} isUnofficial={r.is_unofficial} priority />
+          <SearchResultImage src={r.cover_url} alt={`${r.artist} ${r.title}`} className={imgSize} />
         ) : (
           <div className={`${imgSize} rounded-md bg-stone-100 flex items-center justify-center`}>
             <Disc className="w-5 h-5 text-stone-400" />
