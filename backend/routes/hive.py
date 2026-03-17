@@ -1165,6 +1165,7 @@ async def add_comment(post_id: str, comment_data: CommentCreate, user: Dict = De
         "user_id": user["id"],
         "content": comment_data.content,
         "parent_id": comment_data.parent_id,
+        "image_url": comment_data.image_url,
         "created_at": now
     }
     

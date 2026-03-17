@@ -246,6 +246,7 @@ class CommentCreate(BaseModel):
     post_id: str
     content: str
     parent_id: Optional[str] = None  # For replies
+    image_url: Optional[str] = None  # Optional photo attachment
 
 class CommentResponse(BaseModel):
     id: str
@@ -254,6 +255,7 @@ class CommentResponse(BaseModel):
     content: str
     created_at: str
     parent_id: Optional[str] = None
+    image_url: Optional[str] = None
     user: Optional[Dict[str, Any]] = None
     likes_count: int = 0
     is_liked: bool = False

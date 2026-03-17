@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, Reply, Trash2 } from 'lucide-react';
+import { Heart, Reply, Trash2, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import BeeAvatar from './BeeAvatar';
 import { TitleBadge } from './TitleBadge';
@@ -14,6 +14,30 @@ const renderMentions = (text) => {
     }
     return part;
   });
+};
+
+const CommentImage = ({ src }) => {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <>
+      <img
+        src={src}
+        alt="Comment attachment"
+        className="mt-1.5 rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity border border-stone-200"
+        style={{ maxWidth: '180px', maxHeight: '120px' }}
+        onClick={() => setExpanded(true)}
+        data-testid="comment-image-thumb"
+      />
+      {expanded && (
+        <div className="fixed inset-0 z-[99999] bg-black/80 flex items-center justify-center p-4" onClick={() => setExpanded(false)} data-testid="comment-image-lightbox">
+          <button className="absolute top-4 right-4 text-white/80 hover:text-white bg-black/40 rounded-full p-2" onClick={() => setExpanded(false)} data-testid="comment-image-close">
+            <X className="w-5 h-5" />
+          </button>
+          <img src={src} alt="Comment attachment" className="max-w-full max-h-[85vh] rounded-lg object-contain" />
+        </div>
+      )}
+    </>
+  );
 };
 
 const SingleComment = ({ comment, onReply, onLike, onDelete, isReply, topLevelId, currentUserId, isAdmin }) => {
@@ -64,6 +88,7 @@ const SingleComment = ({ comment, onReply, onLike, onDelete, isReply, topLevelId
             )}
           </div>
           <p className="text-sm mt-1">{renderMentions(comment.content)}</p>
+          {comment.image_url && <CommentImage src={comment.image_url} />}
           <div className="flex items-center gap-3 mt-1.5">
             <button
               onClick={() => onLike(comment.id, comment.is_liked)}

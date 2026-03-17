@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Input } from './ui/input';
-import { Heart, MessageCircle, MoreVertical, Trash2, Pin, Reply, Send, ChevronDown, ChevronUp, Sparkles, X, FileText } from 'lucide-react';
+import { Heart, MessageCircle, MoreVertical, Trash2, Pin, Reply, Send, ChevronDown, ChevronUp, Sparkles, X, FileText, Camera, Loader2 } from 'lucide-react';
 import VerifiedShield from './VerifiedShield';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -21,6 +21,7 @@ import { PostTypeBadge, PostCardBody, NewFeatureBadge, FormatPill } from './Post
 import { TitleBadge } from './TitleBadge';
 import CommentThread from './CommentItem';
 import LoadingHoney from './LoadingHoney';
+import { validateImageFile, prepareImageForUpload } from '../utils/imageUpload';
 
 export const InfiniteScrollSentinel = ({ onIntersect, loading }) => {
   const sentinelRef = useRef(null);
@@ -77,6 +78,10 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
   const commentInputRef = React.useRef(null);
   const mentionTimerRef = React.useRef(null);
   const cardRef = useRef(null);
+  const commentPhotoRef = React.useRef(null);
+  const [commentPhoto, setCommentPhoto] = useState(null);
+  const [commentPhotoPreview, setCommentPhotoPreview] = useState(null);
+  const [photoUploading, setPhotoUploading] = useState(false);
 
   // Collapsible pinned post — persisted in localStorage
   const pinnedKey = post.is_pinned ? `hg_pin_collapsed_${post.id}` : null;
@@ -136,17 +141,55 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
     }
   }, [highlighted, autoOpenComments]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const handleCommentPhotoSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const err = validateImageFile(file);
+    if (err) { toast.error(err); e.target.value = ''; return; }
+    const prepared = await prepareImageForUpload(file);
+    setCommentPhoto(prepared);
+    setCommentPhotoPreview(URL.createObjectURL(prepared));
+  };
+
+  const clearCommentPhoto = () => {
+    setCommentPhoto(null);
+    setCommentPhotoPreview(null);
+    if (commentPhotoRef.current) commentPhotoRef.current.value = '';
+  };
+
   const handleSubmitComment = async (e) => {
     e.preventDefault();
-    if (!newComment.trim()) return;
+    if (!newComment.trim() && !commentPhoto) return;
     setSubmitting(true);
-    const content = newComment.trim();
+    const content = newComment.trim() || ' ';
     const parentId = replyTo?.id || null;
+
+    // Upload photo first if present
+    let imageUrl = null;
+    if (commentPhoto) {
+      setPhotoUploading(true);
+      try {
+        const formData = new FormData();
+        formData.append('file', commentPhoto);
+        const uploadRes = await axios.post(`${API}/upload`, formData, {
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
+        });
+        imageUrl = uploadRes.data.url;
+      } catch (err) {
+        toast.error(err.response?.data?.detail || 'image upload failed. try a different photo.');
+        setSubmitting(false);
+        setPhotoUploading(false);
+        return;
+      }
+      setPhotoUploading(false);
+    }
+
     const optimisticId = `opt_${Date.now()}`;
     const optimisticComment = {
       id: optimisticId, post_id: post.id, user_id: currentUserId, content, parent_id: parentId,
       created_at: new Date().toISOString(), user: { id: currentUserId, username: 'you' },
       likes_count: 0, is_liked: false, replies: [], _optimistic: true,
+      image_url: imageUrl,
     };
     if (parentId) {
       setComments(prev => prev.map(c => c.id === parentId ? { ...c, replies: [...(c.replies || []), optimisticComment] } : c));
@@ -154,10 +197,11 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
       setComments(prev => [...prev, optimisticComment]);
     }
     setNewComment(''); setReplyTo(null); setShowMentions(false);
+    clearCommentPhoto();
     onCommentCountChange(post.id, 1);
     try {
       const response = await axios.post(`${API}/posts/${post.id}/comments`,
-        { post_id: post.id, content, parent_id: parentId },
+        { post_id: post.id, content, parent_id: parentId, image_url: imageUrl },
         { headers: { Authorization: `Bearer ${token}` }}
       );
       if (parentId) {
@@ -397,15 +441,29 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
                     ))}
                   </div>
                 )}
-                <form onSubmit={handleSubmitComment} className="flex gap-2 pt-2 border-t border-honey/20">
-                  <Input ref={commentInputRef} placeholder={replyTo ? `Reply to @${replyTo.username}...` : "Write a comment..."}
-                    value={newComment} onChange={handleCommentInputChange}
-                    onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
-                    className="flex-1 h-9 text-sm border-honey/50" data-testid={`comment-input-${post.id}`} />
-                  <Button type="submit" size="sm" disabled={submitting || !newComment.trim()}
-                    className="bg-honey text-vinyl-black hover:bg-honey-amber h-9 px-3" data-testid={`comment-submit-${post.id}`}>
-                    <Send className="w-4 h-4" />
-                  </Button>
+                <form onSubmit={handleSubmitComment} className="pt-2 border-t border-honey/20">
+                  {commentPhotoPreview && (
+                    <div className="mb-2 relative inline-block" data-testid={`comment-photo-preview-${post.id}`}>
+                      <img src={commentPhotoPreview} alt="Attachment" className="h-16 w-16 object-cover rounded-lg border border-stone-200" />
+                      <button type="button" onClick={clearCommentPhoto} className="absolute -top-1.5 -right-1.5 bg-black/70 text-white rounded-full p-0.5" data-testid={`comment-photo-remove-${post.id}`}>
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  )}
+                  <div className="flex gap-2 items-center">
+                    <input type="file" ref={commentPhotoRef} className="hidden" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif" onChange={handleCommentPhotoSelect} data-testid={`comment-photo-input-${post.id}`} />
+                    <button type="button" onClick={() => commentPhotoRef.current?.click()} className="shrink-0 p-1.5 rounded-full text-stone-400 hover:text-honey-amber hover:bg-honey/10 transition-colors" data-testid={`comment-camera-btn-${post.id}`} disabled={photoUploading}>
+                      {photoUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+                    </button>
+                    <Input ref={commentInputRef} placeholder={replyTo ? `Reply to @${replyTo.username}...` : "Write a comment..."}
+                      value={newComment} onChange={handleCommentInputChange}
+                      onKeyDown={(e) => { if (e.key === 'Enter') e.preventDefault(); }}
+                      className="flex-1 h-9 text-sm border-honey/50" data-testid={`comment-input-${post.id}`} />
+                    <Button type="submit" size="sm" disabled={submitting || photoUploading || (!newComment.trim() && !commentPhoto)}
+                      className="bg-honey text-vinyl-black hover:bg-honey-amber h-9 px-3" data-testid={`comment-submit-${post.id}`}>
+                      <Send className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </form>
               </div>
             </>
