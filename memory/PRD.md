@@ -80,6 +80,11 @@ The HoneyGroove is a vinyl record social platform where users can track collecti
 - **Feed Filter** — Added "Release Notes" option to the Hive feed dropdown. Backend filters via `{is_release_note: true}` query instead of matching `post_type`.
 - **Collapsible + Persistence** — Release note posts show a honey-gradient banner with collapse/expand toggle. Collapsed state persists in `localStorage` (`hg_rn_collapsed_{post_id}`).
 
+### Session 11 (2026-03-17) — Bug Fixes: Album Art & Mood Grid
+- **Album Art in ISO/Haul Modals** — Fixed Discogs search results showing generic disc icon instead of album covers. Root cause: `AlbumArt.js` `toWebP()` function was converting Discogs CDN `.jpeg` URLs to `.webp`, but Discogs returns HTTP 403 for WebP. Fix: skip WebP conversion for Discogs URLs.
+- **Mood Grid Uniform Sizing** — Set fixed `height: 36px` and `whitespace-nowrap` on mood buttons in `ComposerBar.js`. All 12 labels now fit on a single line on both desktop and mobile.
+- **Spin Party Emoji** — Changed from 🩩 (U+1FA69) to 🪩 disco ball (U+1FAA9).
+
 ## Backlog
 
 ### P1 - Upcoming
