@@ -18,6 +18,7 @@ import PullToRefresh from "./components/PullToRefresh";
 import VinylShield from "./components/VinylShield";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ApiErrorGate, MaintenanceGate } from "./components/ApiErrorGate";
+import BackToTop from "./components/BackToTop";
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -405,6 +406,7 @@ function App() {
           <VariantModalProvider>
             <AppContent />
             <VariantModal />
+            <BackToTop />
             <Toaster />
           </VariantModalProvider>
           </SocketProvider>

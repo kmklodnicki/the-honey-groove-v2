@@ -61,7 +61,6 @@ const HivePage = () => {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [showBackToTop, setShowBackToTop] = useState(false);
   const [feedError, setFeedError] = useState(false);
   // Following filter works by fetching the user's following list
   const [followingIds, setFollowingIds] = useState([]);
@@ -70,6 +69,8 @@ const HivePage = () => {
 
   // Live feed: queued new posts from WebSocket
   const [newPostsQueue, setNewPostsQueue] = useState([]);
+  const postsRef = useRef(posts);
+  useEffect(() => { postsRef.current = posts; }, [posts]);
 
   const targetPostId = searchParams.get('post');
   const targetCommentId = searchParams.get('comment');
@@ -229,6 +230,7 @@ const HivePage = () => {
       if (author_id === user?.id) return;
       setNewPostsQueue(prev => {
         if (prev.some(p => p.id === post.id)) return prev;
+        if (postsRef.current.some(p => p.id === post.id)) return prev;
         return [post, ...prev];
       });
     };
@@ -255,8 +257,9 @@ const HivePage = () => {
         const fresh = (res.data || []).filter(p => p.author_id !== user?.id);
         if (fresh.length > 0) {
           setNewPostsQueue(prev => {
-            const ids = new Set(prev.map(p => p.id));
-            const unique = fresh.filter(p => !ids.has(p.id));
+            const queueIds = new Set(prev.map(p => p.id));
+            const feedIds = new Set(postsRef.current.map(p => p.id));
+            const unique = fresh.filter(p => !queueIds.has(p.id) && !feedIds.has(p.id));
             return unique.length ? [...unique, ...prev] : prev;
           });
         }
@@ -277,14 +280,7 @@ const HivePage = () => {
   };
 
 
-  // Back to top scroll listener
-  useEffect(() => {
-    const onScroll = () => setShowBackToTop(window.scrollY > 300);
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Back to top — handled globally via App.js BackToTop component
 
   const filteredPosts = React.useMemo(() => {
     let result = posts;
@@ -630,17 +626,7 @@ const HivePage = () => {
         <p className="text-center text-sm text-muted-foreground pt-6 pb-2 italic">you've reached the beginning of the hive.</p>
       )}
 
-      {/* Back to Top */}
-      {showBackToTop && (
-        <button
-          onClick={scrollToTop}
-          className="fixed bottom-6 right-6 z-40 w-10 h-10 rounded-full bg-vinyl-black text-white shadow-lg flex items-center justify-center hover:bg-vinyl-black/80 transition-all animate-in fade-in slide-in-from-bottom-4 duration-300"
-          data-testid="back-to-top-btn"
-          aria-label="Back to top"
-        >
-          <ArrowUp className="w-5 h-5" />
-        </button>
-      )}
+      {/* Back to Top — handled globally in App.js */}
 
     </div>
   );

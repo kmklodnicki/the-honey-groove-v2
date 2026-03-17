@@ -34,7 +34,6 @@ import DiscogsImport from '../components/DiscogsImport';
 import { usePageTitle } from '../hooks/usePageTitle';
 import AlbumArt, { prefetchArt } from '../components/AlbumArt';
 import SEOHead from '../components/SEOHead';
-import BackToTop from '../components/BackToTop';
 import ValuationAssistantModal from '../components/ValuationAssistantModal';
 import ValuationWizard from '../components/ValuationWizard';
 import { useBlurPlaceholders } from '../hooks/useBlurPlaceholders';
@@ -1213,7 +1212,6 @@ const CollectionPage = () => {
         onComplete={handleWizardComplete}
         onSave={handleWizardSave}
       />
-      <BackToTop />
 
       {/* Duplicate Detector Modal */}
       <Dialog open={dupeModalOpen} onOpenChange={setDupeModalOpen}>

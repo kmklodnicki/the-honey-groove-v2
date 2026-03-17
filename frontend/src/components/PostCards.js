@@ -399,9 +399,9 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
                   {record.is_unofficial && <UnofficialPill variant="inline" />}
                 </div>
                 {post.track && <p className="text-xs text-honey-amber mt-1" data-testid="track-name">Track: {post.track}</p>}
-                {post.caption && <p className="text-sm mt-2"><MentionText text={post.caption} /></p>}
               </div>
             </div>
+            {post.caption && <p className="text-sm mt-2"><MentionText text={post.caption} /></p>}
           </div>
 
           {/* Right: user-uploaded photo */}

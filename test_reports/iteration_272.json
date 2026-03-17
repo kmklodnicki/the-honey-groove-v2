@@ -1,0 +1,55 @@
+{
+  "summary": "Bug fix verification for feed 'new posts' count, Now Spinning caption layout, and global BackToTop button. All fixes verified working.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_feed_backtotop.py",
+    "/app/test_reports/pytest/feed_backtotop_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_feed_backtotop.py"
+  ],
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "100%"
+  },
+  "test_credentials": {
+    "email": "kmklodnicki@gmail.com",
+    "password": "HoneyGroove2026"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Three bug fixes verified: (1) New posts queue deduplicates against displayed posts via postsRef, (2) Now Spinning caption layout moved outside inner flex row for full width, (3) Global BackToTop in App.js with correct mobile/desktop positioning.",
+  "features_verified": {
+    "feed_loads_correctly": "PASS - Feed API returns 20 posts with correct structure",
+    "new_posts_deduplication": "PASS - Code review confirms postsRef.current used in both WebSocket handler (line 233) and polling fallback (line 261)",
+    "caption_layout_fix": "PASS - Caption is outside inner flex row (line 404 is after line 403 closing div)",
+    "global_backtotop_hive": "PASS - BackToTop visible on /hive after scroll, desktop bottom=24px",
+    "global_backtotop_mobile": "PASS - Mobile BackToTop bottom=80px (correct per spec)",
+    "global_backtotop_collection": "PASS - BackToTop visible on /collection page",
+    "global_backtotop_profile": "PASS - BackToTop rendered globally in App.js (line 409)",
+    "no_duplicate_backtotop": "PASS - CollectionPage and ProfilePage have no BackToTop imports",
+    "backend_api_tests": "PASS - 8/8 pytest tests passed"
+  },
+  "bug_fix_details": {
+    "new_posts_count_fix": "Added postsRef (useRef) to track current displayed posts. WebSocket handler (line 232-233) and polling fallback (line 260-262) now deduplicate against BOTH newPostsQueue AND postsRef.current, preventing duplicate 'X new posts' counts.",
+    "caption_layout_fix": "NowSpinningCard (line 404): post.caption rendered outside the inner flex row (album art + metadata). Caption now gets full left column width, not squeezed between album art (96px) and user photo (80px).",
+    "backtotop_global_fix": "BackToTop component added to App.js (line 409) alongside VariantModal and Toaster. Removed from CollectionPage and ProfilePage. CSS uses --btt-bottom variable: 80px on mobile (<768px), 24px on desktop (>=768px)."
+  },
+  "code_review_notes": {
+    "HivePage_postsRef": "Lines 72-73: postsRef keeps sync with posts state via useEffect. Lines 232-233: WS checks postsRef.current. Lines 260-262: Polling checks postsRef.current.",
+    "PostCards_caption": "Line 404: Caption p tag with mt-2 is AFTER the inner flex div (album art row), inside the left column div. This gives caption full width of left column.",
+    "BackToTop_component": "Uses CSS custom property --btt-bottom with @media queries. Mobile: 80px (above bottom nav). Desktop: 24px. z-index: 100003.",
+    "App_BackToTop": "Line 409: <BackToTop /> rendered inside VariantModalProvider, appears on all pages."
+  }
+}

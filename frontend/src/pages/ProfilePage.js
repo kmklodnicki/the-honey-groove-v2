@@ -32,7 +32,6 @@ import SEOHead from '../components/SEOHead';
 import { useVariantModal } from '../context/VariantModalContext';
 import { EmptyState } from '../components/EmptyState';
 import WaxReportPin from '../components/WaxReportPin';
-import BackToTop from '../components/BackToTop';
 import { useAPI } from '../hooks/useAPI';
 import ReactDOM from 'react-dom';
 import { PostCard, InfiniteScrollSentinel } from '../components/HivePostCard';
@@ -1726,7 +1725,6 @@ const ProfilePage = () => {
         </DialogContent>
       </Dialog>
 
-      <BackToTop />
     </div>
   );
 };
