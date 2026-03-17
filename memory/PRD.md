@@ -64,6 +64,9 @@ The HoneyGroove is a vinyl record social platform where users can track collecti
 - **BLOCK-316: Crown Jewels — Value Over Rarity** — Hidden Gems (Vault) now sorted by `max(high_value, median_value)` instead of just median, putting truly most expensive items first. Crown Jewels (Explore) re-weighted from 50/50 (scarcity/value) to 80/20 (value-dominant), also using `max(high, estimated)` for value scoring.
 - **BLOCK-324: Spotify Deep-Linking (V1)** — New `/api/spotify/link/{discogs_id}` endpoint. Authenticates via Client Credentials, searches by UPC barcode first then artist+album, caches results in `spotify_links` collection. Falls back to generic Spotify search URL if no match. Frontend: green "Listen on Spotify" pill on variant pages (or muted "Search Spotify" for fallback). Also fixed "PRESSING PRESSING" duplication in variant header.
 
+### Session 11 (2026-03-17) — BLOCK-324 V2
+- **Spotify Deep-Linking on Hive Feed Cards** — Extended Spotify integration to NOW_SPINNING cards on the Hive feed. Passed `discogsId={record.discogs_id || post.discogs_id}` to `StreamingLinks` in `NowSpinningCard`. Fixed React hooks rules-of-hooks violation by moving `useAuth`, `useState`, `useEffect` above the early return in `StreamingLinks`. All 8 Spotify icons on feed now show green (#1DB954) with direct album links.
+
 ## Backlog
 
 ### P1 - Upcoming
