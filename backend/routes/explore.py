@@ -662,8 +662,13 @@ async def get_crown_jewels(limit: int = 12, user: Dict = Depends(require_auth)):
             pass
 
     # Aggregate: find records with discogs_id, group by discogs_id
+    # Sort by owner_count descending to prioritize community-owned records
+    # Filter out test data
     pipeline = [
-        {"$match": {"discogs_id": {"$exists": True, "$ne": None}}},
+        {"$match": {
+            "discogs_id": {"$exists": True, "$ne": None},
+            "title": {"$not": {"$regex": "^TEST", "$options": "i"}},
+        }},
         {"$group": {
             "_id": "$discogs_id",
             "artist": {"$first": "$artist"},
@@ -673,9 +678,10 @@ async def get_crown_jewels(limit: int = 12, user: Dict = Depends(require_auth)):
             "year": {"$first": "$year"},
             "owner_count": {"$sum": 1},
         }},
-        {"$limit": 100},
+        {"$sort": {"owner_count": -1}},
+        {"$limit": 150},
     ]
-    records = await db.records.aggregate(pipeline).to_list(100)
+    records = await db.records.aggregate(pipeline).to_list(150)
 
     headers_discogs = {"User-Agent": DISCOGS_USER_AGENT}
     jewels = []
@@ -706,6 +712,11 @@ async def get_crown_jewels(limit: int = 12, user: Dict = Depends(require_auth)):
             median_value = market.get("median_value", 0) if market else 0
             low_value = market.get("low_value") if market else None
             high_value = market.get("high_value") if market else None
+
+            # Skip low-value records — Crown Jewels should be $20+
+            effective_value = max(median_value, high_value or 0)
+            if effective_value < 20:
+                continue
 
             jewels.append({
                 "discogs_id": discogs_id,

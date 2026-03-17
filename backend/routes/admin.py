@@ -1078,3 +1078,13 @@ async def send_update_email(req: MassEmailRequest, user=Depends(require_auth)):
         await _asyncio.sleep(0.6)
 
     return {"status": "complete", "sent": sent, "failed": failed, "skipped": skipped, "total": len(users)}
+
+
+
+@router.post("/admin/clear-cache/{cache_key}")
+async def clear_cache(cache_key: str, user: Dict = Depends(require_auth)):
+    """Admin-only: clear a specific cache entry to force refresh."""
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin only")
+    result = await db.cache.delete_one({"key": cache_key})
+    return {"cleared": result.deleted_count > 0, "key": cache_key}
