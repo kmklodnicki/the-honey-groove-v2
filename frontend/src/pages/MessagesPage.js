@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSearchParams, Link } from 'react-router-dom';
 import axios from 'axios';
@@ -27,8 +28,6 @@ const MessagesPage = () => {
   const [convStatus, setConvStatus] = useState('active');
   const [msgTab, setMsgTab] = useState('inbox');
   const [acceptLoading, setAcceptLoading] = useState(false);
-  const [viewHeight, setViewHeight] = useState(window.visualViewport?.height || window.innerHeight);
-  const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [composeOpen, setComposeOpen] = useState(false);
   const [composeQuery, setComposeQuery] = useState('');
   const [composeResults, setComposeResults] = useState([]);
@@ -37,20 +36,6 @@ const MessagesPage = () => {
   const pollRef = useRef(null);
   const threadRef = useRef(null);
   const inputRef = useRef(null);
-
-  // Dynamically resize thread container when mobile keyboard opens/closes
-  useEffect(() => {
-    const vv = window.visualViewport;
-    if (!vv) return;
-    const fullHeight = window.innerHeight;
-    const onResize = () => {
-      setViewHeight(vv.height);
-      // Keyboard is open if viewport shrunk significantly
-      setKeyboardOpen(vv.height < fullHeight * 0.75);
-    };
-    vv.addEventListener('resize', onResize);
-    return () => vv.removeEventListener('resize', onResize);
-  }, []);
 
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -111,7 +96,7 @@ const MessagesPage = () => {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, viewHeight]);
+  }, [messages]);
 
   const openConversation = async (convId) => {
     setActiveConv(convId);
@@ -205,18 +190,18 @@ const MessagesPage = () => {
     );
   }
 
-  // Thread view
+  // Thread view — rendered via Portal to escape main's stacking context (z-10)
+  // This ensures the fixed overlay covers the navbars (z-100)
   if (activeConv) {
-    // On mobile: subtract bottom nav height (h-16 = 64px + safe-area) unless keyboard is open
-    const isMobile = window.innerWidth < 768;
-    const threadStyle = isMobile && !keyboardOpen
-      ? { height: `calc(${viewHeight}px - 4rem - env(safe-area-inset-bottom, 0px))` }
-      : { height: `${viewHeight}px` };
-
-    return (
-      <div className="max-w-2xl mx-auto px-4 pt-14 md:pt-28 pb-2 md:pb-4 flex flex-col" style={threadStyle} ref={threadRef} data-testid="dm-thread">
+    const threadContent = (
+      <div
+        className="fixed inset-0 z-[9999] flex flex-col bg-[#FAF6EE]"
+        ref={threadRef}
+        data-testid="dm-thread"
+      >
+        <div className="max-w-2xl mx-auto w-full px-4 flex flex-col flex-1 min-h-0" style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top, 0.75rem))' }}>
         {/* Thread header */}
-        <div className="flex items-center gap-3 mb-2 md:mb-4">
+        <div className="flex items-center gap-3 mb-2 md:mb-4 shrink-0">
           <Button variant="ghost" size="sm" onClick={() => { setActiveConv(null); setMessages([]); setConvContext(null); fetchConversations(); }} data-testid="dm-back-btn">
             <ArrowLeft className="w-4 h-4" />
           </Button>
@@ -234,7 +219,7 @@ const MessagesPage = () => {
 
         {/* Context card */}
         {convContext && (
-          <Card className="p-3 mb-4 bg-purple-50 border-purple-200" data-testid="dm-context-card">
+          <Card className="p-3 mb-4 bg-purple-50 border-purple-200 shrink-0" data-testid="dm-context-card">
             <div className="flex items-center gap-2 text-sm text-purple-700">
               <Disc className="w-4 h-4 shrink-0" />
               <span>
@@ -248,8 +233,8 @@ const MessagesPage = () => {
           </Card>
         )}
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto space-y-3 mb-2 md:mb-4 min-h-0" data-testid="dm-messages-list">
+        {/* Messages — scrollable middle section */}
+        <div className="flex-1 overflow-y-auto space-y-3 min-h-0" data-testid="dm-messages-list">
           {messages.length === 0 && activeConv === 'new' && (
             <p className="text-center text-sm text-muted-foreground py-8">Start the conversation...</p>
           )}
@@ -269,7 +254,8 @@ const MessagesPage = () => {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input */}
+        {/* Input — always pinned at bottom */}
+        <div className="shrink-0 pt-2" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0.75rem))' }}>
         {convStatus === 'pending' && messages.length > 0 && messages[0].sender_id !== user?.id ? (
           <div className="flex gap-2 items-center p-3 rounded-xl bg-amber-50 border border-amber-200" data-testid="dm-request-actions">
             <MessageCircleMore className="w-4 h-4 text-amber-600 shrink-0" />
@@ -304,7 +290,7 @@ const MessagesPage = () => {
           <Input
             value={newMsg} onChange={e => setNewMsg(e.target.value)} onKeyDown={handleKeyDown}
             placeholder="Type a message..." className="flex-1 border-honey/50 rounded-full px-4"
-            data-testid="dm-input" autoFocus
+            data-testid="dm-input" autoFocus ref={inputRef}
           />
           <Button onClick={sendMessage} disabled={sending || !newMsg.trim()}
             className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full h-10 w-10 p-0 shrink-0" data-testid="dm-send-btn">
@@ -312,8 +298,11 @@ const MessagesPage = () => {
           </Button>
         </div>
         )}
+        </div>
+        </div>
       </div>
     );
+    return createPortal(threadContent, document.body);
   }
 
   // Separate active and pending conversations

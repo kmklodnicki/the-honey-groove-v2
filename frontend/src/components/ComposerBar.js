@@ -866,8 +866,8 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                   Add a photo of your haul (Optional)
                 </button>
               ) : (
-                <div className="relative w-full aspect-video group">
-                  <img src={postPhotoPreview} className="w-full h-full object-cover rounded-xl border border-stone-200 shadow-sm" alt="Haul preview" />
+                <div className="relative w-full max-h-[200px] overflow-hidden rounded-xl group">
+                  <img src={postPhotoPreview} className="w-full h-full object-cover border border-stone-200 shadow-sm" alt="Haul preview" />
                   <button 
                     onClick={clearPostPhoto}
                     className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 shadow-md hover:bg-red-600 transition"
@@ -877,12 +877,14 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                 </div>
               )}
             </div>
-            {/* 5. Submit */}
+          </div>
+          </div>
+          {/* Sticky footer — always visible */}
+          <div className="shrink-0 px-6 max-sm:px-4 pt-3 max-sm:pt-2 border-t border-honey/15 bg-white" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 0.75rem))' }}>
             <Button onClick={submitNewHaul} disabled={submitting || haulItems.length === 0 || !haulCaption.trim()} className="w-full bg-amber-100 text-amber-800 hover:bg-amber-200 rounded-full" data-testid="haul-submit-btn">
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Package className="w-4 h-4 mr-2" />}
               Post Haul ({haulItems.length} record{haulItems.length !== 1 ? 's' : ''})
             </Button>
-          </div>
           </div>
         </DialogContent>
       </Dialog>
