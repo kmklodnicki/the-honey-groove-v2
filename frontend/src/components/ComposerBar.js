@@ -24,7 +24,7 @@ const MOOD_CONFIG = {
   'In The Zone': { emoji: '\u{1F3AF}', bg: '#0a1a0a', btnColor: '#2a6a2a', placeholder: 'locked in. what are you working to?' },
   'Me Time': { emoji: '\u{1F9CD}', bg: '#1a1230', btnColor: '#6a3a9a', placeholder: 'just you and the record...' },
   'Cleaning Session': { emoji: '\u{1F9FC}', bg: '#0a2a1a', btnColor: '#3a9a5a', placeholder: 'fresh grooves only...' },
-  'Spin Party': { emoji: '\u{1FA69}', bg: '#1a0a2a', btnColor: '#aa3a8a', placeholder: "who's pulling up?" },
+  'Spin Party': { emoji: '\u{1FAA9}', bg: '#1a0a2a', btnColor: '#aa3a8a', placeholder: "who's pulling up?" },
   'Limited Edition': { emoji: '\u{1F48E}', bg: '#0a0a2a', btnColor: '#5a5aaa', placeholder: 'how rare is this one?' },
   'Vibe Check': { emoji: '\u2728', bg: '#2a1a08', btnColor: '#aa7a3a', placeholder: "what's the vibe?" },
   'Late Night': { emoji: '\u{1F319}', bg: '#0a0a1a', btnColor: '#4a4a8a', placeholder: 'what are you listening to at this hour?' },
@@ -711,8 +711,11 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                     return (
                       <button key={m}
                         onClick={() => setSpinMood(isSelected ? '' : m)}
-                        className="px-2 py-1.5 rounded-lg text-[11px] font-medium transition-all leading-tight"
+                        className="flex items-center justify-center rounded-lg font-medium transition-all whitespace-nowrap"
                         style={{
+                          height: '36px',
+                          fontSize: '10.5px',
+                          padding: '0 6px',
                           background: isSelected ? 'linear-gradient(135deg, #FFB300, #FFA000)' : '#FFF8E1',
                           color: isSelected ? '#000' : '#3E2723',
                           border: isSelected ? '2px solid #FFA000' : '1.5px solid rgba(255,179,0,0.2)',

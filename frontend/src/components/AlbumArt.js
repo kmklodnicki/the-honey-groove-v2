@@ -6,10 +6,12 @@ import UnofficialPill from './UnofficialPill';
 const FALLBACK = '/vinyl-placeholder.svg';
 const ART_CACHE_NAME = 'honeygroove-album-art-v1';
 
-// Discogs CDN supports WebP — swap extension for smaller payloads
+// Discogs CDN does NOT support WebP extension swapping (returns 403).
+// Only convert non-Discogs URLs that support WebP.
 const toWebP = (url) => {
   if (!url) return url;
-  if (url.includes('discogs') && !url.includes('.webp')) {
+  if (url.includes('discogs')) return url;
+  if (!url.includes('.webp')) {
     return url.replace(/\.(jpe?g|png)$/i, '.webp');
   }
   return url;
