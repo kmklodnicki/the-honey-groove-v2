@@ -218,6 +218,7 @@ def listing_alert_email(username: str, album: str, artist: str, cover_url: str, 
 
 def new_dm(username: str, sender: str, context_record: str, dm_url: str) -> dict:
     context_line = f'<p style="{MUTED}">Re: {context_record}</p>' if context_record else ""
+    settings_url = f"{FRONTEND}/settings"
     body = f"""
     <p><strong>{sender}</strong> sent you a message on the Honey Groove<sup style="font-size:0.6em">™</sup>.</p>
     {context_line}
@@ -225,9 +226,10 @@ def new_dm(username: str, sender: str, context_record: str, dm_url: str) -> dict
         <a href="{dm_url}" style="{BTN}">read it</a>
     </div>
     """
+    unsub_line = f'<p style="margin:8px 0 0 0;"><a href="{settings_url}" style="color:#C8861A;text-decoration:underline;font-size:12px;">manage email preferences</a></p>'
     return {
         "subject": f"{sender} sent you a message.",
-        "html": wrap_email(body),
+        "html": wrap_email(body, settings_url),
     }
 
 
