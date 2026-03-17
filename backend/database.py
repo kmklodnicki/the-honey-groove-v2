@@ -16,12 +16,23 @@ from datetime import datetime, timezone, timedelta
 ROOT_DIR = Path(__file__).parent
 load_dotenv()
 
-# MongoDB — connect with retry
+# MongoDB — connect with pool limits for M0 Atlas (500 connection cap)
 import asyncio as _asyncio
 
 mongo_url = os.environ['MONGO_URL']
 _db_name = os.environ['DB_NAME']
-client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=10000, connectTimeoutMS=10000)
+client = AsyncIOMotorClient(
+    mongo_url,
+    serverSelectionTimeoutMS=10000,
+    connectTimeoutMS=10000,
+    maxPoolSize=10,          # Max 10 connections per process (M0 = 500 cap shared across all clients)
+    minPoolSize=1,           # Keep 1 warm connection
+    maxIdleTimeMS=45000,     # Close idle connections after 45s
+    maxConnecting=2,         # Limit concurrent connection establishment
+    socketTimeoutMS=30000,   # Kill stuck operations after 30s
+    retryWrites=True,
+    retryReads=True,
+)
 db = client[_db_name]
 
 logger = logging.getLogger("database")

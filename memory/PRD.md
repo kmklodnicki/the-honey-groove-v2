@@ -43,6 +43,12 @@ The HoneyGroove is a vinyl record social platform where users can track collecti
 - **Discogs Structured Search Fallback** — Enhanced `/api/discogs/search` with smart fallback: when initial results don't contain ALL query words, tries Discogs API's `release_title` + `artist` structured params. This finds exact album matches (e.g., "ME!" by Taylor Swift) that the basic `q` param misses.
 - **ISO Modal "View More" Button** — Added progressive loading to DiscogsPicker: shows 6 results initially with a "View More (N remaining)" button that loads 6 more per click. Increased max-height from 48 to 60 for better UX.
 
+### Session 9 (2026-03-17) — BLOCK-320
+- **CRITICAL: MongoDB Atlas Connection Limit Fix** — M0 cluster exceeded 500 connection threshold. Root cause: `AsyncIOMotorClient` had no pool limits (default maxPoolSize=100), no idle timeout (zombie connections), aggressive backfill tasks. Fix: `maxPoolSize=10`, `minPoolSize=1`, `maxIdleTimeMS=45000`, `socketTimeoutMS=30000`, `retryWrites/retryReads=True`. Reduced backfill batches (500→100, 200→50), increased sleep (1.1s→2s). Enhanced `/api/health` with pool stats.
+- **Picture Disc Detection** — Fixed `search_discogs()`, `get_discogs_release()`, `_parse_discogs_raw()` to detect "Picture Disc" from format descriptions array when text field is empty.
+- **ISO View More Button Fix** — Moved button OUTSIDE scrollable container on both ComposerBar and Honeypot modals. Added `isoShowCount` state to ComposerBar.
+- **ISO Color Variant Storage** — Both `submitISO` functions now send `color_variant` from selected Discogs release.
+
 ## Backlog
 
 ### P1 - Upcoming

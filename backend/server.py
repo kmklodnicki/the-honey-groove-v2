@@ -121,18 +121,30 @@ async def handle_preflight(request: Request, call_next):
 @app.get("/health")
 @app.get("/api/health")
 async def health_check():
-    return {"status": "ok", "service": "honeygroove-api"}
+    pool_info = {}
+    try:
+        server_info = client.topology_description.server_descriptions()
+        for addr, desc in server_info.items():
+            pool_info[f"{addr[0]}:{addr[1]}"] = str(desc.server_type)
+        # Ping to verify connection
+        await client.admin.command('ping')
+        pool_info["db_status"] = "connected"
+    except Exception as e:
+        pool_info["db_status"] = f"error: {str(e)}"
+    pool_info["maxPoolSize"] = client.options.pool_options.max_pool_size
+    pool_info["minPoolSize"] = client.options.pool_options.min_pool_size
+    return {"status": "ok", "service": "honeygroove-api", "pool": pool_info}
 
 
 async def _backfill_color_variants():
-    """Background task: backfill color_variant for records missing it."""
+    """Background task: backfill color_variant for records missing it (connection-safe)."""
     from database import get_discogs_release
-    await asyncio.sleep(15)  # Wait for server to settle
+    await asyncio.sleep(30)  # Wait for server to settle
     try:
         records = await db.records.find(
             {"discogs_id": {"$ne": None}, "$or": [{"color_variant": None}, {"color_variant": {"$exists": False}}]},
             {"_id": 0, "id": 1, "discogs_id": 1, "title": 1}
-        ).limit(500).to_list(500)
+        ).limit(100).to_list(100)  # Reduced batch size to limit connection pressure
         if not records:
             logger.info("Variant backfill: no records need updating")
             return
@@ -147,7 +159,7 @@ async def _backfill_color_variants():
                         {"$set": {"color_variant": release_data["color_variant"]}}
                     )
                     updated += 1
-                await asyncio.sleep(1.1)  # Respect Discogs rate limit
+                await asyncio.sleep(2)  # Increased sleep to reduce connection contention
             except Exception as e:
                 logger.debug(f"Variant backfill skip {rec.get('title')}: {e}")
         logger.info(f"Variant backfill complete: {updated}/{len(records)} updated")
@@ -156,14 +168,14 @@ async def _backfill_color_variants():
 
 
 async def _backfill_iso_color_variants():
-    """Background task: backfill color_variant for ISO items missing it."""
+    """Background task: backfill color_variant for ISO items missing it (connection-safe)."""
     from database import get_discogs_release
-    await asyncio.sleep(20)  # Stagger after records backfill
+    await asyncio.sleep(60)  # Stagger well after records backfill
     try:
         isos = await db.iso_items.find(
             {"discogs_id": {"$ne": None}, "$or": [{"color_variant": None}, {"color_variant": {"$exists": False}}]},
             {"_id": 0, "id": 1, "discogs_id": 1, "album": 1}
-        ).limit(200).to_list(200)
+        ).limit(50).to_list(50)  # Reduced batch size
         if not isos:
             logger.info("ISO variant backfill: no items need updating")
             return
@@ -178,7 +190,7 @@ async def _backfill_iso_color_variants():
                         {"$set": {"color_variant": release_data["color_variant"]}}
                     )
                     updated += 1
-                await asyncio.sleep(1.1)  # Respect Discogs rate limit
+                await asyncio.sleep(2)  # Increased sleep to reduce connection contention
             except Exception as e:
                 logger.debug(f"ISO variant backfill skip {iso.get('album')}: {e}")
         logger.info(f"ISO variant backfill complete: {updated}/{len(isos)} updated")
