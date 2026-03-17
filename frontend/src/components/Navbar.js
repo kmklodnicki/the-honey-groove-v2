@@ -466,6 +466,10 @@ const DMBadge = () => {
 };
 
 // Notification Bell Component
+// Global dedup state — shared across all NotificationBell instances to prevent double browser notifications
+const _globalShownNotifIds = new Set();
+let _globalPrevCount = -1;
+
 const NotificationBell = () => {
   const { token, API, user } = useAuth();
   const navigate = useNavigate();
@@ -474,8 +478,6 @@ const NotificationBell = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [open, setOpen] = useState(false);
-  const prevCountRef = React.useRef(-1); // -1 = skip first render to prevent initial notification flood
-  const shownNotifIds = React.useRef(new Set()); // track shown browser notifications
   const hasNotificationAPI = typeof Notification !== 'undefined';
   const [pushEnabled, setPushEnabled] = React.useState(hasNotificationAPI && Notification.permission === 'granted');
 
@@ -491,17 +493,17 @@ const NotificationBell = () => {
       const resp = await axios.get(`${API}/notifications/unread-count`, { headers: { Authorization: `Bearer ${token}` } });
       const newCount = resp.data.count;
       // Show browser notification only if count increased and not on first load
-      if (hasNotificationAPI && pushEnabled && prevCountRef.current >= 0 && newCount > prevCountRef.current) {
+      if (hasNotificationAPI && pushEnabled && _globalPrevCount >= 0 && newCount > _globalPrevCount) {
         try {
           const latest = await axios.get(`${API}/notifications?limit=1`, { headers: { Authorization: `Bearer ${token}` } });
           if (latest.data.length > 0 && !latest.data[0].read) {
             const n = latest.data[0];
-            // Skip if we already showed this notification
-            if (!shownNotifIds.current.has(n.id)) {
-              shownNotifIds.current.add(n.id);
+            // Skip if any NotificationBell instance already showed this notification
+            if (!_globalShownNotifIds.has(n.id)) {
+              _globalShownNotifIds.add(n.id);
               // Cap memory
-              if (shownNotifIds.current.size > 50) {
-                shownNotifIds.current.delete(shownNotifIds.current.values().next().value);
+              if (_globalShownNotifIds.size > 50) {
+                _globalShownNotifIds.delete(_globalShownNotifIds.values().next().value);
               }
               new Notification('The HoneyGroove', {
                 body: n.body || n.title || 'You have a new notification',
@@ -512,7 +514,7 @@ const NotificationBell = () => {
           }
         } catch { /* ignore */ }
       }
-      prevCountRef.current = newCount;
+      _globalPrevCount = newCount;
       setUnreadCount(newCount);
     } catch { /* ignore */ }
   }, [API, token, pushEnabled, hasNotificationAPI]);
