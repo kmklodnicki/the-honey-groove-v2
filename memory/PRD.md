@@ -51,6 +51,9 @@ The HoneyGroove is a vinyl record social platform where users can track collecti
 - **BLOCK-313: ISO Modal Variant Art Fix** — Implemented batch cover resolution: collects all variants missing `cover_url`, does batch lookups against `records` and `discogs_releases` collections, falls back to Discogs API (max 3 calls). Added cover fallback to variant release endpoint and ISO post builder. Zero blank covers in search results.
 - **Variant Page Market/Community Fallbacks** — When variant has no market data or 0 community stats, falls back to: (1) sibling releases with same `master_id` in local DB, (2) Discogs master release's `main_release`, (3) master's `lowest_price` estimate. Added `get_discogs_master()` function for `/masters/{id}` endpoint. Fixed slug resolution with fuzzy regex to match titles with special chars (e.g., "Speak Now (Taylor's Version)"). Added `scarcity` and `community` sections to slug endpoint response.
 
+### Session 10 (2026-03-17) — BLOCK-314
+- **P0 Fix: Mobile Messaging Input Hidden by Keyboard** — Thread container used `height: 100vh` which doesn't account for mobile virtual keyboard. Fix: Added `visualViewport` API hook that listens to `resize` events and dynamically sets container height to `${visualViewport.height}px`. Added `pb-20 md:pb-4` to prevent mobile bottom nav from overlapping the input. Messages auto-scroll to bottom on viewport resize.
+
 ## Backlog
 
 ### P1 - Upcoming
