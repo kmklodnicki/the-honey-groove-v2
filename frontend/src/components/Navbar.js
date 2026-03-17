@@ -170,7 +170,7 @@ const Navbar = () => {
                     <BeeAvatar user={user} className="h-10 w-10" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_4px_6px_-2px_rgba(0,0,0,0.05)] backdrop-blur-sm bg-white/95 border border-honey/20" align="end" forceMount style={{ zIndex: 2147483647, position: 'fixed' }}>
+                <DropdownMenuContent className="w-56 shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1),0_4px_6px_-2px_rgba(0,0,0,0.05)] backdrop-blur-sm bg-white/95 border border-honey/20" align="end" sideOffset={8} forceMount style={{ zIndex: 2147483647 }}>
                   <div className="flex items-center gap-2 p-2">
                     <BeeAvatar user={user} className="h-8 w-8" />
                     <div className="flex flex-col">
