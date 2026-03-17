@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { Heart, Reply, Trash2, X } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
@@ -30,13 +31,14 @@ const CommentImage = ({ src }) => {
         onClick={() => setExpanded(true)}
         data-testid="comment-image-thumb"
       />
-      {expanded && (
-        <div className="fixed inset-0 z-[99999] bg-black/80 flex items-center justify-center p-4" onClick={() => setExpanded(false)} data-testid="comment-image-lightbox">
-          <button className="absolute top-4 right-4 text-white/80 hover:text-white bg-black/40 rounded-full p-2" onClick={() => setExpanded(false)} data-testid="comment-image-close">
+      {expanded && createPortal(
+        <div className="fixed inset-0 z-[99999] bg-black/85 flex items-center justify-center p-6" onClick={() => setExpanded(false)} data-testid="comment-image-lightbox">
+          <button className="absolute top-5 right-5 text-white/90 hover:text-white bg-white/15 hover:bg-white/25 backdrop-blur-sm rounded-full p-2.5 transition-colors" onClick={() => setExpanded(false)} data-testid="comment-image-close">
             <X className="w-5 h-5" />
           </button>
-          <img src={resolved} alt="Comment attachment" className="max-w-full max-h-[85vh] rounded-lg object-contain" />
-        </div>
+          <img src={resolved} alt="Comment attachment" className="max-w-[90vw] max-h-[85vh] rounded-xl object-contain shadow-2xl" onClick={e => e.stopPropagation()} />
+        </div>,
+        document.body
       )}
     </>
   );
