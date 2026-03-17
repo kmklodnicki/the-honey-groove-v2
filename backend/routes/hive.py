@@ -861,22 +861,30 @@ async def composer_iso(data: ISOPostCreate, user: Dict = Depends(require_auth)):
     }
     await db.iso_items.insert_one(iso_doc)
     
-    # Create post
-    post_id = str(uuid.uuid4())
-    post_doc = {
-        "id": post_id,
-        "user_id": user["id"],
-        "post_type": "ISO",
-        "caption": data.caption,
-        "iso_id": iso_id,
-        "intent": data.intent or "seeking",
-        "created_at": now
-    }
-    await db.posts.insert_one(post_doc)
-    await parse_and_notify_mentions(post_doc.get("caption", ""), post_doc["id"], user["id"])
-    await _shadow_flag_post(post_doc, user)
+    # Only create a Hive post if user wants to share
+    if data.post_to_hive:
+        post_id = str(uuid.uuid4())
+        post_doc = {
+            "id": post_id,
+            "user_id": user["id"],
+            "post_type": "ISO",
+            "caption": data.caption,
+            "iso_id": iso_id,
+            "intent": data.intent or "seeking",
+            "created_at": now
+        }
+        await db.posts.insert_one(post_doc)
+        await parse_and_notify_mentions(post_doc.get("caption", ""), post_doc["id"], user["id"])
+        await _shadow_flag_post(post_doc, user)
+        return await _emit_and_return(await build_post_response(post_doc, user["id"]), user["id"])
     
-    return await _emit_and_return(await build_post_response(post_doc, user["id"]), user["id"])
+    # Silent ISO — return minimal response
+    return {
+        "id": iso_id, "user_id": user["id"], "post_type": "ISO",
+        "caption": data.caption or "", "created_at": now,
+        "user": {"id": user["id"], "username": user.get("username", "")},
+        "likes_count": 0, "comments_count": 0, "is_liked": False,
+    }
 
 @router.post("/composer/vinyl-mood", response_model=PostResponse)
 async def composer_vinyl_mood(data: VinylMoodCreate, user: Dict = Depends(require_auth)):

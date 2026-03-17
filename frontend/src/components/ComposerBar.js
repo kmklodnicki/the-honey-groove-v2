@@ -59,6 +59,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
   const [spinTrackManual, setSpinTrackManual] = useState(false);
   const [postToHive, setPostToHive] = useState(true);
   const [haulPostToHive, setHaulPostToHive] = useState(true);
+  const [isoPostToHive, setIsoPostToHive] = useState(true);
 
   // New Haul
   const [haulStoreName, setHaulStoreName] = useState('');
@@ -118,6 +119,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
     setIsoArtist(''); setIsoAlbum(''); setIsoPressing(''); setIsoCondition('');
     setIsoPriceMin(''); setIsoPriceMax(''); setIsoCaption('');
     setIsoDiscogsQuery(''); setIsoDiscogsResults([]); setIsoSelectedRelease(null); setIsoManualMode(false); setIsoIntent(null);
+    setIsoPostToHive(true);
     setNoteText(''); setNoteRecordId(''); setNoteShowRecordPicker(false); setNoteImageUrl(''); setNoteUploading(false); setNoteSearch(''); setNoteSearchResults([]);
     setRandRecord(null); setRandCaption(''); setRandLoading(false); setRandAnimating(false);
     setPollQuestion(''); setPollOptions(['', '']);
@@ -434,6 +436,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
     const artist = isoArtist || isoSelectedRelease?.artist;
     const album = isoAlbum || isoSelectedRelease?.title;
     if (!artist || !album) { toast.error('artist and album are required.'); return; }
+    if (isoPostToHive && !isoCaption.trim()) { toast.error('a caption is required to share with the hive.'); return; }
     setSubmitting(true);
     try {
       await axios.post(`${API}/composer/iso`, {
@@ -448,9 +451,10 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
         target_price_max: isoPriceMax ? parseFloat(isoPriceMax) : null,
         caption: isoCaption || null,
         intent: isoIntent || 'seeking',
+        post_to_hive: isoPostToHive,
       }, { headers: { Authorization: `Bearer ${token}` }});
-      toast.success(isoIntent === 'dreaming' ? 'added to dream list.' : 'iso posted.');
-      trackEvent('iso_posted');
+      toast.success(isoPostToHive ? (isoIntent === 'dreaming' ? 'dream added & shared with the hive.' : 'iso posted to the hive.') : (isoIntent === 'dreaming' ? 'added to dream list.' : 'iso saved.'));
+      trackEvent(isoPostToHive ? 'iso_posted' : 'silent_iso_logged');
       closeModal(); onPostCreated?.();
     } catch (err) { toast.error(err.response?.data?.detail || 'Failed to post'); }
     finally { setSubmitting(false); }
@@ -1034,24 +1038,48 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                       <Input placeholder="Min budget ($)" type="number" value={isoPriceMin} onChange={e => setIsoPriceMin(e.target.value)} className="border-honey/50" />
                       <Input placeholder="Max budget ($)" type="number" value={isoPriceMax} onChange={e => setIsoPriceMax(e.target.value)} className="border-honey/50" />
                     </div>
-                    <MentionTextarea placeholder="I'm looking for this because..." value={isoCaption} onChange={setIsoCaption} className="border-honey/50 resize-none" rows={2} data-testid="iso-caption-input" />
-                    <Button onClick={submitISO} disabled={submitting || !isoCaption.trim() || (isoManualMode && (!isoArtist || !isoAlbum)) || (!isoManualMode && !isoSelectedRelease)}
-                      className="w-full rounded-full"
-                      style={isoIntent === 'dreaming'
-                        ? { background: '#f3f4f6', color: '#374151' }
-                        : { background: 'linear-gradient(135deg, #FFD700, #DAA520)', color: '#2A1A06' }
-                      }
-                      data-testid="iso-submit-btn">
-                      {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Search className="w-4 h-4 mr-2" />}
-                      {isoIntent === 'dreaming' ? 'Add to Dream List' : 'Post to the Hive'}
-                    </Button>
+                    <MentionTextarea placeholder="I'm looking for this because..." value={isoCaption} onChange={setIsoCaption} className="border-honey/50 resize-none" rows={2} data-testid="iso-caption-input" style={{ borderColor: 'rgba(200,134,26,0.5)' }} />
                   </>
                 )}
               </>
             )}
           </div>
           </div>
-    </DialogContent> {/* <--- Add this */}
+          {/* Sticky footer with toggle — only show when record is selected */}
+          {(isoManualMode || isoSelectedRelease) && (
+          <div className="shrink-0 px-6 max-sm:px-4 pt-3 max-sm:pt-2 border-t border-honey/15 bg-white" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 0.75rem))' }}>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-sm font-medium text-stone-600" data-testid="iso-hive-label">
+                Post to Hive
+              </label>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={isoPostToHive}
+                onClick={() => setIsoPostToHive(!isoPostToHive)}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${isoPostToHive ? 'bg-amber-500' : 'bg-stone-300'}`}
+                data-testid="iso-post-to-hive-toggle"
+              >
+                <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${isoPostToHive ? 'translate-x-4' : 'translate-x-0.5'}`} />
+              </button>
+            </div>
+            {!isoPostToHive && <p className="text-xs text-stone-400 mb-2" data-testid="iso-silent-hint">{isoIntent === 'dreaming' ? 'Added to your Dream List only.' : 'Saved privately — not posted to the feed.'}</p>}
+            <Button onClick={submitISO} disabled={submitting || (isoManualMode && (!isoArtist || !isoAlbum)) || (!isoManualMode && !isoSelectedRelease)}
+              className="w-full rounded-full"
+              style={isoIntent === 'dreaming'
+                ? { background: '#f3f4f6', color: '#374151' }
+                : { background: 'linear-gradient(135deg, #FFD700, #DAA520)', color: '#2A1A06' }
+              }
+              data-testid="iso-submit-btn">
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Search className="w-4 h-4 mr-2" />}
+              {isoPostToHive
+                ? (isoIntent === 'dreaming' ? 'Add to Dream List & Share' : 'Post ISO to the Hive')
+                : (isoIntent === 'dreaming' ? 'Add to Dream List' : 'Save ISO Privately')
+              }
+            </Button>
+          </div>
+          )}
+    </DialogContent>
   </Dialog>
 
       {/* ═══ A Note Modal ═══ */}

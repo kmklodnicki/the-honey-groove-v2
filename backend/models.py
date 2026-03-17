@@ -324,6 +324,7 @@ class ISOPostCreate(BaseModel):
     cover_url: Optional[str] = None
     year: Optional[int] = None
     intent: Optional[str] = "seeking"
+    post_to_hive: bool = True
 
 class VinylMoodCreate(BaseModel):
     mood: str
