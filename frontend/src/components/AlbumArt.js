@@ -7,19 +7,12 @@ const FALLBACK = '/vinyl-placeholder.svg';
 const ART_CACHE_NAME = 'honeygroove-album-art-v1';
 
 // Discogs CDN does NOT support WebP extension swapping (returns 403).
-// Only convert non-Discogs URLs that support WebP.
-const toWebP = (url) => {
-  if (!url) return url;
-  if (url.includes('discogs')) return url;
-  if (!url.includes('.webp')) {
-    return url.replace(/\.(jpe?g|png)$/i, '.webp');
-  }
-  return url;
-};
+// Since we now proxy through image-proxy, skip WebP conversion entirely.
+const toWebP = (url) => url;
 
-// Only bust cache for non-CDN (our own uploads). Discogs URLs are already immutable.
+// Skip cache-busting for proxied URLs (already have query params)
 const bustCache = (url) => {
-  if (!url || url.includes('discogs.com')) return url;
+  if (!url || url.includes('image-proxy') || url.includes('discogs.com') || url.includes('res.cloudinary.com')) return url;
   const sep = url.includes('?') ? '&' : '?';
   return `${url}${sep}v=2.4.0`;
 };
@@ -179,14 +172,7 @@ const AlbumArt = ({
           style={{ transitionDuration: '0.3s' }}
           onLoad={async (e) => {
             setStatus('loaded');
-            // Save to in-memory and CacheStorage
             if (cacheKey) memSet(cacheKey, e.target.src);
-            if (webpSrc && 'caches' in window) {
-              try {
-                const resp = await fetch(e.target.src, { mode: 'cors' });
-                if (resp.ok) cacheArt(webpSrc, resp);
-              } catch { /* skip caching */ }
-            }
           }}
           onError={(e) => {
             if (!e.target.dataset.proxied && resolvedSrc) {

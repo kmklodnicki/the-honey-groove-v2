@@ -115,6 +115,14 @@ The HoneyGroove is a vinyl record social platform where users can track collecti
 - **PWA Avatar Fix** — Profile pictures weren't loading in PWA standalone mode (showing initials only). Root cause: `resolveImageUrl` was returning direct URLs to `wax-collector-app.emergent.host` which fail CORS in PWA standalone context. Fix: All Emergent-hosted and `/api/files/serve/` URLs are now routed through the backend image proxy (`/api/image-proxy`), serving images from the same origin. The service worker caches these proxy responses so it's a one-time cost per image.
 - **Removed PWA Refresh Button** — Removed `StandaloneRefreshButton` from the Hive page since users can pull-to-refresh in PWA mode.
 
+### Session 12 (2026-03-17) — Album Art Hydration Fix (Recurring)
+- **Fixed album art not loading in Haul/ISO modals and variant pages** — Multiple root causes:
+  1. `RecordSearchResult.js` had `crossOrigin="anonymous"` which forces CORS checks that Discogs CDN doesn't support → removed it, now uses `resolveImageUrl` for consistency.
+  2. `AlbumArt.js` had aggressive WebP conversion (`toWebP`) and cache-busting (`bustCache`) that mangled URLs → disabled WebP conversion entirely, skipped cache-busting for proxied/CDN URLs.
+  3. `AlbumArt.js` `onLoad` handler attempted a CORS `fetch()` for CacheStorage that would fail for Discogs images → removed, simplified to in-memory cache only.
+  4. `resolveImageUrl` now lets Discogs CDN URLs (`i.discogs.com`) pass through directly to the browser (which loads them fine), while Emergent-hosted URLs go through the image proxy.
+  5. Backend image proxy no longer sends Discogs API auth headers to the image CDN (`i.discogs.com`), only to `api.discogs.com`.
+
 ## Backlog
 
 ### P1 - Upcoming

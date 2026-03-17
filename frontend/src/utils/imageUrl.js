@@ -34,6 +34,10 @@ export function resolveImageUrl(src) {
   // Cloudinary URLs — always work, return as-is
   if (src.includes('res.cloudinary.com')) return enforceHttps(src);
 
+  // Discogs image CDN — load directly in browser (no CORS issues for img tags)
+  // Server-side proxy can't fetch these (403), but browsers load them fine
+  if (src.includes('i.discogs.com')) return enforceHttps(src);
+
   // Emergent file host URLs → proxy through our backend to avoid CORS issues in PWA standalone mode
   if (src.includes('emergent.host') || src.includes('emergent.com')) {
     return `${API}/image-proxy?url=${encodeURIComponent(enforceHttps(src))}`;
