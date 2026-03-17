@@ -23,6 +23,9 @@ import requests
 
 router = APIRouter()
 
+# Import shared image proxy helper
+from utils.image_helpers import proxy_cover_url as _proxy_cover_url, proxy_records_cover_urls as _proxy_records_cover_urls
+
 # ============== DISCOGS ROUTES ==============
 
 @router.get("/discogs/search", response_model=List[DiscogsSearchResult])
@@ -116,6 +119,7 @@ async def search_records_discogs(q: str = Query(..., min_length=2), user: Dict =
                             if r.get("discogs_id") not in seen_ids:
                                 structured.append(r)
                                 seen_ids.add(r.get("discogs_id"))
+                        _proxy_records_cover_urls(structured)
                         return [DiscogsSearchResult(**r) for r in structured]
             except Exception:
                 pass
@@ -126,6 +130,8 @@ async def search_records_discogs(q: str = Query(..., min_length=2), user: Dict =
         if cleaned and cleaned != q:
             results = search_discogs(cleaned)
 
+    # Proxy all cover URLs through our image proxy to avoid CDN hotlink blocking
+    _proxy_records_cover_urls(results)
     return [DiscogsSearchResult(**r) for r in results]
 
 @router.get("/discogs/release/{release_id}")
@@ -133,6 +139,8 @@ async def get_discogs_release_info(release_id: int, user: Dict = Depends(require
     result = get_discogs_release(release_id)
     if not result:
         raise HTTPException(status_code=404, detail="Release not found")
+    if result.get("cover_url"):
+        result["cover_url"] = _proxy_cover_url(result["cover_url"])
     return result
 
 

@@ -118,6 +118,63 @@ async def handle_preflight(request: Request, call_next):
     return response
 
 
+# ── Image proxy middleware: rewrite cover_url in JSON responses ──
+from urllib.parse import quote as _url_quote
+import json as _json
+
+def _rewrite_cover_urls(obj):
+    """Recursively rewrite cover_url values to route through image proxy."""
+    if isinstance(obj, dict):
+        for key, val in obj.items():
+            if key == "cover_url" and isinstance(val, str) and val.startswith("http") and "/api/image-proxy" not in val:
+                obj[key] = f"/api/image-proxy?url={_url_quote(val, safe='')}"
+            elif isinstance(val, (dict, list)):
+                _rewrite_cover_urls(val)
+    elif isinstance(obj, list):
+        for item in obj:
+            if isinstance(item, (dict, list)):
+                _rewrite_cover_urls(item)
+
+@app.middleware("http")
+async def proxy_cover_urls_middleware(request: Request, call_next):
+    response = await call_next(request)
+    # Only process JSON API responses (skip image-proxy, files, websocket, etc.)
+    content_type = response.headers.get("content-type", "")
+    if "application/json" not in content_type:
+        return response
+    path = request.url.path
+    # Skip endpoints that don't return cover_url data
+    if path.startswith("/api/image-proxy") or path.startswith("/api/health") or path.startswith("/api/ws"):
+        return response
+    # Read and rewrite the response body
+    body_bytes = b""
+    async for chunk in response.body_iterator:
+        if isinstance(chunk, bytes):
+            body_bytes += chunk
+        else:
+            body_bytes += chunk.encode("utf-8")
+    try:
+        data = _json.loads(body_bytes)
+        _rewrite_cover_urls(data)
+        new_body = _json.dumps(data).encode("utf-8")
+        # Build new headers, updating content-length
+        headers = dict(response.headers)
+        headers["content-length"] = str(len(new_body))
+        return Response(
+            content=new_body,
+            status_code=response.status_code,
+            headers=headers,
+            media_type="application/json",
+        )
+    except (ValueError, UnicodeDecodeError):
+        # Not valid JSON, return as-is
+        return Response(
+            content=body_bytes,
+            status_code=response.status_code,
+            headers=dict(response.headers),
+        )
+
+
 # ── Health check ──
 @app.get("/health")
 @app.get("/api/health")

@@ -13,6 +13,7 @@ from fastapi import APIRouter, Query, Depends
 from fastapi.responses import HTMLResponse
 from database import db, get_discogs_release, get_discogs_market_data, get_discogs_master_versions, get_discogs_master, logger, get_current_user, derive_variant_tag
 from datetime import datetime, timezone
+from utils.image_helpers import proxy_cover_url
 import asyncio
 import os
 import re
@@ -402,7 +403,7 @@ async def get_variant_page(artist_slug: str, album_slug: str, variant_slug: str)
             "album": album,
             "variant": variant,
             "year": year,
-            "cover_url": cover_url,
+            "cover_url": proxy_cover_url(cover_url),
             "format": fmt,
             "label": label,
             "catalog_number": catno,
@@ -669,7 +670,7 @@ async def get_variant_by_release_id(release_id: int, force_refresh: bool = False
             "album": album,
             "variant": variant,
             "year": year,
-            "cover_url": cover_url,
+            "cover_url": proxy_cover_url(cover_url),
             "format": fmt,
             "label": label,
             "catalog_number": catno,

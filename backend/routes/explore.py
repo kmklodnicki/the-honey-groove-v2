@@ -7,6 +7,7 @@ import uuid
 from database import db, require_auth, get_current_user, security, logger, create_notification, get_hidden_user_ids, get_all_blocked_ids
 from database import DISCOGS_TOKEN, DISCOGS_USER_AGENT
 from database import get_discogs_market_data
+from utils.image_helpers import proxy_cover_url, proxy_records_cover_urls
 DISCOGS_API_BASE = "https://api.discogs.com"
 import requests
 from services.email_service import send_email_fire_and_forget
@@ -66,6 +67,7 @@ async def get_buzzing_records(current_user: Optional[Dict] = Depends(get_current
     ]
     
     result = await db.spins.aggregate(pipeline).to_list(limit)
+    proxy_records_cover_urls(result)
     return result
 
 
@@ -564,6 +566,7 @@ async def get_trending_records(limit: int = 12, user: Dict = Depends(require_aut
         {"$project": {"_id": 0}}
     ]
     result = await db.spins.aggregate(pipeline).to_list(limit)
+    proxy_records_cover_urls(result)
     return result
 
 

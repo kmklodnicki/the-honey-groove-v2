@@ -75,13 +75,25 @@ async def proxy_image(url: str = Query(..., description="External image URL to p
 
     # 3. Fetch upstream
     try:
-        # Use Discogs auth headers ONLY for the API domain, NOT the image CDN
-        fetch_headers = {"User-Agent": DISCOGS_USER_AGENT or "Mozilla/5.0 (compatible; HoneyGroove/1.0)"}
+        # Browser-like headers for image CDN requests to avoid hotlink blocking
+        fetch_headers = {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+        }
+        # Only add Discogs API auth for API calls, never for CDN image fetches
         if ("api.discogs.com" in url) and DISCOGS_CONSUMER_KEY and DISCOGS_CONSUMER_SECRET:
             fetch_headers["Authorization"] = f"Discogs key={DISCOGS_CONSUMER_KEY}, secret={DISCOGS_CONSUMER_SECRET}"
+            fetch_headers["User-Agent"] = DISCOGS_USER_AGENT or fetch_headers["User-Agent"]
 
         async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
             resp = await client.get(url, headers=fetch_headers)
+            # Retry with minimal headers if CDN blocks us
+            if resp.status_code == 403:
+                minimal_headers = {
+                    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                    "Accept": "image/*,*/*;q=0.8",
+                }
+                resp = await client.get(url, headers=minimal_headers)
             if resp.status_code != 200:
                 raise HTTPException(status_code=resp.status_code, detail="Upstream image fetch failed")
             content_type = resp.headers.get("content-type", "image/jpeg")
