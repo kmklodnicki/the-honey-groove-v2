@@ -34,11 +34,17 @@ export function resolveImageUrl(src) {
   // Cloudinary URLs — always work, return as-is
   if (src.includes('res.cloudinary.com')) return enforceHttps(src);
 
-  // Old URL containing /api/files/serve/ from ANY domain → rewrite to working Emergent host
+  // Emergent file host URLs → proxy through our backend to avoid CORS issues in PWA standalone mode
+  if (src.includes('emergent.host') || src.includes('emergent.com')) {
+    return `${API}/image-proxy?url=${encodeURIComponent(enforceHttps(src))}`;
+  }
+
+  // Old URL containing /api/files/serve/ from ANY domain → proxy through backend
   const serveIdx = src.indexOf(SERVE_PATH);
   if (serveIdx !== -1) {
     const storagePath = src.substring(serveIdx + SERVE_PATH.length);
-    return `${EMERGENT_FILE_HOST}${storagePath}`;
+    const fullUrl = `${EMERGENT_FILE_HOST}${storagePath}`;
+    return `${API}/image-proxy?url=${encodeURIComponent(fullUrl)}`;
   }
 
   // External URLs (discogs, dicebear, data URIs)
@@ -47,6 +53,7 @@ export function resolveImageUrl(src) {
   }
   if (src.startsWith('/')) return src;
 
-  // Raw storage path → route through Emergent file host
-  return `${EMERGENT_FILE_HOST}${src}`;
+  // Raw storage path → proxy through backend
+  const fullUrl = `${EMERGENT_FILE_HOST}${src}`;
+  return `${API}/image-proxy?url=${encodeURIComponent(fullUrl)}`;
 }

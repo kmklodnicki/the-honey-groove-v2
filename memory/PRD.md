@@ -108,6 +108,12 @@ The HoneyGroove is a vinyl record social platform where users can track collecti
 
 ### Session 12 (2026-03-17) — DM Email Notifications
 - **DM Email Notifications with Opt-Out** — Two gaps fixed: (1) `create_or_get_conversation` (first message in a new DM thread) was not sending any email to the recipient. Now sends via `new_dm` email template. (2) `send_message` (follow-up messages) was sending emails without checking user preferences. Both endpoints now gate emails through `should_send_notification_email()`, respecting the user's `notification_pref_email` setting (all/following/none). The "first unread only" throttle remains to avoid email spam for rapid messages.
+- **DM Email Unsubscribe Link** — Updated `new_dm` email template to include a "manage email preferences" link pointing to `/settings`, rendered via `wrap_email`'s unsubscribe footer.
+- **Backfill Script** — Ran one-time `scripts/backfill_dm_emails.py` to send DM notification emails to users who received a first message in the past 90 minutes but didn't get an email (1 sent, 1 skipped due to opt-out).
+
+### Session 12 (2026-03-17) — PWA Bug Fixes
+- **PWA Avatar Fix** — Profile pictures weren't loading in PWA standalone mode (showing initials only). Root cause: `resolveImageUrl` was returning direct URLs to `wax-collector-app.emergent.host` which fail CORS in PWA standalone context. Fix: All Emergent-hosted and `/api/files/serve/` URLs are now routed through the backend image proxy (`/api/image-proxy`), serving images from the same origin. The service worker caches these proxy responses so it's a one-time cost per image.
+- **Removed PWA Refresh Button** — Removed `StandaloneRefreshButton` from the Hive page since users can pull-to-refresh in PWA mode.
 
 ## Backlog
 

@@ -39,7 +39,6 @@ import ComposerBar from '../components/ComposerBar';
 import { resolveImageUrl } from '../utils/imageUrl';
 import { PostTypeBadge, PostCardBody, NewFeatureBadge, PILL_STYLES } from '../components/PostCards';
 import { PostCard, BeeAvatar, InfiniteScrollSentinel } from '../components/HivePostCard';
-import { StandaloneRefreshButton } from '../components/PullToRefresh';
 import { TitleBadge } from '../components/TitleBadge';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { usePullToRefresh } from '../hooks/usePullToRefresh';
@@ -487,7 +486,6 @@ const HivePage = () => {
             Following
           </button>
         </div>
-        <StandaloneRefreshButton />
       </div>
 
       {/* Composer Bar */}
