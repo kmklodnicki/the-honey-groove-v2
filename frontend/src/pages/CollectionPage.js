@@ -8,7 +8,6 @@ import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Skeleton } from '../components/ui/skeleton';
 import LoadingHoney from '../components/LoadingHoney';
-import ComposerBar from '../components/ComposerBar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import {
   Select,
@@ -572,13 +571,9 @@ const CollectionPage = () => {
     fetchData();
   }, [fetchData]);
 
-  const composerRef = useRef(null);
 
   const handleLogSpin = (record) => {
-    // BLOCK-322: Force the Now Spinning modal instead of auto-posting
-    if (composerRef.current) {
-      composerRef.current.openSpinWithRecord(record);
-    }
+    navigate('/', { state: { spinRecord: record } });
   };
 
   const handleDeleteRecord = async (recordId) => {
@@ -1336,7 +1331,6 @@ const CollectionPage = () => {
           )}
         </DialogContent>
       </Dialog>
-      <ComposerBar ref={composerRef} onPostCreated={fetchData} records={records} />
     </div>
   );
 };
