@@ -135,17 +135,32 @@ async def _get_cached_discogs_release(discogs_id: int) -> dict:
     return {}
 
 
+def _slug_to_fuzzy_regex(slug: str) -> re.Pattern:
+    """Build a fuzzy regex from a slug that matches regardless of special characters.
+    e.g., 'speak-now-taylors-version' matches 'Speak Now (Taylor's Version)'"""
+    words = slug.replace("-", " ").strip().split()
+    # Each word must appear in order, with optional special chars between letters
+    parts = []
+    for word in words:
+        # Allow optional special chars (apostrophes, parentheses, etc.) between chars
+        fuzzy_word = r"[^\w]*".join(re.escape(c) for c in word)
+        parts.append(fuzzy_word)
+    # Words separated by any amount of non-word chars + spaces
+    pattern = r"[\s\W]*".join(parts)
+    return re.compile(pattern, re.IGNORECASE)
+
+
 async def _resolve_discogs_id(artist_slug: str, album_slug: str, variant_slug: str):
     """Find a Discogs release ID from URL slugs by matching records in the DB."""
     artist_term = unslugify(artist_slug)
     album_term = unslugify(album_slug)
     variant_term = unslugify(variant_slug)
 
-    artist_re = re.compile(re.escape(artist_term), re.IGNORECASE)
-    album_re = re.compile(re.escape(album_term), re.IGNORECASE)
-    variant_re = re.compile(re.escape(variant_term), re.IGNORECASE)
+    artist_re = _slug_to_fuzzy_regex(artist_slug)
+    album_re = _slug_to_fuzzy_regex(album_slug)
+    variant_re = _slug_to_fuzzy_regex(variant_slug)
 
-    # Search records collection for matching discogs_id
+    # Search records collection
     records = await db.records.find(
         {
             "artist": artist_re,
@@ -171,6 +186,19 @@ async def _resolve_discogs_id(artist_slug: str, album_slug: str, variant_slug: s
 
     if records_no_variant:
         return records_no_variant, records_no_variant[0].get("discogs_id"), artist_term, album_term, variant_term
+
+    # Fallback: also search discogs_releases collection
+    dr_records = await db.discogs_releases.find(
+        {
+            "artist": artist_re,
+            "title": album_re,
+            "discogs_id": {"$exists": True, "$ne": None},
+        },
+        {"_id": 0}
+    ).to_list(100)
+
+    if dr_records:
+        return dr_records, dr_records[0].get("discogs_id"), artist_term, album_term, variant_term
 
     # No records found at all
     return [], None, artist_term, album_term, variant_term
@@ -261,11 +289,11 @@ async def get_variant_page(artist_slug: str, album_slug: str, variant_slug: str)
             {"_id": 0, "id": 1, "username": 1, "avatar_url": 1}
         ).to_list(20)
 
-    # Marketplace listings
-    artist_re = re.compile(re.escape(artist_term), re.IGNORECASE)
-    album_re = re.compile(re.escape(album_term), re.IGNORECASE)
+    # Marketplace listings (use fuzzy regex for titles with special chars)
+    artist_fuzzy_re = _slug_to_fuzzy_regex(artist_slug)
+    album_fuzzy_re = _slug_to_fuzzy_regex(album_slug)
 
-    listing_query = {"artist": artist_re, "album": album_re, "status": "ACTIVE"}
+    listing_query = {"artist": artist_fuzzy_re, "album": album_fuzzy_re, "status": "ACTIVE"}
     active_listings = await db.listings.find(listing_query, {"_id": 0}).sort("created_at", -1).to_list(50)
 
     variant_listings = [item for item in active_listings if _variant_match(item, variant_term)]
@@ -280,7 +308,7 @@ async def get_variant_page(artist_slug: str, album_slug: str, variant_slug: str)
         listing["seller"] = seller
 
     # Internal sales data
-    sold_query = {"artist": artist_re, "album": album_re, "status": "SOLD"}
+    sold_query = {"artist": artist_fuzzy_re, "album": album_fuzzy_re, "status": "SOLD"}
     sold_listings = await db.listings.find(sold_query, {"_id": 0, "price": 1, "created_at": 1}).to_list(200)
     prices = [s["price"] for s in sold_listings if s.get("price")]
 
@@ -292,7 +320,7 @@ async def get_variant_page(artist_slug: str, album_slug: str, variant_slug: str)
     }
 
     # ISO demand
-    iso_query = {"artist": artist_re, "album": album_re, "status": {"$in": ["OPEN", "WISHLIST"]}}
+    iso_query = {"artist": artist_fuzzy_re, "album": album_fuzzy_re, "status": {"$in": ["OPEN", "WISHLIST"]}}
     iso_count = await db.iso_items.count_documents(iso_query)
 
     # Hive posts
@@ -321,6 +349,51 @@ async def get_variant_page(artist_slug: str, album_slug: str, variant_slug: str)
     discogs_have = discogs_data.get("community_have", 0)
     discogs_want = discogs_data.get("community_want", 0)
     discogs_for_sale = discogs_data.get("num_for_sale", 0)
+    master_id = discogs_data.get("master_id")
+
+    # Market data fallback via master/sibling releases
+    if not discogs_market and master_id:
+        sibling_ids = await db.discogs_releases.find(
+            {"master_id": master_id, "discogs_id": {"$ne": discogs_id}},
+            {"_id": 0, "discogs_id": 1}
+        ).limit(5).to_list(5)
+        for sib in sibling_ids:
+            try:
+                sib_market = get_discogs_market_data(sib["discogs_id"])
+                if sib_market:
+                    discogs_market = sib_market
+                    break
+            except Exception:
+                pass
+        if not discogs_market:
+            try:
+                master_data = await asyncio.to_thread(get_discogs_master, master_id)
+                if master_data:
+                    main_id = master_data.get("main_release")
+                    if main_id and main_id != discogs_id:
+                        main_market = get_discogs_market_data(main_id)
+                        if main_market:
+                            discogs_market = main_market
+                    if not discogs_market and master_data.get("lowest_price"):
+                        lp = float(master_data["lowest_price"])
+                        discogs_market = {"median_value": round(lp * 1.3, 2), "low_value": round(lp, 2), "high_value": round(lp * 2.0, 2)}
+            except Exception:
+                pass
+
+    # Community stats aggregation from sibling releases when variant stats are thin
+    stats_source = "variant"
+    if discogs_have == 0 and discogs_want == 0 and master_id:
+        pipeline = [
+            {"$match": {"master_id": master_id, "community_have": {"$gt": 0}}},
+            {"$group": {"_id": None, "total_have": {"$sum": "$community_have"}, "total_want": {"$sum": "$community_want"}, "total_for_sale": {"$sum": {"$ifNull": ["$num_for_sale", 0]}}}}
+        ]
+        agg = await db.discogs_releases.aggregate(pipeline).to_list(1)
+        if agg and agg[0].get("total_have", 0) > 0:
+            discogs_have = agg[0]["total_have"]
+            discogs_want = agg[0].get("total_want", 0)
+            discogs_for_sale = agg[0].get("total_for_sale", 0)
+            stats_source = "master"
+
     rarity = calculate_rarity(discogs_have, discogs_want, discogs_for_sale)
 
     return {
@@ -340,6 +413,14 @@ async def get_variant_page(artist_slug: str, album_slug: str, variant_slug: str)
             "notes": notes[:300] if notes else None,
         },
         "rarity": rarity,
+        "scarcity": {
+            "discogs_have": discogs_have,
+            "discogs_want": discogs_want,
+            "discogs_for_sale": discogs_for_sale,
+            "tier": rarity.get("tier"),
+            "stats_source": stats_source,
+            "master_id": master_id,
+        },
         "marketplace": {
             "active_listings": variant_listings,
             "listing_count": len(variant_listings),
@@ -355,6 +436,11 @@ async def get_variant_page(artist_slug: str, album_slug: str, variant_slug: str)
             "owners_count": owners_count,
             "iso_count": iso_count,
             "post_count": post_count,
+        },
+        "community": {
+            "internal_owners_count": owners_count,
+            "discogs_have": discogs_have,
+            "discogs_want": discogs_want,
         },
         "activity": {
             "owners": owners,

@@ -49,6 +49,7 @@ The HoneyGroove is a vinyl record social platform where users can track collecti
 - **ISO View More Button Fix** — Moved button OUTSIDE scrollable container on both ComposerBar and Honeypot modals. Added `isoShowCount` state to ComposerBar.
 - **ISO Color Variant Storage** — Both `submitISO` functions now send `color_variant` from selected Discogs release.
 - **BLOCK-313: ISO Modal Variant Art Fix** — Implemented batch cover resolution: collects all variants missing `cover_url`, does batch lookups against `records` and `discogs_releases` collections, falls back to Discogs API (max 3 calls). Added cover fallback to variant release endpoint and ISO post builder. Zero blank covers in search results.
+- **Variant Page Market/Community Fallbacks** — When variant has no market data or 0 community stats, falls back to: (1) sibling releases with same `master_id` in local DB, (2) Discogs master release's `main_release`, (3) master's `lowest_price` estimate. Added `get_discogs_master()` function for `/masters/{id}` endpoint. Fixed slug resolution with fuzzy regex to match titles with special chars (e.g., "Speak Now (Taylor's Version)"). Added `scarcity` and `community` sections to slug endpoint response.
 
 ## Backlog
 
