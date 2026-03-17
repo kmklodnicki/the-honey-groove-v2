@@ -401,7 +401,6 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
                 {post.track && <p className="text-xs text-honey-amber mt-1" data-testid="track-name">Track: {post.track}</p>}
               </div>
             </div>
-            {post.caption && <p className="text-sm mt-2"><MentionText text={post.caption} /></p>}
           </div>
 
           {/* Right: user-uploaded photo */}
@@ -426,6 +425,7 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
             </div>
           )}
         </div>
+        {post.caption && <p className="text-sm mt-2"><MentionText text={post.caption} /></p>}
         {post.photo_url && (
           <PhotoLightbox
             photos={[post.photo_url]}
