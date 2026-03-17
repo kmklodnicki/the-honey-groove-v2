@@ -229,6 +229,7 @@ class PostResponse(BaseModel):
     is_liked: bool = False
     is_pinned: bool = False
     is_new_feature: bool = False
+    is_release_note: bool = False
     content: Optional[str] = None
     intent: Optional[str] = None
     bundle_records: Optional[List[Dict[str, Any]]] = None

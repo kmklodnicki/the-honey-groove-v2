@@ -97,6 +97,7 @@ const HivePage = () => {
     { key: 'NOTE', emoji: '\u{1F4DD}', text: 'Notes' },
     { key: 'POLL', emoji: '\u{1F4CA}', text: 'Polls' },
     { key: 'listing', emoji: '\u{1F3F7}\uFE0F', text: 'For Sale/Trade' },
+    { key: 'RELEASE_NOTE', emoji: '\u270F\uFE0F', text: 'Release Notes' },
   ];
 
   const headers = { Authorization: `Bearer ${token}` };
@@ -373,6 +374,16 @@ const HivePage = () => {
     }
   };
 
+  const handleToggleReleaseNote = async (postId, isReleaseNote) => {
+    try {
+      const resp = await axios.post(`${API}/posts/${postId}/release-note`, {}, { headers });
+      setPosts(prev => prev.map(p => p.id === postId ? { ...p, is_release_note: resp.data.is_release_note } : p));
+      toast.success(resp.data.is_release_note ? 'Promoted to Release Note.' : 'Release Note demoted.');
+    } catch {
+      toast.error('could not update release note status.');
+    }
+  };
+
 
   // Album detail — open unified variant modal
   const handleAlbumClick = (record) => {
@@ -598,6 +609,7 @@ const HivePage = () => {
               onAlbumClick={handleAlbumClick}
               onPin={handlePinPost}
               onToggleFeature={handleToggleFeature}
+              onToggleReleaseNote={handleToggleReleaseNote}
               token={token}
               API={API}
               currentUserId={user?.id}

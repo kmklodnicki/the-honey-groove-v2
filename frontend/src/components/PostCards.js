@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Disc, Package, Search, Moon, Plus, Music, Feather, ShoppingBag, ArrowRightLeft, Shuffle, Gem, MessageCircle, BookOpen, Sparkles, BarChart3, Check, Circle } from 'lucide-react';
+import { Disc, Package, Search, Moon, Plus, Music, Feather, ShoppingBag, ArrowRightLeft, Shuffle, Gem, MessageCircle, BookOpen, Sparkles, BarChart3, Check, Circle, FileText } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import AlbumArt from './AlbumArt';
@@ -122,6 +122,7 @@ const PILL_STYLES = {
   DAILY_PROMPT:         { bg: 'bg-sky-100',      text: 'text-sky-700',     border: 'border-sky-200' },
   RANDOMIZER:           { bg: 'bg-amber-200',    text: 'text-black',       border: 'border-amber-400' },
   NOTE:                 { bg: 'bg-yellow-100',   text: 'text-yellow-700',  border: 'border-yellow-200' },
+  RELEASE_NOTE:         { bg: 'bg-amber-500',    text: 'text-white',       border: 'border-amber-600' },
   POLL:                 { bg: 'bg-amber-100',    text: 'text-amber-800',   border: 'border-amber-200' },
   NEW_FEATURE:          { bg: 'bg-green-100',    text: 'text-green-700',   border: 'border-green-200' },
   following:            { bg: 'bg-violet-100',   text: 'text-violet-700',  border: 'border-violet-200' },
@@ -147,7 +148,19 @@ const VARIANT_DEFAULT = 'bg-stone-100 text-stone-600 border-stone-200';
 // Build link path for a variant pill from a record's discogs_id
 const variantLink = (record) => record?.discogs_id ? `/variant/${record.discogs_id}` : undefined;
 
-const PostTypeBadge = ({ type, mood }) => {
+const PostTypeBadge = ({ type, mood, isReleaseNote }) => {
+  // Release Note badge overrides the default post type pill
+  if (isReleaseNote) {
+    const s = PILL_STYLES.RELEASE_NOTE;
+    return (
+      <span className="inline-flex items-center gap-1.5">
+        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold border whitespace-nowrap shadow-sm ${s.bg} ${s.text} ${s.border}`} data-testid="release-note-badge">
+          <FileText className="w-3 h-3 shrink-0" />
+          Release Note
+        </span>
+      </span>
+    );
+  }
   if (type === 'NOTE') {
     const s = PILL_STYLES.NOTE;
     return (

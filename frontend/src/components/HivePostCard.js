@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Input } from './ui/input';
-import { Heart, MessageCircle, MoreVertical, Trash2, Pin, Reply, Send, ChevronDown, ChevronUp, Sparkles, X } from 'lucide-react';
+import { Heart, MessageCircle, MoreVertical, Trash2, Pin, Reply, Send, ChevronDown, ChevronUp, Sparkles, X, FileText } from 'lucide-react';
 import VerifiedShield from './VerifiedShield';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -62,7 +62,7 @@ export const BeeAvatar = ({ user, className = "h-10 w-10" }) => {
   );
 };
 
-export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, onPin, onToggleFeature, token, API, currentUserId, isAdmin, highlighted, autoOpenComments, imgPriority }) => {
+export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, onPin, onToggleFeature, onToggleReleaseNote, token, API, currentUserId, isAdmin, highlighted, autoOpenComments, imgPriority }) => {
   const [showComments, setShowComments] = useState(!!autoOpenComments);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
@@ -88,6 +88,18 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
     const next = !pinnedCollapsed;
     setPinnedCollapsed(next);
     try { if (next) localStorage.setItem(pinnedKey, '1'); else localStorage.removeItem(pinnedKey); } catch {}
+  };
+
+  // Collapsible release note — persisted in localStorage
+  const releaseNoteKey = post.is_release_note ? `hg_rn_collapsed_${post.id}` : null;
+  const [rnCollapsed, setRnCollapsed] = useState(() => {
+    if (!post.is_release_note) return false;
+    try { return localStorage.getItem(`hg_rn_collapsed_${post.id}`) === '1'; } catch { return false; }
+  });
+  const toggleRnCollapse = () => {
+    const next = !rnCollapsed;
+    setRnCollapsed(next);
+    try { if (next) localStorage.setItem(releaseNoteKey, '1'); else localStorage.removeItem(releaseNoteKey); } catch {}
   };
 
   const isOwner = post.user_id === currentUserId;
@@ -264,8 +276,22 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
           </button>
         </div>
       )}
-      {/* If pinned and collapsed, hide the rest of the card */}
-      {!(post.is_pinned && pinnedCollapsed) && (<>
+      {post.is_release_note && !post.is_pinned && (
+        <div className="px-4 py-1.5 border-b flex items-center gap-1.5 text-xs font-semibold" style={{ background: 'linear-gradient(135deg, #FFF3D4 0%, #FFEAB0 100%)', borderColor: '#DAA520', color: '#92702A' }} data-testid={`release-note-banner-${post.id}`}>
+          <FileText className="w-3 h-3" />
+          <span className="flex-1">{rnCollapsed ? 'Release Note' : 'Release Note'}</span>
+          <button
+            onClick={(e) => { e.stopPropagation(); toggleRnCollapse(); }}
+            className="p-0.5 rounded hover:bg-amber-200/50 transition-colors"
+            data-testid={`release-note-toggle-${post.id}`}
+            aria-label={rnCollapsed ? 'Expand release note' : 'Collapse release note'}
+          >
+            {rnCollapsed ? <ChevronDown className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />}
+          </button>
+        </div>
+      )}
+      {/* If pinned/release-note and collapsed, hide the rest of the card */}
+      {!(post.is_pinned && pinnedCollapsed) && !(post.is_release_note && rnCollapsed) && (<>
       <div className="p-4 pb-2">
         <div className="flex items-center gap-3">
           <Link to={`/profile/${post.user?.username}`}>
@@ -280,7 +306,7 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
                 <VerifiedShield size={18} isFounder={post.user?.is_admin} className="ml-0.5" />
               )}
               {post.user?.title_label && <TitleBadge label={post.user.title_label} />}
-              <PostTypeBadge type={post.post_type} mood={post.mood} />
+              <PostTypeBadge type={post.post_type} mood={post.mood} isReleaseNote={post.is_release_note} />
               {post.record_id && <FormatPill format={post.record_format || post.record?.format || 'Vinyl'} />}
               {!post.record_id && post.bundle_records?.length > 0 && <FormatPill format={post.bundle_records[0]?.format || 'Vinyl'} />}
               {post.is_new_feature && <NewFeatureBadge />}
@@ -308,6 +334,11 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
                 {isAdmin && (
                   <DropdownMenuItem onClick={() => onToggleFeature(post.id, post.is_new_feature)} data-testid={`toggle-feature-${post.id}`}>
                     <Sparkles className="mr-2 h-4 w-4" /> {post.is_new_feature ? 'Remove New Feature' : 'Tag as New Feature'}
+                  </DropdownMenuItem>
+                )}
+                {isAdmin && (
+                  <DropdownMenuItem onClick={() => onToggleReleaseNote(post.id, post.is_release_note)} data-testid={`toggle-release-note-${post.id}`}>
+                    <FileText className="mr-2 h-4 w-4" /> {post.is_release_note ? 'Remove Release Note' : 'Convert to Release Note'}
                   </DropdownMenuItem>
                 )}
               </DropdownMenuContent>

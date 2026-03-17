@@ -500,6 +500,7 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
         is_liked=is_liked,
         is_pinned=post.get("is_pinned", False),
         is_new_feature=post.get("is_new_feature", False),
+        is_release_note=post.get("is_release_note", False),
         content=post.get("content"),
         intent=post.get("intent"),
         bundle_records=post.get("bundle_records"),
@@ -531,6 +532,8 @@ async def get_feed(user: Dict = Depends(require_auth), limit: int = 20, skip: in
                     pinned_resp = await build_post_response(pinned_post, user["id"])
                 elif pt_upper == "LISTING" and pinned_pt in ("listing_sale", "listing_trade"):
                     pinned_resp = await build_post_response(pinned_post, user["id"])
+                elif pt_upper == "RELEASE_NOTE" and pinned_post.get("is_release_note"):
+                    pinned_resp = await build_post_response(pinned_post, user["id"])
                 elif pinned_pt == pt_upper:
                     pinned_resp = await build_post_response(pinned_post, user["id"])
 
@@ -550,6 +553,8 @@ async def get_feed(user: Dict = Depends(require_auth), limit: int = 20, skip: in
                 query["post_type"] = {"$in": ["NOW_SPINNING", "RANDOMIZER"]}
             elif pt_upper == "LISTING":
                 query["post_type"] = {"$in": ["listing_sale", "listing_trade"]}
+            elif pt_upper == "RELEASE_NOTE":
+                query["is_release_note"] = True
             else:
                 query["post_type"] = pt_upper
 
@@ -1387,6 +1392,20 @@ async def toggle_new_feature(post_id: str, user: Dict = Depends(require_auth)):
     new_val = not post.get("is_new_feature", False)
     await db.posts.update_one({"id": post_id}, {"$set": {"is_new_feature": new_val}})
     return {"is_new_feature": new_val, "message": f"New Feature tag {'added' if new_val else 'removed'}"}
+
+
+# ============== ADMIN RELEASE NOTE ==============
+
+@router.post("/posts/{post_id}/release-note")
+async def toggle_release_note(post_id: str, user: Dict = Depends(require_auth)):
+    if not user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Admin access required")
+    post = await db.posts.find_one({"id": post_id})
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    new_val = not post.get("is_release_note", False)
+    await db.posts.update_one({"id": post_id}, {"$set": {"is_release_note": new_val}})
+    return {"is_release_note": new_val, "message": f"Release Note {'promoted' if new_val else 'demoted'}"}
 
 
 
