@@ -67,7 +67,7 @@ class TestSafariBugFix:
         response = requests.options(
             f"{BASE_URL}/api/auth/me",
             headers={
-                "Origin": "https://mobile-msg-fix.preview.emergentagent.com",
+                "Origin": "https://record-dedup-nectar.preview.emergentagent.com",
                 "Access-Control-Request-Method": "GET"
             }
         )

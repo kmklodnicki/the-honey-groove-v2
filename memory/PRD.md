@@ -103,13 +103,15 @@ The HoneyGroove is a vinyl record social platform where users can track collecti
 - **CSS Fix: Modal Mobile Scale Overflow** — The `.modal-mobile-scale` class had `overflow-y: auto !important` which broke the inner flex layout of modals. Changed to `overflow: hidden !important` so scrolling happens in the inner `flex-1 overflow-y-auto` div as intended.
 - **Comment Photo Attachments** — Added camera button to the left of comment input (and replies). Users can upload jpg/png/webp/heic/heif photos. Small preview (64x64) shows before posting. Comments display thumbnails (max 180x120) that expand to a fullscreen lightbox on click. HEIC conversion via heic2any + Canvas fallback. Backend stores `image_url` on comment documents.
 
+### Session 12 (2026-03-17) — P0 Bug Fix: Nectar Page Trending Duplicates
+- **P0 Fix: Duplicate Trending Items on Nectar Page** — Root cause: `/api/explore/trending` grouped spins by `record_id`, so different users' copies of the same album (different pressings with different `discogs_id` values like Lover baby pink vs standard) appeared as separate trending entries. Fix: Rewrote aggregation pipeline to `$lookup` records and group by lowercase `artist|||title` composite key, merging all pressings/variants into one entry with combined spin counts. Applied same fix to `/api/buzzing` endpoint which had the same issue with `discogs_id`-based grouping.
+
 ## Backlog
 
 ### P1 - Upcoming
 - Instagram Story Export (Daily Prompt → 1080x1920 PNG)
 - Re-enable "Mini Groove" feature (yesterday's hive posts)
 - Login Pre-fetching (profile + feed during animation)
-- Update "Crown Jewels" Logic
 
 ### P2 - Future
 - Record Store Day Proxy Network

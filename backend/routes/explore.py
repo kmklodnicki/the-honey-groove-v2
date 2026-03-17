@@ -45,11 +45,12 @@ async def get_buzzing_records(current_user: Optional[Dict] = Depends(get_current
             "as": "record"
         }},
         {"$unwind": "$record"},
-        # Group by discogs_id (preferred) or fallback to lowercase artist+title
+        # Group by lowercase artist+title so all pressings/variants merge
         {"$group": {
-            "_id": {"$ifNull": [
-                "$record.discogs_id",
-                {"$concat": [{"$toLower": {"$ifNull": ["$record.artist", ""]}}, "|||", {"$toLower": {"$ifNull": ["$record.title", ""]}}]}
+            "_id": {"$concat": [
+                {"$toLower": {"$ifNull": ["$record.artist", ""]}},
+                "|||",
+                {"$toLower": {"$ifNull": ["$record.title", ""]}}
             ]},
             "spin_count": {"$sum": 1},
             "record": {"$first": "$record"},
@@ -528,7 +529,7 @@ async def root():
 
 @router.get("/explore/trending")
 async def get_trending_records(limit: int = 12, user: Dict = Depends(require_auth)):
-    """Trending records: most spun + most added in last 14 days"""
+    """Trending records: most spun + most added in last 14 days, deduplicated by album (artist+title)."""
     hidden_ids = await get_hidden_user_ids()
     cutoff = (datetime.now(timezone.utc) - timedelta(days=14)).isoformat()
     spin_match = {"created_at": {"$gte": cutoff}}
@@ -536,19 +537,33 @@ async def get_trending_records(limit: int = 12, user: Dict = Depends(require_aut
         spin_match["user_id"] = {"$nin": hidden_ids}
     pipeline = [
         {"$match": spin_match},
-        {"$group": {"_id": "$record_id", "count": {"$sum": 1}}},
-        {"$sort": {"count": -1}},
+        {"$lookup": {
+            "from": "records",
+            "localField": "record_id",
+            "foreignField": "id",
+            "as": "record"
+        }},
+        {"$unwind": "$record"},
+        # Group by lowercase artist+title so all pressings/variants merge
+        {"$group": {
+            "_id": {"$concat": [
+                {"$toLower": {"$ifNull": ["$record.artist", ""]}},
+                "|||",
+                {"$toLower": {"$ifNull": ["$record.title", ""]}}
+            ]},
+            "spin_count": {"$sum": 1},
+            "record": {"$first": "$record"},
+        }},
+        {"$sort": {"spin_count": -1}},
         {"$limit": limit},
+        {"$replaceRoot": {
+            "newRoot": {
+                "$mergeObjects": ["$record", {"trending_spins": "$spin_count"}]
+            }
+        }},
+        {"$project": {"_id": 0}}
     ]
-    spin_agg = await db.spins.aggregate(pipeline).to_list(limit)
-    record_ids = [s["_id"] for s in spin_agg]
-    counts = {s["_id"]: s["count"] for s in spin_agg}
-    records = await db.records.find({"id": {"$in": record_ids}}, {"_id": 0}).to_list(limit)
-    result = []
-    for r in records:
-        r["trending_spins"] = counts.get(r["id"], 0)
-        result.append(r)
-    result.sort(key=lambda x: x["trending_spins"], reverse=True)
+    result = await db.spins.aggregate(pipeline).to_list(limit)
     return result
 
 
