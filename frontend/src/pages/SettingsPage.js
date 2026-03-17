@@ -56,7 +56,8 @@ const SettingsPage = () => {
   const [bugReportOpen, setBugReportOpen] = useState(false);
   const [isPrivate, setIsPrivate] = useState(user?.is_private || false);
   const [dmSetting, setDmSetting] = useState(user?.dm_setting || 'everyone');
-  const [notifPref, setNotifPref] = useState(user?.notification_preference || 'all');
+  const [notifPrefApp, setNotifPrefApp] = useState(user?.notification_pref_app || user?.notification_preference || 'all');
+  const [notifPrefEmail, setNotifPrefEmail] = useState(user?.notification_pref_email || user?.notification_preference || 'all');
   const [notifSaving, setNotifSaving] = useState(false);
   const [showPwModal, setShowPwModal] = useState(false);
   const [pwSaving, setPwSaving] = useState(false);
@@ -269,16 +270,20 @@ const SettingsPage = () => {
     }
   };
 
-  const handleNotifPrefChange = async (value) => {
-    const prev = notifPref;
-    setNotifPref(value);
+  const handleNotifPrefChange = async (channel, value) => {
+    const prevApp = notifPrefApp;
+    const prevEmail = notifPrefEmail;
+    if (channel === 'app') setNotifPrefApp(value);
+    else setNotifPrefEmail(value);
     setNotifSaving(true);
     try {
-      await axios.put(`${API}/auth/me`, { notification_preference: value }, { headers: { Authorization: `Bearer ${token}` } });
-      updateUser({ ...user, notification_preference: value });
-      toast.success('notification preference updated.');
+      const payload = channel === 'app' ? { notification_pref_app: value } : { notification_pref_email: value };
+      await axios.put(`${API}/auth/me`, payload, { headers: { Authorization: `Bearer ${token}` } });
+      updateUser({ ...user, ...(channel === 'app' ? { notification_pref_app: value } : { notification_pref_email: value }) });
+      toast.success(`${channel === 'app' ? 'in-app' : 'email'} notification preference updated.`);
     } catch {
-      setNotifPref(prev);
+      if (channel === 'app') setNotifPrefApp(prevApp);
+      else setNotifPrefEmail(prevEmail);
       toast.error('could not update preference.');
     } finally { setNotifSaving(false); }
   };
@@ -658,34 +663,74 @@ const SettingsPage = () => {
       <Card className="border-honey/30 mb-6" data-testid="notification-prefs-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2"><Bell className="w-5 h-5 text-amber-500" /> Notifications</CardTitle>
-          <CardDescription>control which notifications you receive.</CardDescription>
+          <CardDescription>control which notifications you receive, separately for in-app and email.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {[
-              { value: 'all', label: 'All Notifications', desc: 'Receive notifications for all activity', icon: Bell },
-              { value: 'following', label: 'Only People I Follow', desc: 'Only get notified when someone you follow interacts', icon: Users },
-              { value: 'none', label: 'None', desc: 'Turn off all in-app notifications', icon: BellOff },
-            ].map(opt => (
-              <button
-                key={opt.value}
-                onClick={() => handleNotifPrefChange(opt.value)}
-                disabled={notifSaving}
-                className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-all text-left ${
-                  notifPref === opt.value
-                    ? 'border-amber-400 bg-amber-50/50'
-                    : 'border-stone-200/50 bg-stone-50/40 hover:bg-stone-50/80'
-                }`}
-                data-testid={`notif-pref-${opt.value}`}
-              >
-                <opt.icon className={`w-4 h-4 shrink-0 ${notifPref === opt.value ? 'text-amber-600' : 'text-stone-400'}`} />
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-medium ${notifPref === opt.value ? 'text-amber-800' : 'text-stone-700'}`}>{opt.label}</p>
-                  <p className="text-xs text-muted-foreground">{opt.desc}</p>
-                </div>
-                {notifPref === opt.value && <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />}
-              </button>
-            ))}
+        <CardContent className="space-y-6">
+          {/* In-App Notifications */}
+          <div>
+            <p className="text-sm font-semibold text-vinyl-black mb-2 flex items-center gap-1.5">
+              <Bell className="w-3.5 h-3.5 text-amber-600" /> In-App Notifications
+            </p>
+            <div className="space-y-1.5">
+              {[
+                { value: 'all', label: 'All Activity', desc: 'Likes, comments, follows, matches' },
+                { value: 'following', label: 'Only People I Follow', desc: 'Only people you follow' },
+                { value: 'none', label: 'None', desc: 'Turn off all in-app notifications' },
+              ].map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => handleNotifPrefChange('app', opt.value)}
+                  disabled={notifSaving}
+                  className={`w-full flex items-center gap-3 p-2.5 rounded-lg border transition-all text-left ${
+                    notifPrefApp === opt.value
+                      ? 'border-amber-400 bg-amber-50/50'
+                      : 'border-stone-200/50 bg-stone-50/40 hover:bg-stone-50/80'
+                  }`}
+                  data-testid={`notif-pref-app-${opt.value}`}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-medium ${notifPrefApp === opt.value ? 'text-amber-800' : 'text-stone-700'}`}>{opt.label}</p>
+                    <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                  </div>
+                  {notifPrefApp === opt.value && <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="border-t border-stone-200/50" />
+
+          {/* Email Notifications */}
+          <div>
+            <p className="text-sm font-semibold text-vinyl-black mb-1.5 flex items-center gap-1.5">
+              <Mail className="w-3.5 h-3.5 text-amber-600" /> Email Notifications
+            </p>
+            <p className="text-xs text-muted-foreground mb-2">Weekly Wax, order confirmations, and account emails are always delivered.</p>
+            <div className="space-y-1.5">
+              {[
+                { value: 'all', label: 'All Activity Emails', desc: 'New followers, ISO matches, listing alerts' },
+                { value: 'following', label: 'Only People I Follow', desc: 'Only emails triggered by people you follow' },
+                { value: 'none', label: 'None', desc: 'No activity emails (Weekly Wax & orders still sent)' },
+              ].map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => handleNotifPrefChange('email', opt.value)}
+                  disabled={notifSaving}
+                  className={`w-full flex items-center gap-3 p-2.5 rounded-lg border transition-all text-left ${
+                    notifPrefEmail === opt.value
+                      ? 'border-amber-400 bg-amber-50/50'
+                      : 'border-stone-200/50 bg-stone-50/40 hover:bg-stone-50/80'
+                  }`}
+                  data-testid={`notif-pref-email-${opt.value}`}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-sm font-medium ${notifPrefEmail === opt.value ? 'text-amber-800' : 'text-stone-700'}`}>{opt.label}</p>
+                    <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                  </div>
+                  {notifPrefEmail === opt.value && <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />}
+                </button>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>

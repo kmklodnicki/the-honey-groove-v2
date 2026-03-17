@@ -81,6 +81,8 @@ async def _build_user_response(user: dict) -> UserResponse:
         is_private=user.get("is_private", False),
         dm_setting=user.get("dm_setting", "everyone"),
         notification_preference=user.get("notification_preference", "all"),
+        notification_pref_app=user.get("notification_pref_app") or user.get("notification_preference", "all"),
+        notification_pref_email=user.get("notification_pref_email") or user.get("notification_preference", "all"),
         discogs_oauth_verified=user.get("discogs_oauth_verified", False),
         needs_discogs_migration=_check_needs_migration(user),
         discogs_migration_dismissed=user.get("discogs_migration_dismissed", False),
@@ -614,6 +616,11 @@ async def update_me(update_data: UserUpdate, user: Dict = Depends(require_auth))
         update_fields["dm_setting"] = update_data.dm_setting
     if update_data.notification_preference is not None and update_data.notification_preference in ("all", "following", "none"):
         update_fields["notification_preference"] = update_data.notification_preference
+    valid_notif = ("all", "following", "none")
+    if update_data.notification_pref_app is not None and update_data.notification_pref_app in valid_notif:
+        update_fields["notification_pref_app"] = update_data.notification_pref_app
+    if update_data.notification_pref_email is not None and update_data.notification_pref_email in valid_notif:
+        update_fields["notification_pref_email"] = update_data.notification_pref_email
     if update_fields:
         await db.users.update_one({"id": user["id"]}, {"$set": update_fields})
     updated = await db.users.find_one({"id": user["id"]}, {"_id": 0, "password_hash": 0})

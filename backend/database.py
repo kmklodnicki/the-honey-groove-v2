@@ -510,11 +510,11 @@ def get_discogs_market_data(release_id: int) -> Optional[Dict]:
 
 
 async def create_notification(user_id: str, ntype: str, title: str, body: str, data: Dict = None, sender_id: str = None):
-    # Check recipient's notification preference
-    recipient = await db.users.find_one({"id": user_id}, {"_id": 0, "notification_preference": 1, "following": 1})
-    pref = (recipient or {}).get("notification_preference", "all")
+    # Check recipient's in-app notification preference
+    recipient = await db.users.find_one({"id": user_id}, {"_id": 0, "notification_pref_app": 1, "notification_preference": 1, "following": 1})
+    pref = (recipient or {}).get("notification_pref_app") or (recipient or {}).get("notification_preference", "all")
     if pref == "none":
-        return  # User opted out of all notifications
+        return  # User opted out of all in-app notifications
     if pref == "following":
         sid = sender_id or (data or {}).get("sender_id") or (data or {}).get("user_id") or (data or {}).get("from_user_id")
         if sid:
@@ -534,3 +534,16 @@ async def create_notification(user_id: str, ntype: str, title: str, body: str, d
         "created_at": now,
     }
     await db.notifications.insert_one(doc)
+
+
+async def should_send_notification_email(user_id: str, sender_id: str = None) -> bool:
+    """Check if a user should receive notification emails (not Weekly Wax/transactional — those always send)."""
+    recipient = await db.users.find_one({"id": user_id}, {"_id": 0, "notification_pref_email": 1, "notification_preference": 1, "following": 1})
+    pref = (recipient or {}).get("notification_pref_email") or (recipient or {}).get("notification_preference", "all")
+    if pref == "none":
+        return False
+    if pref == "following" and sender_id:
+        following_list = (recipient or {}).get("following", [])
+        if sender_id not in following_list:
+            return False
+    return True

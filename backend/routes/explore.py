@@ -119,8 +119,10 @@ async def follow_user(username: str, user: Dict = Depends(require_auth)):
                               f"@{u.get('username','?')} started following you",
                               {"follower_username": u.get("username")}, sender_id=user["id"])
     if target_user.get("email"):
-        tpl = email_tpl.new_follow(u.get("username", "?"), f"{FRONTEND_URL}/profile/{u.get('username','')}")
-        await send_email_fire_and_forget(target_user["email"], tpl["subject"], tpl["html"])
+        from database import should_send_notification_email
+        if await should_send_notification_email(target_user["id"], sender_id=user["id"]):
+            tpl = email_tpl.new_follow(u.get("username", "?"), f"{FRONTEND_URL}/profile/{u.get('username','')}")
+            await send_email_fire_and_forget(target_user["email"], tpl["subject"], tpl["html"])
 
     return {"message": f"Now following {username}", "status": "following"}
 
