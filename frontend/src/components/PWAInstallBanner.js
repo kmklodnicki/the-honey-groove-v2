@@ -40,8 +40,10 @@ const PWAInstallBanner = () => {
   useEffect(() => {
     // Already running as installed app — never show
     if (isStandalone()) return;
-    // User previously installed or dismissed
+    // User previously installed or dismissed — check multiple storage mechanisms
     try { if (localStorage.getItem('pwa_installed') === 'true') return; } catch { /* noop */ }
+    try { if (localStorage.getItem('pwa_banner_dismissed') === 'true') return; } catch { /* noop */ }
+    if (document.cookie.includes('pwa_dismissed=1')) return;
 
     // Listen for standalone mode changes (user installs while page is open)
     const mq = window.matchMedia('(display-mode: standalone)');
@@ -97,6 +99,9 @@ const PWAInstallBanner = () => {
     setShowBanner(false);
     setBannerHeight(0);
     try { localStorage.setItem('pwa_installed', 'true'); } catch { /* noop */ }
+    try { localStorage.setItem('pwa_banner_dismissed', 'true'); } catch { /* noop */ }
+    // Cookie fallback for when localStorage is cleared (e.g., Safari ITP)
+    try { document.cookie = 'pwa_dismissed=1;max-age=31536000;path=/;SameSite=Lax'; } catch { /* noop */ }
   }, []);
 
   if (!showBanner) return null;
