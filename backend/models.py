@@ -308,6 +308,7 @@ class NewHaulCreate(BaseModel):
     caption: Optional[str] = None
     image_url: Optional[str] = None
     items: List[HaulItemCreate]
+    post_to_hive: bool = True
 
 class ISOPostCreate(BaseModel):
     artist: str

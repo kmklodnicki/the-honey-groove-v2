@@ -773,22 +773,30 @@ async def composer_new_haul(data: NewHaulCreate, user: Dict = Depends(require_au
     }
     await db.hauls.insert_one(haul_doc)
     
-    # Create post
-    post_id = str(uuid.uuid4())
-    post_doc = {
-        "id": post_id,
-        "user_id": user["id"],
-        "post_type": "NEW_HAUL",
-        "caption": data.caption,
-        "image_url": data.image_url,
-        "haul_id": haul_id,
-        "created_at": now
-    }
-    await db.posts.insert_one(post_doc)
-    await parse_and_notify_mentions(post_doc.get("caption", ""), post_doc["id"], user["id"])
-    await _shadow_flag_post(post_doc, user)
+    # Only create a Hive post if user wants to share
+    if data.post_to_hive:
+        post_id = str(uuid.uuid4())
+        post_doc = {
+            "id": post_id,
+            "user_id": user["id"],
+            "post_type": "NEW_HAUL",
+            "caption": data.caption,
+            "image_url": data.image_url,
+            "haul_id": haul_id,
+            "created_at": now
+        }
+        await db.posts.insert_one(post_doc)
+        await parse_and_notify_mentions(post_doc.get("caption", ""), post_doc["id"], user["id"])
+        await _shadow_flag_post(post_doc, user)
+        return await _emit_and_return(await build_post_response(post_doc, user["id"]), user["id"])
     
-    return await _emit_and_return(await build_post_response(post_doc, user["id"]), user["id"])
+    # Silent haul — return a minimal response (records added to vault, no post)
+    return {
+        "id": haul_id, "user_id": user["id"], "post_type": "NEW_HAUL",
+        "caption": data.caption or "", "created_at": now,
+        "user": {"id": user["id"], "username": user.get("username", "")},
+        "likes_count": 0, "comments_count": 0, "is_liked": False,
+    }
 
 @router.post("/composer/iso", response_model=PostResponse)
 async def composer_iso(data: ISOPostCreate, user: Dict = Depends(require_auth)):

@@ -58,6 +58,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
   const [spinTracksFetched, setSpinTracksFetched] = useState(false);
   const [spinTrackManual, setSpinTrackManual] = useState(false);
   const [postToHive, setPostToHive] = useState(true);
+  const [haulPostToHive, setHaulPostToHive] = useState(true);
 
   // New Haul
   const [haulStoreName, setHaulStoreName] = useState('');
@@ -113,6 +114,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
     setSpinTracks([]); setSpinTracksLoading(false); setSpinTrackDropdownOpen(false); setSpinTrackSearch(''); setSpinTracksFetched(false);
     setPostToHive(true);
     setHaulStoreName(''); setHaulCaption(''); setHaulItems([]); setHaulSearch(''); setHaulResults([]);
+    setHaulPostToHive(true);
     setIsoArtist(''); setIsoAlbum(''); setIsoPressing(''); setIsoCondition('');
     setIsoPriceMin(''); setIsoPriceMax(''); setIsoCaption('');
     setIsoDiscogsQuery(''); setIsoDiscogsResults([]); setIsoSelectedRelease(null); setIsoManualMode(false); setIsoIntent(null);
@@ -412,16 +414,17 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
 
   const submitNewHaul = async () => {
     if (haulItems.length === 0) { toast.error('add at least one record.'); return; }
+    if (haulPostToHive && !haulCaption.trim()) { toast.error('a caption is required to share with the hive.'); return; }
     setSubmitting(true);
     try {
       let photoUrl = null;
       if (postPhoto) photoUrl = await uploadPostPhoto();
       await axios.post(`${API}/composer/new-haul`, {
         store_name: haulStoreName || null, caption: haulCaption || null, items: haulItems,
-        image_url: photoUrl,
+        image_url: photoUrl, post_to_hive: haulPostToHive,
       }, { headers: { Authorization: `Bearer ${token}` }});
-      toast.success('haul posted.');
-      trackEvent('haul_posted');
+      toast.success(haulPostToHive ? 'haul posted to the hive.' : 'haul logged to your vault.');
+      trackEvent(haulPostToHive ? 'haul_posted' : 'silent_haul_logged');
       closeModal(); onPostCreated?.();
     } catch (err) { toast.error(err.response?.data?.detail || 'Failed to post'); }
     finally { setSubmitting(false); }
@@ -881,12 +884,28 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
           </div>
           {/* Sticky footer — always visible */}
           <div className="shrink-0 px-6 max-sm:px-4 pt-3 max-sm:pt-2 border-t border-honey/15 bg-white" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 0.75rem))' }}>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-sm font-medium text-stone-600" data-testid="haul-hive-label">
+                Post to Hive
+              </label>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={haulPostToHive}
+                onClick={() => setHaulPostToHive(!haulPostToHive)}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${haulPostToHive ? 'bg-amber-500' : 'bg-stone-300'}`}
+                data-testid="haul-post-to-hive-toggle"
+              >
+                <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${haulPostToHive ? 'translate-x-4' : 'translate-x-0.5'}`} />
+              </button>
+            </div>
+            {!haulPostToHive && <p className="text-xs text-stone-400 mb-2" data-testid="haul-silent-hint">Silent haul — logged to your Vault only, not posted to the feed.</p>}
             <Button onClick={() => {
-              if (!haulCaption.trim()) { toast.error('a caption is required to post your haul'); return; }
+              if (haulPostToHive && !haulCaption.trim()) { toast.error('a caption is required to share with the hive.'); return; }
               submitNewHaul();
             }} disabled={submitting || haulItems.length === 0} className="w-full bg-amber-100 text-amber-800 hover:bg-amber-200 rounded-full" data-testid="haul-submit-btn">
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Package className="w-4 h-4 mr-2" />}
-              Post Haul ({haulItems.length} record{haulItems.length !== 1 ? 's' : ''})
+              {haulPostToHive ? `Post Haul (${haulItems.length} record${haulItems.length !== 1 ? 's' : ''})` : `Log Haul to Vault (${haulItems.length})`}
             </Button>
           </div>
         </DialogContent>
