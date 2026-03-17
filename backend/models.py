@@ -37,6 +37,7 @@ class UserResponse(BaseModel):
     onboarding_completed: bool = False
     founding_member: bool = False
     is_admin: bool = False
+    is_founder: bool = False
     email_verified: bool = True
     title_label: Optional[str] = None
     instagram_username: Optional[str] = None

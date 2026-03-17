@@ -71,6 +71,7 @@ async def _build_user_response(user: dict) -> UserResponse:
         onboarding_completed=user.get("onboarding_completed", False),
         founding_member=user.get("founding_member", False),
         is_admin=user.get("is_admin", False),
+        is_founder=user.get("is_founder", False),
         email_verified=user.get("email_verified", True),
         title_label=user.get("title_label"),
         instagram_username=user.get("instagram_username"),

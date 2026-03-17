@@ -214,9 +214,9 @@ const MessagesPage = () => {
       : { height: `${viewHeight}px` };
 
     return (
-      <div className="max-w-2xl mx-auto px-4 pt-16 md:pt-28 pb-2 md:pb-4 flex flex-col" style={threadStyle} ref={threadRef} data-testid="dm-thread">
+      <div className="max-w-2xl mx-auto px-4 pt-14 md:pt-28 pb-2 md:pb-4 flex flex-col" style={threadStyle} ref={threadRef} data-testid="dm-thread">
         {/* Thread header */}
-        <div className="flex items-center gap-3 mb-4">
+        <div className="flex items-center gap-3 mb-2 md:mb-4">
           <Button variant="ghost" size="sm" onClick={() => { setActiveConv(null); setMessages([]); setConvContext(null); fetchConversations(); }} data-testid="dm-back-btn">
             <ArrowLeft className="w-4 h-4" />
           </Button>
@@ -249,7 +249,7 @@ const MessagesPage = () => {
         )}
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto space-y-3 mb-4 min-h-0" data-testid="dm-messages-list">
+        <div className="flex-1 overflow-y-auto space-y-3 mb-2 md:mb-4 min-h-0" data-testid="dm-messages-list">
           {messages.length === 0 && activeConv === 'new' && (
             <p className="text-center text-sm text-muted-foreground py-8">Start the conversation...</p>
           )}

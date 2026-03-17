@@ -776,9 +776,18 @@ const VinylMoodCard = ({ post, onAlbumClick, imgPriority }) => {
 };
 
 // DAILY_PROMPT card body
-const DailyPromptPostCard = ({ post, imgPriority }) => (
+const DailyPromptPostCard = ({ post, imgPriority, onAlbumClick }) => {
+  const promptRecord = post.record || {
+    discogs_id: post.discogs_id,
+    title: post.record_title,
+    artist: post.record_artist,
+    cover_url: post.cover_url,
+    color_variant: post.color_variant,
+  };
+  return (
   <div data-testid="daily-prompt-post-card">
     <p className="text-sm italic text-amber-700 mb-3">{post.prompt_text}</p>
+    <AlbumLink record={promptRecord} onAlbumClick={onAlbumClick}>
     <div className="flex gap-4 items-start bg-amber-50/60 rounded-lg p-3">
       {post.cover_url ? (
         <div className="shrink-0 pr-2">
@@ -804,9 +813,11 @@ const DailyPromptPostCard = ({ post, imgPriority }) => (
         </div>
       </div>
     </div>
+    </AlbumLink>
     {post.caption && <p className="text-sm mt-3"><MentionText text={post.caption} /></p>}
   </div>
-);
+  );
+};
 
 // NOTE card body
 const NoteCard = ({ post, onAlbumClick }) => {
@@ -1034,7 +1045,7 @@ const PostCardBody = ({ post, onAlbumClick, imgPriority }) => {
     case 'ADDED_TO_COLLECTION': return <AddedToCollectionCard post={post} onAlbumClick={onAlbumClick} imgPriority={imgPriority} />;
     case 'WEEKLY_WRAP': return <WeeklyWrapCard post={post} />;
     case 'VINYL_MOOD': return <VinylMoodCard post={post} onAlbumClick={onAlbumClick} imgPriority={imgPriority} />;
-    case 'DAILY_PROMPT': return <DailyPromptPostCard post={post} imgPriority={imgPriority} />;
+    case 'DAILY_PROMPT': return <DailyPromptPostCard post={post} onAlbumClick={onAlbumClick} imgPriority={imgPriority} />;
     case 'POLL': return <PollCard post={post} />;
     case 'RANDOMIZER': return <NowSpinningCard post={post} onAlbumClick={onAlbumClick} imgPriority={imgPriority} />;
     case 'listing_sale': return <ListingPostCard post={post} />;
