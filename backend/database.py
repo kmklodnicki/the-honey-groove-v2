@@ -306,6 +306,38 @@ def get_discogs_master_versions(master_id: int, page: int = 1, per_page: int = 1
     return None
 
 
+def get_discogs_master(master_id: int) -> Optional[Dict]:
+    """Fetch master release data from Discogs (community stats, main image)."""
+    headers = {"User-Agent": DISCOGS_USER_AGENT}
+    params = {}
+    if DISCOGS_TOKEN:
+        params["token"] = DISCOGS_TOKEN
+    try:
+        resp = requests.get(
+            f"{DISCOGS_API_BASE}/masters/{master_id}",
+            params=params, headers=headers, timeout=10
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            images = data.get("images", [])
+            cover_url = images[0].get("uri") if images else None
+            return {
+                "master_id": master_id,
+                "title": data.get("title"),
+                "year": data.get("year"),
+                "cover_url": cover_url,
+                "num_for_sale": data.get("num_for_sale", 0),
+                "lowest_price": data.get("lowest_price"),
+                "most_recent_release": data.get("most_recent_release"),
+                "main_release": data.get("main_release"),
+            }
+        if resp.status_code == 429:
+            logger.warning(f"Discogs rate limit on master {master_id}")
+    except Exception as e:
+        logger.error(f"Discogs master error for {master_id}: {e}")
+    return None
+
+
 def get_discogs_release(release_id: int) -> Optional[Dict]:
     headers = {"User-Agent": DISCOGS_USER_AGENT}
     params = {}

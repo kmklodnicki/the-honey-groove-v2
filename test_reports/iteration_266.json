@@ -1,0 +1,92 @@
+{
+  "summary": "Tested variant pages blank squares and $0 market data issue. Backend API via /api/vinyl/release/{discogs_id} works correctly - returns cover_url, community stats (28,164 owners), and market value ($33.61 median) for Speak Now Orchid. Frontend /variant/{releaseId} page renders correctly. ISSUE: Slug-based route /vinyl/{artist}/{album}/{variant} has slug resolution bug - 'speak-now-taylors-version' doesn't match 'Speak Now (Taylor's Version)' in DB due to apostrophe/parentheses stripping.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "/api/vinyl/{artist}/{album}/{variant}",
+        "issue": "Slug resolution fails for titles with special characters. 'speak-now-taylors-version' cannot match 'Speak Now (Taylor's Version)' because unslugify() doesn't restore parentheses/apostrophes stripped during slugify(). Function _resolve_discogs_id() needs fuzzy matching.",
+        "priority": "MEDIUM",
+        "affected_files": ["backend/routes/vinyl.py lines 138-176", "slugify/unslugify functions lines 83-95"]
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Variant search → detail page navigation",
+        "issue": "Search results link to /vinyl/{slug} pages which fail to resolve due to slug matching bug. The /variant/{releaseId} route works correctly but search cards may not link to it.",
+        "affected_selectors": ["variant cards in search results"]
+      }
+    ],
+    "design_issues": [
+      {
+        "screen": "Search results",
+        "issues": ["One blank placeholder visible for 'Speak Now (Taylor's Version) / Frankenstein Set / Limited' variant - cover_url missing"]
+      }
+    ]
+  },
+  "test_results": {
+    "backend_health_endpoint": {
+      "status": "PASS",
+      "details": "GET /api/health returns pool.maxPoolSize=10, pool.minPoolSize=1, db_status='connected'"
+    },
+    "backend_release_36527356_opalite": {
+      "status": "PASS",
+      "details": "cover_url present, discogs_have=34, discogs_median=$43.32"
+    },
+    "backend_release_27597354_speak_now_orchid": {
+      "status": "PASS",
+      "details": "cover_url present, discogs_have=28164, discogs_want=3037, discogs_median=$33.61"
+    },
+    "backend_release_36739498_hilary_duff_mature": {
+      "status": "PASS",
+      "details": "stats_source='master', discogs_have=3667 (aggregated from siblings), discogs_median=$59.02"
+    },
+    "backend_search_opalite_covers": {
+      "status": "PASS",
+      "details": "3 variants returned, all have cover_url"
+    },
+    "backend_search_speak_now_orchid_covers": {
+      "status": "PASS",
+      "details": "20 variants returned, all have cover_url"
+    },
+    "frontend_variant_release_page": {
+      "status": "PASS",
+      "details": "/variant/27597354 displays album art, Market Value $33.61 median/$49.13 high, 28,164 owners, 3,037 wantlist, 19 internal collectors"
+    },
+    "frontend_vinyl_slug_page": {
+      "status": "FAIL",
+      "details": "/vinyl/taylor-swift/speak-now-taylors-version/orchid-marbled returns blank data: cover_url=null, discogs_id=null, all stats=0, 'No recorded sales yet'"
+    }
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_variant_market_data_fallback.py",
+    "/app/test_reports/pytest/variant_market_data_fallback_results.xml"
+  ],
+  "action_items": [
+    "FIX BACKEND: Improve _resolve_discogs_id() in vinyl.py to handle slugified titles with special characters (parentheses, apostrophes). Consider: 1) Fuzzy text matching, 2) Also search discogs_releases collection, 3) Store slugified versions in DB for direct lookup",
+    "VERIFY: Ensure search results variant cards link to /variant/{discogs_id} route instead of /vinyl/{slug} route to avoid slug resolution failures"
+  ],
+  "critical_code_review_comments": [
+    "Slug resolution in vinyl.py has fundamental limitation: slugify() strips characters that can't be recovered by unslugify(). Albums with parentheses like 'Speak Now (Taylor's Version)' become 'speak-now-taylors-version' which cannot match back.",
+    "Consider adding a 'slug' field to discogs_releases collection during caching, or use fuzzy regex matching in _resolve_discogs_id()"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_variant_market_data_fallback.py"
+  ],
+  "success_rate": {
+    "backend": "100% (14/14 pytest tests passed)",
+    "frontend": "87.5% (7/8 checks passed - slug-based pages fail)"
+  },
+  "test_credentials": {
+    "email": "kmklodnicki@gmail.com",
+    "password": "HoneyGroove2026"
+  },
+  "seed_data_creation": "None",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend /api/vinyl/release/{discogs_id} endpoint fully working with fallback chains for market data and community stats. Frontend /variant/{releaseId} route works. Issue is with slug-based /vinyl/{artist}/{album}/{variant} route - the slug resolution function cannot match titles containing parentheses/apostrophes. Search results show album art correctly. One blank cover observed for 'Frankenstein Set' variant.",
+  "rca_of_the_issue": "Root cause: slugify() removes parentheses and apostrophes (line 88: re.sub(r\"[^\\w\\s-]\", \"\", text)), but unslugify() only replaces hyphens with spaces. When searching DB, regex escape of 'speak now taylors version' cannot match 'Speak Now (Taylor's Version)'. Fix: Implement fuzzy matching or store pre-slugified titles in DB."
+}

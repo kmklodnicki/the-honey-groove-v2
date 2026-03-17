@@ -11,7 +11,7 @@ Data flow:
 """
 from fastapi import APIRouter, Query, Depends
 from fastapi.responses import HTMLResponse
-from database import db, get_discogs_release, get_discogs_market_data, get_discogs_master_versions, logger, get_current_user
+from database import db, get_discogs_release, get_discogs_market_data, get_discogs_master_versions, get_discogs_master, logger, get_current_user
 from datetime import datetime, timezone
 import asyncio
 import os
@@ -430,6 +430,43 @@ async def get_variant_by_release_id(release_id: int, force_refresh: bool = False
     market_raw = get_discogs_market_data(release_id)
     discogs_market = market_raw if market_raw else {}
 
+    # Market data fallback: try sibling releases or master when variant has no price data
+    master_id = discogs_data.get("master_id")
+    if not discogs_market and master_id:
+        # Strategy 1: Find a sibling release in our DB that might have better data
+        sibling_ids = await db.discogs_releases.find(
+            {"master_id": master_id, "discogs_id": {"$ne": release_id}},
+            {"_id": 0, "discogs_id": 1}
+        ).limit(5).to_list(5)
+        for sib in sibling_ids:
+            try:
+                sib_market = get_discogs_market_data(sib["discogs_id"])
+                if sib_market:
+                    discogs_market = sib_market
+                    break
+            except Exception:
+                pass
+        # Strategy 2: Try master release's main_release for market data
+        if not discogs_market:
+            try:
+                master_data = await asyncio.to_thread(get_discogs_master, master_id)
+                if master_data:
+                    main_release_id = master_data.get("main_release")
+                    if main_release_id and main_release_id != release_id:
+                        main_market = get_discogs_market_data(main_release_id)
+                        if main_market:
+                            discogs_market = main_market
+                    # Use master's lowest_price as last resort
+                    if not discogs_market and master_data.get("lowest_price"):
+                        lp = float(master_data["lowest_price"])
+                        discogs_market = {
+                            "median_value": round(lp * 1.3, 2),
+                            "low_value": round(lp, 2),
+                            "high_value": round(lp * 2.0, 2),
+                        }
+            except Exception as e:
+                logger.warning(f"Master market fallback failed for {release_id}: {e}")
+
     artist = discogs_data.get("artist", "Unknown Artist")
     album = discogs_data.get("title", "Unknown Album")
     variant = discogs_data.get("color_variant", "Standard")
@@ -477,21 +514,39 @@ async def get_variant_by_release_id(release_id: int, force_refresh: bool = False
 
     # BLOCK 413: Fallback to master release when variant stats are 0
     stats_source = "variant"
-    master_id = discogs_data.get("master_id")
     if discogs_have == 0 and discogs_want == 0 and master_id:
-        try:
-            master_data = get_discogs_release(master_id)
-            if master_data:
-                master_have = master_data.get("community_have", 0)
-                master_want = master_data.get("community_want", 0)
-                if master_have > 0 or master_want > 0:
-                    discogs_have = master_have
-                    discogs_want = master_want
-                    discogs_for_sale = master_data.get("num_for_sale", discogs_for_sale)
-                    stats_source = "master"
-                    logger.info(f"Variant {release_id}: using master {master_id} stats (have={master_have}, want={master_want})")
-        except Exception as e:
-            logger.warning(f"Master release fallback failed for {release_id}: {e}")
+        # Strategy 1: Aggregate from sibling releases in local DB
+        pipeline = [
+            {"$match": {"master_id": master_id, "community_have": {"$gt": 0}}},
+            {"$group": {"_id": None, "total_have": {"$sum": "$community_have"}, "total_want": {"$sum": "$community_want"}, "total_for_sale": {"$sum": {"$ifNull": ["$num_for_sale", 0]}}}}
+        ]
+        agg = await db.discogs_releases.aggregate(pipeline).to_list(1)
+        if agg and agg[0].get("total_have", 0) > 0:
+            discogs_have = agg[0]["total_have"]
+            discogs_want = agg[0].get("total_want", 0)
+            discogs_for_sale = agg[0].get("total_for_sale", 0)
+            stats_source = "master"
+            logger.info(f"Variant {release_id}: using aggregated sibling stats (have={discogs_have}, want={discogs_want})")
+        else:
+            # Strategy 2: Fetch master release from Discogs API
+            try:
+                master_data = await asyncio.to_thread(get_discogs_master, master_id)
+                if master_data:
+                    # Master endpoint doesn't have community stats directly, try main release
+                    main_id = master_data.get("main_release")
+                    if main_id and main_id != release_id:
+                        main_data = await asyncio.to_thread(get_discogs_release, main_id)
+                        if main_data:
+                            master_have = main_data.get("community_have", 0)
+                            master_want = main_data.get("community_want", 0)
+                            if master_have > 0 or master_want > 0:
+                                discogs_have = master_have
+                                discogs_want = master_want
+                                discogs_for_sale = main_data.get("num_for_sale", discogs_for_sale)
+                                stats_source = "master"
+                                logger.info(f"Variant {release_id}: using main release {main_id} stats")
+            except Exception as e:
+                logger.warning(f"Master release fallback failed for {release_id}: {e}")
 
     rarity = calculate_rarity(discogs_have, discogs_want, discogs_for_sale)
 
