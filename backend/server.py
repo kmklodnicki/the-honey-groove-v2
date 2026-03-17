@@ -35,6 +35,7 @@ from routes.seo import router as seo_router
 from routes.vinyl import router as vinyl_router
 from routes.weekly_wax import router as weekly_wax_router, schedule_weekly_wax
 from routes.image_proxy import router as image_proxy_router
+from routes.spotify import router as spotify_router
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -46,7 +47,7 @@ for r in [auth_router, hive_router, collection_router, honeypot_router,
           valuation_router, wax_reports_router, daily_prompts_router, newsletter_router,
           mood_boards_router, bingo_router, reports_router, admin_router, search_router,
           verification_router, reports_router, seo_router, vinyl_router,
-          weekly_wax_router, image_proxy_router]:
+          weekly_wax_router, image_proxy_router, spotify_router]:
     app.include_router(r, prefix="/api")
 
 # --- Data export download endpoints ---
