@@ -361,6 +361,7 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
     # Hydrate cover_url for auto-bundle records
     bundle = post.get("bundle_records")
     if bundle:
+        # First pass: try records collection
         for item in bundle:
             if not item.get("cover_url"):
                 if item.get("record_id"):
@@ -371,6 +372,27 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
                     rec = await db.records.find_one({"discogs_id": item["discogs_id"]}, {"_id": 0, "cover_url": 1})
                     if rec and rec.get("cover_url"):
                         item["cover_url"] = rec["cover_url"]
+        # Second pass: Discogs API fallback for still-missing covers
+        for item in bundle:
+            if not item.get("cover_url") and item.get("discogs_id"):
+                try:
+                    from routes.vinyl import _get_cached_discogs_release
+                    discogs = await _get_cached_discogs_release(item["discogs_id"])
+                    if discogs and discogs.get("cover_url"):
+                        item["cover_url"] = discogs["cover_url"]
+                        # Persist to records collection so future loads are instant
+                        await db.records.update_many(
+                            {"discogs_id": item["discogs_id"], "$or": [{"cover_url": None}, {"cover_url": ""}]},
+                            {"$set": {"cover_url": discogs["cover_url"]}}
+                        )
+                except Exception as e:
+                    logger.warning(f"Bundle cover hydration failed for discogs_id {item.get('discogs_id')}: {e}")
+        # Third pass: fallback to any sibling cover in the same bundle (same album)
+        fallback_cover = next((i.get("cover_url") for i in bundle if i.get("cover_url")), None)
+        if fallback_cover:
+            for item in bundle:
+                if not item.get("cover_url"):
+                    item["cover_url"] = fallback_cover
     
     iso_data = None
     iso_color_variant = None
