@@ -1231,12 +1231,19 @@ async def get_file(file_id: str, user: Dict = Depends(require_auth)):
 
 @router.get("/files/serve/{path:path}")
 async def serve_file(path: str):
-    """Public proxy endpoint to serve uploaded images from storage."""
+    """Public proxy endpoint to serve uploaded images from storage.
+    Checks Emergent object storage first, falls back to Cloudinary if the file was stored there.
+    """
     if not path.startswith(f"{APP_NAME}/"):
         raise HTTPException(status_code=403, detail="Access denied")
     try:
         data, content_type = get_object(path)
         if data is None:
+            # Fallback: check if this path is a Cloudinary public_id
+            file_doc = await db.files.find_one({"storage_path": path}, {"_id": 0, "url": 1, "storage_type": 1})
+            if file_doc and file_doc.get("url"):
+                from starlette.responses import RedirectResponse
+                return RedirectResponse(url=file_doc["url"], status_code=302)
             logger.error(f"Serve file: get_object returned None for path={path}, storage_key={'set' if storage_key else 'NOT SET'}, EMERGENT_KEY={'set' if EMERGENT_KEY else 'NOT SET'}")
             raise HTTPException(status_code=404, detail="File not found")
         return Response(

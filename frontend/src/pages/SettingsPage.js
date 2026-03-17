@@ -169,7 +169,7 @@ const SettingsPage = () => {
       const response = await axios.post(`${API}/upload`, formData, {
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
       });
-      const publicUrl = `${API}/files/serve/${response.data.path}`;
+      const publicUrl = response.data.url || `${API}/files/serve/${response.data.path}`;
       setAvatarPreview(publicUrl);
       toast.success('photo cropped & uploaded. click save to apply.');
     } catch (error) {
