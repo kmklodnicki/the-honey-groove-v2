@@ -74,6 +74,12 @@ The HoneyGroove is a vinyl record social platform where users can track collecti
 - **Maintenance Mode** — Admin toggle in Platform Settings (`/admin?section=settings`). Backend: `POST /api/admin/maintenance` with `{enabled: bool}` stores state in `platform_settings` collection. Public `GET /api/status/maintenance` endpoint (no auth). Frontend: `MaintenanceGate` component checks status on load and every 60s. Admin users bypass the gate. Shows "Tuning up the grooves" screen to all non-admin users.
 - **Static 500.html** — Pure HTML/CSS turntable error page at `/frontend/public/500.html` for Vercel-level outages when the server is completely unresponsive.
 
+### Session 11 (2026-03-17) — BLOCK-326: Admin Release Notes System
+- **Release Note Promotion** — Admin-only `POST /api/posts/{post_id}/release-note` toggles `is_release_note` on any post. Three-dot menu shows "Convert to Release Note" / "Remove Release Note" for admins.
+- **Release Note Badge** — High-visibility amber/white `RELEASE_NOTE` pill overrides the default post type badge. Uses `FileText` icon with `font-semibold` for prominence.
+- **Feed Filter** — Added "Release Notes" option to the Hive feed dropdown. Backend filters via `{is_release_note: true}` query instead of matching `post_type`.
+- **Collapsible + Persistence** — Release note posts show a honey-gradient banner with collapse/expand toggle. Collapsed state persists in `localStorage` (`hg_rn_collapsed_{post_id}`).
+
 ## Backlog
 
 ### P1 - Upcoming
