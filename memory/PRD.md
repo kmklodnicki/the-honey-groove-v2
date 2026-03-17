@@ -97,6 +97,11 @@ The HoneyGroove is a vinyl record social platform where users can track collecti
 - **Message Input Position** — Reduced thread top padding from `pt-16` to `pt-14` and tightened header/list margins on mobile for more visible content area.
 - **Daily Prompt Clickable** — Wrapped `DailyPromptPostCard` album art section in `AlbumLink` with `onAlbumClick`. Clicking the prompt's album area now opens the variant modal.
 
+### Session 12 (2026-03-17) — P0 Bug Fixes: Mobile Messaging & Modal Scrolling
+- **P0 Fix: Mobile Message Input Visibility (3rd report)** — Root cause: `<main className="relative z-10">` created a stacking context trapping the thread's z-index. Navbars at z-100 were always on top. Fix: Thread view now renders via `createPortal(threadContent, document.body)` to escape the stacking context. Uses `fixed inset-0 z-[9999]` with flexbox layout (header shrink-0, messages flex-1 overflow-y-auto, input shrink-0 with safe-area padding). Removed unused `viewHeight`/`keyboardOpen` state and `visualViewport` listener in favor of pure CSS approach.
+- **P0 Fix: Haul Modal Not Scrollable on Mobile** — When a photo was added, the image (using `aspect-video`) pushed the submit button off-screen with no scroll. Fix: Moved submit button to a sticky footer outside the scrollable area (matching the Now Spinning modal pattern). Capped image preview height at `max-h-[200px]` instead of `aspect-video`.
+- **CSS Fix: Modal Mobile Scale Overflow** — The `.modal-mobile-scale` class had `overflow-y: auto !important` which broke the inner flex layout of modals. Changed to `overflow: hidden !important` so scrolling happens in the inner `flex-1 overflow-y-auto` div as intended.
+
 ## Backlog
 
 ### P1 - Upcoming
@@ -124,7 +129,8 @@ The HoneyGroove is a vinyl record social platform where users can track collecti
 - `/app/frontend/src/components/ErrorBoundary.js` — React error boundary with TurntableErrorScreen
 - `/app/frontend/src/components/ApiErrorGate.js` — ApiErrorGate (500/503) and MaintenanceGate
 - `/app/frontend/src/components/PostCards.js` — Feed cards, StreamingLinks with Spotify deep-linking
-- `/app/frontend/src/components/ComposerBar.js` — Post creation UI
+- `/app/frontend/src/components/ComposerBar.js` — Post creation UI, modal layouts with sticky footers
+- `/app/frontend/src/pages/MessagesPage.js` — DM thread with createPortal for mobile overlay
 - `/app/frontend/public/500.html` — Static Vercel fallback page
 
 ## Test Credentials
