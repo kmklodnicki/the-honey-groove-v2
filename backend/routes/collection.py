@@ -68,6 +68,10 @@ async def search_records_discogs(q: str = Query(..., min_length=2), user: Dict =
                     if d in variant_keywords or any(k.lower() in d.lower() for k in variant_keywords):
                         color_variant = d
                         break
+            # Fallback: derive tag from edition descriptions or country
+            if not color_variant:
+                from database import derive_variant_tag
+                color_variant = derive_variant_tag(None, item.get("country"), descriptions)
             format_str = format_name or ""
             if descriptions:
                 unique_descs = list(dict.fromkeys(d for d in descriptions if d not in ("Album", "Compilation")))
@@ -1832,11 +1836,23 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
                 format_name = formats[0].get("name", "Vinyl") if formats else "Vinyl"
                 # Extract color/variant info from format text field
                 color_variant = None
+                all_descs = []
                 for fmt in formats:
                     ftext = fmt.get("text", "")
                     if ftext:
                         color_variant = ftext
                         break
+                    all_descs.extend(fmt.get("descriptions", []))
+                # Fallback: check descriptions for color keywords
+                if not color_variant and all_descs:
+                    variant_keywords = {"Picture Disc", "Colored", "White", "Red", "Blue", "Green",
+                                        "Yellow", "Orange", "Pink", "Purple", "Clear", "Splatter",
+                                        "Marble", "Gold", "Silver", "Translucent", "Transparent",
+                                        "Glow In The Dark", "Flexi-disc", "Shape", "Etched"}
+                    for d in all_descs:
+                        if d in variant_keywords or any(k.lower() in d.lower() for k in variant_keywords):
+                            color_variant = d
+                            break
                 
                 record_id = str(uuid.uuid4())
                 record_doc = {

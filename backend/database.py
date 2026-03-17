@@ -72,6 +72,41 @@ DISCOGS_AUTHORIZE_URL = "https://www.discogs.com/oauth/authorize"
 DISCOGS_ACCESS_TOKEN_URL = "https://api.discogs.com/oauth/access_token"
 DISCOGS_API_BASE = "https://api.discogs.com"
 
+# Country-to-adjective mapping for international pressing tags
+_COUNTRY_ADJECTIVE = {
+    "Japan": "Japanese", "Germany": "German", "France": "French", "Italy": "Italian",
+    "UK": "UK", "Canada": "Canadian", "Australia": "Australian", "Brazil": "Brazilian",
+    "Netherlands": "Dutch", "Spain": "Spanish", "Mexico": "Mexican", "Argentina": "Argentine",
+    "South Korea": "Korean", "Taiwan": "Taiwanese", "India": "Indian", "Greece": "Greek",
+    "Portugal": "Portuguese", "Turkey": "Turkish", "South Africa": "South African",
+    "New Zealand": "New Zealand", "Europe": "European", "Sweden": "Swedish",
+    "Norway": "Norwegian", "Denmark": "Danish", "Finland": "Finnish",
+    "Philippines": "Philippine", "Colombia": "Colombian", "Chile": "Chilean",
+    "Venezuela": "Venezuelan", "Peru": "Peruvian", "Uruguay": "Uruguayan",
+    "Yugoslavia": "Yugoslavian", "Czechoslovakia": "Czechoslovak", "USSR": "Soviet",
+    "Poland": "Polish", "Hungary": "Hungarian", "Romania": "Romanian",
+}
+
+def derive_variant_tag(color_variant: str, country: str, descriptions: list = None) -> str:
+    """Generate a variant tag when color_variant is null.
+    Priority: format descriptions (Club Edition, Limited Edition, etc.) > country pressing > None."""
+    if color_variant:
+        return color_variant
+    descriptions = descriptions or []
+    # Check format descriptions for meaningful edition tags
+    edition_keywords = ["Club Edition", "Limited Edition", "Remastered", "Promo", "DJ Copy",
+                        "Test Pressing", "Mono", "Quadraphonic", "Half-Speed Mastered",
+                        "Deluxe Edition", "Special Edition", "Anniversary", "Numbered"]
+    for d in descriptions:
+        for kw in edition_keywords:
+            if kw.lower() in d.lower():
+                return d
+    # Fall back to country pressing tag (skip US as it's the default)
+    if country and country != "US":
+        adj = _COUNTRY_ADJECTIVE.get(country, country)
+        return f"{adj} Pressing"
+    return None
+
 def _discogs_session() -> requests.Session:
     """Create a requests session with automatic retry for transient errors."""
     s = requests.Session()
@@ -280,6 +315,9 @@ def search_discogs(query: str, search_type: str = "release") -> List[Dict]:
                         if d in variant_keywords or any(k.lower() in d.lower() for k in variant_keywords):
                             color_variant = d
                             break
+                # Fallback: derive tag from edition descriptions or country
+                if not color_variant:
+                    color_variant = derive_variant_tag(None, item.get("country"), descriptions)
                 # Build compact format string
                 format_str = format_name or ""
                 if descriptions:
@@ -404,6 +442,9 @@ def get_discogs_release(release_id: int) -> Optional[Dict]:
                     if d in variant_keywords or any(k.lower() in d.lower() for k in variant_keywords):
                         color_variant = d
                         break
+            # Fallback: derive tag from edition descriptions or country
+            if not color_variant:
+                color_variant = derive_variant_tag(None, data.get("country"), all_descriptions)
             community = data.get("community", {})
             # Extract barcode / UPC from identifiers
             barcode = None

@@ -11,7 +11,7 @@ Data flow:
 """
 from fastapi import APIRouter, Query, Depends
 from fastapi.responses import HTMLResponse
-from database import db, get_discogs_release, get_discogs_market_data, get_discogs_master_versions, get_discogs_master, logger, get_current_user
+from database import db, get_discogs_release, get_discogs_market_data, get_discogs_master_versions, get_discogs_master, logger, get_current_user, derive_variant_tag
 from datetime import datetime, timezone
 import asyncio
 import os
@@ -250,7 +250,7 @@ async def get_variant_page(artist_slug: str, album_slug: str, variant_slug: str)
     # Discogs is authoritative for these fields
     artist = discogs_data.get("artist") or canonical_record.get("artist") or artist_term.title()
     album = discogs_data.get("title") or canonical_record.get("title") or album_term.title()
-    variant = discogs_data.get("color_variant") or canonical_record.get("color_variant") or variant_term.title()
+    variant = discogs_data.get("color_variant") or canonical_record.get("color_variant") or derive_variant_tag(None, discogs_data.get("country") or canonical_record.get("country"), discogs_data.get("format_descriptions", [])) or variant_term.title()
     year = discogs_data.get("year") or canonical_record.get("year")
     country = discogs_data.get("country") or canonical_record.get("country")
     notes = discogs_data.get("notes")
@@ -555,7 +555,7 @@ async def get_variant_by_release_id(release_id: int, force_refresh: bool = False
 
     artist = discogs_data.get("artist", "Unknown Artist")
     album = discogs_data.get("title", "Unknown Album")
-    variant = discogs_data.get("color_variant", "Standard")
+    variant = discogs_data.get("color_variant") or derive_variant_tag(None, discogs_data.get("country"), discogs_data.get("format_descriptions", [])) or "Standard"
     year = discogs_data.get("year")
     cover_url = discogs_data.get("cover_url")
     country = discogs_data.get("country")
