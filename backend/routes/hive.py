@@ -398,6 +398,17 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
                 rec = await db.records.find_one({"discogs_id": iso.get("discogs_id")}, {"_id": 0, "cover_url": 1})
                 if rec and rec.get("cover_url"):
                     iso["cover_url"] = rec["cover_url"]
+            if not iso.get("cover_url") and iso.get("artist") and iso.get("album"):
+                # Fallback: check discogs_releases for any sibling with same artist+title
+                import re as _re
+                sibling_dr = await db.discogs_releases.find_one(
+                    {"artist": {"$regex": f"^{_re.escape(iso['artist'])}$", "$options": "i"},
+                     "title": {"$regex": f"^{_re.escape(iso['album'])}$", "$options": "i"},
+                     "cover_url": {"$nin": [None, ""]}},
+                    {"_id": 0, "cover_url": 1}
+                )
+                if sibling_dr and sibling_dr.get("cover_url"):
+                    iso["cover_url"] = sibling_dr["cover_url"]
             iso_data = iso
     
     # Resolve color_variant: post-level > record-level > iso-level

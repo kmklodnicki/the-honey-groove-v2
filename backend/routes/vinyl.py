@@ -437,6 +437,26 @@ async def get_variant_by_release_id(release_id: int, force_refresh: bool = False
     cover_url = discogs_data.get("cover_url")
     country = discogs_data.get("country")
 
+    # Cover fallback: if null, try sibling record/release with same artist+title
+    if not cover_url:
+        sibling = await db.records.find_one(
+            {"artist": {"$regex": f"^{re.escape(artist)}$", "$options": "i"},
+             "title": {"$regex": f"^{re.escape(album)}$", "$options": "i"},
+             "cover_url": {"$nin": [None, ""]}},
+            {"_id": 0, "cover_url": 1}
+        )
+        if sibling and sibling.get("cover_url"):
+            cover_url = sibling["cover_url"]
+    if not cover_url:
+        sibling_dr = await db.discogs_releases.find_one(
+            {"artist": {"$regex": f"^{re.escape(artist)}$", "$options": "i"},
+             "title": {"$regex": f"^{re.escape(album)}$", "$options": "i"},
+             "cover_url": {"$nin": [None, ""]}},
+            {"_id": 0, "cover_url": 1}
+        )
+        if sibling_dr and sibling_dr.get("cover_url"):
+            cover_url = sibling_dr["cover_url"]
+
     label_raw = discogs_data.get("label")
     label = label_raw[0] if isinstance(label_raw, list) and label_raw else label_raw
 

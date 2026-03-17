@@ -530,23 +530,8 @@ async def search_variants(
         raw_label = r.get("label")
         label_str = ", ".join(raw_label) if isinstance(raw_label, list) else (raw_label or "")
 
-        # Hydrate cover: fallback to Discogs API if cover_url is missing
-        cover = r.get("cover_url")
-        if not cover and r.get("discogs_id"):
-            try:
-                release_data = await asyncio.to_thread(get_discogs_release, r["discogs_id"])
-                if release_data and release_data.get("cover_url"):
-                    cover = release_data["cover_url"]
-            except Exception:
-                pass
-        # Last resort: find a sibling record with the same artist+title that has a cover
-        if not cover:
-            sibling = await db.records.find_one(
-                {"artist": r.get("artist"), "title": r.get("title"), "cover_url": {"$nin": [None, ""]}},
-                {"_id": 0, "cover_url": 1}
-            )
-            if sibling and sibling.get("cover_url"):
-                cover = sibling["cover_url"]
+        # Hydrate cover: defer to batch resolution below
+        cover = r.get("cover_url") or None
 
         # Count local platform collectors (users who have this record)
         local_collectors = 0
@@ -569,6 +554,67 @@ async def search_variants(
             "slug": f"/vinyl/{slug_artist}/{slug_album}/{slug_variant}",
             "score": _variant_score_v2(r, original_words, expanded_words),
         })
+
+    # ── Batch cover resolution for variants missing cover_url ──
+    missing_cover_indices = [i for i, v in enumerate(variants_out) if not v.get("cover_url")]
+    if missing_cover_indices:
+        # Build a set of artist+title combos to look up
+        cover_cache = {}
+        for idx in missing_cover_indices:
+            v = variants_out[idx]
+            key = f"{(v['artist'] or '').lower().strip()}|{(v['album'] or '').lower().strip()}"
+            if key not in cover_cache:
+                cover_cache[key] = None
+        # Batch lookup: search records collection for any sibling with cover
+        for key in list(cover_cache.keys()):
+            if cover_cache[key]:
+                continue
+            parts = key.split("|", 1)
+            sibling = await db.records.find_one(
+                {"artist": {"$regex": f"^{_re_module.escape(parts[0])}$", "$options": "i"},
+                 "title": {"$regex": f"^{_re_module.escape(parts[1])}$", "$options": "i"},
+                 "cover_url": {"$nin": [None, ""]}},
+                {"_id": 0, "cover_url": 1}
+            )
+            if sibling and sibling.get("cover_url"):
+                cover_cache[key] = sibling["cover_url"]
+        # Fallback: check discogs_releases collection
+        for key in list(cover_cache.keys()):
+            if cover_cache[key]:
+                continue
+            parts = key.split("|", 1)
+            sibling = await db.discogs_releases.find_one(
+                {"artist": {"$regex": f"^{_re_module.escape(parts[0])}$", "$options": "i"},
+                 "title": {"$regex": f"^{_re_module.escape(parts[1])}$", "$options": "i"},
+                 "cover_url": {"$nin": [None, ""]}},
+                {"_id": 0, "cover_url": 1}
+            )
+            if sibling and sibling.get("cover_url"):
+                cover_cache[key] = sibling["cover_url"]
+        # Last resort: Discogs API for any still missing (max 3 to avoid rate limits)
+        still_missing = [k for k, v in cover_cache.items() if not v]
+        api_calls = 0
+        for key in still_missing:
+            if api_calls >= 3:
+                break
+            # Find a discogs_id for this artist+title
+            idx = next((i for i in missing_cover_indices
+                        if f"{(variants_out[i]['artist'] or '').lower().strip()}|{(variants_out[i]['album'] or '').lower().strip()}" == key
+                        and variants_out[i].get("discogs_id")), None)
+            if idx is not None:
+                try:
+                    release_data = await asyncio.to_thread(get_discogs_release, variants_out[idx]["discogs_id"])
+                    if release_data and release_data.get("cover_url"):
+                        cover_cache[key] = release_data["cover_url"]
+                        api_calls += 1
+                except Exception:
+                    pass
+        # Apply resolved covers
+        for idx in missing_cover_indices:
+            v = variants_out[idx]
+            key = f"{(v['artist'] or '').lower().strip()}|{(v['album'] or '').lower().strip()}"
+            if cover_cache.get(key):
+                variants_out[idx]["cover_url"] = cover_cache[key]
 
     page = variants_out[skip:skip + limit]
     has_more = len(variants_out) > skip + limit
