@@ -54,6 +54,7 @@ The HoneyGroove is a vinyl record social platform where users can track collecti
 ### Session 10 (2026-03-17) — BLOCK-314, BLOCK-317
 - **P0 Fix: Mobile Messaging Input Hidden by Keyboard** — Thread container used `height: 100vh` which doesn't account for mobile virtual keyboard. Fix: Added `visualViewport` API hook that listens to `resize` events and dynamically sets container height to `${visualViewport.height}px`. Added `pb-20 md:pb-4` to prevent mobile bottom nav from overlapping the input. Messages auto-scroll to bottom on viewport resize.
 - **P0 Fix: Discogs Sync Connection Aborted (BLOCK-317)** — All Discogs API calls (search, release, master, market data, collection import) now use a shared `_discogs_session()` with `urllib3.Retry` (3 retries, 1.5s exponential backoff, retry on 429/500/502/503/504). Collection import `_run_discogs_import` has an additional `_fetch_with_retry` wrapper (3 retries, 2s linear backoff) for page-level connection errors. User-facing error messages are now friendly instead of raw Python exceptions.
+- **BLOCK-323: New Message Compose Flow** — Added "+" compose button on the Messages inbox header. Opens a modal with debounced fuzzy user search (profile photos + usernames via `/api/users/search`). Selecting a user checks for existing thread via `/api/dm/conversation-with/{id}` — opens it if found, or initializes a new one.
 
 ## Backlog
 

@@ -6,7 +6,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card } from '../components/ui/card';
 import { Skeleton } from '../components/ui/skeleton';
-import { ArrowLeft, Send, Disc, Search, MessageCircleMore, Check, X, Loader2 } from 'lucide-react';
+import { ArrowLeft, Send, Disc, Search, MessageCircleMore, Check, X, Loader2, Plus } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { resolveImageUrl } from '../utils/imageUrl';
@@ -29,6 +29,10 @@ const MessagesPage = () => {
   const [acceptLoading, setAcceptLoading] = useState(false);
   const [viewHeight, setViewHeight] = useState(window.visualViewport?.height || window.innerHeight);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
+  const [composeOpen, setComposeOpen] = useState(false);
+  const [composeQuery, setComposeQuery] = useState('');
+  const [composeResults, setComposeResults] = useState([]);
+  const [composeSearching, setComposeSearching] = useState(false);
   const messagesEndRef = useRef(null);
   const pollRef = useRef(null);
   const threadRef = useRef(null);
@@ -148,6 +152,46 @@ const MessagesPage = () => {
       }
     }
     finally { setSending(false); }
+  };
+
+  // Compose modal: debounced user search
+  useEffect(() => {
+    if (!composeQuery.trim() || composeQuery.trim().length < 2) {
+      setComposeResults([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setComposeSearching(true);
+      try {
+        const resp = await axios.get(`${API}/users/search`, { params: { query: composeQuery.trim() }, headers });
+        setComposeResults((resp.data || []).filter(u => u.id !== user?.id).slice(0, 10));
+      } catch { setComposeResults([]); }
+      finally { setComposeSearching(false); }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [composeQuery]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleComposeSelect = async (selectedUser) => {
+    setComposeOpen(false);
+    setComposeQuery('');
+    setComposeResults([]);
+    try {
+      const resp = await axios.get(`${API}/dm/conversation-with/${selectedUser.id}`, { headers });
+      if (resp.data.conversation_id) {
+        openConversation(resp.data.conversation_id);
+      } else {
+        setOtherUser(selectedUser);
+        setActiveConv('new');
+        setMessages([]);
+        setConvContext(null);
+      }
+    } catch {
+      // Fallback: open new thread directly
+      setOtherUser(selectedUser);
+      setActiveConv('new');
+      setMessages([]);
+      setConvContext(null);
+    }
   };
 
   const handleKeyDown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } };
@@ -279,7 +323,77 @@ const MessagesPage = () => {
   // Conversation list
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 pt-16 md:pt-28 pb-24 md:pb-8" data-testid="dm-inbox">
-      <h1 className="font-heading text-3xl text-vinyl-black mb-4">Messages</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="font-heading text-3xl text-vinyl-black">Messages</h1>
+        <Button
+          onClick={() => setComposeOpen(true)}
+          className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full h-9 w-9 p-0 shrink-0 shadow-sm"
+          data-testid="dm-compose-btn"
+        >
+          <Plus className="w-5 h-5" />
+        </Button>
+      </div>
+
+      {/* Compose / New Message Modal */}
+      {composeOpen && (
+        <div className="fixed inset-0 z-[200] flex items-start justify-center pt-20 md:pt-32 px-4" data-testid="dm-compose-modal">
+          <div className="fixed inset-0 bg-black/40" onClick={() => { setComposeOpen(false); setComposeQuery(''); setComposeResults([]); }} />
+          <div className="relative bg-white rounded-2xl w-full max-w-md shadow-xl border border-honey/20 overflow-hidden">
+            <div className="p-4 border-b border-honey/10">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="font-heading text-lg text-vinyl-black">New Message</h2>
+                <button onClick={() => { setComposeOpen(false); setComposeQuery(''); setComposeResults([]); }} className="text-stone-400 hover:text-stone-600" data-testid="dm-compose-close">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                <Input
+                  value={composeQuery}
+                  onChange={e => setComposeQuery(e.target.value)}
+                  placeholder="Search by username..."
+                  className="pl-9 border-honey/40 rounded-full"
+                  data-testid="dm-compose-search"
+                  autoFocus
+                />
+              </div>
+            </div>
+            <div className="max-h-72 overflow-y-auto">
+              {composeSearching && (
+                <div className="flex items-center justify-center py-6">
+                  <Loader2 className="w-5 h-5 animate-spin text-honey" />
+                </div>
+              )}
+              {!composeSearching && composeQuery.trim().length >= 2 && composeResults.length === 0 && (
+                <p className="text-center text-sm text-muted-foreground py-6">No users found</p>
+              )}
+              {composeResults.map(u => (
+                <button
+                  key={u.id}
+                  onClick={() => handleComposeSelect(u)}
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-honey/10 transition-colors text-left"
+                  data-testid={`dm-compose-user-${u.id}`}
+                >
+                  {u.avatar_url ? (
+                    <img src={resolveImageUrl(u.avatar_url)} alt="" className="w-10 h-10 rounded-full object-cover shrink-0" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-honey/30 flex items-center justify-center text-sm font-bold text-honey-amber shrink-0">
+                      {(u.username || '?')[0].toUpperCase()}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm text-vinyl-black truncate">@{u.username}</p>
+                    {u.display_name && <p className="text-xs text-muted-foreground truncate">{u.display_name}</p>}
+                  </div>
+                </button>
+              ))}
+              {!composeSearching && composeQuery.trim().length < 2 && (
+                <p className="text-center text-xs text-stone-400 py-6">Type at least 2 characters to search</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Inbox / Requests Tabs */}
       {requestConvs.length > 0 && (
