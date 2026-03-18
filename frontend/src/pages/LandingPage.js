@@ -53,7 +53,7 @@ const LandingPage = () => {
   );
 
   const features = [
-    { icon: <Disc className="w-6 h-6" />, title: "Track Your Vault", description: "Know exactly what you own and what it's worth. Every record in your vault shows its current Discogs market value, updated regularly." },
+    { icon: <Disc className="w-6 h-6" />, title: "Track Your Vault", description: "Know exactly what you own and what it's worth. Every record in your vault shows its current market value, updated regularly." },
     { icon: <Music2 className="w-6 h-6" />, title: "Now Spinning", description: "Drop the needle, share the moment. Log your spin, pick a mood, and let the hive know what's on the turntable right now." },
     { icon: <ShoppingBag className="w-6 h-6" />, title: "The Honeypot", description: "A peer-to-peer marketplace where collectors buy, sell, and trade directly. Lower fees than any major vinyl marketplace \u2014 because you should keep more of what your records are worth." },
     { icon: <Search className="w-6 h-6" />, title: "ISO", description: "Post what you've been hunting. Get matched with collectors who have it. We notify you the moment your record appears \u2014 so you never miss it again." },
@@ -295,8 +295,8 @@ const LandingPage = () => {
           </p>
           <div className="max-w-[480px] mx-auto rounded-2xl overflow-hidden border border-[#C8861A]/15 bg-white/80" data-testid="fee-table">
             {[
-              { name: 'eBay', fee: '12.9%', highlight: false },
-              { name: 'Discogs', fee: '8%', highlight: false },
+              { name: 'Other Platforms', fee: '12.9%', highlight: false },
+              { name: 'Competitors', fee: '8%', highlight: false },
               { name: 'The Honey Groove\u2122', fee: '6%', highlight: true },
             ].map((row) => (
               <div
