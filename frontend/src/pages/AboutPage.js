@@ -40,7 +40,7 @@ const AboutPage = () => {
         <div className="space-y-6 text-vinyl-black/80 leading-relaxed">
           <p>I started collecting vinyl in 2022 and haven't stopped since.</p>
           <p>What began as a few records turned into hundreds. A U-Turn Orbit Custom, a Blue Ortofon needle, a Pluto 2 preamp, Edifier speakers, and a growing stack that somehow always finds more shelf space.</p>
-          <p>The more obsessed I became, the more I noticed that nothing online actually fit the way collectors live. Discogs is a database. Reddit is chaotic. Instagram reduces it to content. There was no place that felt like home for people who care about the music, the hunt, the haul, and the community all at once.</p>
+          <p>The more obsessed I became, the more I noticed that nothing online actually fit the way collectors live. The big databases are databases. Reddit is chaotic. Instagram was built for everyone, which means it was built for no one. There was no place that felt like home for people who care about the music, the hunt, the haul, and the community all at once.</p>
           <p className="font-medium text-vinyl-black">So I built it.</p>
           <p>The Honey Groove is the app I always wanted. Track what you own, share what you're spinning, post the finds that made your week, hunt down records you've been chasing for years, and trade directly with people who get it. Every trade protected by a Mutual Hold so you never have to trust a stranger on faith alone.</p>
           <p>It started as a personal problem. It became something I think a lot of us needed.</p>
@@ -60,7 +60,7 @@ const AboutPage = () => {
             <FeatureCard
               icon={<DollarSign className="w-5 h-5" />}
               title="Lower fees."
-              body="6% on completed sales. Lower than Discogs, lower than eBay, lower than anywhere else you're selling right now."
+              body="6% on completed sales. Lower than every major competitor, lower than every other marketplace you're selling on right now."
             />
             <FeatureCard
               icon={<Shield className="w-5 h-5" />}
@@ -75,23 +75,23 @@ const AboutPage = () => {
             <FeatureCard
               icon={<TrendingUp className="w-5 h-5" />}
               title="Your collection, valued."
-              body="Every record in your vault shows its current Discogs market value. Watch your vault grow in more ways than one."
+              body="Every record in your Vault shows its current market value. Watch your collection grow in more ways than one."
             />
           </div>
         </div>
 
         {/* CTA */}
         <div className="mt-14 text-center" data-testid="about-cta">
-          <p className="text-vinyl-black/60 text-sm mb-4">The Honey Groove is currently in closed beta.</p>
+          <p className="text-vinyl-black/60 text-sm mb-4">The Honey Groove is in closed beta.</p>
           <p className="text-vinyl-black/60 text-sm mb-6">
-            Founding members get early access, a permanent badge, and a direct line to me while we're building.
+            Founding members get early access, a permanent badge, and a direct line to me while we build.
           </p>
           <Link
             to="/beta"
             className="inline-flex items-center justify-center px-8 py-3.5 bg-[#E8A820] hover:bg-[#d49a1a] text-[#2A1A06] font-medium text-base rounded-full transition-colors shadow-sm"
             data-testid="about-join-waitlist-btn"
           >
-            join the waitlist
+            request your invite 🐝
           </Link>
         </div>
       </div>
@@ -107,6 +107,7 @@ const AboutPage = () => {
               <Link to="/faq" className="text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors">FAQ</Link>
               <Link to="/terms" className="text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors">Terms</Link>
               <Link to="/privacy" className="text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors">Privacy</Link>
+              <Link to="/guidelines" className="text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors">Guidelines</Link>
             </div>
           </div>
         </div>
