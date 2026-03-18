@@ -96,6 +96,8 @@ async def _build_user_response(user: dict) -> UserResponse:
         stripe_customer_id=user.get("stripe_customer_id"),
         seller_status=user.get("seller_status"),
         has_payment_method=bool(user.get("default_payment_method_id")),
+        honeypot_notify_me=bool(user.get("honeypotNotifyMe", False)),
+        honeypot_notify_at=user.get("honeypotNotifyAt"),
     )
 
 # ============== AUTH ROUTES ==============

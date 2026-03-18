@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/
 import {
   Loader2, Copy, Download, Plus, Users, Key, KeyRound, Check, X, Trash2,
   MessageSquare, Grid3X3, Flag, Settings, ChevronRight, Search,
-  ToggleLeft, ToggleRight, Pencil, Calendar, Hash, Shield, DollarSign, ArrowRightLeft, AlertTriangle, Flame, Heart, Clock
+  ToggleLeft, ToggleRight, Pencil, Calendar, Hash, Shield, DollarSign, ArrowRightLeft, AlertTriangle, Flame, Heart, Clock, BarChart2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -41,6 +41,7 @@ const AdminPage = () => {
     { key: 'golden_hive', label: 'Golden Hive ID', icon: Shield },
     { key: 'test_listings', label: 'Test Listings', icon: Flag },
     { key: 'settings', label: 'Platform Settings', icon: Settings },
+    { key: 'beekeeper', label: 'Beekeeper', icon: BarChart2 },
   ];
 
   return (
@@ -79,6 +80,7 @@ const AdminPage = () => {
       {section === 'golden_hive' && <GoldenHiveAdminSection API={API} headers={headers} />}
       {section === 'test_listings' && <TestListingsSection API={API} headers={headers} />}
       {section === 'settings' && <SettingsSection API={API} headers={headers} />}
+      {section === 'beekeeper' && <BeekeeperSection API={API} headers={headers} />}
     </div>
   );
 };
@@ -2178,6 +2180,70 @@ const TestListingsSection = ({ API, headers }) => {
           ))}
           {filteredActive.length === 0 && <p className="text-sm text-muted-foreground py-4">No matching active listings.</p>}
         </div>
+      </div>
+    </div>
+  );
+};
+
+
+// ═══════════════════════════════════════════════
+// BEEKEEPER SECTION
+// ═══════════════════════════════════════════════
+const BeekeeperSection = ({ API, headers }) => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    axios.get(`${API}/admin/beekeeper`, { headers })
+      .then(r => setData(r.data))
+      .catch(() => toast.error('Failed to load Beekeeper metrics.'))
+      .finally(() => setLoading(false));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (loading) return <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-[#C8861A]" /></div>;
+  if (!data) return null;
+
+  return (
+    <div className="space-y-6" data-testid="beekeeper-section">
+      <h2 className="font-heading text-xl text-vinyl-black">Honeypot Teaser Metrics</h2>
+
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 gap-4">
+        <Card className="p-5 border border-[#F5E6CC]" data-testid="beekeeper-notify-count">
+          <p className="text-xs text-[#8A6B4A] mb-1">Notify Me Signups</p>
+          <p className="text-3xl font-bold text-[#2A1A06]">{data.notify_count}</p>
+        </Card>
+        <Card className="p-5 border border-[#F5E6CC]" data-testid="beekeeper-gold-count">
+          <p className="text-xs text-[#8A6B4A] mb-1">Gold Members</p>
+          <p className="text-3xl font-bold text-[#2A1A06]">{data.gold_member_count}</p>
+        </Card>
+      </div>
+
+      {/* Daily views */}
+      <div>
+        <h3 className="font-medium text-[#2A1A06] mb-3 text-sm">Daily Teaser Views (last 30 days)</h3>
+        {data.daily_views.length === 0 ? (
+          <p className="text-sm text-muted-foreground" data-testid="beekeeper-no-views">No teaser views recorded yet.</p>
+        ) : (
+          <div className="overflow-x-auto" data-testid="beekeeper-views-table">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="border-b border-[#F5E6CC]">
+                  <th className="text-left py-2 pr-4 text-[#8A6B4A] font-medium">Date</th>
+                  <th className="text-right py-2 text-[#8A6B4A] font-medium">Views</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.daily_views.map(({ date, views }) => (
+                  <tr key={date} className="border-b border-[#F5E6CC]/50" data-testid={`beekeeper-row-${date}`}>
+                    <td className="py-2 pr-4 text-[#2A1A06]">{date}</td>
+                    <td className="py-2 text-right font-medium text-[#2A1A06]">{views}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

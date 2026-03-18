@@ -60,6 +60,8 @@ const RecordDetailPage = lazy(() => import("./pages/RecordDetailPage"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const CreateHaulPage = lazy(() => import("./pages/CreateHaulPage"));
 const ISOPage = lazy(() => import("./pages/ISOPage"));
+const HoneypotTeaser = lazy(() => import("./pages/HoneypotTeaser"));
+const GoldPage = lazy(() => import("./pages/GoldPage"));
 const TradesPage = lazy(() => import("./pages/TradesPage"));
 const AdminDisputesPage = lazy(() => import("./pages/AdminDisputesPage"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
@@ -116,6 +118,23 @@ const VinylVariantPageWrapper = () => {
 const VariantReleasePageWrapper = () => {
   const { releaseId } = useParams();
   return <VariantReleasePage key={releaseId} />;
+};
+
+// HoneypotRoute — reads feature flags and renders teaser or real marketplace
+const HoneypotRoute = () => {
+  const { user, API } = useAuth();
+  const [flags, setFlags] = useState(null);
+
+  useEffect(() => {
+    axios.get(`${API}/honeypot/flags`)
+      .then(r => setFlags(r.data))
+      .catch(() => setFlags({ honeypot_live: false, honeypot_early_access: false }));
+  }, [API]);
+
+  if (!flags) return <div className="flex justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-honey" /></div>;
+  if (flags.honeypot_live) return <ISOPage />;
+  if (flags.honeypot_early_access && user?.golden_hive) return <ISOPage />;
+  return <HoneypotTeaser />;
 };
 
 // App Layout with Navbar
@@ -321,8 +340,9 @@ function AppContent() {
       <Route path="/collection" element={<ProtectedRoute><AppLayout><CollectionPage /></AppLayout></ProtectedRoute>} />
       <Route path="/add-record" element={<ProtectedRoute><AppLayout><AddRecordPage /></AppLayout></ProtectedRoute>} />
       <Route path="/create-haul" element={<ProtectedRoute><AppLayout><CreateHaulPage /></AppLayout></ProtectedRoute>} />
-      <Route path="/honeypot" element={<ProtectedRoute><AppLayout><ISOPage /></AppLayout></ProtectedRoute>} />
+      <Route path="/honeypot" element={<ProtectedRoute><AppLayout><HoneypotRoute /></AppLayout></ProtectedRoute>} />
       <Route path="/honeypot/listing/:listingId" element={<ProtectedRoute><AppLayout><ISOPage /></AppLayout></ProtectedRoute>} />
+      <Route path="/gold" element={<ProtectedRoute><AppLayout><GoldPage /></AppLayout></ProtectedRoute>} />
       <Route path="/honeypot/checkout/success" element={<ProtectedRoute><AppLayout><CheckoutSuccessPage /></AppLayout></ProtectedRoute>} />
       <Route path="/iso" element={<Navigate to="/honeypot" replace />} />
       <Route path="/trades" element={<ProtectedRoute><AppLayout><TradesPage /></AppLayout></ProtectedRoute>} />

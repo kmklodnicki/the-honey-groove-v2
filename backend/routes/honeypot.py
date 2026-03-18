@@ -69,6 +69,41 @@ def _can_see_test_listings(user: Optional[Dict]) -> bool:
     return bool(user.get("is_admin"))
 
 
+@router.get("/honeypot/flags")
+async def get_honeypot_flags():
+    """Public endpoint — returns feature flags for the Honeypot teaser."""
+    live_doc = await db.platform_settings.find_one({"key": "honeypot_live"}, {"_id": 0})
+    early_doc = await db.platform_settings.find_one({"key": "honeypot_early_access"}, {"_id": 0})
+    return {
+        "honeypot_live": bool(live_doc and live_doc.get("value")),
+        "honeypot_early_access": bool(early_doc and early_doc.get("value")),
+    }
+
+
+@router.post("/honeypot/notify")
+async def honeypot_notify(user: Dict = Depends(require_auth)):
+    """Authenticated — opts the current user into the Honeypot launch notification list."""
+    from datetime import date
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {"honeypotNotifyMe": True, "honeypotNotifyAt": datetime.now(timezone.utc).isoformat()}},
+    )
+    return {"success": True, "message": "You're on the list."}
+
+
+@router.post("/honeypot/view")
+async def honeypot_view(user: Dict = Depends(require_auth)):
+    """Authenticated — fire-and-forget daily teaser view counter."""
+    from datetime import date
+    key = f"teaser_views_{date.today().isoformat()}"
+    await db.platform_settings.update_one(
+        {"key": key},
+        {"$inc": {"value": 1}, "$setOnInsert": {"key": key}},
+        upsert=True,
+    )
+    return {"ok": True}
+
+
 @router.get("/platform-fee")
 async def get_platform_fee():
     """Public endpoint to get the current platform fee percentage."""

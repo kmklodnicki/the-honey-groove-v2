@@ -62,6 +62,8 @@ class UserResponse(BaseModel):
     stripe_customer_id: Optional[str] = None
     seller_status: Optional[str] = None
     has_payment_method: bool = False
+    honeypot_notify_me: bool = False
+    honeypot_notify_at: Optional[str] = None
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None

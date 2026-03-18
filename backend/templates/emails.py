@@ -471,6 +471,23 @@ def verified_seller_renewal(username: str, expiry_date: str, days_left: int) -> 
 
 
 
+def honeypot_launch(username: str) -> dict:
+    body = f"""
+    <p style="{GREETING}">Hey {username},</p>
+    <p>You asked us to let you know. <strong>The Honeypot is officially live.</strong></p>
+    <p>Buy and sell vinyl at <strong style="{AMBER}">6% fees</strong> (the lowest in the game).
+    Trade records with <strong>Mutual Hold protection</strong>.
+    Post what you're seeking and get matched instantly.</p>
+    <p>You're one of the first to know. List a record, make an offer, or start a trade.</p>
+    <div style="text-align:center;margin:24px 0;">
+        <a href="{FRONTEND}/honeypot" style="{BTN}">enter the Honeypot</a>
+    </div>
+    <p>The hive is buzzing. 🐝</p>
+    {SIG}
+    """
+    return {"subject": "The Honeypot is open. 🍯", "html": wrap_email(body)}
+
+
 def email_change_confirmation(username: str, confirm_url: str) -> dict:
     body = f"""
     <p style="{GREETING}">hey @{username},</p>

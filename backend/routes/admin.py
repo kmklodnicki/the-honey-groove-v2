@@ -1088,3 +1088,18 @@ async def clear_cache(cache_key: str, user: Dict = Depends(require_auth)):
         raise HTTPException(status_code=403, detail="Admin only")
     result = await db.cache.delete_one({"key": cache_key})
     return {"cleared": result.deleted_count > 0, "key": cache_key}
+
+
+@router.get("/admin/beekeeper")
+async def get_beekeeper_metrics(user: Dict = Depends(require_admin)):
+    """Admin-only — Honeypot teaser engagement metrics."""
+    notify_count = await db.users.count_documents({"honeypotNotifyMe": True})
+    gold_member_count = await db.users.count_documents({"golden_hive": True})
+    view_docs = await db.platform_settings.find(
+        {"key": {"$regex": "^teaser_views_"}}, {"_id": 0}
+    ).to_list(30)
+    daily_views = sorted(
+        [{"date": d["key"].replace("teaser_views_", ""), "views": d.get("value", 0)} for d in view_docs],
+        key=lambda x: x["date"],
+    )
+    return {"notify_count": notify_count, "gold_member_count": gold_member_count, "daily_views": daily_views}
