@@ -70,6 +70,7 @@ const FAQPage = lazy(() => import("./pages/FAQPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
 const TermsPage = lazy(() => import("./pages/TermsPage"));
 const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
+const GuidelinesPage = lazy(() => import("./pages/GuidelinesPage"));
 const VerifyEmailPage = lazy(() => import("./pages/VerifyEmailPage"));
 const ExploreSeeAllPage = lazy(() => import("./pages/ExploreSeeAllPage"));
 const WaxReportPage = lazy(() => import("./pages/WaxReportPage"));
@@ -313,6 +314,7 @@ function AppContent() {
       <Route path="/faq" element={<FAQPage />} />
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/guidelines" element={<GuidelinesPage />} />
       <Route path="/verify-email" element={<VerifyEmailPage />} />
       <Route path="/confirm-email-change" element={<ConfirmEmailChangePage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />

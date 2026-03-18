@@ -210,6 +210,7 @@ const Footer = () => (
     <Link to="/" className="text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors">Back to Home</Link>
     <div className="flex gap-4">
       <Link to="/terms" className="text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors">Terms of Service</Link>
+      <Link to="/guidelines" className="text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors">Guidelines</Link>
       <Link to="/faq" className="text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors">FAQ</Link>
     </div>
   </div>
