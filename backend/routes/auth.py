@@ -93,6 +93,9 @@ async def _build_user_response(user: dict) -> UserResponse:
         longest_streak=user.get("longest_streak", 0),
         total_spin_days=user.get("total_spin_days", 0),
         last_spin_date=user.get("last_spin_date"),
+        stripe_customer_id=user.get("stripe_customer_id"),
+        seller_status=user.get("seller_status"),
+        has_payment_method=bool(user.get("default_payment_method_id")),
     )
 
 # ============== AUTH ROUTES ==============

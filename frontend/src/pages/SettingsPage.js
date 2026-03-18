@@ -17,6 +17,7 @@ import {
 } from '../components/ui/dialog';
 import ReportModal from '../components/ReportModal';
 import CropModal from '../components/CropModal';
+import PaymentMethodManager from '../components/PaymentMethodManager';
 
 const SettingsPage = () => {
   usePageTitle('Settings');
@@ -840,6 +841,17 @@ const SettingsPage = () => {
               </Button>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Payment Methods */}
+      <Card className="border-honey/30 mb-6" data-testid="payment-methods-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><CreditCard className="w-5 h-5 text-honey-amber" /> Payment Methods</CardTitle>
+          <CardDescription>saved cards for buying records and mutual hold deposits.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <PaymentMethodManager />
         </CardContent>
       </Card>
 

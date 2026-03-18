@@ -271,7 +271,7 @@ const TradesPage = () => {
       </Tabs>
       {selectedTrade && (
         <TradeDetailModal open={showDetail} onOpenChange={(o) => { if (!o) { setShowDetail(false); setSelectedTrade(null); } }}
-          trade={selectedTrade} currentUserId={user?.id} token={token} API={API} feePct={platformFee} onUpdate={() => { fetchTrades(); setShowDetail(false); setSelectedTrade(null); }} />
+          trade={selectedTrade} currentUserId={user?.id} currentUser={user} token={token} API={API} feePct={platformFee} onUpdate={() => { fetchTrades(); setShowDetail(false); setSelectedTrade(null); }} />
       )}
     </div>
   );
@@ -406,7 +406,7 @@ const RecordMini = ({ record, label }) => (
 );
 
 // ======= Trade Detail Modal =======
-const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API, feePct = 6, onUpdate }) => {
+const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, currentUser, token, API, feePct = 6, onUpdate }) => {
   const [loading, setLoading] = useState(false);
   const [showCounter, setShowCounter] = useState(false);
   const [counterMessage, setCounterMessage] = useState('');
@@ -435,7 +435,7 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
   const canCounter = (trade.status === 'PROPOSED' && !isInitiator) || (trade.status === 'COUNTERED' && isInitiator);
   const canDecline = ['PROPOSED', 'COUNTERED'].includes(trade.status);
   const role = isInitiator ? 'initiator' : 'responder';
-  const holdPaid = trade.hold_charges?.[role]?.status === 'paid';
+  const holdPaid = ['paid', 'authorized'].includes(trade.hold_charges?.[role]?.status);
   const canPayHold = trade.status === 'HOLD_PENDING' && !holdPaid;
   const canShip = trade.status === 'SHIPPING' && !hasShipped(trade, currentUserId);
   const canConfirm = trade.status === 'CONFIRMING' && !hasConfirmed(trade, currentUserId);
@@ -480,13 +480,27 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
   const handlePayHold = async () => {
     setLoading(true);
     try {
-      const resp = await axios.post(`${API}/trades/${trade.id}/hold/checkout`,
-        { origin_url: window.location.origin },
-        { headers: { Authorization: `Bearer ${token}` } });
-      if (resp.data.url) {
-        window.location.href = resp.data.url;
+      const resp = await axios.post(
+        `${API}/trades/${trade.id}/hold/authorize`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (resp.data.requires_action) {
+        // 3DS required — load Stripe.js and handle next action
+        const { loadStripe } = await import('@stripe/stripe-js');
+        const stripeObj = await loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
+        if (stripeObj) {
+          const { error } = await stripeObj.handleNextAction({ clientSecret: resp.data.client_secret });
+          if (error) {
+            toast.error(error.message || '3D Secure authentication failed');
+            setLoading(false);
+            return;
+          }
+        }
       }
-    } catch (err) { toast.error(err.response?.data?.detail || 'Failed to create hold checkout'); }
+      toast.success('Hold authorized!');
+      onUpdate();
+    } catch (err) { toast.error(err.response?.data?.detail || 'Failed to authorize hold'); }
     finally { setLoading(false); }
   };
 
@@ -678,10 +692,26 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, token, API
           {/* Pay Hold Button */}
           {canPayHold && (
             <div>
+              {currentUser?.has_payment_method === false ? (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-center" data-testid="no-payment-method-prompt">
+                  <p className="text-sm text-amber-700 font-medium mb-2">Payment method required</p>
+                  <p className="text-xs text-amber-600 mb-3">Add a card in Settings to authorize your ${trade.hold_amount} hold deposit.</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => { window.location.href = '/settings'; }}
+                    className="rounded-full border-amber-300 text-amber-700 hover:bg-amber-100 text-xs"
+                    data-testid="go-to-settings-btn"
+                  >
+                    Go to Settings
+                  </Button>
+                </div>
+              ) : (
               <Button onClick={handlePayHold} disabled={loading} className="w-full bg-amber-600 text-white hover:bg-amber-700 rounded-full" data-testid="pay-hold-btn">
                 {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Shield className="w-4 h-4 mr-2" />}
-                Pay ${trade.hold_amount} Hold
+                Authorize ${trade.hold_amount} Hold
               </Button>
+              )}
               <div className="text-center mt-2" data-testid="stripe-trust-badge-hold">
                 <span className="text-[11px] text-muted-foreground/60 inline-flex items-center gap-1.5">
                   <svg width="28" height="12" viewBox="0 0 28 12" fill="none" className="opacity-40">

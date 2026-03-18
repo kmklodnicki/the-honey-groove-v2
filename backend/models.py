@@ -59,6 +59,9 @@ class UserResponse(BaseModel):
     longest_streak: int = 0
     total_spin_days: int = 0
     last_spin_date: Optional[str] = None
+    stripe_customer_id: Optional[str] = None
+    seller_status: Optional[str] = None
+    has_payment_method: bool = False
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None

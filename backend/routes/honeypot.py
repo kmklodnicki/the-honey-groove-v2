@@ -775,10 +775,20 @@ async def stripe_connect_verify(user_id: str):
             logger.error(f"Stripe account retrieve failed: {e}")
 
     now = datetime.now(timezone.utc).isoformat()
+    payouts_enabled = False
+    if account_id:
+        try:
+            account = stripe_sdk.Account.retrieve(account_id)
+            charges_enabled = account.charges_enabled
+            payouts_enabled = account.payouts_enabled
+        except Exception:
+            pass
+    seller_status = "active" if (charges_enabled and payouts_enabled) else "pending"
     await db.users.update_one({"id": user_id}, {"$set": {
         "stripe_connected": True,
         "stripe_charges_enabled": charges_enabled,
         "stripe_connected_at": now,
+        "seller_status": seller_status,
     }})
 
     if charges_enabled:
@@ -829,13 +839,19 @@ async def stripe_connect_status(user: Dict = Depends(require_auth)):
     # Re-check charges_enabled from Stripe if account exists but not yet enabled
     account_id = u.get("stripe_account_id")
     charges_enabled = u.get("stripe_charges_enabled", False)
+    payouts_enabled = False
     if account_id and not charges_enabled:
         try:
             stripe_sdk.api_key = STRIPE_API_KEY
             account = stripe_sdk.Account.retrieve(account_id)
             charges_enabled = account.charges_enabled
+            payouts_enabled = account.payouts_enabled
             if charges_enabled:
-                await db.users.update_one({"id": user["id"]}, {"$set": {"stripe_charges_enabled": True}})
+                seller_status = "active" if (charges_enabled and payouts_enabled) else "pending"
+                await db.users.update_one({"id": user["id"]}, {"$set": {
+                    "stripe_charges_enabled": True,
+                    "seller_status": seller_status,
+                }})
         except Exception:
             pass
 
@@ -1004,6 +1020,7 @@ async def create_payment_checkout(request: Request, body: Dict, user: Dict = Dep
     cancel_url = f"{host_url}/honeypot?payment=cancelled"
 
     stripe_sdk.api_key = STRIPE_API_KEY
+    idempotency_key = f"checkout_{listing_id}_{user['id']}"
     try:
         session = stripe_sdk.checkout.Session.create(
             payment_method_types=["card"],
@@ -1031,6 +1048,7 @@ async def create_payment_checkout(request: Request, body: Dict, user: Dict = Dep
                 "buyer_country": user.get("country", ""),
                 "original_amount_cents": str(amount_cents),
             },
+            idempotency_key=idempotency_key,
         )
     except stripe_sdk.error.InvalidRequestError as e:
         await db.listings.update_one({"id": listing_id}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
@@ -1117,6 +1135,7 @@ async def create_payment_intent(request: Request, body: Dict, user: Dict = Depen
                 "listing_id": listing_id, "buyer_id": user["id"],
                 "seller_id": listing["user_id"], "type": "express_purchase",
             },
+            idempotency_key=f"express_{listing_id}_{user['id']}",
         )
     except Exception as e:
         await db.listings.update_one({"id": listing_id}, {"$set": {"status": "ACTIVE"}, "$unset": {"locked_at": "", "locked_by": ""}})
@@ -1303,6 +1322,163 @@ async def stripe_webhook(request: Request):
                     "read": False,
                     "created_at": now,
                 })
+
+    # Stripe Connect account updated
+    if event_type == "account.updated":
+        account = raw_event["data"]["object"]
+        charges_enabled = account.get("charges_enabled", False)
+        payouts_enabled = account.get("payouts_enabled", False)
+        seller_status = "active" if (charges_enabled and payouts_enabled) else "pending"
+        await db.users.update_one(
+            {"stripe_account_id": account["id"]},
+            {"$set": {"stripe_charges_enabled": charges_enabled, "seller_status": seller_status}},
+        )
+        return {"received": True}
+
+    # PaymentIntent failed
+    if event_type == "payment_intent.payment_failed":
+        pi = raw_event["data"]["object"]
+        pi_id = pi["id"]
+        # Marketplace transaction failure
+        txn = await db.payment_transactions.find_one({"session_id": pi_id}, {"_id": 0})
+        if txn:
+            await db.payment_transactions.update_one({"session_id": pi_id}, {"$set": {
+                "payment_status": "FAILED", "updated_at": now,
+            }})
+            await create_notification(txn["buyer_id"], "PAYMENT_FAILED", "Payment failed",
+                                      "Your payment failed. Please check your card and try again.",
+                                      {"listing_id": txn.get("listing_id")})
+        # Hold authorization failure — check hold_charges
+        trade = await db.trades.find_one({
+            "$or": [
+                {"hold_charges.initiator.payment_intent_id": pi_id},
+                {"hold_charges.responder.payment_intent_id": pi_id},
+            ]
+        }, {"_id": 0})
+        if trade:
+            for uid in [trade["initiator_id"], trade["responder_id"]]:
+                await create_notification(uid, "HOLD_AUTH_FAILED", "Hold authorization failed",
+                                          "A mutual hold payment failed. Please add a valid payment method in Settings.",
+                                          {"trade_id": trade["id"]})
+        # Sweetener failure
+        sweetener_trade = await db.trades.find_one({"sweetener_payment_intent_id": pi_id}, {"_id": 0})
+        if sweetener_trade:
+            for uid in [sweetener_trade["initiator_id"], sweetener_trade["responder_id"]]:
+                await create_notification(uid, "SWEETENER_FAILED", "Sweetener payment failed",
+                                          "The trade sweetener payment failed. Please check your payment method.",
+                                          {"trade_id": sweetener_trade["id"]})
+        return {"received": True}
+
+    # Manual-capture PI authorized (amount_capturable_updated)
+    if event_type == "payment_intent.amount_capturable_updated":
+        pi = raw_event["data"]["object"]
+        pi_id = pi["id"]
+        for role in ["initiator", "responder"]:
+            trade = await db.trades.find_one({f"hold_charges.{role}.payment_intent_id": pi_id}, {"_id": 0})
+            if trade:
+                charges = trade.get("hold_charges") or {}
+                charges[role]["status"] = "authorized"
+                await db.trades.update_one({"id": trade["id"]}, {"$set": {"hold_charges": charges, "updated_at": now}})
+                break
+        return {"received": True}
+
+    # PI canceled (hold released)
+    if event_type == "payment_intent.canceled":
+        pi = raw_event["data"]["object"]
+        pi_id = pi["id"]
+        for role in ["initiator", "responder"]:
+            trade = await db.trades.find_one({f"hold_charges.{role}.payment_intent_id": pi_id}, {"_id": 0})
+            if trade:
+                charges = trade.get("hold_charges") or {}
+                charges[role]["status"] = "released"
+                await db.trades.update_one({"id": trade["id"]}, {"$set": {"hold_charges": charges, "updated_at": now}})
+                break
+        return {"received": True}
+
+    # Charge dispute created
+    if event_type == "charge.dispute.created":
+        dispute = raw_event["data"]["object"]
+        charge_id = dispute.get("charge")
+        if charge_id:
+            txn = await db.payment_transactions.find_one(
+                {"$or": [{"charge_id": charge_id}, {"session_id": charge_id}]}, {"_id": 0}
+            )
+            if txn:
+                await db.payment_transactions.update_one(
+                    {"id": txn["id"]},
+                    {"$set": {"payout_status": "PAYOUT_ON_HOLD", "updated_at": now}},
+                )
+            admin_email = "katie@thehoneygroove.com"
+            await create_notification("admin", "DISPUTE_CREATED", "New charge dispute",
+                                      f"Dispute opened on charge {charge_id}. Review in Stripe Dashboard.",
+                                      {"charge_id": charge_id})
+            try:
+                from services.email_service import send_email_fire_and_forget
+                html = f"""<div style="font-family:sans-serif;padding:20px">
+                    <h2>Charge Dispute Opened</h2>
+                    <p>Charge ID: <strong>{charge_id}</strong></p>
+                    <p>Review and respond in your Stripe Dashboard within the dispute window.</p>
+                </div>"""
+                await send_email_fire_and_forget(admin_email, f"[THG] Dispute: {charge_id}", html)
+            except Exception:
+                pass
+        return {"received": True}
+
+    # Transfer created — update payout_status
+    if event_type == "transfer.created":
+        transfer = raw_event["data"]["object"]
+        transfer_id = transfer["id"]
+        listing_id_meta = (transfer.get("metadata") or {}).get("listing_id")
+        query = {"$or": [{"seller_transfer_id": transfer_id}]}
+        if listing_id_meta:
+            query["$or"].append({"listing_id": listing_id_meta})
+        txn = await db.payment_transactions.find_one(query, {"_id": 0})
+        if txn:
+            await db.payment_transactions.update_one({"id": txn["id"]}, {"$set": {
+                "payout_status": "transferred", "updated_at": now,
+            }})
+        return {"received": True}
+
+    # Payout paid — log confirmation
+    if event_type == "payout.paid":
+        connect_account_id = raw_event.get("account")
+        if connect_account_id:
+            logging.info(f"Payout paid for Connect account {connect_account_id}")
+        return {"received": True}
+
+    # Payout failed — notify user
+    if event_type == "payout.failed":
+        connect_account_id = raw_event.get("account")
+        if connect_account_id:
+            u = await db.users.find_one({"stripe_account_id": connect_account_id}, {"_id": 0})
+            if u:
+                await create_notification(u["id"], "PAYOUT_FAILED", "Payout failed",
+                                          "Your payout failed. Please update your bank account in Stripe to receive future payouts.",
+                                          {})
+                try:
+                    from services.email_service import send_email_fire_and_forget
+                    html = f"""<div style="font-family:sans-serif;padding:20px">
+                        <h2>Your payout failed</h2>
+                        <p>Hi {u.get('username', 'there')},</p>
+                        <p>We were unable to send your payout. Please log into Stripe and update your bank account details.</p>
+                    </div>"""
+                    await send_email_fire_and_forget(u["email"], "Action required: Payout failed", html)
+                except Exception:
+                    pass
+        return {"received": True}
+
+    # SetupIntent succeeded — save default payment method if none set (belt-and-suspenders)
+    if event_type == "setup_intent.succeeded":
+        si = raw_event["data"]["object"]
+        pm_id = si.get("payment_method")
+        customer_id = si.get("customer")
+        if pm_id and customer_id:
+            u = await db.users.find_one({"stripe_customer_id": customer_id}, {"_id": 0})
+            if u and not u.get("default_payment_method_id"):
+                await db.users.update_one({"stripe_customer_id": customer_id}, {"$set": {
+                    "default_payment_method_id": pm_id,
+                }})
+        return {"received": True}
 
     return {"received": True}
 

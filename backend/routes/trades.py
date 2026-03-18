@@ -22,17 +22,29 @@ router = APIRouter()
 TRADE_URL = f"{FRONTEND_URL}/honeypot"
 
 
-async def _refund_hold(payment_intent_id: str) -> bool:
-    """Refund a captured hold payment via Stripe."""
-    if not payment_intent_id or not STRIPE_API_KEY:
+async def _cancel_or_refund_hold(charge_entry: dict) -> bool:
+    """Cancel a manual-capture PI (new flow) or refund a Checkout Session payment (legacy flow)."""
+    if not STRIPE_API_KEY:
         return False
+    stripe_sdk.api_key = STRIPE_API_KEY
+    pi_id = charge_entry.get("payment_intent_id")
+    session_id = charge_entry.get("session_id")
     try:
-        stripe_sdk.api_key = STRIPE_API_KEY
-        stripe_sdk.Refund.create(payment_intent=payment_intent_id)
+        if pi_id and not session_id:
+            # New flow: manual-capture PI — cancel (not captured, so no money moved)
+            stripe_sdk.PaymentIntent.cancel(pi_id)
+        elif pi_id:
+            # Legacy flow: PI obtained from Checkout Session after capture
+            stripe_sdk.Refund.create(payment_intent=pi_id)
         return True
     except Exception as e:
-        logger.error(f"Hold refund failed for {payment_intent_id}: {e}")
+        logger.error(f"Hold cancel/refund failed for charge_entry {charge_entry}: {e}")
         return False
+
+
+async def _refund_hold(payment_intent_id: str) -> bool:
+    """Legacy: Refund a captured hold PaymentIntent. Kept for backward compat callers."""
+    return await _cancel_or_refund_hold({"payment_intent_id": payment_intent_id, "session_id": "legacy"})
 
 
 async def _send_hold_emails(trade: Dict, template_fn, **extra_kwargs):
@@ -54,9 +66,9 @@ async def _auto_expire_shipping(trade: Dict):
     if trade.get("hold_enabled") and trade.get("hold_status") == "active":
         charges = trade.get("hold_charges") or {}
         for role in ["initiator", "responder"]:
-            pi_id = (charges.get(role) or {}).get("payment_intent_id")
-            if pi_id:
-                await _refund_hold(pi_id)
+            charge_entry = charges.get(role) or {}
+            if charge_entry.get("payment_intent_id") or charge_entry.get("session_id"):
+                await _cancel_or_refund_hold(charge_entry)
         await db.trades.update_one({"id": trade["id"]}, {"$set": {"hold_status": "refunded"}})
 
     # Mark trade as EXPIRED
@@ -189,6 +201,28 @@ async def complete_trade(trade: Dict):
     # Mark listing as TRADED
     if listing:
         await db.listings.update_one({"id": listing["id"]}, {"$set": {"status": "TRADED"}})
+
+    # Transfer sweetener to recipient (minus platform fee) if paid
+    if trade.get("sweetener_payment_intent_id") and not trade.get("sweetener_transfer_id") and STRIPE_API_KEY:
+        try:
+            stripe_sdk.api_key = STRIPE_API_KEY
+            boot_cents = int(round(float(trade["boot_amount"]) * 100))
+            fee_cents = int(boot_cents * 0.06)
+            recipient_id = trade.get("sweetener_recipient_id")
+            if recipient_id:
+                recipient = await db.users.find_one({"id": recipient_id}, {"_id": 0})
+                if recipient and recipient.get("stripe_account_id"):
+                    transfer = stripe_sdk.Transfer.create(
+                        amount=boot_cents - fee_cents,
+                        currency="usd",
+                        destination=recipient["stripe_account_id"],
+                        transfer_group=f"trade_{trade['id']}",
+                        metadata={"type": "sweetener_payout", "trade_id": trade["id"]},
+                        idempotency_key=f"sweetener_transfer_{trade['id']}",
+                    )
+                    await db.trades.update_one({"id": trade["id"]}, {"$set": {"sweetener_transfer_id": transfer.id}})
+        except Exception as e:
+            logger.error(f"Sweetener transfer failed for trade {trade['id']}: {e}")
 
 
 async def build_trade_response(trade: Dict) -> Dict:
@@ -626,13 +660,13 @@ async def confirm_receipt(trade_id: str, user: Dict = Depends(require_auth)):
 
     if both_confirmed:
         await complete_trade(trade)
-        # If mutual hold trade, refund both holds
+        # If mutual hold trade, cancel/refund both holds
         if trade.get("hold_enabled") and trade.get("hold_status") == "active":
             charges = trade.get("hold_charges") or {}
             for role in ["initiator", "responder"]:
-                pi_id = (charges.get(role) or {}).get("payment_intent_id")
-                if pi_id:
-                    await _refund_hold(pi_id)
+                charge_entry = charges.get(role) or {}
+                if charge_entry.get("payment_intent_id") or charge_entry.get("session_id"):
+                    await _cancel_or_refund_hold(charge_entry)
             await db.trades.update_one({"id": trade_id}, {"$set": {"hold_status": "refunded"}})
             # Send hold reversed emails
             updated_trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
@@ -673,6 +707,15 @@ async def cancel_shipping(trade_id: str, user: Dict = Depends(require_auth)):
     await db.trades.update_one({"id": trade_id}, {"$set": {"status": "CANCELLED", "updated_at": now}})
     # Release listing back to active
     await db.listings.update_one({"id": trade["listing_id"]}, {"$set": {"status": "ACTIVE"}})
+
+    # Refund sweetener if it was charged
+    if trade.get("sweetener_payment_intent_id") and STRIPE_API_KEY:
+        try:
+            stripe_sdk.api_key = STRIPE_API_KEY
+            stripe_sdk.Refund.create(payment_intent=trade["sweetener_payment_intent_id"])
+        except Exception as e:
+            logger.error(f"Sweetener refund failed on cancel-shipping for trade {trade_id}: {e}")
+
     return {"message": "Trade cancelled due to shipping deadline"}
 
 
@@ -807,6 +850,113 @@ async def create_hold_checkout(trade_id: str, request: Request, user: Dict = Dep
     return {"url": session.url, "session_id": session.id}
 
 
+@router.post("/trades/{trade_id}/hold/authorize")
+async def authorize_hold(trade_id: str, user: Dict = Depends(require_auth)):
+    """Authorize a mutual hold using the user's saved payment method (manual-capture PI)."""
+    trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade not found")
+    if trade["status"] != "HOLD_PENDING":
+        raise HTTPException(status_code=400, detail="Trade is not awaiting hold payment")
+    if trade["initiator_id"] != user["id"] and trade["responder_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    role = "initiator" if trade["initiator_id"] == user["id"] else "responder"
+    charges = trade.get("hold_charges") or {}
+    existing = charges.get(role) or {}
+    if existing.get("status") in ("paid", "authorized"):
+        raise HTTPException(status_code=400, detail="Your hold is already authorized")
+
+    u = await db.users.find_one({"id": user["id"]}, {"_id": 0})
+    if not u.get("stripe_customer_id") or not u.get("default_payment_method_id"):
+        raise HTTPException(status_code=400, detail="Add a payment method in Settings before authorizing a hold")
+
+    hold_amount = float(trade.get("hold_amount", 0))
+    if hold_amount < 10:
+        raise HTTPException(status_code=400, detail="Hold amount is below $10 minimum")
+    amount_cents = int(round(hold_amount * 100))
+
+    stripe_sdk.api_key = STRIPE_API_KEY
+    idempotency_key = f"hold_{trade_id}_{role}"
+    try:
+        pi = stripe_sdk.PaymentIntent.create(
+            amount=amount_cents,
+            currency="usd",
+            customer=u["stripe_customer_id"],
+            payment_method=u["default_payment_method_id"],
+            capture_method="manual",
+            confirm=True,
+            off_session=True,
+            metadata={"type": "mutual_hold", "trade_id": trade_id, "role": role},
+            idempotency_key=idempotency_key,
+        )
+    except stripe_sdk.error.CardError as e:
+        raise HTTPException(status_code=402, detail=f"Card declined: {e.user_message or str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Hold authorization failed: {str(e)}")
+
+    if pi.status == "requires_action":
+        return {"requires_action": True, "client_secret": pi.client_secret, "payment_intent_id": pi.id}
+
+    now = datetime.now(timezone.utc).isoformat()
+    charges[role] = {"payment_intent_id": pi.id, "session_id": None, "status": "authorized"}
+    await db.trades.update_one({"id": trade_id}, {"$set": {"hold_charges": charges, "updated_at": now}})
+    return {"authorized": True, "payment_intent_id": pi.id}
+
+
+@router.post("/trades/{trade_id}/hold/reauthorize")
+async def reauthorize_hold(trade_id: str, user: Dict = Depends(require_auth)):
+    """Cancel expired hold PI and create a fresh one (use after ~5-day PI expiry)."""
+    trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
+    if not trade:
+        raise HTTPException(status_code=404, detail="Trade not found")
+    if trade["initiator_id"] != user["id"] and trade["responder_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    role = "initiator" if trade["initiator_id"] == user["id"] else "responder"
+    charges = trade.get("hold_charges") or {}
+    old_entry = charges.get(role) or {}
+    old_pi_id = old_entry.get("payment_intent_id")
+
+    u = await db.users.find_one({"id": user["id"]}, {"_id": 0})
+    if not u.get("stripe_customer_id") or not u.get("default_payment_method_id"):
+        raise HTTPException(status_code=400, detail="Add a payment method in Settings")
+
+    hold_amount = float(trade.get("hold_amount", 0))
+    amount_cents = int(round(hold_amount * 100))
+
+    stripe_sdk.api_key = STRIPE_API_KEY
+    if old_pi_id:
+        try:
+            stripe_sdk.PaymentIntent.cancel(old_pi_id)
+        except Exception as e:
+            logger.warning(f"Could not cancel old hold PI {old_pi_id}: {e}")
+
+    from datetime import date
+    idempotency_key = f"hold_reauth_{trade_id}_{role}_{date.today().isoformat()}"
+    try:
+        pi = stripe_sdk.PaymentIntent.create(
+            amount=amount_cents,
+            currency="usd",
+            customer=u["stripe_customer_id"],
+            payment_method=u["default_payment_method_id"],
+            capture_method="manual",
+            confirm=True,
+            off_session=True,
+            metadata={"type": "mutual_hold_reauth", "trade_id": trade_id, "role": role},
+            idempotency_key=idempotency_key,
+        )
+    except stripe_sdk.error.CardError as e:
+        raise HTTPException(status_code=402, detail=f"Card declined: {e.user_message or str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Reauthorization failed: {str(e)}")
+
+    now = datetime.now(timezone.utc).isoformat()
+    charges[role] = {"payment_intent_id": pi.id, "session_id": None, "status": "authorized"}
+    await db.trades.update_one({"id": trade_id}, {"$set": {"hold_charges": charges, "updated_at": now}})
+    return {"reauthorized": True, "payment_intent_id": pi.id}
+
+
 @router.get("/trades/{trade_id}/hold/status")
 async def check_hold_status(trade_id: str, user: Dict = Depends(require_auth)):
     """Check hold payment status for both parties. If both paid, transition to SHIPPING."""
@@ -822,7 +972,19 @@ async def check_hold_status(trade_id: str, user: Dict = Depends(require_auth)):
     stripe_sdk.api_key = STRIPE_API_KEY
     for role in ["initiator", "responder"]:
         charge = charges.get(role)
-        if charge and charge.get("session_id") and charge.get("status") != "paid":
+        if not charge or charge.get("status") in ("paid", "authorized"):
+            continue
+        # New flow: manual-capture PI — check if authorized (requires_capture)
+        if charge.get("payment_intent_id") and not charge.get("session_id"):
+            try:
+                pi = stripe_sdk.PaymentIntent.retrieve(charge["payment_intent_id"])
+                if pi.status == "requires_capture":
+                    charge["status"] = "authorized"
+                    updated = True
+            except Exception:
+                pass
+        # Legacy flow: Checkout Session
+        elif charge.get("session_id"):
             try:
                 session = stripe_sdk.checkout.Session.retrieve(charge["session_id"])
                 if session.payment_status == "paid":
@@ -836,12 +998,12 @@ async def check_hold_status(trade_id: str, user: Dict = Depends(require_auth)):
     if updated:
         await db.trades.update_one({"id": trade_id}, {"$set": {"hold_charges": charges, "updated_at": now}})
 
-    # Check if both parties have paid
-    init_paid = (charges.get("initiator") or {}).get("status") == "paid"
-    resp_paid = (charges.get("responder") or {}).get("status") == "paid"
+    # Check if both parties have authorized/paid
+    init_done = (charges.get("initiator") or {}).get("status") in ("paid", "authorized")
+    resp_done = (charges.get("responder") or {}).get("status") in ("paid", "authorized")
 
-    if init_paid and resp_paid:
-        # Both paid — transition to SHIPPING
+    if init_done and resp_done:
+        # Both authorized — transition to SHIPPING
         shipping_deadline = (datetime.now(timezone.utc) + timedelta(days=3)).isoformat()
         await db.trades.update_one({"id": trade_id}, {"$set": {
             "status": "SHIPPING",
@@ -850,8 +1012,36 @@ async def check_hold_status(trade_id: str, user: Dict = Depends(require_auth)):
             "shipping": {"initiator": None, "responder": None},
             "confirmations": {},
         }})
+
+        # Charge sweetener if applicable
+        if trade.get("boot_amount") and not trade.get("sweetener_payment_intent_id"):
+            boot_cents = int(round(float(trade["boot_amount"]) * 100))
+            boot_dir = trade.get("boot_direction")
+            payer_id = trade["initiator_id"] if boot_dir == "TO_SELLER" else trade["responder_id"]
+            recipient_id = trade["responder_id"] if boot_dir == "TO_SELLER" else trade["initiator_id"]
+            payer = await db.users.find_one({"id": payer_id}, {"_id": 0})
+            if payer and payer.get("stripe_customer_id") and payer.get("default_payment_method_id"):
+                try:
+                    sweetener_pi = stripe_sdk.PaymentIntent.create(
+                        amount=boot_cents,
+                        currency="usd",
+                        customer=payer["stripe_customer_id"],
+                        payment_method=payer["default_payment_method_id"],
+                        confirm=True,
+                        off_session=True,
+                        metadata={"type": "sweetener", "trade_id": trade_id,
+                                  "payer_id": payer_id, "recipient_id": recipient_id},
+                        idempotency_key=f"sweetener_{trade_id}",
+                    )
+                    await db.trades.update_one({"id": trade_id}, {"$set": {
+                        "sweetener_payment_intent_id": sweetener_pi.id,
+                        "sweetener_payer_id": payer_id,
+                        "sweetener_recipient_id": recipient_id,
+                    }})
+                except Exception as e:
+                    logger.error(f"Sweetener charge failed for trade {trade_id}: {e}")
+
         # Send hold activated emails
-        updated_trade = await db.trades.find_one({"id": trade_id}, {"_id": 0})
         initiator = await db.users.find_one({"id": trade["initiator_id"]}, {"_id": 0})
         responder = await db.users.find_one({"id": trade["responder_id"]}, {"_id": 0})
         hold_amt = f"{trade.get('hold_amount', 0):.2f}"
@@ -865,8 +1055,8 @@ async def check_hold_status(trade_id: str, user: Dict = Depends(require_auth)):
     return {
         "status": "HOLD_PENDING",
         "hold_status": "awaiting_payment",
-        "initiator_paid": init_paid,
-        "responder_paid": resp_paid,
+        "initiator_paid": init_done,
+        "responder_paid": resp_done,
     }
 
 
@@ -1151,8 +1341,10 @@ async def resolve_hold_dispute(trade_id: str, data: AdminHoldResolve, user: Dict
 
     now = datetime.now(timezone.utc).isoformat()
     charges = trade.get("hold_charges") or {}
-    init_pi = (charges.get("initiator") or {}).get("payment_intent_id")
-    resp_pi = (charges.get("responder") or {}).get("payment_intent_id")
+    init_charge = charges.get("initiator") or {}
+    resp_charge = charges.get("responder") or {}
+    init_pi = init_charge.get("payment_intent_id")
+    resp_pi = resp_charge.get("payment_intent_id")
 
     dispute = trade.get("dispute", {})
     dispute["resolution"] = {
@@ -1167,11 +1359,11 @@ async def resolve_hold_dispute(trade_id: str, data: AdminHoldResolve, user: Dict
     hold_amt = f"{trade.get('hold_amount', 0):.2f}"
 
     if data.resolution == "full_reversal":
-        # Refund both parties
-        if init_pi:
-            await _refund_hold(init_pi)
-        if resp_pi:
-            await _refund_hold(resp_pi)
+        # Cancel/refund both parties
+        if init_charge.get("payment_intent_id"):
+            await _cancel_or_refund_hold(init_charge)
+        if resp_charge.get("payment_intent_id"):
+            await _cancel_or_refund_hold(resp_charge)
         await db.trades.update_one({"id": trade_id}, {"$set": {
             "status": "CANCELLED", "hold_status": "refunded", "dispute": dispute, "updated_at": now,
         }})
@@ -1183,9 +1375,9 @@ async def resolve_hold_dispute(trade_id: str, data: AdminHoldResolve, user: Dict
                 await send_email_fire_and_forget(u_obj["email"], tpl["subject"], tpl["html"])
 
     elif data.resolution == "penalize_initiator":
-        # Keep initiator's hold (platform revenue), refund responder
-        if resp_pi:
-            await _refund_hold(resp_pi)
+        # Keep initiator's hold (platform revenue), cancel/refund responder
+        if resp_charge.get("payment_intent_id"):
+            await _cancel_or_refund_hold(resp_charge)
         await db.trades.update_one({"id": trade_id}, {"$set": {
             "status": "CANCELLED", "hold_status": "penalized_initiator", "dispute": dispute, "updated_at": now,
         }})
@@ -1195,9 +1387,9 @@ async def resolve_hold_dispute(trade_id: str, data: AdminHoldResolve, user: Dict
             await send_email_fire_and_forget(responder["email"], tpl["subject"], tpl["html"])
 
     elif data.resolution == "penalize_responder":
-        # Keep responder's hold, refund initiator
-        if init_pi:
-            await _refund_hold(init_pi)
+        # Keep responder's hold, cancel/refund initiator
+        if init_charge.get("payment_intent_id"):
+            await _cancel_or_refund_hold(init_charge)
         await db.trades.update_one({"id": trade_id}, {"$set": {
             "status": "CANCELLED", "hold_status": "penalized_responder", "dispute": dispute, "updated_at": now,
         }})
@@ -1295,9 +1487,9 @@ async def _auto_complete_no_confirmation(trade: Dict):
     if trade.get("hold_enabled") and trade.get("hold_status") == "active":
         charges = trade.get("hold_charges") or {}
         for role in ["initiator", "responder"]:
-            pi_id = (charges.get(role) or {}).get("payment_intent_id")
-            if pi_id:
-                await _refund_hold(pi_id)
+            charge_entry = charges.get(role) or {}
+            if charge_entry.get("payment_intent_id") or charge_entry.get("session_id"):
+                await _cancel_or_refund_hold(charge_entry)
         await db.trades.update_one({"id": trade["id"]}, {"$set": {
             "hold_status": "refunded",
             "updated_at": now_str,
@@ -1369,12 +1561,12 @@ async def auto_reverse_expired_holds():
                 hold_amt = f"{trade.get('hold_amount', 0):.2f}"
 
                 if trade.get("hold_enabled") and trade.get("hold_status") == "active":
-                    # Refund holds for unconfirmed parties
+                    # Cancel/refund holds for unconfirmed parties
                     for uid, role in [(trade["initiator_id"], "initiator"), (trade["responder_id"], "responder")]:
                         if not confirmations.get(uid):
-                            pi_id = (charges.get(role) or {}).get("payment_intent_id")
-                            if pi_id:
-                                await _refund_hold(pi_id)
+                            charge_entry = (charges.get(role) or {})
+                            if charge_entry.get("payment_intent_id") or charge_entry.get("session_id"):
+                                await _cancel_or_refund_hold(charge_entry)
                             confirmations[uid] = "auto"
                             user_obj = await db.users.find_one({"id": uid}, {"_id": 0})
                             if user_obj and user_obj.get("email"):
