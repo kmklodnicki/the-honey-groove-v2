@@ -395,25 +395,25 @@ const LandingPage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 border-t border-honey/20">
+      <footer className="py-6 border-t border-honey/20">
         <div className="max-w-6xl mx-auto px-4 md:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-2">
             <img
               src="/logo-wordmark.png"
               alt="the Honey Groove"
-              className="w-[180px] md:w-[200px]"
+              className="w-[120px] sm:w-[160px] md:w-[200px] shrink-0"
             />
-            <div className="flex items-center gap-6">
-              <Link to="/about" className="text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors" data-testid="footer-about-link">About</Link>
-              <Link to="/faq" className="text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors" data-testid="footer-faq-link">FAQ</Link>
-              <Link to="/terms" className="text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors" data-testid="footer-terms-link">Terms</Link>
-              <Link to="/privacy" className="text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors" data-testid="footer-privacy-link">Privacy</Link>
-              <Link to="/guidelines" className="text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors" data-testid="footer-guidelines-link">Guidelines</Link>
-              <p className="text-sm text-vinyl-black/50">
-                &copy; 2026 the Honey Groove<sup style={{ fontSize: '0.6em' }}>&trade;</sup>. Made with love for vinyl collectors.
-              </p>
+            <div className="flex items-center gap-3 sm:gap-5 flex-nowrap">
+              <Link to="/about" className="text-xs sm:text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors whitespace-nowrap" data-testid="footer-about-link">About</Link>
+              <Link to="/faq" className="text-xs sm:text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors whitespace-nowrap" data-testid="footer-faq-link">FAQ</Link>
+              <Link to="/terms" className="text-xs sm:text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors whitespace-nowrap" data-testid="footer-terms-link">Terms</Link>
+              <Link to="/privacy" className="text-xs sm:text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors whitespace-nowrap" data-testid="footer-privacy-link">Privacy</Link>
+              <Link to="/guidelines" className="text-xs sm:text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors whitespace-nowrap" data-testid="footer-guidelines-link">Guidelines</Link>
             </div>
           </div>
+          <p className="text-xs text-vinyl-black/40 mt-3 text-center">
+            &copy; 2026 the Honey Groove<sup style={{ fontSize: '0.6em' }}>&trade;</sup>. Made with love for vinyl collectors.
+          </p>
         </div>
       </footer>
 
