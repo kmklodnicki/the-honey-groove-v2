@@ -1090,6 +1090,25 @@ async def clear_cache(cache_key: str, user: Dict = Depends(require_auth)):
     return {"cleared": result.deleted_count > 0, "key": cache_key}
 
 
+@router.post("/admin/verify/{user_id}")
+async def admin_verify_user(user_id: str, body: dict, admin: Dict = Depends(require_admin)):
+    """Beekeeper manually verifies or revokes a user's Verified badge."""
+    verified = body.get("verified", False)
+    from datetime import datetime, timezone
+    now = datetime.now(timezone.utc).isoformat()
+    if verified:
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": {"isVerified": True, "verifiedAt": now, "verifiedMethod": "admin"}},
+        )
+    else:
+        await db.users.update_one(
+            {"id": user_id},
+            {"$set": {"isVerified": False, "verifiedAt": None, "verifiedMethod": None}},
+        )
+    return {"success": True, "user_id": user_id, "verified": verified}
+
+
 @router.get("/admin/beekeeper")
 async def get_beekeeper_metrics(user: Dict = Depends(require_admin)):
     """Admin-only — Honeypot teaser engagement metrics."""

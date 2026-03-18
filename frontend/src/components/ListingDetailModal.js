@@ -9,7 +9,7 @@ import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { X, Star, Loader2, ChevronLeft, ChevronRight, DollarSign, ArrowRightLeft, Disc, Check, Heart, AlertTriangle, Package, Flag, Flame, Pencil, Camera, Save } from 'lucide-react';
-import VerifiedShield from './VerifiedShield';
+import UserBadges from './UserBadges';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import { resolveImageUrl } from '../utils/imageUrl';
@@ -498,9 +498,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                         </Avatar>
                         <div className="text-left">
                           <p className="text-sm font-medium flex items-center gap-1">@{seller.username}
-                            {(seller.golden_hive_verified || seller.is_admin) && (
-                              <VerifiedShield size={16} isFounder={seller.is_admin} />
-                            )}
+                            <UserBadges user={seller} size="small" />
                           </p>
                           <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                             <div className="flex">

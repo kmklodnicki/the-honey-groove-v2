@@ -38,7 +38,7 @@ const AdminPage = () => {
     { key: 'feedback', label: 'Feedback & Bug Reports', icon: Heart },
     { key: 'watchtower', label: 'Watchtower', icon: AlertTriangle },
     { key: 'gate', label: 'The Gate', icon: Shield },
-    { key: 'golden_hive', label: 'Golden Hive ID', icon: Shield },
+    { key: 'golden_hive', label: 'Verification', icon: Shield },
     { key: 'test_listings', label: 'Test Listings', icon: Flag },
     { key: 'settings', label: 'Platform Settings', icon: Settings },
     { key: 'beekeeper', label: 'Beekeeper', icon: BarChart2 },
@@ -1408,9 +1408,8 @@ const UserManagementSection = ({ API, headers }) => {
                 <div className="flex items-center gap-2 min-w-0">
                   <img src={resolveImageUrl(u.avatar_url)} alt="" className="w-7 h-7 rounded-full shrink-0" />
                   <Link to={`/profile/${u.username}`} className="text-sm font-medium truncate hover:underline" style={{ color: '#C8861A' }} data-testid={`admin-user-link-${u.username}`}>@{u.username}</Link>
-                  {u.golden_hive && <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">Verified</span>}
-                  {!u.golden_hive && u.golden_hive_status === 'PAID_PENDING_UPLOAD' && <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-100 text-amber-700 border border-amber-200">Paid</span>}
-                  {!u.golden_hive && u.golden_hive_status === 'pending' && <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-100 text-blue-700 border border-blue-200">ID Review</span>}
+                  {(u.is_verified || u.golden_hive) && <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">Verified</span>}
+                  {u.is_gold_member && <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-100 text-amber-700 border border-amber-200">Gold</span>}
                 </div>
                 <span className="text-xs text-muted-foreground break-all">{u.email}</span>
                 <span className="text-xs text-muted-foreground">{fmtDate(u.created_at)}</span>
@@ -1989,57 +1988,69 @@ const GateSection = ({ API, headers }) => {
 }; 
 
 const GoldenHiveAdminSection = ({ API, headers }) => {
-  const [pending, setPending] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [results, setResults] = useState([]);
+  const [searching, setSearching] = useState(false);
   const [processing, setProcessing] = useState(null);
 
-  useEffect(() => {
-    axios.get(`${API}/admin/golden-hive/pending`, { headers }).then(r => setPending(r.data || [])).catch(() => {}).finally(() => setLoading(false));
-  }, [API, headers]);
+  const handleSearch = async () => {
+    if (!search.trim()) return;
+    setSearching(true);
+    try {
+      const r = await axios.get(`${API}/admin/users?q=${encodeURIComponent(search)}&limit=10`, { headers });
+      setResults(r.data || []);
+    } catch { toast.error('Search failed'); }
+    finally { setSearching(false); }
+  };
 
-  const handleAction = async (userId, action) => {
+  const handleVerify = async (userId, verified) => {
     setProcessing(userId);
     try {
-      await axios.post(`${API}/admin/golden-hive/${userId}/${action}`, {}, { headers });
-      toast.success(`Golden Hive ID ${action}d`);
-      setPending(prev => prev.filter(u => u.id !== userId));
-    } catch (err) { toast.error(err.response?.data?.detail || `Failed to ${action}`); }
+      await axios.post(`${API}/admin/verify/${userId}`, { verified }, { headers });
+      toast.success(verified ? 'User verified.' : 'Verification revoked.');
+      setResults(prev => prev.map(u => u.id === userId ? { ...u, is_verified: verified } : u));
+    } catch (err) { toast.error(err.response?.data?.detail || 'Failed.'); }
     finally { setProcessing(null); }
   };
 
   return (
-    <div className="space-y-4" data-testid="admin-golden-hive-section">
-      <div className="flex items-center justify-between">
-        <h2 className="font-heading text-xl text-vinyl-black">Golden Hive ID — Pending Verifications</h2>
-        <span className="text-xs bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full font-medium">{pending.length} pending</span>
+    <div className="space-y-6" data-testid="admin-verification-section">
+      <div>
+        <h2 className="font-heading text-xl text-vinyl-black mb-1">Verification — Manual Control</h2>
+        <p className="text-sm text-muted-foreground">Search for a user to manually grant or revoke their Verified badge.</p>
       </div>
-      {loading ? (
-        <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-honey" /></div>
-      ) : pending.length === 0 ? (
-        <Card className="p-6 text-center"><p className="text-sm text-muted-foreground">No pending verifications</p></Card>
-      ) : (
+      <div className="flex gap-2">
+        <Input value={search} onChange={e => setSearch(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()}
+          placeholder="Search by username or email" className="rounded-xl" data-testid="verify-admin-search" />
+        <Button onClick={handleSearch} disabled={searching} className="rounded-xl bg-honey text-vinyl-black hover:bg-honey-amber">
+          {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+        </Button>
+      </div>
+      {results.length > 0 && (
         <div className="space-y-3">
-          {pending.map(u => (
+          {results.map(u => (
             <Card key={u.id} className="p-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-honey/20 flex items-center justify-center text-sm font-bold text-honey">
-                    {(u.username || '?')[0].toUpperCase()}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">@{u.username}</p>
-                    <p className="text-xs text-muted-foreground">{u.email} · Paid {u.golden_hive_payment_at ? new Date(u.golden_hive_payment_at).toLocaleDateString() : 'N/A'}</p>
+                <div>
+                  <p className="text-sm font-medium">@{u.username}</p>
+                  <p className="text-xs text-muted-foreground">{u.email}</p>
+                  <div className="flex gap-1.5 mt-1">
+                    {u.is_verified && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">Verified</span>}
+                    {u.golden_hive_verified && <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-100 text-amber-700 border border-amber-200">Legacy Golden</span>}
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" onClick={() => handleAction(u.id, 'approve')} disabled={processing === u.id}
-                    className="bg-green-600 hover:bg-green-700 text-white rounded-full text-xs px-4" data-testid={`approve-gh-${u.id}`}>
-                    <Check className="w-3 h-3 mr-1" /> Approve
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => handleAction(u.id, 'reject')} disabled={processing === u.id}
-                    className="border-red-300 text-red-600 hover:bg-red-50 rounded-full text-xs px-4" data-testid={`reject-gh-${u.id}`}>
-                    <X className="w-3 h-3 mr-1" /> Reject
-                  </Button>
+                  {!u.is_verified ? (
+                    <Button size="sm" onClick={() => handleVerify(u.id, true)} disabled={processing === u.id}
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-xs px-4" data-testid={`verify-user-${u.id}`}>
+                      <Check className="w-3 h-3 mr-1" /> Verify
+                    </Button>
+                  ) : (
+                    <Button size="sm" variant="outline" onClick={() => handleVerify(u.id, false)} disabled={processing === u.id}
+                      className="border-red-300 text-red-600 hover:bg-red-50 rounded-full text-xs px-4" data-testid={`revoke-verify-${u.id}`}>
+                      <X className="w-3 h-3 mr-1" /> Revoke
+                    </Button>
+                  )}
                 </div>
               </div>
             </Card>

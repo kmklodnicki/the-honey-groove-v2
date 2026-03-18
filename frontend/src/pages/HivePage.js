@@ -9,7 +9,6 @@ import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Skeleton } from '../components/ui/skeleton';
 import { Heart, MessageCircle, Share2, Disc, Send, ChevronDown, ChevronUp, MoreVertical, Trash2, Play, Plus, Loader2, Pin, Reply, ArrowUp, Sparkles, Check } from 'lucide-react';
-import VerifiedShield from '../components/VerifiedShield';
 import {
   Dialog,
   DialogContent,

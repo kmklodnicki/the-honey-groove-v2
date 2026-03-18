@@ -49,11 +49,6 @@ const SettingsPage = () => {
   const [editingEmail, setEditingEmail] = useState(false);
   const [newEmail, setNewEmail] = useState('');
   const [emailSaving, setEmailSaving] = useState(false);
-  const [verificationStatus, setVerificationStatus] = useState(null);
-  const [goldenStatus, setGoldenStatus] = useState(null);
-  const [goldenCheckoutLoading, setGoldenCheckoutLoading] = useState(false);
-  const [verifyUploading, setVerifyUploading] = useState(false);
-  const verifyInputRef = useRef(null);
   const [bugReportOpen, setBugReportOpen] = useState(false);
   const [isPrivate, setIsPrivate] = useState(user?.is_private || false);
   const [dmSetting, setDmSetting] = useState(user?.dm_setting || 'everyone');
@@ -71,12 +66,6 @@ const SettingsPage = () => {
       .then(r => setStripeStatus(r.data))
       .catch(() => setStripeStatus({ stripe_connected: false, stripe_account_id: null }))
       .finally(() => setStripeLoading(false));
-    axios.get(`${API}/verification/status`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => setVerificationStatus(r.data))
-      .catch(() => {});
-    axios.get(`${API}/golden-hive/status`, { headers: { Authorization: `Bearer ${token}` } })
-      .then(r => setGoldenStatus(r.data))
-      .catch(() => {});
   }, [API, token]);
 
   const toggleNewsletter = async () => {
@@ -202,36 +191,6 @@ const SettingsPage = () => {
   };
 
 
-  const handleGoldenCheckout = async () => {
-    setGoldenCheckoutLoading(true);
-    try {
-      const resp = await axios.post(`${API}/golden-hive/checkout`, { origin_url: window.location.origin }, { headers: { Authorization: `Bearer ${token}` } });
-      if (resp.data.checkout_url) {
-        window.location.href = resp.data.checkout_url;
-      }
-    } catch (err) {
-      toast.error(err.response?.data?.detail || 'could not start payment. try again.');
-    } finally {
-      setGoldenCheckoutLoading(false);
-    }
-  };
-
-  const handleVerificationUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setVerifyUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append('id_photo', file);
-      await axios.post(`${API}/verification/submit`, formData, {
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' },
-      });
-      toast.success('Verification submitted! You\'ll be notified once reviewed.');
-      setVerificationStatus({ status: 'PENDING', golden_hive: false });
-    } catch (err) {
-      toast.error(err.response?.data?.detail || 'Upload failed');
-    } finally { setVerifyUploading(false); }
-  };
 
   const handleDeleteAccount = async () => {
     setDeleting(true);
@@ -906,82 +865,42 @@ const SettingsPage = () => {
             Log Out
           </Button>
 
-          {/* Golden Hive Verification */}
-          <div className="border-t border-honey/20 pt-4">
-            <Label className="text-sm font-medium text-amber-800 mb-2 block">Golden Hive Verification</Label>
+          {/* Verification */}
+          <div className="border-t border-honey/20 pt-4" data-testid="verification-section">
+            <Label className="text-sm font-medium text-[#2A1A06] mb-2 block">Verification</Label>
             {(() => {
-              const gStatus = goldenStatus?.golden_hive_status;
-              const isVerified = goldenStatus?.golden_hive_verified || verificationStatus?.golden_hive;
-
-              if (isVerified || gStatus === 'APPROVED') return (
-                <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2" data-testid="golden-hive-verified">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span className="font-medium">Verified Golden Hive Member</span>
-                </div>
-              );
-              if (!stripeStatus?.stripe_connected) return (
-                <div className="space-y-3" data-testid="golden-id-stripe-gate">
-                  <div className="rounded-lg border border-amber-200/60 bg-amber-50/50 p-3">
-                    <p className="text-xs text-[#8A6B4A] leading-relaxed">to apply for Golden ID and start selling in the Honeypot, you must first set up your Stripe payout account.</p>
-                  </div>
-                  <Button onClick={handleStripeConnect} disabled={stripeConnecting}
-                    className="rounded-full text-xs bg-honey text-vinyl-black hover:bg-honey-amber gap-1.5" data-testid="golden-id-connect-stripe-btn">
-                    {stripeConnecting ? <Loader2 className="w-3 h-3 animate-spin" /> : <CreditCard className="w-3 h-3" />}
-                    Connect Stripe to Continue
-                  </Button>
-                </div>
-              );
-              if (!gStatus) return (
-                <div className="space-y-3" data-testid="golden-id-payment-cta">
-                  <div className="rounded-lg border border-[#C8861A]/20 bg-gradient-to-r from-amber-50/60 to-yellow-50/60 p-4">
-                    <p className="text-sm font-semibold text-[#8A6B4A] mb-1.5">Get Your Golden ID</p>
-                    <ul className="text-xs text-[#8A6B4A]/80 space-y-1 mb-3">
-                      <li className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-[#C8861A]" /> Sell records in the Honeypot marketplace</li>
-                      <li className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-[#C8861A]" /> Verified trust badge on your profile</li>
-                      <li className="flex items-center gap-1.5"><CheckCircle2 className="w-3 h-3 text-[#C8861A]" /> Priority visibility in discovery</li>
-                    </ul>
-                    <p className="text-[11px] text-muted-foreground">One-time verification fee</p>
-                  </div>
-                  <Button onClick={handleGoldenCheckout} disabled={goldenCheckoutLoading}
-                    className="rounded-full text-xs bg-honey text-vinyl-black hover:bg-honey-amber gap-1.5" data-testid="golden-id-pay-btn">
-                    {goldenCheckoutLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Shield className="w-3 h-3" />}
-                    Get Golden ID &middot; $9.99
-                  </Button>
-                </div>
-              );
-              if (gStatus === 'PAID_PENDING_UPLOAD') return (
-                <div className="space-y-3" data-testid="golden-id-upload-section">
-                  <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50/50 border border-emerald-200/50 rounded-lg px-3 py-2">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span className="font-medium">Payment confirmed!</span>
-                  </div>
-                  <p className="text-xs text-[#8A6B4A]">Upload a government-issued ID (driver's license, passport, or ID card) to complete your Golden Hive verification.</p>
-                  <Button onClick={() => verifyInputRef.current?.click()} disabled={verifyUploading}
-                    variant="outline" className="rounded-full text-xs border-honey/50 gap-1.5" data-testid="submit-verification-btn">
-                    {verifyUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Shield className="w-3 h-3" />}
-                    Upload ID Photo
-                  </Button>
-                  <input ref={verifyInputRef} type="file" accept="image/*" onChange={handleVerificationUpload} className="hidden" />
-                </div>
-              );
-              if (gStatus === 'pending' || verificationStatus?.status === 'PENDING') return (
-                <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2" data-testid="verification-pending">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>ID uploaded &middot; verification under review</span>
-                </div>
-              );
-              if (gStatus === 'rejected' || verificationStatus?.status === 'DENIED') return (
+              const isVerified = user?.is_verified || user?.golden_hive_verified;
+              const method = user?.verified_method;
+              if (isVerified) return (
                 <div className="space-y-2">
-                  <p className="text-sm text-red-600">Your previous verification was not approved. Please resubmit with a clearer photo.</p>
-                  <Button onClick={() => verifyInputRef.current?.click()} disabled={verifyUploading}
-                    variant="outline" className="rounded-full text-xs border-honey/50 gap-1.5" data-testid="resubmit-verification-btn">
-                    {verifyUploading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Shield className="w-3 h-3" />}
-                    Resubmit ID Photo
-                  </Button>
-                  <input ref={verifyInputRef} type="file" accept="image/*" onChange={handleVerificationUpload} className="hidden" />
+                  <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2" data-testid="verified-status">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" fill="#22C55E"/><path d="M7.5 12l3 3 6-6" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    <span className="font-medium">Your identity is verified.</span>
+                  </div>
+                  <p className="text-[11px] text-[#8A6B4A]">
+                    {method === 'stripe_kyc' && 'Verified via Stripe seller account (KYC).'}
+                    {method === 'paid' && 'Verified via one-time ID check.'}
+                    {method === 'legacy_golden_hive' && 'Verified as a Golden Hive founding member.'}
+                    {method === 'admin' && 'Manually verified by The Honey Groove team.'}
+                    {!method && 'Verified member.'}
+                  </p>
                 </div>
               );
-              return null;
+              return (
+                <div className="space-y-3" data-testid="get-verified-cta">
+                  <p className="text-xs text-[#8A6B4A] leading-relaxed">Get verified to show other collectors you're trustworthy. Verification is free when you complete Stripe seller onboarding.</p>
+                  <div className="flex flex-col gap-2">
+                    {!stripeStatus?.stripe_connected && (
+                      <Button onClick={handleStripeConnect} disabled={stripeConnecting}
+                        className="rounded-full text-xs bg-honey text-vinyl-black hover:bg-honey-amber gap-1.5 w-fit" data-testid="verify-stripe-connect-btn">
+                        {stripeConnecting ? <Loader2 className="w-3 h-3 animate-spin" /> : <CreditCard className="w-3 h-3" />}
+                        Set up seller account (free verification)
+                      </Button>
+                    )}
+                    <VerifyForFeeButton API={API} token={token} onSuccess={() => window.location.reload()} />
+                  </div>
+                </div>
+              );
             })()}
           </div>
 
@@ -1119,5 +1038,29 @@ const SettingsPage = () => {
     </div>
   );
 };
+
+// Inline $1.99 buyer verification button
+function VerifyForFeeButton({ API, token, onSuccess }) {
+  const [loading, setLoading] = React.useState(false);
+  const handleVerify = async () => {
+    setLoading(true);
+    try {
+      await axios.post(`${API}/verify/purchase`, {}, { headers: { Authorization: `Bearer ${token}` } });
+      toast.success("You're now verified!");
+      onSuccess();
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Verification failed. Check your payment method.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  return (
+    <Button onClick={handleVerify} disabled={loading} variant="outline"
+      className="rounded-full text-xs border-emerald-300 text-emerald-700 hover:bg-emerald-50 gap-1.5 w-fit" data-testid="verify-for-fee-btn">
+      {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" fill="#22C55E"/><path d="M7.5 12l3 3 6-6" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+      Verify for $1.99
+    </Button>
+  );
+}
 
 export default SettingsPage;

@@ -64,6 +64,9 @@ class UserResponse(BaseModel):
     has_payment_method: bool = False
     honeypot_notify_me: bool = False
     honeypot_notify_at: Optional[str] = None
+    is_verified: bool = False
+    verified_at: Optional[str] = None
+    verified_method: Optional[str] = None  # "stripe_kyc" | "paid" | "legacy_golden_hive" | "admin"
 
 class UserUpdate(BaseModel):
     username: Optional[str] = None

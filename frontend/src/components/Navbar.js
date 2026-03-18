@@ -14,7 +14,7 @@ import {
 } from '../components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogTitle } from '../components/ui/dialog';
 import { Home, Search, User, LogOut, Settings, Library, ShoppingBag, ArrowRightLeft, Bell, Check, MessageCircle, Globe, HelpCircle, Package, AlertTriangle, Sparkles, Loader2 } from 'lucide-react';
-import VerifiedShield from './VerifiedShield';
+import UserBadges from './UserBadges';
 const KATIE_ID = '4072aaa7-1171-4cd2-9c8f-20dfca8fdc58';
 import { formatDistanceToNow } from 'date-fns';
 import { resolveImageUrl } from '../utils/imageUrl';
@@ -176,9 +176,7 @@ const Navbar = () => {
                     <div className="flex flex-col">
                       <p className="text-sm font-medium flex items-center gap-1">
                         {user.username ? `@${user.username}` : <span className="w-16 h-3 rounded bg-stone-200 animate-pulse inline-block" />}
-                        {(user.golden_hive_verified || user.is_admin || user.id === KATIE_ID) && (
-                          <VerifiedShield size={14} isFounder={user.is_admin || user.id === KATIE_ID} />
-                        )}
+                        <UserBadges user={{ ...user, is_founder: user.is_admin || user.id === KATIE_ID }} size="small" />
                       </p>
                       <p className="text-xs text-muted-foreground">{user.email}</p>
                     </div>
@@ -396,9 +394,7 @@ const MobileProfileMenu = ({ user, onLogout }) => {
               <div className="flex flex-col min-w-0">
                 <p className="text-sm font-medium truncate flex items-center gap-1">
                   {user.username ? `@${user.username}` : <span className="w-16 h-3 rounded bg-stone-200 animate-pulse inline-block" />}
-                  {(user.golden_hive_verified || user.is_admin || user.id === KATIE_ID) && (
-                    <VerifiedShield size={14} isFounder={user.is_admin || user.id === KATIE_ID} />
-                  )}
+                  <UserBadges user={{ ...user, is_founder: user.is_admin || user.id === KATIE_ID }} size="small" />
                 </p>
                 <p className="text-xs text-muted-foreground truncate">{user.email}</p>
               </div>

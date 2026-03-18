@@ -349,7 +349,7 @@ async def get_community_isos(limit: int = 50, user: Dict = Depends(require_auth)
     result = []
     for iso in isos:
         iso_user = users.get(iso["user_id"])
-        iso["user"] = {"id": iso_user["id"], "username": iso_user.get("username"), "avatar_url": iso_user.get("avatar_url"), "country": iso_user.get("country"), "title_label": iso_user.get("title_label"), "golden_hive": iso_user.get("golden_hive", False)} if iso_user else None
+        iso["user"] = {"id": iso_user["id"], "username": iso_user.get("username"), "avatar_url": iso_user.get("avatar_url"), "country": iso_user.get("country"), "title_label": iso_user.get("title_label"), "golden_hive": iso_user.get("golden_hive", False), "is_verified": bool(iso_user.get("isVerified", iso_user.get("golden_hive_verified", iso_user.get("golden_hive", False))))} if iso_user else None
         result.append(iso)
     return result
 
@@ -492,7 +492,7 @@ async def create_listing(data: ListingCreate, user: Dict = Depends(require_auth)
         )
         await send_email_fire_and_forget(user["email"], tpl["subject"], tpl["html"])
 
-    user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url"), "country": user.get("country"), "title_label": user.get("title_label"), "golden_hive": user.get("golden_hive", False)}
+    user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url"), "country": user.get("country"), "title_label": user.get("title_label"), "golden_hive": user.get("golden_hive", False), "is_verified": bool(user.get("isVerified", user.get("golden_hive_verified", user.get("golden_hive", False))))}
     
     # Auto-create a Hive post for this listing
     post_id = str(uuid.uuid4())
@@ -562,7 +562,7 @@ async def get_listings(listing_type: Optional[str] = None, search: Optional[str]
 async def get_my_listings(user: Dict = Depends(require_auth)):
     """Get current user's listings"""
     listings = await db.listings.find({"user_id": user["id"]}, {"_id": 0}).sort("created_at", -1).to_list(100)
-    user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url"), "country": user.get("country"), "title_label": user.get("title_label"), "golden_hive": user.get("golden_hive", False)}
+    user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url"), "country": user.get("country"), "title_label": user.get("title_label"), "golden_hive": user.get("golden_hive", False), "is_verified": bool(user.get("isVerified", user.get("golden_hive_verified", user.get("golden_hive", False))))}
     return [ListingResponse(**l, user=user_data) for l in listings]
 
 @router.get("/listings/iso-matches")
@@ -591,7 +591,7 @@ async def get_iso_matches(user: Dict = Depends(require_auth)):
     result = []
     for listing in matches:
         seller = await db.users.find_one({"id": listing["user_id"]}, {"_id": 0, "password_hash": 0})
-        user_data = {"id": seller["id"], "username": seller["username"], "avatar_url": seller.get("avatar_url"), "country": seller.get("country"), "title_label": seller.get("title_label"), "golden_hive_verified": seller.get("golden_hive_verified", False)} if seller else None
+        user_data = {"id": seller["id"], "username": seller["username"], "avatar_url": seller.get("avatar_url"), "country": seller.get("country"), "title_label": seller.get("title_label"), "golden_hive_verified": seller.get("golden_hive_verified", False), "is_verified": bool(seller.get("isVerified", seller.get("golden_hive_verified", seller.get("golden_hive", False))))} if seller else None
         result.append(ListingResponse(**listing, user=user_data))
     
     return result
@@ -617,6 +617,8 @@ async def get_listing(listing_id: str, current_user: Optional[Dict] = Depends(ge
             "region": seller.get("region"),
             "country": seller.get("country"),
             "title_label": seller.get("title_label"),
+            "golden_hive_verified": seller.get("golden_hive_verified", False),
+            "is_verified": bool(seller.get("isVerified", seller.get("golden_hive_verified", seller.get("golden_hive", False)))),
         }
 
     # Similar listings by the same artist (max 5, exclude current)
@@ -627,7 +629,7 @@ async def get_listing(listing_id: str, current_user: Optional[Dict] = Depends(ge
     similar_enriched = []
     for s in similar:
         s_seller = await db.users.find_one({"id": s["user_id"]}, {"_id": 0, "password_hash": 0})
-        s_user = {"id": s_seller["id"], "username": s_seller["username"], "avatar_url": s_seller.get("avatar_url"), "country": s_seller.get("country"), "title_label": s_seller.get("title_label"), "golden_hive_verified": s_seller.get("golden_hive_verified", False)} if s_seller else None
+        s_user = {"id": s_seller["id"], "username": s_seller["username"], "avatar_url": s_seller.get("avatar_url"), "country": s_seller.get("country"), "title_label": s_seller.get("title_label"), "golden_hive_verified": s_seller.get("golden_hive_verified", False), "is_verified": bool(s_seller.get("isVerified", s_seller.get("golden_hive_verified", s_seller.get("golden_hive", False))))} if s_seller else None
         similar_enriched.append({**{k: v for k, v in s.items()}, "user": s_user})
 
     # Check wantlist status for current user
@@ -714,7 +716,7 @@ async def update_listing(listing_id: str, data: ListingUpdate, user: Dict = Depe
     await db.listings.update_one({"id": listing_id}, {"$set": update_fields})
 
     updated = await db.listings.find_one({"id": listing_id}, {"_id": 0})
-    user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url"), "country": user.get("country"), "title_label": user.get("title_label"), "golden_hive": user.get("golden_hive", False)}
+    user_data = {"id": user["id"], "username": user["username"], "avatar_url": user.get("avatar_url"), "country": user.get("country"), "title_label": user.get("title_label"), "golden_hive": user.get("golden_hive", False), "is_verified": bool(user.get("isVerified", user.get("golden_hive_verified", user.get("golden_hive", False))))}
     return ListingResponse(**{k: v for k, v in updated.items() if k != '_id'}, user=user_data)
 
 
@@ -1364,9 +1366,17 @@ async def stripe_webhook(request: Request):
         charges_enabled = account.get("charges_enabled", False)
         payouts_enabled = account.get("payouts_enabled", False)
         seller_status = "active" if (charges_enabled and payouts_enabled) else "pending"
+        update_fields = {"stripe_charges_enabled": charges_enabled, "seller_status": seller_status}
+        # Award Verified badge automatically when Stripe KYC completes (charges_enabled = True)
+        if charges_enabled:
+            existing = await db.users.find_one({"stripe_account_id": account["id"]}, {"_id": 0, "isVerified": 1})
+            if existing and not existing.get("isVerified"):
+                update_fields["isVerified"] = True
+                update_fields["verifiedAt"] = now
+                update_fields["verifiedMethod"] = "stripe_kyc"
         await db.users.update_one(
             {"stripe_account_id": account["id"]},
-            {"$set": {"stripe_charges_enabled": charges_enabled, "seller_status": seller_status}},
+            {"$set": update_fields},
         )
         return {"received": True}
 
@@ -1518,7 +1528,57 @@ async def stripe_webhook(request: Request):
     return {"received": True}
 
 
-# ============== GOLDEN HIVE ID ==============
+# ============== VERIFICATION (NEW SYSTEM) ==============
+
+VERIFY_PRICE_CENTS = 199  # $1.99 buyer-only path
+
+
+@router.get("/verify/status")
+async def get_verify_status(user: Dict = Depends(require_auth)):
+    """Return the current user's verification status under the new system."""
+    u = await db.users.find_one({"id": user["id"]}, {"_id": 0, "isVerified": 1, "verifiedAt": 1, "verifiedMethod": 1, "golden_hive_verified": 1, "golden_hive": 1})
+    is_verified = bool(u.get("isVerified", u.get("golden_hive_verified", u.get("golden_hive", False))))
+    method = u.get("verifiedMethod", "legacy_golden_hive" if (u.get("golden_hive_verified") or u.get("golden_hive")) else None)
+    return {"is_verified": is_verified, "verified_at": u.get("verifiedAt"), "verified_method": method}
+
+
+@router.post("/verify/purchase")
+async def purchase_verification(user: Dict = Depends(require_auth)):
+    """$1.99 buyer-only verification — charge card and award badge immediately."""
+    u = await db.users.find_one({"id": user["id"]}, {"_id": 0, "isVerified": 1, "golden_hive_verified": 1, "golden_hive": 1, "stripe_customer_id": 1, "default_payment_method_id": 1})
+    if u.get("isVerified") or u.get("golden_hive_verified") or u.get("golden_hive"):
+        return {"success": True, "message": "Already verified."}
+    customer_id = u.get("stripe_customer_id")
+    payment_method_id = u.get("default_payment_method_id")
+    if not customer_id or not payment_method_id:
+        raise HTTPException(status_code=400, detail="Add a payment method before purchasing verification.")
+    try:
+        import stripe as stripe_sdk_local
+        stripe_sdk_local.api_key = STRIPE_API_KEY
+        pi = stripe_sdk_local.PaymentIntent.create(
+            amount=VERIFY_PRICE_CENTS,
+            currency="usd",
+            customer=customer_id,
+            payment_method=payment_method_id,
+            confirm=True,
+            off_session=True,
+            description="THG Verified badge — one-time",
+            metadata={"user_id": user["id"], "type": "verification"},
+        )
+        if pi.status != "succeeded":
+            raise HTTPException(status_code=402, detail="Payment did not succeed. Please check your card.")
+    except stripe_sdk.error.CardError as e:
+        raise HTTPException(status_code=402, detail=str(e.user_message))
+    now = datetime.now(timezone.utc).isoformat()
+    await db.users.update_one(
+        {"id": user["id"]},
+        {"$set": {"isVerified": True, "verifiedAt": now, "verifiedMethod": "paid"}},
+    )
+    await create_notification(user["id"], "VERIFIED", "You're verified!", "Your Verified badge is now active on your profile, posts, and listings.")
+    return {"success": True, "message": "You're now verified."}
+
+
+# ============== GOLDEN HIVE ID (LEGACY) ==============
 
 GOLDEN_HIVE_PRICE_CENTS = 999  # $9.99
 

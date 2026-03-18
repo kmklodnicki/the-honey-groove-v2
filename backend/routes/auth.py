@@ -98,6 +98,9 @@ async def _build_user_response(user: dict) -> UserResponse:
         has_payment_method=bool(user.get("default_payment_method_id")),
         honeypot_notify_me=bool(user.get("honeypotNotifyMe", False)),
         honeypot_notify_at=user.get("honeypotNotifyAt"),
+        is_verified=bool(user.get("isVerified", user.get("golden_hive_verified", user.get("golden_hive", False)))),
+        verified_at=user.get("verifiedAt"),
+        verified_method=user.get("verifiedMethod"),
     )
 
 # ============== AUTH ROUTES ==============

@@ -82,11 +82,11 @@ const VerifiedShield = ({ size = 20, isFounder = false, className = '' }) => {
           }}
           data-testid="verified-shield-tooltip"
         >
-          <p className="font-bold text-xs mb-0.5">{isFounder ? 'Founder' : 'Golden Hive ID'}</p>
+          <p className="font-bold text-xs mb-0.5">{isFounder ? 'Founder' : 'Verified'}</p>
           <p className="text-[11px] leading-relaxed opacity-90">
             {isFounder
-              ? 'Founder of The Honey Groove. ID verified and trusted community leader.'
-              : 'This user has been officially ID verified. They are a trusted member of The Honey Groove community.'}
+              ? 'Founder of The Honey Groove. Trusted community leader.'
+              : "This user's identity has been verified. They are a trusted member of The Honey Groove community."}
           </p>
         </div>,
         document.body

@@ -6,7 +6,7 @@ import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Input } from './ui/input';
 import { Heart, MessageCircle, MoreVertical, Trash2, Pin, Reply, Send, ChevronDown, ChevronUp, Sparkles, X, FileText, Camera, Loader2 } from 'lucide-react';
-import VerifiedShield from './VerifiedShield';
+import UserBadges from './UserBadges';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from './ui/dropdown-menu';
@@ -346,9 +346,7 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
               <Link to={`/profile/${post.user?.username}`} className="font-medium hover:underline">
                 @{post.user?.username}
               </Link>
-              {(post.user?.golden_hive_verified || post.user?.is_admin) && (
-                <VerifiedShield size={18} isFounder={post.user?.is_admin} className="ml-0.5" />
-              )}
+              <UserBadges user={post.user} size="small" />
               {post.user?.title_label && <TitleBadge label={post.user.title_label} />}
               <PostTypeBadge type={post.post_type} mood={post.mood} isReleaseNote={post.is_release_note} />
               {post.record_id && <FormatPill format={post.record_format || post.record?.format || 'Vinyl'} />}

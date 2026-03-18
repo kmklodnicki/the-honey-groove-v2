@@ -33,104 +33,10 @@ import { useVariantModal } from '../context/VariantModalContext';
 import { EmptyState } from '../components/EmptyState';
 import WaxReportPin from '../components/WaxReportPin';
 import { useAPI } from '../hooks/useAPI';
+import UserBadges from '../components/UserBadges';
 import ReactDOM from 'react-dom';
 import { PostCard, InfiniteScrollSentinel } from '../components/HivePostCard';
 import { PostCardBody } from '../components/PostCards';
-
-// BLOCK 559/561: Golden Hive Shield — prominent badge with portal tooltip
-const GoldenHiveShield = () => {
-  const [open, setOpen] = useState(false);
-  const [pos, setPos] = useState({ top: 0, left: 0 });
-  const triggerRef = useRef(null);
-  const tooltipRef = useRef(null);
-  const isTouchDevice = typeof window !== 'undefined' && 'ontouchstart' in window;
-
-  useEffect(() => {
-    if (!open || !triggerRef.current) return;
-    const rect = triggerRef.current.getBoundingClientRect();
-    const tipW = 240;
-    let left = rect.left + rect.width / 2 - tipW / 2;
-    left = Math.max(8, Math.min(left, window.innerWidth - tipW - 8));
-    // Smart flip: prefer above, flip below if no space
-    const top = rect.top > 80 ? rect.top - 8 : rect.bottom + 8;
-    setPos({ top, left, above: rect.top > 80 });
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
-    const dismiss = (e) => {
-      if (triggerRef.current?.contains(e.target)) return;
-      if (tooltipRef.current?.contains(e.target)) return;
-      setOpen(false);
-    };
-    document.addEventListener('mousedown', dismiss);
-    document.addEventListener('touchstart', dismiss);
-    return () => {
-      document.removeEventListener('mousedown', dismiss);
-      document.removeEventListener('touchstart', dismiss);
-    };
-  }, [open]);
-
-  return (
-    <>
-      <button
-        ref={triggerRef}
-        type="button"
-        className="mt-1 inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-full border golden-shimmer cursor-default focus:outline-none w-full transition-transform hover:scale-[1.02]"
-        style={{ borderColor: 'rgba(218,165,32,0.5)', background: 'rgba(255,215,0,0.06)' }}
-        onMouseEnter={() => !isTouchDevice && setOpen(true)}
-        onMouseLeave={() => !isTouchDevice && setOpen(false)}
-        onClick={() => isTouchDevice && setOpen(o => !o)}
-        data-testid="golden-hive-badge"
-      >
-        {/* BLOCK 577: Gold Shield Final Form — 34px, 3-stop gold chrome gradient, soft glow */}
-        <svg className="shrink-0" width="34" height="34" viewBox="0 0 24 24" fill="none" style={{ filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.2)) drop-shadow(0 0 8px rgba(253,185,49,0.4))' }}>
-          <defs>
-            <linearGradient id="goldShieldLg" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#FFD700"/>
-              <stop offset="50%" stopColor="#FDB931"/>
-              <stop offset="100%" stopColor="#B8860B"/>
-            </linearGradient>
-          </defs>
-          <path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" fill="url(#goldShieldLg)" stroke="#8B6914" strokeWidth="0.5"/>
-          <path d="M9.5 12l2 2 3.5-4" stroke="#1A1A1A" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-        </svg>
-        <span className="text-sm font-bold" style={{ letterSpacing: '-0.01em', color: '#2C2C2C' }}>
-          Golden Hive Verified
-        </span>
-      </button>
-      {open && ReactDOM.createPortal(
-        <div
-          ref={tooltipRef}
-          className="fixed px-3.5 py-2.5 rounded-lg max-w-[240px] whitespace-normal pointer-events-auto animate-in fade-in-0 zoom-in-95 duration-150"
-          style={{
-            ...(pos.above ? { bottom: `${window.innerHeight - pos.top}px` } : { top: pos.top }),
-            left: pos.left,
-            zIndex: 9999,
-            background: '#1A1A1A',
-            color: '#fff',
-            boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
-            borderRadius: '10px',
-          }}
-          data-testid="golden-hive-tooltip"
-        >
-          {isTouchDevice && (
-            <button
-              onClick={(e) => { e.stopPropagation(); setOpen(false); }}
-              className="absolute top-1.5 right-1.5 p-0.5 rounded-full hover:bg-white/20 transition-colors sm:hidden"
-              data-testid="golden-hive-tooltip-close"
-            >
-              <X className="w-3 h-3" />
-            </button>
-          )}
-          <p className="font-bold text-xs mb-1">Golden Hive ID</p>
-          <p className="text-[11px] leading-relaxed opacity-90">This user has been officially ID verified. They are a trusted member of The Honey Groove community.</p>
-        </div>,
-        document.body
-      )}
-    </>
-  );
-};
 
 
 const TasteMatchPill = ({ tasteMatch, onOpen }) => {
@@ -244,8 +150,6 @@ const ProfilePage = () => {
   const [followRequestPending, setFollowRequestPending] = useState(false);
   const [followRequestCount, setFollowRequestCount] = useState(0);
   const [followRequestsOpen, setFollowRequestsOpen] = useState(false);
-  const [goldenHiveModalOpen, setGoldenHiveModalOpen] = useState(false);
-  const [goldenHiveCheckoutLoading, setGoldenHiveCheckoutLoading] = useState(false);
   const [deleteSpinTarget, setDeleteSpinTarget] = useState(null);
 
   // Posts tab state
@@ -420,15 +324,6 @@ const ProfilePage = () => {
     setUserPostsHasMore(true);
     fetchProfile();
 
-    // Handle Golden Hive redirect
-    const params = new URLSearchParams(window.location.search);
-    const ghSessionId = params.get('session_id');
-    const ghStatus = params.get('golden_hive');
-    if (ghStatus === 'success' && ghSessionId && token) {
-      axios.get(`${API}/golden-hive/verify-payment?session_id=${ghSessionId}`, { headers: { Authorization: `Bearer ${token}` } })
-        .then(() => { toast.success('Payment confirmed! Your Golden Hive ID is pending admin review.'); window.history.replaceState({}, '', window.location.pathname); fetchProfile(); })
-        .catch(() => {});
-    }
   }, [fetchProfile]);
 
   // Lazy-load tab data
@@ -733,6 +628,9 @@ const ProfilePage = () => {
                     </svg>
                   )}
                 </h1>
+                {(profile.is_verified || profile.golden_hive_verified || profile.is_gold_member) && (
+                  <UserBadges user={profile} size="large" />
+                )}
                 {profile.title_label && !profile.is_admin && profile.id !== '4072aaa7-1171-4cd2-9c8f-20dfca8fdc58' && <TitleBadge label={profile.title_label} />}
                 {(profile.is_founder || profile.id === '4072aaa7-1171-4cd2-9c8f-20dfca8fdc58') && (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide" style={{ background: 'linear-gradient(135deg, #FFD700, #DAA520)', color: '#1A1A1A', boxShadow: '0 1px 4px rgba(218,165,32,0.3)' }} data-testid="founder-badge">
@@ -771,12 +669,6 @@ const ProfilePage = () => {
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-700 text-xs font-bold mt-1" data-testid="profile-spin-streak-pill">
                   {profile.current_streak} day spin streak
                 </span>
-              )}
-              {profile.golden_hive_status === 'pending' && isOwnProfile && (
-                <div className="mt-1.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-100 border border-stone-200" data-testid="golden-hive-pending">
-                  <Clock className="w-3 h-3 text-stone-500" />
-                  <span className="text-xs text-stone-500">Golden Hive ID — Pending Verification</span>
-                </div>
               )}
               {/* Social links */}
               {(profile.instagram_username || profile.tiktok_username) && (
@@ -912,23 +804,19 @@ const ProfilePage = () => {
                     </Button>
                   )
                 )}
-                {/* Golden Hive ID — primary with glow */}
-                {!profile.golden_hive_verified && profile.golden_hive_status !== 'pending' && (
-                  <div data-testid="golden-hive-cta">
-                    <Button size="sm" onClick={() => setGoldenHiveModalOpen(true)}
-                      className="rounded-full w-full gap-1.5 font-semibold border-0"
-                      style={{ background: 'linear-gradient(135deg, #FFD700, #F4B521)', color: '#1A1A1A', boxShadow: '0 0 20px rgba(255,215,0,0.3)' }}
-                      data-testid="golden-hive-open-modal-btn">
-                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                      Get Golden Hive ID
+                {/* Get Verified CTA — for unverified users without seller Stripe account */}
+                {!profile.is_verified && !profile.golden_hive_verified && isOwnProfile && (
+                  <div data-testid="get-verified-cta">
+                    <Button size="sm" onClick={() => navigate('/settings')}
+                      variant="outline"
+                      className="rounded-full w-full gap-1.5 text-xs border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                      data-testid="get-verified-btn">
+                      <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" fill="#22C55E"/><path d="M7.5 12l3 3 6-6" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      Get Verified
                     </Button>
                   </div>
                 )}
               </>
-            )}
-            {/* BLOCK 577: Golden Hive Verified — renders via flag OR Katie's hard-coded user ID */}
-            {(profile.golden_hive_verified || profile.id === '4072aaa7-1171-4cd2-9c8f-20dfca8fdc58') && (
-              <GoldenHiveShield />
             )}
           </div>
         </div>
@@ -1606,77 +1494,6 @@ const ProfilePage = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Golden Hive ID Detail Modal */}
-      <Dialog open={goldenHiveModalOpen} onOpenChange={setGoldenHiveModalOpen}>
-        <DialogContent className="sm:max-w-md" data-testid="golden-hive-modal">
-          <DialogHeader>
-            <DialogTitle className="font-heading flex items-center gap-2 text-lg">
-              <svg className="w-5 h-5 text-amber-500" viewBox="0 0 24 24" fill="currentColor"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              Golden Hive ID
-            </DialogTitle>
-            <DialogDescription>Stand out as a trusted member of the community.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <ul className="space-y-2.5 text-sm">
-              <li className="flex items-start gap-2">
-                <ShieldCheck className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-                <span><strong>Verified badge</strong> on your profile, posts, and listings</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Star className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-                <span><strong>Priority visibility</strong> in search results and the marketplace</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <ArrowRightLeft className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-                <span><strong>Increased trust</strong> for trades and sales with other collectors</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Lock className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-                <span><strong>Admin-verified identity</strong> — manually reviewed for authenticity</span>
-              </li>
-            </ul>
-            <div className="border-t pt-3">
-              <p className="text-center text-xs text-muted-foreground mb-3">One-time verification — <span className="font-semibold text-amber-700">$9.99</span></p>
-              <Button
-                className="w-full rounded-full bg-gradient-to-r from-amber-400 to-yellow-400 text-vinyl-black hover:from-amber-500 hover:to-yellow-500 font-medium h-11"
-                disabled={goldenHiveCheckoutLoading}
-                data-testid="golden-hive-checkout-btn"
-                onClick={async () => {
-                  if (goldenHiveCheckoutLoading) return;
-                  setGoldenHiveCheckoutLoading(true);
-                  try {
-                    const resp = await axios.post(`${API}/golden-hive/checkout`, {}, { headers: { Authorization: `Bearer ${token}` } });
-                    if (resp.status !== 200 || !resp.data?.url || !resp.data?.session_id) {
-                      toast.error('Checkout session could not be created. Please try again.');
-                      setGoldenHiveCheckoutLoading(false);
-                      return;
-                    }
-                    const checkoutUrl = resp.data.url;
-                    if (!checkoutUrl.startsWith('https://')) {
-                      toast.error('Invalid checkout URL received. Please contact support.');
-                      setGoldenHiveCheckoutLoading(false);
-                      return;
-                    }
-                    await new Promise(r => setTimeout(r, 300));
-                    window.location.href = checkoutUrl;
-                  } catch (err) {
-                    toast.error(err.response?.data?.detail || 'Could not start checkout. Please try again.');
-                    setGoldenHiveCheckoutLoading(false);
-                  }
-                }}
-              >
-                {goldenHiveCheckoutLoading ? (
-                  <span className="flex items-center gap-2">
-                    <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" strokeOpacity="0.25" /><path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round" /></svg>
-                    Taking you to checkout...
-                  </span>
-                ) : 'Get Verified Now'}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Delete Spin Confirmation Dialog */}
       <Dialog open={!!deleteSpinTarget} onOpenChange={(open) => !open && setDeleteSpinTarget(null)}>
