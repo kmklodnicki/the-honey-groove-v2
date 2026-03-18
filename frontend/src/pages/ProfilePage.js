@@ -632,11 +632,6 @@ const ProfilePage = () => {
                   <UserBadges user={profile} size="large" />
                 )}
                 {profile.title_label && !profile.is_admin && profile.id !== '4072aaa7-1171-4cd2-9c8f-20dfca8fdc58' && <TitleBadge label={profile.title_label} />}
-                {(profile.is_founder || profile.id === '4072aaa7-1171-4cd2-9c8f-20dfca8fdc58') && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide" style={{ background: 'linear-gradient(135deg, #FFD700, #DAA520)', color: '#1A1A1A', boxShadow: '0 1px 4px rgba(218,165,32,0.3)' }} data-testid="founder-badge">
-                    FOUNDER
-                  </span>
-                )}
               </div>
               {profile.bio && <p className="text-sm text-muted-foreground mt-1"><MentionText text={profile.bio} /></p>}
               {profile.setup && (
