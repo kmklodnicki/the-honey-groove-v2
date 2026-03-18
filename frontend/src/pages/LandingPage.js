@@ -408,6 +408,7 @@ const LandingPage = () => {
               <Link to="/faq" className="text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors" data-testid="footer-faq-link">FAQ</Link>
               <Link to="/terms" className="text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors" data-testid="footer-terms-link">Terms</Link>
               <Link to="/privacy" className="text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors" data-testid="footer-privacy-link">Privacy</Link>
+              <Link to="/guidelines" className="text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors" data-testid="footer-guidelines-link">Guidelines</Link>
               <p className="text-sm text-vinyl-black/50">
                 &copy; 2026 the Honey Groove<sup style={{ fontSize: '0.6em' }}>&trade;</sup>. Made with love for vinyl collectors.
               </p>
