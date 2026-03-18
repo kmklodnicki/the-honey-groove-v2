@@ -15,7 +15,7 @@ import logging
 
 from database import db, require_auth, logger, FRONTEND_URL
 from services.email_service import send_email, send_email_fire_and_forget
-from templates.emails import beta_waitlist, invite_code as invite_code_tpl
+from templates.emails import beta_waitlist, invite_code as invite_code_tpl, maintenance_notice
 
 router = APIRouter()
 
@@ -1122,3 +1122,53 @@ async def get_beekeeper_metrics(user: Dict = Depends(require_admin)):
         key=lambda x: x["date"],
     )
     return {"notify_count": notify_count, "gold_member_count": gold_member_count, "daily_views": daily_views}
+
+
+BROADCAST_TEMPLATES = {
+    "maintenance_notice": maintenance_notice,
+}
+TEST_RECIPIENT = "kmklodnicki@gmail.com"
+
+
+class BroadcastRequest(BaseModel):
+    template: str
+    test_only: bool = True
+
+
+@router.post("/admin/broadcast")
+async def send_broadcast(body: BroadcastRequest, admin: Dict = Depends(require_admin)):
+    """Send a broadcast email to all users (or test recipient only)."""
+    if body.template not in BROADCAST_TEMPLATES:
+        raise HTTPException(status_code=400, detail=f"Unknown template '{body.template}'. Available: {list(BROADCAST_TEMPLATES.keys())}")
+
+    build_email = BROADCAST_TEMPLATES[body.template]
+
+    if body.test_only:
+        tpl = build_email("Kathryn")
+        await send_email(TEST_RECIPIENT, tpl["subject"], tpl["html"])
+        return {"sent": 1, "test_only": True, "recipient": TEST_RECIPIENT}
+
+    # Full broadcast — fetch all users with an email address
+    users = await db.users.find(
+        {"email": {"$exists": True, "$ne": ""}},
+        {"email": 1, "firstName": 1, "username": 1},
+    ).to_list(None)
+
+    sent = 0
+    failed = 0
+    for u in users:
+        email = u.get("email", "").strip()
+        if not email:
+            continue
+        first_name = u.get("firstName") or u.get("username", "there")
+        tpl = build_email(first_name)
+        ok = await send_email(email, tpl["subject"], tpl["html"])
+        if ok:
+            sent += 1
+        else:
+            failed += 1
+        # Brief pause to avoid Resend rate limits
+        await asyncio.sleep(0.05)
+
+    logger.info(f"Broadcast '{body.template}' complete: {sent} sent, {failed} failed")
+    return {"sent": sent, "failed": failed, "test_only": False}

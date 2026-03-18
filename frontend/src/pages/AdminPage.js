@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/
 import {
   Loader2, Copy, Download, Plus, Users, Key, KeyRound, Check, X, Trash2,
   MessageSquare, Grid3X3, Flag, Settings, ChevronRight, Search,
-  ToggleLeft, ToggleRight, Pencil, Calendar, Hash, Shield, DollarSign, ArrowRightLeft, AlertTriangle, Flame, Heart, Clock, BarChart2
+  ToggleLeft, ToggleRight, Pencil, Calendar, Hash, Shield, DollarSign, ArrowRightLeft, AlertTriangle, Flame, Heart, Clock, BarChart2, Send
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -42,6 +42,7 @@ const AdminPage = () => {
     { key: 'test_listings', label: 'Test Listings', icon: Flag },
     { key: 'settings', label: 'Platform Settings', icon: Settings },
     { key: 'beekeeper', label: 'Beekeeper', icon: BarChart2 },
+    { key: 'broadcast', label: 'Broadcast Email', icon: Send },
   ];
 
   return (
@@ -81,6 +82,7 @@ const AdminPage = () => {
       {section === 'test_listings' && <TestListingsSection API={API} headers={headers} />}
       {section === 'settings' && <SettingsSection API={API} headers={headers} />}
       {section === 'beekeeper' && <BeekeeperSection API={API} headers={headers} />}
+      {section === 'broadcast' && <BroadcastSection API={API} headers={headers} />}
     </div>
   );
 };
@@ -2256,6 +2258,135 @@ const BeekeeperSection = ({ API, headers }) => {
           </div>
         )}
       </div>
+    </div>
+  );
+};
+
+
+const BROADCAST_TEMPLATES = [
+  {
+    key: 'maintenance_notice',
+    label: 'Scheduled Maintenance Notice',
+    subject: "We're Busy Bees! Scheduled Maintenance",
+    description: 'Heads-up email about planned downtime. Sends to all users.',
+  },
+];
+
+const BroadcastSection = ({ API, headers }) => {
+  const [selected, setSelected] = useState(BROADCAST_TEMPLATES[0].key);
+  const [testLoading, setTestLoading] = useState(false);
+  const [broadcastLoading, setBroadcastLoading] = useState(false);
+  const [testSent, setTestSent] = useState(false);
+  const [confirm, setConfirm] = useState(false);
+  const [result, setResult] = useState(null);
+
+  const tpl = BROADCAST_TEMPLATES.find(t => t.key === selected);
+
+  const sendTest = async () => {
+    setTestLoading(true);
+    try {
+      await axios.post(`${API}/admin/broadcast`, { template: selected, test_only: true }, { headers });
+      setTestSent(true);
+      toast.success('Test email sent to kmklodnicki@gmail.com');
+    } catch (e) {
+      toast.error('Test send failed');
+    } finally {
+      setTestLoading(false);
+    }
+  };
+
+  const sendAll = async () => {
+    setBroadcastLoading(true);
+    setConfirm(false);
+    try {
+      const { data } = await axios.post(`${API}/admin/broadcast`, { template: selected, test_only: false }, { headers });
+      setResult(data);
+      toast.success(`Broadcast complete — ${data.sent} sent, ${data.failed} failed`);
+    } catch (e) {
+      toast.error('Broadcast failed');
+    } finally {
+      setBroadcastLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6 max-w-xl" data-testid="broadcast-section">
+      <div>
+        <h2 className="text-xl font-bold text-[#2A1A06] mb-1">Broadcast Email</h2>
+        <p className="text-sm text-[#8A6B4A]">Send a one-time email to all users. Always test before broadcasting.</p>
+      </div>
+
+      <Card className="p-5 border border-[#F5E6CC]">
+        <p className="text-xs font-semibold text-[#8A6B4A] uppercase tracking-wide mb-3">Select Template</p>
+        <div className="space-y-2">
+          {BROADCAST_TEMPLATES.map(t => (
+            <label key={t.key} className="flex items-start gap-3 cursor-pointer" data-testid={`broadcast-tpl-${t.key}`}>
+              <input
+                type="radio"
+                name="broadcast_tpl"
+                value={t.key}
+                checked={selected === t.key}
+                onChange={() => { setSelected(t.key); setTestSent(false); setResult(null); setConfirm(false); }}
+                className="mt-0.5 accent-[#C8861A]"
+              />
+              <div>
+                <p className="text-sm font-medium text-[#2A1A06]">{t.label}</p>
+                <p className="text-xs text-[#8A6B4A]">Subject: <em>{t.subject}</em></p>
+                <p className="text-xs text-[#8A6B4A] mt-0.5">{t.description}</p>
+              </div>
+            </label>
+          ))}
+        </div>
+      </Card>
+
+      <Card className="p-5 border border-[#F5E6CC] space-y-4">
+        <div>
+          <p className="text-xs font-semibold text-[#8A6B4A] uppercase tracking-wide mb-1">Step 1 — Send Test</p>
+          <p className="text-xs text-[#8A6B4A] mb-3">Sends to kmklodnicki@gmail.com so you can review before broadcasting.</p>
+          <Button
+            onClick={sendTest}
+            disabled={testLoading}
+            variant="outline"
+            className="border-[#C8861A] text-[#C8861A] hover:bg-[#C8861A]/5"
+            data-testid="broadcast-test-btn"
+          >
+            {testLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
+            {testSent ? 'Resend Test' : 'Send Test Email'}
+          </Button>
+          {testSent && <p className="text-xs text-green-600 mt-2 flex items-center gap-1"><Check className="w-3 h-3" /> Test sent to kmklodnicki@gmail.com</p>}
+        </div>
+
+        <div className="border-t border-[#F5E6CC] pt-4">
+          <p className="text-xs font-semibold text-[#8A6B4A] uppercase tracking-wide mb-1">Step 2 — Broadcast to All Users</p>
+          {!testSent && <p className="text-xs text-amber-600 mb-3">Send the test first to verify the email looks correct.</p>}
+          {!confirm ? (
+            <Button
+              onClick={() => setConfirm(true)}
+              disabled={!testSent || broadcastLoading}
+              className="bg-[#E8A820] text-[#2A1A06] hover:bg-[#C8861A] font-bold"
+              data-testid="broadcast-all-btn"
+            >
+              <Send className="w-4 h-4 mr-2" /> Send to All Users
+            </Button>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-sm font-semibold text-red-600">This will email every user on the platform. Are you sure?</p>
+              <div className="flex gap-2">
+                <Button onClick={sendAll} disabled={broadcastLoading} className="bg-red-500 text-white hover:bg-red-600" data-testid="broadcast-confirm-btn">
+                  {broadcastLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                  Yes, send it
+                </Button>
+                <Button variant="outline" onClick={() => setConfirm(false)}>Cancel</Button>
+              </div>
+            </div>
+          )}
+          {result && (
+            <p className="text-xs text-green-700 mt-3 font-medium" data-testid="broadcast-result">
+              Done — {result.sent} emails sent{result.failed > 0 ? `, ${result.failed} failed` : ''}.
+            </p>
+          )}
+        </div>
+      </Card>
     </div>
   );
 };

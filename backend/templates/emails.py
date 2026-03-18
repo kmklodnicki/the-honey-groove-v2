@@ -488,6 +488,21 @@ def honeypot_launch(username: str) -> dict:
     return {"subject": "The Honeypot is open. 🍯", "html": wrap_email(body)}
 
 
+def maintenance_notice(first_name: str) -> dict:
+    body = f"""
+    <p style="{GREETING}">Hey {first_name},</p>
+    <p>Heads up that <strong>The Honey Groove will be down for scheduled maintenance tomorrow afternoon and evening from 2PM to 12AM ET.</strong></p>
+    <p>I'm working through some important compliance updates to make sure the platform is solid before we open up to everyone. These aren't glamorous changes, but they're the right ones to make, and I want to get them right.</p>
+    <p>You'll see the site come back online by midnight tomorrow. If anything runs long I'll send an update.</p>
+    <p>Thank you for your patience while we build this the right way!</p>
+    {SIG}
+    """
+    return {
+        "subject": "We're Busy Bees! Scheduled Maintenance",
+        "html": wrap_email(body),
+    }
+
+
 def email_change_confirmation(username: str, confirm_url: str) -> dict:
     body = f"""
     <p style="{GREETING}">hey @{username},</p>
