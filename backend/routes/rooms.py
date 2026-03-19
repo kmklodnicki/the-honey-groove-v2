@@ -42,43 +42,56 @@ async def get_room_feed(slug: str, current_user: Dict = Depends(require_auth)):
     room_filter = room.get("filter", {})
     room_type = room.get("type", "era")
 
+    # Build a shared record-joining pipeline prefix
+    def _lookup_records():
+        return [
+            {"$sort": {"created_at": -1}},
+            {"$limit": 200},
+            {"$lookup": {"from": "records", "localField": "record_id", "foreignField": "id", "as": "record"}},
+            {"$unwind": {"path": "$record", "preserveNullAndEmptyArrays": False}},
+        ]
+
+    def _genre_match(genre: str, style: str):
+        """Build a $match clause that checks Discogs genres/styles arrays (or scalar fallbacks)."""
+        clauses = []
+        if genre:
+            clauses.append({"record.genres": {"$regex": genre, "$options": "i"}})
+            clauses.append({"record.genre": {"$regex": genre, "$options": "i"}})
+        if style:
+            clauses.append({"record.styles": {"$regex": style, "$options": "i"}})
+            clauses.append({"record.style": {"$regex": style, "$options": "i"}})
+        return {"$or": clauses} if clauses else {}
+
     if room_type == "era":
         decade_start = room_filter.get("year", {}).get("$gte")
         decade_end = room_filter.get("year", {}).get("$lte")
+        genre = room_filter.get("genre", "")
+        style = room_filter.get("style", "")
+        match_stage = {"record_year_int": {"$gte": decade_start, "$lte": decade_end}}
+        if genre or style:
+            match_stage.update(_genre_match(genre, style))
         pipeline = [
-            {"$sort": {"created_at": -1}},
-            {"$limit": 200},
-            {"$lookup": {
-                "from": "records",
-                "localField": "record_id",
-                "foreignField": "id",
-                "as": "record"
-            }},
-            {"$unwind": {"path": "$record", "preserveNullAndEmptyArrays": False}},
-            {"$addFields": {
-                "record_year_int": {"$toInt": "$record.year"}
-            }},
-            {"$match": {
-                "record_year_int": {"$gte": decade_start, "$lte": decade_end}
-            }},
+            *_lookup_records(),
+            {"$addFields": {"record_year_int": {"$toInt": "$record.year"}}},
+            {"$match": match_stage},
             {"$project": {"_id": 0, "record._id": 0}},
             {"$limit": 20},
         ]
     elif room_type == "artist":
         artist_name = room_filter.get("artist", {}).get("$regex", "")
         pipeline = [
-            {"$sort": {"created_at": -1}},
-            {"$limit": 200},
-            {"$lookup": {
-                "from": "records",
-                "localField": "record_id",
-                "foreignField": "id",
-                "as": "record"
-            }},
-            {"$unwind": {"path": "$record", "preserveNullAndEmptyArrays": False}},
-            {"$match": {
-                "record.artist": {"$regex": artist_name, "$options": "i"}
-            }},
+            *_lookup_records(),
+            {"$match": {"record.artist": {"$regex": artist_name, "$options": "i"}}},
+            {"$project": {"_id": 0, "record._id": 0}},
+            {"$limit": 20},
+        ]
+    elif room_type == "genre":
+        genre = room_filter.get("genre", "")
+        style = room_filter.get("style", "")
+        gm = _genre_match(genre, style)
+        pipeline = [
+            *_lookup_records(),
+            {"$match": gm} if gm else {"$match": {}},
             {"$project": {"_id": 0, "record._id": 0}},
             {"$limit": 20},
         ]
@@ -87,18 +100,8 @@ async def get_room_feed(slug: str, current_user: Dict = Depends(require_auth)):
         artist_regex = room_filter.get("artist", {}).get("$regex", "") if isinstance(room_filter.get("artist"), dict) else room_filter.get("artist", "")
         if artist_regex:
             pipeline = [
-                {"$sort": {"created_at": -1}},
-                {"$limit": 200},
-                {"$lookup": {
-                    "from": "records",
-                    "localField": "record_id",
-                    "foreignField": "id",
-                    "as": "record"
-                }},
-                {"$unwind": {"path": "$record", "preserveNullAndEmptyArrays": False}},
-                {"$match": {
-                    "record.artist": {"$regex": artist_regex, "$options": "i"}
-                }},
+                *_lookup_records(),
+                {"$match": {"record.artist": {"$regex": artist_regex, "$options": "i"}}},
                 {"$project": {"_id": 0, "record._id": 0}},
                 {"$limit": 20},
             ]
@@ -123,39 +126,62 @@ async def get_room_charts(slug: str):
     room_filter = room.get("filter", {})
     room_type = room.get("type", "era")
 
+    def _lookup_join():
+        return [
+            {"$lookup": {"from": "records", "localField": "record_id", "foreignField": "id", "as": "record"}},
+            {"$unwind": {"path": "$record", "preserveNullAndEmptyArrays": False}},
+        ]
+
+    def _genre_match_c(genre: str, style: str):
+        clauses = []
+        if genre:
+            clauses.append({"record.genres": {"$regex": genre, "$options": "i"}})
+            clauses.append({"record.genre": {"$regex": genre, "$options": "i"}})
+        if style:
+            clauses.append({"record.styles": {"$regex": style, "$options": "i"}})
+            clauses.append({"record.style": {"$regex": style, "$options": "i"}})
+        return {"$or": clauses} if clauses else {}
+
+    CHART_PROJECT = {"$project": {"_id": 0, "record_id": "$_id", "count": 1, "record.title": 1, "record.artist": 1, "record.cover_url": 1, "record.year": 1}}
+
     if room_type == "era":
         decade_start = room_filter.get("year", {}).get("$gte")
         decade_end = room_filter.get("year", {}).get("$lte")
+        genre = room_filter.get("genre", "")
+        style = room_filter.get("style", "")
+        match_stage = {"record_year_int": {"$gte": decade_start, "$lte": decade_end}}
+        if genre or style:
+            match_stage.update(_genre_match_c(genre, style))
         pipeline = [
-            {"$lookup": {
-                "from": "records",
-                "localField": "record_id",
-                "foreignField": "id",
-                "as": "record"
-            }},
-            {"$unwind": {"path": "$record", "preserveNullAndEmptyArrays": False}},
+            *_lookup_join(),
             {"$addFields": {"record_year_int": {"$toInt": "$record.year"}}},
-            {"$match": {"record_year_int": {"$gte": decade_start, "$lte": decade_end}}},
+            {"$match": match_stage},
             {"$group": {"_id": "$record_id", "count": {"$sum": 1}, "record": {"$first": "$record"}}},
             {"$sort": {"count": -1}},
             {"$limit": 5},
-            {"$project": {"_id": 0, "record_id": "$_id", "count": 1, "record.title": 1, "record.artist": 1, "record.cover_url": 1, "record.year": 1}},
+            CHART_PROJECT,
         ]
     elif room_type == "artist":
         artist_name = room_filter.get("artist", {}).get("$regex", "")
         pipeline = [
-            {"$lookup": {
-                "from": "records",
-                "localField": "record_id",
-                "foreignField": "id",
-                "as": "record"
-            }},
-            {"$unwind": {"path": "$record", "preserveNullAndEmptyArrays": False}},
+            *_lookup_join(),
             {"$match": {"record.artist": {"$regex": artist_name, "$options": "i"}}},
             {"$group": {"_id": "$record_id", "count": {"$sum": 1}, "record": {"$first": "$record"}}},
             {"$sort": {"count": -1}},
             {"$limit": 5},
-            {"$project": {"_id": 0, "record_id": "$_id", "count": 1, "record.title": 1, "record.artist": 1, "record.cover_url": 1, "record.year": 1}},
+            CHART_PROJECT,
+        ]
+    elif room_type == "genre":
+        genre = room_filter.get("genre", "")
+        style = room_filter.get("style", "")
+        gm = _genre_match_c(genre, style)
+        pipeline = [
+            *_lookup_join(),
+            {"$match": gm} if gm else {"$match": {}},
+            {"$group": {"_id": "$record_id", "count": {"$sum": 1}, "record": {"$first": "$record"}}},
+            {"$sort": {"count": -1}},
+            {"$limit": 5},
+            CHART_PROJECT,
         ]
     else:
         artist_regex = room_filter.get("artist", {}).get("$regex", "") if isinstance(room_filter.get("artist"), dict) else room_filter.get("artist", "")

@@ -1,4 +1,4 @@
-"""Seed 18 Honeycomb Rooms. Idempotent — safe to re-run."""
+"""Seed 18 Honeycomb Rooms. Idempotent — safe to re-run (uses $setOnInsert)."""
 import asyncio
 import sys
 import os
@@ -7,15 +7,19 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from database import db
 
+# Genre/style values match Discogs taxonomy exactly.
+# genres:  "Hip Hop", "Jazz", "Electronic", "Classical", "Rock", "Pop", "Funk / Soul"
+# styles (sub-genre): "Post-Punk", "Indie Rock", "Heavy Metal", "Ambient", "R&B"
+
 ROOMS = [
-    # Era rooms (10)
+    # ── Era rooms ────────────────────────────────────────────────────────────
     {
         "slug": "50s-jazz",
         "name": "50s Jazz",
         "emoji": "🎷",
         "tagline": "Cool, hard bop, and west coast sounds",
         "type": "era",
-        "filter": {"year": {"$gte": 1950, "$lte": 1959}},
+        "filter": {"year": {"$gte": 1950, "$lte": 1959}, "genre": "Jazz"},
         "theme": {
             "accentColor": "#B8860B",
             "bgGradient": "linear-gradient(135deg, #FFF8DC, #FAEBD7)",
@@ -31,7 +35,7 @@ ROOMS = [
         "emoji": "🎸",
         "tagline": "The decade that changed everything",
         "type": "era",
-        "filter": {"year": {"$gte": 1960, "$lte": 1969}},
+        "filter": {"year": {"$gte": 1960, "$lte": 1969}, "genre": "Rock"},
         "theme": {
             "accentColor": "#C0392B",
             "bgGradient": "linear-gradient(135deg, #FDEDEC, #FADBD8)",
@@ -47,7 +51,7 @@ ROOMS = [
         "emoji": "🕺",
         "tagline": "Funk, soul, and everything between",
         "type": "era",
-        "filter": {"year": {"$gte": 1970, "$lte": 1979}},
+        "filter": {"year": {"$gte": 1970, "$lte": 1979}, "genre": "Funk / Soul"},
         "theme": {
             "accentColor": "#C8861A",
             "bgGradient": "linear-gradient(135deg, #FFF3E0, #FFE0B2)",
@@ -63,7 +67,7 @@ ROOMS = [
         "emoji": "🖤",
         "tagline": "Dark, angular, and beautifully weird",
         "type": "era",
-        "filter": {"year": {"$gte": 1980, "$lte": 1989}},
+        "filter": {"year": {"$gte": 1980, "$lte": 1989}, "style": "Post-Punk"},
         "theme": {
             "accentColor": "#6C3483",
             "bgGradient": "linear-gradient(135deg, #F5EEF8, #EBD5F5)",
@@ -79,7 +83,7 @@ ROOMS = [
         "emoji": "🎤",
         "tagline": "The birth of a culture",
         "type": "era",
-        "filter": {"year": {"$gte": 1980, "$lte": 1989}},
+        "filter": {"year": {"$gte": 1980, "$lte": 1989}, "genre": "Hip Hop"},
         "theme": {
             "accentColor": "#1A5276",
             "bgGradient": "linear-gradient(135deg, #EBF5FB, #D6EAF8)",
@@ -95,7 +99,7 @@ ROOMS = [
         "emoji": "📼",
         "tagline": "Lo-fi, loud, and unapologetically indie",
         "type": "era",
-        "filter": {"year": {"$gte": 1990, "$lte": 1999}},
+        "filter": {"year": {"$gte": 1990, "$lte": 1999}, "style": "Indie Rock"},
         "theme": {
             "accentColor": "#117A65",
             "bgGradient": "linear-gradient(135deg, #E8F8F5, #D1F2EB)",
@@ -111,7 +115,7 @@ ROOMS = [
         "emoji": "🎛️",
         "tagline": "Raves, drum machines, and synthesizers",
         "type": "era",
-        "filter": {"year": {"$gte": 1990, "$lte": 1999}},
+        "filter": {"year": {"$gte": 1990, "$lte": 1999}, "genre": "Electronic"},
         "theme": {
             "accentColor": "#1F618D",
             "bgGradient": "linear-gradient(135deg, #EAF2FF, #D6E9FF)",
@@ -127,7 +131,7 @@ ROOMS = [
         "emoji": "💿",
         "tagline": "The glossy golden era of R&B",
         "type": "era",
-        "filter": {"year": {"$gte": 2000, "$lte": 2009}},
+        "filter": {"year": {"$gte": 2000, "$lte": 2009}, "style": "R&B"},
         "theme": {
             "accentColor": "#7D3C98",
             "bgGradient": "linear-gradient(135deg, #F5EEF8, #E8DAEF)",
@@ -143,7 +147,7 @@ ROOMS = [
         "emoji": "🤘",
         "tagline": "Heavy, loud, and relentless",
         "type": "era",
-        "filter": {"year": {"$gte": 2000, "$lte": 2009}},
+        "filter": {"year": {"$gte": 2000, "$lte": 2009}, "style": "Heavy Metal"},
         "theme": {
             "accentColor": "#616A6B",
             "bgGradient": "linear-gradient(135deg, #F2F3F4, #E5E7E9)",
@@ -159,7 +163,7 @@ ROOMS = [
         "emoji": "🌊",
         "tagline": "Texture, space, and slow beauty",
         "type": "era",
-        "filter": {"year": {"$gte": 2010, "$lte": 2019}},
+        "filter": {"year": {"$gte": 2010, "$lte": 2019}, "style": "Ambient"},
         "theme": {
             "accentColor": "#1A5276",
             "bgGradient": "linear-gradient(135deg, #EBF5FB, #D6EAF8)",
@@ -169,14 +173,14 @@ ROOMS = [
         "member_count": 0,
         "active": True,
     },
-    # Genre rooms (4 — feed falls back to recent posts until genre enrichment is added)
+    # ── Genre rooms ───────────────────────────────────────────────────────────
     {
         "slug": "jazz-room",
         "name": "Jazz Room",
         "emoji": "🎺",
         "tagline": "All things jazz, all eras",
         "type": "genre",
-        "filter": {"genre": "jazz"},
+        "filter": {"genre": "Jazz"},
         "theme": {
             "accentColor": "#B7950B",
             "bgGradient": "linear-gradient(135deg, #FEF9E7, #FDEBD0)",
@@ -192,7 +196,7 @@ ROOMS = [
         "emoji": "🎧",
         "tagline": "Beats, bars, and culture",
         "type": "genre",
-        "filter": {"genre": "hip-hop"},
+        "filter": {"genre": "Hip Hop"},
         "theme": {
             "accentColor": "#1A5276",
             "bgGradient": "linear-gradient(135deg, #EBF5FB, #D6EAF8)",
@@ -208,7 +212,7 @@ ROOMS = [
         "emoji": "⚡",
         "tagline": "Synthesizers and circuit boards",
         "type": "genre",
-        "filter": {"genre": "electronic"},
+        "filter": {"genre": "Electronic"},
         "theme": {
             "accentColor": "#117A65",
             "bgGradient": "linear-gradient(135deg, #E8F8F5, #D1F2EB)",
@@ -224,7 +228,7 @@ ROOMS = [
         "emoji": "🎻",
         "tagline": "Timeless orchestral masterworks",
         "type": "genre",
-        "filter": {"genre": "classical"},
+        "filter": {"genre": "Classical"},
         "theme": {
             "accentColor": "#784212",
             "bgGradient": "linear-gradient(135deg, #FDFEFE, #F5EEF8)",
@@ -234,7 +238,7 @@ ROOMS = [
         "member_count": 0,
         "active": True,
     },
-    # Artist rooms (4)
+    # ── Artist rooms ──────────────────────────────────────────────────────────
     {
         "slug": "david-bowie",
         "name": "David Bowie",
