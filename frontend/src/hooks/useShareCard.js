@@ -42,12 +42,8 @@ export function useShareCard({ cardType, filename = 'thg-share', title = 'The Ho
       // Pre-flight images into browser cache
       await Promise.all(imageUrls.filter(Boolean).map(preflightImage));
 
-      cardRef.current.style.display = 'flex';
-      cardRef.current.style.position = 'fixed';
-      cardRef.current.style.left = '-9999px';
-      cardRef.current.style.top = '0';
-
-      // Let fonts + images settle
+      // Card is always off-screen (position:fixed; left:-9999px) — no display toggle needed.
+      // Just wait for fonts + images to settle before capture.
       await new Promise(r => setTimeout(r, 400));
 
       const canvas = await html2canvas(cardRef.current, {
@@ -59,8 +55,6 @@ export function useShareCard({ cardType, filename = 'thg-share', title = 'The Ho
         backgroundColor: null,
         logging: false,
       });
-
-      cardRef.current.style.display = 'none';
 
       const blob = await canvasToBlob(canvas);
       if (!blob) { setExporting(false); return; }
@@ -86,7 +80,6 @@ export function useShareCard({ cardType, filename = 'thg-share', title = 'The Ho
         downloadBlob(blob, fname, cardType, userId);
       }
     } catch {
-      if (cardRef.current) cardRef.current.style.display = 'none';
       toast.error('Could not generate share card. Try again.');
     } finally {
       setExporting(false);

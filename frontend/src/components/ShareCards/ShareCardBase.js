@@ -216,13 +216,14 @@ const ShareCardBase = React.forwardRef(function ShareCardBase(
     <div
       ref={ref}
       style={{
-        display: 'none', // shown only during capture via useShareCard
+        display: 'flex',
         width: CARD_W,
         height: CARD_H,
         background: bg || BRAND.cream,
         position: 'fixed',
         left: '-9999px',
         top: 0,
+        zIndex: -9999,
         fontFamily: "'DM Serif Display', Georgia, serif",
         overflow: 'hidden',
       }}

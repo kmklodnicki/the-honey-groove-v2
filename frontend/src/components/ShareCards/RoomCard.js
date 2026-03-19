@@ -19,11 +19,12 @@ const RoomCard = React.forwardRef(function RoomCard({ room, user }, ref) {
     <div
       ref={ref}
       style={{
-        display: 'none',
+        display: 'flex',
         width: CARD_W,
         height: CARD_H,
         background: bg,
         position: 'fixed',
+        zIndex: -9999,
         left: '-9999px',
         top: 0,
         fontFamily: "'DM Serif Display', Georgia, serif",
