@@ -294,7 +294,7 @@ const RoomPage = () => {
             </Card>
           ) : (
             feed.map((post, idx) => (
-              <PostCard key={post.id || idx} post={post} token={token} API={API} currentUserId={user?.id} />
+              <PostCard key={post.id || idx} post={post} token={token} API={API} currentUserId={user?.id} obscureIdentity={!isMember} />
             ))
           )}
         </div>
@@ -350,10 +350,14 @@ const RoomPage = () => {
                     <div
                       key={u.id}
                       className="relative w-8 h-8"
-                      title={u.is_top_collector ? `@${u.username} — Top Collector` : `@${u.username}`}
+                      title={isMember ? (u.is_top_collector ? `@${u.username} — Top Collector` : `@${u.username}`) : 'Join to see members'}
                     >
-                      <BeeAvatar user={u} className="h-8 w-8 cursor-pointer" onClick={() => navigate(`/profile/${u.username}`)} />
-                      {u.is_top_collector && (
+                      {isMember ? (
+                        <BeeAvatar user={u} className="h-8 w-8 cursor-pointer" onClick={() => navigate(`/profile/${u.username}`)} />
+                      ) : (
+                        <BeeAvatar user={null} className="h-8 w-8 blur-sm opacity-60 pointer-events-none select-none" />
+                      )}
+                      {isMember && u.is_top_collector && (
                         <span
                           className="absolute -top-1 -right-1 w-4 h-4 flex items-center justify-center rounded-full text-[8px]"
                           style={{ background: '#DAA520', color: '#fff' }}

@@ -63,7 +63,7 @@ export const BeeAvatar = ({ user, className = "h-10 w-10" }) => {
   );
 };
 
-export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, onPin, onToggleFeature, onToggleReleaseNote, token, API, currentUserId, isAdmin, highlighted, autoOpenComments, imgPriority }) => {
+export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbumClick, onPin, onToggleFeature, onToggleReleaseNote, token, API, currentUserId, isAdmin, highlighted, autoOpenComments, imgPriority, obscureIdentity }) => {
   const [showComments, setShowComments] = useState(!!autoOpenComments);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
@@ -338,14 +338,29 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
       {!(post.is_pinned && pinnedCollapsed) && !(post.is_release_note && rnCollapsed) && (<>
       <div className="p-4 pb-2">
         <div className="flex items-center gap-3">
-          <Link to={`/profile/${post.user?.username}`}>
-            <BeeAvatar user={post.user} />
-          </Link>
+          {obscureIdentity ? (
+            <div className="select-none pointer-events-none" aria-hidden="true">
+              <BeeAvatar user={null} className="h-10 w-10 blur-sm opacity-60" />
+            </div>
+          ) : (
+            <Link to={`/profile/${post.user?.username}`}>
+              <BeeAvatar user={post.user} />
+            </Link>
+          )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <Link to={`/profile/${post.user?.username}`} className="font-medium hover:underline">
-                @{post.user?.username}
-              </Link>
+              {obscureIdentity ? (
+                <span
+                  className="font-medium select-none blur-sm opacity-60 pointer-events-none"
+                  aria-hidden="true"
+                >
+                  @{post.user?.username || 'member'}
+                </span>
+              ) : (
+                <Link to={`/profile/${post.user?.username}`} className="font-medium hover:underline">
+                  @{post.user?.username}
+                </Link>
+              )}
               <UserBadges user={post.user} size="small" />
               {post.user?.title_label && <TitleBadge label={post.user.title_label} />}
               <PostTypeBadge type={post.post_type} mood={post.mood} isReleaseNote={post.is_release_note} />
