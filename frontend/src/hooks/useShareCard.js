@@ -74,20 +74,10 @@ export function useShareCard({ cardType, filename = 'thg-share', title = 'The Ho
       ctx.drawImage(canvas, 0, 0);
       console.log('[ShareCard] blitted html2canvas onto fresh output canvas');
 
-      console.log('[ShareCard] DRAWING PILL: post-process start — scanning for [data-canvas-pill] elements');
       if (!ctx) {
-        console.error('[ShareCard] DRAWING PILL: canvas.getContext(2d) returned null');
+        console.error('[ShareCard] canvas.getContext(2d) returned null');
       } else {
         const cardRect = cardRef.current.getBoundingClientRect();
-        console.log('[ShareCard] DRAWING PILL: cardRect =', JSON.stringify({ left: cardRect.left, top: cardRect.top, w: cardRect.width, h: cardRect.height }));
-
-        // querySelectorAll on the live card DOM — pills are always mounted (off-screen)
-        const pillEls = cardRef.current.querySelectorAll('[data-canvas-pill]');
-        console.log('[ShareCard] DRAWING PILL: found', pillEls.length, 'element(s):', Array.from(pillEls).map(el => el.dataset.canvasPill));
-
-        // Also check globally so we can tell if the elements exist at all vs. not being descendants
-        const globalPills = document.querySelectorAll('[data-canvas-pill]');
-        console.log('[ShareCard] DRAWING PILL: global [data-canvas-pill] count =', globalPills.length);
 
         // roundRect polyfill — required for Chrome <99, Safari <15.4
         const rrect = (c, x, y, w, h, r) => {
@@ -103,6 +93,55 @@ export function useShareCard({ cardType, filename = 'thg-share', title = 'The Ho
           c.arcTo(x, y, x + r, y, r);
           c.closePath();
         };
+
+        // ─── IMAGE SHADOW OVERDRAW ─────────────────────────────────────────────
+        // html2canvas does not reliably render CSS box-shadow. We redraw each
+        // album art image using Canvas 2D drawImage with shadow properties.
+        // Step 1: fill rounded rect with shadow active → shadow is painted
+        // Step 2: clip to rounded rect, drawImage → image overwrites fill
+        // ───────────────────────────────────────────────────────────────────────
+        const imageEls = cardRef.current.querySelectorAll('[data-canvas-image]');
+        await Promise.all(Array.from(imageEls).map((el) => new Promise((resolve) => {
+          const imgEl = el.querySelector('img');
+          if (!imgEl?.src) { resolve(); return; }
+          const ir = el.getBoundingClientRect();
+          const ix = ir.left - cardRect.left;
+          const iy = ir.top - cardRect.top;
+          const iw = ir.width;
+          const ih = ir.height;
+          const radius = parseInt(el.dataset.canvasRadius || '0', 10);
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => {
+            ctx.save();
+            // Draw shadow via opaque fill (shadow extends outside rounded rect)
+            ctx.shadowColor = 'rgba(0,0,0,0.35)';
+            ctx.shadowBlur = 40;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 12;
+            ctx.beginPath();
+            rrect(ctx, ix, iy, iw, ih, radius);
+            ctx.fillStyle = '#000000';
+            ctx.fill();
+            // Reset shadow, then clip + draw image (overwrites the black fill)
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+            ctx.beginPath();
+            rrect(ctx, ix, iy, iw, ih, radius);
+            ctx.clip();
+            ctx.drawImage(img, ix, iy, iw, ih);
+            ctx.restore();
+            resolve();
+          };
+          img.onerror = () => resolve();
+          img.src = imgEl.src;
+        })));
+        // ─── END IMAGE SHADOW OVERDRAW ────────────────────────────────────────
+
+        // querySelectorAll on the live card DOM — pills are always mounted (off-screen)
+        const pillEls = cardRef.current.querySelectorAll('[data-canvas-pill]');
 
         pillEls.forEach((el, idx) => {
           const r = el.getBoundingClientRect();

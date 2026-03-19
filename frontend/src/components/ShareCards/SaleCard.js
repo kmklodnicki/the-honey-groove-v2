@@ -14,6 +14,8 @@ const SaleCard = React.forwardRef(function SaleCard({ record, price, user }, ref
     <ShareCardBase ref={ref} bg={bg} user={user} footerTextColor="#1A6B3E" footerSubColor="#145830">
       {/* Album art — clean, no overlays */}
         <div
+          data-canvas-image="true"
+          data-canvas-radius="28"
           style={{
             width: 700,
             height: 700,

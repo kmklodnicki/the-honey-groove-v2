@@ -21,6 +21,8 @@ const NewHaulCard = React.forwardRef(function NewHaulCard({ post, user }, ref) {
     <ShareCardBase ref={ref} bg={bg} user={user}>
       {/* Album art */}
       <div
+        data-canvas-image="true"
+        data-canvas-radius="28"
         style={{
           width: 700,
           height: 700,

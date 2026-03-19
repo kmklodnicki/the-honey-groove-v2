@@ -54,7 +54,7 @@ const VaultValueCard = React.forwardRef(function VaultValueCard({ vaultData, use
               return (
                 <div
                   key={i}
-                  style={{ width: 290, height: 290, borderRadius: 20, overflow: 'hidden', boxShadow: '0 12px 40px rgba(0,0,0,0.35)', background: '#F0E6D0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  data-canvas-image="true" data-canvas-radius="20" style={{ width: 290, height: 290, borderRadius: 20, overflow: 'hidden', boxShadow: '0 12px 40px rgba(0,0,0,0.35)', background: '#F0E6D0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
                   {url ? (
                     <img src={url} alt="" crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />

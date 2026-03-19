@@ -62,6 +62,8 @@ const DailyPromptCard = React.forwardRef(function DailyPromptCard({ promptQuesti
 
         {/* Album art */}
         <div
+          data-canvas-image="true"
+          data-canvas-radius="28"
           style={{
             width: 660,
             height: 660,

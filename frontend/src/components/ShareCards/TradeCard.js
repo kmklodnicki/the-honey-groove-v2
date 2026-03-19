@@ -37,7 +37,7 @@ const TradeCard = React.forwardRef(function TradeCard(
         {/* Sent record */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24, marginTop: 20 }}>
           <p style={{ fontFamily: 'Georgia, serif', fontSize: 26, color: BRAND.warmBrown, textTransform: 'uppercase', letterSpacing: '0.12em', margin: 0 }}>Sent</p>
-          <div style={coverStyle}>
+          <div data-canvas-image="true" data-canvas-radius="24" style={coverStyle}>
             {sentUrl ? (
               <img src={sentUrl} alt="" crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
@@ -62,7 +62,7 @@ const TradeCard = React.forwardRef(function TradeCard(
         {/* Received record */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24, marginTop: 20 }}>
           <p style={{ fontFamily: 'Georgia, serif', fontSize: 26, color: BRAND.warmBrown, textTransform: 'uppercase', letterSpacing: '0.12em', margin: 0 }}>Received</p>
-          <div style={coverStyle}>
+          <div data-canvas-image="true" data-canvas-radius="24" style={coverStyle}>
             {receivedUrl ? (
               <img src={receivedUrl} alt="" crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
