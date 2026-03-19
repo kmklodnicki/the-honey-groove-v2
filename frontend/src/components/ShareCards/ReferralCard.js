@@ -4,14 +4,18 @@ import { ShareCardHeader, ShareCardFooter, ShareCardUser, CARD_W, CARD_H } from 
 const ReferralCard = React.forwardRef(function ReferralCard({ referralCode, user }, ref) {
   const bg = 'linear-gradient(160deg, #FFF8DC 0%, #FFE87A 35%, #F0B429 65%, #C8861A 100%)';
 
-  const hexPattern = `
-    <svg xmlns='http://www.w3.org/2000/svg' width='120' height='104' viewBox='0 0 120 104'>
-      <polygon points='30,2 90,2 120,52 90,102 30,102 0,52' fill='none' stroke='rgba(255,255,255,0.12)' stroke-width='2'/>
-      <polygon points='90,2 150,2 180,52 150,102 90,102 60,52' fill='none' stroke='rgba(255,255,255,0.12)' stroke-width='2'/>
-      <polygon points='30,54 90,54 120,104 90,154 30,154 0,104' fill='none' stroke='rgba(255,255,255,0.12)' stroke-width='2'/>
-    </svg>
-  `;
-  const hexDataUrl = `data:image/svg+xml;base64,${btoa(hexPattern)}`;
+  const hexTiles = [];
+  for (let r = 0; r < 20; r++) {
+    for (let c = 0; c < 10; c++) {
+      hexTiles.push(
+        <g key={`${r}-${c}`} transform={`translate(${c * 120},${r * 104})`}>
+          <polygon points='30,2 90,2 120,52 90,102 30,102 0,52' fill='none' stroke='rgba(255,255,255,0.12)' strokeWidth='2' />
+          <polygon points='90,2 150,2 180,52 150,102 90,102 60,52' fill='none' stroke='rgba(255,255,255,0.12)' strokeWidth='2' />
+          <polygon points='30,54 90,54 120,104 90,154 30,154 0,104' fill='none' stroke='rgba(255,255,255,0.12)' strokeWidth='2' />
+        </g>
+      );
+    }
+  }
 
   return (
     <div
@@ -29,17 +33,14 @@ const ReferralCard = React.forwardRef(function ReferralCard({ referralCode, user
         overflow: 'hidden',
       }}
     >
-      {/* Hex pattern — full card background texture */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage: `url("${hexDataUrl}")`,
-          backgroundSize: '120px 104px',
-          opacity: 0.7,
-          pointerEvents: 'none',
-        }}
-      />
+      {/* Hex pattern — inline SVG to avoid iOS canvas SecurityError with data: URL backgrounds */}
+      <svg
+        width='1080'
+        height='1920'
+        style={{ position: 'absolute', top: 0, left: 0, opacity: 0.7, pointerEvents: 'none' }}
+      >
+        {hexTiles}
+      </svg>
 
       {/* LOGO: pinned top */}
       <ShareCardHeader />

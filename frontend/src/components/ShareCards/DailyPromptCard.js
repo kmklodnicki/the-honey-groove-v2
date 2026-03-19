@@ -9,30 +9,37 @@ const DailyPromptCard = React.forwardRef(function DailyPromptCard({ promptQuesti
 
   const bg = 'linear-gradient(160deg, #FFFDF5 0%, #FFF8E0 45%, #FAF0C0 100%)';
 
-  const hexPattern = `
-    <svg xmlns='http://www.w3.org/2000/svg' width='120' height='104' viewBox='0 0 120 104'>
-      <polygon points='30,2 90,2 120,52 90,102 30,102 0,52' fill='none' stroke='rgba(200,134,26,0.08)' stroke-width='2'/>
-      <polygon points='90,2 150,2 180,52 150,102 90,102 60,52' fill='none' stroke='rgba(200,134,26,0.08)' stroke-width='2'/>
-      <polygon points='30,54 90,54 120,104 90,154 30,154 0,104' fill='none' stroke='rgba(200,134,26,0.08)' stroke-width='2'/>
-    </svg>
-  `;
-  const hexDataUrl = `data:image/svg+xml;base64,${btoa(hexPattern)}`;
+  // Inline SVG tiled pattern — avoids data:image/svg+xml CSS backgrounds which
+  // cause SecurityError on iOS Safari when html2canvas tries to draw them to canvas.
+  const hexCols = 10;
+  const hexRows = 20;
+  const hexW = 120;
+  const hexH = 104;
+  const hexTiles = [];
+  for (let r = 0; r < hexRows; r++) {
+    for (let c = 0; c < hexCols; c++) {
+      const x = c * hexW;
+      const y = r * hexH;
+      hexTiles.push(
+        <g key={`${r}-${c}`} transform={`translate(${x},${y})`}>
+          <polygon points='30,2 90,2 120,52 90,102 30,102 0,52' fill='none' stroke='rgba(200,134,26,0.08)' strokeWidth='2' />
+          <polygon points='90,2 150,2 180,52 150,102 90,102 60,52' fill='none' stroke='rgba(200,134,26,0.08)' strokeWidth='2' />
+          <polygon points='30,54 90,54 120,104 90,154 30,154 0,104' fill='none' stroke='rgba(200,134,26,0.08)' strokeWidth='2' />
+        </g>
+      );
+    }
+  }
 
   return (
     <ShareCardBase ref={ref} bg={bg} user={user}>
-      {/* Hex pattern overlay */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage: `url("${hexDataUrl}")`,
-          backgroundSize: '120px 104px',
-          backgroundRepeat: 'repeat',
-          opacity: 0.5,
-          pointerEvents: 'none',
-          zIndex: 0,
-        }}
-      />
+      {/* Hex pattern overlay — inline SVG so html2canvas can render it without canvas security errors */}
+      <svg
+        width='1080'
+        height='1920'
+        style={{ position: 'absolute', top: 0, left: 0, opacity: 0.5, pointerEvents: 'none', zIndex: 0 }}
+      >
+        {hexTiles}
+      </svg>
 
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', position: 'relative', zIndex: 1 }}>
         {/* "Daily Prompt" tag */}
