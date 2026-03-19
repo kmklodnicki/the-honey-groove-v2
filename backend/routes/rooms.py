@@ -302,8 +302,15 @@ async def leave_room(slug: str, current_user: Dict = Depends(require_auth)):
 async def get_membership(slug: str, current_user: Dict = Depends(require_auth)):
     """Check if the current user is a member of a room."""
     uid = current_user["id"]
+    is_gold = current_user.get("golden_hive") or current_user.get("golden_hive_verified")
     member = await db.room_members.find_one({"slug": slug, "userId": uid})
-    return {"is_member": bool(member)}
+    rooms_joined = await db.room_members.count_documents({"userId": uid})
+    rooms_limit = None if is_gold else 3
+    return {
+        "is_member": bool(member),
+        "rooms_joined_count": rooms_joined,
+        "rooms_limit": rooms_limit,
+    }
 
 
 @router.post("/rooms/create")

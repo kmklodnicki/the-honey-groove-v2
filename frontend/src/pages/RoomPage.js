@@ -43,6 +43,8 @@ const RoomPage = () => {
 
   const [room, setRoom] = useState(null);
   const [isMember, setIsMember] = useState(false);
+  const [roomsJoinedCount, setRoomsJoinedCount] = useState(0);
+  const [roomsLimit, setRoomsLimit] = useState(null);
   const [feed, setFeed] = useState([]);
   const [charts, setCharts] = useState([]);
   const [members, setMembers] = useState([]);
@@ -66,6 +68,8 @@ const RoomPage = () => {
       ]);
       setRoom(roomRes.data);
       setIsMember(memberRes.data.is_member);
+      setRoomsJoinedCount(memberRes.data.rooms_joined_count ?? 0);
+      setRoomsLimit(memberRes.data.rooms_limit ?? null);
     } catch {
       toast.error('Could not load room.');
     }
@@ -96,6 +100,7 @@ const RoomPage = () => {
     try {
       await axios.post(`${API}/rooms/${slug}/join`, {}, { headers });
       setIsMember(true);
+      setRoomsJoinedCount(c => c + 1);
       setRoom(prev => prev ? { ...prev, member_count: (prev.member_count || 0) + 1 } : prev);
       toast.success(`Joined ${room?.name}!`);
     } catch (err) {
@@ -230,6 +235,17 @@ const RoomPage = () => {
             </Tooltip>
           </TooltipProvider>
         )}
+        {/* Free user room count pill — shown when not a member and limit exists */}
+        {!isMember && !isGold && roomsLimit !== null && (
+          <p
+            className="text-xs font-medium mb-3 px-3 py-1 rounded-full"
+            style={{ background: 'rgba(0,0,0,0.10)', color: theme.textColor || '#2A1A06' }}
+            data-testid="rooms-count-pill"
+          >
+            {roomsJoinedCount} of {roomsLimit} free rooms joined
+          </p>
+        )}
+
         <div className="flex gap-2 items-center">
           {isMember ? (
             <Button
@@ -363,16 +379,37 @@ const RoomPage = () => {
 
       {/* Gold upsell dialog */}
       <Dialog open={showGoldDialog} onOpenChange={setShowGoldDialog}>
-        <DialogContent className="sm:max-w-xs" aria-describedby="gold-room-desc">
+        <DialogContent className="sm:max-w-sm" aria-describedby="gold-room-desc">
           <DialogHeader>
-            <DialogTitle className="font-heading text-center" style={{ color: '#D98C2F' }}>
-              Upgrade to Gold
+            <div className="text-center mb-1">
+              <span className="text-3xl">🍯</span>
+            </div>
+            <DialogTitle className="font-heading text-center text-xl" style={{ color: '#D98C2F', fontFamily: 'DM Serif Display, serif' }}>
+              You've filled your hive
             </DialogTitle>
-            <p id="gold-room-desc" className="text-sm text-center text-muted-foreground mt-1">
-              Free members can join up to 3 rooms. Upgrade to Gold for unlimited rooms.
-            </p>
           </DialogHeader>
-          <div className="flex flex-col gap-3 pt-3">
+          <div id="gold-room-desc" className="text-center space-y-3 pt-1">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Free members can join <strong>3 rooms</strong>. You've used all 3 — and{' '}
+              <strong>{room?.name}</strong> is waiting for you.
+            </p>
+            <div
+              className="rounded-xl p-4 text-left space-y-2 text-sm"
+              style={{ background: 'linear-gradient(135deg, #FFF8E7, #FFF3D0)', border: '1px solid #F5C842' }}
+            >
+              <p className="font-semibold text-amber-800 mb-1">Gold unlocks:</p>
+              {[
+                '🐝  Unlimited rooms — join every one that calls to you',
+                '✨  Golden Hive badge on your profile & posts',
+                '🎨  Create your own Vibe & Collector rooms',
+                '📊  Advanced vault analytics & rarity scores',
+              ].map((line, i) => (
+                <p key={i} className="text-amber-900 text-xs leading-snug">{line}</p>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">Starting at <strong>$4.99 / month</strong></p>
+          </div>
+          <div className="flex flex-col gap-3 pt-2">
             <Button
               onClick={() => { setShowGoldDialog(false); navigate('/gold'); }}
               className="w-full rounded-full py-3 text-sm font-semibold text-white"
@@ -384,7 +421,7 @@ const RoomPage = () => {
             <Button
               variant="ghost"
               onClick={() => setShowGoldDialog(false)}
-              className="w-full rounded-full text-sm"
+              className="w-full rounded-full text-sm text-muted-foreground"
             >
               Maybe later
             </Button>
