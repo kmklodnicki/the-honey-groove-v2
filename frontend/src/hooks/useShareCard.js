@@ -56,22 +56,62 @@ export function useShareCard({ cardType, filename = 'thg-share', title = 'The Ho
         logging: false,
       });
 
-      // Post-process: redraw any elements marked data-canvas-redraw="text".
-      // html2canvas cannot reliably vertically-center text inside flex containers,
-      // so we mark those elements opacity:0 (preserving layout) and redraw them
-      // here using Canvas 2D textBaseline='middle' for pixel-perfect centering.
+      // Post-process: elements with data-canvas-pill are opacity:0 in HTML
+      // (preserving layout) but drawn entirely by Canvas 2D API for pixel-perfect
+      // text centering. getBoundingClientRect on the CONTAINER gives accurate coords.
       {
         const ctx = canvas.getContext('2d');
         const cardRect = cardRef.current.getBoundingClientRect();
-        cardRef.current.querySelectorAll('[data-canvas-redraw="text"]').forEach(el => {
+        cardRef.current.querySelectorAll('[data-canvas-pill]').forEach(el => {
           const r = el.getBoundingClientRect();
           const x = r.left - cardRect.left;
           const y = r.top - cardRect.top;
-          ctx.font = el.dataset.canvasFont || '16px sans-serif';
-          ctx.fillStyle = el.dataset.canvasColor || '#000';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(el.dataset.canvasText || '', x + r.width / 2, y + r.height / 2);
+          const w = r.width;
+          const h = r.height;
+          const pillType = el.dataset.canvasPill;
+
+          if (pillType === 'daily-prompt') {
+            ctx.fillStyle = '#F0E6D0';
+            ctx.beginPath();
+            ctx.roundRect(x, y, w, h, h / 2);
+            ctx.fill();
+            ctx.strokeStyle = '#C4A96A';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            console.log('[ShareCard] Drawing daily-prompt pill at', x, y, w, h);
+            ctx.fillStyle = '#8B6914';
+            ctx.font = 'bold 26px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🐝 DAILY PROMPT', x + w / 2, y + h / 2);
+
+          } else if (pillType === 'gold-member') {
+            ctx.fillStyle = '#FFF3CD';
+            ctx.beginPath();
+            ctx.roundRect(x, y, w, h, h / 2);
+            ctx.fill();
+            console.log('[ShareCard] Drawing gold-member badge at', x, y, w, h);
+            ctx.fillStyle = '#8B6914';
+            ctx.font = 'bold 22px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🏅 Gold Member', x + w / 2, y + h / 2);
+
+          } else if (pillType === 'verified') {
+            ctx.fillStyle = '#E8F4FD';
+            ctx.beginPath();
+            ctx.roundRect(x, y, w, h, h / 2);
+            ctx.fill();
+            ctx.strokeStyle = '#4A90D9';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            console.log('[ShareCard] Drawing verified badge at', x, y, w, h);
+            ctx.fillStyle = '#1A5276';
+            ctx.font = 'bold 22px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('✓ Verified', x + w / 2, y + h / 2);
+          }
         });
       }
 

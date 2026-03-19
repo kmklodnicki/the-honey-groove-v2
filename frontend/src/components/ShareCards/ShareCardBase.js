@@ -106,6 +106,7 @@ export function ShareCardUser({ user, textColor = BRAND.dark }) {
           @{user.username}
         </span>
         <div style={{ display: 'flex', gap: 8 }}>
+          {/* opacity:0 preserves layout; Canvas 2D API draws full badge (background + text). */}
           {isGold && (
             <span
               style={{
@@ -118,18 +119,11 @@ export function ShareCardUser({ user, textColor = BRAND.dark }) {
                 fontWeight: 600,
                 display: 'inline-block',
                 lineHeight: '1.6',
+                opacity: 0,
               }}
+              data-canvas-pill="gold-member"
             >
-              {/* opacity:0 — redrawn by Canvas 2D API via data-canvas-redraw */}
-              <span
-                style={{ opacity: 0 }}
-                data-canvas-redraw="text"
-                data-canvas-text="🍯 Gold Member"
-                data-canvas-color={BRAND.amber}
-                data-canvas-font="600 18px Georgia, serif"
-              >
-                🍯 Gold Member
-              </span>
+              🍯 Gold Member
             </span>
           )}
           {isVerified && (
@@ -144,18 +138,11 @@ export function ShareCardUser({ user, textColor = BRAND.dark }) {
                 fontWeight: 600,
                 display: 'inline-block',
                 lineHeight: '1.6',
+                opacity: 0,
               }}
+              data-canvas-pill="verified"
             >
-              {/* opacity:0 — redrawn by Canvas 2D API via data-canvas-redraw */}
-              <span
-                style={{ opacity: 0 }}
-                data-canvas-redraw="text"
-                data-canvas-text="✓ Verified"
-                data-canvas-color="#2563EB"
-                data-canvas-font="600 18px Georgia, serif"
-              >
-                ✓ Verified
-              </span>
+              ✓ Verified
             </span>
           )}
         </div>
