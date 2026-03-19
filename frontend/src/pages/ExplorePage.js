@@ -399,7 +399,7 @@ const ExplorePage = () => {
       {/* Collector Bingo — hidden until feature is ready */}
 
       {/* 2. Honeycomb Rooms */}
-      <ExploreSection icon={<span className="text-base">🍯</span>} title="Honeycomb Rooms" testId="rooms-section" seeAllTo={null}>
+      <ExploreSection icon={<span className="text-base">🍯</span>} title="Honeycomb Rooms" testId="rooms-section" seeAllTo="/nectar/rooms">
         <p className="text-xs text-muted-foreground italic -mt-2 mb-3 pl-1">Join themed spaces for your era, genre, or favorite artist.</p>
         {suggestedRooms.length === 0 ? (
           <EmptyCard text="Rooms coming soon — check back shortly!" />

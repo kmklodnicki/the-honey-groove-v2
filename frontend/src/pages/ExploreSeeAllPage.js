@@ -25,6 +25,7 @@ const SECTIONS = {
   'crown-jewels': { title: 'Crown Jewels', icon: Crown, iconColor: 'text-[#FFD700]' },
   'most-wanted': { title: 'Most Wanted', icon: Heart, iconColor: 'text-red-400' },
   'near-you': { title: 'Near You', icon: MapPin, iconColor: 'text-honey-amber' },
+  rooms: { title: 'Honeycomb Rooms', icon: Users, iconColor: 'text-honey-amber', emoji: '🍯' },
 };
 
 const ExploreSeeAllPage = () => {
@@ -66,6 +67,9 @@ const ExploreSeeAllPage = () => {
           break;
         case 'near-you':
           resp = await axios.get(`${API}/explore/near-you?collector_limit=50&listing_limit=30`, { headers });
+          break;
+        case 'rooms':
+          resp = await axios.get(`${API}/rooms/suggested?limit=100`, { headers });
           break;
         default:
           break;
@@ -139,7 +143,7 @@ const ExploreSeeAllPage = () => {
         <ArrowLeft className="w-4 h-4" /> back to nectar
       </Link>
       <div className="flex items-center gap-2 mb-8">
-        <Icon className={`w-5 h-5 ${meta.iconColor}`} />
+        {meta.emoji ? <span className="text-2xl">{meta.emoji}</span> : <Icon className={`w-5 h-5 ${meta.iconColor}`} />}
         <h1 className="font-heading text-3xl text-vinyl-black">{meta.title}</h1>
       </div>
 
@@ -157,6 +161,7 @@ const ExploreSeeAllPage = () => {
               onSetLocation={() => setShowLocationPrompt(true)}
             />
           )}
+          {section === 'rooms' && <RoomsAll data={data} navigate={navigate} />}
         </>
       )}
 
@@ -421,6 +426,43 @@ const CrownJewelsAll = ({ data, navigate, openDreamCatcher, addedIds }) => {
           {r.have > 0 && <p className="text-[10px] text-muted-foreground">{r.have.toLocaleString()} global owners</p>}
         </button>
       ))}
+    </div>
+  );
+};
+
+const THEME_COLORS = {
+  honey: '#C8861A', midnight: '#7B68EE', forest: '#74C69D',
+  rose: '#D98FA1', slate: '#85A7C0', plum: '#D7BDE2',
+};
+
+const RoomsAll = ({ data, navigate }) => {
+  const rooms = Array.isArray(data) ? data : [];
+  if (rooms.length === 0) return <EmptyState text="No rooms yet — Gold members can create the first one!" />;
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4" data-testid="rooms-all-grid">
+      {rooms.map(room => {
+        const accent = THEME_COLORS[room.theme_preset] || '#C8861A';
+        return (
+          <button
+            key={room.slug}
+            onClick={() => navigate(`/nectar/rooms/${room.slug}`)}
+            className="flex flex-col items-center text-center group"
+            data-testid={`sa-room-${room.slug}`}
+          >
+            <div
+              className="w-full aspect-square rounded-2xl flex flex-col items-center justify-center mb-2 shadow-sm group-hover:shadow-md transition-shadow"
+              style={{ background: room.theme?.bgGradient || '#FFF3E0' }}
+            >
+              <span className="text-3xl mb-1">{room.emoji || '🍯'}</span>
+              <span className="text-[10px] font-medium px-2 capitalize opacity-60" style={{ color: room.theme?.textColor || '#2A1A06' }}>
+                {room.type}
+              </span>
+            </div>
+            <p className="text-sm font-medium text-stone-800 truncate w-full">{room.name}</p>
+            <p className="text-xs text-muted-foreground">{room.member_count || 0} members</p>
+          </button>
+        );
+      })}
     </div>
   );
 };

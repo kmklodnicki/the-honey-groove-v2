@@ -12,7 +12,8 @@ router = APIRouter()
 # GET /rooms/suggested — must be declared BEFORE /{slug} to avoid FastAPI path clash
 @router.get("/rooms/suggested")
 async def get_suggested_rooms(limit: int = 6):
-    """Return top rooms by member count."""
+    """Return active rooms sorted by member count. limit=6 for the Nectar preview, limit=100 for see-all."""
+    limit = min(limit, 100)
     rooms = await db.rooms.find(
         {"active": True},
         {"_id": 0}
