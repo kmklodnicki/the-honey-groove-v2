@@ -35,7 +35,11 @@ export function useShareCard({ cardType, filename = 'thg-share', title = 'The Ho
   });
 
   const exportCard = useCallback(async (imageUrls = []) => {
-    if (!cardRef.current) return;
+    if (!cardRef.current) {
+      console.error('[ShareCard] exportCard called but cardRef.current is null — card not mounted?');
+      return;
+    }
+    console.log('[ShareCard] exportCard START', { cardType, el: cardRef.current?.tagName, id: cardRef.current?.id });
     setExporting(true);
 
     try {
@@ -46,6 +50,7 @@ export function useShareCard({ cardType, filename = 'thg-share', title = 'The Ho
       // Just wait for fonts + images to settle before capture.
       await new Promise(r => setTimeout(r, 400));
 
+      console.log('[ShareCard] calling html2canvas...');
       const canvas = await html2canvas(cardRef.current, {
         width: 1080,
         height: 1920,
@@ -55,20 +60,36 @@ export function useShareCard({ cardType, filename = 'thg-share', title = 'The Ho
         backgroundColor: null,
         logging: false,
       });
+      console.log('[ShareCard] html2canvas done, canvas:', canvas.width, 'x', canvas.height);
 
-      // Post-process: elements with data-canvas-pill are opacity:0 in HTML
-      // (preserving layout) but drawn entirely by Canvas 2D API for pixel-perfect
-      // text centering. getBoundingClientRect on the CONTAINER gives accurate coords.
+      // ─── PILL / BADGE OVERDRAW ──────────────────────────────────────────────
+      // Pills and badges have opacity:0 in HTML (preserves layout for coord lookup)
+      // so html2canvas captures them as transparent. We draw them HERE, LAST,
+      // after all other canvas content is already painted, using the Canvas 2D API
+      // for pixel-perfect text centering with textBaseline='middle'.
       //
-      // Each pill is drawn inside ctx.save()/restore() to prevent state leaking
-      // between pills. roundRect falls back to arc-based path for older browsers.
-      {
-        const ctx = canvas.getContext('2d');
+      // Each pill is isolated with ctx.save()/restore(). roundRect polyfill covers
+      // browsers that don't support the native API (Chrome <99, Safari <15.4).
+      // ────────────────────────────────────────────────────────────────────────
+      console.log('[ShareCard] DRAWING PILL: post-process start — scanning for [data-canvas-pill] elements');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        console.error('[ShareCard] DRAWING PILL: canvas.getContext(2d) returned null');
+      } else {
         const cardRect = cardRef.current.getBoundingClientRect();
+        console.log('[ShareCard] DRAWING PILL: cardRect =', JSON.stringify({ left: cardRect.left, top: cardRect.top, w: cardRect.width, h: cardRect.height }));
 
-        // roundRect polyfill — not available in all browsers (requires Chrome 99+, Safari 15.4+)
+        // querySelectorAll on the live card DOM — pills are always mounted (off-screen)
+        const pillEls = cardRef.current.querySelectorAll('[data-canvas-pill]');
+        console.log('[ShareCard] DRAWING PILL: found', pillEls.length, 'element(s):', Array.from(pillEls).map(el => el.dataset.canvasPill));
+
+        // Also check globally so we can tell if the elements exist at all vs. not being descendants
+        const globalPills = document.querySelectorAll('[data-canvas-pill]');
+        console.log('[ShareCard] DRAWING PILL: global [data-canvas-pill] count =', globalPills.length);
+
+        // roundRect polyfill — required for Chrome <99, Safari <15.4
         const rrect = (c, x, y, w, h, r) => {
-          if (c.roundRect) { c.roundRect(x, y, w, h, r); return; }
+          if (typeof c.roundRect === 'function') { c.roundRect(x, y, w, h, r); return; }
           c.moveTo(x + r, y);
           c.lineTo(x + w - r, y);
           c.arcTo(x + w, y, x + w, y + r, r);
@@ -81,72 +102,76 @@ export function useShareCard({ cardType, filename = 'thg-share', title = 'The Ho
           c.closePath();
         };
 
-        cardRef.current.querySelectorAll('[data-canvas-pill]').forEach(el => {
+        pillEls.forEach((el, idx) => {
           const r = el.getBoundingClientRect();
           const x = r.left - cardRect.left;
           const y = r.top - cardRect.top;
           const w = r.width;
           const h = r.height;
           const pillType = el.dataset.canvasPill;
+          console.log(`[ShareCard] DRAWING PILL [${idx}] type="${pillType}" coords={x:${x.toFixed(1)}, y:${y.toFixed(1)}, w:${w.toFixed(1)}, h:${h.toFixed(1)}}`);
 
           ctx.save();
           try {
             if (pillType === 'daily-prompt') {
-              // Background
+              console.log('DRAWING PILL — daily-prompt background start');
               ctx.fillStyle = '#F0E6D0';
               ctx.beginPath();
               rrect(ctx, x, y, w, h, h / 2);
               ctx.fill();
-              // Border
               ctx.strokeStyle = '#C4A96A';
               ctx.lineWidth = 2;
               ctx.stroke();
-              // Text
-              console.log('[ShareCard] Drawing daily-prompt pill at', x, y, w, h);
+              console.log('DRAWING PILL — daily-prompt fillText');
               ctx.fillStyle = '#8B6914';
               ctx.font = 'bold 26px Arial, sans-serif';
               ctx.textAlign = 'center';
               ctx.textBaseline = 'middle';
               ctx.fillText('🐝 DAILY PROMPT', x + w / 2, y + h / 2);
+              console.log('DRAWING PILL — daily-prompt done');
 
             } else if (pillType === 'gold-member') {
-              // Background
+              console.log('DRAWING PILL — gold-member background start');
               ctx.fillStyle = '#FFF3CD';
               ctx.beginPath();
               rrect(ctx, x, y, w, h, h / 2);
               ctx.fill();
-              // Text — using black for maximum contrast (diagnostic)
-              console.log('[ShareCard] Drawing gold-member badge at', x, y, w, h);
+              console.log('DRAWING PILL — gold-member fillText');
               ctx.fillStyle = '#000000';
               ctx.font = 'bold 22px Arial, sans-serif';
               ctx.textAlign = 'center';
               ctx.textBaseline = 'middle';
               ctx.fillText('🏅 Gold Member', x + w / 2, y + h / 2);
+              console.log('DRAWING PILL — gold-member done');
 
             } else if (pillType === 'verified') {
-              // Background
+              console.log('DRAWING PILL — verified background start');
               ctx.fillStyle = '#E8F4FD';
               ctx.beginPath();
               rrect(ctx, x, y, w, h, h / 2);
               ctx.fill();
-              // Border
               ctx.strokeStyle = '#4A90D9';
               ctx.lineWidth = 2;
               ctx.stroke();
-              // Text
-              console.log('[ShareCard] Drawing verified badge at', x, y, w, h);
+              console.log('DRAWING PILL — verified fillText');
               ctx.fillStyle = '#1A5276';
               ctx.font = 'bold 22px Arial, sans-serif';
               ctx.textAlign = 'center';
               ctx.textBaseline = 'middle';
               ctx.fillText('✓ Verified', x + w / 2, y + h / 2);
+              console.log('DRAWING PILL — verified done');
+
+            } else {
+              console.warn('[ShareCard] DRAWING PILL — unknown pillType:', pillType);
             }
           } catch (pillErr) {
-            console.error('[ShareCard] pill draw error', pillType, pillErr);
+            console.error('[ShareCard] DRAWING PILL — draw error for type:', pillType, pillErr);
           }
           ctx.restore();
         });
+        console.log('[ShareCard] DRAWING PILL: post-process complete');
       }
+      // ─── END PILL OVERDRAW ──────────────────────────────────────────────────
 
       const blob = await canvasToBlob(canvas);
       if (!blob) { setExporting(false); return; }
@@ -171,7 +196,8 @@ export function useShareCard({ cardType, filename = 'thg-share', title = 'The Ho
       } else {
         downloadBlob(blob, fname, cardType, userId);
       }
-    } catch {
+    } catch (e) {
+      console.error('[ShareCard] exportCard FAILED:', e);
       toast.error('Could not generate share card. Try again.');
     } finally {
       setExporting(false);
