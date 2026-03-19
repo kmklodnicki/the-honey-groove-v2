@@ -8,7 +8,7 @@ import {
   Loader2, RefreshCw, CheckCircle, XCircle, Pencil, Search,
   Users, BarChart2, Droplets, ListChecks, Shield, AlertTriangle,
   ChevronRight, ChevronDown, Ban, AlertCircle, Star, Trash2,
-  Music2, Play, Square, RotateCcw,
+  Music2, Play, Square, RotateCcw, ImageIcon,
 } from 'lucide-react';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -1261,6 +1261,107 @@ function MatchingTab({ API, headers }) {
   );
 }
 
+// ─── Tab: Covers ──────────────────────────────────────────────────────────────
+
+function CoversTab({ API, headers }) {
+  const [submissions, setSubmissions] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [actionId, setActionId] = useState(null);
+  const [statusFilter, setStatusFilter] = useState('pending');
+
+  const fetchSubmissions = useCallback(async (status) => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${API}/beekeeper/community-covers`, { headers, params: { status, limit: 50 } });
+      setSubmissions(res.data.submissions || []);
+      setTotal(res.data.total || 0);
+    } catch { /* non-fatal */ } finally {
+      setLoading(false);
+    }
+  }, [API, headers]);
+
+  useEffect(() => { fetchSubmissions(statusFilter); }, [fetchSubmissions, statusFilter]);
+
+  const doAction = async (id, action) => {
+    setActionId(id + action);
+    try {
+      await axios.post(`${API}/beekeeper/community-covers/${id}/${action}`, {}, { headers });
+      toast.success(action === 'approve' ? 'Cover approved' : 'Cover rejected');
+      fetchSubmissions(statusFilter);
+    } catch (e) {
+      toast.error(e?.response?.data?.detail || 'Action failed');
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  return (
+    <div className="space-y-5">
+      {/* Filter tabs */}
+      <div className="flex gap-2">
+        {['pending', 'approved', 'rejected'].map(s => (
+          <button
+            key={s}
+            onClick={() => setStatusFilter(s)}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors capitalize ${statusFilter === s ? 'bg-amber-400 text-amber-900' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'}`}
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-amber-400" /></div>
+      ) : submissions.length === 0 ? (
+        <div className="text-center py-16 text-stone-400">
+          <ImageIcon className="w-10 h-10 mx-auto mb-3 opacity-30" />
+          <p className="text-sm">No {statusFilter} submissions</p>
+        </div>
+      ) : (
+        <>
+          <p className="text-xs text-stone-400">{total} submission{total !== 1 ? 's' : ''}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {submissions.map(sub => (
+              <div key={sub.id} className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
+                <img src={sub.imageUrl} alt="" className="w-full aspect-square object-cover" />
+                <div className="p-4">
+                  <p className="text-sm font-semibold text-stone-800 truncate">{sub.title || 'Unknown'}</p>
+                  <p className="text-xs text-stone-400 truncate mb-1">{(sub.artists || []).join(', ') || '—'}</p>
+                  <p className="text-xs text-stone-300">by @{sub.submittedByUsername} · ID {sub.discogsReleaseId}</p>
+                  {statusFilter === 'pending' && (
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={() => doAction(sub.id, 'approve')}
+                        disabled={!!actionId}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-green-50 text-green-700 text-xs font-medium hover:bg-green-100 transition-colors disabled:opacity-50"
+                      >
+                        {actionId === sub.id + 'approve' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => doAction(sub.id, 'reject')}
+                        disabled={!!actionId}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-red-50 text-red-600 text-xs font-medium hover:bg-red-100 transition-colors disabled:opacity-50"
+                      >
+                        {actionId === sub.id + 'reject' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
+                        Reject
+                      </button>
+                    </div>
+                  )}
+                  {statusFilter !== 'pending' && (
+                    <p className={`text-xs mt-2 font-medium capitalize ${statusFilter === 'approved' ? 'text-green-600' : 'text-red-500'}`}>{sub.status}</p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 const TABS = [
@@ -1269,6 +1370,7 @@ const TABS = [
   { key: 'metrics', label: 'Metrics', icon: BarChart2 },
   { key: 'users', label: 'Users', icon: Users },
   { key: 'matching', label: 'Matching', icon: Music2 },
+  { key: 'covers', label: 'Covers', icon: ImageIcon },
 ];
 
 export default function BeekeeperPage() {
@@ -1319,6 +1421,7 @@ export default function BeekeeperPage() {
         {activeTab === 'metrics' && <MetricsTab API={API} headers={headers} />}
         {activeTab === 'users' && <UsersTab API={API} headers={headers} />}
         {activeTab === 'matching' && <MatchingTab API={API} headers={headers} />}
+        {activeTab === 'covers' && <CoversTab API={API} headers={headers} />}
       </div>
     </div>
   );

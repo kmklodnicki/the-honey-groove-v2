@@ -846,3 +846,59 @@ async def get_manual_override_releases(skip: int = 0, limit: int = 50, admin: Di
          "spotifyAlbumId": 1, "spotifyImageUrl": 1, "spotifyMatchedAt": 1}
     ).sort("spotifyMatchedAt", -1).skip(skip).limit(limit).to_list(limit)
     return {"releases": docs, "total": await db.releases.count_documents({"spotifyMatchStatus": "manual_override"})}
+
+
+# ─── Community Cover Moderation ───────────────────────────────────────────────
+
+@router.get("/beekeeper/community-covers")
+async def list_community_cover_submissions(status: str = "pending", skip: int = 0, limit: int = 50, admin: Dict = Depends(require_admin)):
+    """List community cover photo submissions by status."""
+    docs = await db.community_cover_submissions.find(
+        {"status": status},
+        {"_id": 0}
+    ).sort("submittedAt", -1).skip(skip).limit(limit).to_list(limit)
+    total = await db.community_cover_submissions.count_documents({"status": status})
+    return {"submissions": docs, "total": total}
+
+
+@router.post("/beekeeper/community-covers/{submission_id}/approve")
+async def approve_community_cover(submission_id: str, admin: Dict = Depends(require_admin)):
+    """Approve a community cover submission — sets it as the release's community cover."""
+    sub = await db.community_cover_submissions.find_one({"id": submission_id}, {"_id": 0})
+    if not sub:
+        raise HTTPException(status_code=404, detail="Submission not found")
+
+    now = datetime.now(timezone.utc).isoformat()
+
+    # Set on releases collection
+    await db.releases.update_one(
+        {"discogsReleaseId": sub["discogsReleaseId"]},
+        {"$set": {
+            "communityCoverUrl": sub["imageUrl"],
+            "communityCoverSmall": sub["imageSmall"],
+            "communityCoverBy": sub["submittedBy"],
+        }}
+    )
+
+    # Mark submission approved
+    await db.community_cover_submissions.update_one(
+        {"id": submission_id},
+        {"$set": {"status": "approved", "reviewedAt": now, "reviewedBy": admin["id"]}}
+    )
+    return {"success": True}
+
+
+@router.post("/beekeeper/community-covers/{submission_id}/reject")
+async def reject_community_cover(submission_id: str, admin: Dict = Depends(require_admin)):
+    """Reject a community cover submission."""
+    result = await db.community_cover_submissions.update_one(
+        {"id": submission_id},
+        {"$set": {
+            "status": "rejected",
+            "reviewedAt": datetime.now(timezone.utc).isoformat(),
+            "reviewedBy": admin["id"],
+        }}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    return {"success": True}

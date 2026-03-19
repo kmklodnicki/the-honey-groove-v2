@@ -576,19 +576,23 @@ async def upload_record_cover(
         }}
     )
 
-    # If release has no community cover, promote this as the community cover
+    # Queue as a pending community cover submission (requires beekeeper approval)
     discogs_id = record.get("discogs_id")
     if discogs_id:
-        release_doc = await db.releases.find_one({"discogsReleaseId": discogs_id}, {"_id": 0, "communityCoverUrl": 1})
-        if release_doc and not release_doc.get("communityCoverUrl"):
-            await db.releases.update_one(
-                {"discogsReleaseId": discogs_id},
-                {"$set": {
-                    "communityCoverUrl": url_640,
-                    "communityCoverSmall": url_300,
-                    "communityCoverBy": user["id"],
-                }}
-            )
+        import uuid as _uuid
+        await db.community_cover_submissions.insert_one({
+            "id": str(_uuid.uuid4()),
+            "discogsReleaseId": discogs_id,
+            "recordId": record_id,
+            "submittedBy": user["id"],
+            "submittedByUsername": user.get("username", ""),
+            "imageUrl": url_640,
+            "imageSmall": url_300,
+            "title": record.get("album", ""),
+            "artists": [record.get("artist", "")] if record.get("artist") else [],
+            "status": "pending",
+            "submittedAt": now,
+        })
 
     # Return updated record with resolved image fields
     updated_record = await db.records.find_one({"id": record_id}, {"_id": 0})
