@@ -93,13 +93,15 @@ const RoomCard = React.forwardRef(function RoomCard({ room, user }, ref) {
             textAlign: 'center',
             lineHeight: 1.1,
             margin: 0,
+            maxWidth: 860,
+            wordBreak: 'break-word',
           }}
         >
           {displayName}
         </p>
 
         {/* "room" suffix */}
-        <p style={{ fontFamily: 'Georgia, serif', fontSize: 48, color: textColor, opacity: 0.75, margin: 0, letterSpacing: '0.04em' }}>
+        <p style={{ fontFamily: 'Georgia, serif', fontSize: 48, color: textColor, opacity: 0.75, margin: 0, letterSpacing: '0.04em', textAlign: 'center' }}>
           room
         </p>
 
