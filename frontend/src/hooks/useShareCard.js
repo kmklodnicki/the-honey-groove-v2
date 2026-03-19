@@ -63,16 +63,18 @@ export function useShareCard({ cardType, filename = 'thg-share', title = 'The Ho
       console.log('[ShareCard] html2canvas done, canvas:', canvas.width, 'x', canvas.height);
 
       // ─── PILL / BADGE OVERDRAW ──────────────────────────────────────────────
-      // Pills and badges have opacity:0 in HTML (preserves layout for coord lookup)
-      // so html2canvas captures them as transparent. We draw them HERE, LAST,
-      // after all other canvas content is already painted, using the Canvas 2D API
-      // for pixel-perfect text centering with textBaseline='middle'.
-      //
-      // Each pill is isolated with ctx.save()/restore(). roundRect polyfill covers
-      // browsers that don't support the native API (Chrome <99, Safari <15.4).
+      // html2canvas's returned canvas may have an internal state that prevents
+      // subsequent draws from appearing in toBlob. We blit it onto a fresh canvas
+      // so our pill/badge draws are guaranteed to be included in the final PNG.
       // ────────────────────────────────────────────────────────────────────────
+      const output = document.createElement('canvas');
+      output.width = 1080;
+      output.height = 1920;
+      const ctx = output.getContext('2d');
+      ctx.drawImage(canvas, 0, 0);
+      console.log('[ShareCard] blitted html2canvas onto fresh output canvas');
+
       console.log('[ShareCard] DRAWING PILL: post-process start — scanning for [data-canvas-pill] elements');
-      const ctx = canvas.getContext('2d');
       if (!ctx) {
         console.error('[ShareCard] DRAWING PILL: canvas.getContext(2d) returned null');
       } else {
@@ -173,7 +175,7 @@ export function useShareCard({ cardType, filename = 'thg-share', title = 'The Ho
       }
       // ─── END PILL OVERDRAW ──────────────────────────────────────────────────
 
-      const blob = await canvasToBlob(canvas);
+      const blob = await canvasToBlob(output);
       if (!blob) { setExporting(false); return; }
 
       trackEvent('share_card_generated', { card_type: cardType, user_id: userId });
