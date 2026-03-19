@@ -430,7 +430,7 @@ const ExplorePage = () => {
               onClick={() => navigate('/gold')}
               data-testid="create-room-gold-cta"
             >
-              <Crown className="w-3 h-3 mr-1" /> Create a Room · Gold only
+              <Crown className="w-3 h-3 mr-1" /> Create a Room
             </Button>
           )}
         </div>
