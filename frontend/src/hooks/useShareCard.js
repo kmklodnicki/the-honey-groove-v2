@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import html2canvas from 'html2canvas';
+import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 
 /**
@@ -28,11 +29,17 @@ export function useShareCard({ cardType, filename = 'thg-share', title = 'The Ho
     img.src = url;
   });
 
+  // Wraps canvas.toBlob in a Promise so the full chain is properly awaited
+  const canvasToBlob = (canvas) => new Promise((resolve) => {
+    canvas.toBlob(resolve, 'image/png');
+  });
+
   const exportCard = useCallback(async (imageUrls = []) => {
     if (!cardRef.current) return;
     setExporting(true);
+
     try {
-      // Pre-flight all images so they're in the browser cache before canvas capture
+      // Pre-flight images into browser cache
       await Promise.all(imageUrls.filter(Boolean).map(preflightImage));
 
       cardRef.current.style.display = 'flex';
@@ -40,8 +47,8 @@ export function useShareCard({ cardType, filename = 'thg-share', title = 'The Ho
       cardRef.current.style.left = '-9999px';
       cardRef.current.style.top = '0';
 
-      // Wait for fonts + images to settle
-      await new Promise(r => setTimeout(r, 500));
+      // Let fonts + images settle
+      await new Promise(r => setTimeout(r, 400));
 
       const canvas = await html2canvas(cardRef.current, {
         width: 1080,
@@ -55,36 +62,68 @@ export function useShareCard({ cardType, filename = 'thg-share', title = 'The Ho
 
       cardRef.current.style.display = 'none';
 
+      const blob = await canvasToBlob(canvas);
+      if (!blob) { setExporting(false); return; }
+
       trackEvent('share_card_generated', { card_type: cardType, user_id: userId });
 
-      canvas.toBlob(async (blob) => {
-        if (!blob) { setExporting(false); return; }
-        const fname = `${filename}-${Date.now()}.png`;
-        const file = new File([blob], fname, { type: 'image/png' });
+      const fname = `${filename}-${Date.now()}.png`;
+      const file = new File([blob], fname, { type: 'image/png' });
 
-        if (navigator.share && navigator.canShare?.({ files: [file] })) {
-          try {
-            await navigator.share({ files: [file], title });
-            trackEvent('share_card_shared', { card_type: cardType, share_method: 'native_share', user_id: userId });
-          } catch {
-            // User cancelled — don't track
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title });
+          trackEvent('share_card_shared', { card_type: cardType, share_method: 'native_share', user_id: userId });
+        } catch (err) {
+          if (err?.name === 'AbortError') {
+            // User dismissed the share sheet — no action needed
+          } else {
+            // iOS gesture timeout or other error — open image directly so user can save
+            openImageFallback(blob, fname, cardType, userId);
           }
-        } else {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = fname;
-          a.click();
-          URL.revokeObjectURL(url);
-          trackEvent('share_card_downloaded', { card_type: cardType, user_id: userId });
         }
-        setExporting(false);
-      }, 'image/png');
+      } else {
+        downloadBlob(blob, fname, cardType, userId);
+      }
     } catch {
-      setExporting(false);
       if (cardRef.current) cardRef.current.style.display = 'none';
+      toast.error('Could not generate share card. Try again.');
+    } finally {
+      setExporting(false);
     }
-  }, [cardType, filename, title, userId]);
+  }, [cardType, filename, title, userId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return { cardRef, exporting, exportCard };
+}
+
+function downloadBlob(blob, fname, cardType, userId) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fname;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+  trackEvent('share_card_downloaded', { card_type: cardType, user_id: userId });
+}
+
+// iOS fallback: open the image as a blob URL in the current tab.
+// Safari shows the PNG full-screen and the user can tap Share → Save Image
+// or share directly to Instagram Stories.
+function openImageFallback(blob, fname, cardType, userId) {
+  const url = URL.createObjectURL(blob);
+  // Try opening in a new tab first; if blocked, navigate current tab
+  const w = window.open(url, '_blank');
+  if (!w) {
+    // Popup blocked — navigate current tab to the image
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fname;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  trackEvent('share_card_downloaded', { card_type: cardType, share_method: 'image_fallback', user_id: userId });
 }
