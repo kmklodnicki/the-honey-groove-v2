@@ -142,8 +142,16 @@ export function useShareCard({ cardType, filename = 'thg-share', title = 'The Ho
 
         // querySelectorAll on the live card DOM — pills are always mounted (off-screen)
         const pillEls = cardRef.current.querySelectorAll('[data-canvas-pill]');
+        console.log(`[ShareCard] found ${pillEls.length} pill element(s)`);
 
         pillEls.forEach((el, idx) => {
+          // data-canvas-active="false" means the badge should not be drawn
+          // (user doesn't have this badge, but span is in DOM to keep coords stable)
+          if (el.dataset.canvasActive === 'false') {
+            console.log(`[ShareCard] SKIPPING PILL [${idx}] type="${el.dataset.canvasPill}" (not active)`);
+            return;
+          }
+
           const r = el.getBoundingClientRect();
           const x = r.left - cardRect.left;
           const y = r.top - cardRect.top;

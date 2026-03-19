@@ -105,49 +105,47 @@ export function ShareCardUser({ user, textColor = BRAND.dark }) {
         @{user.username}
       </span>
 
-      {/* Badges row — opacity:0 preserves layout; Canvas 2D API draws full badge */}
-      {(isGold || isVerified) && (
-        <div style={{ display: 'flex', gap: 10 }}>
-          {isGold && (
-            <span
-              style={{
-                fontFamily: 'Georgia, serif',
-                fontSize: 18,
-                color: BRAND.amber,
-                background: 'rgba(200,134,26,0.12)',
-                borderRadius: 20,
-                padding: '4px 12px',
-                fontWeight: 600,
-                display: 'inline-block',
-                lineHeight: '1.6',
-                opacity: 0,
-              }}
-              data-canvas-pill="gold-member"
-            >
-              🏅 Gold Member
-            </span>
-          )}
-          {isVerified && (
-            <span
-              style={{
-                fontFamily: 'Georgia, serif',
-                fontSize: 18,
-                color: '#2563EB',
-                background: 'rgba(37,99,235,0.08)',
-                borderRadius: 20,
-                padding: '4px 12px',
-                fontWeight: 600,
-                display: 'inline-block',
-                lineHeight: '1.6',
-                opacity: 0,
-              }}
-              data-canvas-pill="verified"
-            >
-              ✓ Verified
-            </span>
-          )}
-        </div>
-      )}
+      {/* Badges row — always rendered so DOM coords are stable regardless of hydration timing.
+          opacity:0 hides from html2canvas; data-canvas-active tells the canvas overdraw
+          whether to actually draw the badge. */}
+      <div style={{ display: 'flex', gap: 10 }}>
+        <span
+          style={{
+            fontFamily: 'Georgia, serif',
+            fontSize: 18,
+            color: BRAND.amber,
+            background: 'rgba(200,134,26,0.12)',
+            borderRadius: 20,
+            padding: '4px 12px',
+            fontWeight: 600,
+            display: 'inline-block',
+            lineHeight: '1.6',
+            opacity: 0,
+          }}
+          data-canvas-pill="gold-member"
+          data-canvas-active={isGold ? 'true' : 'false'}
+        >
+          🏅 Gold Member
+        </span>
+        <span
+          style={{
+            fontFamily: 'Georgia, serif',
+            fontSize: 18,
+            color: '#2563EB',
+            background: 'rgba(37,99,235,0.08)',
+            borderRadius: 20,
+            padding: '4px 12px',
+            fontWeight: 600,
+            display: 'inline-block',
+            lineHeight: '1.6',
+            opacity: 0,
+          }}
+          data-canvas-pill="verified"
+          data-canvas-active={isVerified ? 'true' : 'false'}
+        >
+          ✓ Verified
+        </span>
+      </div>
     </div>
   );
 }
