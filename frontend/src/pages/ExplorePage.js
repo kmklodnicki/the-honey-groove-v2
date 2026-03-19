@@ -770,7 +770,7 @@ const ExplorePage = () => {
             </TooltipProvider>
             {/* Emoji picker */}
             <div className="flex gap-2 flex-wrap">
-              {['🍯','🎸','🎷','🎺','🥁','🎻','🎹','🎵','🎶','🌙'].map(em => (
+              {['🍯','🎸','🎷','🎺','🥁','🎻','🎹','🎵','🎶','🌙','💕','🤩','🫧','💚'].map(em => (
                 <button
                   key={em}
                   onClick={() => setCreateRoomForm(f => ({ ...f, emoji: em }))}
