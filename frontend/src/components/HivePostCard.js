@@ -486,6 +486,7 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
             cover_url: post.cover_url || post.record?.cover_url || post.bundle_records?.[0]?.cover_url,
             title: post.record_title || post.record?.title || post.bundle_records?.[0]?.title || post.caption,
             artist: post.record_artist || post.record?.artist || post.bundle_records?.[0]?.artist,
+            color_variant: post.color_variant || post.record?.color_variant,
             bundle_records: post.bundle_records,
           }}
           user={post.user}
@@ -497,6 +498,7 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
             cover_url: post.cover_url || post.record?.cover_url,
             title: post.record_title || post.record?.title || post.caption,
             artist: post.record_artist || post.record?.artist,
+            color_variant: post.color_variant || post.record?.color_variant,
           }}
           user={post.user}
         />

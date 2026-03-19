@@ -49,6 +49,11 @@ const TradeCard = React.forwardRef(function TradeCard(
               {sentRecord.title}
             </p>
           )}
+          {(sentRecord?.color_variant || sentRecord?.variant) && (
+            <p style={{ fontFamily: 'Georgia, serif', fontSize: 22, fontStyle: 'italic', color: '#888888', margin: 0, textAlign: 'center', maxWidth: 440 }}>
+              {sentRecord.color_variant || sentRecord.variant}
+            </p>
+          )}
         </div>
 
         {/* Swap icon */}
@@ -67,6 +72,11 @@ const TradeCard = React.forwardRef(function TradeCard(
           {receivedRecord?.title && (
             <p style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 28, fontWeight: 700, color: BRAND.dark, textAlign: 'center', margin: 0, lineHeight: 1.25, maxWidth: 440 }}>
               {receivedRecord.title}
+            </p>
+          )}
+          {(receivedRecord?.color_variant || receivedRecord?.variant) && (
+            <p style={{ fontFamily: 'Georgia, serif', fontSize: 22, fontStyle: 'italic', color: '#888888', margin: 0, textAlign: 'center', maxWidth: 440 }}>
+              {receivedRecord.color_variant || receivedRecord.variant}
             </p>
           )}
         </div>

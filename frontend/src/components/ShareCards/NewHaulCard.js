@@ -11,6 +11,7 @@ const NewHaulCard = React.forwardRef(function NewHaulCard({ post, user }, ref) {
       : null;
   const title = post?.title || post?.record_title || post?.bundle_records?.[0]?.title || 'New Haul';
   const artist = post?.artist || post?.record_artist || post?.bundle_records?.[0]?.artist || '';
+  const variant = post?.variant || post?.color_variant || '';
   const bundleCount = post?.bundle_records?.length;
 
   // Slightly deeper warm gradient to distinguish from Now Spinning
@@ -53,6 +54,13 @@ const NewHaulCard = React.forwardRef(function NewHaulCard({ post, user }, ref) {
       {artist && (
         <p style={{ fontFamily: 'Georgia, serif', fontSize: 38, fontStyle: 'italic', color: '#8A6B4A', margin: '20px 0 0', textAlign: 'center' }}>
           {artist}
+        </p>
+      )}
+
+      {/* Variant */}
+      {variant && (
+        <p style={{ fontFamily: 'Georgia, serif', fontSize: 28, fontStyle: 'italic', color: '#888888', margin: '12px 0 0', textAlign: 'center' }}>
+          {variant}
         </p>
       )}
 
