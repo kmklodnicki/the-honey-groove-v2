@@ -8,6 +8,7 @@ import { Input } from './ui/input';
 import { Heart, MessageCircle, MoreVertical, Trash2, Pin, Reply, Send, ChevronDown, ChevronUp, Sparkles, X, FileText, Camera, Loader2, Share2 } from 'lucide-react';
 import { useShareCard } from '../hooks/useShareCard';
 import NowSpinningCard from './ShareCards/NowSpinningCard';
+import NewHaulCard from './ShareCards/NewHaulCard';
 import SaleCard from './ShareCards/SaleCard';
 import UserBadges from './UserBadges';
 import {
@@ -464,13 +465,24 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
           price={post.price || post.listing_price}
           user={post.user}
         />
-      ) : isShareable ? (
-        <NowSpinningCard
+      ) : isShareable && post.post_type === 'NEW_HAUL' ? (
+        <NewHaulCard
           ref={shareCardRef}
           post={{
             cover_url: post.cover_url || post.record?.cover_url || post.bundle_records?.[0]?.cover_url,
             title: post.record_title || post.record?.title || post.bundle_records?.[0]?.title || post.caption,
             artist: post.record_artist || post.record?.artist || post.bundle_records?.[0]?.artist,
+            bundle_records: post.bundle_records,
+          }}
+          user={post.user}
+        />
+      ) : isShareable ? (
+        <NowSpinningCard
+          ref={shareCardRef}
+          post={{
+            cover_url: post.cover_url || post.record?.cover_url,
+            title: post.record_title || post.record?.title || post.caption,
+            artist: post.record_artist || post.record?.artist,
           }}
           user={post.user}
         />
