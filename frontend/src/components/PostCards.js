@@ -125,6 +125,7 @@ const PILL_STYLES = {
   RELEASE_NOTE:         { bg: 'bg-amber-500',    text: 'text-white',       border: 'border-amber-600' },
   POLL:                 { bg: 'bg-amber-100',    text: 'text-amber-800',   border: 'border-amber-200' },
   NEW_FEATURE:          { bg: 'bg-green-100',    text: 'text-green-700',   border: 'border-green-200' },
+  ROOM_JOIN:            { bg: 'bg-amber-50',     text: 'text-amber-700',   border: 'border-amber-200' },
   following:            { bg: 'bg-violet-100',   text: 'text-violet-700',  border: 'border-violet-200' },
   all:                  { bg: 'bg-stone-100',    text: 'text-stone-600',   border: 'border-stone-200' },
 };
@@ -184,6 +185,7 @@ const PostTypeBadge = ({ type, mood, isReleaseNote }) => {
     RANDOMIZER: { label: 'Now Spinning: Randomized', icon: Shuffle },
     listing_sale: { label: 'For Sale', icon: ShoppingBag },
     listing_trade: { label: 'For Trade', icon: ArrowRightLeft },
+    ROOM_JOIN: { label: 'Joined a Room', emoji: '🍯' },
   };
   const c = config[type] || config.NOW_SPINNING;
   const s = PILL_STYLES[type] || PILL_STYLES.NOW_SPINNING;
@@ -1036,6 +1038,38 @@ const ListingPostCard = ({ post }) => {
   );
 };
 
+const RoomJoinCard = ({ post }) => {
+  const THEME_COLORS = {
+    honey: '#C8861A', midnight: '#7B68EE', forest: '#74C69D',
+    rose: '#D98FA1', slate: '#85A7C0', plum: '#D7BDE2',
+  };
+  const accentColor = THEME_COLORS[post.room_theme_preset] || '#C8861A';
+  return (
+    <Link to={`/nectar/rooms/${post.room_slug}`} className="block group" data-testid={`room-join-card-${post.room_slug}`}>
+      <div
+        className="flex items-center gap-4 rounded-2xl p-4 transition-opacity group-hover:opacity-90"
+        style={{ background: post.room_theme?.bgGradient || 'linear-gradient(135deg, #FFF3E0, #FFE0B2)' }}
+      >
+        <div className="text-4xl flex-shrink-0">{post.room_emoji || '🍯'}</div>
+        <div className="min-w-0">
+          <p className="font-semibold text-sm" style={{ color: post.room_theme?.textColor || '#2A1A06' }}>
+            {post.room_name}
+          </p>
+          <p className="text-xs mt-0.5" style={{ color: post.room_theme?.textColor || '#2A1A06', opacity: 0.7 }}>
+            {post.room_type} room · tap to join
+          </p>
+        </div>
+        <div
+          className="ml-auto flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full"
+          style={{ background: accentColor + '30', color: accentColor }}
+        >
+          Join
+        </div>
+      </div>
+    </Link>
+  );
+};
+
 const PostCardBody = ({ post, onAlbumClick, imgPriority }) => {
   switch (post.post_type) {
     case 'NOW_SPINNING': return <NowSpinningCard post={post} onAlbumClick={onAlbumClick} imgPriority={imgPriority} />;
@@ -1050,6 +1084,7 @@ const PostCardBody = ({ post, onAlbumClick, imgPriority }) => {
     case 'RANDOMIZER': return <NowSpinningCard post={post} onAlbumClick={onAlbumClick} imgPriority={imgPriority} />;
     case 'listing_sale': return <ListingPostCard post={post} />;
     case 'listing_trade': return <ListingPostCard post={post} />;
+    case 'ROOM_JOIN': return <RoomJoinCard post={post} />;
     default:
       {
         const defRecord = post.record || {};

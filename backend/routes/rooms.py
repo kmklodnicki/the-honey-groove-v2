@@ -4,7 +4,9 @@ from typing import Optional, Dict
 from datetime import datetime, timezone, timedelta
 import uuid
 
+import uuid
 from database import db, require_auth, get_current_user, logger
+from live_hive import emit_new_post
 
 router = APIRouter()
 
@@ -243,6 +245,39 @@ async def join_room(slug: str, current_user: Dict = Depends(require_auth)):
 
     if result.upserted_id:
         await db.rooms.update_one({"slug": slug}, {"$inc": {"member_count": 1}})
+
+        # Post to Hive feed to encourage others to join
+        try:
+            post_id = str(uuid.uuid4())
+            post_doc = {
+                "id": post_id,
+                "user_id": uid,
+                "post_type": "ROOM_JOIN",
+                "room_slug": slug,
+                "room_name": room.get("name"),
+                "room_emoji": room.get("emoji", "🍯"),
+                "room_type": room.get("type"),
+                "room_theme": room.get("theme"),
+                "room_theme_preset": room.get("theme_preset"),
+                "caption": None,
+                "created_at": now,
+            }
+            await db.posts.insert_one(post_doc)
+            # Emit to live feed
+            post_user = await db.users.find_one({"id": uid}, {"_id": 0, "password_hash": 0})
+            user_data = {
+                "id": post_user["id"],
+                "username": post_user["username"],
+                "avatar_url": post_user.get("avatar_url"),
+                "founding_member": post_user.get("founding_member", False),
+                "golden_hive_verified": post_user.get("golden_hive_verified", False),
+                "title_label": post_user.get("title_label"),
+            } if post_user else None
+            feed_payload = {**post_doc, "_id": None, "user": user_data, "likes_count": 0, "comments_count": 0, "liked": False}
+            await emit_new_post(feed_payload, uid)
+        except Exception as e:
+            logger.warning(f"Room join feed post failed: {e}")
+
         # Fire-and-forget milestone check
         try:
             from routes.milestones import check_room_milestone
