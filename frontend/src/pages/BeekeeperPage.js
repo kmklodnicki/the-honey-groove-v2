@@ -973,6 +973,8 @@ function MatchingTab({ API, headers }) {
   const [manualDialog, setManualDialog] = useState(null); // { discogsReleaseId, title, artists }
   const [manualInput, setManualInput] = useState('');
   const [manualLoading, setManualLoading] = useState(false);
+  const [manualOverrides, setManualOverrides] = useState([]);
+  const [clearingId, setClearingId] = useState(null);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -989,10 +991,17 @@ function MatchingTab({ API, headers }) {
     } catch { /* non-fatal */ }
   }, [API, headers]);
 
+  const fetchManualOverrides = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API}/beekeeper/spotify-matching/manual-overrides`, { headers, params: { limit: 50 } });
+      setManualOverrides(res.data.releases || []);
+    } catch { /* non-fatal */ }
+  }, [API, headers]);
+
   useEffect(() => {
     setLoading(true);
-    Promise.all([fetchStats(), fetchUnmatched()]).finally(() => setLoading(false));
-  }, [fetchStats, fetchUnmatched]);
+    Promise.all([fetchStats(), fetchUnmatched(), fetchManualOverrides()]).finally(() => setLoading(false));
+  }, [fetchStats, fetchUnmatched, fetchManualOverrides]);
 
   // Poll while running
   useEffect(() => {
@@ -1000,6 +1009,21 @@ function MatchingTab({ API, headers }) {
     const id = setInterval(() => { fetchStats(); fetchUnmatched(); }, 3000);
     return () => clearInterval(id);
   }, [stats?.isRunning, fetchStats, fetchUnmatched]);
+
+  const doClearMatch = async (releaseId) => {
+    setClearingId(releaseId);
+    try {
+      await axios.delete(`${API}/beekeeper/spotify-matching/manual/${releaseId}`, { headers });
+      toast.success('Match cleared');
+      fetchStats();
+      fetchUnmatched();
+      fetchManualOverrides();
+    } catch (e) {
+      toast.error(e?.response?.data?.detail || 'Clear failed');
+    } finally {
+      setClearingId(null);
+    }
+  };
 
   const doAction = async (action) => {
     setActionLoading(action);
@@ -1028,6 +1052,7 @@ function MatchingTab({ API, headers }) {
       setManualInput('');
       fetchStats();
       fetchUnmatched();
+      fetchManualOverrides();
     } catch (e) {
       toast.error(e?.response?.data?.detail || 'Match failed');
     } finally {
@@ -1158,6 +1183,37 @@ function MatchingTab({ API, headers }) {
                 >
                   <Music2 className="w-3.5 h-3.5" />
                   Match
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Manual overrides table */}
+      {manualOverrides.length > 0 && (
+        <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
+          <div className="px-5 py-3 border-b border-stone-100">
+            <h3 className="text-sm font-semibold text-stone-700">Manual overrides</h3>
+          </div>
+          <div className="divide-y divide-stone-100">
+            {manualOverrides.map(rel => (
+              <div key={rel.discogsReleaseId} className="flex items-center gap-3 px-5 py-3">
+                {rel.spotifyImageUrl && (
+                  <img src={rel.spotifyImageUrl} alt="" className="w-9 h-9 rounded-md object-cover flex-shrink-0" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-stone-800 truncate">{rel.title || 'Unknown'}</p>
+                  <p className="text-xs text-stone-400 truncate">
+                    {(rel.artists || []).join(', ') || '—'} · ID {rel.discogsReleaseId}
+                  </p>
+                </div>
+                <button
+                  onClick={() => doClearMatch(rel.discogsReleaseId)}
+                  disabled={clearingId === rel.discogsReleaseId}
+                  className="flex-shrink-0 px-3 py-1.5 rounded-xl bg-red-50 text-red-600 text-xs font-medium hover:bg-red-100 transition-colors disabled:opacity-50"
+                >
+                  {clearingId === rel.discogsReleaseId ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Clear'}
                 </button>
               </div>
             ))}

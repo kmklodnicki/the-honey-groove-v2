@@ -754,6 +754,25 @@ async def manual_spotify_match(release_id: str, body: dict, admin: Dict = Depend
     return {"success": True, "albumId": album_id, "imageUrl": image_url}
 
 
+@router.delete("/beekeeper/spotify-matching/manual/{release_id}")
+async def clear_spotify_match(release_id: str, admin: Dict = Depends(require_admin)):
+    """Clear a manual Spotify match, resetting the release to 'unmatched'."""
+    result = await db.releases.update_one(
+        {"discogsReleaseId": int(release_id)},
+        {"$set": {
+            "spotifyAlbumId": None,
+            "spotifyImageUrl": None,
+            "spotifyImageSmall": None,
+            "spotifyMatchType": None,
+            "spotifyMatchStatus": "unmatched",
+            "spotifyMatchedAt": None,
+        }}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Release not found")
+    return {"success": True}
+
+
 # ─── CC0 Backfill ────────────────────────────────────────────────────────────
 
 @router.post("/beekeeper/cc0-backfill/start")
@@ -803,3 +822,14 @@ async def get_unmatched_releases(skip: int = 0, limit: int = 50, admin: Dict = D
         {"_id": 0, "discogsReleaseId": 1, "title": 1, "artists": 1, "barcode": 1, "year": 1}
     ).skip(skip).limit(limit).to_list(limit)
     return {"releases": docs, "total": await db.releases.count_documents({"spotifyMatchStatus": "unmatched"})}
+
+
+@router.get("/beekeeper/spotify-matching/manual-overrides")
+async def get_manual_override_releases(skip: int = 0, limit: int = 50, admin: Dict = Depends(require_admin)):
+    """List manually matched releases so they can be reviewed or cleared."""
+    docs = await db.releases.find(
+        {"spotifyMatchStatus": "manual_override"},
+        {"_id": 0, "discogsReleaseId": 1, "title": 1, "artists": 1, "year": 1,
+         "spotifyAlbumId": 1, "spotifyImageUrl": 1, "spotifyMatchedAt": 1}
+    ).sort("spotifyMatchedAt", -1).skip(skip).limit(limit).to_list(limit)
+    return {"releases": docs, "total": await db.releases.count_documents({"spotifyMatchStatus": "manual_override"})}
