@@ -91,6 +91,7 @@ const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
 const RepollinateSuccessPage = lazy(() => import("./pages/RepollinateSuccessPage"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 const ClaimInvitePage = lazy(() => import("./pages/ClaimInvitePage"));
+const RoomPage = lazy(() => import("./pages/RoomPage"));
 
 // Auth guards — loading is ALWAYS false. No gates.
 // If user exists (from JWT decode or login), render children.
@@ -337,6 +338,7 @@ function AppContent() {
       <Route path="/onboarding/building" element={<ProtectedRoute><BuildingHivePage /></ProtectedRoute>} />
       <Route path="/onboarding/welcome-to-the-hive" element={<ProtectedRoute><WelcomeHivePage /></ProtectedRoute>} />
       <Route path="/nectar" element={<ProtectedRoute><AppLayout><ExplorePage /></AppLayout></ProtectedRoute>} />
+      <Route path="/nectar/rooms/:slug" element={<ProtectedRoute><AppLayout><RoomPage /></AppLayout></ProtectedRoute>} />
       <Route path="/nectar/:section" element={<ProtectedRoute><AppLayout><ExploreSeeAllPage /></AppLayout></ProtectedRoute>} />
       <Route path="/hive" element={<ProtectedRoute><AppLayout><HivePage /></AppLayout></ProtectedRoute>} />
       <Route path="/collection" element={<ProtectedRoute><AppLayout><CollectionPage /></AppLayout></ProtectedRoute>} />

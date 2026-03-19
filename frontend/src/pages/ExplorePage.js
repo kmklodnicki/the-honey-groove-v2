@@ -34,6 +34,7 @@ const ExplorePage = () => {
   const [nearYou, setNearYou] = useState({ collectors: [], listings: [], needs_location: true });
   const [loading, setLoading] = useState(true);
   const [myKindaPeople, setMyKindaPeople] = useState([]);
+  const [suggestedRooms, setSuggestedRooms] = useState([]);
   const { openVariantModal } = useVariantModal();
   // Track optimistic follow state per username
   const [followedUsers, setFollowedUsers] = useState(new Set());
@@ -95,6 +96,11 @@ const ExplorePage = () => {
     axios.get(`${API}/discover/my-kinda-people`, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => setMyKindaPeople(r.data)).catch(() => {});
   }, [API, token]);
+
+  // Fetch suggested Honeycomb Rooms
+  useEffect(() => {
+    axios.get(`${API}/rooms/suggested`).then(r => setSuggestedRooms(r.data)).catch(() => {});
+  }, [API]);
 
   useEffect(() => {}, []);
 
@@ -234,7 +240,7 @@ const ExplorePage = () => {
                     {p.follows_me && !isFollowed && (
                       <span className="inline-block text-[10px] font-medium mt-0.5 px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(218,165,32,0.12)', color: '#C8861A' }} data-testid={`follows-you-${p.username}`}>Follows you</span>
                     )}
-                    <p className="text-xs font-bold mt-0.5" style={{ color: '#C8861A' }}>{p.common_count || 0} {(p.common_count || 0) === 1 ? 'record' : 'records'} in common</p>
+                    <p className="text-sm font-semibold mt-0.5" style={{ color: '#C8861A' }}>{p.common_count || 0} {(p.common_count || 0) === 1 ? 'record' : 'records'} in common</p>
                     {p.shared_covers?.length > 0 && (
                       <div className="flex justify-center gap-1 mt-2">
                         {p.shared_covers.slice(0, 3).map((c, i) => (
@@ -277,18 +283,38 @@ const ExplorePage = () => {
 
       {/* Collector Bingo — hidden until feature is ready */}
 
-      {/* 1. Trending in the Hive */}
-      <ExploreSection icon={<TrendingUp className="w-4 h-4 text-honey-amber" />} title="Trending in the Hive" testId="trending-section" seeAllTo="/nectar/trending">
+      {/* 2. Honeycomb Rooms */}
+      <ExploreSection icon={<span className="text-base">🍯</span>} title="Honeycomb Rooms" testId="rooms-section" seeAllTo={null}>
+        <p className="text-xs text-muted-foreground italic -mt-2 mb-3 pl-1">Join themed spaces for your era, genre, or favorite artist.</p>
+        {suggestedRooms.length === 0 ? (
+          <EmptyCard text="Rooms coming soon — check back shortly!" />
+        ) : (
+          <div className="flex flex-wrap justify-center gap-3" data-testid="rooms-grid">
+            {suggestedRooms.map(room => (
+              <HexRoomCard key={room.slug} room={room} onClick={() => navigate(`/nectar/rooms/${room.slug}`)} />
+            ))}
+          </div>
+        )}
+      </ExploreSection>
+
+      {/* 1. Hot Right Now */}
+      <ExploreSection icon={<TrendingUp className="w-4 h-4 text-honey-amber" />} title="Hot Right Now" testId="trending-section" seeAllTo="/nectar/trending">
         <p className="text-xs text-muted-foreground italic -mt-2 mb-3 pl-1">What Hive members have been spinning.</p>
         {trending.length === 0 ? (
           <EmptyCard text="No trending records yet. Start spinning!" />
         ) : (
           <ScrollRow>
-            {trending.map(r => (
+            {trending.map((r, idx) => (
               <button key={r.id} onClick={() => openTrendingModal(r)}
                 className="flex-shrink-0 w-36 text-left group" data-testid={`trending-${r.id}`}>
-                <div className="aspect-square rounded-xl overflow-hidden bg-honey/10 mb-2 shadow-sm group-hover:shadow-md transition-shadow">
+                <div className="aspect-square rounded-xl overflow-hidden bg-honey/10 mb-2 shadow-sm group-hover:shadow-md transition-shadow relative">
                   <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} artist={r.artist} title={r.title} className="w-full h-full object-cover" isUnofficial={r.is_unofficial} />
+                  {idx === 0 && (
+                    <span className="absolute top-2 left-2 w-6 h-6 flex items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ background: '#DAA520' }} data-testid="rank-badge-1">#1</span>
+                  )}
+                  {(idx === 1 || idx === 2) && (
+                    <span className="absolute top-2 left-2 w-6 h-6 flex items-center justify-center rounded-full text-[10px] font-bold bg-gray-200 text-gray-700" data-testid={`rank-badge-${idx + 1}`}>#{idx + 1}</span>
+                  )}
                 </div>
                 <p className="text-sm font-medium truncate">{r.title}</p>
                 <p className="text-xs text-muted-foreground truncate">{r.artist}</p>
@@ -310,7 +336,7 @@ const ExplorePage = () => {
         ) : (
           <ScrollRow>
             {crownJewels.map((r, idx) => (
-              <button key={r.discogs_id || idx} onClick={() => navigate(`/variant/${r.discogs_id}`)} className="flex-shrink-0 w-40 text-left group" data-testid={`crown-jewel-${r.discogs_id || idx}`}>
+              <button key={r.discogs_id || idx} onClick={() => navigate(`/variant/${r.discogs_id}`)} className="flex-shrink-0 w-40 text-left group border-2 border-[#DAA520] rounded-xl p-1 shadow-[0_0_12px_rgba(218,165,32,0.2)]" data-testid={`crown-jewel-${r.discogs_id || idx}`}>
                 <div className="aspect-square rounded-xl overflow-hidden bg-honey/10 mb-2 shadow-sm relative group-hover:shadow-md transition-shadow">
                   <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} artist={r.artist} title={r.title} className="w-full h-full object-cover" isUnofficial={r.is_unofficial} />
                   {r.estimated_value > 0 && (
@@ -345,8 +371,8 @@ const ExplorePage = () => {
         )}
       </ExploreSection>
 
-      {/* 4. Most Wanted */}
-      <ExploreSection icon={<Heart className="w-4 h-4 text-red-400" />} title="Most Wanted" testId="most-wanted-section" seeAllTo="/nectar/most-wanted">
+      {/* 4. The Buzz Board */}
+      <ExploreSection icon={<Heart className="w-4 h-4 text-red-400" />} title="The Buzz Board" testId="most-wanted-section" seeAllTo="/nectar/most-wanted">
         <p className="text-xs text-muted-foreground italic -mt-2 mb-3 pl-1">Hive members have their eyes on these records.</p>
         {mostWanted.length === 0 ? (
           <EmptyCard text="No Dream List data yet. Add records to your Dream List!" />
@@ -486,6 +512,26 @@ const ExplorePage = () => {
     </div>
   );
 };
+
+const HexRoomCard = ({ room, onClick }) => (
+  <div
+    onClick={onClick}
+    style={{
+      clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
+      background: room.theme?.bgGradient || '#FFF3E0',
+      width: 120,
+      height: 138,
+      cursor: 'pointer',
+    }}
+    className="flex flex-col items-center justify-center transition-transform hover:scale-105"
+    data-testid={`room-hex-${room.slug}`}
+  >
+    <span className="text-3xl">{room.emoji}</span>
+    <span className="text-xs font-semibold text-center mt-1 px-2" style={{ color: room.theme?.textColor || '#2A1A06' }}>
+      {room.name}
+    </span>
+  </div>
+);
 
 const ExploreSection = ({ icon, title, testId, seeAllTo, children }) => (
   <section className="mb-10" data-testid={testId}>
