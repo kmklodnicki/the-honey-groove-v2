@@ -8,7 +8,7 @@ import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { Skeleton } from '../components/ui/skeleton';
-import { Users, Music, Share2, Trophy } from 'lucide-react';
+import { Users, Music, Share2, Trophy, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
 import AlbumArt from '../components/AlbumArt';
@@ -16,6 +16,15 @@ import BeeAvatar from '../components/BeeAvatar';
 import { PostCard } from '../components/HivePostCard';
 import RoomShareCard from '../components/RoomShareCard';
 import { resolveImageUrl } from '../utils/imageUrl';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../components/ui/tooltip';
+
+const ROOM_TYPE_TOOLTIPS = {
+  genre:     "Rooms built around musical genres. Automatically created from the most-collected genres across all Vaults on THG.",
+  artist:    "Dedicated rooms for artists with 10+ collectors on THG. Gold members can also create artist rooms manually.",
+  era:       "Rooms organized by decade. Automatically generated based on release years across the THG catalog.",
+  vibe:      "Mood-based rooms created by Gold members. Late night spins, rainy day records, road trip vinyl. The fun ones.",
+  collector: "Rooms organized by collecting style, not genre. Colored vinyl, rare pressings, picture discs. Gold members only.",
+};
 
 // Pre-flight: ensure an image is in the browser cache before canvas export
 const preflightImage = (url) => new Promise((resolve) => {
@@ -198,10 +207,29 @@ const RoomPage = () => {
         <p className="text-sm mb-3" style={{ color: theme.textColor ? theme.textColor + 'CC' : '#2A1A0699' }}>
           {room.tagline}
         </p>
-        <p className="text-sm font-semibold mb-4" style={{ color: accentColor }}>
+        <p className="text-sm font-semibold mb-3" style={{ color: accentColor }}>
           <Users className="inline w-4 h-4 mr-1" />
           {(room.member_count || 0).toLocaleString()} {room.member_count === 1 ? 'member' : 'members'}
         </p>
+        {room.type && ROOM_TYPE_TOOLTIPS[room.type] && (
+          <TooltipProvider delayDuration={300}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium capitalize mb-4 cursor-default"
+                  style={{ background: 'rgba(0,0,0,0.12)', color: theme.textColor || '#2A1A06' }}
+                  data-testid="room-type-badge"
+                >
+                  {room.type}
+                  <Info className="w-3 h-3 opacity-60" />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="max-w-[220px] text-center text-xs leading-snug">
+                {ROOM_TYPE_TOOLTIPS[room.type]}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
         <div className="flex gap-2 items-center">
           {isMember ? (
             <Button

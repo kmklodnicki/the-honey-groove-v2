@@ -9,7 +9,7 @@ import { Skeleton } from '../components/ui/skeleton';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '../components/ui/dialog';
-import { Disc, Users, Search, TrendingUp, Lock, Play, UserPlus, MessageCircle, MapPin, Heart, Plus, Crown, Check, Sparkles, Star, PartyPopper } from 'lucide-react';
+import { Disc, Users, Search, TrendingUp, Lock, Play, UserPlus, MessageCircle, MapPin, Heart, Plus, Crown, Check, Sparkles, Star, PartyPopper, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
 import AlbumArt from '../components/AlbumArt';
@@ -20,6 +20,15 @@ import ScrollRow from '../components/ScrollRow';
 import { useVariantModal } from '../context/VariantModalContext';
 import { useAPI } from '../hooks/useAPI';
 import GoldGate from '../components/GoldGate';
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../components/ui/tooltip';
+
+const ROOM_TYPE_TOOLTIPS = {
+  genre:     "Rooms built around musical genres. Automatically created from the most-collected genres across all Vaults on THG.",
+  artist:    "Dedicated rooms for artists with 10+ collectors on THG. Gold members can also create artist rooms manually.",
+  era:       "Rooms organized by decade. Automatically generated based on release years across the THG catalog.",
+  vibe:      "Mood-based rooms created by Gold members. Late night spins, rainy day records, road trip vinyl. The fun ones.",
+  collector: "Rooms organized by collecting style, not genre. Colored vinyl, rare pressings, picture discs. Gold members only.",
+};
 
 const COUNTRY_NAMES = {US:'United States',GB:'United Kingdom',CA:'Canada',AU:'Australia',DE:'Germany',FR:'France',JP:'Japan',NL:'Netherlands',SE:'Sweden',IT:'Italy',ES:'Spain',BR:'Brazil',MX:'Mexico',NZ:'New Zealand',IE:'Ireland',NO:'Norway',DK:'Denmark',FI:'Finland',BE:'Belgium',AT:'Austria',CH:'Switzerland',PT:'Portugal',PL:'Poland',CZ:'Czech Republic',KR:'South Korea',TW:'Taiwan',SG:'Singapore',ZA:'South Africa',AR:'Argentina',CL:'Chile',CO:'Colombia',PH:'Philippines',IN:'India',IL:'Israel',GR:'Greece',HU:'Hungary',RO:'Romania',HR:'Croatia',SK:'Slovakia',BG:'Bulgaria',RS:'Serbia',UA:'Ukraine',TH:'Thailand',MY:'Malaysia',ID:'Indonesia',VN:'Vietnam',HK:'Hong Kong',AE:'UAE',SA:'Saudi Arabia'};
 
@@ -735,22 +744,30 @@ const ExplorePage = () => {
               maxLength={280}
               data-testid="create-room-desc-input"
             />
-            <div className="flex gap-2">
-              {['vibe', 'collector'].map(t => (
-                <button
-                  key={t}
-                  onClick={() => setCreateRoomForm(f => ({ ...f, type: t }))}
-                  className="flex-1 rounded-full py-1.5 text-xs font-semibold border transition-all capitalize"
-                  style={createRoomForm.type === t
-                    ? { background: '#E8A820', color: '#2A1A06', borderColor: '#E8A820' }
-                    : { background: 'transparent', color: '#C8861A', borderColor: 'rgba(218,165,32,0.4)' }
-                  }
-                  data-testid={`room-type-${t}`}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
+            <TooltipProvider delayDuration={300}>
+              <div className="flex gap-2">
+                {['vibe', 'collector'].map(t => (
+                  <Tooltip key={t}>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => setCreateRoomForm(f => ({ ...f, type: t }))}
+                        className="flex-1 rounded-full py-1.5 text-xs font-semibold border transition-all capitalize"
+                        style={createRoomForm.type === t
+                          ? { background: '#E8A820', color: '#2A1A06', borderColor: '#E8A820' }
+                          : { background: 'transparent', color: '#C8861A', borderColor: 'rgba(218,165,32,0.4)' }
+                        }
+                        data-testid={`room-type-${t}`}
+                      >
+                        {t}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="max-w-[180px] text-center text-xs leading-snug">
+                      {ROOM_TYPE_TOOLTIPS[t]}
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+              </div>
+            </TooltipProvider>
             {/* Emoji picker */}
             <div className="flex gap-2 flex-wrap">
               {['🍯','🎸','🎷','🎺','🥁','🎻','🎹','🎵','🎶','🌙'].map(em => (
@@ -819,25 +836,44 @@ const ExplorePage = () => {
   );
 };
 
-const HexRoomCard = ({ room, onClick }) => (
-  <div
-    onClick={onClick}
-    style={{
-      clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
-      background: room.theme?.bgGradient || '#FFF3E0',
-      width: 120,
-      height: 138,
-      cursor: 'pointer',
-    }}
-    className="flex flex-col items-center justify-center transition-transform hover:scale-105"
-    data-testid={`room-hex-${room.slug}`}
-  >
-    <span className="text-3xl">{room.emoji}</span>
-    <span className="text-xs font-semibold text-center mt-1 px-2" style={{ color: room.theme?.textColor || '#2A1A06' }}>
-      {room.name}
-    </span>
-  </div>
-);
+const HexRoomCard = ({ room, onClick }) => {
+  const tooltipText = ROOM_TYPE_TOOLTIPS[room.type] || null;
+  return (
+    <TooltipProvider delayDuration={400}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div
+            onClick={onClick}
+            style={{
+              clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
+              background: room.theme?.bgGradient || '#FFF3E0',
+              width: 120,
+              height: 138,
+              cursor: 'pointer',
+            }}
+            className="flex flex-col items-center justify-center transition-transform hover:scale-105"
+            data-testid={`room-hex-${room.slug}`}
+          >
+            <span className="text-3xl">{room.emoji}</span>
+            <span className="text-xs font-semibold text-center mt-1 px-2" style={{ color: room.theme?.textColor || '#2A1A06' }}>
+              {room.name}
+            </span>
+            {room.type && (
+              <span className="text-[9px] font-medium capitalize mt-0.5 opacity-60" style={{ color: room.theme?.textColor || '#2A1A06' }}>
+                {room.type}
+              </span>
+            )}
+          </div>
+        </TooltipTrigger>
+        {tooltipText && (
+          <TooltipContent side="bottom" className="max-w-[200px] text-center text-xs leading-snug">
+            {tooltipText}
+          </TooltipContent>
+        )}
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
 
 const ExploreSection = ({ icon, title, testId, seeAllTo, children }) => (
   <section className="mb-10" data-testid={testId}>
