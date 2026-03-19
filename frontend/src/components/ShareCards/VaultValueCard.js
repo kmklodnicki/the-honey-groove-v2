@@ -18,10 +18,7 @@ const VaultValueCard = React.forwardRef(function VaultValueCard({ vaultData, use
 
   return (
     <ShareCardBase ref={ref} bg={bg} user={user}>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: '0 80px' }}>
-        <div style={{ flex: 1, minHeight: 0 }} />
-
-        {/* "MY COLLECTION" */}
+      {/* "MY COLLECTION" */}
         <p style={{ fontFamily: 'Georgia, serif', fontSize: 30, letterSpacing: '0.18em', textTransform: 'uppercase', color: BRAND.warmBrown, margin: 0, fontWeight: 600 }}>
           My Collection
         </p>
@@ -79,8 +76,6 @@ const VaultValueCard = React.forwardRef(function VaultValueCard({ vaultData, use
             </span>
           </div>
         ) : null}
-        <div style={{ flex: 1, minHeight: 0 }} />
-      </div>
     </ShareCardBase>
   );
 });

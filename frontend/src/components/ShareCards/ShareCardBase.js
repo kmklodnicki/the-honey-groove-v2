@@ -1,12 +1,9 @@
 import React from 'react';
 import { resolveImageUrl } from '../../utils/imageUrl';
 
-/* ─── Universal zone heights (px, card is 1080×1920) ─── */
+/* ─── Card dimensions (px) ─── */
 export const CARD_W = 1080;
 export const CARD_H = 1920;
-const HEADER_H = 120;
-const USER_H = 180;
-const FOOTER_H = 200;
 
 /* ─── Brand tokens ─── */
 export const BRAND = {
@@ -19,18 +16,19 @@ export const BRAND = {
 };
 
 /**
- * ShareCardHeader — THG wordmark, top zone (~120px).
+ * ShareCardHeader — exported for standalone cards that manage their own layout.
  */
-export function ShareCardHeader({ tint = BRAND.amber }) {
+export function ShareCardHeader() {
   return (
     <div
       style={{
-        height: HEADER_H,
+        position: 'absolute',
+        top: 0, left: 0, right: 0,
+        height: 140,
         display: 'flex',
-        alignItems: 'flex-end',
+        alignItems: 'center',
         justifyContent: 'center',
-        padding: '0 60px 24px',
-        flexShrink: 0,
+        paddingTop: 60,
       }}
     >
       <img
@@ -45,9 +43,10 @@ export function ShareCardHeader({ tint = BRAND.amber }) {
 
 /**
  * ShareCardUser — avatar + @username + Gold/Verified badges.
+ * Natural height (no fixed height) so it fits inside the 260px footer zone.
  */
 export function ShareCardUser({ user, textColor = BRAND.dark }) {
-  if (!user) return <div style={{ height: USER_H, flexShrink: 0 }} />;
+  if (!user) return null;
 
   const isGold = user.golden_hive || user.golden_hive_verified;
   const isVerified = user.is_verified || user.verified;
@@ -57,13 +56,11 @@ export function ShareCardUser({ user, textColor = BRAND.dark }) {
   return (
     <div
       style={{
-        height: USER_H,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         gap: 20,
         padding: '0 60px',
-        flexShrink: 0,
       }}
     >
       {/* Avatar */}
@@ -147,19 +144,17 @@ export function ShareCardUser({ user, textColor = BRAND.dark }) {
 
 /**
  * ShareCardFooter — "The Honey Groove" wordmark + handle.
+ * Natural height (no fixed height).
  */
 export function ShareCardFooter({ textColor = BRAND.amber, subColor = BRAND.warmBrown }) {
   return (
     <div
       style={{
-        height: FOOTER_H,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'flex-end',
         gap: 6,
-        padding: '0 60px 48px',
-        flexShrink: 0,
+        padding: '0 60px',
       }}
     >
       <p
@@ -190,52 +185,93 @@ export function ShareCardFooter({ textColor = BRAND.amber, subColor = BRAND.warm
 }
 
 /**
- * ShareCardBase — outer wrapper. Every card uses this.
+ * ShareCardBase — outer wrapper. Every card using this component gets:
+ *   - Logo pinned to top (140px)
+ *   - Content centered in the middle zone (top 140 → bottom footerHeight)
+ *   - User attribution + THG branding pinned to bottom (footerHeight, default 260px)
  *
  * Props:
- *   cardRef     — React ref from useShareCard, attached to the outer div
- *   bg          — CSS background value (gradient string or color)
- *   user        — user object for the user attribution zone
- *   textColor   — optional override for user/footer text
- *   children    — the card-specific content area
+ *   cardRef          — React ref (via React.forwardRef)
+ *   bg               — CSS background value
+ *   user             — user object for attribution
+ *   footerHeight     — bottom zone height in px (default 260; use 200 for content-heavy cards)
+ *   footerTextColor  — optional color override for footer branding
+ *   footerSubColor   — optional sub-color override for footer handle
+ *   userTextColor    — optional color override for @username text
+ *   children         — card-specific content (no spacers needed)
  */
 const ShareCardBase = React.forwardRef(function ShareCardBase(
-  { bg, user, children, headerTint, footerTextColor, footerSubColor, userTextColor },
+  { bg, user, children, footerHeight = 260, footerTextColor, footerSubColor, userTextColor },
   ref
 ) {
   return (
     <div
       ref={ref}
       style={{
-        display: 'none', // shown only during capture
+        display: 'none', // shown only during capture via useShareCard
         width: CARD_W,
         height: CARD_H,
         background: bg || BRAND.cream,
-        flexDirection: 'column',
-        fontFamily: "'DM Serif Display', Georgia, serif",
-        overflow: 'hidden',
         position: 'fixed',
         left: '-9999px',
         top: 0,
+        fontFamily: "'DM Serif Display', Georgia, serif",
+        overflow: 'hidden',
       }}
     >
-      <ShareCardHeader tint={headerTint} />
-
-      {/* Content zone — explicit height so spacers inside children compute reliably */}
+      {/* LOGO: pinned top (0–140px) */}
       <div
         style={{
-          height: CARD_H - HEADER_H - USER_H - FOOTER_H,
+          position: 'absolute',
+          top: 0, left: 0, right: 0,
+          height: 140,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingTop: 60,
+        }}
+      >
+        <img
+          src="/logo-wordmark-clean.png"
+          alt="The Honey Groove"
+          crossOrigin="anonymous"
+          style={{ height: 80, objectFit: 'contain', opacity: 0.92 }}
+        />
+      </div>
+
+      {/* CONTENT: centered middle zone (140px → footerHeight from bottom) */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 140,
+          bottom: footerHeight,
+          left: 0, right: 0,
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'stretch',
-          overflow: 'hidden',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '0 80px',
         }}
       >
         {children}
       </div>
 
-      <ShareCardUser user={user} textColor={userTextColor} />
-      <ShareCardFooter textColor={footerTextColor} subColor={footerSubColor} />
+      {/* FOOTER: pinned bottom — user attribution + THG branding */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 0, left: 0, right: 0,
+          height: footerHeight,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 12,
+        }}
+      >
+        <ShareCardUser user={user} textColor={userTextColor} />
+        <ShareCardFooter textColor={footerTextColor} subColor={footerSubColor} />
+      </div>
     </div>
   );
 });

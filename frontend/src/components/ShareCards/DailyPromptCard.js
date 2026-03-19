@@ -34,9 +34,7 @@ const DailyPromptCard = React.forwardRef(function DailyPromptCard({ promptQuesti
         }}
       />
 
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: '0 80px', position: 'relative', zIndex: 1 }}>
-        <div style={{ flex: 1, minHeight: 0 }} />
-
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', position: 'relative', zIndex: 1 }}>
         {/* "Daily Prompt" tag */}
         <div style={{ background: 'rgba(200,134,26,0.12)', border: '1.5px solid rgba(200,134,26,0.3)', borderRadius: 100, padding: '10px 32px' }}>
           <p style={{ fontFamily: 'Georgia, serif', fontSize: 26, color: BRAND.amber, fontWeight: 700, letterSpacing: '0.08em', margin: 0, textTransform: 'uppercase' }}>
@@ -91,7 +89,6 @@ const DailyPromptCard = React.forwardRef(function DailyPromptCard({ promptQuesti
         <p style={{ fontFamily: 'Georgia, serif', fontSize: 26, color: BRAND.warmBrown, margin: '16px 0 0', opacity: 0.75 }}>
           Daily Prompt on The Honey Groove
         </p>
-        <div style={{ flex: 1, minHeight: 0 }} />
       </div>
     </ShareCardBase>
   );

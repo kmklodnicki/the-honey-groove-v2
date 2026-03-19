@@ -12,10 +12,7 @@ const SaleCard = React.forwardRef(function SaleCard({ record, price, user }, ref
 
   return (
     <ShareCardBase ref={ref} bg={bg} user={user} footerTextColor="#1A6B3E" footerSubColor="#145830">
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: '0 80px' }}>
-        <div style={{ flex: 1, minHeight: 0 }} />
-
-        {/* Album art with SOLD overlay */}
+      {/* Album art with SOLD overlay */}
         <div style={{ position: 'relative', width: 700, height: 700 }}>
           <div
             style={{
@@ -84,8 +81,6 @@ const SaleCard = React.forwardRef(function SaleCard({ record, price, user }, ref
         <p style={{ fontFamily: 'Georgia, serif', fontSize: 34, color: '#2D6B4A', fontStyle: 'italic', margin: '16px 0 0', opacity: 0.85 }}>
           Sold on The Honeypot
         </p>
-        <div style={{ flex: 1, minHeight: 0 }} />
-      </div>
     </ShareCardBase>
   );
 });

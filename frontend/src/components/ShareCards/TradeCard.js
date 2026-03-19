@@ -28,10 +28,7 @@ const TradeCard = React.forwardRef(function TradeCard(
   };
 
   return (
-    <ShareCardBase ref={ref} bg={bg} user={user}>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: '0 80px' }}>
-        <div style={{ flex: 1, minHeight: 0 }} />
-
+    <ShareCardBase ref={ref} bg={bg} user={user} footerHeight={200}>
         {/* "JUST TRADED" */}
         <p style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 72, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: BRAND.amberDark, margin: 0, textAlign: 'center' }}>
           Just Traded
@@ -80,8 +77,6 @@ const TradeCard = React.forwardRef(function TradeCard(
             @{user.username} × @{partnerUsername}
           </p>
         )}
-        <div style={{ flex: 1, minHeight: 0 }} />
-      </div>
     </ShareCardBase>
   );
 });

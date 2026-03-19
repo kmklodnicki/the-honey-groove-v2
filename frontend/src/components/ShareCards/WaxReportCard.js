@@ -149,10 +149,7 @@ const WaxReportCard = React.forwardRef(function WaxReportCard({ report, user, is
       footerSubColor={footerSubColor}
       userTextColor={userTextColor}
     >
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, width: '100%', padding: '0 80px' }}>
-        <div style={{ flex: 1, minHeight: 0 }} />
-
-        {/* "YOUR WEEK IN WAX" */}
+      {/* "YOUR WEEK IN WAX" */}
         <div style={{ textAlign: 'center' }}>
           <p
             style={{
@@ -300,8 +297,6 @@ const WaxReportCard = React.forwardRef(function WaxReportCard({ report, user, is
             )}
           </div>
         )}
-        <div style={{ flex: 1, minHeight: 0 }} />
-      </div>
     </ShareCardBase>
   );
 });

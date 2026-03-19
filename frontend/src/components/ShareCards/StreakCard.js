@@ -27,12 +27,11 @@ const StreakCard = React.forwardRef(function StreakCard({ streakDays = 7, user }
         width: CARD_W,
         height: CARD_H,
         background: bg,
-        flexDirection: 'column',
-        fontFamily: "'DM Serif Display', Georgia, serif",
-        overflow: 'hidden',
         position: 'fixed',
         left: '-9999px',
         top: 0,
+        fontFamily: "'DM Serif Display', Georgia, serif",
+        overflow: 'hidden',
       }}
     >
       {embers.map((e, i) => (
@@ -52,12 +51,23 @@ const StreakCard = React.forwardRef(function StreakCard({ streakDays = 7, user }
         />
       ))}
 
+      {/* LOGO: pinned top */}
       <ShareCardHeader />
 
-      {/* Content */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 80px' }}>
-        <div style={{ flex: 1, minHeight: 0 }} />
-
+      {/* CONTENT: centered middle zone */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 140,
+          bottom: 260,
+          left: 0, right: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '0 80px',
+        }}
+      >
         {/* Bee + flame */}
         <div style={{ fontSize: 160, lineHeight: 1 }}>🐝🔥</div>
 
@@ -88,11 +98,24 @@ const StreakCard = React.forwardRef(function StreakCard({ streakDays = 7, user }
         <p style={{ fontFamily: 'Georgia, serif', fontSize: 38, fontStyle: 'italic', color: '#5A2800', textAlign: 'center', margin: '20px 0 0', opacity: 0.85 }}>
           Buzz In streak on The Honey Groove
         </p>
-        <div style={{ flex: 1, minHeight: 0 }} />
       </div>
 
-      <ShareCardUser user={user} textColor="#5A2800" />
-      <ShareCardFooter textColor="#7A3800" subColor="#5A2800" />
+      {/* FOOTER: pinned bottom */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 0, left: 0, right: 0,
+          height: 260,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 12,
+        }}
+      >
+        <ShareCardUser user={user} textColor="#5A2800" />
+        <ShareCardFooter textColor="#7A3800" subColor="#5A2800" />
+      </div>
     </div>
   );
 });

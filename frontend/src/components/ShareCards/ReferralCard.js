@@ -1,17 +1,9 @@
 import React from 'react';
-import ShareCardBase, { BRAND } from './ShareCardBase';
+import { ShareCardHeader, ShareCardFooter, ShareCardUser, CARD_W, CARD_H } from './ShareCardBase';
 
-/**
- * ReferralCard — share card for referral invites.
- *
- * Props:
- *   referralCode  — e.g. "KATIE-HIVE"
- *   user          — user object
- */
 const ReferralCard = React.forwardRef(function ReferralCard({ referralCode, user }, ref) {
   const bg = 'linear-gradient(160deg, #FFF8DC 0%, #FFE87A 35%, #F0B429 65%, #C8861A 100%)';
 
-  // Honeycomb hex pattern
   const hexPattern = `
     <svg xmlns='http://www.w3.org/2000/svg' width='120' height='104' viewBox='0 0 120 104'>
       <polygon points='30,2 90,2 120,52 90,102 30,102 0,52' fill='none' stroke='rgba(255,255,255,0.12)' stroke-width='2'/>
@@ -26,18 +18,17 @@ const ReferralCard = React.forwardRef(function ReferralCard({ referralCode, user
       ref={ref}
       style={{
         display: 'none',
-        width: 1080,
-        height: 1920,
+        width: CARD_W,
+        height: CARD_H,
         background: bg,
-        flexDirection: 'column',
-        fontFamily: "'DM Serif Display', Georgia, serif",
-        overflow: 'hidden',
         position: 'fixed',
         left: '-9999px',
         top: 0,
+        fontFamily: "'DM Serif Display', Georgia, serif",
+        overflow: 'hidden',
       }}
     >
-      {/* Hex pattern */}
+      {/* Hex pattern — full card background texture */}
       <div
         style={{
           position: 'absolute',
@@ -49,15 +40,25 @@ const ReferralCard = React.forwardRef(function ReferralCard({ referralCode, user
         }}
       />
 
-      {/* Header */}
-      <div style={{ height: 120, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 60px 24px', flexShrink: 0, position: 'relative', zIndex: 1 }}>
-        <img src="/logo-wordmark-clean.png" alt="The Honey Groove" crossOrigin="anonymous" style={{ height: 80, objectFit: 'contain', opacity: 0.95 }} />
-      </div>
+      {/* LOGO: pinned top */}
+      <ShareCardHeader />
 
-      {/* Content */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '0 80px', position: 'relative', zIndex: 1 }}>
-        <div style={{ flex: 1, minHeight: 0 }} />
-
+      {/* CONTENT: centered middle zone */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 140,
+          bottom: 260,
+          left: 0, right: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '0 80px',
+          position: 'relative',
+          zIndex: 1,
+        }}
+      >
         {/* Bee icon */}
         <div style={{ fontSize: 120, lineHeight: 1 }}>🐝</div>
 
@@ -143,27 +144,24 @@ const ReferralCard = React.forwardRef(function ReferralCard({ referralCode, user
         >
           thehoneygroove.com
         </p>
-        <div style={{ flex: 1, minHeight: 0 }} />
       </div>
 
-      {/* User zone */}
-      {user && (
-        <div style={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, padding: '0 60px', flexShrink: 0, position: 'relative', zIndex: 1 }}>
-          <div style={{ width: 80, height: 80, borderRadius: '50%', overflow: 'hidden', border: '3px solid rgba(90,40,0,0.3)', background: '#FAF0DC', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            {user.avatar_url ? (
-              <img src={user.avatar_url} alt="" crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            ) : (
-              <span style={{ fontFamily: 'Georgia, serif', fontSize: 32, fontWeight: 700, color: '#C8861A' }}>{(user.username || '?')[0].toUpperCase()}</span>
-            )}
-          </div>
-          <span style={{ fontFamily: 'Georgia, serif', fontSize: 28, fontWeight: 700, color: '#5A2800' }}>@{user.username}</span>
-        </div>
-      )}
-
-      {/* Footer */}
-      <div style={{ height: 200, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', gap: 6, padding: '0 60px 48px', flexShrink: 0, position: 'relative', zIndex: 1 }}>
-        <p style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 30, fontWeight: 700, color: '#5A2800', margin: 0 }}>The Honey Groove</p>
-        <p style={{ fontFamily: 'Georgia, serif', fontSize: 22, color: '#7A4A18', margin: 0, opacity: 0.8 }}>@thehoneygroove · thehoneygroove.com</p>
+      {/* FOOTER: pinned bottom */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 0, left: 0, right: 0,
+          height: 260,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 12,
+          zIndex: 1,
+        }}
+      >
+        <ShareCardUser user={user} textColor="#5A2800" />
+        <ShareCardFooter textColor="#5A2800" subColor="#7A4A18" />
       </div>
     </div>
   );

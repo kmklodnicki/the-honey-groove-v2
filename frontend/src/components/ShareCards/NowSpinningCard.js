@@ -11,9 +11,6 @@ const NowSpinningCard = React.forwardRef(function NowSpinningCard({ post, user }
 
   return (
     <ShareCardBase ref={ref} bg={bg} user={user}>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', padding: '0 80px' }}>
-        <div style={{ flex: 1, minHeight: 0 }} />
-
         {/* Vinyl + album art */}
         <div style={{ position: 'relative', width: 780, height: 780 }}>
           {/* Vinyl disc */}
@@ -107,8 +104,6 @@ const NowSpinningCard = React.forwardRef(function NowSpinningCard({ post, user }
             {artist}
           </p>
         )}
-        <div style={{ flex: 1, minHeight: 0 }} />
-      </div>
     </ShareCardBase>
   );
 });

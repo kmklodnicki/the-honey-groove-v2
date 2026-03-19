@@ -23,27 +23,30 @@ const RoomCard = React.forwardRef(function RoomCard({ room, user }, ref) {
         width: CARD_W,
         height: CARD_H,
         background: bg,
-        flexDirection: 'column',
-        fontFamily: "'DM Serif Display', Georgia, serif",
-        overflow: 'hidden',
         position: 'fixed',
         left: '-9999px',
         top: 0,
+        fontFamily: "'DM Serif Display', Georgia, serif",
+        overflow: 'hidden',
       }}
     >
+      {/* LOGO: pinned top */}
       <ShareCardHeader />
 
-      {/* Content */}
+      {/* CONTENT: centered middle zone */}
       <div
         style={{
-          flex: 1,
+          position: 'absolute',
+          top: 140,
+          bottom: 260,
+          left: 0, right: 0,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
+          justifyContent: 'center',
           padding: '0 80px',
         }}
       >
-        <div style={{ flex: 1, minHeight: 0 }} />
         {/* Hexagon room icon */}
         <div style={{ position: 'relative', width: 320, height: 360 }}>
           <svg width="320" height="360" viewBox="0 0 320 360">
@@ -116,11 +119,24 @@ const RoomCard = React.forwardRef(function RoomCard({ room, user }, ref) {
             {(room.member_count || 0).toLocaleString()} {room.member_count === 1 ? 'member' : 'members'}
           </span>
         </div>
-        <div style={{ flex: 1, minHeight: 0 }} />
       </div>
 
-      <ShareCardUser user={user} textColor={textColor} />
-      <ShareCardFooter textColor={footerTextColor} subColor={footerSubColor} />
+      {/* FOOTER: pinned bottom */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 0, left: 0, right: 0,
+          height: 260,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 12,
+        }}
+      >
+        <ShareCardUser user={user} textColor={textColor} />
+        <ShareCardFooter textColor={footerTextColor} subColor={footerSubColor} />
+      </div>
     </div>
   );
 });
