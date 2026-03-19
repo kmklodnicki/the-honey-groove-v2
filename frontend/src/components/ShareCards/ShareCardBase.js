@@ -58,25 +58,24 @@ export function ShareCardUser({ user, textColor = BRAND.dark }) {
     <div
       style={{
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        gap: 20,
-        padding: '0 60px',
+        gap: 10,
       }}
     >
       {/* Avatar */}
       <div
         style={{
-          width: 80,
-          height: 80,
+          width: 96,
+          height: 96,
           borderRadius: '50%',
           overflow: 'hidden',
           border: '3px solid rgba(200,134,26,0.4)',
-          flexShrink: 0,
           background: '#FAF0DC',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
+          flexShrink: 0,
         }}
       >
         {avatarUrl ? (
@@ -87,27 +86,28 @@ export function ShareCardUser({ user, textColor = BRAND.dark }) {
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
         ) : (
-          <span style={{ fontFamily: 'Georgia, serif', fontSize: 32, fontWeight: 700, color: BRAND.amber }}>
+          <span style={{ fontFamily: 'Georgia, serif', fontSize: 36, fontWeight: 700, color: BRAND.amber }}>
             {initial}
           </span>
         )}
       </div>
 
-      {/* Username + badges */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <span
-          style={{
-            fontFamily: 'Georgia, serif',
-            fontSize: 28,
-            fontWeight: 700,
-            color: textColor,
-            letterSpacing: '0.01em',
-          }}
-        >
-          @{user.username}
-        </span>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {/* opacity:0 preserves layout; Canvas 2D API draws full badge (background + text). */}
+      {/* Username */}
+      <span
+        style={{
+          fontFamily: 'Georgia, serif',
+          fontSize: 28,
+          fontWeight: 700,
+          color: textColor,
+          letterSpacing: '0.01em',
+        }}
+      >
+        @{user.username}
+      </span>
+
+      {/* Badges row — opacity:0 preserves layout; Canvas 2D API draws full badge */}
+      {(isGold || isVerified) && (
+        <div style={{ display: 'flex', gap: 10 }}>
           {isGold && (
             <span
               style={{
@@ -124,7 +124,7 @@ export function ShareCardUser({ user, textColor = BRAND.dark }) {
               }}
               data-canvas-pill="gold-member"
             >
-              🍯 Gold Member
+              🏅 Gold Member
             </span>
           )}
           {isVerified && (
@@ -147,7 +147,7 @@ export function ShareCardUser({ user, textColor = BRAND.dark }) {
             </span>
           )}
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -211,7 +211,7 @@ export function ShareCardFooter({ textColor = BRAND.amber, subColor = BRAND.warm
  *   children         — card-specific content (no spacers needed)
  */
 const ShareCardBase = React.forwardRef(function ShareCardBase(
-  { bg, user, children, footerHeight = 260, footerTextColor, footerSubColor, userTextColor },
+  { bg, user, children, footerHeight = 340, footerTextColor, footerSubColor, userTextColor },
   ref
 ) {
   return (

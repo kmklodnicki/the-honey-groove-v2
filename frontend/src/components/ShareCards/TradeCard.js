@@ -28,7 +28,7 @@ const TradeCard = React.forwardRef(function TradeCard(
   };
 
   return (
-    <ShareCardBase ref={ref} bg={bg} user={user} footerHeight={200}>
+    <ShareCardBase ref={ref} bg={bg} user={user} footerHeight={280}>
         {/* "JUST TRADED" */}
         <p style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 72, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: BRAND.amberDark, margin: 0, textAlign: 'center' }}>
           Just Traded
