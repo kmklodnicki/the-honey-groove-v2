@@ -10,6 +10,7 @@ import { useShareCard } from '../hooks/useShareCard';
 import NowSpinningCard from './ShareCards/NowSpinningCard';
 import NewHaulCard from './ShareCards/NewHaulCard';
 import SaleCard from './ShareCards/SaleCard';
+import DailyPromptShareCard from './ShareCards/DailyPromptCard';
 import UserBadges from './UserBadges';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -115,10 +116,12 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
   const timeAgo = formatDistanceToNow(new Date(post.created_at), { addSuffix: true });
 
   // Share card — for spins, hauls, and sale listings
-  const isShareable = ['NOW_SPINNING', 'NEW_HAUL', 'listing_sale'].includes(post.post_type);
+  const isShareable = ['NOW_SPINNING', 'NEW_HAUL', 'listing_sale', 'DAILY_PROMPT'].includes(post.post_type);
+  const cardTypeMap = { NEW_HAUL: 'haul', listing_sale: 'sale', DAILY_PROMPT: 'daily_prompt' };
+  const filenameMap = { NEW_HAUL: 'haul', listing_sale: 'sale', DAILY_PROMPT: 'daily-prompt' };
   const { cardRef: shareCardRef, exporting: shareExporting, exportCard } = useShareCard({
-    cardType: post.post_type === 'NEW_HAUL' ? 'haul' : post.post_type === 'listing_sale' ? 'sale' : 'now_spinning',
-    filename: `thg-${post.post_type === 'NEW_HAUL' ? 'haul' : post.post_type === 'listing_sale' ? 'sale' : 'now-spinning'}`,
+    cardType: cardTypeMap[post.post_type] || 'now_spinning',
+    filename: `thg-${filenameMap[post.post_type] || 'now-spinning'}`,
     title: `${post.user?.username ? `@${post.user.username} on ` : ''}The Honey Groove`,
     userId: currentUserId,
   });
@@ -454,7 +457,18 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
       </div>
 
       {/* Hidden share card — rendered off-screen for html2canvas capture */}
-      {isShareable && post.post_type === 'listing_sale' ? (
+      {isShareable && post.post_type === 'DAILY_PROMPT' ? (
+        <DailyPromptShareCard
+          ref={shareCardRef}
+          promptQuestion={post.prompt_text}
+          record={{
+            cover_url: post.cover_url,
+            title: post.record_title,
+            artist: post.record_artist,
+          }}
+          user={post.user}
+        />
+      ) : isShareable && post.post_type === 'listing_sale' ? (
         <SaleCard
           ref={shareCardRef}
           record={{
