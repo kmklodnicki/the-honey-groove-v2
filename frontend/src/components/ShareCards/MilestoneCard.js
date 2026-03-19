@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShareCardHeader, ShareCardFooter, ShareCardUser, CARD_W, CARD_H } from './ShareCardBase';
+import { ShareCardHeader, ShareCardFooter, ShareCardUser, CARD_W, CARD_H, HEADER_H } from './ShareCardBase';
 
 const MilestoneCard = React.forwardRef(function MilestoneCard({ milestoneText, description, user }, ref) {
   const bg = 'linear-gradient(160deg, #FFFADC 0%, #FFE87A 35%, #F0B429 65%, #C8861A 100%)';
@@ -64,7 +64,7 @@ const MilestoneCard = React.forwardRef(function MilestoneCard({ milestoneText, d
       <div
         style={{
           position: 'absolute',
-          top: 140,
+          top: HEADER_H,
           bottom: 260,
           left: 0, right: 0,
           display: 'flex',

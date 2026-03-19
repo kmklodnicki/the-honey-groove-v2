@@ -4,6 +4,7 @@ import { resolveImageUrl } from '../../utils/imageUrl';
 /* ─── Card dimensions (px) ─── */
 export const CARD_W = 1080;
 export const CARD_H = 1920;
+export const HEADER_H = 280; // logo zone height — must clear Instagram Stories UI bar
 
 /* ─── Brand tokens ─── */
 export const BRAND = {
@@ -24,18 +25,18 @@ export function ShareCardHeader() {
       style={{
         position: 'absolute',
         top: 0, left: 0, right: 0,
-        height: 140,
+        height: HEADER_H,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingTop: 60,
+        paddingTop: 160,
       }}
     >
       <img
         src="/logo-wordmark-clean.png"
         alt="The Honey Groove"
         crossOrigin="anonymous"
-        style={{ height: 80, objectFit: 'contain', opacity: 0.92 }}
+        style={{ height: 92, objectFit: 'contain', opacity: 0.92 }}
       />
     </div>
   );
@@ -229,31 +230,31 @@ const ShareCardBase = React.forwardRef(function ShareCardBase(
         overflow: 'hidden',
       }}
     >
-      {/* LOGO: pinned top (0–140px) */}
+      {/* LOGO: pinned top (0–280px) — must clear Instagram Stories UI bar */}
       <div
         style={{
           position: 'absolute',
           top: 0, left: 0, right: 0,
-          height: 140,
+          height: HEADER_H,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          paddingTop: 60,
+          paddingTop: 160,
         }}
       >
         <img
           src="/logo-wordmark-clean.png"
           alt="The Honey Groove"
           crossOrigin="anonymous"
-          style={{ height: 80, objectFit: 'contain', opacity: 0.92 }}
+          style={{ height: 92, objectFit: 'contain', opacity: 0.92 }}
         />
       </div>
 
-      {/* CONTENT: centered middle zone (140px → footerHeight from bottom) */}
+      {/* CONTENT: centered middle zone (280px → footerHeight from bottom) */}
       <div
         style={{
           position: 'absolute',
-          top: 140,
+          top: HEADER_H,
           bottom: footerHeight,
           left: 0, right: 0,
           display: 'flex',

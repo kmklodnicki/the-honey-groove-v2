@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShareCardHeader, ShareCardFooter, ShareCardUser, CARD_W, CARD_H } from './ShareCardBase';
+import { ShareCardHeader, ShareCardFooter, ShareCardUser, CARD_W, CARD_H, HEADER_H } from './ShareCardBase';
 
 const ReferralCard = React.forwardRef(function ReferralCard({ referralCode, user }, ref) {
   const bg = 'linear-gradient(160deg, #FFF8DC 0%, #FFE87A 35%, #F0B429 65%, #C8861A 100%)';
@@ -49,7 +49,7 @@ const ReferralCard = React.forwardRef(function ReferralCard({ referralCode, user
       <div
         style={{
           position: 'absolute',
-          top: 140,
+          top: HEADER_H,
           bottom: 260,
           left: 0, right: 0,
           display: 'flex',

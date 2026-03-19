@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShareCardHeader, ShareCardFooter, ShareCardUser, BRAND, CARD_W, CARD_H } from './ShareCardBase';
+import { ShareCardHeader, ShareCardFooter, ShareCardUser, BRAND, CARD_W, CARD_H, HEADER_H } from './ShareCardBase';
 
 const RoomCard = React.forwardRef(function RoomCard({ room, user }, ref) {
   if (!room) return null;
@@ -38,7 +38,7 @@ const RoomCard = React.forwardRef(function RoomCard({ room, user }, ref) {
       <div
         style={{
           position: 'absolute',
-          top: 140,
+          top: HEADER_H,
           bottom: 260,
           left: 0, right: 0,
           display: 'flex',
