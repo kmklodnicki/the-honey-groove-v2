@@ -412,11 +412,7 @@ const ExplorePage = () => {
         )}
         {/* Create a Room CTA */}
         <div className="mt-4 flex justify-center">
-          <GoldGate
-            isGold={isGold}
-            hint="Gold members can create Vibe and Collector rooms"
-            compact
-          >
+          {isGold ? (
             <Button
               variant="outline"
               size="sm"
@@ -426,7 +422,17 @@ const ExplorePage = () => {
             >
               <Plus className="w-3 h-3 mr-1" /> Create a Room
             </Button>
-          </GoldGate>
+          ) : (
+            <Button
+              size="sm"
+              className="rounded-full font-bold text-[#2A1A06] shadow-sm"
+              style={{ background: '#E8A820' }}
+              onClick={() => navigate('/gold')}
+              data-testid="create-room-gold-cta"
+            >
+              <Crown className="w-3 h-3 mr-1" /> Create a Room · Gold only
+            </Button>
+          )}
         </div>
       </ExploreSection>
 
