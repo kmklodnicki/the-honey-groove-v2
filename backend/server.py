@@ -41,6 +41,7 @@ from routes.ebay import router as ebay_router
 from routes.rooms import router as rooms_router
 from routes.honey_drop import router as honey_drop_router
 from routes.milestones import router as milestones_router
+from routes.beekeeper import router as beekeeper_router
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -53,7 +54,8 @@ for r in [auth_router, hive_router, collection_router, honeypot_router,
           mood_boards_router, bingo_router, reports_router, admin_router, search_router,
           verification_router, reports_router, seo_router, vinyl_router,
           weekly_wax_router, image_proxy_router, spotify_router, payments_router,
-          ebay_router, rooms_router, honey_drop_router, milestones_router]:
+          ebay_router, rooms_router, honey_drop_router, milestones_router,
+          beekeeper_router]:
     app.include_router(r, prefix="/api")
 
 # --- Data export download endpoints ---
@@ -323,6 +325,10 @@ async def startup_event():
     await db.prompt_responses.create_index([("user_id", 1), ("prompt_id", 1)], unique=True)
     await db.prompt_responses.create_index([("user_id", 1), ("created_at", -1)])
     await db.image_cache.create_index("release_id", unique=True)
+    # Beekeeper: room queue sort + user moderation indexes
+    await db.rooms.create_index([("active", 1), ("created_at", 1)])
+    await db.users.create_index("suspended_until")
+    await db.users.create_index("is_banned")
     # Honeycomb Rooms indexes
     await db.rooms.create_index("slug", unique=True)
     await db.room_members.create_index([("slug", 1), ("userId", 1)], unique=True)

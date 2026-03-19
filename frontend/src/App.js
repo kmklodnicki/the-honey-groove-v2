@@ -65,6 +65,7 @@ const GoldPage = lazy(() => import("./pages/GoldPage"));
 const TradesPage = lazy(() => import("./pages/TradesPage"));
 const AdminDisputesPage = lazy(() => import("./pages/AdminDisputesPage"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
+const BeekeeperPage = lazy(() => import("./pages/BeekeeperPage"));
 const MessagesPage = lazy(() => import("./pages/MessagesPage"));
 const FAQPage = lazy(() => import("./pages/FAQPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
@@ -362,9 +363,10 @@ function AppContent() {
       <Route path="/record/:recordId" element={<ProtectedRoute><AppLayout><RecordDetailPage /></AppLayout></ProtectedRoute>} />
 
       {/* Admin routes */}
-      <Route path="/admin" element={<AdminRoute><AppLayout><AdminPage /></AppLayout></AdminRoute>} />
-      <Route path="/admin/disputes" element={<AdminRoute><AppLayout><AdminDisputesPage /></AppLayout></AdminRoute>} />
-      <Route path="/admin/beta" element={<Navigate to="/admin?section=beta" replace />} />
+      <Route path="/beekeeper" element={<AdminRoute><AppLayout><BeekeeperPage /></AppLayout></AdminRoute>} />
+      <Route path="/admin" element={<Navigate to="/beekeeper" replace />} />
+      <Route path="/admin/disputes" element={<Navigate to="/beekeeper" replace />} />
+      <Route path="/admin/beta" element={<Navigate to="/beekeeper" replace />} />
 
       {/* Catch all */}
       <Route path="*" element={<Navigate to="/" replace />} />
