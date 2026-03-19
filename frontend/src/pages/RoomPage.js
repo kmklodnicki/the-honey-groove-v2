@@ -20,7 +20,7 @@ import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../com
 
 const ROOM_TYPE_TOOLTIPS = {
   genre:     "Rooms built around musical genres. Automatically created from the most-collected genres across all Vaults on THG.",
-  artist:    "Dedicated rooms for artists with 10+ collectors on THG. Gold members can also create artist rooms manually.",
+  artist:    "Dedicated rooms for artists with 10+ collectors on THG. Auto-created by the system.",
   era:       "Rooms organized by decade. Automatically generated based on release years across the THG catalog.",
   vibe:      "Mood-based rooms created by Gold members. Late night spins, rainy day records, road trip vinyl. The fun ones.",
   collector: "Rooms organized by collecting style, not genre. Colored vinyl, rare pressings, picture discs. Gold members only.",

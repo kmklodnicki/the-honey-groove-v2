@@ -382,6 +382,11 @@ async def create_room(body: dict, current_user: Dict = Depends(require_auth)):
         )
 
     room_type = body.get("type", "")
+    if room_type in ("genre", "artist", "era"):
+        raise HTTPException(
+            status_code=403,
+            detail="Genre, Artist, and Era rooms are system-managed only and cannot be created by users."
+        )
     if room_type not in ("vibe", "collector"):
         raise HTTPException(status_code=400, detail="type must be 'vibe' or 'collector'")
 
