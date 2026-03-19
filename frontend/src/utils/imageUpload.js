@@ -2,7 +2,7 @@ import heic2any from 'heic2any';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
 const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'];
-const MAX_SIZE = 15 * 1024 * 1024; // 15MB
+const MAX_SIZE = 15 * 1024 * 1024; // 15MB — large files are auto-compressed before upload
 
 /**
  * Validate an image file before upload.
@@ -63,11 +63,24 @@ function canvasConvert(file) {
 }
 
 /**
- * Convert HEIC/HEIF to JPEG, trying multiple strategies.
- * For non-HEIC files, returns the original file unchanged.
+ * Convert HEIC/HEIF to JPEG, and compress any large file to JPEG.
+ * Vercel serverless functions have a 4.5MB body limit, so files over ~3MB
+ * are compressed via canvas to stay safely under that threshold.
  */
 export async function prepareImageForUpload(file) {
-  if (!isHeic(file)) return file;
+  if (!isHeic(file)) {
+    // Compress large files to avoid Vercel's 4.5MB body limit
+    if (file.size > 3 * 1024 * 1024) {
+      try {
+        const blob = await canvasConvert(file);
+        const ext = file.name.lastIndexOf('.') !== -1 ? file.name.substring(0, file.name.lastIndexOf('.')) : file.name;
+        return new File([blob], `${ext}.jpg`, { type: 'image/jpeg' });
+      } catch (e) {
+        console.log('Compression failed, uploading original:', e.message);
+      }
+    }
+    return file;
+  }
 
   const newName = file.name.replace(/\.heic$/i, '.jpg').replace(/\.heif$/i, '.jpg');
 

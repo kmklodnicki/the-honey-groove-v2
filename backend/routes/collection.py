@@ -16,6 +16,9 @@ from database import DISCOGS_REQUEST_TOKEN_URL, DISCOGS_AUTHORIZE_URL, DISCOGS_A
 from database import oauth_request_tokens, import_progress, EMERGENT_KEY, APP_NAME
 from models import *
 from utils.rarity import calculate_rarity
+from utils.image_resolver import resolve_album_image
+from services.releases_service import upsert_release_cc0, get_or_fetch_release
+from services.spotify_service import match_to_spotify
 from fastapi import UploadFile, File
 from requests_oauthlib import OAuth1Session
 import asyncio
@@ -23,8 +26,6 @@ import requests
 
 router = APIRouter()
 
-# Import shared image proxy helper
-from utils.image_helpers import proxy_cover_url as _proxy_cover_url, proxy_records_cover_urls as _proxy_records_cover_urls
 
 # ============== DISCOGS ROUTES ==============
 
@@ -86,7 +87,7 @@ async def search_records_discogs(q: str = Query(..., min_length=2), user: Dict =
                 "artist": artist, "title": title,
                 "year": item.get("year"),
                 "genre": item.get("genre", []),
-                "cover_url": item.get("cover_image"),
+                "cover_url": None,  # Discogs cover_image is Restricted Data — use Spotify art instead
                 "format": format_str or (item.get("format", [None])[0] if item.get("format") else None),
                 "label": labels[0] if labels else None,
                 "catno": item.get("catno"),
@@ -119,7 +120,6 @@ async def search_records_discogs(q: str = Query(..., min_length=2), user: Dict =
                             if r.get("discogs_id") not in seen_ids:
                                 structured.append(r)
                                 seen_ids.add(r.get("discogs_id"))
-                        _proxy_records_cover_urls(structured)
                         return [DiscogsSearchResult(**r) for r in structured]
             except Exception:
                 pass
@@ -130,8 +130,6 @@ async def search_records_discogs(q: str = Query(..., min_length=2), user: Dict =
         if cleaned and cleaned != q:
             results = search_discogs(cleaned)
 
-    # Proxy all cover URLs through our image proxy to avoid CDN hotlink blocking
-    _proxy_records_cover_urls(results)
     return [DiscogsSearchResult(**r) for r in results]
 
 @router.get("/discogs/release/{release_id}")
@@ -139,8 +137,8 @@ async def get_discogs_release_info(release_id: int, user: Dict = Depends(require
     result = get_discogs_release(release_id)
     if not result:
         raise HTTPException(status_code=404, detail="Release not found")
-    if result.get("cover_url"):
-        result["cover_url"] = _proxy_cover_url(result["cover_url"])
+    # Strip internal-only Discogs image field before sending to frontend
+    result.pop("_discogs_cover_url", None)
     return result
 
 
@@ -175,8 +173,7 @@ async def add_record(record_data: RecordCreate, user: Dict = Depends(require_aut
                 title_match = input_title in result_title or result_title in input_title
                 if artist_match and title_match:
                     resolved_discogs_id = best.get("discogs_id")
-                    if not resolved_cover_url or resolved_cover_url.endswith("spacer.gif") or "placeholder" in (resolved_cover_url or "").lower():
-                        resolved_cover_url = best.get("cover_url") or resolved_cover_url
+                    # Do NOT use Discogs cover_url — Restricted Data; Spotify art resolves via releases collection
                     if not resolved_color_variant and best.get("color_variant"):
                         resolved_color_variant = best["color_variant"]
                     logger.info(f"Smart Match: '{record_data.artist} - {record_data.title}' -> discogs_id={resolved_discogs_id}")
@@ -186,14 +183,15 @@ async def add_record(record_data: RecordCreate, user: Dict = Depends(require_aut
             logger.warning(f"Smart Match Discogs lookup failed: {e}")
 
     # Image Hydration: if cover_url is missing/placeholder, fetch from Discogs release
+    # Note: we read _discogs_cover_url (internal-only field) but do NOT store it in the record.
+    # Discogs images are Restricted Data — they are intentionally excluded from stored records.
     if (not resolved_cover_url or resolved_cover_url.endswith("spacer.gif") or "placeholder" in (resolved_cover_url or "").lower()) and resolved_discogs_id:
         release = get_discogs_release(resolved_discogs_id)
         if release:
-            if release.get("cover_url"):
-                resolved_cover_url = release["cover_url"]
             is_unofficial = "Unofficial Release" in release.get("format_descriptions", [])
             if not resolved_color_variant and release.get("color_variant"):
                 resolved_color_variant = release["color_variant"]
+            # Do NOT set resolved_cover_url from Discogs — Spotify/community art will be resolved instead
 
     # Compute rarity from Discogs community data if available
     if resolved_discogs_id:
@@ -231,7 +229,17 @@ async def add_record(record_data: RecordCreate, user: Dict = Depends(require_aut
     }
     
     await db.records.insert_one(record_doc)
-    
+
+    # Phase 2 & 3: Persist CC0 data and trigger Spotify matching (fire-and-forget)
+    if resolved_discogs_id:
+        try:
+            release_info_for_cc0 = get_discogs_release(resolved_discogs_id)
+            if release_info_for_cc0:
+                release_doc = await upsert_release_cc0(resolved_discogs_id, release_info_for_cc0)
+                asyncio.create_task(match_to_spotify(release_doc))
+        except Exception as _e:
+            logger.warning(f"CC0/Spotify background task failed for {resolved_discogs_id}: {_e}")
+
     # Invalidate completion cache for this user (ownership changed)
     await db.completion_cache.delete_many({"user_id": user["id"]})
     
@@ -286,6 +294,10 @@ async def add_record(record_data: RecordCreate, user: Dict = Depends(require_aut
         }
         await db.posts.insert_one(post_doc)
     
+    # Resolve image fields (release may not have Spotify art yet — that's async)
+    _release_doc = await get_or_fetch_release(resolved_discogs_id) if resolved_discogs_id else None
+    _img = resolve_album_image(record_doc, _release_doc)
+
     return RecordResponse(
         id=record_id,
         discogs_id=resolved_discogs_id,
@@ -304,6 +316,7 @@ async def add_record(record_data: RecordCreate, user: Dict = Depends(require_aut
         rarity_label=rarity_label,
         community_have=community_have,
         community_want=community_want,
+        **_img,
     )
 
 
@@ -452,17 +465,159 @@ async def get_my_records(user: Dict = Depends(require_auth)):
             r["copy_number"] = discogs_seen[did]
             r["total_copies"] = discogs_counts[did]
     
-    return [RecordResponse(**r) for r in records]
+    # Batch-fetch releases for image resolution
+    discogs_ids = list({r["discogs_id"] for r in records if r.get("discogs_id")})
+    releases_map: Dict[int, Any] = {}
+    if discogs_ids:
+        cursor = db.releases.find({"discogsReleaseId": {"$in": discogs_ids}}, {"_id": 0})
+        async for rel in cursor:
+            releases_map[rel["discogsReleaseId"]] = rel
+
+    result = []
+    for r in records:
+        rel = releases_map.get(r.get("discogs_id"))
+        img = resolve_album_image(r, rel)
+        result.append(RecordResponse(**r, **img))
+    return result
 
 @router.get("/records/{record_id}", response_model=RecordResponse)
 async def get_record(record_id: str, current_user: Optional[Dict] = Depends(get_current_user)):
     record = await db.records.find_one({"id": record_id}, {"_id": 0})
     if not record:
         raise HTTPException(status_code=404, detail="Record not found")
-    
+
     spin_count = await db.spins.count_documents({"record_id": record_id})
-    
-    return RecordResponse(**record, spin_count=spin_count)
+    release = await get_or_fetch_release(record.get("discogs_id"))
+    img = resolve_album_image(record, release)
+
+    return RecordResponse(**record, spin_count=spin_count, **img)
+
+
+# ============== COVER PHOTO UPLOAD (Phase 6) ==============
+
+@router.post("/records/{record_id}/cover")
+async def upload_record_cover(
+    record_id: str,
+    file: UploadFile = File(...),
+    user: Dict = Depends(require_auth),
+):
+    """Upload or replace the user's cover photo for a record they own.
+
+    Accepts JPEG/PNG/WebP (and HEIC/HEIF which must be converted client-side to JPEG).
+    Generates 640×640 and 300×300 square crops via Pillow and uploads to Cloudinary.
+    """
+    from utils.cloudinary_upload import upload_image_buffer
+    from PIL import Image
+    import io as _io
+
+    # Ownership check
+    record = await db.records.find_one({"id": record_id, "user_id": user["id"]}, {"_id": 0})
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found or not yours")
+
+    # Validate file type
+    allowed_types = {"image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"}
+    content_type = (file.content_type or "").lower()
+    if content_type not in allowed_types and not content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Only JPEG, PNG, WebP, or HEIC/HEIF images are allowed")
+
+    raw = await file.read()
+    if len(raw) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File too large (max 10MB)")
+
+    try:
+        img = Image.open(_io.BytesIO(raw)).convert("RGB")
+    except Exception as e:
+        logger.error(f"upload_record_cover: Image.open failed for content_type={content_type} size={len(raw)}: {e}")
+        raise HTTPException(status_code=400, detail=f"Could not read image file: {e}")
+
+    # Auto-crop to square if within 10% of 1:1
+    w, h = img.size
+    ratio = w / h if h else 1
+    if 0.9 <= ratio <= 1.1:
+        side = min(w, h)
+        left = (w - side) // 2
+        top = (h - side) // 2
+        img = img.crop((left, top, left + side, top + side))
+
+    def _make_thumb(source_img, size):
+        thumb = source_img.copy()
+        thumb.thumbnail((size, size), Image.LANCZOS)
+        # Center-pad to exact square
+        canvas = Image.new("RGB", (size, size), (255, 255, 255))
+        offset = ((size - thumb.width) // 2, (size - thumb.height) // 2)
+        canvas.paste(thumb, offset)
+        buf = _io.BytesIO()
+        canvas.save(buf, format="JPEG", quality=85)
+        return buf.getvalue()
+
+    buf_640 = _make_thumb(img, 640)
+    buf_300 = _make_thumb(img, 300)
+
+    try:
+        result_640 = upload_image_buffer(buf_640, folder="thehoneygroove/user-covers", public_id=f"{record_id}_640")
+        result_300 = upload_image_buffer(buf_300, folder="thehoneygroove/user-covers", public_id=f"{record_id}_300")
+    except Exception as e:
+        logger.error(f"upload_record_cover: Cloudinary upload failed for record_id={record_id}: {e}")
+        raise HTTPException(status_code=500, detail=f"Image upload failed: {e}")
+
+    url_640 = result_640["secure_url"]
+    url_300 = result_300["secure_url"]
+    now = datetime.now(timezone.utc).isoformat()
+
+    # Update record
+    await db.records.update_one(
+        {"id": record_id},
+        {"$set": {
+            "userPhotoUrl": url_640,
+            "userPhotoSmall": url_300,
+            "userPhotoUploadedBy": user["id"],
+            "userPhotoUploadedAt": now,
+        }}
+    )
+
+    # If release has no community cover, promote this as the community cover
+    discogs_id = record.get("discogs_id")
+    if discogs_id:
+        release_doc = await db.releases.find_one({"discogsReleaseId": discogs_id}, {"_id": 0, "communityCoverUrl": 1})
+        if release_doc and not release_doc.get("communityCoverUrl"):
+            await db.releases.update_one(
+                {"discogsReleaseId": discogs_id},
+                {"$set": {
+                    "communityCoverUrl": url_640,
+                    "communityCoverSmall": url_300,
+                    "communityCoverBy": user["id"],
+                }}
+            )
+
+    # Return updated record with resolved image fields
+    updated_record = await db.records.find_one({"id": record_id}, {"_id": 0})
+    release = await get_or_fetch_release(discogs_id)
+    img_fields = resolve_album_image(updated_record, release)
+    spin_count = await db.spins.count_documents({"record_id": record_id})
+    try:
+        return RecordResponse(**updated_record, spin_count=spin_count, **img_fields)
+    except Exception as e:
+        logger.error(f"upload_record_cover: RecordResponse construction failed: {e}. updated_record keys: {list(updated_record.keys())}, img_fields: {img_fields}")
+        raise HTTPException(status_code=500, detail=f"Response construction failed: {e}")
+
+
+@router.delete("/records/{record_id}/cover")
+async def delete_record_cover(record_id: str, user: Dict = Depends(require_auth)):
+    """Remove the user's uploaded cover photo for a record. Falls back to Spotify/community/placeholder."""
+    record = await db.records.find_one({"id": record_id, "user_id": user["id"]}, {"_id": 0})
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found or not yours")
+
+    await db.records.update_one(
+        {"id": record_id},
+        {"$unset": {"userPhotoUrl": "", "userPhotoSmall": "", "userPhotoUploadedBy": "", "userPhotoUploadedAt": ""}}
+    )
+    updated_record = await db.records.find_one({"id": record_id}, {"_id": 0})
+    release = await get_or_fetch_release(record.get("discogs_id"))
+    img_fields = resolve_album_image(updated_record, release)
+    spin_count = await db.spins.count_documents({"record_id": record_id})
+    return RecordResponse(**updated_record, spin_count=spin_count, **img_fields)
 
 
 @router.post("/records/enrich-rarity")
@@ -499,41 +654,31 @@ async def enrich_rarity(user: Dict = Depends(require_auth)):
 
 @router.post("/records/hard-refresh-images")
 async def hard_refresh_images(user: Dict = Depends(require_auth)):
-    """Bulk repair: re-fetch cover images for all records with placeholder/missing images."""
-    import time
+    """Bulk repair: trigger CC0 data fetch + Spotify matching for all records missing release docs.
+    Discogs images are no longer used — Spotify art is fetched via the matching pipeline instead."""
     cursor = db.records.find(
-        {"user_id": user["id"], "$or": [
-            {"cover_url": None},
-            {"cover_url": ""},
-            {"cover_url": {"$regex": "spacer\\.gif|placeholder|honeycomb", "$options": "i"}},
-        ]},
-        {"_id": 0, "id": 1, "discogs_id": 1, "title": 1, "artist": 1, "cover_url": 1}
+        {"user_id": user["id"], "discogs_id": {"$ne": None}},
+        {"_id": 0, "id": 1, "discogs_id": 1, "title": 1, "artist": 1}
     )
     records = await cursor.to_list(length=500)
-    fixed = 0
-    failed = 0
-    fixed_records = []
+    queued = 0
     for rec in records:
         discogs_id = rec.get("discogs_id")
         if not discogs_id:
-            failed += 1
             continue
-        try:
-            release = get_discogs_release(int(discogs_id))
-            new_url = release.get("cover_url") if release else None
-            if new_url and "spacer.gif" not in new_url and "placeholder" not in new_url.lower():
-                await db.records.update_one(
-                    {"id": rec["id"]},
-                    {"$set": {"cover_url": new_url}}
-                )
-                fixed += 1
-                fixed_records.append({"title": rec.get("title"), "artist": rec.get("artist")})
-            else:
-                failed += 1
-        except Exception:
-            failed += 1
-        await asyncio.sleep(0.3)  # Rate limit Discogs API
-    return {"total_placeholders": len(records), "fixed": fixed, "failed": failed, "fixed_records": fixed_records[:20]}
+        # Only queue if no release doc yet
+        existing = await db.releases.find_one({"discogsReleaseId": discogs_id}, {"_id": 0, "discogsReleaseId": 1})
+        if not existing:
+            try:
+                release_data = get_discogs_release(int(discogs_id))
+                if release_data:
+                    release_doc = await upsert_release_cc0(discogs_id, release_data)
+                    asyncio.create_task(match_to_spotify(release_doc))
+                    queued += 1
+            except Exception:
+                pass
+            await asyncio.sleep(0.3)
+    return {"total_records": len(records), "queued_for_matching": queued}
 
 
 
@@ -1848,7 +1993,7 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
                     skipped_records.append({"title": release_title, "artist": release_artist, "discogs_id": discogs_id, "reason": "duplicate"})
                     continue
                 
-                cover_url = basic_info.get("cover_image") or basic_info.get("thumb")
+                cover_url = None  # Discogs cover_image is Restricted Data — Spotify art resolves via releases collection
                 formats = basic_info.get("formats", [])
                 format_name = formats[0].get("name", "Vinyl") if formats else "Vinyl"
                 # Extract color/variant info from format text field
