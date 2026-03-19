@@ -814,6 +814,19 @@ async def start_cc0_backfill(admin: Dict = Depends(require_admin)):
     return {"success": True, "message": "CC0 backfill started"}
 
 
+@router.get("/beekeeper/spotify-matching/releases")
+async def get_releases_by_status(status: str = "unmatched", skip: int = 0, limit: int = 50, admin: Dict = Depends(require_admin)):
+    """List releases filtered by spotifyMatchStatus."""
+    valid = {"matched", "unmatched", "manual_override", "pending"}
+    if status not in valid:
+        raise HTTPException(status_code=400, detail=f"status must be one of {valid}")
+    projection = {"_id": 0, "discogsReleaseId": 1, "title": 1, "artists": 1, "barcode": 1, "year": 1,
+                  "spotifyAlbumId": 1, "spotifyImageUrl": 1, "spotifyMatchedAt": 1}
+    docs = await db.releases.find({"spotifyMatchStatus": status}, projection).skip(skip).limit(limit).to_list(limit)
+    total = await db.releases.count_documents({"spotifyMatchStatus": status})
+    return {"releases": docs, "total": total}
+
+
 @router.get("/beekeeper/spotify-matching/unmatched")
 async def get_unmatched_releases(skip: int = 0, limit: int = 50, admin: Dict = Depends(require_admin)):
     """List unmatched releases for the manual match UI."""

@@ -968,13 +968,14 @@ function MatchingTab({ API, headers }) {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
-  const [unmatched, setUnmatched] = useState([]);
-  const [unmatchedTotal, setUnmatchedTotal] = useState(0);
   const [manualDialog, setManualDialog] = useState(null); // { discogsReleaseId, title, artists }
   const [manualInput, setManualInput] = useState('');
   const [manualLoading, setManualLoading] = useState(false);
-  const [manualOverrides, setManualOverrides] = useState([]);
   const [clearingId, setClearingId] = useState(null);
+  const [activeFilter, setActiveFilter] = useState(null); // 'matched' | 'unmatched' | 'manual_override'
+  const [filteredReleases, setFilteredReleases] = useState([]);
+  const [filteredTotal, setFilteredTotal] = useState(0);
+  const [filterLoading, setFilterLoading] = useState(false);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -984,31 +985,43 @@ function MatchingTab({ API, headers }) {
   }, [API, headers]);
 
   const fetchUnmatched = useCallback(async () => {
-    try {
-      const res = await axios.get(`${API}/beekeeper/spotify-matching/unmatched`, { headers, params: { limit: 50 } });
-      setUnmatched(res.data.releases || []);
-      setUnmatchedTotal(res.data.total || 0);
-    } catch { /* non-fatal */ }
-  }, [API, headers]);
+    // kept for legacy callers (doManualMatch, doClearMatch)
+    if (activeFilter === 'unmatched') {
+      const res = await axios.get(`${API}/beekeeper/spotify-matching/releases`, { headers, params: { status: 'unmatched', limit: 50 } });
+      setFilteredReleases(res.data.releases || []);
+      setFilteredTotal(res.data.total || 0);
+    }
+  }, [API, headers, activeFilter]);
 
-  const fetchManualOverrides = useCallback(async () => {
+  const fetchFiltered = useCallback(async (status) => {
+    if (!status) { setFilteredReleases([]); setFilteredTotal(0); return; }
+    setFilterLoading(true);
     try {
-      const res = await axios.get(`${API}/beekeeper/spotify-matching/manual-overrides`, { headers, params: { limit: 50 } });
-      setManualOverrides(res.data.releases || []);
-    } catch { /* non-fatal */ }
+      const res = await axios.get(`${API}/beekeeper/spotify-matching/releases`, { headers, params: { status, limit: 50 } });
+      setFilteredReleases(res.data.releases || []);
+      setFilteredTotal(res.data.total || 0);
+    } catch { /* non-fatal */ } finally {
+      setFilterLoading(false);
+    }
   }, [API, headers]);
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([fetchStats(), fetchUnmatched(), fetchManualOverrides()]).finally(() => setLoading(false));
-  }, [fetchStats, fetchUnmatched, fetchManualOverrides]);
+    fetchStats().finally(() => setLoading(false));
+  }, [fetchStats]);
 
   // Poll while running
   useEffect(() => {
     if (!stats?.isRunning) return;
-    const id = setInterval(() => { fetchStats(); fetchUnmatched(); }, 3000);
+    const id = setInterval(() => fetchStats(), 3000);
     return () => clearInterval(id);
-  }, [stats?.isRunning, fetchStats, fetchUnmatched]);
+  }, [stats?.isRunning, fetchStats]);
+
+  const handleFilterClick = (status) => {
+    const next = activeFilter === status ? null : status;
+    setActiveFilter(next);
+    fetchFiltered(next);
+  };
 
   const doClearMatch = async (releaseId) => {
     setClearingId(releaseId);
@@ -1016,8 +1029,7 @@ function MatchingTab({ API, headers }) {
       await axios.delete(`${API}/beekeeper/spotify-matching/manual/${releaseId}`, { headers });
       toast.success('Match cleared');
       fetchStats();
-      fetchUnmatched();
-      fetchManualOverrides();
+      fetchFiltered(activeFilter);
     } catch (e) {
       toast.error(e?.response?.data?.detail || 'Clear failed');
     } finally {
@@ -1051,8 +1063,7 @@ function MatchingTab({ API, headers }) {
       setManualDialog(null);
       setManualInput('');
       fetchStats();
-      fetchUnmatched();
-      fetchManualOverrides();
+      fetchFiltered(activeFilter);
     } catch (e) {
       toast.error(e?.response?.data?.detail || 'Match failed');
     } finally {
@@ -1069,14 +1080,19 @@ function MatchingTab({ API, headers }) {
       {/* Stats cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'Pending', value: stats?.pending ?? '—', color: 'text-amber-600' },
-          { label: 'Matched', value: stats?.matched ?? '—', color: 'text-green-600' },
-          { label: 'Unmatched', value: stats?.unmatched ?? '—', color: 'text-red-500' },
-          { label: 'Manual', value: stats?.manual_override ?? '—', color: 'text-blue-600' },
-        ].map(({ label, value, color }) => (
-          <div key={label} className="bg-white rounded-2xl border border-stone-200 p-4 shadow-sm">
+          { label: 'Pending', value: stats?.pending ?? '—', color: 'text-amber-600', filter: null },
+          { label: 'Matched', value: stats?.matched ?? '—', color: 'text-green-600', filter: 'matched' },
+          { label: 'Unmatched', value: stats?.unmatched ?? '—', color: 'text-red-500', filter: 'unmatched' },
+          { label: 'Manual', value: stats?.manual_override ?? '—', color: 'text-blue-600', filter: 'manual_override' },
+        ].map(({ label, value, color, filter }) => (
+          <div
+            key={label}
+            onClick={() => filter && handleFilterClick(filter)}
+            className={`bg-white rounded-2xl border p-4 shadow-sm transition-all ${filter ? 'cursor-pointer hover:shadow-md' : ''} ${activeFilter === filter && filter ? 'border-stone-400 ring-1 ring-stone-300' : 'border-stone-200'}`}
+          >
             <p className="text-xs text-stone-400 mb-1">{label}</p>
             <p className={`text-2xl font-semibold ${color}`}>{value}</p>
+            {filter && <p className="text-xs text-stone-300 mt-1">{activeFilter === filter ? 'click to hide ↑' : 'click to view →'}</p>}
           </div>
         ))}
       </div>
@@ -1158,66 +1174,57 @@ function MatchingTab({ API, headers }) {
         </div>
       )}
 
-      {/* Unmatched table */}
-      {unmatched.length > 0 && (
+      {/* Filtered releases list */}
+      {activeFilter && (
         <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
           <div className="px-5 py-3 border-b border-stone-100 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-stone-700">Unmatched releases</h3>
-            <span className="text-xs text-stone-400">{unmatchedTotal} total</span>
+            <h3 className="text-sm font-semibold text-stone-700 capitalize">
+              {activeFilter === 'manual_override' ? 'Manual overrides' : `${activeFilter} releases`}
+            </h3>
+            <span className="text-xs text-stone-400">{filteredTotal} total</span>
           </div>
-          <div className="divide-y divide-stone-100">
-            {unmatched.map(rel => (
-              <div key={rel.discogsReleaseId} className="flex items-center gap-3 px-5 py-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-stone-800 truncate">{rel.title || 'Unknown'}</p>
-                  <p className="text-xs text-stone-400 truncate">
-                    {(rel.artists || []).join(', ') || '—'} · {rel.year || '—'} · ID {rel.discogsReleaseId}
-                  </p>
-                  {rel.barcode?.length > 0 && (
-                    <p className="text-xs text-stone-300 truncate">UPC: {rel.barcode[0]}</p>
+          {filterLoading ? (
+            <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-amber-400" /></div>
+          ) : filteredReleases.length === 0 ? (
+            <p className="text-sm text-stone-400 text-center py-8">No releases</p>
+          ) : (
+            <div className="divide-y divide-stone-100">
+              {filteredReleases.map(rel => (
+                <div key={rel.discogsReleaseId} className="flex items-center gap-3 px-5 py-3">
+                  {rel.spotifyImageUrl && (
+                    <img src={rel.spotifyImageUrl} alt="" className="w-9 h-9 rounded-md object-cover flex-shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-stone-800 truncate">{rel.title || 'Unknown'}</p>
+                    <p className="text-xs text-stone-400 truncate">
+                      {(rel.artists || []).join(', ') || '—'} · {rel.year || '—'} · ID {rel.discogsReleaseId}
+                    </p>
+                    {rel.barcode?.length > 0 && (
+                      <p className="text-xs text-stone-300 truncate">UPC: {rel.barcode[0]}</p>
+                    )}
+                  </div>
+                  {activeFilter === 'unmatched' && (
+                    <button
+                      onClick={() => { setManualDialog(rel); setManualInput(''); }}
+                      className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-50 text-amber-700 text-xs font-medium hover:bg-amber-100 transition-colors"
+                    >
+                      <Music2 className="w-3.5 h-3.5" />
+                      Match
+                    </button>
+                  )}
+                  {activeFilter === 'manual_override' && (
+                    <button
+                      onClick={() => doClearMatch(rel.discogsReleaseId)}
+                      disabled={clearingId === rel.discogsReleaseId}
+                      className="flex-shrink-0 px-3 py-1.5 rounded-xl bg-red-50 text-red-600 text-xs font-medium hover:bg-red-100 transition-colors disabled:opacity-50"
+                    >
+                      {clearingId === rel.discogsReleaseId ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Clear'}
+                    </button>
                   )}
                 </div>
-                <button
-                  onClick={() => { setManualDialog(rel); setManualInput(''); }}
-                  className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-50 text-amber-700 text-xs font-medium hover:bg-amber-100 transition-colors"
-                >
-                  <Music2 className="w-3.5 h-3.5" />
-                  Match
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Manual overrides table */}
-      {manualOverrides.length > 0 && (
-        <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
-          <div className="px-5 py-3 border-b border-stone-100">
-            <h3 className="text-sm font-semibold text-stone-700">Manual overrides</h3>
-          </div>
-          <div className="divide-y divide-stone-100">
-            {manualOverrides.map(rel => (
-              <div key={rel.discogsReleaseId} className="flex items-center gap-3 px-5 py-3">
-                {rel.spotifyImageUrl && (
-                  <img src={rel.spotifyImageUrl} alt="" className="w-9 h-9 rounded-md object-cover flex-shrink-0" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-stone-800 truncate">{rel.title || 'Unknown'}</p>
-                  <p className="text-xs text-stone-400 truncate">
-                    {(rel.artists || []).join(', ') || '—'} · ID {rel.discogsReleaseId}
-                  </p>
-                </div>
-                <button
-                  onClick={() => doClearMatch(rel.discogsReleaseId)}
-                  disabled={clearingId === rel.discogsReleaseId}
-                  className="flex-shrink-0 px-3 py-1.5 rounded-xl bg-red-50 text-red-600 text-xs font-medium hover:bg-red-100 transition-colors disabled:opacity-50"
-                >
-                  {clearingId === rel.discogsReleaseId ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Clear'}
-                </button>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
