@@ -56,7 +56,8 @@ const RoomPage = () => {
 
   const isGold = user?.golden_hive || user?.golden_hive_verified;
 
-  usePageTitle(room?.name || 'Room');
+  const displayName = room?.nickname || room?.name;
+  usePageTitle(displayName || 'Room');
 
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -102,7 +103,7 @@ const RoomPage = () => {
       setIsMember(true);
       setRoomsJoinedCount(c => c + 1);
       setRoom(prev => prev ? { ...prev, member_count: (prev.member_count || 0) + 1 } : prev);
-      toast.success(`Joined ${room?.name}!`);
+      toast.success(`Joined ${room?.nickname || room?.name}!`);
     } catch (err) {
       if (err.response?.status === 403) {
         setShowGoldDialog(true);
@@ -138,7 +139,7 @@ const RoomPage = () => {
         if (!blob) return;
         const file = new File([blob], `honeygroove-room-${slug}-${Date.now()}.png`, { type: 'image/png' });
         if (navigator.share && navigator.canShare?.({ files: [file] })) {
-          await navigator.share({ files: [file], title: `${room?.name} — The Honey Groove` });
+          await navigator.share({ files: [file], title: `${room?.nickname || room?.name} — The Honey Groove` });
         } else {
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
@@ -158,7 +159,7 @@ const RoomPage = () => {
       await axios.delete(`${API}/rooms/${slug}/leave`, { headers });
       setIsMember(false);
       setRoom(prev => prev ? { ...prev, member_count: Math.max(0, (prev.member_count || 1) - 1) } : prev);
-      toast.success(`Left ${room?.name}.`);
+      toast.success(`Left ${room?.nickname || room?.name}.`);
     } catch {
       toast.error('Could not leave room.');
     }
@@ -207,7 +208,7 @@ const RoomPage = () => {
           className="font-heading text-3xl font-bold mb-1"
           style={{ color: theme.textColor || '#2A1A06', fontFamily: 'DM Serif Display, serif' }}
         >
-          {room.name}
+          {room.nickname || room.name}
         </h1>
         <p className="text-sm mb-3" style={{ color: theme.textColor ? theme.textColor + 'CC' : '#2A1A0699' }}>
           {room.tagline}
@@ -395,7 +396,7 @@ const RoomPage = () => {
           <div id="gold-room-desc" className="text-center space-y-3 pt-1">
             <p className="text-sm text-muted-foreground leading-relaxed">
               Free members can join <strong>3 rooms</strong>. You've used all 3 — and{' '}
-              <strong>{room?.name}</strong> is waiting for you.
+              <strong>{room?.nickname || room?.name}</strong> is waiting for you.
             </p>
             <div
               className="rounded-xl p-4 text-left space-y-2 text-sm"

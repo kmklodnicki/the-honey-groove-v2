@@ -246,6 +246,7 @@ ROOMS = [
         "tagline": "The chameleon lives on wax",
         "type": "artist",
         "filter": {"artist": {"$regex": "bowie", "$options": "i"}},
+        "matchCriteria": {"type": "artist", "value": "David Bowie"},
         "theme": {
             "accentColor": "#C0392B",
             "bgGradient": "linear-gradient(135deg, #FDEDEC, #FADBD8)",
@@ -262,6 +263,7 @@ ROOMS = [
         "tagline": "A love supreme, on vinyl",
         "type": "artist",
         "filter": {"artist": {"$regex": "coltrane", "$options": "i"}},
+        "matchCriteria": {"type": "artist", "value": "John Coltrane"},
         "theme": {
             "accentColor": "#B7950B",
             "bgGradient": "linear-gradient(135deg, #FEF9E7, #FDEBD0)",
@@ -278,6 +280,7 @@ ROOMS = [
         "tagline": "Rumours and beyond",
         "type": "artist",
         "filter": {"artist": {"$regex": "fleetwood", "$options": "i"}},
+        "matchCriteria": {"type": "artist", "value": "Fleetwood Mac"},
         "theme": {
             "accentColor": "#6C3483",
             "bgGradient": "linear-gradient(135deg, #F5EEF8, #EBD5F5)",
@@ -294,6 +297,7 @@ ROOMS = [
         "tagline": "Original pressings and deep cuts",
         "type": "artist",
         "filter": {"artist": {"$regex": "beatles", "$options": "i"}},
+        "matchCriteria": {"type": "artist", "value": "The Beatles"},
         "theme": {
             "accentColor": "#C8861A",
             "bgGradient": "linear-gradient(135deg, #FFF3E0, #FFE0B2)",

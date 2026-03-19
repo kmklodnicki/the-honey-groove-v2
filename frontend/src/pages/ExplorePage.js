@@ -862,7 +862,7 @@ const HexRoomCard = ({ room, onClick }) => {
           >
             <span className="text-3xl">{room.emoji}</span>
             <span className="text-xs font-semibold text-center mt-1 px-2" style={{ color: room.theme?.textColor || '#2A1A06' }}>
-              {room.name}
+              {room.nickname || room.name}
             </span>
             {room.type && (
               <span className="text-[9px] font-medium capitalize mt-0.5 opacity-60" style={{ color: room.theme?.textColor || '#2A1A06' }}>

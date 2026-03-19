@@ -46,6 +46,11 @@ function QueueTab({ API, headers }) {
   const [editDialog, setEditDialog] = useState(null); // room data
   const [editForm, setEditForm] = useState({});
   const [actionLoading, setActionLoading] = useState(null);
+  const [artistRooms, setArtistRooms] = useState([]);
+  const [artistRoomsOpen, setArtistRoomsOpen] = useState(false);
+  const [nicknameDialog, setNicknameDialog] = useState(null); // { slug, name, nickname }
+  const [nicknameValue, setNicknameValue] = useState('');
+  const [nicknameSaving, setNicknameSaving] = useState(false);
 
   const fetchQueue = useCallback(async () => {
     setLoading(true);
@@ -60,7 +65,34 @@ function QueueTab({ API, headers }) {
     }
   }, [API, headers, filter]);
 
-  useEffect(() => { fetchQueue(); }, [fetchQueue]);
+  const fetchArtistRooms = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API}/beekeeper/rooms/artist`, { headers });
+      setArtistRooms(res.data || []);
+    } catch { /* non-fatal */ }
+  }, [API, headers]);
+
+  const openNicknameDialog = (room) => {
+    setNicknameDialog(room);
+    setNicknameValue(room.nickname || '');
+  };
+
+  const saveNickname = async () => {
+    if (!nicknameDialog) return;
+    setNicknameSaving(true);
+    try {
+      await axios.put(`${API}/beekeeper/rooms/${nicknameDialog.slug}/nickname`, { nickname: nicknameValue }, { headers });
+      toast.success('Nickname saved');
+      setNicknameDialog(null);
+      fetchArtistRooms();
+    } catch (e) {
+      toast.error(e?.response?.data?.detail || 'Failed to save nickname');
+    } finally {
+      setNicknameSaving(false);
+    }
+  };
+
+  useEffect(() => { fetchQueue(); fetchArtistRooms(); }, [fetchQueue, fetchArtistRooms]);
 
   const approve = async (slug) => {
     setActionLoading(slug + '_approve');
@@ -186,6 +218,80 @@ function QueueTab({ API, headers }) {
               <button onClick={reject} disabled={actionLoading}
                 className="flex-1 py-2 rounded-xl bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-50">
                 {actionLoading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Reject'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Artist Rooms — nickname management */}
+      <div className="mt-8">
+        <button
+          onClick={() => setArtistRoomsOpen(o => !o)}
+          className="flex items-center gap-2 text-sm font-semibold text-stone-600 hover:text-stone-800 transition-colors mb-3"
+          data-testid="artist-rooms-toggle"
+        >
+          {artistRoomsOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+          Artist Rooms ({artistRooms.length})
+          <span className="text-xs font-normal text-stone-400">— set display nicknames</span>
+        </button>
+        {artistRoomsOpen && (
+          <div className="space-y-2">
+            {artistRooms.length === 0 ? (
+              <p className="text-sm text-stone-400 pl-6">No artist rooms found.</p>
+            ) : artistRooms.map(room => (
+              <div key={room.slug} className="bg-white rounded-xl border border-stone-200 p-4 flex items-center gap-3 shadow-sm">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
+                  style={{ background: room.theme?.bgGradient || '#FFF3E0' }}>
+                  {room.emoji || '🎵'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-stone-800">{room.nickname || room.name}</p>
+                  {room.nickname && (
+                    <p className="text-xs text-stone-400">system name: {room.name}</p>
+                  )}
+                  <p className="text-xs text-stone-400">{room.member_count || 0} members · /{room.slug}</p>
+                </div>
+                <button
+                  onClick={() => openNicknameDialog(room)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-100 text-amber-700 text-xs font-medium hover:bg-amber-200 transition-colors flex-shrink-0"
+                  data-testid={`nickname-${room.slug}`}
+                >
+                  <Pencil className="w-3 h-3" /> Nickname
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Nickname dialog */}
+      {nicknameDialog && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+            <h3 className="font-semibold text-lg text-stone-800 mb-1">Set Nickname</h3>
+            <p className="text-sm text-stone-500 mb-4">
+              System name: <strong>{nicknameDialog.name}</strong><br />
+              Slug &amp; match criteria stay unchanged. Leave blank to clear the nickname.
+            </p>
+            <input
+              value={nicknameValue}
+              onChange={e => setNicknameValue(e.target.value)}
+              placeholder={nicknameDialog.name}
+              maxLength={80}
+              className="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 mb-4"
+              data-testid="nickname-input"
+              autoFocus
+            />
+            <div className="flex gap-3">
+              <button onClick={() => setNicknameDialog(null)}
+                className="flex-1 py-2 rounded-xl border border-stone-200 text-stone-600 text-sm font-medium hover:bg-stone-50 transition-colors">
+                Cancel
+              </button>
+              <button onClick={saveNickname} disabled={nicknameSaving}
+                className="flex-1 py-2 rounded-xl bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition-colors disabled:opacity-50"
+                data-testid="nickname-save-btn">
+                {nicknameSaving ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Save'}
               </button>
             </div>
           </div>

@@ -87,7 +87,7 @@ const RoomShareCard = React.forwardRef(({ room, post }, ref) => {
             lineHeight: 1.1,
           }}
         >
-          {room.name}
+          {room.nickname || room.name}
         </p>
 
         {/* Member count */}

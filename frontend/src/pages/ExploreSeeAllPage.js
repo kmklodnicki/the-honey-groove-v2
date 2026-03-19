@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Card } from '../components/ui/card';
@@ -33,6 +33,7 @@ const ExploreSeeAllPage = () => {
   const { section } = useParams();
   const { user, token, API } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -161,7 +162,7 @@ const ExploreSeeAllPage = () => {
               onSetLocation={() => setShowLocationPrompt(true)}
             />
           )}
-          {section === 'rooms' && <RoomsAll data={data} navigate={navigate} />}
+          {section === 'rooms' && <RoomsAll data={data} navigate={navigate} searchParams={searchParams} setSearchParams={setSearchParams} />}
         </>
       )}
 
@@ -435,14 +436,67 @@ const THEME_COLORS = {
   rose: '#D98FA1', slate: '#85A7C0', plum: '#D7BDE2',
 };
 
-const RoomsAll = ({ data, navigate }) => {
+const TYPE_ORDER = ['genre', 'artist', 'era', 'vibe', 'collector'];
+
+const SORT_OPTIONS = [
+  { value: 'members', label: 'Most Members' },
+  { value: 'newest',  label: 'Newest' },
+  { value: 'az',      label: 'A to Z' },
+  { value: 'type',    label: 'By Type' },
+];
+
+function sortRooms(rooms, sort) {
+  const getName = r => r.nickname || r.name || '';
+  const sorted = [...rooms];
+  if (sort === 'newest') {
+    return sorted.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  }
+  if (sort === 'az') {
+    return sorted.sort((a, b) => getName(a).localeCompare(getName(b)));
+  }
+  if (sort === 'type') {
+    return sorted.sort((a, b) => {
+      const ti = TYPE_ORDER.indexOf(a.type ?? '');
+      const tj = TYPE_ORDER.indexOf(b.type ?? '');
+      if (ti !== tj) return (ti === -1 ? 99 : ti) - (tj === -1 ? 99 : tj);
+      return (b.member_count || 0) - (a.member_count || 0);
+    });
+  }
+  // default: members
+  return sorted.sort((a, b) => (b.member_count || 0) - (a.member_count || 0));
+}
+
+const RoomsAll = ({ data, navigate, searchParams, setSearchParams }) => {
   const rooms = Array.isArray(data) ? data : [];
+  const sort = searchParams?.get('sort') || 'members';
+
+  const setSort = (val) => {
+    const next = new URLSearchParams(searchParams);
+    if (val === 'members') next.delete('sort'); else next.set('sort', val);
+    setSearchParams(next, { replace: true });
+  };
+
   if (rooms.length === 0) return <EmptyState text="No rooms yet — Gold members can create the first one!" />;
+
+  const sorted = sortRooms(rooms, sort);
+
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4" data-testid="rooms-all-grid">
-      {rooms.map(room => {
-        const accent = THEME_COLORS[room.theme_preset] || '#C8861A';
-        return (
+    <div>
+      {/* Sort controls */}
+      <div className="flex justify-end mb-4">
+        <select
+          value={sort}
+          onChange={e => setSort(e.target.value)}
+          className="text-sm border border-honey/40 rounded-full px-3 py-1.5 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-honey/40 cursor-pointer"
+          data-testid="rooms-sort-select"
+        >
+          {SORT_OPTIONS.map(o => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4" data-testid="rooms-all-grid">
+        {sorted.map(room => (
           <button
             key={room.slug}
             onClick={() => navigate(`/nectar/rooms/${room.slug}`)}
@@ -458,11 +512,11 @@ const RoomsAll = ({ data, navigate }) => {
                 {room.type}
               </span>
             </div>
-            <p className="text-sm font-medium text-stone-800 truncate w-full">{room.name}</p>
+            <p className="text-sm font-medium text-stone-800 truncate w-full">{room.nickname || room.name}</p>
             <p className="text-xs text-muted-foreground">{room.member_count || 0} members</p>
           </button>
-        );
-      })}
+        ))}
+      </div>
     </div>
   );
 };

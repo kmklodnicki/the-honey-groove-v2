@@ -204,6 +204,31 @@ async def edit_and_approve_room(slug: str, body: dict, admin: Dict = Depends(req
     return {"success": True, "slug": slug, "message": "Room edited and approved"}
 
 
+@router.get("/beekeeper/rooms/artist")
+async def list_artist_rooms(admin: Dict = Depends(require_admin)):
+    """Return all live artist rooms for nickname management."""
+    rooms = await db.rooms.find(
+        {"type": "artist", "active": True},
+        {"_id": 0, "slug": 1, "name": 1, "nickname": 1, "emoji": 1, "theme": 1, "theme_preset": 1, "member_count": 1, "filter": 1}
+    ).sort("member_count", -1).to_list(100)
+    return rooms
+
+
+@router.put("/beekeeper/rooms/{slug}/nickname")
+async def set_room_nickname(slug: str, body: dict, admin: Dict = Depends(require_admin)):
+    """Set or clear a display nickname on an artist room. Does not affect slug or match criteria."""
+    room = await db.rooms.find_one({"slug": slug, "type": "artist"}, {"_id": 0})
+    if not room:
+        raise HTTPException(status_code=404, detail="Artist room not found")
+
+    nickname = (body.get("nickname") or "").strip()[:80]
+    await db.rooms.update_one(
+        {"slug": slug},
+        {"$set": {"nickname": nickname or None}}
+    )
+    return {"success": True, "slug": slug, "nickname": nickname or None}
+
+
 # ─── Honey Drop ───
 
 @router.post("/beekeeper/honey-drop")
