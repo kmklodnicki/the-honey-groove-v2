@@ -324,7 +324,7 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
         return None
 
     post_user = await db.users.find_one({"id": post["user_id"]}, {"_id": 0, "password_hash": 0})
-    user_data = {"id": post_user["id"], "username": post_user["username"], "avatar_url": post_user.get("avatar_url"), "founding_member": post_user.get("founding_member", False), "title_label": post_user.get("title_label"), "golden_hive_verified": post_user.get("golden_hive_verified", False)} if post_user else None
+    user_data = {"id": post_user["id"], "username": post_user["username"], "avatar_url": post_user.get("avatar_url"), "founding_member": post_user.get("founding_member", False), "title_label": post_user.get("title_label"), "golden_hive": post_user.get("golden_hive", False), "golden_hive_verified": post_user.get("golden_hive_verified", False), "is_verified": bool(post_user.get("isVerified", post_user.get("golden_hive_verified", False)))} if post_user else None
     
     record_data = None
     record_color_variant = None
