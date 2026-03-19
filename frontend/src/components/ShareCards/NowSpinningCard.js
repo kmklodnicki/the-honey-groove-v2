@@ -11,81 +11,25 @@ const NowSpinningCard = React.forwardRef(function NowSpinningCard({ post, user }
 
   return (
     <ShareCardBase ref={ref} bg={bg} user={user}>
-        {/* Vinyl + album art */}
-        <div style={{ position: 'relative', width: 780, height: 780 }}>
-          {/* Vinyl disc */}
-          <div
-            style={{
-              position: 'absolute',
-              right: -80,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              width: 640,
-              height: 640,
-              borderRadius: '50%',
-              background: 'radial-gradient(circle at 50% 50%, #444 0%, #2a2a2a 40%, #1a1a1a 70%, #111 100%)',
-              boxShadow: '0 12px 48px rgba(0,0,0,0.35)',
-              zIndex: 1,
-            }}
-          >
-            {[100, 165, 230, 280, 330].map(r => (
-              <div
-                key={r}
-                style={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  transform: 'translate(-50%, -50%)',
-                  width: r * 2,
-                  height: r * 2,
-                  borderRadius: '50%',
-                  border: '1px solid rgba(255,255,255,0.06)',
-                }}
-              />
-            ))}
-            <div
-              style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: 110,
-                height: 110,
-                borderRadius: '50%',
-                background: '#C8861A',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#1a1a1a' }} />
-            </div>
-          </div>
-
-          {/* Album art */}
-          <div
-            style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              width: 700,
-              height: 700,
-              borderRadius: 28,
-              overflow: 'hidden',
-              boxShadow: '0 32px 80px rgba(0,0,0,0.28)',
-              zIndex: 2,
-              background: '#F0E6D0',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {coverUrl ? (
-              <img src={coverUrl} alt="" crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            ) : (
-              <span style={{ fontSize: 100 }}>🎵</span>
-            )}
-          </div>
+        {/* Album art */}
+        <div
+          style={{
+            width: 700,
+            height: 700,
+            borderRadius: 28,
+            overflow: 'hidden',
+            boxShadow: '0 32px 80px rgba(0,0,0,0.28)',
+            background: '#F0E6D0',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {coverUrl ? (
+            <img src={coverUrl} alt="" crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            <span style={{ fontSize: 100 }}>🎵</span>
+          )}
         </div>
 
         {/* "NOW SPINNING" label */}

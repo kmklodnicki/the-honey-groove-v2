@@ -12,54 +12,33 @@ const SaleCard = React.forwardRef(function SaleCard({ record, price, user }, ref
 
   return (
     <ShareCardBase ref={ref} bg={bg} user={user} footerTextColor="#1A6B3E" footerSubColor="#145830">
-      {/* Album art with SOLD overlay */}
-        <div style={{ position: 'relative', width: 700, height: 700 }}>
-          <div
-            style={{
-              width: 700,
-              height: 700,
-              borderRadius: 28,
-              overflow: 'hidden',
-              boxShadow: '0 24px 64px rgba(0,0,0,0.22)',
-              background: '#E0F0E8',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {coverUrl ? (
-              <img src={coverUrl} alt="" crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            ) : (
-              <span style={{ fontSize: 100 }}>🎵</span>
-            )}
-          </div>
-
-          {/* SOLD banner */}
-          <div
-            style={{
-              position: 'absolute',
-              top: 50,
-              right: -30,
-              width: 240,
-              background: 'linear-gradient(135deg, #C8861A, #E8A820)',
-              color: '#FFF',
-              fontFamily: "'DM Serif Display', Georgia, serif",
-              fontSize: 36,
-              fontWeight: 700,
-              letterSpacing: '0.12em',
-              textAlign: 'center',
-              padding: '14px 0',
-              transform: 'rotate(30deg)',
-              transformOrigin: 'center',
-              boxShadow: '0 4px 16px rgba(0,0,0,0.25)',
-            }}
-          >
-            SOLD
-          </div>
+      {/* Album art — clean, no overlays */}
+        <div
+          style={{
+            width: 700,
+            height: 700,
+            borderRadius: 28,
+            overflow: 'hidden',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.22)',
+            background: '#E0F0E8',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {coverUrl ? (
+            <img src={coverUrl} alt="" crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            <span style={{ fontSize: 100 }}>🎵</span>
+          )}
         </div>
 
         {/* Record info */}
         <div style={{ textAlign: 'center', marginTop: 28 }}>
+          {/* SOLD label in text zone — not on album art */}
+          <p style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 44, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#C8861A', margin: '0 0 16px' }}>
+            Sold
+          </p>
           <p style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 52, fontWeight: 700, color: '#1A3D28', margin: 0, lineHeight: 1.15, maxWidth: 860 }}>
             {title}
           </p>

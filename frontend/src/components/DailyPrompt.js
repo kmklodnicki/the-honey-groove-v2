@@ -9,6 +9,8 @@ import { Textarea } from './ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import MentionText from './MentionText';
 import { Loader2, Disc, Share2, Send, Download, Search, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useShareCard } from '../hooks/useShareCard';
+import DailyPromptShareCard from './ShareCards/DailyPromptCard';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import RecordSearchResult from './RecordSearchResult';
@@ -371,6 +373,12 @@ const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
   const [submitting, setSubmitting] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [responseData, setResponseData] = useState(null);
+  const { cardRef: promptShareRef, exporting: promptShareExporting, exportCard: exportPromptCard } = useShareCard({
+    cardType: 'daily_prompt',
+    filename: 'thg-daily-prompt',
+    title: `My Daily Prompt answer — The Honey Groove`,
+    userId: user?.id,
+  });
 
   // Debounced local collection search
   const searchCollection = useCallback((query) => {
@@ -615,10 +623,25 @@ const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
                   </p>
                 )}
               </div>
-              {/* save & share card — hidden until feature is ready */}
+              <Button
+                onClick={exportPromptCard}
+                disabled={promptShareExporting}
+                className="w-full rounded-full text-white font-semibold"
+                style={{ background: 'linear-gradient(135deg, #FFB300, #FFA000)' }}
+                data-testid="prompt-share-card-btn"
+              >
+                {promptShareExporting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Share2 className="w-4 h-4 mr-2" />}
+                share your answer
+              </Button>
               <Button variant="ghost" onClick={() => onOpenChange(false)} className="w-full text-muted-foreground">
                 done
               </Button>
+              <DailyPromptShareCard
+                ref={promptShareRef}
+                promptQuestion={prompt?.text}
+                record={selectedRecord}
+                user={user}
+              />
             </div>
           )}
         </div>
