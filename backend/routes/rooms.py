@@ -113,6 +113,26 @@ async def get_room_feed(slug: str, current_user: Dict = Depends(require_auth)):
             ]
 
     posts = await db.posts.aggregate(pipeline).to_list(20)
+
+    # Enrich posts with user data so the frontend can display author info
+    user_ids_feed = list({p["user_id"] for p in posts if p.get("user_id")})
+    if user_ids_feed:
+        users_raw_feed = await db.users.find(
+            {"id": {"$in": user_ids_feed}},
+            {"_id": 0, "id": 1, "username": 1, "avatar_url": 1, "founding_member": 1, "title_label": 1, "golden_hive_verified": 1}
+        ).to_list(len(user_ids_feed))
+        users_map_feed = {u["id"]: u for u in users_raw_feed}
+        for p in posts:
+            raw = users_map_feed.get(p.get("user_id"))
+            p["user"] = {
+                "id": raw["id"],
+                "username": raw["username"],
+                "avatar_url": raw.get("avatar_url"),
+                "founding_member": raw.get("founding_member", False),
+                "title_label": raw.get("title_label"),
+                "golden_hive_verified": raw.get("golden_hive_verified", False),
+            } if raw else None
+
     return posts
 
 
@@ -258,9 +278,9 @@ async def get_room_members(slug: str, current_user: Optional[Dict] = Depends(get
         except Exception:
             collector_counts[uid] = 0
 
-    # Sort by count desc, mark top 5
+    # Sort by count desc, assign ranks 1-3 for top contributors (Gold-only)
     sorted_ids = sorted(user_ids, key=lambda uid: collector_counts.get(uid, 0), reverse=True)
-    top_5 = set(sorted_ids[:5])
+    top_3_ranks = {uid: rank + 1 for rank, uid in enumerate(sorted_ids[:3])} if is_gold else {}
 
     users_map = {u["id"]: u for u in users_raw}
     result = []
@@ -268,7 +288,7 @@ async def get_room_members(slug: str, current_user: Optional[Dict] = Depends(get
         u = users_map.get(uid)
         if not u:
             continue
-        u["is_top_collector"] = uid in top_5 and is_gold
+        u["collector_rank"] = top_3_ranks.get(uid)  # 1, 2, or 3, or None
         result.append(u)
 
     return result

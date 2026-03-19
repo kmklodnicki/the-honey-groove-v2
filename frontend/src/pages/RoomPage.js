@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useVariantModal } from '../context/VariantModalContext';
 import axios from 'axios';
-import html2canvas from 'html2canvas';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
@@ -14,9 +13,10 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import AlbumArt from '../components/AlbumArt';
 import BeeAvatar from '../components/BeeAvatar';
 import { PostCard } from '../components/HivePostCard';
-import RoomShareCard from '../components/RoomShareCard';
+import RoomCard from '../components/ShareCards/RoomCard';
 import { resolveImageUrl } from '../utils/imageUrl';
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from '../components/ui/tooltip';
+import { useShareCard } from '../hooks/useShareCard';
 
 const ROOM_TYPE_TOOLTIPS = {
   genre:     "Rooms built around musical genres. Automatically created from the most-collected genres across all Vaults on THG.",
@@ -25,16 +25,6 @@ const ROOM_TYPE_TOOLTIPS = {
   vibe:      "Mood-based rooms created by Gold members. Late night spins, rainy day records, road trip vinyl. The fun ones.",
   collector: "Rooms organized by collecting style, not genre. Colored vinyl, rare pressings, picture discs. Gold members only.",
 };
-
-// Pre-flight: ensure an image is in the browser cache before canvas export
-const preflightImage = (url) => new Promise((resolve) => {
-  if (!url) { resolve(false); return; }
-  const img = new Image();
-  img.crossOrigin = 'anonymous';
-  img.onload = () => resolve(true);
-  img.onerror = () => resolve(false);
-  img.src = url;
-});
 
 const RoomPage = () => {
   const { slug } = useParams();
@@ -51,10 +41,15 @@ const RoomPage = () => {
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
   const [showGoldDialog, setShowGoldDialog] = useState(false);
-  const [exporting, setExporting] = useState(false);
-  const shareRef = useRef(null);
 
   const isGold = user?.golden_hive || user?.golden_hive_verified;
+
+  const { cardRef: shareRef, exporting, exportCard: exportRoomCard } = useShareCard({
+    cardType: 'room',
+    filename: `thg-room-${slug}`,
+    title: `${room?.nickname || room?.name || 'Room'} — The Honey Groove`,
+    userId: user?.id,
+  });
 
   const displayName = room?.nickname || room?.name;
   usePageTitle(displayName || 'Room');
@@ -115,44 +110,9 @@ const RoomPage = () => {
     }
   };
 
-  const handleShare = useCallback(async () => {
-    if (!shareRef.current) return;
-    setExporting(true);
-    try {
-      // Pre-flight cover image if room has a featured record
-      if (room?.cover_url) {
-        await preflightImage(resolveImageUrl(room.cover_url));
-      }
-      shareRef.current.style.display = 'block';
-      shareRef.current.style.position = 'fixed';
-      shareRef.current.style.left = '-9999px';
-      shareRef.current.style.top = '0';
-
-      await new Promise(r => setTimeout(r, 500));
-
-      const canvas = await html2canvas(shareRef.current, {
-        width: 1080, height: 1920, scale: 1, useCORS: true, allowTaint: false, backgroundColor: null,
-      });
-      shareRef.current.style.display = 'none';
-
-      canvas.toBlob(async (blob) => {
-        if (!blob) return;
-        const file = new File([blob], `honeygroove-room-${slug}-${Date.now()}.png`, { type: 'image/png' });
-        if (navigator.share && navigator.canShare?.({ files: [file] })) {
-          await navigator.share({ files: [file], title: `${room?.nickname || room?.name} — The Honey Groove` });
-        } else {
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url; a.download = file.name; a.click();
-          URL.revokeObjectURL(url);
-        }
-        setExporting(false);
-      }, 'image/png');
-    } catch {
-      setExporting(false);
-      if (shareRef.current) shareRef.current.style.display = 'none';
-    }
-  }, [room, slug]);
+  const handleShare = useCallback(() => {
+    exportRoomCard([]);
+  }, [exportRoomCard]);
 
   const handleLeave = async () => {
     try {
@@ -350,21 +310,21 @@ const RoomPage = () => {
                   {members.slice(0, 12).map(u => (
                     <div
                       key={u.id}
-                      className="relative w-8 h-8"
-                      title={isMember ? (u.is_top_collector ? `@${u.username} — Top Collector` : `@${u.username}`) : 'Join to see members'}
+                      className="relative w-9 h-9"
+                      title={isMember ? `@${u.username}` : 'Join to see members'}
                     >
                       {isMember ? (
-                        <BeeAvatar user={u} className="h-8 w-8 cursor-pointer" onClick={() => navigate(`/profile/${u.username}`)} />
+                        <BeeAvatar user={u} className="h-9 w-9 cursor-pointer" onClick={() => navigate(`/profile/${u.username}`)} />
                       ) : (
-                        <BeeAvatar user={null} className="h-8 w-8 blur-sm opacity-60 pointer-events-none select-none" />
+                        <BeeAvatar user={null} className="h-9 w-9 blur-sm opacity-60 pointer-events-none select-none" />
                       )}
-                      {isMember && u.is_top_collector && (
+                      {isMember && u.collector_rank && (
                         <span
-                          className="absolute -top-1 -right-1 w-4 h-4 flex items-center justify-center rounded-full text-[8px]"
+                          className="absolute -top-1 -right-1 w-4 h-4 flex items-center justify-center rounded-full text-[9px] font-bold"
                           style={{ background: '#DAA520', color: '#fff' }}
-                          data-testid={`top-collector-badge-${u.id}`}
+                          data-testid={`collector-rank-badge-${u.id}`}
                         >
-                          🏆
+                          {u.collector_rank}
                         </span>
                       )}
                     </div>
@@ -380,7 +340,7 @@ const RoomPage = () => {
       </div>
 
       {/* Hidden share card for html2canvas export */}
-      <RoomShareCard ref={shareRef} room={room} />
+      <RoomCard ref={shareRef} room={room} user={user} />
 
       {/* Gold upsell dialog */}
       <Dialog open={showGoldDialog} onOpenChange={setShowGoldDialog}>
