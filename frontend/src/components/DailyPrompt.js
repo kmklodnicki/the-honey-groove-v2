@@ -500,7 +500,7 @@ const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
       setResponseData(r.data);
       trackEvent('daily_prompt_answered');
       toast.success(postToHive ? 'Buzzed in & posted to The Hive!' : 'Buzzed in!');
-      onSuccess?.(r.data);
+      onSuccess?.({ ...r.data, cover_url: discogsData?.cover_url || selectedRecord?.cover_url, record_title: displayData?.title || selectedRecord?.title, record_artist: displayData?.artist || selectedRecord?.artist });
     } catch (err) {
       // Retry once if prompt_id is stale (cleanup replaced it)
       if (err.response?.status === 404 && err.response?.data?.detail?.includes('not found')) {
@@ -518,7 +518,7 @@ const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
             setResponseData(retry.data);
             trackEvent('daily_prompt_answered');
             toast.success(postToHive ? 'Buzzed in & posted to The Hive!' : 'Buzzed in!');
-            onSuccess?.(retry.data);
+            onSuccess?.({ ...retry.data, cover_url: discogsData?.cover_url || selectedRecord?.cover_url, record_title: displayData?.title || selectedRecord?.title, record_artist: displayData?.artist || selectedRecord?.artist });
             setSubmitting(false);
             return;
           }

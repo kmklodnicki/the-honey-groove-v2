@@ -116,10 +116,8 @@ export function ShareCardUser({ user, textColor = BRAND.dark }) {
                 borderRadius: 20,
                 padding: '4px 12px',
                 fontWeight: 600,
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                lineHeight: 1,
+                display: 'inline-block',
+                lineHeight: '1.6',
               }}
             >
               🍯 Gold Member
@@ -135,10 +133,8 @@ export function ShareCardUser({ user, textColor = BRAND.dark }) {
                 borderRadius: 20,
                 padding: '4px 12px',
                 fontWeight: 600,
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                lineHeight: 1,
+                display: 'inline-block',
+                lineHeight: '1.6',
               }}
             >
               ✓ Verified
