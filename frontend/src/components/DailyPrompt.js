@@ -54,6 +54,12 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
   const [carouselIdx, setCarouselIdx] = useState(0);
   const [loadingResponses, setLoadingResponses] = useState(false);
   const [archiveOpen, setArchiveOpen] = useState(false);
+  const { cardRef: cardShareRef, exporting: cardShareExporting, exportCard: exportCardShare } = useShareCard({
+    cardType: 'daily_prompt',
+    filename: 'thg-daily-prompt',
+    title: 'My Daily Prompt answer — The Honey Groove',
+    userId: user?.id,
+  });
 
   const [searchParams] = useSearchParams();
   const highlightId = searchParams.get('highlight');
@@ -194,9 +200,22 @@ useEffect(() => {
         ) : (
           /* ── REVIEW MODE: Post-buzz carousel ── */
           <div data-testid="prompt-review-mode">
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-sm text-amber-700 font-medium">buzzed in</span>
-              {streak > 0 && <span className="flex items-center gap-1 text-sm text-amber-600 font-bold">🐝 {streak} {streak === 1 ? 'day' : 'days'} in a row</span>}
+            <div className="flex items-center justify-between gap-3 mb-3">
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-amber-700 font-medium">buzzed in</span>
+                {streak > 0 && <span className="flex items-center gap-1 text-sm text-amber-600 font-bold">🐝 {streak} {streak === 1 ? 'day' : 'days'} in a row</span>}
+              </div>
+              {buzzResponse && (
+                <button
+                  onClick={exportCardShare}
+                  disabled={cardShareExporting}
+                  className="flex items-center gap-1 text-xs font-semibold text-amber-700 hover:text-amber-900 transition"
+                  data-testid="prompt-card-share-btn"
+                >
+                  {cardShareExporting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Share2 className="w-3 h-3" />}
+                  share
+                </button>
+              )}
             </div>
 
             {/* Carousel */}
@@ -337,6 +356,17 @@ useEffect(() => {
         </div>
         )}
       </Card>
+
+      <DailyPromptShareCard
+        ref={cardShareRef}
+        promptQuestion={prompt?.text}
+        record={{
+          cover_url: buzzResponse?.cover_url,
+          title: buzzResponse?.record_title,
+          artist: buzzResponse?.record_artist,
+        }}
+        user={user}
+      />
 
       <BuzzInModal
         open={modalOpen}
