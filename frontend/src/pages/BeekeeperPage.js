@@ -1329,8 +1329,8 @@ function CoversTab({ API, headers }) {
                   <p className="text-sm font-semibold text-stone-800 truncate">{sub.title || 'Unknown'}</p>
                   <p className="text-xs text-stone-400 truncate mb-1">{(sub.artists || []).join(', ') || '—'}</p>
                   <p className="text-xs text-stone-300">by @{sub.submittedByUsername} · ID {sub.discogsReleaseId}</p>
-                  {statusFilter === 'pending' && (
-                    <div className="flex gap-2 mt-3">
+                  <div className="flex gap-2 mt-3">
+                    {statusFilter !== 'approved' && (
                       <button
                         onClick={() => doAction(sub.id, 'approve')}
                         disabled={!!actionId}
@@ -1339,6 +1339,8 @@ function CoversTab({ API, headers }) {
                         {actionId === sub.id + 'approve' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
                         Approve
                       </button>
+                    )}
+                    {statusFilter !== 'rejected' && (
                       <button
                         onClick={() => doAction(sub.id, 'reject')}
                         disabled={!!actionId}
@@ -1347,11 +1349,8 @@ function CoversTab({ API, headers }) {
                         {actionId === sub.id + 'reject' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
                         Reject
                       </button>
-                    </div>
-                  )}
-                  {statusFilter !== 'pending' && (
-                    <p className={`text-xs mt-2 font-medium capitalize ${statusFilter === 'approved' ? 'text-green-600' : 'text-red-500'}`}>{sub.status}</p>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

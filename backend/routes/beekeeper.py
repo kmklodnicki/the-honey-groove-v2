@@ -890,15 +890,24 @@ async def approve_community_cover(submission_id: str, admin: Dict = Depends(requ
 
 @router.post("/beekeeper/community-covers/{submission_id}/reject")
 async def reject_community_cover(submission_id: str, admin: Dict = Depends(require_admin)):
-    """Reject a community cover submission."""
-    result = await db.community_cover_submissions.update_one(
-        {"id": submission_id},
-        {"$set": {
-            "status": "rejected",
-            "reviewedAt": datetime.now(timezone.utc).isoformat(),
-            "reviewedBy": admin["id"],
-        }}
-    )
-    if result.matched_count == 0:
+    """Reject a community cover submission. If it was previously approved, clears the community cover."""
+    sub = await db.community_cover_submissions.find_one({"id": submission_id}, {"_id": 0})
+    if not sub:
         raise HTTPException(status_code=404, detail="Submission not found")
+
+    now = datetime.now(timezone.utc).isoformat()
+
+    # If this submission's image is currently the community cover, clear it
+    if sub.get("status") == "approved":
+        release = await db.releases.find_one({"discogsReleaseId": sub["discogsReleaseId"]}, {"_id": 0, "communityCoverUrl": 1})
+        if release and release.get("communityCoverUrl") == sub["imageUrl"]:
+            await db.releases.update_one(
+                {"discogsReleaseId": sub["discogsReleaseId"]},
+                {"$set": {"communityCoverUrl": None, "communityCoverSmall": None, "communityCoverBy": None}}
+            )
+
+    await db.community_cover_submissions.update_one(
+        {"id": submission_id},
+        {"$set": {"status": "rejected", "reviewedAt": now, "reviewedBy": admin["id"]}}
+    )
     return {"success": True}
