@@ -6,9 +6,6 @@ import { Card } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Skeleton } from '../components/ui/skeleton';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-} from '../components/ui/dialog';
-import {
   ArrowLeft, TrendingUp, Music, Disc, Heart, Users, MessageSquare,
   Calendar, Clock, BarChart3, Download, Share2, RefreshCw, ChevronRight, Loader2,
 } from 'lucide-react';
@@ -17,6 +14,8 @@ import { trackEvent } from '../utils/analytics';
 import { usePageTitle } from '../hooks/usePageTitle';
 import AlbumArt from '../components/AlbumArt';
 import { resolveImageUrl } from '../utils/imageUrl';
+import { useShareCard } from '../hooks/useShareCard';
+import WaxReportCard from '../components/ShareCards/WaxReportCard';
 
 /* ═══════ Brand Colors ═══════ */
 const C = {
@@ -34,11 +33,16 @@ const WaxReportPage = () => {
   const navigate = useNavigate();
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [shareModal, setShareModal] = useState(false);
-  const [shareImg, setShareImg] = useState(null);
-  const [shareLoading, setShareLoading] = useState(false);
   const [regenLoading, setRegenLoading] = useState(false);
   const headers = { Authorization: `Bearer ${token}` };
+
+  const isGold = user?.golden_hive || user?.golden_hive_verified;
+  const { cardRef: waxShareRef, exporting: waxExporting, exportCard: exportWaxCard } = useShareCard({
+    cardType: 'wax_report',
+    filename: 'thg-wax-report',
+    title: 'My Week in Wax — The Honey Groove',
+    userId: user?.id,
+  });
 
   const fetchReport = useCallback(async () => {
     try {
@@ -64,26 +68,10 @@ const WaxReportPage = () => {
 
   useEffect(() => { fetchReport(); }, [fetchReport]);
 
-  const handleShare = async () => {
+  const handleShare = () => {
     if (!report) return;
-    setShareModal(true);
-    setShareLoading(true);
-    try {
-      const resp = await axios.get(`${API}/wax-reports/${report.id}/share-card`, {
-        headers, responseType: 'blob',
-      });
-      setShareImg(URL.createObjectURL(resp.data));
-      trackEvent('export_card_generated', { card_type: 'week_in_wax' });
-    } catch { toast.error('could not generate share card.'); }
-    finally { setShareLoading(false); }
-  };
-
-  const downloadShare = () => {
-    if (!shareImg) return;
-    const a = document.createElement('a');
-    a.href = shareImg;
-    a.download = `week-in-wax-${report?.username || 'report'}.png`;
-    a.click();
+    const topCover = report.listening_stats?.top_records?.[0]?.cover_url;
+    exportWaxCard([topCover].filter(Boolean));
   };
 
   const handleRegenLabel = async () => {
@@ -142,11 +130,33 @@ const WaxReportPage = () => {
           {report.avatar_url
             ? <img src={resolveImageUrl(report.avatar_url)} alt="" className="w-14 h-14 rounded-full object-cover shadow" />
             : <div className="w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold" style={{ background: C.barTrack, color: C.amber }}>{(report.username || '?')[0].toUpperCase()}</div>}
-          <div>
+          <div className="flex-1">
             <h1 className="font-heading text-2xl" style={{ color: C.textDark }}>your week in wax</h1>
             <p className="text-sm" style={{ color: C.textMuted }}>@{report.username} · {weekRange}</p>
           </div>
+          <button
+            onClick={handleShare}
+            disabled={waxExporting}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all hover:scale-105 disabled:opacity-60"
+            style={{ background: C.barTrack, color: C.amberAccent }}
+            title="Share to Stories"
+            data-testid="wax-share-btn"
+          >
+            {waxExporting
+              ? <Loader2 className="w-4 h-4 animate-spin" />
+              : <Share2 className="w-4 h-4" />
+            }
+            Share
+          </button>
         </div>
+
+        {/* Hidden WaxReportCard — rendered off-screen for html2canvas */}
+        <WaxReportCard
+          ref={waxShareRef}
+          report={report}
+          user={user}
+          isGold={isGold}
+        />
 
         {/* ═══ Personality Label ═══ */}
         {report.personality && (

@@ -5,7 +5,9 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Input } from './ui/input';
-import { Heart, MessageCircle, MoreVertical, Trash2, Pin, Reply, Send, ChevronDown, ChevronUp, Sparkles, X, FileText, Camera, Loader2 } from 'lucide-react';
+import { Heart, MessageCircle, MoreVertical, Trash2, Pin, Reply, Send, ChevronDown, ChevronUp, Sparkles, X, FileText, Camera, Loader2, Share2 } from 'lucide-react';
+import { useShareCard } from '../hooks/useShareCard';
+import NowSpinningCard from './ShareCards/NowSpinningCard';
 import UserBadges from './UserBadges';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -109,6 +111,19 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
 
   const isOwner = post.user_id === currentUserId;
   const timeAgo = formatDistanceToNow(new Date(post.created_at), { addSuffix: true });
+
+  // Share card — for spin and haul posts
+  const isShareable = post.post_type === 'spin' || post.post_type === 'haul';
+  const { cardRef: shareCardRef, exporting: shareExporting, exportCard } = useShareCard({
+    cardType: post.post_type === 'haul' ? 'haul' : 'now_spinning',
+    filename: `thg-${post.post_type === 'haul' ? 'haul' : 'now-spinning'}`,
+    title: `${post.user?.username ? `@${post.user.username} on ` : ''}The Honey Groove`,
+    userId: currentUserId,
+  });
+  const handleSharePost = () => {
+    const coverUrl = post.cover_url || post.record?.cover_url || post.bundle_records?.[0]?.cover_url;
+    exportCard([coverUrl].filter(Boolean));
+  };
 
   const fetchComments = async () => {
     setLoadingComments(true);
@@ -420,7 +435,34 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
           {post.comments_count > 0 && post.comments_count}
           {showComments ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
         </button>
+        {isShareable && (
+          <button
+            onClick={handleSharePost}
+            disabled={shareExporting}
+            className="ml-auto flex items-center gap-1.5 text-sm text-muted-foreground hover:text-honey-amber transition-colors disabled:opacity-50"
+            title="Share to Stories"
+            data-testid={`share-btn-${post.id}`}
+          >
+            {shareExporting
+              ? <Loader2 className="w-4 h-4 animate-spin" />
+              : <Share2 className="w-4 h-4" />
+            }
+          </button>
+        )}
       </div>
+
+      {/* Hidden share card — rendered off-screen for html2canvas capture */}
+      {isShareable && (
+        <NowSpinningCard
+          ref={shareCardRef}
+          post={{
+            cover_url: post.cover_url || post.record?.cover_url || post.bundle_records?.[0]?.cover_url,
+            title: post.record_title || post.record?.title || post.bundle_records?.[0]?.title || post.caption,
+            artist: post.record_artist || post.record?.artist || post.bundle_records?.[0]?.artist,
+          }}
+          user={post.user}
+        />
+      )}
       {showComments && (
         <div className="px-4 pb-4 border-t border-honey/20 bg-honey/5">
           {loadingComments ? (
