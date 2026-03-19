@@ -16,6 +16,7 @@ import { Camera, X, Check, Loader2, Upload } from 'lucide-react';
 import { toast } from 'sonner';
 import { API } from '../utils/apiBase';
 import { validateImageFile, prepareImageForUpload } from '../utils/imageUpload';
+import safeStorage from '../utils/safeStorage';
 
 export default function CoverUploadModal({ open, onClose, recordId, albumTitle, artistName, onSuccess }) {
   const [preview, setPreview] = useState(null);
@@ -59,7 +60,7 @@ export default function CoverUploadModal({ open, onClose, recordId, albumTitle, 
     if (!recordId) { toast.error('Missing record ID — please close and try again.'); return; }
     setUploading(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = safeStorage.getItem('honeygroove_token');
       const formData = new FormData();
       formData.append('file', file);
 
