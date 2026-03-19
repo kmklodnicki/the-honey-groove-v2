@@ -807,6 +807,7 @@ async def unified_search(q: str = Query(..., min_length=2), user: Dict = Depends
     user_filter = {
         "$or": field_or("username") + field_or("bio") + field_or("location"),
         "is_hidden": {"$ne": True},
+        "is_internal": {"$ne": True},
     }
     if hidden_ids:
         user_filter["id"] = {"$nin": hidden_ids}
@@ -1014,6 +1015,7 @@ async def search_users(
         "$and": [
             {"$or": [{"username": regex}, {"display_name": regex}]},
             {"id": {"$nin": list(exclude_ids)}},
+            {"is_internal": {"$ne": True}},
         ]
     }
 

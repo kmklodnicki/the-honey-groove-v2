@@ -849,7 +849,7 @@ async def get_near_you(user: Dict = Depends(require_auth), collector_limit: int 
             return {"collectors": [], "listings": [], "needs_location": True}
         match_query = {"region": {"$regex": f"^{my_region}$", "$options": "i"}}
 
-    query = {"id": {"$ne": user["id"]}, "username": {"$ne": "demo"}, "email": {"$not": {"$regex": "(example|test)\\.com$", "$options": "i"}}}
+    query = {"id": {"$ne": user["id"]}, "username": {"$ne": "demo"}, "email": {"$not": {"$regex": "(example|test)\\.com$", "$options": "i"}}, "is_internal": {"$ne": True}}
     if hidden_ids:
         query["id"] = {"$ne": user["id"], "$nin": hidden_ids}
     query.update(match_query)
@@ -924,7 +924,7 @@ async def get_suggested_collectors(limit: int = 10, user: Dict = Depends(require
         following_ids = {f["following_id"] for f in following}
         all_exclude = list(following_ids | set(hidden_ids) | set(blocked_ids) | {user["id"]})
         return await db.users.find(
-            {"id": {"$nin": all_exclude}, **user_exclude}, {"_id": 0, "password_hash": 0}
+            {"id": {"$nin": all_exclude}, "is_internal": {"$ne": True}, **user_exclude}, {"_id": 0, "password_hash": 0}
         ).sort("created_at", -1).limit(limit).to_list(limit)
 
     following = await db.followers.find({"follower_id": user["id"]}, {"_id": 0, "following_id": 1}).to_list(500)
