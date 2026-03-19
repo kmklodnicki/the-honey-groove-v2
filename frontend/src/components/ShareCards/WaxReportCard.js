@@ -279,6 +279,7 @@ const WaxReportCard = React.forwardRef(function WaxReportCard({ report, user, is
           <div
             style={{
               display: 'flex',
+              alignItems: 'center',
               gap: 32,
               padding: '14px 40px',
               background: 'rgba(200,134,26,0.12)',
@@ -287,11 +288,11 @@ const WaxReportCard = React.forwardRef(function WaxReportCard({ report, user, is
               marginTop: 24,
             }}
           >
-            <span style={{ fontFamily: 'Georgia, serif', fontSize: 22, color: theme.accent }}>
+            <span style={{ fontFamily: 'Georgia, serif', fontSize: 22, color: theme.accent, lineHeight: 1 }}>
               🍯 Gold
             </span>
             {report.collection_value?.change_pct && (
-              <span style={{ fontFamily: 'Georgia, serif', fontSize: 22, color: theme.accent }}>
+              <span style={{ fontFamily: 'Georgia, serif', fontSize: 22, color: theme.accent, lineHeight: 1 }}>
                 Collection {report.collection_value.change_pct > 0 ? '+' : ''}{report.collection_value.change_pct}% this week
               </span>
             )}

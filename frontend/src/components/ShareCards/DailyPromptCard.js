@@ -36,8 +36,8 @@ const DailyPromptCard = React.forwardRef(function DailyPromptCard({ promptQuesti
 
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', position: 'relative', zIndex: 1 }}>
         {/* "Daily Prompt" tag */}
-        <div style={{ background: 'rgba(200,134,26,0.12)', border: '1.5px solid rgba(200,134,26,0.3)', borderRadius: 100, padding: '10px 32px' }}>
-          <p style={{ fontFamily: 'Georgia, serif', fontSize: 26, color: BRAND.amber, fontWeight: 700, letterSpacing: '0.08em', margin: 0, textTransform: 'uppercase' }}>
+        <div style={{ background: 'rgba(200,134,26,0.12)', border: '1.5px solid rgba(200,134,26,0.3)', borderRadius: 100, padding: '10px 32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <p style={{ fontFamily: 'Georgia, serif', fontSize: 26, color: BRAND.amber, fontWeight: 700, letterSpacing: '0.08em', margin: 0, textTransform: 'uppercase', lineHeight: 1 }}>
             🐝 Daily Prompt
           </p>
         </div>

@@ -37,7 +37,7 @@ const VaultValueCard = React.forwardRef(function VaultValueCard({ vaultData, use
             {recordCount.toLocaleString()} {recordCount === 1 ? 'Record' : 'Records'}
           </span>
           {topGenre && (
-            <span style={{ fontFamily: 'Georgia, serif', fontSize: 28, color: BRAND.amber, background: 'rgba(200,134,26,0.12)', border: '1.5px solid rgba(200,134,26,0.3)', borderRadius: 100, padding: '8px 24px', fontWeight: 600 }}>
+            <span style={{ fontFamily: 'Georgia, serif', fontSize: 28, color: BRAND.amber, background: 'rgba(200,134,26,0.12)', border: '1.5px solid rgba(200,134,26,0.3)', borderRadius: 100, padding: '8px 24px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>
               {topGenre}
             </span>
           )}

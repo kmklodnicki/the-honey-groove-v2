@@ -114,8 +114,12 @@ export function ShareCardUser({ user, textColor = BRAND.dark }) {
                 color: BRAND.amber,
                 background: 'rgba(200,134,26,0.12)',
                 borderRadius: 20,
-                padding: '2px 12px',
+                padding: '4px 12px',
                 fontWeight: 600,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                lineHeight: 1,
               }}
             >
               🍯 Gold Member
@@ -129,8 +133,12 @@ export function ShareCardUser({ user, textColor = BRAND.dark }) {
                 color: '#2563EB',
                 background: 'rgba(37,99,235,0.08)',
                 borderRadius: 20,
-                padding: '2px 12px',
+                padding: '4px 12px',
                 fontWeight: 600,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                lineHeight: 1,
               }}
             >
               ✓ Verified

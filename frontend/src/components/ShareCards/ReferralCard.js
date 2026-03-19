@@ -113,6 +113,8 @@ const ReferralCard = React.forwardRef(function ReferralCard({ referralCode, user
                 textTransform: 'uppercase',
                 letterSpacing: '0.1em',
                 margin: '0 0 12px',
+                lineHeight: 1,
+                textAlign: 'center',
               }}
             >
               Use my code

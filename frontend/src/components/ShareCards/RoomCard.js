@@ -113,9 +113,10 @@ const RoomCard = React.forwardRef(function RoomCard({ room, user }, ref) {
             borderRadius: 100,
             border: `1.5px solid ${accentColor}40`,
             marginTop: 24,
+            justifyContent: 'center',
           }}
         >
-          <span style={{ fontFamily: 'Georgia, serif', fontSize: 36, color: accentColor, fontWeight: 700 }}>
+          <span style={{ fontFamily: 'Georgia, serif', fontSize: 36, color: accentColor, fontWeight: 700, lineHeight: 1 }}>
             {(room.member_count || 0).toLocaleString()} {room.member_count === 1 ? 'member' : 'members'}
           </span>
         </div>
