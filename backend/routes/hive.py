@@ -510,6 +510,12 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
         poll_user_vote=poll_user_vote,
         poll_results=poll_results,
         record_format=record_data.get("format") if record_data else post.get("record_format"),
+        room_slug=post.get("room_slug"),
+        room_name=post.get("room_name"),
+        room_emoji=post.get("room_emoji"),
+        room_type=post.get("room_type"),
+        room_theme=post.get("room_theme"),
+        room_theme_preset=post.get("room_theme_preset"),
     )
 
 @router.get("/feed")

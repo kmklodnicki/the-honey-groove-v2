@@ -248,6 +248,12 @@ class PostResponse(BaseModel):
     poll_user_vote: Optional[int] = None  # option_index the viewer voted for, or None
     poll_results: Optional[List[Dict[str, Any]]] = None  # [{option, count, percentage}, ...]
     record_format: Optional[str] = None  # "Vinyl" | "CD" | "Cassette" etc.
+    room_slug: Optional[str] = None
+    room_name: Optional[str] = None
+    room_emoji: Optional[str] = None
+    room_type: Optional[str] = None
+    room_theme: Optional[Dict[str, Any]] = None
+    room_theme_preset: Optional[str] = None
 
 # Comment Models
 class CommentCreate(BaseModel):
