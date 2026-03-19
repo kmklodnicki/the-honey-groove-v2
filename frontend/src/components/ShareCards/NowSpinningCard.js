@@ -19,7 +19,7 @@ const NowSpinningCard = React.forwardRef(function NowSpinningCard({ post, user }
             height: 700,
             borderRadius: 28,
             overflow: 'hidden',
-            boxShadow: '0 32px 80px rgba(0,0,0,0.28)',
+            boxShadow: '0 12px 40px rgba(0,0,0,0.35)',
             background: '#F0E6D0',
             display: 'flex',
             alignItems: 'center',

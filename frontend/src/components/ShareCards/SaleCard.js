@@ -19,7 +19,7 @@ const SaleCard = React.forwardRef(function SaleCard({ record, price, user }, ref
             height: 700,
             borderRadius: 28,
             overflow: 'hidden',
-            boxShadow: '0 24px 64px rgba(0,0,0,0.22)',
+            boxShadow: '0 12px 40px rgba(0,0,0,0.35)',
             background: '#E0F0E8',
             display: 'flex',
             alignItems: 'center',

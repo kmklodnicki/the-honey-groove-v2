@@ -19,7 +19,7 @@ const TradeCard = React.forwardRef(function TradeCard(
     height: 440,
     borderRadius: 24,
     overflow: 'hidden',
-    boxShadow: '0 20px 60px rgba(0,0,0,0.22)',
+    boxShadow: '0 12px 40px rgba(0,0,0,0.35)',
     background: '#F0E6D0',
     display: 'flex',
     alignItems: 'center',

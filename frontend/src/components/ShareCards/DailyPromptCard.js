@@ -67,7 +67,7 @@ const DailyPromptCard = React.forwardRef(function DailyPromptCard({ promptQuesti
             height: 660,
             borderRadius: 28,
             overflow: 'hidden',
-            boxShadow: '0 24px 64px rgba(0,0,0,0.22)',
+            boxShadow: '0 12px 40px rgba(0,0,0,0.35)',
             background: '#F0E6D0',
             display: 'flex',
             alignItems: 'center',
