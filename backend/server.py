@@ -405,6 +405,7 @@ async def startup_event():
     await db.invite_codes.create_index([("created_at", -1)])
 
     await db.users.update_one({"email": "demo@example.com"}, {"$set": {"is_admin": True}})
+    await db.users.update_one({"username": "katie_test"}, {"$set": {"is_hidden": True, "is_test": True}})
 
     try:
         init_storage()
