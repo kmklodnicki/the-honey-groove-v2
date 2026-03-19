@@ -35,7 +35,7 @@ const TradeCard = React.forwardRef(function TradeCard(
         </p>
 
         {/* Sent record */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, marginTop: 20 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24, marginTop: 20 }}>
           <p style={{ fontFamily: 'Georgia, serif', fontSize: 26, color: BRAND.warmBrown, textTransform: 'uppercase', letterSpacing: '0.12em', margin: 0 }}>Sent</p>
           <div style={coverStyle}>
             {sentUrl ? (
@@ -55,7 +55,7 @@ const TradeCard = React.forwardRef(function TradeCard(
         <div style={{ fontSize: 64, lineHeight: 1, color: BRAND.amber, marginTop: 12 }}>⇅</div>
 
         {/* Received record */}
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, marginTop: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24, marginTop: 20 }}>
           <p style={{ fontFamily: 'Georgia, serif', fontSize: 26, color: BRAND.warmBrown, textTransform: 'uppercase', letterSpacing: '0.12em', margin: 0 }}>Received</p>
           <div style={coverStyle}>
             {receivedUrl ? (

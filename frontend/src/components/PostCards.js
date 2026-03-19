@@ -537,26 +537,29 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
     if (coverUrl || title) {
       const fallbackRecord = { title, artist, cover_url: coverUrl };
       return (
-        <AlbumLink record={fallbackRecord} onAlbumClick={onAlbumClick}>
-          <div data-testid="new-haul-card">
-            <div className="flex gap-4 items-start">
-              {coverUrl ? (
-                <div className="shrink-0">
-                  <AlbumArt src={coverUrl} alt={`${artist} ${title} vinyl record`} className="w-24 h-24 rounded-[10px] object-cover shadow-md" priority={imgPriority} />
+        <div>
+          <AlbumLink record={fallbackRecord} onAlbumClick={onAlbumClick}>
+            <div data-testid="new-haul-card">
+              <div className="flex gap-4 items-start">
+                {coverUrl ? (
+                  <div className="shrink-0">
+                    <AlbumArt src={coverUrl} alt={`${artist} ${title} vinyl record`} className="w-24 h-24 rounded-[10px] object-cover shadow-md" priority={imgPriority} />
+                  </div>
+                ) : (
+                  <div className="w-24 h-24 rounded-lg bg-pink-50 flex items-center justify-center shrink-0">
+                    <Package className="w-10 h-10 text-pink-300" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-heading text-lg leading-tight truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{title}</p>
+                  <p className="text-sm text-muted-foreground truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{artist}</p>
+                  {post.caption && <p className="text-sm mt-2 whitespace-pre-wrap"><MentionText text={post.caption} /></p>}
                 </div>
-              ) : (
-                <div className="w-24 h-24 rounded-lg bg-pink-50 flex items-center justify-center shrink-0">
-                  <Package className="w-10 h-10 text-pink-300" />
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="font-heading text-lg leading-tight truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{title}</p>
-                <p className="text-sm text-muted-foreground truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{artist}</p>
-                {post.caption && <p className="text-sm mt-2 whitespace-pre-wrap"><MentionText text={post.caption} /></p>}
               </div>
             </div>
-          </div>
-        </AlbumLink>
+          </AlbumLink>
+          <StreamingLinks artist={artist} album={title} discogsId={post.discogs_id} />
+        </div>
       );
     }
     return <p className="text-sm whitespace-pre-wrap"><MentionText text={post.caption} /></p>;
@@ -816,6 +819,7 @@ const DailyPromptPostCard = ({ post, imgPriority, onAlbumClick }) => {
       </div>
     </div>
     </AlbumLink>
+    <StreamingLinks artist={post.record_artist} album={post.record_title} discogsId={post.discogs_id || promptRecord.discogs_id} />
     {post.caption && <p className="text-sm mt-3 whitespace-pre-wrap"><MentionText text={post.caption} /></p>}
   </div>
   );
@@ -1012,29 +1016,32 @@ const ListingPostCard = ({ post }) => {
   const isSale = post.post_type === 'listing_sale';
   const variantText = post.color_variant || post.pressing_variant;
   return (
-    <Link to={post.listing_id ? `/honeypot/listing/${post.listing_id}` : '/honeypot'} className="block" data-testid={`listing-post-${post.id}`}>
-      <div className="flex gap-3 items-center bg-stone-50 rounded-xl p-3 hover:bg-stone-100 transition-colors">
-        {post.cover_url ? (
-          <div className="shrink-0">
-            <AlbumArt src={post.cover_url} alt={`${post.record_artist || 'Artist'} ${post.record_title || 'Album'}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-16 h-16 rounded-[10px] object-cover shadow-sm" isUnofficial={post.is_unofficial} />
+    <div>
+      <Link to={post.listing_id ? `/honeypot/listing/${post.listing_id}` : '/honeypot'} className="block" data-testid={`listing-post-${post.id}`}>
+        <div className="flex gap-3 items-center bg-stone-50 rounded-xl p-3 hover:bg-stone-100 transition-colors">
+          {post.cover_url ? (
+            <div className="shrink-0">
+              <AlbumArt src={post.cover_url} alt={`${post.record_artist || 'Artist'} ${post.record_title || 'Album'}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-16 h-16 rounded-[10px] object-cover shadow-sm" isUnofficial={post.is_unofficial} />
+            </div>
+          ) : (
+            <div className="w-16 h-16 rounded-lg bg-amber-100 flex items-center justify-center"><Disc className="w-6 h-6 text-amber-400" /></div>
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="font-medium text-sm truncate">{post.record_title}</p>
+            <p className="text-xs text-muted-foreground truncate">{post.record_artist}</p>
+            <div className="flex flex-wrap gap-1 mt-1" data-testid="card-meta-pills">
+              {variantText && <VariantTag variant={variantText} linkTo={variantLink(post.record)} />}
+              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100/60 text-teal-700`}>
+                {isSale ? <ShoppingBag className="w-3 h-3" /> : <ArrowRightLeft className="w-3 h-3" />}
+                {isSale ? 'For Sale' : 'For Trade'}
+              </span>
+            </div>
+            {post.pressing_notes && <p className="text-xs italic text-stone-500 font-serif mt-1 truncate">{post.pressing_notes.length > 60 ? post.pressing_notes.slice(0, 60) + '...' : post.pressing_notes}</p>}
           </div>
-        ) : (
-          <div className="w-16 h-16 rounded-lg bg-amber-100 flex items-center justify-center"><Disc className="w-6 h-6 text-amber-400" /></div>
-        )}
-        <div className="flex-1 min-w-0">
-          <p className="font-medium text-sm truncate">{post.record_title}</p>
-          <p className="text-xs text-muted-foreground truncate">{post.record_artist}</p>
-          <div className="flex flex-wrap gap-1 mt-1" data-testid="card-meta-pills">
-            {variantText && <VariantTag variant={variantText} linkTo={variantLink(post.record)} />}
-            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-teal-100/60 text-teal-700`}>
-              {isSale ? <ShoppingBag className="w-3 h-3" /> : <ArrowRightLeft className="w-3 h-3" />}
-              {isSale ? 'For Sale' : 'For Trade'}
-            </span>
-          </div>
-          {post.pressing_notes && <p className="text-xs italic text-stone-500 font-serif mt-1 truncate">{post.pressing_notes.length > 60 ? post.pressing_notes.slice(0, 60) + '...' : post.pressing_notes}</p>}
         </div>
-      </div>
-    </Link>
+      </Link>
+      <StreamingLinks artist={post.record_artist} album={post.record_title} discogsId={post.discogs_id} />
+    </div>
   );
 };
 
@@ -1187,4 +1194,4 @@ const FormatPill = ({ format }) => {
   );
 };
 
-export { PostTypeBadge, PostCardBody, ListingTypeBadge, TagPill, NewFeatureBadge, VariantTag, PILL_STYLES, FormatPill };
+export { PostTypeBadge, PostCardBody, ListingTypeBadge, TagPill, NewFeatureBadge, VariantTag, PILL_STYLES, FormatPill, StreamingLinks };

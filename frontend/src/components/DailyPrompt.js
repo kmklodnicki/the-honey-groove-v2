@@ -11,6 +11,7 @@ import MentionText from './MentionText';
 import { Loader2, Disc, Share2, Send, Download, Search, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useShareCard } from '../hooks/useShareCard';
 import DailyPromptShareCard from './ShareCards/DailyPromptCard';
+import { StreamingLinks } from './PostCards';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import RecordSearchResult from './RecordSearchResult';
@@ -310,6 +311,11 @@ useEffect(() => {
               </div>
             ) : null}
           </div>
+        )}
+
+        {/* Spotify link for the user's own response record */}
+        {buzzResponse?.discogs_id && (
+          <StreamingLinks artist={buzzResponse.record_artist} album={buzzResponse.record_title} discogsId={buzzResponse.discogs_id} />
         )}
 
         {/* Centered archive link — secondary explore action */}
