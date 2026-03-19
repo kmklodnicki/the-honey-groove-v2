@@ -34,11 +34,11 @@ export function resolveImageUrl(src) {
   // Cloudinary URLs — always work, return as-is
   if (src.includes('res.cloudinary.com')) return enforceHttps(src);
 
-  // Discogs CDN — MUST proxy through our backend.
-  // Discogs blocks hotlinking from production domains (thehoneygroove.com).
-  // Our /api/image-proxy fetches server-side and serves same-origin.
-  if (src.includes('discogs.com')) {
-    return `${API}/image-proxy?url=${encodeURIComponent(enforceHttps(src))}`;
+  // Discogs CDN — no longer used for album art (Restricted Data per Discogs TOS).
+  // Any remaining discogs.com image URLs are legacy; return null so the AlbumArt
+  // component falls through to its placeholder state.
+  if (src.includes('i.discogs.com') || src.includes('st.discogs.com')) {
+    return null;
   }
 
   // Emergent file host URLs → proxy through our backend to avoid CORS issues in PWA standalone mode

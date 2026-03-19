@@ -108,6 +108,9 @@ class RecordCreate(BaseModel):
     notes: Optional[str] = None
     color_variant: Optional[str] = None
     edition_number: Optional[int] = None
+    userPhotoUrl: Optional[str] = None
+    userPhotoSmall: Optional[str] = None
+    userPhotoUploadedBy: Optional[str] = None
 
 class RecordResponse(BaseModel):
     id: str
@@ -130,6 +133,17 @@ class RecordResponse(BaseModel):
     community_want: Optional[int] = None
     rarity_label: Optional[str] = None
     is_unofficial: Optional[bool] = False
+    # User-uploaded and resolved image fields
+    userPhotoUrl: Optional[str] = None
+    userPhotoSmall: Optional[str] = None
+    userPhotoUploadedBy: Optional[str] = None
+    imageUrl: Optional[str] = None          # resolved by backend (priority: user → spotify → community → placeholder)
+    imageSmall: Optional[str] = None
+    imageSource: Optional[str] = None       # "user_upload"|"spotify"|"community"|"placeholder"
+    needsCoverPhoto: Optional[bool] = False
+    hasUserPhoto: Optional[bool] = False
+    spotifyAlbumId: Optional[str] = None
+    discogsUrl: Optional[str] = None
 
 class DiscogsSearchResult(BaseModel):
     discogs_id: int
@@ -143,6 +157,40 @@ class DiscogsSearchResult(BaseModel):
     catno: Optional[str] = None
     color_variant: Optional[str] = None
     genre: Optional[List[str]] = None
+    spotifyImageUrl: Optional[str] = None
+    spotifyImageSmall: Optional[str] = None
+    spotifyMatchStatus: Optional[str] = None
+
+
+class ReleaseDocument(BaseModel):
+    """Pydantic model for the `releases` collection. Stores CC0 + Spotify data."""
+    # CC0 fields from Discogs (freely usable)
+    discogsReleaseId: int
+    title: Optional[str] = None
+    artists: Optional[List[str]] = []
+    labels: Optional[List[str]] = []
+    formats: Optional[List[str]] = []
+    tracklist: Optional[List[Dict[str, Any]]] = []
+    year: Optional[int] = None
+    country: Optional[str] = None
+    genres: Optional[List[str]] = []
+    styles: Optional[List[str]] = []
+    barcode: Optional[List[str]] = []
+    notes: Optional[str] = None
+    credits: Optional[List[str]] = []
+    discogsUrl: Optional[str] = None
+    dataFetchedAt: Optional[str] = None
+    # Spotify fields
+    spotifyAlbumId: Optional[str] = None
+    spotifyImageUrl: Optional[str] = None
+    spotifyImageSmall: Optional[str] = None
+    spotifyMatchType: Optional[str] = None   # "upc"|"artist_album"|"simple"
+    spotifyMatchedAt: Optional[str] = None
+    spotifyMatchStatus: Optional[str] = None  # "pending"|"matched"|"unmatched"|"manual_override"
+    # Community-uploaded cover
+    communityCoverUrl: Optional[str] = None
+    communityCoverSmall: Optional[str] = None
+    communityCoverBy: Optional[str] = None
 
 # Spin Models
 class SpinCreate(BaseModel):

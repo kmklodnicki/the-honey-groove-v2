@@ -335,6 +335,11 @@ async def startup_event():
     await db.room_members.create_index("userId")
     # Honey Drop indexes
     await db.honey_drops.create_index("date", unique=True)
+    # Releases collection (CC0 + Spotify album art)
+    await db.releases.create_index([("discogsReleaseId", 1)], unique=True)
+    await db.releases.create_index([("barcode", 1)])
+    await db.releases.create_index([("spotifyAlbumId", 1)])
+    await db.releases.create_index([("spotifyMatchStatus", 1)])
     # Milestones indexes
     await db.milestones.create_index([("userId", 1), ("type", 1)], unique=True)
     await db.milestones.create_index("achieved_at")

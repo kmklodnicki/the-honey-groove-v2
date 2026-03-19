@@ -929,6 +929,12 @@ const SettingsPage = () => {
         </CardContent>
       </Card>
 
+      {/* Discogs Attribution */}
+      <p className="text-xs text-muted-foreground text-center px-2 pb-2">
+        This application uses the Discogs API but is not affiliated with, sponsored or endorsed by Discogs.
+        &ldquo;Discogs&rdquo; is a trademark of Zink Media, LLC.
+      </p>
+
       {/* Delete Account Confirmation Modal */}
       <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
         <DialogContent className="sm:max-w-md bg-[#FAF6EE] border-honey/30 rounded-2xl" data-testid="delete-account-modal">

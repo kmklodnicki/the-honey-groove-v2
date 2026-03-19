@@ -201,7 +201,7 @@ const ProfilePage = () => {
       album: record.title || record.album,
       variant: record.color_variant || record.pressing_notes || record.variant || '',
       discogs_id: record.discogs_id,
-      cover_url: record.cover_url,
+      cover_url: record.imageUrl || record.imageSmall || record.cover_url,
     });
   };
 
@@ -1011,13 +1011,18 @@ const ProfilePage = () => {
                       : (showCommonOnly ? { opacity: 0.3 } : {})}
                   >
                     <div className="relative aspect-square bg-vinyl-black">
-                      {record.cover_url ? (
-                        <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${record.color_variant ? ` ${record.color_variant}` : ''} vinyl record`} className="w-full h-full object-cover" isUnofficial={record.is_unofficial} />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Disc className="w-12 h-12 text-honey" />
-                        </div>
-                      )}
+                      <AlbumArt
+                        imageUrl={record.imageUrl || record.cover_url}
+                        imageSmall={record.imageSmall}
+                        imageSource={record.imageSource}
+                        needsCoverPhoto={record.needsCoverPhoto}
+                        albumTitle={record.title}
+                        artistName={record.artist}
+                        size="small"
+                        alt={`${record.artist} ${record.title}${record.color_variant ? ` ${record.color_variant}` : ''} vinyl record`}
+                        className="w-full h-full object-cover"
+                        isUnofficial={record.is_unofficial}
+                      />
                       {record.color_variant && (
                         <>
                           <div className="absolute top-0 left-0 w-1/2 h-1/2 z-[4] pointer-events-none rounded-tl-2xl" style={{ background: 'linear-gradient(135deg, rgba(0,0,0,0.25) 0%, transparent 60%)' }} />
@@ -1400,7 +1405,7 @@ const ProfilePage = () => {
                     {tasteMatch.shared_reality.map((r, i) => (
                       <div key={i} className="shrink-0 w-20">
                         <div className="w-20 h-20 rounded-lg overflow-hidden bg-vinyl-black">
-                          {r.cover_url ? <AlbumArt src={r.cover_url} alt={r.title} className="w-full h-full object-cover" isUnofficial={r.is_unofficial} /> : <div className="w-full h-full flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>}
+                          <AlbumArt imageUrl={r.imageUrl || r.cover_url} imageSource={r.imageSource} albumTitle={r.title} artistName={r.artist} size="small" alt={r.title} className="w-full h-full object-cover" isUnofficial={r.is_unofficial} />
                         </div>
                         <p className="text-[10px] font-medium truncate mt-1">{r.title}</p>
                         <p className="text-[10px] text-muted-foreground truncate">{r.artist}</p>
@@ -1420,7 +1425,7 @@ const ProfilePage = () => {
                     {tasteMatch.shared_dreams.map((r, i) => (
                       <div key={i} className="shrink-0 w-20">
                         <div className="w-20 h-20 rounded-lg overflow-hidden bg-vinyl-black">
-                          {r.cover_url ? <AlbumArt src={r.cover_url} alt={r.title} className="w-full h-full object-cover" isUnofficial={r.is_unofficial} /> : <div className="w-full h-full flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>}
+                          <AlbumArt imageUrl={r.imageUrl || r.cover_url} imageSource={r.imageSource} albumTitle={r.title} artistName={r.artist} size="small" alt={r.title} className="w-full h-full object-cover" isUnofficial={r.is_unofficial} />
                         </div>
                         <p className="text-[10px] font-medium truncate mt-1">{r.title}</p>
                         <p className="text-[10px] text-muted-foreground truncate">{r.artist}</p>
@@ -1440,7 +1445,7 @@ const ProfilePage = () => {
                     {tasteMatch.swap_potential.map((r, i) => (
                       <div key={i} className="shrink-0 w-20">
                         <div className="w-20 h-20 rounded-lg overflow-hidden bg-vinyl-black ring-2 ring-honey/40">
-                          {r.cover_url ? <AlbumArt src={r.cover_url} alt={r.title} className="w-full h-full object-cover" isUnofficial={r.is_unofficial} /> : <div className="w-full h-full flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>}
+                          <AlbumArt imageUrl={r.imageUrl || r.cover_url} imageSource={r.imageSource} albumTitle={r.title} artistName={r.artist} size="small" alt={r.title} className="w-full h-full object-cover" isUnofficial={r.is_unofficial} />
                         </div>
                         <p className="text-[10px] font-medium truncate mt-1">{r.title}</p>
                         <p className="text-[10px] text-muted-foreground truncate">{r.artist}</p>

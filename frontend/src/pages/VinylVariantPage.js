@@ -115,7 +115,7 @@ export default function VinylVariantPage() {
           '@context': 'https://schema.org',
           '@type': 'Product',
           name: `${ov.artist} — ${ov.album} (${ov.variant})`,
-          image: ov.cover_url,
+          image: ov.imageUrl || ov.imageSmall,
           category: 'Vinyl Record',
           url: `https://thehoneygroove.com${seo.canonical}`,
           brand: { '@type': 'MusicGroup', name: ov.artist },
@@ -146,13 +146,19 @@ export default function VinylVariantPage() {
               className="relative aspect-square overflow-hidden bg-stone-200 transition-transform duration-150 ease-out hover:-translate-y-[3px]"
               style={{ borderRadius: '14px', boxShadow: '0 12px 28px rgba(0,0,0,0.12)' }}
             >
-              {ov.cover_url ? (
-                <AlbumArt src={ov.cover_url} alt={`${ov.artist} ${ov.album} ${ov.variant} vinyl record`} className="w-full h-full object-cover" isUnofficial={ov.is_unofficial} formatText={ov.format || ''} />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Disc className="w-16 h-16 text-honey/40" />
-                </div>
-              )}
+              <AlbumArt
+                imageUrl={ov.imageUrl}
+                imageSmall={ov.imageSmall}
+                imageSource={ov.imageSource}
+                needsCoverPhoto={ov.needsCoverPhoto}
+                albumTitle={ov.album}
+                artistName={ov.artist}
+                size="large"
+                alt={`${ov.artist} ${ov.album} ${ov.variant} vinyl record`}
+                className="w-full h-full object-cover"
+                isUnofficial={ov.is_unofficial}
+                formatText={ov.format || ''}
+              />
               {/* Variant pill */}
               <div
                 className="absolute bottom-3 left-3 right-3 truncate uppercase text-[11px] font-bold px-3 py-1 rounded-full text-center"
@@ -216,6 +222,20 @@ export default function VinylVariantPage() {
                 </a>
               )}
             </div>
+
+            {/* Discogs attribution — required per Discogs API TOS */}
+            {ov.discogs_id && (
+              <p className="text-[10px] text-muted-foreground/60 mt-1">
+                <a
+                  href={`https://www.discogs.com/release/${ov.discogs_id}`}
+                  target="_blank"
+                  rel="noopener"
+                  className="hover:text-muted-foreground transition-colors"
+                >
+                  Data provided by Discogs
+                </a>
+              </p>
+            )}
 
             {/* Quick stats row */}
             <div className="grid grid-cols-3 gap-3">
@@ -338,7 +358,7 @@ export default function VinylVariantPage() {
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-lg overflow-hidden bg-stone-200 shrink-0">
                     <AlbumArt
-                      src={listing.photo_urls?.[0] || listing.cover_url || ov.cover_url}
+                      src={listing.photo_urls?.[0] || listing.cover_url || ov.imageSmall || ov.imageUrl}
                       alt={`${listing.artist} ${listing.album}${listing.pressing_notes ? ` ${listing.pressing_notes}` : ''} vinyl record`}
                       className="w-full h-full object-cover"
                     />

@@ -7,6 +7,7 @@ import os
 import logging
 
 from database import db, require_auth, get_current_user, security, logger, create_notification, get_hidden_user_ids
+from utils.image_helpers import is_discogs_image_url
 
 # ---------- HONEY Order ID Generator ----------
 HONEY_ORDER_START = 134208789
@@ -138,7 +139,7 @@ async def create_iso_direct(data: ISODirectCreate, user: Dict = Depends(require_
         "artist": data.artist,
         "album": data.album,
         "discogs_id": data.discogs_id,
-        "cover_url": data.cover_url,
+        "cover_url": None if is_discogs_image_url(data.cover_url) else data.cover_url,
         "year": data.year,
         "color_variant": data.color_variant,
         "pressing_notes": data.notes,
@@ -403,7 +404,7 @@ async def create_listing(data: ListingCreate, user: Dict = Depends(require_auth)
         "discogs_id": data.discogs_id,
         "artist": data.artist,
         "album": data.album,
-        "cover_url": data.cover_url,
+        "cover_url": None if is_discogs_image_url(data.cover_url) else data.cover_url,
         "year": data.year,
         "condition": data.condition,
         "pressing_notes": data.pressing_notes,

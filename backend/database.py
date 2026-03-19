@@ -483,8 +483,11 @@ def get_discogs_release(release_id: int) -> Optional[Dict]:
                 "year": data.get("year"),
                 "genre": data.get("genres", []),
                 "style": data.get("styles", []),
-                "cover_url": cover_url,
-                "thumb_url": thumb_url,
+                # cover_url and thumb_url intentionally excluded from the returned dict.
+                # Discogs images are Restricted Data (Discogs TOS §4). They are only
+                # consumed internally by releases_service.py for CC0 data extraction
+                # and MUST NOT be stored in the records collection or exposed via API.
+                "_discogs_cover_url": cover_url,   # internal-only; never expose to API responses
                 "tracklist": [{"position": t.get("position"), "title": t.get("title"), "duration": t.get("duration")} for t in data.get("tracklist", [])],
                 "format": [f.get("name", "") for f in data.get("formats", [])],
                 "format_descriptions": [desc for f in data.get("formats", []) for desc in f.get("descriptions", [])],
@@ -497,6 +500,7 @@ def get_discogs_release(release_id: int) -> Optional[Dict]:
                 "community_have": community.get("have", 0),
                 "community_want": community.get("want", 0),
                 "num_for_sale": data.get("num_for_sale", 0),
+                "identifiers": data.get("identifiers", []),
             }
         except Exception as e:
             logger.error(f"Discogs release error (attempt {attempt+1}): {e}")

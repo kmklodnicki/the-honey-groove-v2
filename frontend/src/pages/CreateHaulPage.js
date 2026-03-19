@@ -102,7 +102,7 @@ const CreateHaulPage = () => {
           discogs_id: item.discogs_id,
           title: item.title,
           artist: item.artist,
-          cover_url: item.cover_url,
+          cover_url: item.imageSmall || item.imageUrl || item.cover_url,
           year: item.year,
           format: item.itemFormat || 'Vinyl',
         }))
@@ -179,8 +179,8 @@ const CreateHaulPage = () => {
                 key={item.discogs_id}
                 className="flex items-center gap-3 p-3 bg-honey/10 rounded-lg"
               >
-                {item.cover_url ? (
-                  <AlbumArt src={item.cover_url} alt={item.title} className="w-12 h-12 rounded object-cover" isUnofficial={item.is_unofficial} />
+                {(item.imageUrl || item.cover_url) ? (
+                  <AlbumArt src={item.imageSmall || item.imageUrl || item.cover_url} alt={item.title} className="w-12 h-12 rounded object-cover" isUnofficial={item.is_unofficial} />
                 ) : (
                   <div className="w-12 h-12 rounded bg-vinyl-black flex items-center justify-center">
                     <Disc className="w-5 h-5 text-honey" />
@@ -251,8 +251,8 @@ const CreateHaulPage = () => {
                 className="flex items-center gap-3 p-3 rounded-lg border border-honey/30 hover:border-honey hover:bg-honey/5 cursor-pointer transition-colors"
                 onClick={() => addItem(result)}
               >
-                {result.cover_url ? (
-                  <AlbumArt src={result.cover_url} alt={result.title} className="w-12 h-12 rounded object-cover" isUnofficial={result.is_unofficial} />
+                {(result.imageUrl || result.cover_url) ? (
+                  <AlbumArt src={result.imageSmall || result.imageUrl || result.cover_url} alt={result.title} className="w-12 h-12 rounded object-cover" isUnofficial={result.is_unofficial} />
                 ) : (
                   <div className="w-12 h-12 rounded bg-vinyl-black flex items-center justify-center">
                     <Disc className="w-5 h-5 text-honey" />

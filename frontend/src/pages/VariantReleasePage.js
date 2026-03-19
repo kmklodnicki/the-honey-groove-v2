@@ -129,7 +129,7 @@ export default function VariantReleasePage() {
       await axios.post(`${API}/records`, {
         discogs_id: parseInt(releaseId),
         title: ov.album, artist: ov.artist,
-        cover_url: ov.cover_url || '', year: ov.year,
+        cover_url: ov.imageUrl || ov.imageSmall || '', year: ov.year,
         pressing_notes: ov.variant || '',
       }, { headers: { Authorization: `Bearer ${token}` } });
       setOwnership({ in_collection: true, record_id: null });
@@ -147,7 +147,7 @@ export default function VariantReleasePage() {
       await axios.post(`${API}/composer/iso`, {
         artist: ov.artist, album: ov.album,
         discogs_id: parseInt(releaseId),
-        cover_url: ov.cover_url || null,
+        cover_url: ov.imageUrl || ov.imageSmall || null,
         year: ov.year || null,
         pressing_notes: ov.variant || null,
         caption: caption || null,
@@ -179,7 +179,7 @@ export default function VariantReleasePage() {
         title={`${ov.artist} — ${ov.album} (${ov.variant || 'Standard'})`}
         description={`${ov.variant || 'Standard'} pressing of ${ov.album} by ${ov.artist}. ${scarcity.discogs_have} global owners.`}
         url={`/variant/${releaseId}`}
-        image={ov.cover_url}
+        image={ov.imageUrl || ov.imageSmall}
       />
 
       {/* Back */}
@@ -195,13 +195,19 @@ export default function VariantReleasePage() {
       <section className="flex flex-col md:flex-row gap-8 mb-10" data-testid="variant-hero">
         <div className="w-full md:w-72 shrink-0">
           <div className="relative aspect-square overflow-hidden bg-stone-200 rounded-2xl shadow-lg shadow-black/5">
-            {ov.cover_url ? (
-              <AlbumArt src={ov.cover_url} alt={`${ov.artist} ${ov.album} ${ov.variant} vinyl`} className="w-full h-full object-cover" isUnofficial={ov.is_unofficial} formatText={ov.format || ''} />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <Disc className="w-16 h-16 text-honey/30" />
-              </div>
-            )}
+            <AlbumArt
+              imageUrl={ov.imageUrl}
+              imageSmall={ov.imageSmall}
+              imageSource={ov.imageSource}
+              needsCoverPhoto={ov.needsCoverPhoto}
+              albumTitle={ov.album}
+              artistName={ov.artist}
+              size="large"
+              alt={`${ov.artist} ${ov.album} ${ov.variant} vinyl`}
+              className="w-full h-full object-cover"
+              isUnofficial={ov.is_unofficial}
+              formatText={ov.format || ''}
+            />
             {/* Variant pill */}
             <div
               className="absolute bottom-3 left-3 right-3 truncate uppercase text-[11px] font-bold px-3 py-1 rounded-full text-center"
@@ -266,6 +272,20 @@ export default function VariantReleasePage() {
               </a>
             )}
           </div>
+
+          {/* Discogs attribution — required per Discogs API TOS */}
+          {releaseId && (
+            <p className="text-[10px] text-muted-foreground/60 mt-1 mb-4">
+              <a
+                href={`https://www.discogs.com/release/${releaseId}`}
+                target="_blank"
+                rel="noopener"
+                className="hover:text-muted-foreground transition-colors"
+              >
+                Data provided by Discogs
+              </a>
+            </p>
+          )}
 
           {/* Action buttons */}
           {token && (
@@ -364,7 +384,7 @@ export default function VariantReleasePage() {
                   album_name: ov.album || '',
                   variant_name: ov.variant || null,
                   artist: ov.artist || '',
-                  cover_url: ov.cover_url || '',
+                  cover_url: ov.imageUrl || ov.imageSmall || '',
                 }, { headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
               }
             }}
@@ -458,7 +478,7 @@ export default function VariantReleasePage() {
           {actionModal === 'add' ? (
             <div className="px-6 pb-6 pt-2 space-y-4">
               <div className="flex items-center gap-3 p-3 rounded-lg bg-honey/10">
-                {ov.cover_url && <img src={ov.cover_url} alt="" className="w-12 h-12 rounded-md object-cover" />}
+                {(ov.imageUrl || ov.imageSmall) && <img src={ov.imageSmall || ov.imageUrl} alt="" className="w-12 h-12 rounded-md object-cover" />}
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium truncate">{ov.album}</p>
                   <p className="text-xs text-muted-foreground truncate">{ov.artist} · {ov.variant || 'Standard'}</p>
@@ -472,7 +492,7 @@ export default function VariantReleasePage() {
           ) : (
             <div className="px-6 pb-2 pt-2 space-y-4">
               <div className="flex items-center gap-3 p-3 rounded-lg bg-honey/10">
-                {ov.cover_url && <img src={ov.cover_url} alt="" className="w-12 h-12 rounded-md object-cover" />}
+                {(ov.imageUrl || ov.imageSmall) && <img src={ov.imageSmall || ov.imageUrl} alt="" className="w-12 h-12 rounded-md object-cover" />}
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium truncate">{ov.album}</p>
                   <p className="text-xs text-muted-foreground truncate">{ov.artist} · {ov.variant || 'Standard'}</p>

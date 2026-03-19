@@ -11,6 +11,7 @@ import {
 import { usePageTitle } from '../hooks/usePageTitle';
 import { toast } from 'sonner';
 import AlbumArt from '../components/AlbumArt';
+import CoverUploadModal from '../components/CoverUploadModal';
 import { resolveImageUrl } from '../utils/imageUrl';
 import { PostTypeBadge } from '../components/PostCards';
 import SEOHead from '../components/SEOHead';
@@ -25,6 +26,7 @@ const RecordDetailPage = () => {
   const { token, API, user } = useAuth();
   const navigate = useNavigate();
   const [data, setData] = useState(null);
+  const [uploadOpen, setUploadOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [spinning, setSpinning] = useState(false);
   const [rarity, setRarity] = useState(null);
@@ -146,14 +148,23 @@ const RecordDetailPage = () => {
       <div className="flex flex-col md:flex-row gap-8 mb-10" data-testid="record-hero">
         {/* Album art */}
         <div className="shrink-0">
-          <div className="relative w-full md:w-80 aspect-square rounded-2xl overflow-hidden bg-honey/10 shadow-lg shadow-black/5">
-            {record.cover_url ? (
-              <AlbumArt src={record.cover_url} alt={`${record.artist} ${record.title}${record.color_variant ? ` ${record.color_variant}` : ''} vinyl record`} className="w-full h-full object-cover" data-testid="record-cover" isUnofficial={record.is_unofficial} />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <Disc className="w-20 h-20 text-honey/30" />
-              </div>
-            )}
+          <div className="relative group w-full md:w-80 aspect-square rounded-2xl overflow-hidden bg-honey/10 shadow-lg shadow-black/5">
+            <AlbumArt
+              imageUrl={record.imageUrl || record.cover_url}
+              imageSmall={record.imageSmall}
+              imageSource={record.imageSource || (record.cover_url ? 'legacy' : 'placeholder')}
+              needsCoverPhoto={record.needsCoverPhoto}
+              albumTitle={record.title}
+              artistName={record.artist}
+              recordId={record.id}
+              size="large"
+              alt={`${record.artist} ${record.title}${record.color_variant ? ` ${record.color_variant}` : ''} vinyl record`}
+              className="w-full h-full"
+              data-testid="record-cover"
+              isUnofficial={record.is_unofficial}
+              onUploadClick={isOwner ? () => setUploadOpen(true) : undefined}
+              showUploadCta={isOwner}
+            />
           </div>
         </div>
 
@@ -172,7 +183,7 @@ const RecordDetailPage = () => {
             </p>
           )}
 
-          <div className="flex flex-wrap gap-2 mb-6">
+          <div className="flex flex-wrap gap-2 mb-4">
             {record.year && (
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-honey/10 text-sm text-vinyl-black/70">
                 <Calendar className="w-3.5 h-3.5" /> {record.year}
@@ -185,6 +196,20 @@ const RecordDetailPage = () => {
             )}
             {record.is_unofficial && <UnofficialPill variant="inline" />}
           </div>
+
+          {/* Discogs attribution — required per Discogs API TOS */}
+          {(record.discogsUrl || record.discogs_id) && (
+            <p className="text-xs text-muted-foreground mb-6">
+              <a
+                href={record.discogsUrl || `https://www.discogs.com/release/${record.discogs_id}`}
+                target="_blank"
+                rel="noopener"
+                className="hover:underline"
+              >
+                Data provided by Discogs
+              </a>
+            </p>
+          )}
 
           {/* Spin button */}
           {isOwner && (
@@ -392,6 +417,20 @@ const RecordDetailPage = () => {
           <h3 className="font-heading text-lg mb-2">Notes</h3>
           <p className="text-sm text-vinyl-black/70 bg-honey/5 rounded-xl p-4 border border-honey/10">{record.notes}</p>
         </div>
+      )}
+
+      {isOwner && (
+        <CoverUploadModal
+          open={uploadOpen}
+          onClose={() => setUploadOpen(false)}
+          recordId={record.id}
+          albumTitle={record.title}
+          artistName={record.artist}
+          onSuccess={(updated) => {
+            setData(prev => ({ ...prev, record: { ...prev.record, ...updated } }));
+            setUploadOpen(false);
+          }}
+        />
       )}
     </div>
   );

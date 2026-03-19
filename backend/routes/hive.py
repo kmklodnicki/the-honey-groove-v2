@@ -18,6 +18,7 @@ from database import oauth_request_tokens, import_progress, EMERGENT_KEY
 from models import *
 from io import BytesIO
 from util.content_filter import detect_offplatform_payment, detect_profanity
+from utils.image_helpers import is_discogs_image_url
 
 router = APIRouter()
 
@@ -338,8 +339,18 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
                 post["record_title"] = record["title"]
             if not post.get("record_artist") and record.get("artist"):
                 post["record_artist"] = record["artist"]
-            if not post.get("cover_url") and record.get("cover_url"):
-                post["cover_url"] = record["cover_url"]
+            # Resolve cover from priority chain: user photo → spotify → community
+            if not post.get("cover_url"):
+                if record.get("userPhotoSmall") or record.get("userPhotoUrl"):
+                    post["cover_url"] = record.get("userPhotoSmall") or record.get("userPhotoUrl")
+                elif record.get("discogs_id"):
+                    rel = await db.releases.find_one(
+                        {"discogsReleaseId": record["discogs_id"]},
+                        {"_id": 0, "spotifyImageSmall": 1, "spotifyImageUrl": 1, "communityCoverSmall": 1, "communityCoverUrl": 1}
+                    )
+                    if rel:
+                        post["cover_url"] = (rel.get("spotifyImageSmall") or rel.get("spotifyImageUrl")
+                                             or rel.get("communityCoverSmall") or rel.get("communityCoverUrl"))
         else:
             # Record was deleted — skip ghost post if it has no usable data
             if not post.get("record_title"):
@@ -349,45 +360,59 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
     if post.get("haul_id"):
         haul = await db.hauls.find_one({"id": post["haul_id"]}, {"_id": 0})
         if haul:
-            # Hydrate missing cover_url for haul items from records collection
+            # Hydrate missing cover_url for haul items from releases collection (Spotify art)
             items = haul.get("items", [])
+            haul_discogs_ids = [item["discogs_id"] for item in items if item.get("discogs_id") and not item.get("cover_url")]
+            haul_releases: Dict[int, Any] = {}
+            if haul_discogs_ids:
+                async for rel in db.releases.find(
+                    {"discogsReleaseId": {"$in": haul_discogs_ids}},
+                    {"_id": 0, "discogsReleaseId": 1, "spotifyImageSmall": 1, "spotifyImageUrl": 1}
+                ):
+                    haul_releases[rel["discogsReleaseId"]] = rel
             for item in items:
+                # Strip any stale Discogs CDN URLs — Restricted Data
+                if is_discogs_image_url(item.get("cover_url")):
+                    item["cover_url"] = None
                 if not item.get("cover_url") and item.get("discogs_id"):
-                    rec = await db.records.find_one({"discogs_id": item["discogs_id"]}, {"_id": 0, "cover_url": 1})
-                    if rec and rec.get("cover_url"):
-                        item["cover_url"] = rec["cover_url"]
+                    rel = haul_releases.get(item["discogs_id"])
+                    if rel:
+                        item["cover_url"] = rel.get("spotifyImageSmall") or rel.get("spotifyImageUrl")
         haul_data = haul
 
-    # Hydrate cover_url for auto-bundle records
+    # Hydrate cover_url for auto-bundle records via releases collection (Spotify art)
     bundle = post.get("bundle_records")
     if bundle:
-        # First pass: try records collection
+        # Batch fetch releases for all discogs_ids in bundle
+        bundle_discogs_ids = list({item["discogs_id"] for item in bundle if item.get("discogs_id")})
+        bundle_releases: Dict[int, Any] = {}
+        if bundle_discogs_ids:
+            async for rel in db.releases.find(
+                {"discogsReleaseId": {"$in": bundle_discogs_ids}},
+                {"_id": 0, "discogsReleaseId": 1, "spotifyImageSmall": 1, "spotifyImageUrl": 1, "communityCoverSmall": 1, "communityCoverUrl": 1}
+            ):
+                bundle_releases[rel["discogsReleaseId"]] = rel
+
         for item in bundle:
+            # Strip any stale Discogs CDN URLs — Restricted Data
+            if is_discogs_image_url(item.get("cover_url")):
+                item["cover_url"] = None
             if not item.get("cover_url"):
+                # Try user photo from the record
                 if item.get("record_id"):
-                    rec = await db.records.find_one({"id": item["record_id"]}, {"_id": 0, "cover_url": 1})
-                    if rec and rec.get("cover_url"):
-                        item["cover_url"] = rec["cover_url"]
-                elif item.get("discogs_id"):
-                    rec = await db.records.find_one({"discogs_id": item["discogs_id"]}, {"_id": 0, "cover_url": 1})
-                    if rec and rec.get("cover_url"):
-                        item["cover_url"] = rec["cover_url"]
-        # Second pass: Discogs API fallback for still-missing covers
-        for item in bundle:
-            if not item.get("cover_url") and item.get("discogs_id"):
-                try:
-                    from routes.vinyl import _get_cached_discogs_release
-                    discogs = await _get_cached_discogs_release(item["discogs_id"])
-                    if discogs and discogs.get("cover_url"):
-                        item["cover_url"] = discogs["cover_url"]
-                        # Persist to records collection so future loads are instant
-                        await db.records.update_many(
-                            {"discogs_id": item["discogs_id"], "$or": [{"cover_url": None}, {"cover_url": ""}]},
-                            {"$set": {"cover_url": discogs["cover_url"]}}
-                        )
-                except Exception as e:
-                    logger.warning(f"Bundle cover hydration failed for discogs_id {item.get('discogs_id')}: {e}")
-        # Third pass: fallback to any sibling cover in the same bundle (same album)
+                    rec = await db.records.find_one(
+                        {"id": item["record_id"]},
+                        {"_id": 0, "userPhotoSmall": 1, "userPhotoUrl": 1}
+                    )
+                    if rec and (rec.get("userPhotoSmall") or rec.get("userPhotoUrl")):
+                        item["cover_url"] = rec.get("userPhotoSmall") or rec.get("userPhotoUrl")
+                # Try releases collection (Spotify/community art)
+                if not item.get("cover_url") and item.get("discogs_id"):
+                    rel = bundle_releases.get(item["discogs_id"])
+                    if rel:
+                        item["cover_url"] = (rel.get("spotifyImageSmall") or rel.get("spotifyImageUrl")
+                                             or rel.get("communityCoverSmall") or rel.get("communityCoverUrl"))
+        # Final pass: share a cover within the bundle if one item has art
         fallback_cover = next((i.get("cover_url") for i in bundle if i.get("cover_url")), None)
         if fallback_cover:
             for item in bundle:
@@ -401,36 +426,15 @@ async def build_post_response(post: Dict, current_user_id: Optional[str] = None)
         iso_data = iso
         if iso:
             iso_color_variant = iso.get("color_variant")
-            # Hydrate missing cover_url from Discogs or records collection
+            # Hydrate missing cover_url from releases collection (Spotify/community art)
             if not iso.get("cover_url") and iso.get("discogs_id"):
-                try:
-                    from routes.vinyl import _get_cached_discogs_release
-                    discogs = await _get_cached_discogs_release(iso["discogs_id"])
-                    if discogs and discogs.get("cover_url"):
-                        iso["cover_url"] = discogs["cover_url"]
-                        # Persist so we don't re-fetch next time
-                        await db.iso_items.update_one(
-                            {"id": iso["id"]},
-                            {"$set": {"cover_url": discogs["cover_url"]}}
-                        )
-                except Exception as e:
-                    logger.warning(f"ISO cover_url hydration failed for {iso.get('id')}: {e}")
-            if not iso.get("cover_url"):
-                # Fallback: check records collection
-                rec = await db.records.find_one({"discogs_id": iso.get("discogs_id")}, {"_id": 0, "cover_url": 1})
-                if rec and rec.get("cover_url"):
-                    iso["cover_url"] = rec["cover_url"]
-            if not iso.get("cover_url") and iso.get("artist") and iso.get("album"):
-                # Fallback: check discogs_releases for any sibling with same artist+title
-                import re as _re
-                sibling_dr = await db.discogs_releases.find_one(
-                    {"artist": {"$regex": f"^{_re.escape(iso['artist'])}$", "$options": "i"},
-                     "title": {"$regex": f"^{_re.escape(iso['album'])}$", "$options": "i"},
-                     "cover_url": {"$nin": [None, ""]}},
-                    {"_id": 0, "cover_url": 1}
+                rel = await db.releases.find_one(
+                    {"discogsReleaseId": iso["discogs_id"]},
+                    {"_id": 0, "spotifyImageSmall": 1, "spotifyImageUrl": 1, "communityCoverSmall": 1, "communityCoverUrl": 1}
                 )
-                if sibling_dr and sibling_dr.get("cover_url"):
-                    iso["cover_url"] = sibling_dr["cover_url"]
+                if rel:
+                    iso["cover_url"] = (rel.get("spotifyImageSmall") or rel.get("spotifyImageUrl")
+                                        or rel.get("communityCoverSmall") or rel.get("communityCoverUrl"))
             iso_data = iso
     
     # Resolve color_variant: post-level > record-level > iso-level
@@ -754,7 +758,7 @@ async def composer_new_haul(data: NewHaulCreate, user: Dict = Depends(require_au
             "discogs_id": item.discogs_id,
             "title": item.title,
             "artist": item.artist,
-            "cover_url": item.cover_url,
+            "cover_url": None if is_discogs_image_url(item.cover_url) else item.cover_url,
             "year": item.year,
             "format": getattr(item, 'format', None) or "Vinyl",
             "notes": item.notes,
@@ -815,7 +819,7 @@ async def composer_iso(data: ISOPostCreate, user: Dict = Depends(require_auth)):
     is_dreaming = data.intent == "dreaming"
     iso_id = str(uuid.uuid4())
 
-    # Auto-populate cover_url and discogs_id if missing but artist+album given
+    # Auto-populate discogs_id if missing but artist+album given
     resolved_cover_url = data.cover_url
     resolved_discogs_id = data.discogs_id
     if not resolved_discogs_id and data.artist and data.album:
@@ -825,8 +829,7 @@ async def composer_iso(data: ISOPostCreate, user: Dict = Depends(require_auth)):
             if results:
                 best = results[0]
                 resolved_discogs_id = best.get("discogs_id")
-                if not resolved_cover_url:
-                    resolved_cover_url = best.get("cover_url")
+                # Do not use Discogs cover_url — Restricted Data
                 if not data.color_variant and best.get("color_variant"):
                     data.color_variant = best["color_variant"]
         except Exception as e:
@@ -840,8 +843,15 @@ async def composer_iso(data: ISOPostCreate, user: Dict = Depends(require_auth)):
         if release_info:
             is_unofficial = "Unofficial Release" in release_info.get("format_descriptions", [])
             discogs_color_variant = release_info.get("color_variant")
-            if not resolved_cover_url and release_info.get("cover_url"):
-                resolved_cover_url = release_info["cover_url"]
+            # Resolve cover from releases collection (Spotify art) — never from Discogs images
+            if not resolved_cover_url:
+                rel = await db.releases.find_one(
+                    {"discogsReleaseId": resolved_discogs_id},
+                    {"_id": 0, "spotifyImageSmall": 1, "spotifyImageUrl": 1, "communityCoverUrl": 1}
+                )
+                if rel:
+                    resolved_cover_url = (rel.get("spotifyImageSmall") or rel.get("spotifyImageUrl")
+                                          or rel.get("communityCoverUrl"))
 
     # Resolve color_variant: explicit from user > Discogs > None
     resolved_color_variant = data.color_variant or discogs_color_variant

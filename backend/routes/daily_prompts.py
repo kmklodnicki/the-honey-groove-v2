@@ -137,16 +137,6 @@ def _extract_dominant_color(image_url: str) -> Optional[str]:
         return None
 
 
-def _get_thumb_url(image_url: str) -> Optional[str]:
-    """Convert a Discogs CDN high-res URL to its 150px thumbnail counterpart."""
-    if not image_url or "discogs.com" not in image_url:
-        return None
-    # Replace high-res params with thumbnail params
-    import re
-    thumb = re.sub(r'/q:\d+/h:\d+/w:\d+/', '/q:40/h:150/w:150/', image_url)
-    return thumb if thumb != image_url else None
-
-
 async def get_cached_image(release_id: int) -> Optional[str]:
     """Get cached high-res image URL for a release."""
     cached = await db.image_cache.find_one({"release_id": release_id}, {"_id": 0})
@@ -161,39 +151,6 @@ async def get_cached_blur(release_id: int) -> Optional[str]:
     """Get cached blur data URL for a release."""
     cached = await db.image_cache.find_one({"release_id": release_id}, {"_id": 0, "blur_data_url": 1})
     return cached.get("blur_data_url") if cached else None
-
-
-async def cache_discogs_image(release_id: int) -> Optional[str]:
-    """Fetch and cache high-res Discogs image + blur placeholder for a release."""
-    existing = await get_cached_image(release_id)
-    if existing:
-        return existing
-    release = get_discogs_release(release_id)
-    if not release or not release.get("cover_url"):
-        return None
-    image_url = release["cover_url"]
-    thumb_url = release.get("thumb_url")
-    # Generate blur from the accessible 150px thumbnail
-    blur_data_url = _generate_blur_data_url(thumb_url) if thumb_url else None
-    dominant_color = _extract_dominant_color(thumb_url) if thumb_url else None
-    update_doc = {
-        "release_id": release_id,
-        "image_url": image_url,
-        "cached_at": datetime.now(timezone.utc).isoformat(),
-        "resolution": "high",
-    }
-    if thumb_url:
-        update_doc["thumb_url"] = thumb_url
-    if blur_data_url:
-        update_doc["blur_data_url"] = blur_data_url
-    if dominant_color:
-        update_doc["dominant_color"] = dominant_color
-    await db.image_cache.update_one(
-        {"release_id": release_id},
-        {"$set": update_doc},
-        upsert=True,
-    )
-    return image_url
 
 
 @router.get("/image/blur-placeholder")
@@ -418,11 +375,21 @@ async def buzz_in(data: dict, user: Dict = Depends(require_auth)):
     if not record:
         raise HTTPException(status_code=404, detail="Record not found in your collection")
 
-    # Fetch high-res Discogs data
+    # Fetch Discogs metadata (CC0 fields only — no cover images)
     discogs_data = None
     if record.get("discogs_id"):
         discogs_data = get_discogs_release(record["discogs_id"])
-        await cache_discogs_image(record["discogs_id"])
+
+    # Resolve cover from releases collection (user photo → Spotify → community)
+    resolved_cover_url = record.get("userPhotoSmall") or record.get("userPhotoUrl")
+    if not resolved_cover_url and record.get("discogs_id"):
+        rel = await db.releases.find_one(
+            {"discogsReleaseId": record["discogs_id"]},
+            {"_id": 0, "spotifyImageSmall": 1, "spotifyImageUrl": 1, "communityCoverSmall": 1, "communityCoverUrl": 1}
+        )
+        if rel:
+            resolved_cover_url = (rel.get("spotifyImageSmall") or rel.get("spotifyImageUrl")
+                                  or rel.get("communityCoverSmall") or rel.get("communityCoverUrl"))
 
     response_id = str(uuid.uuid4())
     now = datetime.now(timezone.utc).isoformat()
@@ -434,7 +401,7 @@ async def buzz_in(data: dict, user: Dict = Depends(require_auth)):
         "caption": caption,
         "record_title": discogs_data.get("title") if discogs_data else record.get("title"),
         "record_artist": discogs_data.get("artist") if discogs_data else record.get("artist"),
-        "cover_url": discogs_data.get("cover_url") if discogs_data else record.get("cover_url"),
+        "cover_url": resolved_cover_url,
         "label": (discogs_data.get("label", [None])[0] if discogs_data and discogs_data.get("label") else None),
         "year": discogs_data.get("year") if discogs_data else record.get("year"),
         "format": (discogs_data.get("format", [None])[0] if discogs_data and discogs_data.get("format") else None),
@@ -542,15 +509,15 @@ async def get_prompt_responses(prompt_id: str, user: Dict = Depends(require_auth
                         r["thumb_url"] = cache_doc.get("thumb_url")
                         r["dominant_color"] = cache_doc.get("dominant_color")
 
-        # Image proxying: rewrite external cover URLs to route through our image proxy
-        # This ensures carousel images are served from our cache, not directly from Discogs
-        if r.get("cover_url"):
-            original = r["cover_url"]
-            if original.startswith("http://") or original.startswith("https://"):
+        # Image proxying: rewrite external cover URLs to route through our image proxy.
+        # Guard: never proxy Discogs CDN URLs — Restricted Data per Discogs TOS.
+        cover = r.get("cover_url")
+        if cover and "discogs.com" not in cover:
+            if cover.startswith("http://") or cover.startswith("https://"):
                 from urllib.parse import quote
-                r["proxy_cover_url"] = f"/api/image-proxy?url={quote(original, safe='')}"
+                r["proxy_cover_url"] = f"/api/image-proxy?url={quote(cover, safe='')}"
             else:
-                r["proxy_cover_url"] = original
+                r["proxy_cover_url"] = cover
         else:
             r["proxy_cover_url"] = None
 
@@ -906,15 +873,3 @@ async def admin_reorder_prompts(data: dict, user: Dict = Depends(require_auth)):
     return {"reordered": len(ordered_ids)}
 
 
-# ─────────── Discogs High-Res Fetch ───────────
-
-@router.get("/prompts/discogs-hires/{release_id}")
-async def get_discogs_hires(release_id: int, user: Dict = Depends(require_auth)):
-    """Get high-res Discogs data for a record (with caching)."""
-    cached_url = await get_cached_image(release_id)
-    release_data = get_discogs_release(release_id)
-    if not release_data:
-        raise HTTPException(status_code=404, detail="Release not found on Discogs")
-    if not cached_url and release_data.get("cover_url"):
-        await cache_discogs_image(release_id)
-    return release_data

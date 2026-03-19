@@ -13,7 +13,7 @@ from fastapi import APIRouter, Query, Depends
 from fastapi.responses import HTMLResponse
 from database import db, get_discogs_release, get_discogs_market_data, get_discogs_master_versions, get_discogs_master, logger, get_current_user, derive_variant_tag
 from datetime import datetime, timezone
-from utils.image_helpers import proxy_cover_url
+from utils.image_resolver import resolve_album_image
 import asyncio
 import os
 import re
@@ -256,8 +256,18 @@ async def get_variant_page(artist_slug: str, album_slug: str, variant_slug: str)
     country = discogs_data.get("country") or canonical_record.get("country")
     notes = discogs_data.get("notes")
 
-    # Cover image: Discogs authoritative, fall back to internal
-    cover_url = discogs_data.get("cover_url") or canonical_record.get("cover_url")
+    # Cover image: releases collection (Spotify) → community upload → None
+    # Discogs cover images are Restricted Data and must not be used
+    cover_url = None
+    if discogs_id:
+        _rel = await db.releases.find_one(
+            {"discogsReleaseId": discogs_id},
+            {"_id": 0, "spotifyImageUrl": 1, "spotifyImageSmall": 1, "communityCoverUrl": 1}
+        )
+        if _rel:
+            cover_url = (_rel.get("spotifyImageUrl") or _rel.get("communityCoverUrl"))
+    if not cover_url and canonical_record.get("userPhotoUrl"):
+        cover_url = canonical_record["userPhotoUrl"]
 
     # Label & catno from Discogs
     label_raw = discogs_data.get("label")
@@ -403,7 +413,7 @@ async def get_variant_page(artist_slug: str, album_slug: str, variant_slug: str)
             "album": album,
             "variant": variant,
             "year": year,
-            "cover_url": proxy_cover_url(cover_url),
+            "cover_url": cover_url,
             "format": fmt,
             "label": label,
             "catalog_number": catno,
@@ -558,28 +568,11 @@ async def get_variant_by_release_id(release_id: int, force_refresh: bool = False
     album = discogs_data.get("title", "Unknown Album")
     variant = discogs_data.get("color_variant") or derive_variant_tag(None, discogs_data.get("country"), discogs_data.get("format_descriptions", [])) or "Standard"
     year = discogs_data.get("year")
-    cover_url = discogs_data.get("cover_url")
     country = discogs_data.get("country")
 
-    # Cover fallback: if null, try sibling record/release with same artist+title
-    if not cover_url:
-        sibling = await db.records.find_one(
-            {"artist": {"$regex": f"^{re.escape(artist)}$", "$options": "i"},
-             "title": {"$regex": f"^{re.escape(album)}$", "$options": "i"},
-             "cover_url": {"$nin": [None, ""]}},
-            {"_id": 0, "cover_url": 1}
-        )
-        if sibling and sibling.get("cover_url"):
-            cover_url = sibling["cover_url"]
-    if not cover_url:
-        sibling_dr = await db.discogs_releases.find_one(
-            {"artist": {"$regex": f"^{re.escape(artist)}$", "$options": "i"},
-             "title": {"$regex": f"^{re.escape(album)}$", "$options": "i"},
-             "cover_url": {"$nin": [None, ""]}},
-            {"_id": 0, "cover_url": 1}
-        )
-        if sibling_dr and sibling_dr.get("cover_url"):
-            cover_url = sibling_dr["cover_url"]
+    # Resolve album art from releases collection (no Discogs image URLs — Restricted Data)
+    release_doc = await db.releases.find_one({"discogsReleaseId": release_id})
+    resolved_image = resolve_album_image({}, release_doc or {})
 
     label_raw = discogs_data.get("label")
     label = label_raw[0] if isinstance(label_raw, list) and label_raw else label_raw
@@ -670,7 +663,10 @@ async def get_variant_by_release_id(release_id: int, force_refresh: bool = False
             "album": album,
             "variant": variant,
             "year": year,
-            "cover_url": proxy_cover_url(cover_url),
+            "imageUrl": resolved_image.get("imageUrl"),
+            "imageSmall": resolved_image.get("imageSmall"),
+            "imageSource": resolved_image.get("imageSource"),
+            "needsCoverPhoto": resolved_image.get("needsCoverPhoto", False),
             "format": fmt,
             "label": label,
             "catalog_number": catno,

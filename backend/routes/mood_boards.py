@@ -63,13 +63,19 @@ async def _get_top_records(user_id: str, time_range: str = "week"):
 
 
 async def _get_cover_url(record: dict) -> str:
-    """Get best available cover URL with caching."""
+    """Get best available cover URL. Priority: user upload → Spotify → community."""
+    if record.get("userPhotoUrl"):
+        return record["userPhotoUrl"]
     release_id = record.get("discogs_id")
     if release_id:
-        cached = await db.image_cache.find_one({"release_id": release_id}, {"_id": 0})
-        if cached:
-            return cached["image_url"]
-    return record.get("cover_url", "")
+        rel = await db.releases.find_one(
+            {"discogsReleaseId": release_id},
+            {"_id": 0, "spotifyImageUrl": 1, "spotifyImageSmall": 1, "communityCoverUrl": 1}
+        )
+        if rel:
+            return (rel.get("spotifyImageUrl") or rel.get("spotifyImageSmall")
+                    or rel.get("communityCoverUrl") or "")
+    return ""
 
 
 def _generate_mood_board_image(covers: list, username: str) -> bytes:

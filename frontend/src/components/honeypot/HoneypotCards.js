@@ -39,7 +39,7 @@ export const ISOCard = ({ iso, isOwn, onMarkFound, onDelete, onSetPriceAlert, on
     <Card className={`p-4 border-honey/30 transition-all ${iso.status === 'FOUND' ? 'opacity-60 bg-amber-50/30' : 'hover:shadow-md'}`} data-testid={`iso-item-${iso.id}`}>
       <div className="flex items-start gap-3">
         <div className="relative shrink-0">
-          <AlbumArt src={iso.cover_url} alt={`${iso.artist} ${iso.album}${iso.pressing_notes ? ` ${iso.pressing_notes}` : ''} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow" isUnofficial={iso.is_unofficial} />
+          <AlbumArt imageUrl={iso.cover_url} albumTitle={iso.album} artistName={iso.artist} size="small" alt={`${iso.artist} ${iso.album}${iso.pressing_notes ? ` ${iso.pressing_notes}` : ''} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow" isUnofficial={iso.is_unofficial} />
           {iso.status === 'OPEN' && (
             <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #DAA520, #E8A820)', boxShadow: '0 2px 6px rgba(218,165,32,0.5)' }} data-testid={`seeking-bolt-${iso.id}`}>
               <Zap className="w-3 h-3 text-white fill-white" />
@@ -110,7 +110,7 @@ export const CommunityISOCard = ({ iso, onHaveThis, onOpenVariant }) => (
   <Card className={`p-4 border-honey/30 hover:shadow-md transition-all ${onOpenVariant ? 'cursor-pointer' : ''}`} data-testid={`community-iso-${iso.id}`} onClick={onOpenVariant || undefined}>
     <div className="flex items-start gap-3">
       <div className="relative shrink-0">
-        <AlbumArt src={iso.cover_url} alt={`${iso.artist} ${iso.album} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow" isUnofficial={iso.is_unofficial} />
+        <AlbumArt imageUrl={iso.cover_url} albumTitle={iso.album} artistName={iso.artist} size="small" alt={`${iso.artist} ${iso.album} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow" isUnofficial={iso.is_unofficial} />
         {iso.color_variant && (
           <div className="absolute -bottom-1 -right-1 max-w-[90%] truncate uppercase text-[7px] font-bold px-1.5 py-px rounded-full z-[5]"
             style={{ background: 'rgba(255,215,0,0.25)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', color: '#000', border: '1.5px solid #DAA520' }}

@@ -341,7 +341,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
 
   const addHaulItem = (item) => {
     if (haulItems.find(h => h.discogs_id === item.discogs_id)) return;
-    setHaulItems(prev => [...prev, { discogs_id: item.discogs_id, title: item.title, artist: item.artist, cover_url: item.cover_url, year: item.year }]);
+    setHaulItems(prev => [...prev, { discogs_id: item.discogs_id, title: item.title, artist: item.artist, imageUrl: item.imageUrl, imageSmall: item.imageSmall, cover_url: item.cover_url, year: item.year }]);
     setHaulSearch(''); setHaulResults([]);
   };
 
@@ -602,8 +602,8 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                   </div>
                 ) : (
                   <div className="flex items-center gap-3 rounded-lg p-2" style={{ background: 'rgba(244,185,66,0.1)' }}>
-                    {spinSelectedRecord.cover_url ? (
-                      <AlbumArt src={spinSelectedRecord.cover_url} alt={`${spinSelectedRecord.artist} ${spinSelectedRecord.title} vinyl record`} className="w-10 h-10 max-sm:w-8 max-sm:h-8 rounded-md object-cover shadow-sm" />
+                    {(spinSelectedRecord.imageUrl || spinSelectedRecord.cover_url) ? (
+                      <AlbumArt src={spinSelectedRecord.imageSmall || spinSelectedRecord.imageUrl || spinSelectedRecord.cover_url} alt={`${spinSelectedRecord.artist} ${spinSelectedRecord.title} vinyl record`} className="w-10 h-10 max-sm:w-8 max-sm:h-8 rounded-md object-cover shadow-sm" />
                     ) : (
                       <div className="w-10 h-10 max-sm:w-8 max-sm:h-8 rounded-md bg-stone-100 flex items-center justify-center"><Disc className="w-5 h-5 text-stone-400" /></div>
                     )}
@@ -836,7 +836,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
               <div className="space-y-2">
                 {haulItems.map((item, idx) => (
                   <div key={idx} className="flex items-center gap-3 rounded-lg p-2" style={{ background: 'rgba(244,185,66,0.1)' }}>
-                    <AlbumArt src={item.cover_url} alt={`${item.artist} ${item.title} vinyl record`} className="w-12 h-12 rounded-md object-cover shadow-sm" />
+                    <AlbumArt src={item.imageSmall || item.imageUrl || item.cover_url} alt={`${item.artist} ${item.title} vinyl record`} className="w-12 h-12 rounded-md object-cover shadow-sm" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{item.title}</p>
                       <p className="text-xs truncate" style={{ color: '#8A6B4A' }}>{item.artist}</p>
@@ -1019,7 +1019,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                   </>
                 ) : isoSelectedRelease ? (
                   <div className="flex items-center gap-3 bg-blue-50 rounded-lg p-3">
-                    {isoSelectedRelease.cover_url ? <AlbumArt src={isoSelectedRelease.cover_url} alt={`${isoSelectedRelease.artist} ${isoSelectedRelease.title} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow" /> : <Disc className="w-14 h-14 text-blue-300" />}
+                    {(isoSelectedRelease.imageUrl || isoSelectedRelease.cover_url) ? <AlbumArt src={isoSelectedRelease.imageSmall || isoSelectedRelease.imageUrl || isoSelectedRelease.cover_url} alt={`${isoSelectedRelease.artist} ${isoSelectedRelease.title} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow" /> : <Disc className="w-14 h-14 text-blue-300" />}
                     <div className="flex-1 min-w-0"><p className="font-heading text-base">{isoSelectedRelease.title}</p><p className="text-sm text-muted-foreground">{isoSelectedRelease.artist} {isoSelectedRelease.year ? `(${isoSelectedRelease.year})` : ''}</p></div>
                     <button onClick={() => { setIsoSelectedRelease(null); setIsoArtist(''); setIsoAlbum(''); }} className="text-xs text-muted-foreground hover:text-red-500">Change</button>
                   </div>
@@ -1163,8 +1163,8 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
             {/* Tagged record preview */}
             {noteRecord && (
               <div className="flex items-center gap-2 bg-stone-50 rounded-lg px-3 py-2" data-testid="note-tagged-record">
-                {noteRecord.cover_url ? (
-                  <AlbumArt src={noteRecord.cover_url} alt={`${noteRecord.artist} ${noteRecord.title} vinyl record`} className="w-8 h-8 rounded object-cover" />
+                {(noteRecord.imageUrl || noteRecord.cover_url) ? (
+                  <AlbumArt src={noteRecord.imageSmall || noteRecord.imageUrl || noteRecord.cover_url} alt={`${noteRecord.artist} ${noteRecord.title} vinyl record`} className="w-8 h-8 rounded object-cover" />
                 ) : (
                   <div className="w-8 h-8 rounded bg-stone-200 flex items-center justify-center"><Disc className="w-4 h-4 text-stone-400" /></div>
                 )}
@@ -1227,8 +1227,8 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
             ) : randRecord ? (
               <div className="flex flex-col items-center" data-testid="randomizer-result">
                 <div className="w-40 h-40 rounded-xl overflow-hidden shadow-lg border border-honey/30">
-                  {randRecord.cover_url ? (
-                    <AlbumArt src={randRecord.cover_url} alt={`${randRecord.artist} ${randRecord.title}`} className="w-full h-full object-cover" />
+                  {(randRecord.imageUrl || randRecord.cover_url) ? (
+                    <AlbumArt src={randRecord.imageSmall || randRecord.imageUrl || randRecord.cover_url} alt={`${randRecord.artist} ${randRecord.title}`} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full bg-stone-100 flex items-center justify-center"><Disc className="w-12 h-12 text-stone-300" /></div>
                   )}

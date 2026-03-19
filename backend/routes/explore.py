@@ -7,7 +7,7 @@ import uuid
 from database import db, require_auth, get_current_user, security, logger, create_notification, get_hidden_user_ids, get_all_blocked_ids
 from database import DISCOGS_TOKEN, DISCOGS_USER_AGENT
 from database import get_discogs_market_data
-from utils.image_helpers import proxy_cover_url, proxy_records_cover_urls
+from utils.image_helpers import proxy_records_cover_urls
 DISCOGS_API_BASE = "https://api.discogs.com"
 import requests
 from services.email_service import send_email_fire_and_forget
@@ -647,7 +647,7 @@ async def get_trending_in_collections(limit: int = 20, user: Dict = Depends(requ
                     "artist": artist,
                     "title": title,
                     "year": item.get("year"),
-                    "cover_url": item.get("cover_image"),
+                    "cover_url": None,  # Discogs cover_image is Restricted Data
                     "format": item.get("format", []),
                     "have": community.get("have", 0),
                     "want": community.get("want", 0),
@@ -749,7 +749,7 @@ async def get_crown_jewels(limit: int = 12, user: Dict = Depends(require_auth)):
                 "discogs_id": discogs_id,
                 "artist": rec.get("artist", "Unknown"),
                 "title": rec.get("title", "Unknown"),
-                "cover_url": rec.get("cover_url") or d.get("images", [{}])[0].get("uri", ""),
+                "cover_url": rec.get("cover_url"),  # Only use stored URL (never Discogs CDN images — Restricted Data)
                 "variant": variant or rec.get("pressing_notes", ""),
                 "year": rec.get("year") or d.get("year"),
                 "have": have,

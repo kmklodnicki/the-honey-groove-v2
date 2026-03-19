@@ -1,11 +1,22 @@
-"""Beekeeper admin panel routes — room moderation, metrics, honey drop, user management."""
+"""Beekeeper admin panel routes — room moderation, metrics, honey drop, user management,
+and Spotify matching / CC0 backfill tooling."""
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Dict, Optional
 from datetime import datetime, timezone, timedelta
+import asyncio
 
 from database import db, require_auth, create_notification, logger
 
 router = APIRouter()
+
+# ─── Spotify Matching State ─────────────────────────────────────────────────
+
+_match_stop_event: Optional[asyncio.Event] = None
+_match_task: Optional[asyncio.Task] = None
+_match_run_result: Optional[dict] = None
+
+_backfill_stop_event: Optional[asyncio.Event] = None
+_backfill_task: Optional[asyncio.Task] = None
 
 
 # ─── Auth ───
@@ -605,3 +616,190 @@ async def user_action(user_id: str, body: dict, admin: Dict = Depends(require_ad
         return {"success": True, "action": action, "message": "User soft-deleted"}
 
     return {"success": False, "message": "Unknown action"}
+
+
+# ─── Spotify Matching ────────────────────────────────────────────────────────
+
+@router.get("/beekeeper/spotify-matching/stats")
+async def spotify_matching_stats(admin: Dict = Depends(require_admin)):
+    """Coverage stats for Spotify album art matching."""
+    pending = await db.releases.count_documents({"spotifyMatchStatus": "pending"})
+    matched = await db.releases.count_documents({"spotifyMatchStatus": "matched"})
+    unmatched = await db.releases.count_documents({"spotifyMatchStatus": "unmatched"})
+    manual = await db.releases.count_documents({"spotifyMatchStatus": "manual_override"})
+    total = pending + matched + unmatched + manual
+    coverage_pct = round((matched + manual) / max(total, 1) * 100, 1)
+    running = _match_task is not None and not _match_task.done()
+    return {
+        "pending": pending,
+        "matched": matched,
+        "unmatched": unmatched,
+        "manual_override": manual,
+        "total": total,
+        "coveragePct": coverage_pct,
+        "isRunning": running,
+        "lastRunResult": _match_run_result,
+    }
+
+
+@router.post("/beekeeper/spotify-matching/start")
+async def start_spotify_matching(admin: Dict = Depends(require_admin)):
+    """Start batch Spotify matching in the background."""
+    global _match_stop_event, _match_task, _match_run_result
+    from services.spotify_service import batch_match_releases
+
+    if _match_task and not _match_task.done():
+        return {"success": False, "message": "Matching already running"}
+
+    _match_stop_event = asyncio.Event()
+
+    async def _run():
+        global _match_run_result
+        result = await batch_match_releases(_match_stop_event)
+        _match_run_result = result
+        now = datetime.now(timezone.utc).isoformat()
+        await db.matching_runs.insert_one({**result, "type": "spotify", "completedAt": now})
+
+    _match_task = asyncio.create_task(_run())
+    return {"success": True, "message": "Spotify matching started"}
+
+
+@router.post("/beekeeper/spotify-matching/stop")
+async def stop_spotify_matching(admin: Dict = Depends(require_admin)):
+    """Signal the running batch to stop gracefully."""
+    global _match_stop_event
+    if _match_stop_event:
+        _match_stop_event.set()
+    return {"success": True, "message": "Stop signal sent"}
+
+
+@router.post("/beekeeper/spotify-matching/retry")
+async def retry_spotify_matching(admin: Dict = Depends(require_admin)):
+    """Re-queue all unmatched releases as pending and restart matching."""
+    global _match_stop_event, _match_task, _match_run_result
+    from services.spotify_service import batch_match_releases
+
+    if _match_task and not _match_task.done():
+        return {"success": False, "message": "Matching already running — stop it first"}
+
+    requeued = await db.releases.update_many(
+        {"spotifyMatchStatus": "unmatched"},
+        {"$set": {"spotifyMatchStatus": "pending"}}
+    )
+
+    _match_stop_event = asyncio.Event()
+
+    async def _run():
+        global _match_run_result
+        result = await batch_match_releases(_match_stop_event)
+        _match_run_result = result
+        now = datetime.now(timezone.utc).isoformat()
+        await db.matching_runs.insert_one({**result, "type": "spotify_retry", "completedAt": now})
+
+    _match_task = asyncio.create_task(_run())
+    return {"success": True, "requeued": requeued.modified_count, "message": "Retry started"}
+
+
+@router.post("/beekeeper/spotify-matching/manual/{release_id}")
+async def manual_spotify_match(release_id: str, body: dict, admin: Dict = Depends(require_admin)):
+    """Manually assign a Spotify album to a release by Spotify album ID or URL."""
+    import re, requests as _req
+    from services.spotify_service import get_spotify_token
+
+    release = await db.releases.find_one({"discogsReleaseId": int(release_id)}, {"_id": 0})
+    if not release:
+        raise HTTPException(status_code=404, detail="Release not found")
+
+    spotify_input = body.get("spotifyAlbumId") or body.get("spotifyUrl") or ""
+    # Extract album ID from URL if needed
+    match = re.search(r"album/([A-Za-z0-9]+)", spotify_input)
+    album_id = match.group(1) if match else spotify_input.strip()
+    if not album_id:
+        raise HTTPException(status_code=400, detail="spotifyAlbumId or spotifyUrl required")
+
+    token = await get_spotify_token()
+    if not token:
+        raise HTTPException(status_code=503, detail="Spotify token unavailable")
+
+    try:
+        resp = await asyncio.get_event_loop().run_in_executor(
+            None,
+            lambda: _req.get(f"https://api.spotify.com/v1/albums/{album_id}",
+                             headers={"Authorization": f"Bearer {token}"}, timeout=10)
+        )
+        if resp.status_code != 200:
+            raise HTTPException(status_code=400, detail=f"Spotify album not found: {resp.status_code}")
+        album = resp.json()
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+    images = album.get("images", [])
+    image_url = images[0]["url"] if images else None
+    image_small = images[1]["url"] if len(images) > 1 else image_url
+    now = datetime.now(timezone.utc).isoformat()
+
+    await db.releases.update_one(
+        {"discogsReleaseId": int(release_id)},
+        {"$set": {
+            "spotifyAlbumId": album_id,
+            "spotifyImageUrl": image_url,
+            "spotifyImageSmall": image_small,
+            "spotifyMatchType": "manual",
+            "spotifyMatchStatus": "manual_override",
+            "spotifyMatchedAt": now,
+        }}
+    )
+    return {"success": True, "albumId": album_id, "imageUrl": image_url}
+
+
+# ─── CC0 Backfill ────────────────────────────────────────────────────────────
+
+@router.post("/beekeeper/cc0-backfill/start")
+async def start_cc0_backfill(admin: Dict = Depends(require_admin)):
+    """Backfill CC0 release data for all vault records that don't yet have a releases doc."""
+    global _backfill_stop_event, _backfill_task
+    from services.releases_service import upsert_release_cc0
+    import asyncio as _asyncio
+    from database import get_discogs_release
+
+    if _backfill_task and not _backfill_task.done():
+        return {"success": False, "message": "Backfill already running"}
+
+    _backfill_stop_event = asyncio.Event()
+
+    async def _run():
+        # Find all distinct discogs_ids from records that have no releases doc
+        all_ids_cursor = db.records.find({"discogs_id": {"$ne": None}}, {"_id": 0, "discogs_id": 1})
+        all_ids = list({r["discogs_id"] async for r in all_ids_cursor})
+
+        existing_ids_cursor = db.releases.find({}, {"_id": 0, "discogsReleaseId": 1})
+        existing = {r["discogsReleaseId"] async for r in existing_ids_cursor}
+
+        missing = [i for i in all_ids if i not in existing]
+        logger.info(f"CC0 backfill: {len(missing)} releases to fetch")
+
+        for discogs_id in missing:
+            if _backfill_stop_event.is_set():
+                break
+            try:
+                data = await _asyncio.get_event_loop().run_in_executor(None, get_discogs_release, discogs_id)
+                if data:
+                    await upsert_release_cc0(discogs_id, data)
+            except Exception as e:
+                logger.warning(f"CC0 backfill error for {discogs_id}: {e}")
+            await _asyncio.sleep(1.0)  # 1 req/sec to respect Discogs rate limit
+
+    _backfill_task = asyncio.create_task(_run())
+    return {"success": True, "message": "CC0 backfill started"}
+
+
+@router.get("/beekeeper/spotify-matching/unmatched")
+async def get_unmatched_releases(skip: int = 0, limit: int = 50, admin: Dict = Depends(require_admin)):
+    """List unmatched releases for the manual match UI."""
+    docs = await db.releases.find(
+        {"spotifyMatchStatus": "unmatched"},
+        {"_id": 0, "discogsReleaseId": 1, "title": 1, "artists": 1, "barcode": 1, "year": 1}
+    ).skip(skip).limit(limit).to_list(limit)
+    return {"releases": docs, "total": await db.releases.count_documents({"spotifyMatchStatus": "unmatched"})}

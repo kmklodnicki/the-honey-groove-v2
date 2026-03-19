@@ -153,7 +153,22 @@ async def _fallback(discogs_id: int, artist: str, title: str, persist: bool = Fa
 
 @router.get("/link/{discogs_id}")
 async def get_spotify_link(discogs_id: int, user: Dict = Depends(get_current_user)):
-    """Get the Spotify link for a Discogs release."""
+    """Get the Spotify link for a Discogs release.
+    Checks releases collection first (new pipeline), falls back to spotify_links cache."""
+    # Check releases collection (new Spotify matching pipeline)
+    release = await db.releases.find_one(
+        {"discogsReleaseId": discogs_id, "spotifyMatchStatus": "matched"},
+        {"_id": 0, "spotifyAlbumId": 1}
+    )
+    if release and release.get("spotifyAlbumId"):
+        album_id = release["spotifyAlbumId"]
+        return {
+            "discogs_id": discogs_id,
+            "spotify_id": album_id,
+            "spotify_url": f"https://open.spotify.com/album/{album_id}",
+            "spotify_uri": f"spotify:album:{album_id}",
+            "matched": True,
+        }
     return await resolve_spotify_link(discogs_id)
 
 

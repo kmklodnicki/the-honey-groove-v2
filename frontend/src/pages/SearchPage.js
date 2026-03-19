@@ -35,7 +35,12 @@ const VariantCard = ({ v, onOpen }) => (
   >
     <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-stone-100 shadow-sm">
       <AlbumArt
-        src={v.cover_url}
+        imageUrl={v.imageUrl || v.cover_url}
+        imageSmall={v.imageSmall}
+        imageSource={v.imageSource}
+        albumTitle={v.album}
+        artistName={v.artist}
+        size="small"
         alt={`${v.artist} ${v.album} ${v.variant} vinyl record`}
         className="w-full h-full object-cover"
       />

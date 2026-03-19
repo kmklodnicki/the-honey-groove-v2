@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, RefreshCw, Heart, ArrowRight, Cloud, Sparkles, CheckSquare, Square, ListChecks, AlertTriangle, Copy, Loader2, X, ImageDown, Share2 } from 'lucide-react';
+import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, RefreshCw, Heart, ArrowRight, Cloud, Sparkles, CheckSquare, Square, ListChecks, AlertTriangle, Copy, Loader2, X, ImageDown, Share2, Camera } from 'lucide-react';
 import { useShareCard } from '../hooks/useShareCard';
 import VaultValueCard from '../components/ShareCards/VaultValueCard';
 import {
@@ -34,6 +34,7 @@ import { toast } from 'sonner';
 import DiscogsImport from '../components/DiscogsImport';
 import { usePageTitle } from '../hooks/usePageTitle';
 import AlbumArt, { prefetchArt } from '../components/AlbumArt';
+import CoverUploadModal from '../components/CoverUploadModal';
 import SEOHead from '../components/SEOHead';
 import ValuationAssistantModal from '../components/ValuationAssistantModal';
 import ValuationWizard from '../components/ValuationWizard';
@@ -326,6 +327,7 @@ const CollectionPage = () => {
     userId: user?.id,
   });
   const [records, setRecords] = useState([]);
+  const [uploadRecord, setUploadRecord] = useState(null);
   const [spins, setSpins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -365,7 +367,7 @@ const CollectionPage = () => {
   const navigate = useNavigate();
 
   // Blur placeholders for record cover images
-  const coverUrls = useMemo(() => records.map(r => r.cover_url).filter(Boolean), [records]);
+  const coverUrls = useMemo(() => records.map(r => r.imageUrl || r.cover_url).filter(Boolean), [records]);
   const blurMap = useBlurPlaceholders(coverUrls);
 
   // Auto-open valuation modal if ?filter=pending_value
@@ -496,7 +498,7 @@ const CollectionPage = () => {
       discogs_id: record.discogs_id || record.release_id,
       album: record.album || record.title,
       artist: record.artist,
-      cover_url: record.cover_url || record.thumb,
+      cover_url: record.imageUrl || record.imageSmall || record.cover_url || record.thumb,
     });
     setValuationModalOpen(true);
   };
@@ -828,7 +830,8 @@ const CollectionPage = () => {
         const endIdx = Math.min(startIdx + cols * 2, sortedAndFilteredRecords.length);
         const urls = [];
         for (let i = startIdx; i < endIdx; i++) {
-          const url = sortedAndFilteredRecords[i]?.cover_url;
+          const r = sortedAndFilteredRecords[i];
+          const url = r?.imageUrl || r?.cover_url;
           if (url && !prefetchedRef.current.has(url)) {
             urls.push(url);
             prefetchedRef.current.add(url);
@@ -869,7 +872,7 @@ const CollectionPage = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => exportVaultCard(records.slice(0, 4).map(r => r.cover_url).filter(Boolean))}
+              onClick={() => exportVaultCard(records.slice(0, 4).map(r => r.imageUrl || r.cover_url).filter(Boolean))}
               disabled={vaultExporting}
               className="rounded-full px-3"
               data-testid="share-vault-btn"
@@ -1115,12 +1118,13 @@ const CollectionPage = () => {
                     onDelete={handleDeleteRecord}
                     onMoveToWishlist={requestMoveToDreaming}
                     onMoveToISO={requestMoveToHunt}
+                    onUploadClick={() => setUploadRecord(record)}
                     isSpinning={false}
                     value={valueMap[record.id]}
                     selectMode={selectMode}
                     isSelected={selectedIds.has(record.id)}
                     onToggleSelect={toggleSelect}
-                    blurData={record.cover_url ? blurMap[record.cover_url] : null}
+                    blurData={(record.imageUrl || record.cover_url) ? blurMap[record.imageUrl || record.cover_url] : null}
                     isFading={fadingIds.has(record.id)}
                     priority={idx < 4}
                   />
@@ -1228,6 +1232,18 @@ const CollectionPage = () => {
         onClose={() => setWizardOpen(false)}
         onComplete={handleWizardComplete}
         onSave={handleWizardSave}
+      />
+
+      <CoverUploadModal
+        open={!!uploadRecord}
+        onClose={() => setUploadRecord(null)}
+        recordId={uploadRecord?.id}
+        albumTitle={uploadRecord?.title}
+        artistName={uploadRecord?.artist}
+        onSuccess={(updated) => {
+          setRecords(prev => prev.map(r => r.id === updated.id ? { ...r, ...updated } : r));
+          setUploadRecord(null);
+        }}
       />
 
       {/* Duplicate Detector Modal */}
@@ -1421,7 +1437,7 @@ const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg, pending
   );
 };
 
-const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, isSpinning, value, selectMode, isSelected, onToggleSelect, blurData, isFading, priority }) => {
+const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, onUploadClick, isSpinning, value, selectMode, isSelected, onToggleSelect, blurData, isFading, priority }) => {
   return (
     <Card 
       className={`relative group border-honey/20 overflow-hidden hover:shadow-honey transition-all duration-300 hover:-translate-y-1 flex flex-col w-full h-full ${isSelected ? 'ring-2 ring-honey shadow-honey' : ''} ${selectMode ? 'cursor-pointer' : ''} ${isFading ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}
@@ -1439,21 +1455,24 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
       )}
       <Link to={selectMode ? '#' : `/record/${record.id}`} onClick={selectMode ? (e) => e.preventDefault() : undefined}>
         <div className="relative aspect-square bg-stone-200">
-          {record.cover_url ? (
-            <AlbumArt 
-              src={record.cover_url} 
-              alt={`${record.artist} ${record.title}${record.color_variant ? ` ${record.color_variant}` : ''} vinyl record`}
-              className={`w-full h-full object-cover ${isSpinning ? 'animate-spin-slow' : ''}`}
-              blurDataUrl={blurData?.blur_data_url}
-              thumbSrc={blurData?.thumb_url}
-              priority={priority}
-              isUnofficial={record.is_unofficial}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Disc className={`w-16 h-16 text-honey ${isSpinning ? 'animate-spin-slow' : ''}`} />
-            </div>
-          )}
+          <AlbumArt
+            imageUrl={record.imageUrl || record.cover_url}
+            imageSmall={record.imageSmall}
+            imageSource={record.imageSource}
+            needsCoverPhoto={record.needsCoverPhoto}
+            albumTitle={record.title}
+            artistName={record.artist}
+            recordId={record.id}
+            size="small"
+            alt={`${record.artist} ${record.title}${record.color_variant ? ` ${record.color_variant}` : ''} vinyl record`}
+            className={`w-full h-full object-cover ${isSpinning ? 'animate-spin-slow' : ''}`}
+            blurDataUrl={blurData?.blur_data_url}
+            thumbSrc={blurData?.thumb_url}
+            priority={priority}
+            isUnofficial={record.is_unofficial}
+            onUploadClick={onUploadClick}
+            showUploadCta
+          />
           
           {/* Spin count badge */}
           {record.spin_count > 0 && (
@@ -1584,6 +1603,9 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, i
               <DropdownMenuItem onClick={() => onSpin(record)} data-testid={`spin-btn-${record.id}`}>
                 <Play className="w-4 h-4 mr-2" /> Log Spin
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={onUploadClick} data-testid={`cover-btn-${record.id}`}>
+                <Camera className="w-4 h-4 mr-2" /> Change Cover Photo
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onMoveToWishlist(record.id)} data-testid={`wishlist-btn-${record.id}`}>
                 <Heart className="w-4 h-4 mr-2" /> Move to Dream Items
               </DropdownMenuItem>
@@ -1606,11 +1628,16 @@ const WishlistCard = ({ item, onPromote, onAddToCollection, onDelete }) => (
   <Card className="relative group overflow-hidden border-honey/20 hover:shadow-honey transition-all duration-300 hover:-translate-y-1" style={{ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', background: 'rgba(255,255,255,0.75)' }} data-testid={`wishlist-card-${item.id}`}>
     <Link to={item.discogs_id ? `/variant/${item.discogs_id}` : '#'} className="block">
       <div className="relative aspect-square bg-stone-100">
-        {item.cover_url ? (
-          <AlbumArt src={item.cover_url} alt={`${item.artist} ${item.album}${item.color_variant ? ` ${item.color_variant}` : ''} vinyl record`} className="w-full h-full object-cover" isUnofficial={item.is_unofficial} />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center"><Disc className="w-10 h-10 text-honey" /></div>
-        )}
+        <AlbumArt
+          imageUrl={item.cover_url}
+          imageSource={item.cover_url ? 'community' : undefined}
+          albumTitle={item.album}
+          artistName={item.artist}
+          size="small"
+          alt={`${item.artist} ${item.album}${item.color_variant ? ` ${item.color_variant}` : ''} vinyl record`}
+          className="w-full h-full object-cover"
+          isUnofficial={item.is_unofficial}
+        />
 
         {/* Variant pill overlay with scrim */}
         {item.color_variant && (

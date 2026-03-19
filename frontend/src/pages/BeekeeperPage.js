@@ -8,6 +8,7 @@ import {
   Loader2, RefreshCw, CheckCircle, XCircle, Pencil, Search,
   Users, BarChart2, Droplets, ListChecks, Shield, AlertTriangle,
   ChevronRight, ChevronDown, Ban, AlertCircle, Star, Trash2,
+  Music2, Play, Square, RotateCcw,
 } from 'lucide-react';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -961,6 +962,242 @@ function ActionBtn({ icon: Icon, label, color, onClick, loading }) {
   );
 }
 
+// ─── Tab: Matching ────────────────────────────────────────────────────────────
+
+function MatchingTab({ API, headers }) {
+  const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(null);
+  const [unmatched, setUnmatched] = useState([]);
+  const [unmatchedTotal, setUnmatchedTotal] = useState(0);
+  const [manualDialog, setManualDialog] = useState(null); // { discogsReleaseId, title, artists }
+  const [manualInput, setManualInput] = useState('');
+  const [manualLoading, setManualLoading] = useState(false);
+
+  const fetchStats = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API}/beekeeper/spotify-matching/stats`, { headers });
+      setStats(res.data);
+    } catch { /* non-fatal */ }
+  }, [API, headers]);
+
+  const fetchUnmatched = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API}/beekeeper/spotify-matching/unmatched`, { headers, params: { limit: 50 } });
+      setUnmatched(res.data.releases || []);
+      setUnmatchedTotal(res.data.total || 0);
+    } catch { /* non-fatal */ }
+  }, [API, headers]);
+
+  useEffect(() => {
+    setLoading(true);
+    Promise.all([fetchStats(), fetchUnmatched()]).finally(() => setLoading(false));
+  }, [fetchStats, fetchUnmatched]);
+
+  // Poll while running
+  useEffect(() => {
+    if (!stats?.isRunning) return;
+    const id = setInterval(() => { fetchStats(); fetchUnmatched(); }, 3000);
+    return () => clearInterval(id);
+  }, [stats?.isRunning, fetchStats, fetchUnmatched]);
+
+  const doAction = async (action) => {
+    setActionLoading(action);
+    try {
+      await axios.post(`${API}/beekeeper/spotify-matching/${action}`, {}, { headers });
+      toast.success(action === 'stop' ? 'Stop signal sent' : 'Started');
+      await fetchStats();
+    } catch (e) {
+      toast.error(e?.response?.data?.detail || 'Action failed');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const doManualMatch = async () => {
+    if (!manualDialog || !manualInput.trim()) return;
+    setManualLoading(true);
+    try {
+      await axios.post(
+        `${API}/beekeeper/spotify-matching/manual/${manualDialog.discogsReleaseId}`,
+        { spotifyUrl: manualInput.trim() },
+        { headers }
+      );
+      toast.success('Manual match saved');
+      setManualDialog(null);
+      setManualInput('');
+      fetchStats();
+      fetchUnmatched();
+    } catch (e) {
+      toast.error(e?.response?.data?.detail || 'Match failed');
+    } finally {
+      setManualLoading(false);
+    }
+  };
+
+  if (loading) return <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-amber-400" /></div>;
+
+  const coveragePct = stats?.coveragePct ?? 0;
+
+  return (
+    <div className="space-y-6">
+      {/* Stats cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          { label: 'Pending', value: stats?.pending ?? '—', color: 'text-amber-600' },
+          { label: 'Matched', value: stats?.matched ?? '—', color: 'text-green-600' },
+          { label: 'Unmatched', value: stats?.unmatched ?? '—', color: 'text-red-500' },
+          { label: 'Manual', value: stats?.manual_override ?? '—', color: 'text-blue-600' },
+        ].map(({ label, value, color }) => (
+          <div key={label} className="bg-white rounded-2xl border border-stone-200 p-4 shadow-sm">
+            <p className="text-xs text-stone-400 mb-1">{label}</p>
+            <p className={`text-2xl font-semibold ${color}`}>{value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Coverage progress */}
+      <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-sm">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-sm font-medium text-stone-700">Album art coverage</p>
+          <p className="text-sm font-semibold text-amber-600">{coveragePct}%</p>
+        </div>
+        <div className="h-2.5 bg-stone-100 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-amber-400 rounded-full transition-all duration-500"
+            style={{ width: `${Math.min(coveragePct, 100)}%` }}
+          />
+        </div>
+        <p className="text-xs text-stone-400 mt-2">
+          {stats?.matched ?? 0} of {stats?.total ?? 0} releases have Spotify album art
+        </p>
+      </div>
+
+      {/* Controls */}
+      <div className="flex flex-wrap gap-2">
+        {!stats?.isRunning ? (
+          <>
+            <button
+              onClick={() => doAction('start')}
+              disabled={!!actionLoading}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-green-500 text-white text-sm font-medium hover:bg-green-600 transition-colors disabled:opacity-50"
+              data-testid="start-matching-btn"
+            >
+              {actionLoading === 'start' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+              Start Matching
+            </button>
+            {(stats?.unmatched ?? 0) > 0 && (
+              <button
+                onClick={() => doAction('retry')}
+                disabled={!!actionLoading}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-100 text-amber-700 text-sm font-medium hover:bg-amber-200 transition-colors disabled:opacity-50"
+                data-testid="retry-matching-btn"
+              >
+                {actionLoading === 'retry' ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+                Retry Unmatched ({stats.unmatched})
+              </button>
+            )}
+          </>
+        ) : (
+          <button
+            onClick={() => doAction('stop')}
+            disabled={actionLoading === 'stop'}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-100 text-red-600 text-sm font-medium hover:bg-red-200 transition-colors disabled:opacity-50"
+            data-testid="stop-matching-btn"
+          >
+            {actionLoading === 'stop' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Square className="w-4 h-4" />}
+            Stop
+          </button>
+        )}
+        <button
+          onClick={() => { fetchStats(); fetchUnmatched(); }}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-stone-100 text-stone-600 text-sm font-medium hover:bg-stone-200 transition-colors"
+        >
+          <RefreshCw className="w-4 h-4" />
+          Refresh
+        </button>
+      </div>
+
+      {/* Running indicator */}
+      {stats?.isRunning && (
+        <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-50 rounded-xl px-4 py-2 border border-amber-200">
+          <Loader2 className="w-4 h-4 animate-spin" />
+          Matching in progress…
+        </div>
+      )}
+
+      {/* Last run result */}
+      {stats?.lastRunResult && !stats?.isRunning && (
+        <div className="bg-stone-50 rounded-xl border border-stone-200 px-4 py-3 text-sm text-stone-600">
+          Last run: {stats.lastRunResult.processed} processed · {stats.lastRunResult.matched} matched · {stats.lastRunResult.unmatched} unmatched
+        </div>
+      )}
+
+      {/* Unmatched table */}
+      {unmatched.length > 0 && (
+        <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
+          <div className="px-5 py-3 border-b border-stone-100 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-stone-700">Unmatched releases</h3>
+            <span className="text-xs text-stone-400">{unmatchedTotal} total</span>
+          </div>
+          <div className="divide-y divide-stone-100">
+            {unmatched.map(rel => (
+              <div key={rel.discogsReleaseId} className="flex items-center gap-3 px-5 py-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-stone-800 truncate">{rel.title || 'Unknown'}</p>
+                  <p className="text-xs text-stone-400 truncate">
+                    {(rel.artists || []).join(', ') || '—'} · {rel.year || '—'} · ID {rel.discogsReleaseId}
+                  </p>
+                  {rel.barcode?.length > 0 && (
+                    <p className="text-xs text-stone-300 truncate">UPC: {rel.barcode[0]}</p>
+                  )}
+                </div>
+                <button
+                  onClick={() => { setManualDialog(rel); setManualInput(''); }}
+                  className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-50 text-amber-700 text-xs font-medium hover:bg-amber-100 transition-colors"
+                >
+                  <Music2 className="w-3.5 h-3.5" />
+                  Match
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Manual match dialog (simple inline) */}
+      {manualDialog && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/30 backdrop-blur-sm"
+          onClick={(e) => { if (e.target === e.currentTarget) setManualDialog(null); }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <h3 className="font-semibold text-stone-800 mb-1">Manual Spotify Match</h3>
+            <p className="text-xs text-stone-500 mb-4 line-clamp-1">
+              {manualDialog.title} — {(manualDialog.artists || []).join(', ')}
+            </p>
+            <input
+              value={manualInput}
+              onChange={e => setManualInput(e.target.value)}
+              placeholder="Paste Spotify album URL or album ID…"
+              className="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-amber-300"
+              autoFocus
+            />
+            <div className="flex gap-2">
+              <button onClick={() => setManualDialog(null)}
+                className="flex-1 px-4 py-2 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50 transition-colors">
+                Cancel
+              </button>
+              <button onClick={doManualMatch} disabled={manualLoading || !manualInput.trim()}
+                className="flex-1 px-4 py-2 rounded-xl bg-amber-400 text-amber-900 text-sm font-medium hover:bg-amber-500 transition-colors disabled:opacity-50">
+                {manualLoading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Save Match'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 const TABS = [
@@ -968,6 +1205,7 @@ const TABS = [
   { key: 'honey-drop', label: 'Honey Drop', icon: Droplets },
   { key: 'metrics', label: 'Metrics', icon: BarChart2 },
   { key: 'users', label: 'Users', icon: Users },
+  { key: 'matching', label: 'Matching', icon: Music2 },
 ];
 
 export default function BeekeeperPage() {
@@ -1017,6 +1255,7 @@ export default function BeekeeperPage() {
         {activeTab === 'honey-drop' && <HoneyDropTab API={API} headers={headers} />}
         {activeTab === 'metrics' && <MetricsTab API={API} headers={headers} />}
         {activeTab === 'users' && <UsersTab API={API} headers={headers} />}
+        {activeTab === 'matching' && <MatchingTab API={API} headers={headers} />}
       </div>
     </div>
   );

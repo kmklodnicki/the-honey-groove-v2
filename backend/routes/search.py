@@ -7,6 +7,7 @@ import os
 import requests as req
 
 from database import db, require_auth, get_current_user, search_discogs, get_hidden_user_ids, logger, get_discogs_release
+from utils.image_helpers import strip_discogs_image_urls
 
 router = APIRouter()
 
@@ -15,16 +16,7 @@ DISCOGS_HEADERS = {"User-Agent": "WaxLog/1.0"}
 
 
 def _fetch_artist_image_from_discogs(name: str) -> Optional[str]:
-    """Search Discogs for an artist and return their image URL."""
-    try:
-        params = {"token": DISCOGS_TOKEN, "q": name, "type": "artist", "per_page": 1}
-        r = req.get("https://api.discogs.com/database/search", params=params, headers=DISCOGS_HEADERS, timeout=8)
-        if r.status_code == 200:
-            results = r.json().get("results", [])
-            if results:
-                return results[0].get("cover_image") or results[0].get("thumb") or None
-    except Exception as e:
-        logger.error(f"Discogs artist image fetch error for '{name}': {e}")
+    # Discogs artist images are Restricted Data — not permitted for display per Discogs TOS
     return None
 
 
@@ -748,12 +740,9 @@ async def search_discover(user: Optional[Dict] = Depends(get_current_user)):
         return results
 
     t, ra, mw, rec = await asyncio.gather(trending(), rare(), most_wanted(), recently_added())
-    return {
-        "trending": t,
-        "rare": ra,
-        "most_wanted": mw,
-        "recently_added": rec,
-    }
+    result = {"trending": t, "rare": ra, "most_wanted": mw, "recently_added": rec}
+    strip_discogs_image_urls(result)
+    return result
 
 
 # ========== Original unified search (kept for backward compat) ==========
