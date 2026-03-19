@@ -559,7 +559,7 @@ async def get_feed(user: Dict = Depends(require_auth), limit: int = 20, skip: in
                 query["post_type"] = pt_upper
 
         # Allowed post types in the Hive feed
-        ALLOWED_TYPES = {"NOW_SPINNING", "NEW_HAUL", "ISO", "RANDOMIZER", "DAILY_PROMPT", "NOTE", "POLL"}
+        ALLOWED_TYPES = {"NOW_SPINNING", "NEW_HAUL", "ISO", "RANDOMIZER", "DAILY_PROMPT", "NOTE", "POLL", "ROOM_JOIN"}
 
         # Over-fetch to compensate for Python-side filtering, then trim to limit
         result = []
