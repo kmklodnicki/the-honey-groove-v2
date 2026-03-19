@@ -56,6 +56,25 @@ export function useShareCard({ cardType, filename = 'thg-share', title = 'The Ho
         logging: false,
       });
 
+      // Post-process: redraw any elements marked data-canvas-redraw="text".
+      // html2canvas cannot reliably vertically-center text inside flex containers,
+      // so we mark those elements opacity:0 (preserving layout) and redraw them
+      // here using Canvas 2D textBaseline='middle' for pixel-perfect centering.
+      {
+        const ctx = canvas.getContext('2d');
+        const cardRect = cardRef.current.getBoundingClientRect();
+        cardRef.current.querySelectorAll('[data-canvas-redraw="text"]').forEach(el => {
+          const r = el.getBoundingClientRect();
+          const x = r.left - cardRect.left;
+          const y = r.top - cardRect.top;
+          ctx.font = el.dataset.canvasFont || '16px sans-serif';
+          ctx.fillStyle = el.dataset.canvasColor || '#000';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(el.dataset.canvasText || '', x + r.width / 2, y + r.height / 2);
+        });
+      }
+
       const blob = await canvasToBlob(canvas);
       if (!blob) { setExporting(false); return; }
 

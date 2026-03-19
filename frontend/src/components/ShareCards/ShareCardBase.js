@@ -120,7 +120,16 @@ export function ShareCardUser({ user, textColor = BRAND.dark }) {
                 lineHeight: '1.6',
               }}
             >
-              🍯 Gold Member
+              {/* opacity:0 — redrawn by Canvas 2D API via data-canvas-redraw */}
+              <span
+                style={{ opacity: 0 }}
+                data-canvas-redraw="text"
+                data-canvas-text="🍯 Gold Member"
+                data-canvas-color={BRAND.amber}
+                data-canvas-font="600 18px Georgia, serif"
+              >
+                🍯 Gold Member
+              </span>
             </span>
           )}
           {isVerified && (
@@ -137,7 +146,16 @@ export function ShareCardUser({ user, textColor = BRAND.dark }) {
                 lineHeight: '1.6',
               }}
             >
-              ✓ Verified
+              {/* opacity:0 — redrawn by Canvas 2D API via data-canvas-redraw */}
+              <span
+                style={{ opacity: 0 }}
+                data-canvas-redraw="text"
+                data-canvas-text="✓ Verified"
+                data-canvas-color="#2563EB"
+                data-canvas-font="600 18px Georgia, serif"
+              >
+                ✓ Verified
+              </span>
             </span>
           )}
         </div>

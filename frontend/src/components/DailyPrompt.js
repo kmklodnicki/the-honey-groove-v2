@@ -61,6 +61,20 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
     userId: user?.id,
   });
 
+  // Guarded share handler — logs missing data and shows a helpful toast instead of
+  // a generic html2canvas error when buzzResponse hasn't been enriched with cover data yet.
+  const handleCardShare = useCallback(() => {
+    const cover = buzzResponse?.cover_url;
+    const title = buzzResponse?.record_title;
+    const artist = buzzResponse?.record_artist;
+    if (!cover || !title || !artist) {
+      console.error('[DailyPrompt] Share card missing data:', { cover_url: cover, record_title: title, record_artist: artist, buzzResponse });
+      toast.error('Record data still loading — try again in a moment.');
+      return;
+    }
+    exportCardShare([resolveImageUrl(cover)]);
+  }, [buzzResponse, exportCardShare]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const [searchParams] = useSearchParams();
   const highlightId = searchParams.get('highlight');
 useEffect(() => {
@@ -122,6 +136,18 @@ useEffect(() => {
       const r = await axios.get(`${API}/prompts/${prompt.id}/responses`, { headers: { Authorization: `Bearer ${token}` } });
       setResponses(r.data);
       setCarouselIdx(0);
+      // Augment buzzResponse with cover data from the user's own carousel entry.
+      // The API /prompts/today response never includes cover_url; the responses
+      // endpoint does — this is the only way to restore cover data on page reload.
+      const myResp = r.data.find(resp => resp.username === user?.username);
+      if (myResp?.cover_url) {
+        setBuzzResponse(prev => prev ? {
+          ...prev,
+          cover_url: prev.cover_url || myResp.cover_url,
+          record_title: prev.record_title || myResp.record_title,
+          record_artist: prev.record_artist || myResp.record_artist,
+        } : prev);
+      }
       // BLOCK 444: Prefetch current + next 3 slides' images
       const urls = r.data
         .slice(0, 4)
@@ -140,7 +166,7 @@ useEffect(() => {
       }
     } catch { /* ignore */ }
     finally { setLoadingResponses(false); }
-  }, [API, token, prompt, hasBuzzedIn]);
+  }, [API, token, prompt, hasBuzzedIn, user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { fetchResponses(); }, [fetchResponses]);
 
@@ -207,7 +233,7 @@ useEffect(() => {
               </div>
               {buzzResponse && (
                 <button
-                  onClick={exportCardShare}
+                  onClick={handleCardShare}
                   disabled={cardShareExporting}
                   className="flex items-center gap-1 text-xs font-semibold text-amber-700 hover:text-amber-900 transition"
                   data-testid="prompt-card-share-btn"
@@ -312,10 +338,16 @@ useEffect(() => {
           </div>
         )}
 
-        {/* Spotify attribution link — required when album art is shareable */}
-        {buzzResponse?.record_title && buzzResponse?.record_artist && (
+        {/* Spotify link — Spotify compliance + dynamic per carousel item.
+            Uses direct album URL (spotify_url from DB) when available; falls back
+            to search. Updates automatically as the user arrows through responses.
+            Hidden when the current response has no record info. */}
+        {hasBuzzedIn && currentResp && (currentResp.record_title || currentResp.record_artist) && (
           <a
-            href={`https://open.spotify.com/search/${encodeURIComponent(`${buzzResponse.record_artist} ${buzzResponse.record_title}`)}`}
+            href={
+              currentResp.spotify_url ||
+              `https://open.spotify.com/search/${encodeURIComponent(`${currentResp.record_artist || ''} ${currentResp.record_title || ''}`.trim())}`
+            }
             target="_blank"
             rel="noopener noreferrer"
             onClick={e => e.stopPropagation()}

@@ -492,12 +492,29 @@ async def get_prompt_responses(prompt_id: str, user: Dict = Depends(require_auth
             r["display_name"] = u.get("display_name")
             r["avatar_url"] = u.get("avatar_url")
             r["founding_member"] = u.get("founding_member", False)
-        # Get the record's color_variant if available
+        # Get the record's color_variant and discogs_id
         if r.get("record_id"):
-            rec = await db.records.find_one({"id": r["record_id"]}, {"_id": 0, "color_variant": 1})
+            rec = await db.records.find_one({"id": r["record_id"]}, {"_id": 0, "color_variant": 1, "discogs_id": 1})
             r["color_variant"] = rec.get("color_variant") if rec else None
+            r["discogs_id"] = rec.get("discogs_id") if rec else None
         else:
             r["color_variant"] = None
+            r["discogs_id"] = None
+        # Enrich with Spotify link (direct album URL when matched, search URL as fallback)
+        r["spotify_id"] = None
+        r["spotify_url"] = None
+        discogs_id_raw = r.get("discogs_id")
+        if discogs_id_raw is not None:
+            try:
+                spotify_doc = await db.spotify_links.find_one(
+                    {"discogs_id": int(discogs_id_raw)},
+                    {"_id": 0, "spotify_id": 1, "spotify_url": 1}
+                )
+                if spotify_doc:
+                    r["spotify_id"] = spotify_doc.get("spotify_id")
+                    r["spotify_url"] = spotify_doc.get("spotify_url")
+            except (TypeError, ValueError):
+                pass
         # Find the linked Hive post for deep-linking
         if not r.get("post_id"):
             linked_post = await db.posts.find_one(

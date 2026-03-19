@@ -44,7 +44,15 @@ const DailyPromptCard = React.forwardRef(function DailyPromptCard({ promptQuesti
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', position: 'relative', zIndex: 1 }}>
         {/* "Daily Prompt" tag */}
         <div style={{ background: 'rgba(200,134,26,0.12)', border: '1.5px solid rgba(200,134,26,0.3)', borderRadius: 100, padding: '10px 32px', display: 'inline-block', textAlign: 'center' }}>
-          <p style={{ fontFamily: 'Georgia, serif', fontSize: 26, color: BRAND.amber, fontWeight: 700, letterSpacing: '0.08em', margin: 0, textTransform: 'uppercase', lineHeight: '1.6' }}>
+          {/* Text is opacity:0 so html2canvas preserves layout but doesn't draw it wrong.
+              Canvas 2D API redraws it pixel-perfectly via the data-canvas-redraw mechanism. */}
+          <p
+            style={{ fontFamily: 'Georgia, serif', fontSize: 26, color: BRAND.amber, fontWeight: 700, letterSpacing: '0.08em', margin: 0, textTransform: 'uppercase', lineHeight: '1.6', opacity: 0 }}
+            data-canvas-redraw="text"
+            data-canvas-text="🐝 DAILY PROMPT"
+            data-canvas-color={BRAND.amber}
+            data-canvas-font="bold 26px Georgia, serif"
+          >
             🐝 Daily Prompt
           </p>
         </div>
