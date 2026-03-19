@@ -83,12 +83,31 @@ async def get_room_feed(slug: str, current_user: Dict = Depends(require_auth)):
             {"$limit": 20},
         ]
     else:
-        # Genre rooms: fall back to most-recent posts (no genre field yet)
-        pipeline = [
-            {"$sort": {"created_at": -1}},
-            {"$limit": 20},
-            {"$project": {"_id": 0}},
-        ]
+        # Vibe/collector rooms: apply artist filter if present, otherwise unfiltered
+        artist_regex = room_filter.get("artist", {}).get("$regex", "") if isinstance(room_filter.get("artist"), dict) else room_filter.get("artist", "")
+        if artist_regex:
+            pipeline = [
+                {"$sort": {"created_at": -1}},
+                {"$limit": 200},
+                {"$lookup": {
+                    "from": "records",
+                    "localField": "record_id",
+                    "foreignField": "id",
+                    "as": "record"
+                }},
+                {"$unwind": {"path": "$record", "preserveNullAndEmptyArrays": False}},
+                {"$match": {
+                    "record.artist": {"$regex": artist_regex, "$options": "i"}
+                }},
+                {"$project": {"_id": 0, "record._id": 0}},
+                {"$limit": 20},
+            ]
+        else:
+            pipeline = [
+                {"$sort": {"created_at": -1}},
+                {"$limit": 20},
+                {"$project": {"_id": 0}},
+            ]
 
     posts = await db.posts.aggregate(pipeline).to_list(20)
     return posts
@@ -139,14 +158,26 @@ async def get_room_charts(slug: str):
             {"$project": {"_id": 0, "record_id": "$_id", "count": 1, "record.title": 1, "record.artist": 1, "record.cover_url": 1, "record.year": 1}},
         ]
     else:
-        pipeline = [
-            {"$group": {"_id": "$record_id", "count": {"$sum": 1}}},
-            {"$sort": {"count": -1}},
-            {"$limit": 5},
-            {"$lookup": {"from": "records", "localField": "_id", "foreignField": "id", "as": "record"}},
-            {"$unwind": {"path": "$record", "preserveNullAndEmptyArrays": True}},
-            {"$project": {"_id": 0, "record_id": "$_id", "count": 1, "record.title": 1, "record.artist": 1, "record.cover_url": 1}},
-        ]
+        artist_regex = room_filter.get("artist", {}).get("$regex", "") if isinstance(room_filter.get("artist"), dict) else room_filter.get("artist", "")
+        if artist_regex:
+            pipeline = [
+                {"$lookup": {"from": "records", "localField": "record_id", "foreignField": "id", "as": "record"}},
+                {"$unwind": {"path": "$record", "preserveNullAndEmptyArrays": False}},
+                {"$match": {"record.artist": {"$regex": artist_regex, "$options": "i"}}},
+                {"$group": {"_id": "$record_id", "count": {"$sum": 1}, "record": {"$first": "$record"}}},
+                {"$sort": {"count": -1}},
+                {"$limit": 5},
+                {"$project": {"_id": 0, "record_id": "$_id", "count": 1, "record.title": 1, "record.artist": 1, "record.cover_url": 1, "record.year": 1}},
+            ]
+        else:
+            pipeline = [
+                {"$group": {"_id": "$record_id", "count": {"$sum": 1}}},
+                {"$sort": {"count": -1}},
+                {"$limit": 5},
+                {"$lookup": {"from": "records", "localField": "_id", "foreignField": "id", "as": "record"}},
+                {"$unwind": {"path": "$record", "preserveNullAndEmptyArrays": True}},
+                {"$project": {"_id": 0, "record_id": "$_id", "count": 1, "record.title": 1, "record.artist": 1, "record.cover_url": 1}},
+            ]
 
     charts = await db.posts.aggregate(pipeline).to_list(5)
     return charts
