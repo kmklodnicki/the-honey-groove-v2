@@ -240,6 +240,24 @@ ROOMS = [
     },
     # ── Artist rooms ──────────────────────────────────────────────────────────
     {
+        "slug": "taylor-swift",
+        "name": "Taylor Swift",
+        "emoji": "🩷",
+        "tagline": "13 RPM. The hunt, the hauls, and the holy grail pressings.",
+        "type": "artist",
+        "filter": {"artist": {"$regex": "Taylor Swift", "$options": "i"}},
+        "matchCriteria": {"type": "artist", "value": "Taylor Swift"},
+        "theme": {
+            "accentColor": "#D98FA1",
+            "bgGradient": "linear-gradient(135deg, #F8D7DA, #F1AEB5)",
+            "hexColor": "#D98FA1",
+            "textColor": "#3D1520",
+        },
+        "theme_preset": "rose",
+        "member_count": 0,
+        "active": True,
+    },
+    {
         "slug": "david-bowie",
         "name": "David Bowie",
         "emoji": "⚡",
