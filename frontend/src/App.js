@@ -1,4 +1,5 @@
 import React, { useEffect, useState, Suspense, lazy } from "react";
+import { Analytics } from "@vercel/analytics/react";
 import "@/App.css";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
@@ -443,6 +444,7 @@ function App() {
       </BrowserRouter>
       </VinylShield>
       </ErrorBoundary>
+      <Analytics />
     </HelmetProvider>
   );
 }
