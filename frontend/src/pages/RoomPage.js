@@ -1,18 +1,31 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useVariantModal } from '../context/VariantModalContext';
 import axios from 'axios';
+import html2canvas from 'html2canvas';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { Skeleton } from '../components/ui/skeleton';
-import { Users, Music } from 'lucide-react';
+import { Users, Music, Share2, Trophy } from 'lucide-react';
 import { toast } from 'sonner';
 import { usePageTitle } from '../hooks/usePageTitle';
 import AlbumArt from '../components/AlbumArt';
 import BeeAvatar from '../components/BeeAvatar';
 import { PostCard } from '../components/HivePostCard';
+import RoomShareCard from '../components/RoomShareCard';
+import { resolveImageUrl } from '../utils/imageUrl';
+
+// Pre-flight: ensure an image is in the browser cache before canvas export
+const preflightImage = (url) => new Promise((resolve) => {
+  if (!url) { resolve(false); return; }
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => resolve(true);
+  img.onerror = () => resolve(false);
+  img.src = url;
+});
 
 const RoomPage = () => {
   const { slug } = useParams();
@@ -27,6 +40,10 @@ const RoomPage = () => {
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
   const [showGoldDialog, setShowGoldDialog] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const shareRef = useRef(null);
+
+  const isGold = user?.golden_hive || user?.golden_hive_verified;
 
   usePageTitle(room?.name || 'Room');
 
@@ -82,6 +99,45 @@ const RoomPage = () => {
       setJoining(false);
     }
   };
+
+  const handleShare = useCallback(async () => {
+    if (!shareRef.current) return;
+    setExporting(true);
+    try {
+      // Pre-flight cover image if room has a featured record
+      if (room?.cover_url) {
+        await preflightImage(resolveImageUrl(room.cover_url));
+      }
+      shareRef.current.style.display = 'block';
+      shareRef.current.style.position = 'fixed';
+      shareRef.current.style.left = '-9999px';
+      shareRef.current.style.top = '0';
+
+      await new Promise(r => setTimeout(r, 500));
+
+      const canvas = await html2canvas(shareRef.current, {
+        width: 1080, height: 1920, scale: 1, useCORS: true, allowTaint: false, backgroundColor: null,
+      });
+      shareRef.current.style.display = 'none';
+
+      canvas.toBlob(async (blob) => {
+        if (!blob) return;
+        const file = new File([blob], `honeygroove-room-${slug}-${Date.now()}.png`, { type: 'image/png' });
+        if (navigator.share && navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file], title: `${room?.name} — The Honey Groove` });
+        } else {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = file.name; a.click();
+          URL.revokeObjectURL(url);
+        }
+        setExporting(false);
+      }, 'image/png');
+    } catch {
+      setExporting(false);
+      if (shareRef.current) shareRef.current.style.display = 'none';
+    }
+  }, [room, slug]);
 
   const handleLeave = async () => {
     try {
@@ -146,27 +202,41 @@ const RoomPage = () => {
           <Users className="inline w-4 h-4 mr-1" />
           {(room.member_count || 0).toLocaleString()} {room.member_count === 1 ? 'member' : 'members'}
         </p>
-        {isMember ? (
+        <div className="flex gap-2 items-center">
+          {isMember ? (
+            <Button
+              variant="outline"
+              onClick={handleLeave}
+              className="rounded-full px-6"
+              style={{ borderColor: accentColor, color: accentColor }}
+              data-testid="leave-room-btn"
+            >
+              Leave Room
+            </Button>
+          ) : (
+            <Button
+              onClick={handleJoin}
+              disabled={joining}
+              className="rounded-full px-6 text-white font-semibold"
+              style={{ background: accentColor }}
+              data-testid="join-room-btn"
+            >
+              {joining ? 'Joining…' : 'Join Room'}
+            </Button>
+          )}
           <Button
             variant="outline"
-            onClick={handleLeave}
-            className="rounded-full px-6"
+            size="sm"
+            onClick={handleShare}
+            disabled={exporting}
+            className="rounded-full px-4"
             style={{ borderColor: accentColor, color: accentColor }}
-            data-testid="leave-room-btn"
+            data-testid="share-room-btn"
           >
-            Leave Room
+            <Share2 className="w-4 h-4 mr-1" />
+            {exporting ? 'Exporting…' : 'Share'}
           </Button>
-        ) : (
-          <Button
-            onClick={handleJoin}
-            disabled={joining}
-            className="rounded-full px-6 text-white font-semibold"
-            style={{ background: accentColor }}
-            data-testid="join-room-btn"
-          >
-            {joining ? 'Joining…' : 'Join Room'}
-          </Button>
-        )}
+        </div>
       </div>
 
       {/* Two-column layout */}
@@ -233,8 +303,21 @@ const RoomPage = () => {
               <>
                 <div className="flex flex-wrap gap-2">
                   {members.slice(0, 12).map(u => (
-                    <div key={u.id} className="w-8 h-8" title={`@${u.username}`}>
+                    <div
+                      key={u.id}
+                      className="relative w-8 h-8"
+                      title={u.is_top_collector ? `@${u.username} — Top Collector` : `@${u.username}`}
+                    >
                       <BeeAvatar user={u} className="h-8 w-8 cursor-pointer" onClick={() => navigate(`/profile/${u.username}`)} />
+                      {u.is_top_collector && (
+                        <span
+                          className="absolute -top-1 -right-1 w-4 h-4 flex items-center justify-center rounded-full text-[8px]"
+                          style={{ background: '#DAA520', color: '#fff' }}
+                          data-testid={`top-collector-badge-${u.id}`}
+                        >
+                          🏆
+                        </span>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -246,6 +329,9 @@ const RoomPage = () => {
           </Card>
         </div>
       </div>
+
+      {/* Hidden share card for html2canvas export */}
+      <RoomShareCard ref={shareRef} room={room} />
 
       {/* Gold upsell dialog */}
       <Dialog open={showGoldDialog} onOpenChange={setShowGoldDialog}>

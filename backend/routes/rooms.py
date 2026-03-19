@@ -1,7 +1,7 @@
 """Honeycomb Rooms — themed community spaces."""
 from fastapi import APIRouter, HTTPException, Depends
 from typing import Optional, Dict
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import uuid
 
 from database import db, require_auth, get_current_user, logger
@@ -150,19 +150,68 @@ async def get_room_charts(slug: str):
 
 
 @router.get("/rooms/{slug}/members")
-async def get_room_members(slug: str):
-    """Return up to 20 members of a room sorted by join date."""
+async def get_room_members(slug: str, current_user: Optional[Dict] = Depends(get_current_user)):
+    """Return up to 20 members. Gold users see Top Collector badges (top 5 by relevant records)."""
+    room = await db.rooms.find_one({"slug": slug}, {"_id": 0, "type": 1, "filter": 1})
     members = await db.room_members.find(
         {"slug": slug},
         {"_id": 0, "userId": 1, "joined_at": 1}
     ).sort("joined_at", 1).limit(20).to_list(20)
 
     user_ids = [m["userId"] for m in members]
-    users = await db.users.find(
+    users_raw = await db.users.find(
         {"id": {"$in": user_ids}},
         {"_id": 0, "id": 1, "username": 1, "avatar_url": 1}
     ).to_list(20)
-    return users
+
+    is_gold = current_user and (
+        current_user.get("golden_hive") or current_user.get("golden_hive_verified")
+    )
+
+    # Compute collection_count_in_room per member for Top Collector ranking
+    room_type = room.get("type", "era") if room else "era"
+    room_filter = room.get("filter", {}) if room else {}
+    collector_counts = {}
+
+    for uid in user_ids:
+        try:
+            if room_type == "era":
+                decade_start = room_filter.get("year", {}).get("$gte", 0)
+                decade_end = room_filter.get("year", {}).get("$lte", 9999)
+                pipeline = [
+                    {"$match": {"user_id": uid, "year": {"$ne": None}}},
+                    {"$addFields": {"year_int": {"$toInt": "$year"}}},
+                    {"$match": {"year_int": {"$gte": decade_start, "$lte": decade_end}}},
+                    {"$count": "n"},
+                ]
+                result = await db.records.aggregate(pipeline).to_list(1)
+                collector_counts[uid] = result[0]["n"] if result else 0
+            elif room_type == "artist":
+                artist_regex = room_filter.get("artist", {}).get("$regex", "")
+                count = await db.records.count_documents({
+                    "user_id": uid,
+                    "artist": {"$regex": artist_regex, "$options": "i"}
+                })
+                collector_counts[uid] = count
+            else:
+                collector_counts[uid] = 0
+        except Exception:
+            collector_counts[uid] = 0
+
+    # Sort by count desc, mark top 5
+    sorted_ids = sorted(user_ids, key=lambda uid: collector_counts.get(uid, 0), reverse=True)
+    top_5 = set(sorted_ids[:5])
+
+    users_map = {u["id"]: u for u in users_raw}
+    result = []
+    for uid in user_ids:
+        u = users_map.get(uid)
+        if not u:
+            continue
+        u["is_top_collector"] = uid in top_5 and is_gold
+        result.append(u)
+
+    return result
 
 
 @router.post("/rooms/{slug}/join")
@@ -193,6 +242,12 @@ async def join_room(slug: str, current_user: Dict = Depends(require_auth)):
 
     if result.upserted_id:
         await db.rooms.update_one({"slug": slug}, {"$inc": {"member_count": 1}})
+        # Fire-and-forget milestone check
+        try:
+            from routes.milestones import check_room_milestone
+            await check_room_milestone(uid)
+        except Exception as e:
+            logger.debug(f"Milestone check skipped: {e}")
 
     return {"joined": True}
 
@@ -213,3 +268,85 @@ async def get_membership(slug: str, current_user: Dict = Depends(require_auth)):
     uid = current_user["id"]
     member = await db.room_members.find_one({"slug": slug, "userId": uid})
     return {"is_member": bool(member)}
+
+
+@router.post("/rooms/create")
+async def create_room(body: dict, current_user: Dict = Depends(require_auth)):
+    """Gold-only: create a new Vibe or Collector room (pending moderation)."""
+    is_gold = current_user.get("golden_hive") or current_user.get("golden_hive_verified")
+    if not is_gold:
+        raise HTTPException(
+            status_code=403,
+            detail="Gold membership required to create rooms.",
+            headers={"X-Gold-Required": "true"}
+        )
+
+    room_type = body.get("type", "")
+    if room_type not in ("vibe", "collector"):
+        raise HTTPException(status_code=400, detail="type must be 'vibe' or 'collector'")
+
+    name = (body.get("name") or "").strip()
+    if not name or len(name) < 3 or len(name) > 60:
+        raise HTTPException(status_code=400, detail="name must be 3–60 characters")
+
+    description = (body.get("description") or "").strip()[:280]
+    theme_preset = body.get("theme_preset") or "honey"
+    emoji = (body.get("emoji") or "🍯").strip()
+
+    uid = current_user["id"]
+
+    # Rate limit: max 1 room created per user per 30 days
+    thirty_days_ago = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+    recent_count = await db.rooms.count_documents({
+        "createdBy": uid,
+        "created_at": {"$gte": thirty_days_ago}
+    })
+    if recent_count >= 1:
+        raise HTTPException(
+            status_code=429,
+            detail="You can create one room per 30 days. Check back soon!"
+        )
+
+    # Build slug from name
+    import re
+    slug_base = re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")[:40]
+    slug = slug_base
+    # Ensure slug uniqueness
+    suffix = 2
+    while await db.rooms.find_one({"slug": slug}):
+        slug = f"{slug_base}-{suffix}"
+        suffix += 1
+
+    # Theme presets
+    THEME_PRESETS = {
+        "honey":    {"bgGradient": "linear-gradient(135deg, #FFF3E0, #FFE0B2)", "accentColor": "#C8861A", "textColor": "#2A1A06"},
+        "midnight": {"bgGradient": "linear-gradient(135deg, #1A1A2E, #16213E)", "accentColor": "#7B68EE", "textColor": "#E8E8F0"},
+        "forest":   {"bgGradient": "linear-gradient(135deg, #1B4332, #2D6A4F)", "accentColor": "#74C69D", "textColor": "#D8F3DC"},
+        "rose":     {"bgGradient": "linear-gradient(135deg, #F8D7DA, #F1AEB5)", "accentColor": "#D98FA1", "textColor": "#3D1520"},
+        "slate":    {"bgGradient": "linear-gradient(135deg, #2C3E50, #3D5166)", "accentColor": "#85A7C0", "textColor": "#ECF0F1"},
+        "plum":     {"bgGradient": "linear-gradient(135deg, #4A235A, #6C3483)", "accentColor": "#D7BDE2", "textColor": "#F5EEF8"},
+    }
+    theme = THEME_PRESETS.get(theme_preset, THEME_PRESETS["honey"])
+
+    now = datetime.now(timezone.utc).isoformat()
+    room_doc = {
+        "slug": slug,
+        "name": name,
+        "tagline": description,
+        "type": room_type,
+        "emoji": emoji,
+        "theme": theme,
+        "theme_preset": theme_preset,
+        "filter": {},
+        "member_count": 0,
+        "active": False,  # Pending moderation
+        "createdBy": uid,
+        "created_at": now,
+    }
+    await db.rooms.insert_one(room_doc)
+
+    return {
+        "slug": slug,
+        "pending": True,
+        "message": "Your room has been submitted for review. We'll notify you when it goes live!"
+    }

@@ -953,6 +953,72 @@ async def get_suggested_collectors(limit: int = 10, user: Dict = Depends(require
     return users
 
 
+@router.get("/explore/you-might-love")
+async def get_you_might_love(limit: int = 8, user: Dict = Depends(require_auth)):
+    """Personalized record recommendations based on taste-match overlap."""
+    uid = user["id"]
+    is_gold = user.get("golden_hive") or user.get("golden_hive_verified")
+
+    # Current user's collection
+    my_records = await db.records.find(
+        {"user_id": uid, "discogs_id": {"$ne": None}},
+        {"_id": 0, "discogs_id": 1}
+    ).to_list(5000)
+    my_discogs = {r["discogs_id"] for r in my_records if r.get("discogs_id")}
+
+    if not my_discogs:
+        return []
+
+    hidden_ids = await get_hidden_user_ids()
+    blocked_ids = await get_all_blocked_ids(uid)
+    all_exclude_ids = list(set(hidden_ids) | set(blocked_ids) | {uid})
+
+    # Find similar collectors: users who share at least max(2, 30% of user's collection) records
+    min_shared = max(2, int(len(my_discogs) * 0.3))
+    pipeline = [
+        {"$match": {"discogs_id": {"$in": list(my_discogs)}, "user_id": {"$nin": all_exclude_ids}}},
+        {"$group": {"_id": "$user_id", "shared_count": {"$addToSet": "$discogs_id"}}},
+        {"$project": {"_id": 1, "shared_records": {"$size": "$shared_count"}}},
+        {"$match": {"shared_records": {"$gte": min_shared}}},
+        {"$sort": {"shared_records": -1}},
+        {"$limit": 30},
+    ]
+    similar = await db.records.aggregate(pipeline).to_list(30)
+    similar_user_ids = [s["_id"] for s in similar]
+    overlap_map = {s["_id"]: s["shared_records"] for s in similar}
+
+    if not similar_user_ids:
+        return []
+
+    # Get records owned by similar collectors that the current user doesn't own
+    candidate_pipeline = [
+        {"$match": {
+            "user_id": {"$in": similar_user_ids},
+            "discogs_id": {"$nin": list(my_discogs), "$ne": None}
+        }},
+        {"$group": {
+            "_id": "$discogs_id",
+            "owner_count": {"$sum": 1},
+            "record": {"$first": "$$ROOT"},
+        }},
+        {"$sort": {"owner_count": -1}},
+        {"$limit": limit},
+        {"$replaceRoot": {
+            "newRoot": {"$mergeObjects": ["$record", {"owner_count": "$owner_count"}]}
+        }},
+        {"$project": {"_id": 0, "user_id": 0}},
+    ]
+    candidates = await db.records.aggregate(candidate_pipeline).to_list(limit)
+
+    # Add reason tag and gold_only flag
+    for idx, rec in enumerate(candidates):
+        count = rec.get("owner_count", 1)
+        rec["reason"] = f"Owned by {count} collector{'s' if count != 1 else ''} with your taste"
+        rec["gold_only"] = (not is_gold) and (idx >= 4)
+
+    return candidates
+
+
 @router.get("/explore/active-isos")
 async def get_active_iso_matches(user: Dict = Depends(require_auth)):
     """Get ISO matches for the current user - listings matching their wantlist"""

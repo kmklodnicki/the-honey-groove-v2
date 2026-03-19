@@ -39,6 +39,8 @@ from routes.spotify import router as spotify_router
 from routes.payments import router as payments_router
 from routes.ebay import router as ebay_router
 from routes.rooms import router as rooms_router
+from routes.honey_drop import router as honey_drop_router
+from routes.milestones import router as milestones_router
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
@@ -51,7 +53,7 @@ for r in [auth_router, hive_router, collection_router, honeypot_router,
           mood_boards_router, bingo_router, reports_router, admin_router, search_router,
           verification_router, reports_router, seo_router, vinyl_router,
           weekly_wax_router, image_proxy_router, spotify_router, payments_router,
-          ebay_router, rooms_router]:
+          ebay_router, rooms_router, honey_drop_router, milestones_router]:
     app.include_router(r, prefix="/api")
 
 # --- Data export download endpoints ---
@@ -325,6 +327,11 @@ async def startup_event():
     await db.rooms.create_index("slug", unique=True)
     await db.room_members.create_index([("slug", 1), ("userId", 1)], unique=True)
     await db.room_members.create_index("userId")
+    # Honey Drop indexes
+    await db.honey_drops.create_index("date", unique=True)
+    # Milestones indexes
+    await db.milestones.create_index([("userId", 1), ("type", 1)], unique=True)
+    await db.milestones.create_index("achieved_at")
     # Start weekly report scheduler
     asyncio.create_task(schedule_weekly_reports())
     # Start Weekly Wax email scheduler
