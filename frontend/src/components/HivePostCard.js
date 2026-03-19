@@ -8,6 +8,7 @@ import { Input } from './ui/input';
 import { Heart, MessageCircle, MoreVertical, Trash2, Pin, Reply, Send, ChevronDown, ChevronUp, Sparkles, X, FileText, Camera, Loader2, Share2 } from 'lucide-react';
 import { useShareCard } from '../hooks/useShareCard';
 import NowSpinningCard from './ShareCards/NowSpinningCard';
+import SaleCard from './ShareCards/SaleCard';
 import UserBadges from './UserBadges';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -112,11 +113,11 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
   const isOwner = post.user_id === currentUserId;
   const timeAgo = formatDistanceToNow(new Date(post.created_at), { addSuffix: true });
 
-  // Share card — for spin and haul posts
-  const isShareable = post.post_type === 'spin' || post.post_type === 'haul';
+  // Share card — for spins, hauls, and sale listings
+  const isShareable = ['NOW_SPINNING', 'NEW_HAUL', 'listing_sale'].includes(post.post_type);
   const { cardRef: shareCardRef, exporting: shareExporting, exportCard } = useShareCard({
-    cardType: post.post_type === 'haul' ? 'haul' : 'now_spinning',
-    filename: `thg-${post.post_type === 'haul' ? 'haul' : 'now-spinning'}`,
+    cardType: post.post_type === 'NEW_HAUL' ? 'haul' : post.post_type === 'listing_sale' ? 'sale' : 'now_spinning',
+    filename: `thg-${post.post_type === 'NEW_HAUL' ? 'haul' : post.post_type === 'listing_sale' ? 'sale' : 'now-spinning'}`,
     title: `${post.user?.username ? `@${post.user.username} on ` : ''}The Honey Groove`,
     userId: currentUserId,
   });
@@ -452,7 +453,18 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
       </div>
 
       {/* Hidden share card — rendered off-screen for html2canvas capture */}
-      {isShareable && (
+      {isShareable && post.post_type === 'listing_sale' ? (
+        <SaleCard
+          ref={shareCardRef}
+          record={{
+            cover_url: post.cover_url || post.record?.cover_url,
+            title: post.record_title || post.record?.title,
+            artist: post.record_artist || post.record?.artist,
+          }}
+          price={post.price || post.listing_price}
+          user={post.user}
+        />
+      ) : isShareable ? (
         <NowSpinningCard
           ref={shareCardRef}
           post={{
@@ -462,7 +474,7 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
           }}
           user={post.user}
         />
-      )}
+      ) : null}
       {showComments && (
         <div className="px-4 pb-4 border-t border-honey/20 bg-honey/5">
           {loadingComments ? (

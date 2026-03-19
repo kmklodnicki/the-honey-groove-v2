@@ -16,7 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, RefreshCw, Heart, ArrowRight, Cloud, Sparkles, CheckSquare, Square, ListChecks, AlertTriangle, Copy, Loader2, X, ImageDown } from 'lucide-react';
+import { Disc, Plus, Search, Play, Trash2, MoreVertical, ArrowUpDown, Gem, RefreshCw, Heart, ArrowRight, Cloud, Sparkles, CheckSquare, Square, ListChecks, AlertTriangle, Copy, Loader2, X, ImageDown, Share2 } from 'lucide-react';
+import { useShareCard } from '../hooks/useShareCard';
+import VaultValueCard from '../components/ShareCards/VaultValueCard';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -316,6 +318,13 @@ const SORT_OPTIONS = [
 const CollectionPage = () => {
   usePageTitle('The Vault');
   const { user, token, API } = useAuth();
+  const isGold = user?.golden_hive || user?.golden_hive_verified;
+  const { cardRef: vaultShareRef, exporting: vaultExporting, exportCard: exportVaultCard } = useShareCard({
+    cardType: 'vault_value',
+    filename: 'thg-my-vault',
+    title: `${user?.username ? `@${user.username}'s Vault — ` : ''}The Honey Groove`,
+    userId: user?.id,
+  });
   const [records, setRecords] = useState([]);
   const [spins, setSpins] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -855,13 +864,38 @@ const CollectionPage = () => {
           <h1 className="font-heading text-3xl text-vinyl-black">My Vault</h1>
           <p className="text-muted-foreground">{records.length} owned · {wishlistItems.length} on Dream List</p>
         </div>
-        <Link to={`/add-record?mode=${collectionTab === 'wishlist' ? 'dreaming' : 'reality'}`}>
-          <Button className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2" data-testid="add-record-btn">
-            <Plus className="w-4 h-4" />
-            {collectionTab === 'wishlist' ? 'Add to Dream List' : 'Add to Your Vault'}
-          </Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          {collectionValue?.total_value > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => exportVaultCard(records.slice(0, 4).map(r => r.cover_url).filter(Boolean))}
+              disabled={vaultExporting}
+              className="rounded-full px-3"
+              data-testid="share-vault-btn"
+            >
+              {vaultExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Share2 className="w-4 h-4" />}
+            </Button>
+          )}
+          <Link to={`/add-record?mode=${collectionTab === 'wishlist' ? 'dreaming' : 'reality'}`}>
+            <Button className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-2" data-testid="add-record-btn">
+              <Plus className="w-4 h-4" />
+              {collectionTab === 'wishlist' ? 'Add to Dream List' : 'Add to Your Vault'}
+            </Button>
+          </Link>
+        </div>
       </div>
+      <VaultValueCard
+        ref={vaultShareRef}
+        vaultData={{
+          total_value: collectionValue?.total_value || 0,
+          record_count: records.length,
+          top_genre: collectionValue?.top_genre || '',
+          top_records: records.slice(0, 4),
+        }}
+        user={user}
+        isGold={isGold}
+      />
 
       <Tabs value={collectionTab} onValueChange={handleTabChange}>
         {/* Treasury Dashboard — Premium Value Display */}

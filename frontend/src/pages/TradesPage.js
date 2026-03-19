@@ -22,7 +22,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { ArrowRightLeft, Check, X, MessageSquare, Disc, Loader2, DollarSign, Search, Package, AlertTriangle, Star, Camera, Truck, Clock, CheckCircle2, XCircle, Shield, HelpCircle, MapPin } from 'lucide-react';
+import { ArrowRightLeft, Check, X, MessageSquare, Disc, Loader2, DollarSign, Search, Package, AlertTriangle, Star, Camera, Truck, Clock, CheckCircle2, XCircle, Shield, HelpCircle, MapPin, Share2 } from 'lucide-react';
+import { useShareCard } from '../hooks/useShareCard';
+import TradeShareCard from '../components/ShareCards/TradeCard';
 import {
   Tooltip,
   TooltipContent,
@@ -281,6 +283,16 @@ const TradesPage = () => {
 const TradeCard = ({ trade, currentUserId, onClick, feePct = 6 }) => {
   const isInitiator = trade.initiator_id === currentUserId;
   const otherUser = isInitiator ? trade.responder : trade.initiator;
+  const isCompleted = trade.status === 'COMPLETED';
+  const sentRecord = isInitiator ? trade.offered_record : trade.listing_record;
+  const receivedRecord = isInitiator ? trade.listing_record : trade.offered_record;
+  const currentUser = isInitiator ? trade.initiator : trade.responder;
+  const { cardRef: tradeShareRef, exporting: tradeExporting, exportCard: exportTradeCard } = useShareCard({
+    cardType: 'trade',
+    filename: 'thg-trade',
+    title: `Just traded on The Honey Groove`,
+    userId: currentUserId,
+  });
   const sc = STATUS_CONFIG[trade.status] || STATUS_CONFIG.PROPOSED;
   const role = isInitiator ? 'initiator' : 'responder';
   const holdNeedsPay = trade.status === 'HOLD_PENDING' && !(trade.hold_charges?.[role]?.status === 'paid');
@@ -357,10 +369,32 @@ const TradeCard = ({ trade, currentUserId, onClick, feePct = 6 }) => {
           </Avatar>
           <span className="text-xs text-muted-foreground">with @{otherUser?.username}</span>
         </div>
-        {trade.messages?.length > 0 && (
-          <span className="text-xs text-muted-foreground flex items-center gap-1"><MessageSquare className="w-3 h-3" /> {trade.messages.length}</span>
-        )}
+        <div className="flex items-center gap-2">
+          {trade.messages?.length > 0 && (
+            <span className="text-xs text-muted-foreground flex items-center gap-1"><MessageSquare className="w-3 h-3" /> {trade.messages.length}</span>
+          )}
+          {isCompleted && (
+            <button
+              onClick={(e) => { e.stopPropagation(); exportTradeCard([sentRecord?.cover_url, receivedRecord?.cover_url].filter(Boolean)); }}
+              disabled={tradeExporting}
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-honey-amber transition-colors disabled:opacity-50"
+              title="Share this trade"
+              data-testid={`share-trade-btn-${trade.id}`}
+            >
+              {tradeExporting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Share2 className="w-3.5 h-3.5" />}
+            </button>
+          )}
+        </div>
       </div>
+      {isCompleted && (
+        <TradeShareCard
+          ref={tradeShareRef}
+          sentRecord={sentRecord}
+          receivedRecord={receivedRecord}
+          partnerUsername={otherUser?.username}
+          user={currentUser}
+        />
+      )}
     </Card>
   );
 };
