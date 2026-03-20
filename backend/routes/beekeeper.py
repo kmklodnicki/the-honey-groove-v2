@@ -2,10 +2,11 @@
 and Spotify matching / CC0 backfill tooling."""
 import os
 from fastapi import APIRouter, HTTPException, Depends, Request
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 from datetime import datetime, timezone, timedelta
 import asyncio
 
+from bson import ObjectId
 from database import db, require_auth, create_notification, logger
 
 router = APIRouter()
@@ -1416,3 +1417,172 @@ async def run_compliance_cleanup(admin: Dict = Depends(require_admin)):
         "images_remaining": images_checked,
         "cleaned_at": datetime.now(timezone.utc).isoformat(),
     }
+
+
+# ─── Testimonials ─────────────────────────────────────────────────────────────
+
+def _serialize_testimonial(t: dict) -> dict:
+    t["id"] = str(t.pop("_id"))
+    if t.get("linkedUserId"):
+        t["linkedUserId"] = str(t["linkedUserId"])
+    return t
+
+
+# Public: landing page fetches active testimonials (no auth required)
+@router.get("/testimonials")
+async def get_public_testimonials():
+    cursor = db.testimonials.find(
+        {"isActive": True},
+        sort=[("sortOrder", 1)],
+    )
+    results = []
+    async for doc in cursor:
+        results.append(_serialize_testimonial(doc))
+    return results
+
+
+# Admin: all testimonials
+@router.get("/beekeeper/testimonials")
+async def list_all_testimonials(admin: Dict = Depends(require_admin)):
+    cursor = db.testimonials.find({}, sort=[("sortOrder", 1)])
+    results = []
+    async for doc in cursor:
+        results.append(_serialize_testimonial(doc))
+    return results
+
+
+# Admin: create
+@router.post("/beekeeper/testimonials")
+async def create_testimonial(body: dict, admin: Dict = Depends(require_admin)):
+    required = {"quote", "username", "avatarLetter"}
+    if not required.issubset(body.keys()):
+        raise HTTPException(400, "Missing required fields: quote, username, avatarLetter")
+    if len(body.get("quote", "")) > 300:
+        raise HTTPException(400, "quote must be 300 characters or fewer")
+
+    # Auto-assign sortOrder at the end
+    last = await db.testimonials.find_one({}, sort=[("sortOrder", -1)])
+    next_order = (last["sortOrder"] + 1) if last else 1
+
+    doc = {
+        "quote": body["quote"].strip(),
+        "username": body["username"].strip(),
+        "label": body.get("label", "beta collector").strip(),
+        "avatarLetter": body.get("avatarLetter", "?")[0].upper(),
+        "avatarUrl": body.get("avatarUrl"),
+        "recordCount": int(body.get("recordCount", 0)),
+        "isActive": bool(body.get("isActive", True)),
+        "sortOrder": int(body.get("sortOrder", next_order)),
+        "createdAt": datetime.now(timezone.utc),
+        "linkedUserId": ObjectId(body["linkedUserId"]) if body.get("linkedUserId") else None,
+    }
+    result = await db.testimonials.insert_one(doc)
+    doc["_id"] = result.inserted_id
+    return _serialize_testimonial(doc)
+
+
+# Admin: update
+@router.put("/beekeeper/testimonials/{tid}")
+async def update_testimonial(tid: str, body: dict, admin: Dict = Depends(require_admin)):
+    try:
+        oid = ObjectId(tid)
+    except Exception:
+        raise HTTPException(400, "Invalid testimonial id")
+
+    allowed = {"quote", "username", "label", "avatarLetter", "avatarUrl",
+               "recordCount", "isActive", "sortOrder", "linkedUserId"}
+    update = {}
+    for k, v in body.items():
+        if k not in allowed:
+            continue
+        if k == "quote" and len(v) > 300:
+            raise HTTPException(400, "quote must be 300 characters or fewer")
+        if k == "avatarLetter" and v:
+            v = v[0].upper()
+        if k == "linkedUserId":
+            v = ObjectId(v) if v else None
+        update[k] = v
+
+    if not update:
+        raise HTTPException(400, "No valid fields to update")
+
+    result = await db.testimonials.update_one({"_id": oid}, {"$set": update})
+    if result.matched_count == 0:
+        raise HTTPException(404, "Testimonial not found")
+    doc = await db.testimonials.find_one({"_id": oid})
+    return _serialize_testimonial(doc)
+
+
+# Admin: delete
+@router.delete("/beekeeper/testimonials/{tid}")
+async def delete_testimonial(tid: str, admin: Dict = Depends(require_admin)):
+    try:
+        oid = ObjectId(tid)
+    except Exception:
+        raise HTTPException(400, "Invalid testimonial id")
+    result = await db.testimonials.delete_one({"_id": oid})
+    if result.deleted_count == 0:
+        raise HTTPException(404, "Testimonial not found")
+    return {"deleted": True}
+
+
+# Admin: reorder (accepts {orderedIds: [id1, id2, ...]})
+@router.put("/beekeeper/testimonials-reorder")
+async def reorder_testimonials(body: dict, admin: Dict = Depends(require_admin)):
+    ordered_ids = body.get("orderedIds", [])
+    if not ordered_ids:
+        raise HTTPException(400, "orderedIds is required")
+    for i, tid in enumerate(ordered_ids):
+        try:
+            oid = ObjectId(tid)
+        except Exception:
+            raise HTTPException(400, f"Invalid id: {tid}")
+        await db.testimonials.update_one({"_id": oid}, {"$set": {"sortOrder": i + 1}})
+    return {"reordered": len(ordered_ids)}
+
+
+# Admin: pull from Hive — top engaged posts for testimonial sourcing
+@router.get("/beekeeper/testimonials/hive-posts")
+async def get_hive_posts_for_testimonials(admin: Dict = Depends(require_admin)):
+    cursor = db.posts.find(
+        {"post_type": {"$in": ["note", "spin", "haul"]}},
+        sort=[("likes_count", -1)],
+    ).limit(20)
+    results = []
+    async for doc in cursor:
+        user = await db.users.find_one({"_id": doc.get("user_id")}, {"username": 1, "avatar_url": 1, "record_count": 1})
+        results.append({
+            "postId": str(doc["_id"]),
+            "text": doc.get("content") or doc.get("text") or "",
+            "likesCount": doc.get("likes_count", 0),
+            "username": f"@{user['username']}" if user else "@unknown",
+            "avatarLetter": (user.get("username", "?")[0].upper()) if user else "?",
+            "avatarUrl": user.get("avatar_url") if user else None,
+            "recordCount": user.get("record_count", 0) if user else 0,
+            "linkedUserId": str(doc.get("user_id")) if doc.get("user_id") else None,
+        })
+    return results
+
+
+# Admin: seed the 5 initial testimonials (idempotent — skips if collection non-empty)
+@router.post("/beekeeper/testimonials/seed")
+async def seed_testimonials(admin: Dict = Depends(require_admin)):
+    existing = await db.testimonials.count_documents({})
+    if existing > 0:
+        return {"seeded": 0, "message": "Collection already has testimonials"}
+
+    seeds = [
+        {"quote": "I have been waiting for something like this. Discogs is for cataloging, eBay is for selling, but nothing was for the community. The Honey Groove is where I actually want to hang out.", "username": "@crazy_vinyl_13", "label": "beta collector", "avatarLetter": "C", "recordCount": 187, "isActive": True, "sortOrder": 1},
+        {"quote": "The Wax Report personality cards are addicting. I share mine every Monday morning and my followers keep asking how to join.", "username": "@crateking", "label": "founding collector", "avatarLetter": "C", "recordCount": 312, "isActive": True, "sortOrder": 2},
+        {"quote": "6% fees? I was paying almost 13% on other platforms. I moved all my listings here the first week. The Mutual Hold system makes trading feel safe for the first time ever.", "username": "@waxvault99", "label": "beta collector", "avatarLetter": "W", "recordCount": 94, "isActive": True, "sortOrder": 3},
+        {"quote": "The Daily Prompt got me posting every day. 23 day streak and counting. This is the first vinyl app that actually feels alive.", "username": "@deepgrooves", "label": "Gold Collector", "avatarLetter": "D", "recordCount": 241, "isActive": True, "sortOrder": 4},
+        {"quote": "I found three records from my Dream List through ISOs here in the first month. The matching system actually works.", "username": "@pressingsonly", "label": "beta collector", "avatarLetter": "P", "recordCount": 156, "isActive": True, "sortOrder": 5},
+    ]
+    now = datetime.now(timezone.utc)
+    for s in seeds:
+        s["createdAt"] = now
+        s["avatarUrl"] = None
+        s["linkedUserId"] = None
+    await db.testimonials.insert_many(seeds)
+    await db.testimonials.create_index([("isActive", 1), ("sortOrder", 1)])
+    return {"seeded": len(seeds)}

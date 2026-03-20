@@ -1660,6 +1660,337 @@ function MigrationTab({ API, headers }) {
 }
 
 
+// ─── Tab: Testimonials ────────────────────────────────────────────────────────
+
+const GOLD = '#D4A828';
+const GOLD_LIGHT = '#E8CA5A';
+const NAVY = '#1E2A3A';
+const CREAM = '#F0E6C8';
+
+function TestimonialPreview({ t }) {
+  return (
+    <div style={{
+      background: NAVY, borderRadius: 16, padding: '28px 32px',
+      border: '1px solid rgba(255,255,255,0.1)', maxWidth: 480,
+    }}>
+      <div style={{ fontFamily: "'Playfair Display', serif", fontSize: 40, color: `${GOLD}33`, lineHeight: 1, marginBottom: 4 }}>"</div>
+      <p style={{ color: '#fff', fontFamily: "'Playfair Display', serif", fontSize: 17, fontStyle: 'italic', lineHeight: 1.7, marginBottom: 20 }}>
+        {t.quote || <em style={{ opacity: 0.4 }}>quote will appear here…</em>}
+      </p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{
+          width: 36, height: 36, borderRadius: '50%',
+          background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontWeight: 700, fontSize: 15, color: NAVY, fontFamily: "'Playfair Display', serif",
+        }}>
+          {(t.avatarLetter || '?')[0]?.toUpperCase()}
+        </div>
+        <div>
+          <p style={{ color: '#fff', fontSize: 12, fontWeight: 700, margin: 0 }}>{t.username || '@username'}</p>
+          <p style={{ color: CREAM, fontSize: 10, margin: 0, opacity: 0.7 }}>
+            {t.label || 'beta collector'}{t.recordCount ? ` · ${t.recordCount} records` : ''}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const BLANK_FORM = { quote: '', username: '', label: 'beta collector', avatarLetter: '', recordCount: '', isActive: true, linkedUserId: '' };
+
+function TestimonialsTab({ API, headers }) {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(null); // null | 'new' | testimonial object
+  const [form, setForm] = useState(BLANK_FORM);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(null);
+  const [hiveOpen, setHiveOpen] = useState(false);
+  const [hivePosts, setHivePosts] = useState([]);
+  const [hiveLoading, setHiveLoading] = useState(false);
+  const [dragOver, setDragOver] = useState(null);
+  const dragItem = useRef(null);
+
+  const fetch_ = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${API}/beekeeper/testimonials`, { headers });
+      setItems(res.data || []);
+    } catch { toast.error('Failed to load testimonials'); }
+    finally { setLoading(false); }
+  }, [API, headers]);
+
+  useEffect(() => { fetch_(); }, [fetch_]);
+
+  const activeCount = items.filter(t => t.isActive).length;
+
+  // ── Editor ──
+  const openNew = () => { setForm(BLANK_FORM); setEditing('new'); };
+  const openEdit = (t) => {
+    setForm({ quote: t.quote, username: t.username, label: t.label, avatarLetter: t.avatarLetter, recordCount: t.recordCount, isActive: t.isActive, linkedUserId: t.linkedUserId || '' });
+    setEditing(t);
+  };
+  const closeEditor = () => { setEditing(null); setForm(BLANK_FORM); };
+
+  const handleSave = async () => {
+    if (!form.quote.trim() || !form.username.trim() || !form.avatarLetter.trim()) {
+      toast.error('Quote, username, and avatar letter are required'); return;
+    }
+    setSaving(true);
+    try {
+      const body = { ...form, recordCount: Number(form.recordCount) || 0, linkedUserId: form.linkedUserId || null };
+      if (editing === 'new') {
+        await axios.post(`${API}/beekeeper/testimonials`, body, { headers });
+        toast.success('Testimonial added');
+      } else {
+        await axios.put(`${API}/beekeeper/testimonials/${editing.id}`, body, { headers });
+        toast.success('Testimonial updated');
+      }
+      closeEditor();
+      fetch_();
+    } catch (e) { toast.error(e?.response?.data?.detail || 'Save failed'); }
+    finally { setSaving(false); }
+  };
+
+  const handleDelete = async (id) => {
+    setDeleting(id);
+    try {
+      await axios.delete(`${API}/beekeeper/testimonials/${id}`, { headers });
+      toast.success('Deleted');
+      fetch_();
+    } catch { toast.error('Delete failed'); }
+    finally { setDeleting(null); }
+  };
+
+  const handleToggleActive = async (t) => {
+    try {
+      await axios.put(`${API}/beekeeper/testimonials/${t.id}`, { isActive: !t.isActive }, { headers });
+      setItems(prev => prev.map(x => x.id === t.id ? { ...x, isActive: !x.isActive } : x));
+    } catch { toast.error('Update failed'); }
+  };
+
+  // ── Drag-to-reorder ──
+  const handleDragStart = (i) => { dragItem.current = i; };
+  const handleDragEnter = (i) => { setDragOver(i); };
+  const handleDrop = async () => {
+    if (dragItem.current === null || dragItem.current === dragOver) { setDragOver(null); return; }
+    const reordered = [...items];
+    const [moved] = reordered.splice(dragItem.current, 1);
+    reordered.splice(dragOver, 0, moved);
+    setItems(reordered);
+    setDragOver(null);
+    dragItem.current = null;
+    try {
+      await axios.put(`${API}/beekeeper/testimonials-reorder`, { orderedIds: reordered.map(t => t.id) }, { headers });
+    } catch { toast.error('Reorder failed'); fetch_(); }
+  };
+
+  // ── Pull from Hive ──
+  const openHive = async () => {
+    setHiveOpen(true);
+    setHiveLoading(true);
+    try {
+      const res = await axios.get(`${API}/beekeeper/testimonials/hive-posts`, { headers });
+      setHivePosts(res.data || []);
+    } catch { toast.error('Could not load Hive posts'); }
+    finally { setHiveLoading(false); }
+  };
+  const pullPost = (post) => {
+    setForm({ quote: post.text, username: post.username, label: 'beta collector', avatarLetter: post.avatarLetter, recordCount: post.recordCount, isActive: true, linkedUserId: post.linkedUserId || '' });
+    setEditing('new');
+    setHiveOpen(false);
+  };
+
+  // ── Seed ──
+  const handleSeed = async () => {
+    try {
+      const res = await axios.post(`${API}/beekeeper/testimonials/seed`, {}, { headers });
+      toast.success(res.data.message || `Seeded ${res.data.seeded} testimonials`);
+      fetch_();
+    } catch (e) { toast.error(e?.response?.data?.detail || 'Seed failed'); }
+  };
+
+  if (editing) {
+    return (
+      <div className="max-w-2xl">
+        <div className="flex items-center gap-3 mb-6">
+          <button onClick={closeEditor} className="text-sm text-[#3A4D63] hover:text-[#1E2A3A]">← Back</button>
+          <h2 className="font-heading text-xl text-[#1E2A3A]">{editing === 'new' ? 'New Testimonial' : 'Edit Testimonial'}</h2>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Form */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-[#3A4D63] uppercase tracking-wide mb-1">Quote <span className="text-red-400">*</span></label>
+              <textarea
+                value={form.quote}
+                onChange={e => setForm(f => ({ ...f, quote: e.target.value }))}
+                maxLength={300}
+                rows={5}
+                className="w-full border border-[#E5DBC8] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#D4A828] resize-none"
+                placeholder="Testimonial text…"
+              />
+              <p className="text-xs text-right mt-0.5" style={{ color: form.quote.length > 270 ? '#E53E3E' : '#9CA3AF' }}>{form.quote.length}/300</p>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#3A4D63] uppercase tracking-wide mb-1">Username <span className="text-red-400">*</span></label>
+              <input value={form.username} onChange={e => setForm(f => ({ ...f, username: e.target.value }))} className="w-full border border-[#E5DBC8] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#D4A828]" placeholder="@username" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-[#3A4D63] uppercase tracking-wide mb-1">Label</label>
+                <input value={form.label} onChange={e => setForm(f => ({ ...f, label: e.target.value }))} className="w-full border border-[#E5DBC8] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#D4A828]" placeholder="beta collector" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#3A4D63] uppercase tracking-wide mb-1">Avatar Letter <span className="text-red-400">*</span></label>
+                <input value={form.avatarLetter} onChange={e => setForm(f => ({ ...f, avatarLetter: e.target.value.slice(-1).toUpperCase() }))} className="w-full border border-[#E5DBC8] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#D4A828] text-center font-bold text-lg" placeholder="J" maxLength={1} />
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#3A4D63] uppercase tracking-wide mb-1">Record Count</label>
+              <input type="number" value={form.recordCount} onChange={e => setForm(f => ({ ...f, recordCount: e.target.value }))} className="w-full border border-[#E5DBC8] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#D4A828]" placeholder="187" />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#3A4D63] uppercase tracking-wide mb-1">Linked User ID <span className="text-[#9CA3AF] font-normal">(optional)</span></label>
+              <input value={form.linkedUserId} onChange={e => setForm(f => ({ ...f, linkedUserId: e.target.value }))} className="w-full border border-[#E5DBC8] rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:border-[#D4A828]" placeholder="MongoDB ObjectId" />
+              <p className="text-xs text-[#9CA3AF] mt-1">If linked, record count auto-updates nightly from their Vault.</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setForm(f => ({ ...f, isActive: !f.isActive }))}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.isActive ? 'bg-[#D4A828]' : 'bg-gray-200'}`}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.isActive ? 'translate-x-6' : 'translate-x-1'}`} />
+              </button>
+              <span className="text-sm text-[#3A4D63]">{form.isActive ? 'Active — visible on landing page' : 'Inactive — hidden from landing page'}</span>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button onClick={handleSave} disabled={saving} className="flex-1 bg-[#D4A828] hover:bg-[#E8CA5A] text-white font-semibold rounded-xl py-2.5 text-sm transition-colors flex items-center justify-center gap-2">
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                {editing === 'new' ? 'Add Testimonial' : 'Save Changes'}
+              </button>
+              <button onClick={closeEditor} className="px-5 bg-white border border-[#E5DBC8] text-[#3A4D63] rounded-xl py-2.5 text-sm hover:bg-gray-50">Cancel</button>
+            </div>
+          </div>
+
+          {/* Live preview */}
+          <div>
+            <p className="text-xs font-semibold text-[#3A4D63] uppercase tracking-wide mb-3">Live Preview</p>
+            <TestimonialPreview t={form} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {/* Header row */}
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+        <div className="flex items-center gap-3">
+          <h2 className="font-heading text-xl text-[#1E2A3A]">Testimonials</h2>
+          <span className="text-sm px-2.5 py-0.5 rounded-full bg-[#D4A828]/10 text-[#D4A828] font-semibold">{activeCount} active</span>
+          {activeCount < 3 && (
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium flex items-center gap-1">
+              <AlertTriangle className="w-3 h-3" /> fewer than 3 active
+            </span>
+          )}
+        </div>
+        <div className="flex gap-2">
+          {items.length === 0 && (
+            <button onClick={handleSeed} className="text-xs border border-[#E5DBC8] text-[#3A4D63] rounded-xl px-3 py-2 hover:bg-[#FFFBF2]">Seed defaults</button>
+          )}
+          <button onClick={openHive} className="flex items-center gap-1.5 border border-[#E5DBC8] text-[#3A4D63] rounded-xl px-3 py-2 text-sm hover:bg-[#FFFBF2]">
+            🍯 Pull from Hive
+          </button>
+          <button onClick={openNew} className="flex items-center gap-1.5 bg-[#D4A828] text-white rounded-xl px-4 py-2 text-sm font-semibold hover:bg-[#E8CA5A]">
+            + Add Testimonial
+          </button>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-[#D4A828]" /></div>
+      ) : items.length === 0 ? (
+        <div className="text-center py-16 text-[#3A4D63]/60 text-sm">No testimonials yet. Seed the defaults or add one manually.</div>
+      ) : (
+        <div className="bg-white rounded-2xl border border-[#E5DBC8] overflow-hidden">
+          {/* Table header */}
+          <div className="grid grid-cols-[40px_1fr_140px_80px_80px_100px] gap-3 px-4 py-2.5 bg-[#FFFBF2] border-b border-[#E5DBC8] text-xs font-semibold text-[#3A4D63] uppercase tracking-wide">
+            <span>#</span><span>Quote</span><span>User</span><span>Records</span><span>Active</span><span>Actions</span>
+          </div>
+          {items.map((t, i) => (
+            <div
+              key={t.id}
+              draggable
+              onDragStart={() => handleDragStart(i)}
+              onDragEnter={() => handleDragEnter(i)}
+              onDragOver={e => e.preventDefault()}
+              onDrop={handleDrop}
+              onDragEnd={() => setDragOver(null)}
+              className={`grid grid-cols-[40px_1fr_140px_80px_80px_100px] gap-3 px-4 py-3 border-b border-[#E5DBC8] last:border-0 items-center text-sm cursor-grab transition-colors ${dragOver === i ? 'bg-[#D4A828]/5' : 'hover:bg-[#FFFBF2]'} ${!t.isActive ? 'opacity-50' : ''}`}
+            >
+              <span className="text-[#9CA3AF] font-mono text-xs select-none">{i + 1}</span>
+              <p className="truncate text-[#1E2A3A]" title={t.quote}>"{t.quote.slice(0, 70)}{t.quote.length > 70 ? '…' : ''}"</p>
+              <div>
+                <p className="font-semibold text-[#1E2A3A] text-xs">{t.username}</p>
+                <p className="text-[#9CA3AF] text-xs">{t.label}</p>
+              </div>
+              <span className="text-[#3A4D63]">{t.recordCount}</span>
+              <button
+                onClick={() => handleToggleActive(t)}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${t.isActive ? 'bg-[#D4A828]' : 'bg-gray-200'}`}
+                title={t.isActive ? 'Click to deactivate' : 'Click to activate'}
+              >
+                <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${t.isActive ? 'translate-x-4' : 'translate-x-0.5'}`} />
+              </button>
+              <div className="flex items-center gap-2">
+                <button onClick={() => openEdit(t)} className="p-1.5 rounded-lg hover:bg-[#D4A828]/10 text-[#D4A828]" title="Edit"><Pencil className="w-3.5 h-3.5" /></button>
+                <button onClick={() => handleDelete(t.id)} disabled={deleting === t.id} className="p-1.5 rounded-lg hover:bg-red-50 text-red-400" title="Delete">
+                  {deleting === t.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <p className="text-xs text-[#9CA3AF] mt-3">Drag rows to reorder. Changes save automatically. Inactive testimonials are hidden from the landing page.</p>
+
+      {/* Pull from Hive modal */}
+      {hiveOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40" onClick={() => setHiveOpen(false)}>
+          <div className="bg-white rounded-2xl p-6 w-full max-w-lg mx-4 shadow-2xl max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-heading text-lg text-[#1E2A3A]">Pull from Hive</h3>
+              <button onClick={() => setHiveOpen(false)} className="text-[#9CA3AF] hover:text-[#1E2A3A]"><X className="w-5 h-5" /></button>
+            </div>
+            <p className="text-sm text-[#3A4D63] mb-4">Select a high-engagement post to convert into a testimonial.</p>
+            <div className="overflow-y-auto flex-1 space-y-3">
+              {hiveLoading ? (
+                <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-[#D4A828]" /></div>
+              ) : hivePosts.length === 0 ? (
+                <p className="text-center text-[#9CA3AF] text-sm py-8">No posts found.</p>
+              ) : hivePosts.map(post => (
+                <div key={post.postId} className="border border-[#E5DBC8] rounded-xl p-4 hover:border-[#D4A828] cursor-pointer transition-colors" onClick={() => pullPost(post)}>
+                  <p className="text-sm text-[#1E2A3A] mb-2 line-clamp-3">"{post.text}"</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-[#3A4D63]">{post.username}</span>
+                    <span className="text-xs text-[#9CA3AF]">❤️ {post.likesCount} · {post.recordCount} records</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 const TABS = [
@@ -1670,6 +2001,7 @@ const TABS = [
   { key: 'matching', label: 'Matching', icon: Music2 },
   { key: 'covers', label: 'Covers', icon: ImageIcon },
   { key: 'migration', label: 'Migration', icon: ShieldCheck },
+  { key: 'testimonials', label: 'Testimonials', icon: Star },
 ];
 
 export default function BeekeeperPage() {
@@ -1722,6 +2054,7 @@ export default function BeekeeperPage() {
         {activeTab === 'matching' && <MatchingTab API={API} headers={headers} />}
         {activeTab === 'covers' && <CoversTab API={API} headers={headers} />}
         {activeTab === 'migration' && <MigrationTab API={API} headers={headers} />}
+        {activeTab === 'testimonials' && <TestimonialsTab API={API} headers={headers} />}
       </div>
     </div>
   );

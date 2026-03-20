@@ -1,189 +1,20 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/favicon-32.png" />
-        <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon-16.png" />
-        <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-        <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon.png" />
-        <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-        <meta property="og:image" content="%PUBLIC_URL%/og-image.png" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="1200" />
-        <meta property="og:title" content="The HoneyGroove" />
-        <meta property="og:description" content="the vinyl social club, finally. track your records, share your hauls, hunt down your ISO, and trade with people who get it." />
-        <meta property="og:type" content="website" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:image" content="%PUBLIC_URL%/og-image.png" />
-        <meta name="twitter:title" content="The HoneyGroove" />
-        <meta name="twitter:description" content="the vinyl social club, finally." />
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
-        <meta name="theme-color" content="#F4B942" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="description" content="The HoneyGroove — the vinyl social club, finally." />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link rel="preconnect" href="https://i.discogs.com" crossorigin />
-        <link rel="dns-prefetch" href="https://i.discogs.com" />
-        <link rel="dns-prefetch" href="https://st.discogs.com" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600&display=swap" rel="stylesheet" />
-        <!--
-        manifest.json provides metadata used when your web app is installed on a
-        user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-        -->
-        <!--
-        Notice the use of %PUBLIC_URL% in the tags above.
-        It will be replaced with the URL of the `public` folder during the build.
-        Only files inside the `public` folder can be referenced from the HTML.
-
-        Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-        work correctly both with client-side routing and a non-root public URL.
-        Learn how to configure a non-root public URL by running `npm run build`.
-        -->
-        <title>the Honey Groove&#8482;</title>
-        <script type="application/ld+json">
-        {
-          "@context": "https://schema.org",
-          "@type": "WebApplication",
-          "name": "The Honey Groove",
-          "url": "https://thehoneygroove.com",
-          "description": "Social vinyl tracking platform for record collectors. Track your vinyl collection, log spins, discover new music, and connect with collectors worldwide.",
-          "applicationCategory": "SocialNetworkingApplication",
-          "operatingSystem": "Web",
-          "offers": {
-            "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "USD"
-          },
-          "creator": {
-            "@type": "Organization",
-            "name": "The Honey Groove"
-          },
-          "keywords": "vinyl, record collection, vinyl tracking, record collectors, vinyl social network, now spinning, vinyl marketplace"
-        }
-        </script>
-        <script>window.addEventListener("error",function(e){if(e.error instanceof DOMException&&e.error.name==="DataCloneError"&&e.message&&e.message.includes("PerformanceServerTiming")){e.stopImmediatePropagation();e.preventDefault()}},true);</script>
-        <script src="https://assets.emergent.sh/scripts/emergent-main.js"></script>
-    </head>
-    <body>
-        <noscript>You need to enable JavaScript to run this app.</noscript>
-        <div id="loading-screen" style="position:fixed;top:0;right:0;bottom:0;left:0;z-index:9999;background:#FAF6EE;display:flex;align-items:center;justify-content:center">
-          <img src="%PUBLIC_URL%/logo-wordmark.png" alt="the Honey Groove" style="height:36px;opacity:0.7" />
-        </div>
-        <script>
-          // Force-remove loading screen after 5s
-          setTimeout(function(){
-            var ls=document.getElementById('loading-screen');
-            if(ls) ls.remove();
-          },5000);
-          // Safari fallback: if app hasn't mounted in 15s, show reload button
-          // Also capture and display any JS errors to help diagnose Safari issues
-          window.__hg_errors = [];
-          window.onerror = function(msg, url, line) {
-            window.__hg_errors.push(msg + ' at ' + url + ':' + line);
-          };
-          setTimeout(function(){
-            var root=document.getElementById('root');
-            if(root && root.childNodes.length===0){
-              var errMsg = window.__hg_errors.length > 0
-                ? '<p style="color:#C8861A;font-size:11px;max-width:280px;word-break:break-word;margin-bottom:12px;text-align:center">' + window.__hg_errors[0] + '</p>'
-                : '';
-              var fb=document.createElement('div');
-              fb.id='safari-fallback';
-              fb.style.cssText='position:fixed;top:0;right:0;bottom:0;left:0;z-index:99999;background:#FAF6EE;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Georgia,serif;';
-              fb.innerHTML='<img src="/logo-wordmark.png" alt="the Honey Groove" style="height:40px;margin-bottom:24px;opacity:0.8"/><p style="color:#8A6B4A;font-size:14px;margin-bottom:8px">having trouble loading...</p>' + errMsg + '<button onclick="window.location.reload()" style="background:#C8861A;color:#fff;border:none;padding:12px 32px;border-radius:999px;font-size:15px;font-family:Georgia,serif;cursor:pointer">tap to reload</button>';
-              document.body.appendChild(fb);
-            }
-          },15000);
-        </script>
-        <div id="root"></div>
-        <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
-        <a
-            id="emergent-badge"
-            target="_blank"
-            href="https://app.emergent.sh/?utm_source=emergent-badge"
-            style="display: none !important;"
-        ></a>
-        <script>
-            !(function (t, e) {
-                var o, n, p, r;
-                e.__SV ||
-                    ((window.posthog = e),
-                    (e._i = []),
-                    (e.init = function (i, s, a) {
-                        function g(t, e) {
-                            var o = e.split(".");
-                            2 == o.length && ((t = t[o[0]]), (e = o[1])),
-                                (t[e] = function () {
-                                    t.push(
-                                        [e].concat(
-                                            Array.prototype.slice.call(
-                                                arguments,
-                                                0,
-                                            ),
-                                        ),
-                                    );
-                                });
-                        }
-                        ((p = t.createElement("script")).type =
-                            "text/javascript"),
-                            (p.crossOrigin = "anonymous"),
-                            (p.async = !0),
-                            (p.src =
-                                s.api_host.replace(
-                                    ".i.posthog.com",
-                                    "-assets.i.posthog.com",
-                                ) + "/static/array.js"),
-                            (r =
-                                t.getElementsByTagName(
-                                    "script",
-                                )[0]).parentNode.insertBefore(p, r);
-                        var u = e;
-                        for (
-                            void 0 !== a ? (u = e[a] = []) : (a = "posthog"),
-                                u.people = u.people || [],
-                                u.toString = function (t) {
-                                    var e = "posthog";
-                                    return (
-                                        "posthog" !== a && (e += "." + a),
-                                        t || (e += " (stub)"),
-                                        e
-                                    );
-                                },
-                                u.people.toString = function () {
-                                    return u.toString(1) + ".people (stub)";
-                                },
-                                o =
-                                    "init me ws ys ps bs capture je Di ks register register_once register_for_session unregister unregister_for_session Ps getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSurveysLoaded onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey canRenderSurveyAsync identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty Es $s createPersonProfile Is opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing Ss debug xs getPageViewId captureTraceFeedback captureTraceMetric".split(
-                                        " ",
-                                    ),
-                                n = 0;
-                            n < o.length;
-                            n++
-                        )
-                            g(u, o[n]);
-                        e._i.push([i, s, a]);
-                    }),
-                    (e.__SV = 1));
-            })(document, window.posthog || []);
-            posthog.init("phc_xAvL2Iq4tFmANRE7kzbKwaSqp1HJjN7x48s3vr0CMjs", {
-                api_host: "https://us.i.posthog.com",
-                person_profiles: "identified_only", // or 'always' to create profiles for anonymous users as well,
-                session_recording: {
-                    recordCrossOriginIframes: true,
-                    capturePerformance: false,
-                },
-            });
-        </script>
-    </body>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#1E2A3A" />
+    <meta name="description" content="The vinyl social club. Track your collection, share your spins, and trade records with people who get it." />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=DM+Sans:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet" />
+    <title>The Honey Groove</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
 </html>
