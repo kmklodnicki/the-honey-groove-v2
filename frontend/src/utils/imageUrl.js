@@ -20,6 +20,8 @@ export function isLegacyUploadUrl(src) {
 export function proxyImageUrl(src) {
   if (!src || typeof src !== 'string') return null;
   if (src.includes('image-proxy')) return src;
+  // Spotify CDN must be served directly — never proxy or re-host (Spotify Developer Policy)
+  if (src.includes('i.scdn.co') || src.includes('scdn.co')) return enforceHttps(src);
   return `${API}/image-proxy?url=${encodeURIComponent(enforceHttps(src))}`;
 }
 

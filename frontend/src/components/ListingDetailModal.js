@@ -456,7 +456,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                       />
                     </div>
                     {/* Spotify attribution — shown when cover art is Spotify-sourced (Spotify compliance §2.1) */}
-                    {!photos[0] && listing.cover_url?.includes('i.scdn.co') && listing.discogs_id && (
+                    {!photos[0] && listing.cover_url?.includes('i.scdn.co') && (
                       <a
                         href={`https://open.spotify.com/search/${encodeURIComponent(`${listing.artist || ''} ${listing.album || ''}`.trim())}`}
                         target="_blank"

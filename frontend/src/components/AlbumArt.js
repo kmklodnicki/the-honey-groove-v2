@@ -168,8 +168,8 @@ const AlbumArt = ({
           Change
         </button>
       )}
-      {isUnofficial && <UnofficialPill variant="overlay" />}
-      {!isUnofficial && formatText && /unofficial/i.test(formatText) && <UnofficialPill variant="overlay" />}
+      {isUnofficial && imageSource !== 'spotify' && <UnofficialPill variant="overlay" />}
+      {!isUnofficial && formatText && /unofficial/i.test(formatText) && imageSource !== 'spotify' && <UnofficialPill variant="overlay" />}
     </div>
   );
 };

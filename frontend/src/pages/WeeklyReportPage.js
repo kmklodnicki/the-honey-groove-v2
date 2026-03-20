@@ -16,6 +16,8 @@ const proxyImageUrl = (url) => {
   if (!resolved) return null;
   // Only proxy external URLs (discogs, etc.) — local files are already CORS-safe
   if (resolved.startsWith('data:') || resolved.includes('/api/files/serve/')) return resolved;
+  // Spotify CDN must be served directly — never proxy or re-host (Spotify Developer Policy)
+  if (resolved.includes('i.scdn.co') || resolved.includes('scdn.co')) return resolved;
   if (resolved.startsWith('http')) {
     return `${API_BASE}/image-proxy?url=${encodeURIComponent(resolved)}`;
   }

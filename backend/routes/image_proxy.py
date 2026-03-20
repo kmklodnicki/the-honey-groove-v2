@@ -44,6 +44,10 @@ async def proxy_image(url: str = Query(..., description="External image URL to p
     if url.startswith("http://"):
         url = url.replace("http://", "https://", 1)
 
+    # Block Spotify CDN — must be served directly per Spotify Developer Policy (no re-hosting)
+    if "i.scdn.co" in url or "scdn.co" in url:
+        raise HTTPException(status_code=400, detail="Spotify CDN images must be served directly, not proxied")
+
     cache_key = hashlib.md5(url.encode()).hexdigest()
     storage_path = f"honeygroove/image-cache/{cache_key}"
 

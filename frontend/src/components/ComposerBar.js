@@ -341,7 +341,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
 
   const addHaulItem = (item) => {
     if (haulItems.find(h => h.discogs_id === item.discogs_id)) return;
-    setHaulItems(prev => [...prev, { discogs_id: item.discogs_id, title: item.title, artist: item.artist, imageUrl: item.imageUrl, imageSmall: item.imageSmall, cover_url: item.cover_url, year: item.year }]);
+    setHaulItems(prev => [...prev, { discogs_id: item.discogs_id, title: item.title, artist: item.artist, imageUrl: item.imageUrl, imageSmall: item.imageSmall, cover_url: item.cover_url, year: item.year, imageSource: item.imageSource, spotifyAlbumId: item.spotifyAlbumId }]);
     setHaulSearch(''); setHaulResults([]);
   };
 
@@ -840,6 +840,21 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{item.title}</p>
                       <p className="text-xs truncate" style={{ color: '#3A4D63' }}>{item.artist}</p>
+                      {item.imageSource === 'spotify' && (
+                        <a
+                          href={item.spotifyAlbumId
+                            ? `https://open.spotify.com/album/${item.spotifyAlbumId}`
+                            : `https://open.spotify.com/search/${encodeURIComponent(`${item.artist || ''} ${item.title || ''}`.trim())}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={e => e.stopPropagation()}
+                          className="inline-flex items-center gap-1 mt-0.5 text-[10px] text-[#7A8694] hover:text-[#1DB954] transition-colors"
+                          data-testid={`haul-spotify-link-${idx}`}
+                        >
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+                          Spotify
+                        </a>
+                      )}
                     </div>
                     <button onClick={() => setHaulItems(prev => prev.filter((_, i) => i !== idx))} className="p-1 rounded-full hover:bg-black/10 text-muted-foreground hover:text-red-500"><X className="w-4 h-4" /></button>
                   </div>
