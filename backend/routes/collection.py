@@ -699,6 +699,26 @@ async def update_record_notes(record_id: str, body: dict, user: Dict = Depends(r
     return {"success": True, "notes": notes_text}
 
 
+@router.put("/records/{record_id}/value")
+async def update_record_estimated_value(record_id: str, body: dict, user: Dict = Depends(require_auth)):
+    """Set a user's self-reported estimated value for a record (THG-native pricing)."""
+    record = await db.records.find_one({"id": record_id}, {"_id": 0})
+    if not record:
+        raise HTTPException(status_code=404, detail="Record not found")
+    if record["user_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Not your record")
+    value = body.get("value")
+    if value is not None:
+        try:
+            value = float(value)
+            if value < 0:
+                raise ValueError
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=400, detail="value must be a non-negative number or null")
+    await db.records.update_one({"id": record_id}, {"$set": {"userEstimatedValue": value}})
+    return {"success": True, "userEstimatedValue": value}
+
+
 
 @router.get("/records/{record_id}/detail")
 async def get_record_detail(record_id: str, current_user: Optional[Dict] = Depends(get_current_user)):
@@ -1668,9 +1688,6 @@ async def discogs_oauth_callback(oauth_token: str = Query(...), oauth_verifier: 
             # Clean up pending
             await db.discogs_oauth_pending.delete_one({"oauth_token": oauth_token})
             oauth_request_tokens.pop(oauth_token, None)
-            
-            # BLOCK 484: Trigger priority price fetch for first 50 records
-            asyncio.create_task(_priority_value_relink(user_id))
         
         # BLOCK 472: Redirect to the frontend that initiated the flow (dynamic env support)
         frontend_base = pending.get("callback_origin", FRONTEND_URL) if pending else FRONTEND_URL
@@ -1756,84 +1773,148 @@ async def run_great_disconnect_endpoint(user: Dict = Depends(require_auth)):
 
 @router.get("/discogs/status")
 async def discogs_connection_status(user: Dict = Depends(require_auth)):
-    """Check if user has connected their Discogs account"""
+    """Check if user has connected their Discogs account.
+    After import the OAuth token is deleted, so 'connected' is inferred from
+    discogs_imports history as well as from any live token document.
+    """
     token_doc = await db.discogs_tokens.find_one({"user_id": user["id"]}, {"_id": 0})
-    
-    if not token_doc:
+    last_import = await db.discogs_imports.find_one({"user_id": user["id"]}, {"_id": 0})
+
+    has_imported = bool(last_import and last_import.get("imported", 0) > 0)
+    # Connected = either active token OR a completed import on record
+    connected = bool(token_doc or has_imported)
+
+    if not connected:
         return {
             "connected": False,
+            "has_imported": False,
             "discogs_username": None,
-            "last_synced": None
+            "last_synced": None,
         }
-    
-    # Check import progress
+
     progress = import_progress.get(user["id"])
-    
-    # Get last sync time
-    last_import = await db.discogs_imports.find_one(
-        {"user_id": user["id"]},
-        {"_id": 0},
+
+    # Prefer token doc for username (freshly connected), fall back to import history
+    discogs_username = (
+        (token_doc.get("discogs_username") if token_doc else None)
+        or (last_import.get("discogs_username") if last_import else None)
     )
-    
+
     return {
-        "connected": True,
-        "discogs_username": token_doc.get("discogs_username"),
-        "connected_at": token_doc.get("connected_at"),
+        "connected": connected,
+        "has_imported": has_imported,
+        "discogs_username": discogs_username,
+        "connected_at": token_doc.get("connected_at") if token_doc else None,
         "last_synced": last_import.get("completed_at") if last_import else None,
+        "total_imported": last_import.get("imported", 0) if last_import else 0,
         "import_status": progress if progress else None,
-        "oauth_verified": bool(token_doc.get("oauth_verified") or token_doc.get("oauth_token")),
-        "auth_type": token_doc.get("auth_type", "unknown"),
-        "needs_migration": token_doc.get("auth_type") == "personal_token" and not token_doc.get("oauth_token"),
+        "oauth_verified": bool(token_doc and (token_doc.get("oauth_verified") or token_doc.get("oauth_token"))),
+        "auth_type": token_doc.get("auth_type", "unknown") if token_doc else "none",
+        "needs_migration": bool(token_doc and token_doc.get("auth_type") == "personal_token" and not token_doc.get("oauth_token")),
     }
 
 
 @router.post("/discogs/import")
 async def start_discogs_import(user: Dict = Depends(require_auth)):
-    """Start importing the user's Discogs collection"""
+    """Start importing the user's Discogs collection (full import)."""
     token_doc = await db.discogs_tokens.find_one({"user_id": user["id"]}, {"_id": 0})
-    
+
     if not token_doc:
         raise HTTPException(status_code=400, detail="Discogs account not connected. Please authorize first.")
-    
+
     # Check if import is already in progress
     current = import_progress.get(user["id"])
     if current and current.get("status") == "in_progress":
         return current
-    
-    # Initialize progress
+
+    job_id = str(uuid.uuid4())
     import_progress[user["id"]] = {
+        "jobId": job_id,
         "status": "in_progress",
         "total": 0,
         "imported": 0,
         "skipped": 0,
+        "errors": 0,
+        "newReleasesCreated": 0,
+        "existingReleasesLinked": 0,
+        "spotifyMatched": 0,
+        "spotifyPending": 0,
         "error_message": None,
         "discogs_username": token_doc.get("discogs_username"),
-        "started_at": datetime.now(timezone.utc).isoformat()
+        "started_at": datetime.now(timezone.utc).isoformat(),
     }
-    
-    # Run import in background
+
     auth_type = token_doc.get("auth_type", "oauth")
     asyncio.create_task(_run_discogs_import(
         user["id"],
         token_doc.get("oauth_token"),
         token_doc.get("oauth_token_secret"),
         token_doc["discogs_username"],
-        auth_type
+        auth_type,
+        check_new_only=False,
     ))
-    
+
     return import_progress[user["id"]]
+
+
+@router.post("/discogs/import/check-new")
+async def check_new_discogs_additions(user: Dict = Depends(require_auth)):
+    """Check Discogs collection for records not yet in the Vault (re-import only new additions)."""
+    token_doc = await db.discogs_tokens.find_one({"user_id": user["id"]}, {"_id": 0})
+
+    if not token_doc:
+        raise HTTPException(status_code=400, detail="Discogs account not connected. Please re-authorize first.")
+
+    # Check if import is already in progress
+    current = import_progress.get(user["id"])
+    if current and current.get("status") == "in_progress":
+        return current
+
+    job_id = str(uuid.uuid4())
+    import_progress[user["id"]] = {
+        "jobId": job_id,
+        "status": "in_progress",
+        "total": 0,
+        "imported": 0,
+        "skipped": 0,
+        "errors": 0,
+        "newReleasesCreated": 0,
+        "existingReleasesLinked": 0,
+        "spotifyMatched": 0,
+        "spotifyPending": 0,
+        "error_message": None,
+        "discogs_username": token_doc.get("discogs_username"),
+        "started_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+    auth_type = token_doc.get("auth_type", "oauth")
+    asyncio.create_task(_run_discogs_import(
+        user["id"],
+        token_doc.get("oauth_token"),
+        token_doc.get("oauth_token_secret"),
+        token_doc["discogs_username"],
+        auth_type,
+        check_new_only=True,
+    ))
+
+    return import_progress[user["id"]]
+
+
+@router.get("/discogs/import/status/{job_id}")
+async def get_import_status_by_job(job_id: str, user: Dict = Depends(require_auth)):
+    """Get import progress by job ID."""
+    progress = import_progress.get(user["id"])
+    if progress and progress.get("jobId") == job_id:
+        return progress
+    return {"status": "not_found", "jobId": job_id}
 
 
 @router.get("/discogs/import/progress")
 async def get_import_progress(user: Dict = Depends(require_auth)):
-    """Get current import progress"""
+    """Get current import progress."""
     progress = import_progress.get(user["id"])
     if not progress:
-        # Check if there was a past import
-        last_import = await db.discogs_imports.find_one(
-            {"user_id": user["id"]},
-            {"_id": 0},
-        )
+        last_import = await db.discogs_imports.find_one({"user_id": user["id"]}, {"_id": 0})
         if last_import:
             return {
                 "status": "completed",
@@ -1841,22 +1922,46 @@ async def get_import_progress(user: Dict = Depends(require_auth)):
                 "imported": last_import.get("imported", 0),
                 "skipped": last_import.get("skipped", 0),
                 "errors": last_import.get("errors", 0),
+                "newReleasesCreated": last_import.get("newReleasesCreated", 0),
+                "existingReleasesLinked": last_import.get("existingReleasesLinked", 0),
+                "spotifyMatched": last_import.get("spotifyMatched", 0),
+                "spotifyPending": last_import.get("spotifyPending", 0),
                 "error_message": None,
                 "discogs_username": last_import.get("discogs_username"),
                 "sample_covers": last_import.get("sample_covers", []),
                 "skipped_records": last_import.get("skipped_records", []),
-                "last_synced": last_import.get("completed_at")
+                "last_synced": last_import.get("completed_at"),
             }
-        return {"status": "idle", "total": 0, "imported": 0, "skipped": 0, "errors": 0, "sample_covers": []}
+        return {
+            "status": "idle", "total": 0, "imported": 0, "skipped": 0, "errors": 0,
+            "newReleasesCreated": 0, "existingReleasesLinked": 0,
+            "spotifyMatched": 0, "spotifyPending": 0, "sample_covers": [],
+        }
     return progress
 
 
-async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret: str, discogs_username: str, auth_type: str = "oauth"):
-    """Background task to import Discogs collection"""
+async def _run_discogs_import(
+    user_id: str,
+    oauth_token: str,
+    oauth_token_secret: str,
+    discogs_username: str,
+    auth_type: str = "oauth",
+    check_new_only: bool = False,
+):
+    """Background task to import Discogs collection using the CC0-compliant pipeline.
+
+    Flow:
+    1. Fetch collection release IDs (and wantlist IDs) via user's OAuth token.
+    2. DISCARD the OAuth token — it is no longer needed after step 1.
+    3. For each release ID: look up or create a CC0 release doc (no Discogs images).
+    4. Insert vault (records) docs referencing the release doc.
+    5. Trigger Spotify matching for any newly created releases.
+    """
+    import time as _time
+
     MAX_PAGE_RETRIES = 3
 
     def _fetch_with_retry(session, url, params, attempt_label=""):
-        """Fetch a URL with retries for connection errors."""
         last_err = None
         for attempt in range(1, MAX_PAGE_RETRIES + 1):
             try:
@@ -1866,74 +1971,66 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
                 last_err = e
                 wait = attempt * 2
                 logger.warning(f"Discogs fetch retry {attempt}/{MAX_PAGE_RETRIES} for {attempt_label}: {type(e).__name__}. Waiting {wait}s...")
-                import time
-                time.sleep(wait)
+                _time.sleep(wait)
         raise last_err
 
     try:
-        # Set up the appropriate session based on auth type
+        # ── Step 1: Build authenticated session ──────────────────────────────
         if auth_type == "personal_token":
             session = requests.Session()
             session.headers.update({
                 "Authorization": f"Discogs token={DISCOGS_TOKEN}",
-                "User-Agent": DISCOGS_USER_AGENT
+                "User-Agent": DISCOGS_USER_AGENT,
             })
         else:
             session = OAuth1Session(
                 client_key=DISCOGS_CONSUMER_KEY,
                 client_secret=DISCOGS_CONSUMER_SECRET,
                 resource_owner_key=oauth_token,
-                resource_owner_secret=oauth_token_secret
+                resource_owner_secret=oauth_token_secret,
             )
             session.headers.update({"User-Agent": DISCOGS_USER_AGENT})
-        
-        # First, get the total count from folder 0 (All)
+
+        # ── Step 2: Fetch collection IDs (paginated) ─────────────────────────
         first_page_url = f"{DISCOGS_API_BASE}/users/{discogs_username}/collection/folders/0/releases"
         first_resp = _fetch_with_retry(session, first_page_url, {"page": 1, "per_page": 100}, f"page 1 for {discogs_username}")
-        
+
         if first_resp.status_code == 403:
             import_progress[user_id]["status"] = "error"
-            import_progress[user_id]["error_message"] = f"Collection for '{discogs_username}' is private. Update your Discogs privacy settings or connect via OAuth."
+            import_progress[user_id]["error_message"] = f"Collection for '{discogs_username}' is private. Update your Discogs privacy settings."
             return
-        
         if first_resp.status_code == 404:
             import_progress[user_id]["status"] = "error"
             import_progress[user_id]["error_message"] = f"Discogs user '{discogs_username}' not found."
             return
-        
         if first_resp.status_code != 200:
             import_progress[user_id]["status"] = "error"
             import_progress[user_id]["error_message"] = f"Failed to fetch collection (HTTP {first_resp.status_code}). Please try again."
             return
-        
+
         first_data = first_resp.json()
         pagination = first_data.get("pagination", {})
         total_items = pagination.get("items", 0)
         total_pages = pagination.get("pages", 1)
-        
         import_progress[user_id]["total"] = total_items
-        
+
         if total_items == 0:
             import_progress[user_id]["status"] = "completed"
             import_progress[user_id]["error_message"] = "No releases found in your Discogs collection."
+            # Discard OAuth token — no longer needed
+            await db.discogs_tokens.delete_one({"user_id": user_id})
             return
-        
-        # Process all pages
-        all_releases = first_data.get("releases", [])
-        
+
+        all_releases = list(first_data.get("releases", []))
+
         for page in range(2, total_pages + 1):
-            remaining = int(first_resp.headers.get('X-Discogs-Ratelimit-Remaining', 60))
-            if remaining < 5:
-                await asyncio.sleep(30)
-            else:
-                await asyncio.sleep(1.1)
-            
+            remaining = int(first_resp.headers.get("X-Discogs-Ratelimit-Remaining", 60))
+            await asyncio.sleep(30 if remaining < 5 else 1.1)
             try:
                 page_resp = _fetch_with_retry(session, first_page_url, {"page": page, "per_page": 100}, f"page {page}/{total_pages}")
             except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
                 logger.error(f"Failed to fetch page {page} after retries: {e}")
                 continue
-            
             if page_resp.status_code == 429:
                 await asyncio.sleep(60)
                 try:
@@ -1941,131 +2038,292 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
                 except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
                     logger.error(f"Failed to fetch page {page} after rate-limit wait: {e}")
                     continue
-            
             if page_resp.status_code == 200:
-                page_data = page_resp.json()
-                all_releases.extend(page_data.get("releases", []))
+                all_releases.extend(page_resp.json().get("releases", []))
                 first_resp = page_resp
             else:
                 logger.warning(f"Failed to fetch page {page}: {page_resp.status_code}")
-        
-        # Now import each release into the user's collection
+
+        # ── Step 2b: Extract wantlist IDs for Dream List import ──────────────
+        wantlist_release_ids = []
+        try:
+            wl_url = f"{DISCOGS_API_BASE}/users/{discogs_username}/wants"
+            wl_resp = _fetch_with_retry(session, wl_url, {"page": 1, "per_page": 100}, "wantlist page 1")
+            if wl_resp.status_code == 200:
+                wl_data = wl_resp.json()
+                wl_pages = wl_data.get("pagination", {}).get("pages", 1)
+                # Each want item: {"id": <instance_id>, "basic_information": {"id": <release_id>, ...}}
+                wantlist_release_ids = [
+                    w["basic_information"]["id"]
+                    for w in wl_data.get("wants", [])
+                    if w.get("basic_information", {}).get("id")
+                ]
+                for wl_page in range(2, wl_pages + 1):
+                    await asyncio.sleep(1.1)
+                    try:
+                        wlp_resp = _fetch_with_retry(session, wl_url, {"page": wl_page, "per_page": 100}, f"wantlist page {wl_page}")
+                        if wlp_resp.status_code == 200:
+                            wantlist_release_ids.extend(
+                                w["basic_information"]["id"]
+                                for w in wlp_resp.json().get("wants", [])
+                                if w.get("basic_information", {}).get("id")
+                            )
+                    except Exception as we:
+                        logger.warning(f"Failed to fetch wantlist page {wl_page}: {we}")
+                        break
+        except Exception as we:
+            logger.warning(f"Wantlist fetch failed (non-fatal): {we}")
+
+        # ── Step 3: DISCARD OAuth token — no longer needed ───────────────────
+        await db.discogs_tokens.delete_one({"user_id": user_id})
+        logger.info(f"Discogs OAuth token discarded for user {user_id} after collection ID extraction")
+
+        # ── Step 4: Build the list of release IDs to hydrate ─────────────────
+        # Extract only IDs + format info from the collection payload
+        release_id_infos = []
+        for rel in all_releases:
+            basic = rel.get("basic_information", {})
+            rid = basic.get("id")
+            if not rid:
+                continue
+            formats = basic.get("formats", [])
+            format_name = formats[0].get("name", "Vinyl") if formats else "Vinyl"
+            color_variant = None
+            all_descs = []
+            for fmt in formats:
+                ftext = fmt.get("text", "")
+                if ftext:
+                    color_variant = ftext
+                    break
+                all_descs.extend(fmt.get("descriptions", []))
+            if not color_variant and all_descs:
+                variant_keywords = {
+                    "Picture Disc", "Colored", "White", "Red", "Blue", "Green",
+                    "Yellow", "Orange", "Pink", "Purple", "Clear", "Splatter",
+                    "Marble", "Gold", "Silver", "Translucent", "Transparent",
+                    "Glow In The Dark", "Flexi-disc", "Shape", "Etched",
+                }
+                for d in all_descs:
+                    if d in variant_keywords or any(k.lower() in d.lower() for k in variant_keywords):
+                        color_variant = d
+                        break
+            is_unofficial = any("Unofficial Release" in fmt.get("descriptions", []) for fmt in formats)
+            release_id_infos.append({
+                "discogs_release_id": rid,
+                "format_name": format_name,
+                "color_variant": color_variant,
+                "is_unofficial": is_unofficial,
+                "year": basic.get("year"),
+            })
+
+        # If check_new_only, filter to only IDs not already in vault
+        if check_new_only:
+            existing_docs = await db.records.find(
+                {"user_id": user_id, "discogsReleaseId": {"$exists": True, "$ne": None}},
+                {"_id": 0, "discogsReleaseId": 1},
+            ).to_list(50000)
+            existing_ids = {d["discogsReleaseId"] for d in existing_docs}
+            release_id_infos = [r for r in release_id_infos if r["discogs_release_id"] not in existing_ids]
+            logger.info(f"check-new: {len(release_id_infos)} new releases to add for user {user_id}")
+
+        # ── Step 5: Hydrate each release through the CC0 pipeline ────────────
         imported = 0
         skipped = 0
         errors = 0
-        imported_discogs_ids = []
-        sample_covers = []
+        new_releases_created = 0
+        existing_releases_linked = 0
         skipped_records = []
+        sample_covers = []
         now = datetime.now(timezone.utc).isoformat()
-        
-        for release in all_releases:
+
+        for rid_info in release_id_infos:
+            rid = rid_info["discogs_release_id"]
+            title_fallback = "Unknown Title"
+            artist_fallback = "Unknown Artist"
             try:
-                basic_info = release.get("basic_information", {})
-                discogs_id = basic_info.get("id")
-                instance_id = release.get("instance_id")
-                
-                # Extract title/artist early for skip logging
-                artists = basic_info.get("artists", [])
-                release_title = basic_info.get("title", "Unknown Title")
-                release_artist = ", ".join(a.get("name", "") for a in artists) if artists else "Unknown Artist"
-                
-                if not discogs_id:
+                # Dedup: skip if vault record already exists for this user + release
+                existing_record = await db.records.find_one(
+                    {"user_id": user_id, "discogsReleaseId": rid}
+                )
+                if existing_record:
                     skipped += 1
                     import_progress[user_id]["skipped"] = skipped
-                    skipped_records.append({"title": release_title, "artist": release_artist, "discogs_id": None, "reason": "missing_data"})
-                    continue
-                
-                # Check if this specific copy (instance) already exists
-                # Use instance_id as unique key to allow multiple copies of same release
-                if instance_id:
-                    existing = await db.records.find_one({
-                        "user_id": user_id,
-                        "instance_id": instance_id
+                    skipped_records.append({
+                        "title": existing_record.get("title", title_fallback),
+                        "artist": existing_record.get("artist", artist_fallback),
+                        "discogs_id": rid,
+                        "reason": "duplicate",
                     })
+                    continue
+
+                # Check releases collection first (avoid redundant Discogs API calls)
+                release_doc_raw = await db.releases.find_one({"discogsReleaseId": rid})
+                if release_doc_raw:
+                    existing_releases_linked += 1
+                    import_progress[user_id]["existingReleasesLinked"] = existing_releases_linked
                 else:
-                    # Fallback: if no instance_id, check by discogs_id
-                    existing = await db.records.find_one({
-                        "user_id": user_id,
-                        "discogs_id": discogs_id,
-                        "instance_id": None
-                    })
-                
-                if existing:
+                    # Fetch CC0 data from Discogs API and upsert into releases collection
+                    try:
+                        discogs_data = await asyncio.get_event_loop().run_in_executor(
+                            None, get_discogs_release, rid
+                        )
+                        if discogs_data:
+                            await upsert_release_cc0(rid, discogs_data)
+                            release_doc_raw = await db.releases.find_one({"discogsReleaseId": rid})
+                            new_releases_created += 1
+                            import_progress[user_id]["newReleasesCreated"] = new_releases_created
+                            # Trigger Spotify matching in background for the new release
+                            if release_doc_raw:
+                                release_for_spotify = {k: v for k, v in release_doc_raw.items() if k != "_id"}
+                                asyncio.create_task(match_to_spotify(release_for_spotify))
+                        else:
+                            logger.warning(f"No data returned from Discogs for release {rid}")
+                    except Exception as fe:
+                        logger.warning(f"Failed to fetch/upsert release {rid}: {fe}")
+
+                    await asyncio.sleep(1.0)  # 1 req/sec rate limit on /releases/{id}
+
+                if not release_doc_raw:
+                    # Can't hydrate — skip this record
                     skipped += 1
+                    errors += 1
                     import_progress[user_id]["skipped"] = skipped
-                    import_progress[user_id]["imported"] = imported
-                    skipped_records.append({"title": release_title, "artist": release_artist, "discogs_id": discogs_id, "reason": "duplicate"})
+                    import_progress[user_id]["errors"] = errors
+                    skipped_records.append({
+                        "title": title_fallback,
+                        "artist": artist_fallback,
+                        "discogs_id": rid,
+                        "reason": "error",
+                        "error_detail": "Could not fetch release data from Discogs",
+                    })
                     continue
-                
-                cover_url = None  # Discogs cover_image is Restricted Data — Spotify art resolves via releases collection
-                formats = basic_info.get("formats", [])
-                format_name = formats[0].get("name", "Vinyl") if formats else "Vinyl"
-                # Extract color/variant info from format text field
-                color_variant = None
-                all_descs = []
-                for fmt in formats:
-                    ftext = fmt.get("text", "")
-                    if ftext:
-                        color_variant = ftext
-                        break
-                    all_descs.extend(fmt.get("descriptions", []))
-                # Fallback: check descriptions for color keywords
-                if not color_variant and all_descs:
-                    variant_keywords = {"Picture Disc", "Colored", "White", "Red", "Blue", "Green",
-                                        "Yellow", "Orange", "Pink", "Purple", "Clear", "Splatter",
-                                        "Marble", "Gold", "Silver", "Translucent", "Transparent",
-                                        "Glow In The Dark", "Flexi-disc", "Shape", "Etched"}
-                    for d in all_descs:
-                        if d in variant_keywords or any(k.lower() in d.lower() for k in variant_keywords):
-                            color_variant = d
-                            break
-                
-                record_id = str(uuid.uuid4())
+
+                # Build title/artist from release doc
+                release_title = release_doc_raw.get("title") or title_fallback
+                release_artists = release_doc_raw.get("artists", [])
+                release_artist = ", ".join(release_artists) if release_artists else artist_fallback
+                release_id_str = str(release_doc_raw["_id"])
+
+                # Derive format: prefer the format_name from collection payload,
+                # fall back to release doc formats list
+                format_name = rid_info.get("format_name", "Vinyl")
+                if not format_name or format_name == "Vinyl":
+                    doc_formats = release_doc_raw.get("formats", [])
+                    if doc_formats:
+                        format_name = doc_formats[0]
+
                 record_doc = {
-                    "id": record_id,
+                    "id": str(uuid.uuid4()),
                     "user_id": user_id,
-                    "discogs_id": discogs_id,
-                    "instance_id": instance_id,
+                    "discogs_id": rid,            # kept for backward compatibility
+                    "discogsReleaseId": rid,       # canonical dedup key
+                    "releaseId": release_id_str,   # FK → releases collection
+                    "importSource": "discogs_import",
                     "title": release_title,
                     "artist": release_artist,
-                    "cover_url": cover_url,
-                    "year": basic_info.get("year"),
+                    "cover_url": None,             # Discogs images are Restricted Data
+                    "year": rid_info.get("year") or release_doc_raw.get("year"),
                     "format": format_name,
-                    "color_variant": color_variant,
-                    "is_unofficial": any(
-                        "Unofficial Release" in fmt.get("descriptions", [])
-                        for fmt in formats
-                    ),
-                    "notes": release.get("notes", [{}])[0].get("value", "") if release.get("notes") else "Imported from Discogs",
+                    "color_variant": rid_info.get("color_variant"),
+                    "is_unofficial": rid_info.get("is_unofficial", False),
+                    "notes": "Imported from Discogs",
                     "source": "discogs_import",
-                    "created_at": now
+                    "created_at": now,
                 }
-                
+
                 await db.records.insert_one(record_doc)
                 imported += 1
-                imported_discogs_ids.append(discogs_id)
                 import_progress[user_id]["imported"] = imported
-                
-                # Collect sample covers for summary (first 12)
-                if cover_url and len(sample_covers) < 12:
-                    sample_covers.append({"title": record_doc["title"], "artist": release_artist, "cover_url": cover_url})
-                
+
+                # Collect sample covers from Spotify art (if already matched)
+                if len(sample_covers) < 12 and release_doc_raw.get("spotifyImageUrl"):
+                    sample_covers.append({
+                        "title": release_title,
+                        "artist": release_artist,
+                        "cover_url": release_doc_raw["spotifyImageUrl"],
+                    })
+
             except Exception as e:
-                logger.error(f"Failed to import release: {e}")
+                logger.error(f"Failed to import release {rid}: {e}")
                 errors += 1
                 skipped += 1
                 import_progress[user_id]["skipped"] = skipped
-                skipped_records.append({"title": release_title, "artist": release_artist, "discogs_id": discogs_id, "reason": "error", "error_detail": str(e)[:120]})
-        
-        # Mark complete with enriched summary
-        import_progress[user_id]["status"] = "completed"
-        import_progress[user_id]["imported"] = imported
-        import_progress[user_id]["skipped"] = skipped
-        import_progress[user_id]["errors"] = errors
-        import_progress[user_id]["sample_covers"] = sample_covers
-        import_progress[user_id]["skipped_records"] = skipped_records
-        
-        # Store import record
+                import_progress[user_id]["errors"] = errors
+                skipped_records.append({
+                    "title": title_fallback,
+                    "artist": artist_fallback,
+                    "discogs_id": rid,
+                    "reason": "error",
+                    "error_detail": str(e)[:120],
+                })
+
+        # ── Step 6: Dream List — hydrate wantlist into iso_items ─────────────
+        wl_added = 0
+        for wl_rid in wantlist_release_ids:
+            try:
+                existing_iso = await db.iso_items.find_one(
+                    {"user_id": user_id, "discogsReleaseId": wl_rid, "status": "WISHLIST"}
+                )
+                if existing_iso:
+                    continue
+
+                wl_release = await db.releases.find_one({"discogsReleaseId": wl_rid})
+                if not wl_release:
+                    try:
+                        wl_data = await asyncio.get_event_loop().run_in_executor(
+                            None, get_discogs_release, wl_rid
+                        )
+                        if wl_data:
+                            await upsert_release_cc0(wl_rid, wl_data)
+                            wl_release = await db.releases.find_one({"discogsReleaseId": wl_rid})
+                    except Exception as we:
+                        logger.warning(f"Failed to fetch wantlist release {wl_rid}: {we}")
+                    await asyncio.sleep(1.0)
+
+                if not wl_release:
+                    continue
+
+                wl_title = wl_release.get("title", "Unknown Title")
+                wl_artists = wl_release.get("artists", [])
+                wl_artist = ", ".join(wl_artists) if wl_artists else "Unknown Artist"
+
+                iso_doc = {
+                    "id": str(uuid.uuid4()),
+                    "user_id": user_id,
+                    "discogsReleaseId": wl_rid,
+                    "releaseId": str(wl_release["_id"]),
+                    "importSource": "discogs_import",
+                    "artist": wl_artist,
+                    "album": wl_title,
+                    "status": "WISHLIST",
+                    "priority": "MED",
+                    "created_at": now,
+                }
+                await db.iso_items.insert_one(iso_doc)
+                wl_added += 1
+            except Exception as we:
+                logger.warning(f"Failed to add wantlist item {wl_rid} to Dream List: {we}")
+
+        if wl_added > 0:
+            logger.info(f"Dream List: added {wl_added} wantlist items for user {user_id}")
+
+        # ── Step 7: Finalize ─────────────────────────────────────────────────
+        # Count how many releases are pending vs matched Spotify
+        pending_spotify = await db.releases.count_documents({"spotifyMatchStatus": "pending"})
+        matched_spotify = await db.releases.count_documents({"spotifyMatchStatus": "matched"})
+        import_progress[user_id].update({
+            "status": "completed",
+            "imported": imported,
+            "skipped": skipped,
+            "errors": errors,
+            "newReleasesCreated": new_releases_created,
+            "existingReleasesLinked": existing_releases_linked,
+            "spotifyMatched": matched_spotify,
+            "spotifyPending": pending_spotify,
+            "sample_covers": sample_covers,
+            "skipped_records": skipped_records,
+        })
+
         await db.discogs_imports.update_one(
             {"user_id": user_id},
             {"$set": {
@@ -2075,64 +2333,53 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
                 "imported": imported,
                 "skipped": skipped,
                 "errors": errors,
+                "newReleasesCreated": new_releases_created,
+                "existingReleasesLinked": existing_releases_linked,
+                "spotifyMatched": matched_spotify,
+                "spotifyPending": pending_spotify,
                 "sample_covers": sample_covers,
                 "skipped_records": skipped_records,
-                "completed_at": datetime.now(timezone.utc).isoformat()
+                "completed_at": datetime.now(timezone.utc).isoformat(),
             }},
-            upsert=True
+            upsert=True,
         )
-        
-        # Mark user as having completed a Discogs import (for welcome dashboard)
+
         if imported > 0:
-            # Calculate and cache welcome stats
-            records = await db.records.find(
+            records_all = await db.records.find(
                 {"user_id": user_id},
-                {"_id": 0, "discogs_id": 1, "artist": 1}
+                {"_id": 0, "artist": 1},
             ).to_list(10000)
-            discogs_ids_all = list({r["discogs_id"] for r in records if r.get("discogs_id")})
-            total_value = 0.0
-            if discogs_ids_all:
-                values = await db.collection_values.find(
-                    {"release_id": {"$in": discogs_ids_all}}, {"_id": 0}
-                ).to_list(10000)
-                for v in values:
-                    total_value += v.get("median_value") or v.get("low_value") or 0
-            artist_counts = {}
-            for r in records:
-                a = r.get("artist", "Unknown Artist")
+            artist_counts: dict = {}
+            for r in records_all:
+                a = r.get("artist", "")
                 if a and a != "Unknown Artist":
                     artist_counts[a] = artist_counts.get(a, 0) + 1
             top_artist = max(artist_counts, key=artist_counts.get) if artist_counts else None
-            
+
             await db.users.update_one({"id": user_id}, {"$set": {
                 "discogs_import_completed": True,
                 "has_seen_welcome_hive_dashboard": False,
                 "last_imported_record_count": imported,
-                "last_imported_collection_value": round(total_value, 2),
                 "last_imported_artist_count": len(artist_counts),
                 "last_imported_top_artist": top_artist,
             }})
-        
-        # Create activity post for the import
-        if imported > 0:
-            post_id = str(uuid.uuid4())
+
             post_doc = {
-                "id": post_id,
+                "id": str(uuid.uuid4()),
                 "user_id": user_id,
                 "post_type": "record_added",
                 "content": f"Imported {imported} records from Discogs",
                 "record_id": None,
                 "haul_id": None,
-                "created_at": datetime.now(timezone.utc).isoformat()
+                "created_at": datetime.now(timezone.utc).isoformat(),
             }
             await db.posts.insert_one(post_doc)
-        
-        # Background: fetch collection values for newly imported records
-        if imported_discogs_ids:
-            asyncio.create_task(_post_import_value_refresh(user_id, imported_discogs_ids))
-        
-        logger.info(f"Discogs import complete for {user_id}: {imported} imported, {skipped} skipped, {errors} errors out of {total_items}")
-        
+
+        logger.info(
+            f"Discogs import complete for {user_id}: {imported} imported, {skipped} skipped, "
+            f"{errors} errors, {new_releases_created} new releases, {existing_releases_linked} linked"
+        )
+
     except Exception as e:
         logger.error(f"Discogs import failed for {user_id}: {e}")
         import_progress[user_id]["status"] = "error"
@@ -2146,33 +2393,10 @@ async def _run_discogs_import(user_id: str, oauth_token: str, oauth_token_secret
 
 
 async def _post_import_value_refresh(user_id: str, discogs_ids: list):
-    """After import, fetch Discogs market values for newly imported records."""
-    from database import get_discogs_market_data
-    fetched = 0
-    for did in discogs_ids:
-        try:
-            cached = await db.collection_values.find_one({"release_id": did})
-            if cached:
-                continue  # Already valued
-            data = get_discogs_market_data(did)
-            if data:
-                now = datetime.now(timezone.utc).isoformat()
-                await db.collection_values.update_one(
-                    {"release_id": did},
-                    {"$set": {
-                        "release_id": did,
-                        "median_value": data["median_value"],
-                        "low_value": data["low_value"],
-                        "high_value": data["high_value"],
-                        "last_updated": now,
-                    }},
-                    upsert=True
-                )
-                fetched += 1
-        except Exception as e:
-            logger.error(f"Post-import value fetch failed for {did}: {e}")
-        await asyncio.sleep(1.1)  # Rate limit
-    logger.info(f"Post-import value refresh for {user_id}: {fetched}/{len(discogs_ids)} valued")
+    """Deprecated — Discogs marketplace pricing is no longer fetched (Restricted Data under TOS §4).
+    Vault Value now uses userEstimatedValue and THG transaction history only.
+    This stub is kept so any lingering asyncio.create_task() calls do not fail."""
+    logger.debug(f"_post_import_value_refresh: deprecated, skipping for {user_id} ({len(discogs_ids)} ids)")
 
 
 @router.delete("/discogs/disconnect")
@@ -2186,46 +2410,27 @@ async def disconnect_discogs(user: Dict = Depends(require_auth)):
 
 @router.get("/discogs/import/summary")
 async def get_import_summary(user: Dict = Depends(require_auth)):
-    """Get a rich summary of the last completed import including collection value."""
+    """Get a rich summary of the last completed import."""
     last_import = await db.discogs_imports.find_one({"user_id": user["id"]}, {"_id": 0})
     if not last_import:
         return {"has_import": False}
-    
-    # Get collection value
-    records = await db.records.find(
-        {"user_id": user["id"], "discogs_id": {"$ne": None}},
-        {"_id": 0, "discogs_id": 1}
-    ).to_list(5000)
-    discogs_ids = list({r["discogs_id"] for r in records if r.get("discogs_id")})
-    
-    total_value = 0.0
-    valued_count = 0
-    if discogs_ids:
-        values = await db.collection_values.find(
-            {"release_id": {"$in": discogs_ids}}, {"_id": 0}
-        ).to_list(5000)
-        for v in values:
-            if v.get("median_value"):
-                total_value += v["median_value"]
-                valued_count += 1
-    
+
     total_records = await db.records.count_documents({"user_id": user["id"]})
-    
+
     return {
         "has_import": True,
         "imported": last_import.get("imported", 0),
         "skipped": last_import.get("skipped", 0),
         "errors": last_import.get("errors", 0),
         "total": last_import.get("total", 0),
-        "discogs_username": last_import.get("discogs_username"),
+        "newReleasesCreated": last_import.get("newReleasesCreated", 0),
+        "existingReleasesLinked": last_import.get("existingReleasesLinked", 0),
         "sample_covers": last_import.get("sample_covers", []),
         "skipped_records": last_import.get("skipped_records", []),
         "completed_at": last_import.get("completed_at"),
         "collection_stats": {
             "total_records": total_records,
-            "total_value": round(total_value, 2),
-            "valued_count": valued_count,
-        }
+        },
     }
 
 

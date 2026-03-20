@@ -8,7 +8,7 @@ import { Progress } from '../components/ui/progress';
 import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from '../components/ui/dialog';
-import { ExternalLink, RefreshCw, CheckCircle2, AlertCircle, Loader2, Unplug, Disc, ArrowRight, XCircle, ChevronDown, ChevronUp, Ban, Copy, AlertTriangle, Info } from 'lucide-react';
+import { ExternalLink, Plus, CheckCircle2, AlertCircle, Loader2, Unplug, Disc, ChevronDown, ChevronUp, Ban, Copy, AlertTriangle, Info } from 'lucide-react';
 import { toast } from 'sonner';
 import { trackEvent } from '../utils/analytics';
 import AlbumArt from './AlbumArt';
@@ -85,15 +85,11 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
     const params = new URLSearchParams(window.location.search);
     const discogsParam = params.get('discogs');
     if (discogsParam === 'connected') {
-      toast.success(`discogs connected as ${params.get('username') || ''}.`);
+      toast.success(`Discogs connected. Ready to import.`);
       window.history.replaceState({}, '', window.location.pathname);
       fetchStatus();
       // BLOCK 500: Show the "Pure Gold" success screen
       setShowPureGold(true);
-      // BLOCK 484: Trigger priority price re-link for first 50 records
-      axios.post(`${API}/valuation/priority-relink`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      }).catch(() => {});
       // BLOCK 573: Re-check verification status after OAuth — triggers Gold Shield
       axios.get(`${API}/user/profile`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -144,7 +140,34 @@ const DiscogsImport = ({ onImportComplete, compact = false }) => {
       setProgress(resp.data);
     } catch (err) {
       setImporting(false);
-      toast.error(err.response?.data?.detail || 'could not find that Discogs username. double check and try again.');
+      toast.error(err.response?.data?.detail || 'Import failed. Please try again.');
+    }
+  };
+
+  const handleCheckNew = async () => {
+    // "Check for New Additions" — requires a fresh Discogs OAuth if no active token
+    if (!status?.connected || !status?.oauth_verified) {
+      // Re-initiate OAuth; after callback the user can run check-new
+      handleConnect();
+      return;
+    }
+    setImporting(true);
+    setProgress({ status: 'in_progress', total: 0, imported: 0, skipped: 0 });
+    try {
+      const resp = await axios.post(`${API}/discogs/import/check-new`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 30000,
+      });
+      setProgress(resp.data);
+    } catch (err) {
+      setImporting(false);
+      if (err.response?.status === 400 && err.response?.data?.detail?.includes('not connected')) {
+        // Token was already discarded — re-auth required
+        toast.info('Please reconnect to Discogs to check for new additions.');
+        handleConnect();
+      } else {
+        toast.error(err.response?.data?.detail || 'Could not check for new additions.');
+      }
     }
   };
 
@@ -193,42 +216,42 @@ return (
                   <Info className="w-3.5 h-3.5 text-muted-foreground cursor-help shrink-0" />
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-[260px] text-xs leading-relaxed">
-                  <p>One-way sync from your Discogs collection to The Honey Groove. Two-way sync is on the roadmap.</p>
-                  <p className="mt-1 text-muted-foreground">Hit Sync again anytime you add records to your Discogs.</p>
+                  <p>One-way import from your Discogs collection into The Honey Groove Vault.</p>
+                  <p className="mt-1 text-muted-foreground">Use "Check for New Additions" anytime you add records to your Discogs.</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            {status?.oauth_verified && (
-              <span className="text-[10px] font-semibold text-green-700 bg-green-50 px-1.5 py-0.5 rounded-full border border-green-200 shrink-0" data-testid="oauth-verified-badge">
-                Verified
-              </span>
-            )}
             {status?.needs_migration && (
               <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200 shrink-0" data-testid="needs-migration-badge">
                 Re-verify
               </span>
             )}
-            {status?.connected && (
-              <span className="text-xs text-muted-foreground truncate hidden sm:inline">@{status.discogs_username}</span>
+            {status?.has_imported && status?.last_synced && (
+              <span className="text-xs text-muted-foreground truncate hidden sm:inline">
+                Last import: {new Date(status.last_synced).toLocaleDateString()}
+              </span>
             )}
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {status?.connected && !status?.needs_migration && !importing && (
               <>
-                <Button onClick={handleImport} size="sm"
-                  className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-1.5 h-8 text-xs px-3"
-                  data-testid="discogs-sync-btn">
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  {status?.last_synced ? 'Sync' : 'Import'}
-                </Button>
-                {status?.last_synced && (
-                  <span className="text-[10px] text-muted-foreground whitespace-nowrap hidden sm:inline">
-                    {new Date(status.last_synced).toLocaleDateString()}
-                  </span>
+                {status?.has_imported ? (
+                  <Button onClick={handleCheckNew} size="sm"
+                    className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-1.5 h-8 text-xs px-3"
+                    data-testid="discogs-check-new-btn">
+                    <Plus className="w-3.5 h-3.5" />
+                    Check for New Additions
+                  </Button>
+                ) : (
+                  <Button onClick={handleImport} size="sm"
+                    className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full gap-1.5 h-8 text-xs px-3"
+                    data-testid="discogs-sync-btn">
+                    Import
+                  </Button>
                 )}
               </>
             )}
-            {status?.connected && (
+            {status?.has_imported && (
               <Button variant="ghost" size="sm" onClick={() => setShowDisconnect(true)}
                 className="text-muted-foreground hover:text-red-500 h-8 w-8 p-0" data-testid="discogs-disconnect-btn">
                 <Unplug className="w-3.5 h-3.5" />
@@ -237,7 +260,7 @@ return (
           </div>
         </div>
 
-        {/* Expandable content: connect, progress, errors */}
+        {/* Expandable content: connect, progress, errors, post-import summary */}
         {(!status?.connected || status?.needs_migration || importing || (progress?.status === 'completed' && progress.imported > 0) || progress?.status === 'error') && (
         <CardContent className="pt-0 pb-3">
           {!status?.connected ? (
@@ -268,29 +291,50 @@ return (
               <div className="flex items-center justify-between text-sm">
                 <span className="font-medium flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin text-honey-amber" />
-                  Importing...
+                  {progress.total > 0
+                    ? `Building your Vault...`
+                    : 'Connecting to Discogs...'}
                 </span>
                 <span className="text-muted-foreground text-xs">
-                  {progress.imported + progress.skipped} / {progress.total || '...'}
+                  {progress.total > 0
+                    ? `${progress.imported + progress.skipped} of ${progress.total}`
+                    : ''}
                 </span>
               </div>
-              <Progress value={progressPercent} className="h-1.5" />
-              <div className="flex gap-4 text-xs text-muted-foreground">
-                <span className="text-green-600">{progress.imported} imported</span>
-                <span>{progress.skipped} skipped</span>
-              </div>
+              {progress.total > 0 && (
+                <>
+                  <Progress value={progressPercent} className="h-1.5" />
+                  <div className="flex gap-4 text-xs text-muted-foreground">
+                    <span className="text-green-600">{progress.imported} added</span>
+                    {progress.skipped > 0 && <span>{progress.skipped} skipped</span>}
+                    {progress.newReleasesCreated > 0 && (
+                      <span className="text-honey-amber">{progress.newReleasesCreated} new releases fetched</span>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           ) : (
             <div className="space-y-2">
               {progress?.status === 'completed' && progress.imported > 0 && (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs text-green-600 bg-green-50 px-2.5 py-1.5 rounded-lg flex-1" data-testid="import-complete-msg">
-                    <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                    <span>{progress.imported} records imported</span>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-xs text-green-600 bg-green-50 px-2.5 py-1.5 rounded-lg flex-1" data-testid="import-complete-msg">
+                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                      <span>
+                        Import complete! {progress.imported} records added
+                        {progress.errors > 0 ? `. ${progress.errors} could not be matched.` : '.'}
+                      </span>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={fetchSummary} className="text-xs text-honey-amber ml-2 h-7" data-testid="view-summary-btn">
+                      Summary
+                    </Button>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={fetchSummary} className="text-xs text-honey-amber ml-2 h-7" data-testid="view-summary-btn">
-                    Summary
-                  </Button>
+                  {/* Post-import summary card */}
+                  <div className="text-[10px] text-muted-foreground px-1">
+                    Imported via Discogs · album art loading in background
+                    {progress.spotifyPending > 0 && ` (${progress.spotifyPending} pending)`}
+                  </div>
                 </div>
               )}
               {progress?.status === 'error' && (
@@ -360,29 +404,16 @@ return (
                 </div>
               )}
 
-              {/* Collection value */}
+              {/* Collection stats */}
               {summary.collection_stats && (
                 <div className="bg-gradient-to-r from-honey/10 to-honey/20 rounded-xl p-4" data-testid="import-summary-value">
-                  <p className="text-xs text-muted-foreground mb-1">Your Collection</p>
+                  <p className="text-xs text-muted-foreground mb-1">Your Vault</p>
                   <div className="flex items-baseline gap-3">
                     <p className="font-heading text-2xl text-vinyl-black">{summary.collection_stats.total_records} records</p>
-                    {summary.collection_stats.total_value > 0 && (
-                      <p className="text-sm text-honey-amber font-medium">
-                        ~${summary.collection_stats.total_value.toLocaleString(undefined, { maximumFractionDigits: 0 })} estimated
-                      </p>
-                    )}
                   </div>
-                  {summary.collection_stats.valued_count > 0 && (
-                    <p className="text-[10px] text-muted-foreground mt-1">
-                      {summary.collection_stats.valued_count} records valued via Discogs market data
-                      {summary.collection_stats.valued_count < summary.collection_stats.total_records && ' (more values loading in background)'}
-                    </p>
-                  )}
-                  {summary.collection_stats.valued_count === 0 && summary.imported > 0 && (
-                    <p className="text-[10px] text-muted-foreground mt-1">
-                      Market values are being fetched in the background. Check back in a few minutes.
-                    </p>
-                  )}
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Album art is loading in the background via Spotify matching.
+                  </p>
                 </div>
               )}
 

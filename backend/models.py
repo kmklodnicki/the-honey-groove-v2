@@ -99,6 +99,9 @@ class TokenResponse(BaseModel):
 # Record Models
 class RecordCreate(BaseModel):
     discogs_id: Optional[int] = None
+    discogsReleaseId: Optional[int] = None   # Canonical Discogs release ID for deduplication
+    releaseId: Optional[str] = None           # ObjectId ref to releases collection
+    importSource: Optional[str] = None        # "discogs_import" | "manual"
     instance_id: Optional[int] = None
     title: str
     artist: str
@@ -111,10 +114,14 @@ class RecordCreate(BaseModel):
     userPhotoUrl: Optional[str] = None
     userPhotoSmall: Optional[str] = None
     userPhotoUploadedBy: Optional[str] = None
+    userEstimatedValue: Optional[float] = None  # User self-reported value
 
 class RecordResponse(BaseModel):
     id: str
     discogs_id: Optional[int] = None
+    discogsReleaseId: Optional[int] = None   # Canonical Discogs release ID
+    releaseId: Optional[str] = None           # ObjectId ref to releases collection
+    importSource: Optional[str] = None        # "discogs_import" | "manual"
     instance_id: Optional[int] = None
     title: str
     artist: str
@@ -144,6 +151,7 @@ class RecordResponse(BaseModel):
     hasUserPhoto: Optional[bool] = False
     spotifyAlbumId: Optional[str] = None
     discogsUrl: Optional[str] = None
+    userEstimatedValue: Optional[float] = None  # User self-reported value
 
 class DiscogsSearchResult(BaseModel):
     discogs_id: int
@@ -486,9 +494,15 @@ class ShareGraphicRequest(BaseModel):
 
 class DiscogsImportStatus(BaseModel):
     status: str
+    jobId: Optional[str] = None
     total: int = 0
     imported: int = 0
     skipped: int = 0
+    errors: int = 0
+    newReleasesCreated: int = 0
+    existingReleasesLinked: int = 0
+    spotifyMatched: int = 0
+    spotifyPending: int = 0
     error_message: Optional[str] = None
     discogs_username: Optional[str] = None
     last_synced: Optional[str] = None

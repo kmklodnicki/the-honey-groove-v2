@@ -340,6 +340,12 @@ async def startup_event():
     await db.releases.create_index([("barcode", 1)])
     await db.releases.create_index([("spotifyAlbumId", 1)])
     await db.releases.create_index([("spotifyMatchStatus", 1)])
+    # Vault deduplication: one record per user per Discogs release
+    await db.records.create_index([("user_id", 1), ("discogsReleaseId", 1)], unique=False)
+    # releaseId FK for vault → releases joins
+    await db.records.create_index([("releaseId", 1)])
+    # iso_items Dream List: dedup wantlist imports
+    await db.iso_items.create_index([("user_id", 1), ("discogsReleaseId", 1)])
     # Milestones indexes
     await db.milestones.create_index([("userId", 1), ("type", 1)], unique=True)
     await db.milestones.create_index("achieved_at")

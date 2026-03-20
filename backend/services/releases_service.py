@@ -20,14 +20,22 @@ async def upsert_release_cc0(discogs_id: int, discogs_data: dict) -> dict:
     if isinstance(artists, str):
         artists = [a.strip() for a in artists.split(",") if a.strip()] if artists else []
 
-    # Collect all barcodes
+    # Collect all barcodes — from the "barcode" field (get_discogs_release returns
+    # the first barcode as a string) and also from the "identifiers" list which
+    # contains all barcodes (UPC, EAN, etc.) for Spotify UPC matching.
     barcodes = []
     raw_barcode = discogs_data.get("barcode")
     if raw_barcode:
         if isinstance(raw_barcode, str):
             barcodes = [raw_barcode]
         elif isinstance(raw_barcode, list):
-            barcodes = raw_barcode
+            barcodes = list(raw_barcode)
+    # Also extract any additional barcodes from identifiers list
+    for ident in discogs_data.get("identifiers", []):
+        if ident.get("type") == "Barcode" and ident.get("value"):
+            val = ident["value"].strip()
+            if val and val not in barcodes:
+                barcodes.append(val)
 
     cc0_fields = {
         "discogsReleaseId": discogs_id,

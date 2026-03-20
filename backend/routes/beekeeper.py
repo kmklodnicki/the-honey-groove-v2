@@ -911,3 +911,248 @@ async def reject_community_cover(submission_id: str, admin: Dict = Depends(requi
         {"$set": {"status": "rejected", "reviewedAt": now, "reviewedBy": admin["id"]}}
     )
     return {"success": True}
+
+
+# ─── Discogs Migration (TOS Compliance) ──────────────────────────────────────
+
+_migration_stop_event: Optional[asyncio.Event] = None
+_migration_task: Optional[asyncio.Task] = None
+_migration_status: dict = {
+    "running": False,
+    "processed": 0,
+    "linked": 0,
+    "spotify_triggered": 0,
+    "tokens_deleted": 0,
+    "usernames_cleared": 0,
+    "images_cleared": 0,
+    "errors": [],
+    "started_at": None,
+    "completed_at": None,
+}
+
+
+@router.get("/beekeeper/migration/discogs/status")
+async def get_discogs_migration_status(admin: Dict = Depends(require_admin)):
+    """Current status of the Discogs TOS compliance migration."""
+    # Also report compliance counts
+    discogs_url_in_records = await db.records.count_documents({
+        "$or": [
+            {"cover_url": {"$regex": "discogs", "$options": "i"}},
+            {"imageUrl": {"$regex": "discogs", "$options": "i"}},
+        ]
+    })
+    releases_with_images = await db.releases.count_documents({"images": {"$exists": True}})
+    stored_tokens = await db.discogs_tokens.count_documents({})
+    users_with_username = await db.users.count_documents({"discogs_username": {"$exists": True, "$ne": None}})
+
+    return {
+        **_migration_status,
+        "compliance": {
+            "discogs_urls_in_records": discogs_url_in_records,
+            "releases_with_images_field": releases_with_images,
+            "stored_oauth_tokens": stored_tokens,
+            "users_with_discogs_username": users_with_username,
+        },
+    }
+
+
+@router.post("/beekeeper/migration/discogs/start")
+async def start_discogs_migration(admin: Dict = Depends(require_admin)):
+    """Start the Discogs TOS compliance migration for all beta users.
+
+    For each record with importSource='discogs_import' (or legacy records with a discogs_id
+    but no releaseId), this task:
+    1. Looks up or creates a releases document (CC0 data only).
+    2. Updates the record with releaseId, discogsReleaseId, importSource.
+    3. Clears any stored Discogs image URLs from records.
+    4. Triggers Spotify matching for releases that have no match yet.
+
+    Post-migration cleanup:
+    - Deletes all documents in discogs_tokens.
+    - Unsets discogs_username from all user documents.
+    - Clears any cover_url / imageUrl fields pointing to Discogs CDN.
+    """
+    global _migration_task, _migration_stop_event
+
+    if _migration_task and not _migration_task.done():
+        return {"message": "Migration already running", **_migration_status}
+
+    _migration_stop_event = asyncio.Event()
+    _migration_status.update({
+        "running": True,
+        "processed": 0,
+        "linked": 0,
+        "spotify_triggered": 0,
+        "tokens_deleted": 0,
+        "usernames_cleared": 0,
+        "images_cleared": 0,
+        "errors": [],
+        "started_at": datetime.now(timezone.utc).isoformat(),
+        "completed_at": None,
+    })
+    _migration_task = asyncio.create_task(_run_discogs_migration(_migration_stop_event))
+    return {"message": "Migration started", **_migration_status}
+
+
+@router.post("/beekeeper/migration/discogs/stop")
+async def stop_discogs_migration(admin: Dict = Depends(require_admin)):
+    """Cancel an in-progress Discogs migration batch."""
+    if _migration_stop_event:
+        _migration_stop_event.set()
+    return {"message": "Stop signal sent", **_migration_status}
+
+
+async def _run_discogs_migration(stop_event: asyncio.Event):
+    """Background: link all Discogs-imported records to the releases collection."""
+    from database import get_discogs_release
+    from services.releases_service import upsert_release_cc0
+    from services.spotify_service import match_to_spotify
+
+    global _migration_status
+
+    try:
+        # Find all records that were imported from Discogs but lack a releaseId
+        cursor = db.records.find(
+            {"$or": [
+                {"importSource": "discogs_import", "releaseId": {"$exists": False}},
+                {"source": "discogs_import", "releaseId": {"$exists": False}},
+                {"discogs_id": {"$exists": True, "$ne": None}, "releaseId": {"$exists": False}},
+            ]},
+            {"_id": 0, "id": 1, "discogs_id": 1, "discogsReleaseId": 1},
+        )
+        records_to_migrate = await cursor.to_list(50000)
+
+        for rec in records_to_migrate:
+            if stop_event.is_set():
+                break
+
+            rid = rec.get("discogsReleaseId") or rec.get("discogs_id")
+            if not rid:
+                _migration_status["processed"] += 1
+                continue
+
+            try:
+                # Look up existing release doc
+                release_doc = await db.releases.find_one({"discogsReleaseId": rid})
+                if not release_doc:
+                    discogs_data = await asyncio.get_event_loop().run_in_executor(
+                        None, get_discogs_release, rid
+                    )
+                    if discogs_data:
+                        await upsert_release_cc0(rid, discogs_data)
+                        release_doc = await db.releases.find_one({"discogsReleaseId": rid})
+                    await asyncio.sleep(1.0)
+
+                if release_doc:
+                    release_id_str = str(release_doc["_id"])
+                    update_fields: dict = {
+                        "releaseId": release_id_str,
+                        "discogsReleaseId": rid,
+                        "importSource": "discogs_import",
+                    }
+                    # Clear Discogs image URLs if present
+                    unset_fields: dict = {}
+                    if rec.get("cover_url") and "discogs" in str(rec.get("cover_url", "")).lower():
+                        unset_fields["cover_url"] = ""
+                        _migration_status["images_cleared"] += 1
+                    if rec.get("imageUrl") and "discogs" in str(rec.get("imageUrl", "")).lower():
+                        unset_fields["imageUrl"] = ""
+                        _migration_status["images_cleared"] += 1
+
+                    op: dict = {"$set": update_fields}
+                    if unset_fields:
+                        op["$unset"] = unset_fields
+                    await db.records.update_one({"id": rec["id"]}, op)
+                    _migration_status["linked"] += 1
+
+                    # Trigger Spotify matching if not yet attempted
+                    if release_doc.get("spotifyMatchStatus") in (None, "pending"):
+                        release_for_spotify = {k: v for k, v in release_doc.items() if k != "_id"}
+                        asyncio.create_task(match_to_spotify(release_for_spotify))
+                        _migration_status["spotify_triggered"] += 1
+
+                _migration_status["processed"] += 1
+
+            except Exception as e:
+                err = f"record {rec.get('id', '?')}: {str(e)[:120]}"
+                _migration_status["errors"].append(err)
+                logger.warning(f"Migration error — {err}")
+                _migration_status["processed"] += 1
+
+        # ── Post-migration cleanup ────────────────────────────────────────────
+        if not stop_event.is_set():
+            # 1. Clear all stored OAuth tokens
+            del_result = await db.discogs_tokens.delete_many({})
+            _migration_status["tokens_deleted"] = del_result.deleted_count
+
+            # 2. Unset discogs_username from all user docs
+            unset_result = await db.users.update_many(
+                {"discogs_username": {"$exists": True}},
+                {"$unset": {"discogs_username": ""}},
+            )
+            _migration_status["usernames_cleared"] = unset_result.modified_count
+
+            # 3. Clear any remaining Discogs CDN image URLs from records
+            discogs_image_records = await db.records.count_documents({
+                "$or": [
+                    {"cover_url": {"$regex": "discogs", "$options": "i"}},
+                    {"imageUrl": {"$regex": "discogs", "$options": "i"}},
+                ]
+            })
+            if discogs_image_records > 0:
+                await db.records.update_many(
+                    {"cover_url": {"$regex": "discogs", "$options": "i"}},
+                    {"$unset": {"cover_url": ""}},
+                )
+                await db.records.update_many(
+                    {"imageUrl": {"$regex": "discogs", "$options": "i"}},
+                    {"$unset": {"imageUrl": ""}},
+                )
+                _migration_status["images_cleared"] += discogs_image_records
+
+            logger.info(
+                f"Discogs migration complete: {_migration_status['processed']} processed, "
+                f"{_migration_status['linked']} linked, {_migration_status['tokens_deleted']} tokens deleted"
+            )
+
+        _migration_status["running"] = False
+        _migration_status["completed_at"] = datetime.now(timezone.utc).isoformat()
+
+    except Exception as e:
+        logger.error(f"Discogs migration failed: {e}")
+        _migration_status["running"] = False
+        _migration_status["errors"].append(f"Fatal: {str(e)[:200]}")
+        _migration_status["completed_at"] = datetime.now(timezone.utc).isoformat()
+
+
+@router.get("/beekeeper/compliance/discogs")
+async def discogs_compliance_check(admin: Dict = Depends(require_admin)):
+    """Compliance audit: returns counts of any remaining Discogs Restricted Data in the DB.
+    All counts should be zero after a successful migration.
+    """
+    records_with_discogs_url = await db.records.count_documents({
+        "$or": [
+            {"cover_url": {"$regex": r"i\.discogs\.com|st\.discogs\.com", "$options": "i"}},
+            {"imageUrl": {"$regex": r"i\.discogs\.com|st\.discogs\.com", "$options": "i"}},
+        ]
+    })
+    releases_with_images = await db.releases.count_documents({"images": {"$exists": True}})
+    stored_tokens = await db.discogs_tokens.count_documents({})
+    users_with_username = await db.users.count_documents({
+        "discogs_username": {"$exists": True, "$ne": None}
+    })
+
+    all_clear = (
+        records_with_discogs_url == 0
+        and releases_with_images == 0
+        and stored_tokens == 0
+    )
+
+    return {
+        "all_clear": all_clear,
+        "records_with_discogs_image_urls": records_with_discogs_url,
+        "releases_with_images_field": releases_with_images,
+        "stored_oauth_tokens": stored_tokens,
+        "users_with_discogs_username": users_with_username,
+        "checked_at": datetime.now(timezone.utc).isoformat(),
+    }

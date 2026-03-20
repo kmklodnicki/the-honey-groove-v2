@@ -16,7 +16,12 @@ FONTS_DIR = Path(__file__).parent.parent / "fonts"
 
 
 async def _get_cached_value(discogs_id: int) -> Optional[Dict]:
-    """Return cached value if fresh, else None."""
+    """Return cached Discogs market value if present and fresh, else None.
+
+    NOTE: New Discogs marketplace price fetching is deprecated (Restricted Data under
+    Discogs TOS §4).  This function still reads *existing* cached values so that
+    historical data is not immediately lost, but _fetch_and_cache() is now a no-op.
+    """
     doc = await db.collection_values.find_one({"release_id": discogs_id}, {"_id": 0})
     if not doc:
         return None
@@ -27,66 +32,81 @@ async def _get_cached_value(discogs_id: int) -> Optional[Dict]:
 
 
 async def _fetch_and_cache(discogs_id: int) -> Optional[Dict]:
-    """Fetch from Discogs, store in cache, return doc."""
-    data = get_discogs_market_data(discogs_id)
-    if not data:
-        return None
-    now = datetime.now(timezone.utc).isoformat()
-    doc = {
-        "release_id": discogs_id,
-        "median_value": data["median_value"],
-        "low_value": data["low_value"],
-        "high_value": data["high_value"],
-        "last_updated": now,
-    }
-    await db.collection_values.update_one(
-        {"release_id": discogs_id}, {"$set": doc}, upsert=True
-    )
-    return doc
+    """Deprecated — no longer fetches Discogs marketplace pricing (Restricted Data).
+    Returns any existing cached entry so callers don't break, but does NOT refresh."""
+    return await _get_cached_value(discogs_id)
 
 
 async def _ensure_cached(discogs_id: int) -> Optional[Dict]:
-    """Get from cache or fetch live (never on page load — called from background)."""
-    cached = await _get_cached_value(discogs_id)
-    if cached:
-        return cached
-    return await _fetch_and_cache(discogs_id)
+    """Return cached value only — new fetches are disabled per TOS compliance."""
+    return await _get_cached_value(discogs_id)
+
+
+async def _get_user_estimated_value(user_id: str) -> float:
+    """Sum of userEstimatedValue across all records for a user (THG-native pricing)."""
+    records = await db.records.find(
+        {"user_id": user_id, "userEstimatedValue": {"$exists": True, "$ne": None}},
+        {"_id": 0, "userEstimatedValue": 1},
+    ).to_list(10000)
+    return sum(r.get("userEstimatedValue", 0) or 0 for r in records)
 
 
 # ===================== COLLECTION VALUE =====================
 
 @router.get("/valuation/collection")
 async def get_collection_value(user: Dict = Depends(require_auth)):
-    """Total estimated collection value from cached Discogs data."""
-    records = await db.records.find(
-        {"user_id": user["id"], "discogs_id": {"$ne": None}},
-        {"_id": 0, "discogs_id": 1}
+    """Total estimated collection value.
+    Priority: userEstimatedValue (user self-reported) → cached Discogs median (legacy).
+    New Discogs price fetching is disabled (Restricted Data). Shows '—' when no data.
+    """
+    records_all = await db.records.find(
+        {"user_id": user["id"]},
+        {"_id": 0, "discogs_id": 1, "userEstimatedValue": 1},
     ).to_list(5000)
-    discogs_ids = list({r["discogs_id"] for r in records if r.get("discogs_id")})
-    if not discogs_ids:
-        return {"total_value": 0, "valued_count": 0, "total_count": len(records)}
-
-    values = await db.collection_values.find(
-        {"release_id": {"$in": discogs_ids}}, {"_id": 0}
-    ).to_list(5000)
-    val_map = {v["release_id"]: v for v in values}
-
-    total = 0.0
-    valued = 0
-    for did in discogs_ids:
-        v = val_map.get(did)
-        if v and v.get("median_value"):
-            total += v["median_value"]
-            valued += 1
-
     total_records = await db.records.count_documents({"user_id": user["id"]})
-    # BLOCK 495: Calculate avg_value
+
+    # Sum user-estimated values first
+    user_estimated_total = sum(
+        r.get("userEstimatedValue") or 0
+        for r in records_all
+        if r.get("userEstimatedValue") is not None
+    )
+    user_valued_count = sum(1 for r in records_all if r.get("userEstimatedValue") is not None)
+
+    # Fall back to cached Discogs data (legacy, read-only)
+    discogs_ids = list({r["discogs_id"] for r in records_all if r.get("discogs_id")})
+    legacy_total = 0.0
+    legacy_valued = 0
+    if discogs_ids:
+        values = await db.collection_values.find(
+            {"release_id": {"$in": discogs_ids}}, {"_id": 0}
+        ).to_list(5000)
+        for v in values:
+            if v.get("median_value"):
+                legacy_total += v["median_value"]
+                legacy_valued += 1
+
+    # Use user estimates if available, otherwise fall back to legacy Discogs cache
+    if user_valued_count > 0:
+        total = user_estimated_total
+        valued = user_valued_count
+        value_source = "user_estimated"
+    elif legacy_valued > 0:
+        total = legacy_total
+        valued = legacy_valued
+        value_source = "legacy_discogs_cache"
+    else:
+        total = 0.0
+        valued = 0
+        value_source = "none"
+
     avg_value = round(total / total_records, 2) if total_records > 0 else 0
     return {
-        "total_value": round(total, 2),
+        "total_value": round(total, 2) if valued > 0 else None,
         "valued_count": valued,
         "total_count": total_records,
-        "avg_value": avg_value,
+        "avg_value": avg_value if valued > 0 else None,
+        "value_source": value_source,
     }
 
 
