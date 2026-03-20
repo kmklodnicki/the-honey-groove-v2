@@ -67,6 +67,16 @@ DISCOGS_TOKEN = os.environ.get('DISCOGS_TOKEN', '')
 DISCOGS_USER_AGENT = os.environ.get('DISCOGS_USER_AGENT', 'HoneyGroove/1.0')
 DISCOGS_CONSUMER_KEY = os.environ.get('DISCOGS_CONSUMER_KEY', '')
 DISCOGS_CONSUMER_SECRET = os.environ.get('DISCOGS_CONSUMER_SECRET', '')
+
+
+def _discogs_auth_params() -> dict:
+    """Return auth params for Discogs API calls.
+    Prefers personal access token; falls back to consumer key+secret (Discogs Auth flow)."""
+    if DISCOGS_TOKEN:
+        return {"token": DISCOGS_TOKEN}
+    if DISCOGS_CONSUMER_KEY and DISCOGS_CONSUMER_SECRET:
+        return {"key": DISCOGS_CONSUMER_KEY, "secret": DISCOGS_CONSUMER_SECRET}
+    return {}
 DISCOGS_REQUEST_TOKEN_URL = "https://api.discogs.com/oauth/request_token"
 DISCOGS_AUTHORIZE_URL = "https://www.discogs.com/oauth/authorize"
 DISCOGS_ACCESS_TOKEN_URL = "https://api.discogs.com/oauth/access_token"
@@ -280,9 +290,7 @@ def get_object(path: str) -> tuple:
 
 def search_discogs(query: str, search_type: str = "release") -> List[Dict]:
     headers = {"User-Agent": DISCOGS_USER_AGENT}
-    params = {"q": query, "type": search_type, "per_page": 20}
-    if DISCOGS_TOKEN:
-        params["token"] = DISCOGS_TOKEN
+    params = {"q": query, "type": search_type, "per_page": 20, **_discogs_auth_params()}
     try:
         s = _discogs_session()
         resp = s.get(f"{DISCOGS_API_BASE}/database/search", params=params, headers=headers, timeout=15)
@@ -348,9 +356,7 @@ def search_discogs(query: str, search_type: str = "release") -> List[Dict]:
 def get_discogs_master_versions(master_id: int, page: int = 1, per_page: int = 100) -> Optional[Dict]:
     """Fetch all versions of a master release from Discogs."""
     headers = {"User-Agent": DISCOGS_USER_AGENT}
-    params = {"per_page": per_page, "page": page}
-    if DISCOGS_TOKEN:
-        params["token"] = DISCOGS_TOKEN
+    params = {"per_page": per_page, "page": page, **_discogs_auth_params()}
     try:
         s = _discogs_session()
         resp = s.get(
@@ -367,9 +373,7 @@ def get_discogs_master_versions(master_id: int, page: int = 1, per_page: int = 1
 def get_discogs_master(master_id: int) -> Optional[Dict]:
     """Fetch master release data from Discogs (community stats, main image)."""
     headers = {"User-Agent": DISCOGS_USER_AGENT}
-    params = {}
-    if DISCOGS_TOKEN:
-        params["token"] = DISCOGS_TOKEN
+    params = {**_discogs_auth_params()}
     try:
         s = _discogs_session()
         resp = s.get(
@@ -399,9 +403,7 @@ def get_discogs_master(master_id: int) -> Optional[Dict]:
 
 def get_discogs_release(release_id: int) -> Optional[Dict]:
     headers = {"User-Agent": DISCOGS_USER_AGENT}
-    params = {}
-    if DISCOGS_TOKEN:
-        params["token"] = DISCOGS_TOKEN
+    params = {**_discogs_auth_params()}
     s = _discogs_session()
     max_retries = 2
     for attempt in range(max_retries + 1):
