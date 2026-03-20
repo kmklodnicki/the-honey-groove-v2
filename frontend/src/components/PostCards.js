@@ -372,7 +372,7 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
                 <div className="shrink-0" style={{ overflow: 'visible' }}>
                   <AlbumWithVinyl>
                     <AlbumArt src={coverUrl} alt={`${artist} ${title}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-24 h-24 rounded-[10px] object-cover shadow-md album-art-hover relative z-[6]" priority={imgPriority} isUnofficial={record.is_unofficial} />
-                    {post.honeypot_rating && (
+                    {post.honeypot_rating && !coverUrl?.includes('i.scdn.co') && (
                       <div className="absolute top-1 right-4 z-[7] px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
                         style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
                         data-testid="feed-rating-pill">
@@ -463,7 +463,7 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
                   <div className="relative group/cover">
                     <AlbumArt src={item.cover_url} alt={`${item.artist} - ${item.title}`} 
                       className="w-full aspect-square rounded-lg object-cover border border-[#E5DBC8]/60" isUnofficial={item.is_unofficial} />
-                    {item.color_variant && (
+                    {item.color_variant && !item.cover_url?.includes('i.scdn.co') && item.imageSource !== 'spotify' && (
                       <div className="absolute bottom-1 left-1 right-1 z-[6]">
                         <span className="inline-block max-w-full truncate text-[8px] font-bold uppercase tracking-wide px-1.5 py-px rounded-full"
                           style={{ background: 'rgba(255,215,0,0.25)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)', border: '1.5px solid rgba(218,165,32,0.6)', boxShadow: '0 2px 8px rgba(0,0,0,0.2)' }}
@@ -472,12 +472,14 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
                         </span>
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-lg opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-end p-1.5">
-                      <div className="min-w-0">
-                        <p className="text-[10px] font-medium text-white truncate">{item.title}</p>
-                        <p className="text-[9px] text-white/70 truncate">{item.artist}</p>
+                    {!item.cover_url?.includes('i.scdn.co') && item.imageSource !== 'spotify' && (
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-lg opacity-0 group-hover/cover:opacity-100 transition-opacity flex items-end p-1.5">
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-medium text-white truncate">{item.title}</p>
+                          <p className="text-[9px] text-white/70 truncate">{item.artist}</p>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 </AlbumLink>
               ))}
@@ -798,7 +800,7 @@ const DailyPromptPostCard = ({ post, imgPriority, onAlbumClick }) => {
         <div className="shrink-0 pr-2">
           <AlbumWithVinyl preset="prompt">
             <AlbumArt src={post.cover_url} alt={`${post.record_artist} ${post.record_title}${post.color_variant ? ` ${post.color_variant}` : ''} vinyl record`} className="w-20 h-20 rounded-[10px] object-cover shadow-md relative z-[6]" priority={imgPriority} isUnofficial={post.is_unofficial} />
-            {post.honeypot_rating && (
+            {post.honeypot_rating && !post.cover_url?.includes('i.scdn.co') && (
               <div className="absolute top-1 right-1 z-[7] px-1.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide"
               style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', border: '1px solid #FFD700', color: '#FFD700' }}
               data-testid="feed-rating-pill">

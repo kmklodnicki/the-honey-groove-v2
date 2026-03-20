@@ -400,7 +400,7 @@ const CrownJewelsAll = ({ data, navigate, openDreamCatcher, addedIds }) => {
         <button key={r.discogs_id || idx} onClick={() => navigate(`/variant/${r.discogs_id}`)} className="text-left group" data-testid={`sa-cj-${r.discogs_id || idx}`}>
           <div className="aspect-square rounded-xl overflow-hidden bg-honey/10 mb-2 shadow-sm relative group-hover:shadow-md transition-shadow">
             <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} className="w-full h-full object-cover" isUnofficial={r.is_unofficial} />
-            {r.estimated_value > 0 && (
+            {r.estimated_value > 0 && !r.cover_url?.includes('i.scdn.co') && (
               <span
                 className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full"
                 style={{ background: 'rgba(255,179,0,0.85)', color: '#1E2A3A', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,160,0,0.6)' }}
