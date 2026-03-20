@@ -1468,13 +1468,14 @@ async def create_testimonial(body: dict, admin: Dict = Depends(require_admin)):
         "quote": body["quote"].strip(),
         "username": body["username"].strip(),
         "label": body.get("label", "beta collector").strip(),
-        "avatarLetter": body.get("avatarLetter", "?")[0].upper(),
+        "avatarLetter": (body.get("avatarLetter") or "?")[0].upper(),
         "avatarUrl": body.get("avatarUrl"),
         "recordCount": int(body.get("recordCount", 0)),
         "isActive": bool(body.get("isActive", True)),
         "sortOrder": int(body.get("sortOrder", next_order)),
         "createdAt": datetime.now(timezone.utc),
         "linkedUserId": ObjectId(body["linkedUserId"]) if body.get("linkedUserId") else None,
+        "linkedUsername": body.get("linkedUsername"),
     }
     result = await db.testimonials.insert_one(doc)
     doc["_id"] = result.inserted_id
@@ -1490,7 +1491,7 @@ async def update_testimonial(tid: str, body: dict, admin: Dict = Depends(require
         raise HTTPException(400, "Invalid testimonial id")
 
     allowed = {"quote", "username", "label", "avatarLetter", "avatarUrl",
-               "recordCount", "isActive", "sortOrder", "linkedUserId"}
+               "recordCount", "isActive", "sortOrder", "linkedUserId", "linkedUsername"}
     update = {}
     for k, v in body.items():
         if k not in allowed:

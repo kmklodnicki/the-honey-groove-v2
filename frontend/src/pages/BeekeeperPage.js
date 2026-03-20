@@ -1697,7 +1697,7 @@ function TestimonialPreview({ t }) {
   );
 }
 
-const BLANK_FORM = { quote: '', username: '', label: 'beta collector', avatarLetter: '', recordCount: '', isActive: true, linkedUserId: '' };
+const BLANK_FORM = { quote: '', username: '', label: 'beta collector', avatarLetter: '', recordCount: '', isActive: true, linkedUserId: '', linkedUsername: '' };
 
 function TestimonialsTab({ API, headers }) {
   const [items, setItems] = useState([]);
@@ -1711,6 +1711,11 @@ function TestimonialsTab({ API, headers }) {
   const [hiveLoading, setHiveLoading] = useState(false);
   const [dragOver, setDragOver] = useState(null);
   const dragItem = useRef(null);
+  // User autocomplete for linkedUserId
+  const [userQuery, setUserQuery] = useState('');
+  const [userResults, setUserResults] = useState([]);
+  const [userSearching, setUserSearching] = useState(false);
+  const userSearchTimer = useRef(null);
 
   const fetch_ = useCallback(async () => {
     setLoading(true);
@@ -1728,10 +1733,40 @@ function TestimonialsTab({ API, headers }) {
   // ── Editor ──
   const openNew = () => { setForm(BLANK_FORM); setEditing('new'); };
   const openEdit = (t) => {
-    setForm({ quote: t.quote, username: t.username, label: t.label, avatarLetter: t.avatarLetter, recordCount: t.recordCount, isActive: t.isActive, linkedUserId: t.linkedUserId || '' });
+    setForm({ quote: t.quote, username: t.username, label: t.label, avatarLetter: t.avatarLetter, recordCount: t.recordCount, isActive: t.isActive, linkedUserId: t.linkedUserId || '', linkedUsername: t.linkedUsername || '' });
+    setUserQuery(t.linkedUsername || '');
+    setUserResults([]);
     setEditing(t);
   };
-  const closeEditor = () => { setEditing(null); setForm(BLANK_FORM); };
+  const closeEditor = () => { setEditing(null); setForm(BLANK_FORM); setUserQuery(''); setUserResults([]); };
+
+  const handleUserQueryChange = (q) => {
+    setUserQuery(q);
+    setUserResults([]);
+    clearTimeout(userSearchTimer.current);
+    if (!q.trim()) return;
+    userSearchTimer.current = setTimeout(async () => {
+      setUserSearching(true);
+      try {
+        const res = await axios.get(`${API}/beekeeper/users`, { headers, params: { q, limit: 6 } });
+        setUserResults(res.data.users || []);
+      } catch { /* silent */ }
+      finally { setUserSearching(false); }
+    }, 300);
+  };
+
+  const selectUser = (u) => {
+    setForm(f => ({
+      ...f,
+      linkedUserId: u.id,
+      linkedUsername: u.username,
+      username: f.username || `@${u.username}`,
+      avatarLetter: f.avatarLetter || u.username[0].toUpperCase(),
+      recordCount: f.recordCount || u.records_count || '',
+    }));
+    setUserQuery(u.username);
+    setUserResults([]);
+  };
 
   const handleSave = async () => {
     if (!form.quote.trim() || !form.username.trim() || !form.avatarLetter.trim()) {
@@ -1739,7 +1774,8 @@ function TestimonialsTab({ API, headers }) {
     }
     setSaving(true);
     try {
-      const body = { ...form, recordCount: Number(form.recordCount) || 0, linkedUserId: form.linkedUserId || null };
+      const { linkedUsername, ...rest } = form;
+      const body = { ...rest, recordCount: Number(form.recordCount) || 0, linkedUserId: form.linkedUserId || null, linkedUsername: linkedUsername || null };
       if (editing === 'new') {
         await axios.post(`${API}/beekeeper/testimonials`, body, { headers });
         toast.success('Testimonial added');
@@ -1852,9 +1888,40 @@ function TestimonialsTab({ API, headers }) {
               <label className="block text-xs font-semibold text-[#3A4D63] uppercase tracking-wide mb-1">Record Count</label>
               <input type="number" value={form.recordCount} onChange={e => setForm(f => ({ ...f, recordCount: e.target.value }))} className="w-full border border-[#E5DBC8] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#D4A828]" placeholder="187" />
             </div>
-            <div>
-              <label className="block text-xs font-semibold text-[#3A4D63] uppercase tracking-wide mb-1">Linked User ID <span className="text-[#9CA3AF] font-normal">(optional)</span></label>
-              <input value={form.linkedUserId} onChange={e => setForm(f => ({ ...f, linkedUserId: e.target.value }))} className="w-full border border-[#E5DBC8] rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:border-[#D4A828]" placeholder="MongoDB ObjectId" />
+            <div className="relative">
+              <label className="block text-xs font-semibold text-[#3A4D63] uppercase tracking-wide mb-1">Linked User <span className="text-[#9CA3AF] font-normal">(optional)</span></label>
+              <div className="relative">
+                <input
+                  value={userQuery}
+                  onChange={e => handleUserQueryChange(e.target.value)}
+                  onFocus={() => { if (userQuery) handleUserQueryChange(userQuery); }}
+                  className="w-full border border-[#E5DBC8] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-[#D4A828]"
+                  placeholder="Search by username…"
+                  autoComplete="off"
+                />
+                {userSearching && <span className="absolute right-3 top-2.5 text-xs text-[#9CA3AF]">…</span>}
+                {form.linkedUserId && !userResults.length && (
+                  <div className="mt-1 flex items-center gap-2">
+                    <span className="text-xs text-[#D4A828] font-medium">✓ {userQuery}</span>
+                    <button type="button" onClick={() => { setForm(f => ({ ...f, linkedUserId: '', linkedUsername: '' })); setUserQuery(''); }} className="text-xs text-[#9CA3AF] hover:text-red-400">clear</button>
+                  </div>
+                )}
+              </div>
+              {userResults.length > 0 && (
+                <div className="absolute z-20 w-full bg-white border border-[#E5DBC8] rounded-xl shadow-lg mt-1 overflow-hidden">
+                  {userResults.map(u => (
+                    <button
+                      key={u.id}
+                      type="button"
+                      onMouseDown={() => selectUser(u)}
+                      className="w-full flex items-center justify-between px-3 py-2 text-sm hover:bg-[#FFFBF2] text-left border-b border-[#F5EFE6] last:border-0"
+                    >
+                      <span className="font-medium text-[#1E2A3A]">@{u.username}</span>
+                      <span className="text-xs text-[#9CA3AF]">{u.records_count ?? 0} records</span>
+                    </button>
+                  ))}
+                </div>
+              )}
               <p className="text-xs text-[#9CA3AF] mt-1">If linked, record count auto-updates nightly from their Vault.</p>
             </div>
             <div className="flex items-center gap-3">
