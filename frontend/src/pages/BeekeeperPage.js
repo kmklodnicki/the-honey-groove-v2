@@ -707,38 +707,75 @@ function MetricsTab({ API, headers }) {
 
 // ─── Tab: Users ──────────────────────────────────────────────────────────────
 
+const USER_FILTERS = [
+  { value: '', label: 'All' },
+  { value: 'gold', label: 'Gold' },
+  { value: 'verified', label: 'Verified' },
+  { value: 'banned', label: 'Banned' },
+  { value: 'suspended', label: 'Suspended' },
+];
+const USERS_PAGE_SIZE = 50;
+
 function UsersTab({ API, headers }) {
   const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState('');
   const [users, setUsers] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [skip, setSkip] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [selected, setSelected] = useState(null);
   const [detail, setDetail] = useState(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(null);
   const searchTimeout = useRef(null);
 
-  const search = useCallback(async (q) => {
-    setLoading(true);
+  const search = useCallback(async (q, f, newSkip = 0, append = false) => {
+    if (append) setLoadingMore(true);
+    else setLoading(true);
     try {
-      const res = await axios.get(`${API}/beekeeper/users`, { params: { q }, headers });
-      setUsers(res.data.users || []);
+      const res = await axios.get(`${API}/beekeeper/users`, {
+        params: { q, filter: f, skip: newSkip, limit: USERS_PAGE_SIZE },
+        headers,
+      });
+      const incoming = res.data.users || [];
+      setUsers(prev => append ? [...prev, ...incoming] : incoming);
+      setTotal(res.data.total || 0);
+      setSkip(newSkip + incoming.length);
     } catch {
       toast.error('Search failed');
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   }, [API, headers]);
 
   useEffect(() => {
-    search('');
+    setSkip(0);
+    search(query, filter, 0, false);
+  }, [filter]); // eslint-disable-line
+
+  useEffect(() => {
+    search('', '', 0, false);
   }, [search]);
 
   const handleQueryChange = (e) => {
     const val = e.target.value;
     setQuery(val);
     clearTimeout(searchTimeout.current);
-    searchTimeout.current = setTimeout(() => search(val), 350);
+    searchTimeout.current = setTimeout(() => {
+      setSkip(0);
+      search(val, filter, 0, false);
+    }, 350);
   };
+
+  const handleFilterChange = (f) => {
+    setFilter(f);
+    setSkip(0);
+    search(query, f, 0, false);
+  };
+
+  const loadMore = () => search(query, filter, skip, true);
 
   const openDetail = async (user) => {
     setSelected(user);
@@ -773,12 +810,22 @@ function UsersTab({ API, headers }) {
     <div className="grid md:grid-cols-5 gap-6 min-h-[500px]">
       {/* User list */}
       <div className="md:col-span-2">
-        <div className="relative mb-3">
+        <div className="relative mb-2">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#7A8694]" />
           <input value={query} onChange={handleQueryChange}
             placeholder="Search username or email..."
             className="w-full border border-[#E5DBC8] rounded-xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#D4A828]" />
         </div>
+        {/* Filter chips */}
+        <div className="flex gap-1.5 flex-wrap mb-2">
+          {USER_FILTERS.map(f => (
+            <button key={f.value} onClick={() => handleFilterChange(f.value)}
+              className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${filter === f.value ? 'bg-[#D4A828] text-white border-[#D4A828]' : 'bg-white text-[#3A4D63] border-[#E5DBC8] hover:border-[#D4A828]'}`}>
+              {f.label}
+            </button>
+          ))}
+        </div>
+        <p className="text-xs text-[#7A8694] mb-2">{total} user{total !== 1 ? 's' : ''} · showing {users.length}</p>
         {loading ? (
           <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-[#D4A828]" /></div>
         ) : (
@@ -801,6 +848,12 @@ function UsersTab({ API, headers }) {
                 </div>
               </button>
             ))}
+            {users.length < total && (
+              <button onClick={loadMore} disabled={loadingMore}
+                className="w-full py-2 rounded-xl border border-[#E5DBC8] text-xs text-[#3A4D63] hover:bg-[#FFFBF2] hover:border-[#D4A828] transition-all disabled:opacity-50 mt-1">
+                {loadingMore ? <Loader2 className="w-3.5 h-3.5 animate-spin mx-auto" /> : `Load more (${total - users.length} remaining)`}
+              </button>
+            )}
           </div>
         )}
       </div>
