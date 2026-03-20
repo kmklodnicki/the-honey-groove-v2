@@ -88,7 +88,7 @@ const AboutPage = () => {
           </p>
           <Link
             to="/beta"
-            className="inline-flex items-center justify-center px-8 py-3.5 bg-[#E8A820] hover:bg-[#d49a1a] text-[#2A1A06] font-medium text-base rounded-full transition-colors shadow-sm"
+            className="inline-flex items-center justify-center px-8 py-3.5 bg-[#E8A820] hover:bg-[#d49a1a] text-[#1E2A3A] font-medium text-base rounded-full transition-colors shadow-sm"
             data-testid="about-join-waitlist-btn"
           >
             request your invite 🐝

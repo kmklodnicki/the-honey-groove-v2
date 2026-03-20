@@ -86,7 +86,7 @@ export default function ClaimInvitePage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#FAF6EE' }}>
+    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: '#FFFBF2' }}>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <img src="/logo-wordmark.png" alt="the Honey Groove" className="h-10 mx-auto mb-2" />
@@ -116,7 +116,7 @@ export default function ClaimInvitePage() {
                   value={resendEmail}
                   onChange={e => setResendEmail(e.target.value)}
                   placeholder="Enter your email"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none transition-colors text-sm mb-3"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#D4A828] focus:ring-1 focus:ring-[#D4A828] outline-none transition-colors text-sm mb-3"
                   data-testid="resend-email-input"
                 />
                 {resendStatus === 'sent' ? (
@@ -154,7 +154,7 @@ export default function ClaimInvitePage() {
                 {isExisting ? 'Set a new password to get back into the hive.' : 'Set your password to join the hive.'}
               </p>
 
-              <div className="bg-amber-50 rounded-lg px-4 py-2.5 mb-6 text-center" data-testid="claim-email">
+              <div className="bg-[#F0E6C8] rounded-lg px-4 py-2.5 mb-6 text-center" data-testid="claim-email">
                 <span className="text-sm font-medium" style={{ color: '#915527' }}>{email}</span>
               </div>
 
@@ -165,7 +165,7 @@ export default function ClaimInvitePage() {
                     type="password"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none transition-colors text-sm"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#D4A828] focus:ring-1 focus:ring-[#D4A828] outline-none transition-colors text-sm"
                     placeholder="At least 6 characters"
                     required
                     minLength={6}
@@ -179,7 +179,7 @@ export default function ClaimInvitePage() {
                     type="password"
                     value={confirm}
                     onChange={e => setConfirm(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none transition-colors text-sm"
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#D4A828] focus:ring-1 focus:ring-[#D4A828] outline-none transition-colors text-sm"
                     placeholder="Type it again"
                     required
                     minLength={6}

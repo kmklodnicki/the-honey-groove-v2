@@ -2,7 +2,7 @@ import React from 'react';
 import { ShareCardHeader, ShareCardFooter, ShareCardUser, CARD_W, CARD_H, HEADER_H } from './ShareCardBase';
 
 const ReferralCard = React.forwardRef(function ReferralCard({ referralCode, user }, ref) {
-  const bg = 'linear-gradient(160deg, #FFF8DC 0%, #FFE87A 35%, #F0B429 65%, #C8861A 100%)';
+  const bg = 'linear-gradient(160deg, #FFF8DC 0%, #FFE87A 35%, #F0B429 65%, #D4A828 100%)';
 
   const hexTiles = [];
   for (let r = 0; r < 20; r++) {

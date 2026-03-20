@@ -177,7 +177,7 @@ const OnboardingModal = ({ open, onComplete }) => {
         <div className="flex items-center justify-center gap-2 mb-4" data-testid="onboarding-progress">
           {Array.from({ length: totalSteps }, (_, i) => i + (needsFirstName ? 0 : 1)).map(s => (
             <div key={s} className="flex items-center gap-1">
-              <div className={`w-10 h-1 rounded-full transition-colors ${s <= step ? 'bg-amber-500' : 'bg-stone-200'}`} />
+              <div className={`w-10 h-1 rounded-full transition-colors ${s <= step ? 'bg-[#D4A828]' : 'bg-[#F3EBE0]'}`} />
             </div>
           ))}
           <span className="text-xs text-muted-foreground ml-2">Step {step - (needsFirstName ? 0 : 1) + 1} of {totalSteps}</span>
@@ -194,7 +194,7 @@ const OnboardingModal = ({ open, onComplete }) => {
               placeholder="Your first name"
               value={onboardFirstName}
               onChange={e => setOnboardFirstName(e.target.value.slice(0, 50))}
-              className="border-amber-200 text-center text-lg"
+              className="border-[#E5DBC8] text-center text-lg"
               data-testid="onboarding-first-name-input"
               autoFocus
             />
@@ -208,7 +208,7 @@ const OnboardingModal = ({ open, onComplete }) => {
                 } catch { toast.error('Could not save. Try again.'); }
               }}
               disabled={!onboardFirstName.trim()}
-              className="w-full rounded-full bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-40"
+              className="w-full rounded-full bg-[#D4A828] hover:bg-[#E8CA5A] text-white disabled:opacity-40"
               data-testid="onboarding-firstname-next"
             >
               Next <ChevronRight className="w-4 h-4 ml-1" />
@@ -245,9 +245,9 @@ const OnboardingModal = ({ open, onComplete }) => {
 
             {/* Divider */}
             <div className="flex items-center gap-3 text-[10px] text-muted-foreground uppercase tracking-wider">
-              <div className="flex-1 h-px bg-stone-200" />
+              <div className="flex-1 h-px bg-[#F3EBE0]" />
               <span>or search manually</span>
-              <div className="flex-1 h-px bg-stone-200" />
+              <div className="flex-1 h-px bg-[#F3EBE0]" />
             </div>
 
             {/* Manual search */}
@@ -257,14 +257,14 @@ const OnboardingModal = ({ open, onComplete }) => {
                 placeholder="search Discogs..."
                 value={searchQuery}
                 onChange={e => { setSearchQuery(e.target.value); searchDiscogs(e.target.value); }}
-                className="pl-9 border-amber-200"
+                className="pl-9 border-[#E5DBC8]"
                 data-testid="onboarding-search"
               />
-              {searchLoading && <Loader2 className="w-4 h-4 animate-spin absolute right-3 top-3 text-amber-400" />}
+              {searchLoading && <Loader2 className="w-4 h-4 animate-spin absolute right-3 top-3 text-[#D4A828]" />}
             </div>
 
             {searchResults.length > 0 && (
-              <div className="border border-amber-200/50 rounded-lg max-h-48 overflow-y-auto bg-white">
+              <div className="border border-[#E5DBC8]/50 rounded-lg max-h-48 overflow-y-auto bg-white">
                 {searchResults.map(r => (
                   <RecordSearchResult key={r.discogs_id} record={r} onClick={() => addRecord(r)} size="sm" testId={`onboarding-result-${r.discogs_id}`} />
                 ))}
@@ -278,7 +278,7 @@ const OnboardingModal = ({ open, onComplete }) => {
                     {r.cover_url ? (
                       <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} className="w-16 h-16 rounded-lg object-cover shadow-sm" />
                     ) : (
-                      <div className="w-16 h-16 rounded-lg bg-stone-100 flex items-center justify-center"><Disc className="w-6 h-6 text-stone-400" /></div>
+                      <div className="w-16 h-16 rounded-lg bg-[#F3EBE0] flex items-center justify-center"><Disc className="w-6 h-6 text-[#7A8694]" /></div>
                     )}
                     <button onClick={() => setAddedRecords(prev => prev.filter((_, j) => j !== i))}
                       className="absolute -top-1 -right-1 bg-black/60 rounded-full p-0.5 text-white opacity-0 group-hover:opacity-100 transition-opacity">
@@ -292,7 +292,7 @@ const OnboardingModal = ({ open, onComplete }) => {
 
             <Button
               onClick={goStep2}
-              className="w-full rounded-full bg-amber-500 hover:bg-amber-600 text-white"
+              className="w-full rounded-full bg-[#D4A828] hover:bg-[#E8CA5A] text-white"
               data-testid="onboarding-step1-next"
             >
               {addedRecords.length > 0 ? 'continue' : 'skip for now'} <ChevronRight className="w-4 h-4 ml-1" />
@@ -310,17 +310,17 @@ const OnboardingModal = ({ open, onComplete }) => {
 
             {/* Selected record preview */}
             {spinRecord && (
-              <div className="flex items-center gap-3 bg-amber-50 rounded-xl p-3" data-testid="onboarding-spin-selected">
+              <div className="flex items-center gap-3 bg-[#F0E6C8] rounded-xl p-3" data-testid="onboarding-spin-selected">
                 {spinRecord.cover_url ? (
                   <AlbumArt src={spinRecord.cover_url} alt={`${spinRecord.artist} ${spinRecord.title} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow-sm" />
                 ) : (
-                  <div className="w-14 h-14 rounded-lg bg-amber-100 flex items-center justify-center"><Disc className="w-6 h-6 text-amber-400" /></div>
+                  <div className="w-14 h-14 rounded-lg bg-[#F0E6C8] flex items-center justify-center"><Disc className="w-6 h-6 text-[#D4A828]" /></div>
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-sm truncate">{spinRecord.title}</p>
                   <p className="text-xs text-muted-foreground truncate">{spinRecord.artist}</p>
                 </div>
-                <button onClick={() => setSpinRecord(null)} className="p-1 rounded-full hover:bg-amber-100 transition-colors" data-testid="onboarding-spin-clear">
+                <button onClick={() => setSpinRecord(null)} className="p-1 rounded-full hover:bg-[#F0E6C8] transition-colors" data-testid="onboarding-spin-clear">
                   <X className="w-4 h-4 text-muted-foreground" />
                 </button>
               </div>
@@ -335,14 +335,14 @@ const OnboardingModal = ({ open, onComplete }) => {
                     placeholder="search for a record..."
                     value={spinSearch}
                     onChange={e => { setSpinSearch(e.target.value); searchSpin(e.target.value); }}
-                    className="pl-9 border-amber-200"
+                    className="pl-9 border-[#E5DBC8]"
                     data-testid="onboarding-spin-search"
                   />
-                  {spinSearching && <Loader2 className="w-4 h-4 animate-spin absolute right-3 top-3 text-amber-400" />}
+                  {spinSearching && <Loader2 className="w-4 h-4 animate-spin absolute right-3 top-3 text-[#D4A828]" />}
                 </div>
 
                 {spinResults.length > 0 && (
-                  <div className="border border-amber-200/50 rounded-lg max-h-48 overflow-y-auto bg-white">
+                  <div className="border border-[#E5DBC8]/50 rounded-lg max-h-48 overflow-y-auto bg-white">
                     {spinResults.map(r => (
                       <RecordSearchResult key={r.discogs_id} record={r} onClick={() => pickSpinRecord(r)} size="sm" testId={`onboarding-spin-result-${r.discogs_id}`} />
                     ))}
@@ -357,9 +357,9 @@ const OnboardingModal = ({ open, onComplete }) => {
                       {addedRecords.slice(0, 8).map((r, i) => (
                         <button key={i} onClick={() => pickSpinRecord(r)} className="shrink-0 group" data-testid={`onboarding-quick-pick-${i}`}>
                           {r.cover_url ? (
-                            <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow-sm group-hover:ring-2 ring-amber-400 transition-all" />
+                            <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow-sm group-hover:ring-2 ring-[#D4A828] transition-all" />
                           ) : (
-                            <div className="w-14 h-14 rounded-lg bg-stone-100 flex items-center justify-center group-hover:ring-2 ring-amber-400 transition-all"><Disc className="w-5 h-5 text-stone-400" /></div>
+                            <div className="w-14 h-14 rounded-lg bg-[#F3EBE0] flex items-center justify-center group-hover:ring-2 ring-[#D4A828] transition-all"><Disc className="w-5 h-5 text-[#7A8694]" /></div>
                           )}
                         </button>
                       ))}
@@ -375,7 +375,7 @@ const OnboardingModal = ({ open, onComplete }) => {
               <div className="flex flex-wrap gap-1.5">
                 {MOOD_OPTIONS.map(m => (
                   <button key={m} onClick={() => setMood(mood === m ? '' : m)}
-                    className={`px-3 py-1.5 rounded-full text-xs transition-all ${mood === m ? 'bg-amber-500 text-white' : 'bg-amber-50 text-amber-700 hover:bg-amber-100'}`}
+                    className={`px-3 py-1.5 rounded-full text-xs transition-all ${mood === m ? 'bg-[#D4A828] text-white' : 'bg-[#F0E6C8] text-[#D4A828] hover:bg-[#F0E6C8]'}`}
                     data-testid={`onboarding-mood-${m.toLowerCase().replace(/\s/g, '-')}`}
                   >
                     {m}
@@ -388,20 +388,20 @@ const OnboardingModal = ({ open, onComplete }) => {
               placeholder="add a caption..."
               value={caption}
               onChange={e => setCaption(e.target.value)}
-              className="border-amber-200 resize-none"
+              className="border-[#E5DBC8] resize-none"
               rows={2}
               data-testid="onboarding-caption"
             />
 
             <Button
               onClick={() => setStep(3)}
-              className="w-full rounded-full bg-amber-500 hover:bg-amber-600 text-white"
+              className="w-full rounded-full bg-[#D4A828] hover:bg-[#E8CA5A] text-white"
               data-testid="onboarding-step2-next"
             >
               next
             </Button>
 
-            <button onClick={() => setStep(3)} className="w-full text-center text-xs text-muted-foreground hover:text-amber-600 transition-colors" data-testid="onboarding-skip">
+            <button onClick={() => setStep(3)} className="w-full text-center text-xs text-muted-foreground hover:text-[#D4A828] transition-colors" data-testid="onboarding-skip">
               skip for now
             </button>
           </div>
@@ -418,7 +418,7 @@ const OnboardingModal = ({ open, onComplete }) => {
             <select
               value={onboardCountry}
               onChange={(e) => setOnboardCountry(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-amber-200 bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400"
+              className="flex h-10 w-full rounded-md border border-[#E5DBC8] bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#D4A828]"
               data-testid="onboarding-country"
             >
               <option value="">Select your country</option>
@@ -430,7 +430,7 @@ const OnboardingModal = ({ open, onComplete }) => {
             <Button
               onClick={postAndEnter}
               disabled={submitting || !onboardCountry}
-              className="w-full rounded-full bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-40"
+              className="w-full rounded-full bg-[#D4A828] hover:bg-[#E8CA5A] text-white disabled:opacity-40"
               data-testid="onboarding-post-btn"
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}

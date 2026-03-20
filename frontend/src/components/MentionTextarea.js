@@ -117,7 +117,7 @@ const MentionTextarea = ({ value, onChange, placeholder, rows = 2, maxLength, cl
               key={u.id}
               onMouseDown={(e) => { e.preventDefault(); insertMention(u.username); }}
               className={`w-full flex items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors ${
-                idx === selectedIdx ? 'bg-honey/10' : 'hover:bg-stone-50'
+                idx === selectedIdx ? 'bg-honey/10' : 'hover:bg-[#FFFBF2]'
               }`}
               data-testid={`mention-option-${u.username}`}
             >

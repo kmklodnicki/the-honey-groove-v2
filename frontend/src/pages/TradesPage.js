@@ -40,12 +40,12 @@ import AlbumArt from '../components/AlbumArt';
 import { resolveImageUrl } from '../utils/imageUrl';
 
 const STATUS_CONFIG = {
-  PROPOSED: { label: 'Proposed', color: 'bg-amber-100 text-amber-700', dot: 'bg-amber-400' },
+  PROPOSED: { label: 'Proposed', color: 'bg-[#F0E6C8] text-[#D4A828]', dot: 'bg-[#D4A828]' },
   COUNTERED: { label: 'Countered', color: 'bg-blue-100 text-blue-700', dot: 'bg-blue-400' },
   ACCEPTED: { label: 'Accepted', color: 'bg-green-100 text-green-700', dot: 'bg-green-400' },
   DECLINED: { label: 'Declined', color: 'bg-red-100 text-red-700', dot: 'bg-red-400' },
   CANCELLED: { label: 'Cancelled', color: 'bg-gray-100 text-gray-600', dot: 'bg-gray-400' },
-  HOLD_PENDING: { label: 'Hold Pending', color: 'bg-amber-100 text-amber-700', dot: 'bg-amber-500' },
+  HOLD_PENDING: { label: 'Hold Pending', color: 'bg-[#F0E6C8] text-[#D4A828]', dot: 'bg-[#D4A828]' },
   SHIPPING: { label: 'Shipping', color: 'bg-purple-100 text-purple-700', dot: 'bg-purple-400' },
   CONFIRMING: { label: 'Confirming', color: 'bg-cyan-100 text-cyan-700', dot: 'bg-cyan-400' },
   COMPLETED: { label: 'Completed', color: 'bg-green-100 text-green-700', dot: 'bg-green-500' },
@@ -108,7 +108,7 @@ const TradeTimeline = ({ trade }) => {
               <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
                 i < active ? 'bg-green-500 text-white'
                 : i === active ? 'bg-honey text-vinyl-black ring-2 ring-honey/30'
-                : 'bg-stone-200 text-stone-400'
+                : 'bg-[#F3EBE0] text-[#7A8694]'
               }`}>
                 {i < active ? <Check className="w-3 h-3" /> : i + 1}
               </div>
@@ -117,7 +117,7 @@ const TradeTimeline = ({ trade }) => {
               }`}>{step.label}</span>
             </div>
             {i < TIMELINE_STEPS.length - 1 && (
-              <div className={`flex-1 h-0.5 mx-1 ${i < active ? 'bg-green-400' : 'bg-stone-200'}`} />
+              <div className={`flex-1 h-0.5 mx-1 ${i < active ? 'bg-green-400' : 'bg-[#F3EBE0]'}`} />
             )}
           </React.Fragment>
         ))}
@@ -347,7 +347,7 @@ const TradeCard = ({ trade, currentUserId, onClick, feePct = 6 }) => {
       )}
       {/* Mutual Hold indicator */}
       {trade.hold_enabled && trade.hold_amount > 0 && (
-        <div className="mt-2.5 flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200/50" data-testid="trade-hold-badge">
+        <div className="mt-2.5 flex items-center gap-2 px-3 py-2 rounded-lg bg-[#F0E6C8] border border-[#E5DBC8]/50" data-testid="trade-hold-badge">
           <Shield className="w-4 h-4 text-honey-amber shrink-0" />
           <span className="text-sm font-medium text-vinyl-black">
             {trade.hold_status === 'active' ? `Hold active · $${trade.hold_amount} held from each party`
@@ -415,10 +415,10 @@ const ShippingSummary = ({ trade, currentUserId }) => {
   const otherName = trade.initiator_id === currentUserId ? trade.responder?.username : trade.initiator?.username;
   return (
     <div className="mt-2 flex items-center gap-2 text-xs">
-      {iShipped ? <CheckCircle2 className="w-3 h-3 text-green-500" /> : <Clock className="w-3 h-3 text-amber-500" />}
+      {iShipped ? <CheckCircle2 className="w-3 h-3 text-green-500" /> : <Clock className="w-3 h-3 text-[#D4A828]" />}
       <span>{iShipped ? 'You shipped' : 'You need to ship'}</span>
       <span className="text-muted-foreground">|</span>
-      {otherShipped ? <CheckCircle2 className="w-3 h-3 text-green-500" /> : <Clock className="w-3 h-3 text-amber-500" />}
+      {otherShipped ? <CheckCircle2 className="w-3 h-3 text-green-500" /> : <Clock className="w-3 h-3 text-[#D4A828]" />}
       <span>{otherShipped ? `@${otherName} shipped` : `Waiting on @${otherName}`}</span>
     </div>
   );
@@ -683,17 +683,17 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, currentUse
           {/* === MUTUAL HOLD STATUS === */}
           {trade.hold_enabled && trade.hold_amount > 0 && (
             <div className={`rounded-xl p-4 border ${
-              trade.hold_status === 'active' ? 'bg-amber-50 border-amber-200'
+              trade.hold_status === 'active' ? 'bg-[#F0E6C8] border-[#E5DBC8]'
                 : trade.hold_status === 'frozen' ? 'bg-red-50 border-red-200'
                 : trade.hold_status === 'refunded' ? 'bg-green-50 border-green-200'
-                : 'bg-amber-50/50 border-amber-200/50'
+                : 'bg-[#F0E6C8]/50 border-[#E5DBC8]/50'
             }`} data-testid="hold-status-section">
               <div className="flex items-center gap-2 mb-2">
                 <Shield className="w-4 h-4 text-honey-amber" />
                 <span className="text-xs font-medium text-honey-amber">MUTUAL HOLD</span>
               </div>
               {trade.hold_status === 'active' && (
-                <p className="text-sm font-medium text-amber-800">Hold active · ${trade.hold_amount} held from each party</p>
+                <p className="text-sm font-medium text-[#1E2A3A]">Hold active · ${trade.hold_amount} held from each party</p>
               )}
               {trade.hold_status === 'frozen' && (
                 <p className="text-sm font-medium text-red-700">Hold frozen · ${trade.hold_amount} per party. Dispute in progress.</p>
@@ -703,19 +703,19 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, currentUse
               )}
               {trade.hold_status === 'awaiting_payment' && (
                 <div>
-                  <p className="text-sm text-amber-700 mb-2">Both parties must pay the ${trade.hold_amount} hold to start shipping.</p>
+                  <p className="text-sm text-[#D4A828] mb-2">Both parties must pay the ${trade.hold_amount} hold to start shipping.</p>
                   <div className="flex items-center gap-2 text-xs mb-1">
-                    {trade.hold_charges?.initiator?.status === 'paid' ? <CheckCircle2 className="w-3 h-3 text-green-500" /> : <Clock className="w-3 h-3 text-amber-500" />}
+                    {trade.hold_charges?.initiator?.status === 'paid' ? <CheckCircle2 className="w-3 h-3 text-green-500" /> : <Clock className="w-3 h-3 text-[#D4A828]" />}
                     <span>@{trade.initiator?.username} {isInitiator ? '(you)' : ''} · {trade.hold_charges?.initiator?.status === 'paid' ? 'Paid' : 'Waiting'}</span>
                   </div>
                   <div className="flex items-center gap-2 text-xs">
-                    {trade.hold_charges?.responder?.status === 'paid' ? <CheckCircle2 className="w-3 h-3 text-green-500" /> : <Clock className="w-3 h-3 text-amber-500" />}
+                    {trade.hold_charges?.responder?.status === 'paid' ? <CheckCircle2 className="w-3 h-3 text-green-500" /> : <Clock className="w-3 h-3 text-[#D4A828]" />}
                     <span>@{trade.responder?.username} {!isInitiator ? '(you)' : ''} · {trade.hold_charges?.responder?.status === 'paid' ? 'Paid' : 'Waiting'}</span>
                   </div>
                 </div>
               )}
               {!trade.hold_status && (
-                <p className="text-sm text-amber-700">${trade.hold_amount} mutual hold · charged when both parties accept.</p>
+                <p className="text-sm text-[#D4A828]">${trade.hold_amount} mutual hold · charged when both parties accept.</p>
               )}
               <p className="text-[10px] text-muted-foreground mt-2 italic">
                 Fully reversed within 48 hours of confirmed delivery. The hold is not subject to platform fees.
@@ -727,21 +727,21 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, currentUse
           {canPayHold && (
             <div>
               {currentUser?.has_payment_method === false ? (
-                <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-center" data-testid="no-payment-method-prompt">
-                  <p className="text-sm text-amber-700 font-medium mb-2">Payment method required</p>
-                  <p className="text-xs text-amber-600 mb-3">Add a card in Settings to authorize your ${trade.hold_amount} hold deposit.</p>
+                <div className="rounded-xl border border-[#E5DBC8] bg-[#F0E6C8] p-3 text-center" data-testid="no-payment-method-prompt">
+                  <p className="text-sm text-[#D4A828] font-medium mb-2">Payment method required</p>
+                  <p className="text-xs text-[#D4A828] mb-3">Add a card in Settings to authorize your ${trade.hold_amount} hold deposit.</p>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => { window.location.href = '/settings'; }}
-                    className="rounded-full border-amber-300 text-amber-700 hover:bg-amber-100 text-xs"
+                    className="rounded-full border-[#D4A828] text-[#D4A828] hover:bg-[#F0E6C8] text-xs"
                     data-testid="go-to-settings-btn"
                   >
                     Go to Settings
                   </Button>
                 </div>
               ) : (
-              <Button onClick={handlePayHold} disabled={loading} className="w-full bg-amber-600 text-white hover:bg-amber-700 rounded-full" data-testid="pay-hold-btn">
+              <Button onClick={handlePayHold} disabled={loading} className="w-full bg-[#D4A828] text-white hover:bg-[#E8CA5A] rounded-full" data-testid="pay-hold-btn">
                 {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Shield className="w-4 h-4 mr-2" />}
                 Authorize ${trade.hold_amount} Hold
               </Button>
@@ -767,7 +767,7 @@ const TradeDetailModal = ({ open, onOpenChange, trade, currentUserId, currentUse
                 const isMe = (role === 'initiator' && isInitiator) || (role === 'responder' && !isInitiator);
                 return (
                   <div key={role} className={`flex items-center gap-2 py-2 ${role === 'responder' ? 'border-t border-purple-200' : ''}`}>
-                    {s ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Clock className="w-4 h-4 text-amber-500" />}
+                    {s ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Clock className="w-4 h-4 text-[#D4A828]" />}
                     <span className="text-sm flex-1">
                       <strong>@{name}</strong> {isMe ? '(you)' : ''} · {s ? `Shipped via ${s.carrier || 'carrier'}` : 'Waiting to ship'}
                     </span>
@@ -1149,7 +1149,7 @@ const HoldExplainerLink = () => {
     <>
       <button
         onClick={() => setShowExplainer(true)}
-        className="text-[11px] text-amber-600 hover:text-amber-700 hover:underline flex items-center gap-1"
+        className="text-[11px] text-[#D4A828] hover:text-[#D4A828] hover:underline flex items-center gap-1"
         data-testid="hold-explainer-trigger"
       >
         <HelpCircle className="w-3 h-3" /> How does this work?
@@ -1163,15 +1163,15 @@ const HoldExplainerLink = () => {
           <div className="space-y-4 pt-2 text-sm text-muted-foreground" data-testid="hold-explainer-modal">
             <div className="space-y-3">
               <div className="flex gap-3 items-start">
-                <span className="w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold shrink-0">1</span>
+                <span className="w-6 h-6 rounded-full bg-[#F0E6C8] text-[#D4A828] flex items-center justify-center text-xs font-bold shrink-0">1</span>
                 <p><strong className="text-vinyl-black">Both parties are charged.</strong> When a trade is accepted, both the proposer and the seller are charged the hold amount. This ensures both parties have skin in the game.</p>
               </div>
               <div className="flex gap-3 items-start">
-                <span className="w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold shrink-0">2</span>
+                <span className="w-6 h-6 rounded-full bg-[#F0E6C8] text-[#D4A828] flex items-center justify-center text-xs font-bold shrink-0">2</span>
                 <p><strong className="text-vinyl-black">Ship your records.</strong> Once both holds are paid, both parties ship their records and enter tracking info.</p>
               </div>
               <div className="flex gap-3 items-start">
-                <span className="w-6 h-6 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold shrink-0">3</span>
+                <span className="w-6 h-6 rounded-full bg-[#F0E6C8] text-[#D4A828] flex items-center justify-center text-xs font-bold shrink-0">3</span>
                 <p><strong className="text-vinyl-black">Confirm delivery.</strong> When both parties confirm they received their records, the hold is fully refunded to both parties.</p>
               </div>
               <div className="flex gap-3 items-start">
@@ -1179,8 +1179,8 @@ const HoldExplainerLink = () => {
                 <p><strong className="text-vinyl-black">Disputes.</strong> If something goes wrong, either party can open a dispute. An admin will review and decide how to resolve it · including potentially releasing funds to the affected party.</p>
               </div>
             </div>
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-              <p className="text-xs text-amber-800">The hold amount should reflect the approximate value of the records being traded. Higher holds = more protection for both parties.</p>
+            <div className="bg-[#F0E6C8] border border-[#E5DBC8] rounded-lg p-3">
+              <p className="text-xs text-[#1E2A3A]">The hold amount should reflect the approximate value of the records being traded. Higher holds = more protection for both parties.</p>
             </div>
           </div>
         </DialogContent>
@@ -1360,7 +1360,7 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
           </div>
 
           {/* Hold Amount (always required) */}
-          <div className="bg-amber-50/50 border border-amber-200/50 rounded-xl p-4" data-testid="hold-amount-section">
+          <div className="bg-[#F0E6C8]/50 border border-[#E5DBC8]/50 rounded-xl p-4" data-testid="hold-amount-section">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <Shield className="w-4 h-4 text-honey-amber" />
@@ -1369,22 +1369,22 @@ export const ProposeTradeModal = ({ open, onOpenChange, listing, token, API, onS
               <HoldExplainerLink />
             </div>
             <div className="relative">
-              <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-600" />
+              <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4A828]" />
               <Input
                 type="number"
                 min="10"
                 placeholder={holdSuggestion ? holdSuggestion.suggested_hold.toFixed(2) : '50.00'}
                 value={holdAmount}
                 onChange={e => setHoldAmount(e.target.value)}
-                className="pl-9 border-amber-300 bg-white"
+                className="pl-9 border-[#D4A828] bg-white"
                 data-testid="hold-amount-input"
               />
             </div>
             {holdSuggestion && (
-              <p className="text-xs text-amber-700 mt-2">{holdSuggestion.label}</p>
+              <p className="text-xs text-[#D4A828] mt-2">{holdSuggestion.label}</p>
             )}
             {!holdSuggestion && (
-              <p className="text-xs text-amber-600/70 mt-2">Suggested based on estimated record values. Both parties will be charged this amount and fully refunded on confirmed delivery.</p>
+              <p className="text-xs text-[#D4A828]/70 mt-2">Suggested based on estimated record values. Both parties will be charged this amount and fully refunded on confirmed delivery.</p>
             )}
             {holdAmount && parseFloat(holdAmount) < 10 && (
               <p className="text-xs text-red-500 mt-1">Minimum hold amount is $10</p>

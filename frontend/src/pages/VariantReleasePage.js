@@ -185,7 +185,7 @@ export default function VariantReleasePage() {
       {/* Back */}
       <button
         onClick={() => navigate(-1)}
-        className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-vinyl-black mb-8 transition-colors group"
+        className="inline-flex items-center gap-1.5 text-sm text-[#3A4D63] hover:text-vinyl-black mb-8 transition-colors group"
         data-testid="back-btn"
       >
         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" /> Back
@@ -194,7 +194,7 @@ export default function VariantReleasePage() {
       {/* Hero */}
       <section className="flex flex-col md:flex-row gap-8 mb-10" data-testid="variant-hero">
         <div className="w-full md:w-72 shrink-0">
-          <div className="relative aspect-square overflow-hidden bg-stone-200 rounded-2xl shadow-lg shadow-black/5">
+          <div className="relative aspect-square overflow-hidden bg-[#F3EBE0] rounded-2xl shadow-lg shadow-black/5">
             <AlbumArt
               imageUrl={ov.imageUrl}
               imageSmall={ov.imageSmall}
@@ -263,7 +263,7 @@ export default function VariantReleasePage() {
                 className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                   spotifyLink.matched
                     ? 'bg-[#1DB954]/15 text-[#1DB954] hover:bg-[#1DB954]/25 border border-[#1DB954]/30'
-                    : 'bg-stone-100 text-stone-500 hover:bg-stone-200 border border-stone-200'
+                    : 'bg-[#F3EBE0] text-[#3A4D63] hover:bg-[#F3EBE0] border border-[#E5DBC8]'
                 }`}
                 data-testid="spotify-link"
               >
@@ -305,12 +305,12 @@ export default function VariantReleasePage() {
                 </Button>
               )}
               <Button variant="outline" size="sm" onClick={() => openAction('dream')}
-                className="rounded-full border-stone-300 hover:bg-stone-50 h-8 px-3 text-xs"
+                className="rounded-full border-[#E5DBC8] hover:bg-[#FFFBF2] h-8 px-3 text-xs"
                 data-testid="variant-dream-btn">
                 <Heart className="w-3 h-3 mr-1" /> Dream List
               </Button>
               <Button variant="outline" size="sm" onClick={() => openAction('seeking')}
-                className="rounded-full border-amber-300 text-amber-700 hover:bg-amber-50 h-8 px-3 text-xs"
+                className="rounded-full border-[#D4A828] text-[#D4A828] hover:bg-[#F0E6C8] h-8 px-3 text-xs"
                 data-testid="variant-seeking-btn">
                 <Search className="w-3 h-3 mr-1" /> Seeking (ISO)
               </Button>
@@ -467,8 +467,8 @@ export default function VariantReleasePage() {
           <DialogHeader className="px-6 pt-6 pb-2">
             <DialogTitle className="font-heading flex items-center gap-2">
               {actionModal === 'add' && <><Plus className="w-5 h-5 text-honey-amber" /> Add to Vault</>}
-              {actionModal === 'dream' && <><Heart className="w-5 h-5 text-stone-500" /> Dream List</>}
-              {actionModal === 'seeking' && <><Search className="w-5 h-5 text-amber-600" /> Seeking (ISO)</>}
+              {actionModal === 'dream' && <><Heart className="w-5 h-5 text-[#3A4D63]" /> Dream List</>}
+              {actionModal === 'seeking' && <><Search className="w-5 h-5 text-[#D4A828]" /> Seeking (ISO)</>}
             </DialogTitle>
             <DialogDescription>
               {actionModal === 'add' ? `Add ${ov.album} to your vault` : `${ov.artist} — ${ov.album}`}
@@ -513,17 +513,17 @@ export default function VariantReleasePage() {
           {actionModal && actionModal !== 'add' && (
             <div className="px-6 pb-6 pt-2 border-t border-honey/15">
               <div className="flex items-center justify-between mb-3">
-                <label className="text-sm font-medium text-stone-600">Post to Hive</label>
+                <label className="text-sm font-medium text-[#3A4D63]">Post to Hive</label>
                 <button type="button" role="switch" aria-checked={postToHive} onClick={() => setPostToHive(!postToHive)}
-                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${postToHive ? 'bg-amber-500' : 'bg-stone-300'}`}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${postToHive ? 'bg-[#D4A828]' : 'bg-[#E5DBC8]'}`}
                   data-testid="variant-action-toggle">
                   <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${postToHive ? 'translate-x-4' : 'translate-x-0.5'}`} />
                 </button>
               </div>
-              {!postToHive && <p className="text-xs text-stone-400 mb-3">{actionModal === 'dream' ? 'Added to your Dream List only.' : 'Saved privately.'}</p>}
+              {!postToHive && <p className="text-xs text-[#7A8694] mb-3">{actionModal === 'dream' ? 'Added to your Dream List only.' : 'Saved privately.'}</p>}
               <Button onClick={handleDreamOrSeeking} disabled={actionLoading}
                 className="w-full rounded-full"
-                style={actionModal === 'dream' ? { background: '#f3f4f6', color: '#374151' } : { background: 'linear-gradient(135deg, #FFD700, #DAA520)', color: '#2A1A06' }}
+                style={actionModal === 'dream' ? { background: '#f3f4f6', color: '#374151' } : { background: 'linear-gradient(135deg, #FFD700, #DAA520)', color: '#1E2A3A' }}
                 data-testid="variant-action-submit">
                 {actionLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : actionModal === 'dream' ? <Heart className="w-4 h-4 mr-2" /> : <Search className="w-4 h-4 mr-2" />}
                 {postToHive

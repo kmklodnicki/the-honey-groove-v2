@@ -55,11 +55,11 @@ const DiscogsSecurityModal = ({ open, onClose }) => {
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) handleLater(); }}>
       <DialogContent className="sm:max-w-md p-0 overflow-hidden border-0" data-testid="discogs-migration-modal">
-        <div className="px-6 pt-6 pb-4" style={{ background: 'linear-gradient(135deg, #1A1A1A 0%, #2A1A06 100%)' }}>
+        <div className="px-6 pt-6 pb-4" style={{ background: 'linear-gradient(135deg, #1A1A1A 0%, #1E2A3A 100%)' }}>
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-full flex items-center justify-center"
               style={{ background: 'rgba(200,134,26,0.2)', border: '1px solid rgba(200,134,26,0.4)' }}>
-              <Shield className="w-5 h-5 text-amber-400" />
+              <Shield className="w-5 h-5 text-[#D4A828]" />
             </div>
             <h2 className="text-xl font-bold text-white" style={{ fontFamily: '"DM Serif Display", serif' }}>
               Secure Library Import
@@ -68,24 +68,24 @@ const DiscogsSecurityModal = ({ open, onClose }) => {
         </div>
 
         <div className="px-6 pb-6 space-y-5">
-          <p className="text-sm text-stone-600 leading-relaxed">
+          <p className="text-sm text-[#3A4D63] leading-relaxed">
             To protect your library, we implemented a new secure safety feature to verify your identity.
             Connect your Discogs account via official OAuth to ensure your collection data remains private and uniquely yours.
           </p>
 
           <div className="rounded-xl p-4" style={{ background: '#FFFDF5', border: '1px solid rgba(200,134,26,0.2)' }}>
-            <p className="text-xs text-stone-500 mb-1">What you get</p>
-            <ul className="text-xs text-stone-600 space-y-1">
+            <p className="text-xs text-[#3A4D63] mb-1">What you get</p>
+            <ul className="text-xs text-[#3A4D63] space-y-1">
               <li className="flex items-start gap-2">
-                <span className="mt-0.5 w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                <span className="mt-0.5 w-1.5 h-1.5 rounded-full bg-[#D4A828] shrink-0" />
                 Your full Discogs collection imported in seconds
               </li>
               <li className="flex items-start gap-2">
-                <span className="mt-0.5 w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                <span className="mt-0.5 w-1.5 h-1.5 rounded-full bg-[#D4A828] shrink-0" />
                 Verified identity — no one can impersonate your collection
               </li>
               <li className="flex items-start gap-2">
-                <span className="mt-0.5 w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
+                <span className="mt-0.5 w-1.5 h-1.5 rounded-full bg-[#D4A828] shrink-0" />
                 Automatic collection value tracking
               </li>
             </ul>
@@ -106,7 +106,7 @@ const DiscogsSecurityModal = ({ open, onClose }) => {
             </Button>
             <Button
               variant="ghost"
-              className="w-full h-10 rounded-full text-sm text-stone-500 hover:text-stone-700"
+              className="w-full h-10 rounded-full text-sm text-[#3A4D63] hover:text-[#3A4D63]"
               onClick={async () => {
                 await handleLater();
                 onClose();

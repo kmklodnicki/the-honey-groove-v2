@@ -38,7 +38,7 @@ const SaleCard = React.forwardRef(function SaleCard({ record, price, user }, ref
         {/* Record info */}
         <div style={{ textAlign: 'center', marginTop: 28 }}>
           {/* SOLD label in text zone — not on album art */}
-          <p style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 44, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#C8861A', margin: '0 0 16px' }}>
+          <p style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 44, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#D4A828', margin: '0 0 16px' }}>
             Sold
           </p>
           <p style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 52, fontWeight: 700, color: '#1A3D28', margin: 0, lineHeight: 1.15, maxWidth: 860 }}>

@@ -13,7 +13,7 @@ const CARD_ELEMENT_OPTIONS = {
   style: {
     base: {
       fontSize: '15px',
-      color: '#1F1F1F',
+      color: '#1E2A3A',
       fontFamily: 'Inter, sans-serif',
       '::placeholder': { color: '#9ca3af' },
     },

@@ -27,7 +27,7 @@ const BackToTop = ({ threshold = 400 }) => {
       }}
       aria-label="Back to top"
     >
-      <ArrowUp className="w-5 h-5" style={{ color: '#C8861A' }} />
+      <ArrowUp className="w-5 h-5" style={{ color: '#D4A828' }} />
       <style>{`
         @media (max-width: 767px) {
           [data-testid="back-to-top-btn"] { --btt-bottom: 80px !important; }

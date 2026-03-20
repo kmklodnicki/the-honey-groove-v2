@@ -19,13 +19,13 @@ import { countryFlag } from '../../utils/countryFlag';
 import UnofficialPill from '../UnofficialPill';
 
 export const STATUS_CONFIG = {
-  PROPOSED: { label: 'Proposed', color: 'bg-amber-100 text-amber-700' },
+  PROPOSED: { label: 'Proposed', color: 'bg-[#F0E6C8] text-[#D4A828]' },
   COUNTERED: { label: 'Countered', color: 'bg-blue-100 text-blue-700' },
   ACCEPTED: { label: 'Accepted', color: 'bg-green-100 text-green-700' },
   DECLINED: { label: 'Declined', color: 'bg-red-100 text-red-700' },
   CANCELLED: { label: 'Cancelled', color: 'bg-gray-100 text-gray-600' },
-  HOLD_PENDING: { label: 'Hold Pending', color: 'bg-amber-100 text-amber-700' },
-  SHIPPING: { label: 'Shipping', color: 'bg-[#E8A820]/15 text-[#C8861A] border border-[#C8861A]/30' },
+  HOLD_PENDING: { label: 'Hold Pending', color: 'bg-[#F0E6C8] text-[#D4A828]' },
+  SHIPPING: { label: 'Shipping', color: 'bg-[#E8A820]/15 text-[#D4A828] border border-[#D4A828]/30' },
   CONFIRMING: { label: 'Confirming', color: 'bg-cyan-100 text-cyan-700' },
   COMPLETED: { label: 'Completed', color: 'bg-green-100 text-green-700' },
   DISPUTED: { label: 'Disputed', color: 'bg-red-100 text-red-700' },
@@ -36,7 +36,7 @@ export const ISOCard = ({ iso, isOwn, onMarkFound, onDelete, onSetPriceAlert, on
   const [showAlertInput, setShowAlertInput] = useState(false);
 
   return (
-    <Card className={`p-4 border-honey/30 transition-all ${iso.status === 'FOUND' ? 'opacity-60 bg-amber-50/30' : 'hover:shadow-md'}`} data-testid={`iso-item-${iso.id}`}>
+    <Card className={`p-4 border-honey/30 transition-all ${iso.status === 'FOUND' ? 'opacity-60 bg-[#F0E6C8]/30' : 'hover:shadow-md'}`} data-testid={`iso-item-${iso.id}`}>
       <div className="flex items-start gap-3">
         <div className="relative shrink-0">
           <AlbumArt imageUrl={iso.cover_url} albumTitle={iso.album} artistName={iso.artist} size="small" alt={`${iso.artist} ${iso.album}${iso.pressing_notes ? ` ${iso.pressing_notes}` : ''} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow" isUnofficial={iso.is_unofficial} />
@@ -49,8 +49,8 @@ export const ISOCard = ({ iso, isOwn, onMarkFound, onDelete, onSetPriceAlert, on
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h4 className="font-heading text-base truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{iso.album}</h4>
-            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${iso.status === 'FOUND' ? 'bg-amber-100 text-[#C8861A]' : ''}`}
-              style={iso.status === 'OPEN' ? { background: 'rgba(255,215,0,0.15)', color: '#C8861A', border: '1.5px solid #DAA520' } : {}}
+            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${iso.status === 'FOUND' ? 'bg-[#F0E6C8] text-[#D4A828]' : ''}`}
+              style={iso.status === 'OPEN' ? { background: 'rgba(255,215,0,0.15)', color: '#D4A828', border: '1.5px solid #DAA520' } : {}}
             >{iso.status === 'OPEN' ? 'SEEKING' : iso.status}</span>
           </div>
           <p className="text-sm text-muted-foreground truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{iso.artist}{iso.year ? ` (${iso.year})` : ''}</p>
@@ -91,11 +91,11 @@ export const ISOCard = ({ iso, isOwn, onMarkFound, onDelete, onSetPriceAlert, on
         {isOwn && iso.status === 'OPEN' && (
           <div className="flex flex-col gap-1 shrink-0 items-end">
             <div className="flex gap-1">
-              <Button size="sm" variant="ghost" className="text-[#C8861A] hover:bg-amber-50 h-8 px-2" onClick={() => onMarkFound(iso.id)} data-testid={`mark-found-${iso.id}`}><CheckCircle2 className="w-4 h-4" /></Button>
-              <Button size="sm" variant="ghost" className="text-[#8A6B4A]/60 hover:bg-[#8A6B4A]/10 h-8 px-2" onClick={() => onDelete(iso.id)}><Trash2 className="w-4 h-4" /></Button>
+              <Button size="sm" variant="ghost" className="text-[#D4A828] hover:bg-[#F0E6C8] h-8 px-2" onClick={() => onMarkFound(iso.id)} data-testid={`mark-found-${iso.id}`}><CheckCircle2 className="w-4 h-4" /></Button>
+              <Button size="sm" variant="ghost" className="text-[#3A4D63]/60 hover:bg-[#3A4D63]/10 h-8 px-2" onClick={() => onDelete(iso.id)}><Trash2 className="w-4 h-4" /></Button>
             </div>
             {onDemote && (
-              <button onClick={() => onDemote(iso.id)} className="text-[10px] text-[#C8861A]/70 hover:text-[#C8861A] transition-colors" data-testid={`demote-btn-${iso.id}`}>
+              <button onClick={() => onDemote(iso.id)} className="text-[10px] text-[#D4A828]/70 hover:text-[#D4A828] transition-colors" data-testid={`demote-btn-${iso.id}`}>
                 Back to Dreams
               </button>
             )}
@@ -123,7 +123,7 @@ export const CommunityISOCard = ({ iso, onHaveThis, onOpenVariant }) => (
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <h4 className="font-heading text-base truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{iso.album}</h4>
-          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-[#E8A820]/15 text-[#C8861A] border border-[#C8861A]/30">SEARCHING</span>
+          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-[#E8A820]/15 text-[#D4A828] border border-[#D4A828]/30">SEARCHING</span>
         </div>
         <p className="text-sm text-muted-foreground">{iso.artist}{iso.year ? ` (${iso.year})` : ''}</p>
         {iso.user && (
@@ -138,7 +138,7 @@ export const CommunityISOCard = ({ iso, onHaveThis, onOpenVariant }) => (
           {(iso.target_price_min || iso.target_price_max) && <span>Budget: {iso.target_price_min ? `$${iso.target_price_min}` : ''}{iso.target_price_min && iso.target_price_max ? ' – ' : ''}{iso.target_price_max ? (iso.target_price_min ? `$${iso.target_price_max}` : `up to $${iso.target_price_max}`) : ''}</span>}
         </div>
       </div>
-      <Button size="sm" className="bg-[#E8A820]/15 text-[#C8861A] hover:bg-[#E8A820]/25 rounded-full gap-1 shrink-0" onClick={(e) => { e.stopPropagation(); onHaveThis(iso); }} data-testid={`i-have-this-${iso.id}`}>
+      <Button size="sm" className="bg-[#E8A820]/15 text-[#D4A828] hover:bg-[#E8A820]/25 rounded-full gap-1 shrink-0" onClick={(e) => { e.stopPropagation(); onHaveThis(iso); }} data-testid={`i-have-this-${iso.id}`}>
         <MessageSquare className="w-3 h-3" /> I have this
       </Button>
     </div>
@@ -184,9 +184,9 @@ export const ActiveTradeCard = ({ trade, currentUserId }) => {
 
 export const ListingCard = ({ listing, currentUserId, onProposeTrade, onBuyNow, onMakeOffer, onClick }) => {
   const typeConfig = {
-    BUY_NOW: { label: 'Buy Now', color: 'bg-amber-100/60 text-[#C8861A]' },
-    MAKE_OFFER: { label: 'Offer', color: 'bg-amber-100/60 text-[#C8861A]' },
-    TRADE: { label: 'Trade', color: 'bg-[#E8A820]/15 text-[#C8861A] border border-[#C8861A]/30' },
+    BUY_NOW: { label: 'Buy Now', color: 'bg-[#F0E6C8]/60 text-[#D4A828]' },
+    MAKE_OFFER: { label: 'Offer', color: 'bg-[#F0E6C8]/60 text-[#D4A828]' },
+    TRADE: { label: 'Trade', color: 'bg-[#E8A820]/15 text-[#D4A828] border border-[#D4A828]/30' },
   };
   const tc = typeConfig[listing.listing_type] || typeConfig.BUY_NOW;
   const mainImage = (listing.photo_urls?.length > 0) ? listing.photo_urls[0] : listing.cover_url;
@@ -218,7 +218,7 @@ export const ListingCard = ({ listing, currentUserId, onProposeTrade, onBuyNow, 
         )}
       </div>
       {listing.price && (
-        <span className="font-heading text-base text-[#C8861A] font-bold shrink-0">${listing.price}</span>
+        <span className="font-heading text-base text-[#D4A828] font-bold shrink-0">${listing.price}</span>
       )}
     </div>
   );

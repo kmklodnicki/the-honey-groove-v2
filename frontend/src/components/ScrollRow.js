@@ -85,7 +85,7 @@ export default function ScrollRow({ children, className = '' }) {
       {!isMobile && canLeft && (
         <button
           onClick={() => scroll(-1)}
-          className="absolute top-1/2 -translate-y-1/2 -left-5 z-20 w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover/scroll:opacity-100 transition-opacity duration-200 hover:scale-110 text-[#996012]"
+          className="absolute top-1/2 -translate-y-1/2 -left-5 z-20 w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover/scroll:opacity-100 transition-opacity duration-200 hover:scale-110 text-[#D4A828]"
           style={arrowBtnStyle}
           aria-label="Scroll left"
           data-testid="scroll-left"
@@ -96,7 +96,7 @@ export default function ScrollRow({ children, className = '' }) {
       {!isMobile && canRight && (
         <button
           onClick={() => scroll(1)}
-          className="absolute top-1/2 -translate-y-1/2 -right-5 z-20 w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover/scroll:opacity-100 transition-opacity duration-200 hover:scale-110 text-[#996012]"
+          className="absolute top-1/2 -translate-y-1/2 -right-5 z-20 w-10 h-10 rounded-full flex items-center justify-center opacity-0 group-hover/scroll:opacity-100 transition-opacity duration-200 hover:scale-110 text-[#D4A828]"
           style={arrowBtnStyle}
           aria-label="Scroll right"
           data-testid="scroll-right"
@@ -113,8 +113,8 @@ export default function ScrollRow({ children, className = '' }) {
               key={i}
               className={`rounded-full transition-all duration-300 ${
                 i === activeIdx
-                  ? 'w-4 h-1.5 bg-[#C8861A]/70'
-                  : 'w-1.5 h-1.5 bg-stone-300/60'
+                  ? 'w-4 h-1.5 bg-[#D4A828]/70'
+                  : 'w-1.5 h-1.5 bg-[#E5DBC8]/60'
               }`}
             />
           ))}

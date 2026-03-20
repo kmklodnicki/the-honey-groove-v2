@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Loader2 } from 'lucide-react';
 
-const CONFETTI_COLORS = ['#FFD700', '#FFA500', '#FFB800', '#C8861A', '#E5AB00', '#FDE68A', '#DAA520'];
+const CONFETTI_COLORS = ['#FFD700', '#FFA500', '#FFB800', '#D4A828', '#E5AB00', '#FDE68A', '#DAA520'];
 
 const ConfettiPiece = ({ delay, left }) => {
   const color = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
@@ -84,7 +84,7 @@ const RepollinateSuccessPage = () => {
       <div className="text-center max-w-md" data-testid="repollinate-success">
         {status === 'verifying' && (
           <>
-            <Loader2 className="w-10 h-10 animate-spin mx-auto mb-4" style={{ color: '#C8861A' }} />
+            <Loader2 className="w-10 h-10 animate-spin mx-auto mb-4" style={{ color: '#D4A828' }} />
             <h2 className="font-heading text-2xl" style={{ fontFamily: '"Playfair Display", serif' }}>Verifying payment...</h2>
             <p className="text-sm text-muted-foreground mt-2">Just a moment while we restore your streak.</p>
           </>
@@ -96,7 +96,7 @@ const RepollinateSuccessPage = () => {
             <h2 className="font-heading text-3xl mb-2" style={{ fontFamily: '"Playfair Display", serif', color: '#915527' }}>
               You've re-pollinated!
             </h2>
-            <p className="text-lg mb-1" style={{ color: '#C8861A' }}>
+            <p className="text-lg mb-1" style={{ color: '#D4A828' }}>
               Your streak has been restored.
             </p>
             {streak && (

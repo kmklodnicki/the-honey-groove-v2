@@ -33,14 +33,14 @@ const DISPUTE_REASON_LABELS = {
 
 const STATUS_BADGE = {
   PAID: { label: 'Paid', color: 'bg-green-100 text-green-700', icon: CheckCircle2 },
-  PENDING: { label: 'Pending', color: 'bg-amber-100 text-amber-700', icon: Clock },
+  PENDING: { label: 'Pending', color: 'bg-[#F0E6C8] text-[#D4A828]', icon: Clock },
   FAILED: { label: 'Failed', color: 'bg-red-100 text-red-700', icon: XCircle },
-  EXPIRED: { label: 'Expired', color: 'bg-stone-100 text-stone-500', icon: XCircle },
+  EXPIRED: { label: 'Expired', color: 'bg-[#F3EBE0] text-[#3A4D63]', icon: XCircle },
   CANCELLED: { label: 'Cancelled', color: 'bg-red-50 text-red-500', icon: Ban },
 };
 
 const SHIPPING_BADGE = {
-  NOT_SHIPPED: { label: 'Not Shipped', color: 'bg-stone-100 text-stone-600' },
+  NOT_SHIPPED: { label: 'Not Shipped', color: 'bg-[#F3EBE0] text-[#3A4D63]' },
   SHIPPED: { label: 'Shipped', color: 'bg-blue-100 text-blue-700' },
   DELIVERED: { label: 'Delivered', color: 'bg-green-100 text-green-700' },
 };
@@ -160,7 +160,7 @@ const RatingSection = ({ order, perspective, token, API, onUpdate }) => {
         <p className="text-xs font-medium text-green-700">Your Rating</p>
         <div className="flex items-center gap-1">
           {[1,2,3,4,5].map(i => (
-            <Star key={i} className={`w-4 h-4 ${i <= myRating.stars ? 'text-amber-400 fill-amber-400' : 'text-stone-200'}`} />
+            <Star key={i} className={`w-4 h-4 ${i <= myRating.stars ? 'text-[#D4A828] fill-[#D4A828]' : 'text-[#E5DBC8]'}`} />
           ))}
         </div>
         {myRating.comment && <p className="text-xs text-green-600">{myRating.comment}</p>}
@@ -170,7 +170,7 @@ const RatingSection = ({ order, perspective, token, API, onUpdate }) => {
 
   if (isExpired) {
     return (
-      <div className="bg-stone-50 border border-stone-200 rounded-xl p-3" data-testid="rating-expired">
+      <div className="bg-[#FFFBF2] border border-[#E5DBC8] rounded-xl p-3" data-testid="rating-expired">
         <p className="text-xs text-muted-foreground">Rating window expired. No rating was left.</p>
       </div>
     );
@@ -188,13 +188,13 @@ const RatingSection = ({ order, perspective, token, API, onUpdate }) => {
   };
 
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2.5" data-testid="rating-form">
+    <div className="bg-[#F0E6C8] border border-[#E5DBC8] rounded-xl p-3 space-y-2.5" data-testid="rating-form">
       <div className="flex items-center justify-between">
-        <p className="text-xs font-medium text-amber-700">
+        <p className="text-xs font-medium text-[#D4A828]">
           Rate the {perspective === 'buyer' ? 'seller' : 'buyer'}
         </p>
         {countdown && (
-          <span className="text-[10px] text-amber-600 flex items-center gap-1">
+          <span className="text-[10px] text-[#D4A828] flex items-center gap-1">
             <Clock className="w-3 h-3" /> {countdown}
           </span>
         )}
@@ -203,20 +203,20 @@ const RatingSection = ({ order, perspective, token, API, onUpdate }) => {
         {[1,2,3,4,5].map(i => (
           <button key={i} onClick={() => setStars(i)} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(0)}
             className="transition-transform hover:scale-110" data-testid={`star-${i}`}>
-            <Star className={`w-6 h-6 ${i <= (hover || stars) ? 'text-amber-400 fill-amber-400' : 'text-stone-200'}`} />
+            <Star className={`w-6 h-6 ${i <= (hover || stars) ? 'text-[#D4A828] fill-[#D4A828]' : 'text-[#E5DBC8]'}`} />
           </button>
         ))}
       </div>
       <Input placeholder="Optional comment..." value={comment} onChange={e => setComment(e.target.value)}
-        className="h-8 text-xs border-amber-200" data-testid="rating-comment-input" />
+        className="h-8 text-xs border-[#E5DBC8]" data-testid="rating-comment-input" />
       <Button size="sm" onClick={submit} disabled={submitting || !stars}
         className="bg-honey text-vinyl-black hover:bg-honey-amber h-7 text-xs rounded-full w-full" data-testid="submit-rating-btn">
         {submitting ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Star className="w-3 h-3 mr-1" />}
         Submit Rating
       </Button>
       {theirRating && (
-        <div className="pt-1 border-t border-amber-200/50">
-          <p className="text-[10px] text-amber-600">
+        <div className="pt-1 border-t border-[#E5DBC8]/50">
+          <p className="text-[10px] text-[#D4A828]">
             The {perspective === 'buyer' ? 'seller' : 'buyer'} rated you {theirRating.stars} stars
           </p>
         </div>
@@ -344,14 +344,14 @@ const OrderRow = ({ order, perspective, token, API, onUpdate, onCancel }) => {
 
               {/* Order meta */}
               <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground mb-2">
-                <span className="font-mono text-[10px] bg-stone-100 px-1.5 py-0.5 rounded" data-testid="order-number">{order.order_number?.startsWith('HONEY-') ? order.order_number : `#${order.order_number}`}</span>
+                <span className="font-mono text-[10px] bg-[#F3EBE0] px-1.5 py-0.5 rounded" data-testid="order-number">{order.order_number?.startsWith('HONEY-') ? order.order_number : `#${order.order_number}`}</span>
                 <span>{timeAgo}</span>
                 {counterparty.username && (
                   <span className="text-honey-amber" data-testid="order-counterparty">
                     @{counterparty.username}
                   </span>
                 )}
-                {order.condition && <span className="text-stone-400">{formatGradeDisplay(order.condition)}</span>}
+                {order.condition && <span className="text-[#7A8694]">{formatGradeDisplay(order.condition)}</span>}
               </div>
 
               {/* Status badges */}
@@ -438,10 +438,10 @@ const OrderRow = ({ order, perspective, token, API, onUpdate, onCancel }) => {
                 <span className="text-muted-foreground">Payout:</span>
                 <span className={`px-2 py-0.5 rounded-full font-medium ${
                   order.payout_status === 'RELEASED' ? 'bg-emerald-100 text-emerald-700' :
-                  order.payout_status === 'PENDING' ? 'bg-amber-100 text-amber-700' :
+                  order.payout_status === 'PENDING' ? 'bg-[#F0E6C8] text-[#D4A828]' :
                   order.payout_status === 'PAYOUT_ON_HOLD' ? 'bg-red-100 text-red-700' :
                   order.payout_status === 'CANCELLED' ? 'bg-red-100 text-red-600' :
-                  'bg-stone-100 text-stone-600'
+                  'bg-[#F3EBE0] text-[#3A4D63]'
                 }`} data-testid="payout-status-badge">
                   {order.payout_status === 'RELEASED' ? 'Released' :
                    order.payout_status === 'PENDING' ? 'Pending (auto-release after delivery)' :

@@ -143,7 +143,7 @@ export default function VinylVariantPage() {
           {/* Album Art */}
           <div className="w-full md:w-64 shrink-0">
             <div
-              className="relative aspect-square overflow-hidden bg-stone-200 transition-transform duration-150 ease-out hover:-translate-y-[3px]"
+              className="relative aspect-square overflow-hidden bg-[#F3EBE0] transition-transform duration-150 ease-out hover:-translate-y-[3px]"
               style={{ borderRadius: '14px', boxShadow: '0 12px 28px rgba(0,0,0,0.12)' }}
             >
               <AlbumArt
@@ -214,7 +214,7 @@ export default function VinylVariantPage() {
                   className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                     spotifyLink.matched
                       ? 'bg-[#1DB954]/15 text-[#1DB954] hover:bg-[#1DB954]/25 border border-[#1DB954]/30'
-                      : 'bg-stone-100 text-stone-500 hover:bg-stone-200 border border-stone-200'
+                      : 'bg-[#F3EBE0] text-[#3A4D63] hover:bg-[#F3EBE0] border border-[#E5DBC8]'
                   }`}
                   data-testid="spotify-link"
                 >
@@ -358,7 +358,7 @@ export default function VinylVariantPage() {
               <Card key={listing.id || i} className="p-4 border-honey/20 hover:shadow-honey transition-all cursor-pointer" data-testid={`listing-${listing.id}`}
                 onClick={() => navigate(`/honeypot/listing/${listing.id}`)}>
                 <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-lg overflow-hidden bg-stone-200 shrink-0">
+                  <div className="w-14 h-14 rounded-lg overflow-hidden bg-[#F3EBE0] shrink-0">
                     <AlbumArt
                       src={listing.photo_urls?.[0] || listing.cover_url || ov.imageSmall || ov.imageUrl}
                       alt={`${listing.artist} ${listing.album}${listing.pressing_notes ? ` ${listing.pressing_notes}` : ''} vinyl record`}

@@ -220,7 +220,7 @@ const AdminBetaPage = () => {
                       <td className="px-4 py-3 font-mono text-sm font-medium">{c.code}</td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                          c.status === 'unused' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
+                          c.status === 'unused' ? 'bg-green-100 text-green-700' : 'bg-[#F0E6C8] text-[#D4A828]'
                         }`}>
                           {c.status}
                         </span>

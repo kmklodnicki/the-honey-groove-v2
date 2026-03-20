@@ -36,7 +36,7 @@ body {
     font-family: "Inter", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #FFF6E6;
+    background-color: #FFFBF2;
     color: #1F1F1F;
 }
 
@@ -108,30 +108,30 @@ h1, h2, h3, h4, h5, h6 {
 
 @layer base {
     :root {
-        --background: 40 100% 95%;
-        --foreground: 0 0% 12%;
-        --card: 0 0% 100%;
-        --card-foreground: 0 0% 12%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 0 0% 12%;
-        --primary: 40 90% 61%;
-        --primary-foreground: 0 0% 12%;
-        --secondary: 45 90% 72%;
-        --secondary-foreground: 0 0% 12%;
-        --muted: 42 60% 90%;
-        --muted-foreground: 0 0% 45%;
-        --accent: 35 72% 52%;
-        --accent-foreground: 0 0% 100%;
-        --destructive: 0 50% 64%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 40 60% 80%;
-        --input: 42 60% 92%;
-        --ring: 40 90% 61%;
-        --chart-1: 40 90% 61%;
-        --chart-2: 45 90% 72%;
-        --chart-3: 35 72% 52%;
-        --chart-4: 42 100% 95%;
-        --chart-5: 0 0% 12%;
+        /* Foiled Gold #D4A828 */ --primary: 43 65% 49%;
+        /* White text on gold  */ --primary-foreground: 0 0% 100%;
+        /* Deep Ink #1E2A3A    */ --secondary: 211 32% 17%;
+        /* White on navy       */ --secondary-foreground: 0 0% 100%;
+        /* Deep Ink #1E2A3A    */ --foreground: 211 32% 17%;
+        /* Warm Cream #FFFBF2  */ --background: 45 100% 97%;
+        /* Parchment #F3EBE0   */ --card: 30 55% 91%;
+        /* Deep Ink #1E2A3A    */ --card-foreground: 211 32% 17%;
+        /* Parchment #F3EBE0   */ --popover: 30 55% 91%;
+        /* Deep Ink #1E2A3A    */ --popover-foreground: 211 32% 17%;
+        /* Gold Wash #F0E6C8   */ --muted: 40 63% 86%;
+        /* Slate #3A4D63       */ --muted-foreground: 214 26% 31%;
+        /* Champagne #E8CA5A   */ --accent: 44 77% 64%;
+        /* Deep Ink #1E2A3A    */ --accent-foreground: 211 32% 17%;
+        /* Merlot #9B2C2C      */ --destructive: 0 55% 39%;
+        /* White               */ --destructive-foreground: 0 0% 100%;
+        /* Wheat #E5DBC8       */ --border: 36 38% 82%;
+        /* Parchment #F3EBE0   */ --input: 30 55% 91%;
+        /* Foiled Gold #D4A828 */ --ring: 43 65% 49%;
+        --chart-1: 43 65% 49%;
+        --chart-2: 44 77% 64%;
+        --chart-3: 211 32% 17%;
+        --chart-4: 40 63% 86%;
+        --chart-5: 0 55% 39%;
         --radius: 0.75rem;
     }
 }

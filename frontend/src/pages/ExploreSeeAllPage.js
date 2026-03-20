@@ -170,7 +170,7 @@ const ExploreSeeAllPage = () => {
       <Dialog open={!!dreamTarget} onOpenChange={(open) => !open && setDreamTarget(null)}>
         <DialogContent className="sm:max-w-xs" aria-describedby="sa-dream-catcher-desc">
           <DialogHeader>
-            <DialogTitle className="font-heading text-center" style={{ color: '#D98C2F' }}>
+            <DialogTitle className="font-heading text-center" style={{ color: '#D4A828' }}>
               Add to your list
             </DialogTitle>
             <p id="sa-dream-catcher-desc" className="text-sm text-center text-muted-foreground mt-1">
@@ -403,7 +403,7 @@ const CrownJewelsAll = ({ data, navigate, openDreamCatcher, addedIds }) => {
             {r.estimated_value > 0 && (
               <span
                 className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full"
-                style={{ background: 'rgba(255,179,0,0.85)', color: '#2A1A06', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,160,0,0.6)' }}
+                style={{ background: 'rgba(255,179,0,0.85)', color: '#1E2A3A', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,160,0,0.6)' }}
               >
                 ${r.estimated_value >= 1000 ? (r.estimated_value / 1000).toFixed(1) + 'k' : r.estimated_value.toFixed(0)}
               </span>
@@ -432,7 +432,7 @@ const CrownJewelsAll = ({ data, navigate, openDreamCatcher, addedIds }) => {
 };
 
 const THEME_COLORS = {
-  honey: '#C8861A', midnight: '#7B68EE', forest: '#74C69D',
+  honey: '#D4A828', midnight: '#7B68EE', forest: '#74C69D',
   rose: '#D98FA1', slate: '#85A7C0', plum: '#D7BDE2',
 };
 
@@ -487,7 +487,7 @@ const RoomsAll = ({ data, navigate, searchParams, setSearchParams }) => {
         <select
           value={sort}
           onChange={e => setSort(e.target.value)}
-          className="text-sm border border-honey/40 rounded-full px-3 py-1.5 bg-white text-stone-700 focus:outline-none focus:ring-2 focus:ring-honey/40 cursor-pointer"
+          className="text-sm border border-honey/40 rounded-full px-3 py-1.5 bg-white text-[#3A4D63] focus:outline-none focus:ring-2 focus:ring-honey/40 cursor-pointer"
           data-testid="rooms-sort-select"
         >
           {SORT_OPTIONS.map(o => (
@@ -508,11 +508,11 @@ const RoomsAll = ({ data, navigate, searchParams, setSearchParams }) => {
               style={{ background: room.theme?.bgGradient || '#FFF3E0' }}
             >
               <span className="text-3xl mb-1">{room.emoji || '🍯'}</span>
-              <span className="text-[10px] font-medium px-2 capitalize opacity-60" style={{ color: room.theme?.textColor || '#2A1A06' }}>
+              <span className="text-[10px] font-medium px-2 capitalize opacity-60" style={{ color: room.theme?.textColor || '#1E2A3A' }}>
                 {room.type}
               </span>
             </div>
-            <p className="text-sm font-medium text-stone-800 truncate w-full">{room.nickname || room.name}</p>
+            <p className="text-sm font-medium text-[#1E2A3A] truncate w-full">{room.nickname || room.name}</p>
             <p className="text-xs text-muted-foreground">{room.member_count || 0} members</p>
           </button>
         ))}

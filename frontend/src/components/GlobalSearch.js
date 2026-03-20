@@ -276,7 +276,7 @@ const GlobalSearch = ({ onClose }) => {
           className="border-0 shadow-none focus-visible:ring-0 text-base"
           data-testid="global-search-input"
         />
-        {loading && <Loader2 className="w-4 h-4 animate-spin text-amber-400 shrink-0" data-testid="search-spinner" />}
+        {loading && <Loader2 className="w-4 h-4 animate-spin text-[#D4A828] shrink-0" data-testid="search-spinner" />}
         <Button variant="ghost" size="sm" onClick={onClose} className="text-muted-foreground shrink-0" data-testid="search-close-btn">
           Cancel
         </Button>
@@ -291,7 +291,7 @@ const GlobalSearch = ({ onClose }) => {
               <>
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Recent</span>
-                  <button onClick={() => { clearRecent(); setRecentSearches([]); }} className="text-xs text-muted-foreground hover:text-amber-600 flex items-center gap-1" data-testid="clear-recent-btn">
+                  <button onClick={() => { clearRecent(); setRecentSearches([]); }} className="text-xs text-muted-foreground hover:text-[#D4A828] flex items-center gap-1" data-testid="clear-recent-btn">
                     <Trash2 className="w-3 h-3" /> clear all
                   </button>
                 </div>
@@ -319,7 +319,7 @@ const GlobalSearch = ({ onClose }) => {
         {/* No results */}
         {noResults && (
           <div className="text-center py-12" data-testid="search-empty-state">
-            <p className="text-sm text-muted-foreground" style={{ color: '#8A6B4A' }}>
+            <p className="text-sm text-muted-foreground" style={{ color: '#3A4D63' }}>
               no results for "{query}" 🐝
             </p>
           </div>
@@ -350,7 +350,7 @@ const GlobalSearch = ({ onClose }) => {
                           testId={`search-record-${r.discogs_id || i}`}
                           actions={
                             <button onClick={(e) => { e.stopPropagation(); addToCollection(r); }}
-                              className="text-xs text-amber-600 hover:text-amber-800 px-2 py-1 rounded-full border border-amber-300 hover:bg-amber-50 opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="text-xs text-[#D4A828] hover:text-[#1E2A3A] px-2 py-1 rounded-full border border-[#D4A828] hover:bg-[#F0E6C8] opacity-0 group-hover:opacity-100 transition-opacity"
                               data-testid={`search-add-collection-${r.discogs_id || i}`}
                             >+ collection</button>
                           }
@@ -388,12 +388,12 @@ const GlobalSearch = ({ onClose }) => {
                         <p className="text-xs text-muted-foreground">{u.record_count || 0} records</p>
                       </div>
                       {u.is_following ? (
-                        <span className="text-xs text-muted-foreground px-3 py-1.5 rounded-full border border-stone-200 bg-stone-50" data-testid={`search-following-${i}`}>
+                        <span className="text-xs text-muted-foreground px-3 py-1.5 rounded-full border border-[#E5DBC8] bg-[#FFFBF2]" data-testid={`search-following-${i}`}>
                           Following
                         </span>
                       ) : (
                         <button onClick={(e) => { e.stopPropagation(); followUser(u); }}
-                          className="text-xs text-amber-600 hover:text-amber-800 px-3 py-1.5 rounded-full border border-amber-300 hover:bg-amber-50 flex items-center gap-1"
+                          className="text-xs text-[#D4A828] hover:text-[#1E2A3A] px-3 py-1.5 rounded-full border border-[#D4A828] hover:bg-[#F0E6C8] flex items-center gap-1"
                           data-testid={`search-follow-${i}`}
                         >
                           <UserPlus className="w-3 h-3" /> Follow
@@ -419,7 +419,7 @@ const GlobalSearch = ({ onClose }) => {
                         {l.cover_url ? (
                           <img src={resolveImageUrl(l.cover_url)} alt="" className="w-11 h-11 rounded-md object-cover shadow-sm" />
                         ) : (
-                          <div className="w-11 h-11 rounded-md bg-stone-100 flex items-center justify-center"><ShoppingBag className="w-5 h-5 text-stone-400" /></div>
+                          <div className="w-11 h-11 rounded-md bg-[#F3EBE0] flex items-center justify-center"><ShoppingBag className="w-5 h-5 text-[#7A8694]" /></div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -427,7 +427,7 @@ const GlobalSearch = ({ onClose }) => {
                         <p className="text-xs text-muted-foreground truncate">{l.artist}</p>
                       </div>
                       <div className="text-right shrink-0">
-                        {l.price && <p className="text-sm font-semibold" style={{ color: '#C8861A' }}>${l.price}</p>}
+                        {l.price && <p className="text-sm font-semibold" style={{ color: '#D4A828' }}>${l.price}</p>}
                         {l.condition && <p className="text-[10px] text-muted-foreground">{formatGradeDisplay(l.condition)}</p>}
                       </div>
                     </div>
@@ -449,7 +449,7 @@ const GlobalSearch = ({ onClose }) => {
                     return (
                       <div key={p.id || i} className="flex items-start gap-3 p-2 rounded-lg hover:bg-honey/10 cursor-pointer" onClick={goToPost} data-testid={`search-post-${i}`}>
                         <div className="mt-0.5 shrink-0">
-                          <Icon className="w-4 h-4 text-amber-500" />
+                          <Icon className="w-4 h-4 text-[#D4A828]" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">

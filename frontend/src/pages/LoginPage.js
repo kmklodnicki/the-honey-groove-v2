@@ -38,7 +38,7 @@ const HoneypotLoader = () => (
       {/* Handle */}
       <path d="M20 20 Q20 12 28 12 Q36 12 36 20" stroke="#DAA520" strokeWidth="2.5" fill="none" opacity="0.5" />
     </svg>
-    <p className="text-sm font-medium animate-pulse" style={{ color: '#C8861A' }}>Warming up the honey...</p>
+    <p className="text-sm font-medium animate-pulse" style={{ color: '#D4A828' }}>Warming up the honey...</p>
   </div>
 );
 
@@ -119,17 +119,17 @@ const LoginPage = () => {
         </CardHeader>
         <CardContent>
           {unverified && (
-            <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl p-4" data-testid="email-verify-banner">
+            <div className="mb-4 bg-[#F0E6C8] border border-[#E5DBC8] rounded-xl p-4" data-testid="email-verify-banner">
               <div className="flex items-start gap-3">
-                <Mail className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                <Mail className="w-5 h-5 text-[#D4A828] shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm text-amber-800 font-medium">Please verify your email address</p>
-                  <p className="text-xs text-amber-700 mt-1">Check your inbox for a verification link.</p>
+                  <p className="text-sm text-[#1E2A3A] font-medium">Please verify your email address</p>
+                  <p className="text-xs text-[#D4A828] mt-1">Check your inbox for a verification link.</p>
                   <button
                     type="button"
                     onClick={handleResendVerification}
                     disabled={resending}
-                    className="text-xs text-amber-600 hover:text-amber-800 underline mt-2 inline-flex items-center gap-1"
+                    className="text-xs text-[#D4A828] hover:text-[#1E2A3A] underline mt-2 inline-flex items-center gap-1"
                     data-testid="resend-verification-btn"
                   >
                     {resending ? <><Loader2 className="w-3 h-3 animate-spin" /> Sending...</> : 'Resend verification email'}

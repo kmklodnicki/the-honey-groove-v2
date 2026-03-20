@@ -63,16 +63,16 @@ export const MoodBoardTab = ({ username }) => {
   return (
     <div className="space-y-4" data-testid="mood-board-tab">
       {/* Manual generation */}
-      <Card className="p-4 border-amber-200/50">
+      <Card className="p-4 border-[#E5DBC8]/50">
         <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wide">Generate a Mood Board</p>
         <div className="flex gap-2 mb-3">
           {TIME_PILLS.map(p => (
             <button key={p.key} onClick={() => setSelectedRange(p.key)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${selectedRange === p.key ? 'bg-amber-500 text-white shadow-sm' : 'bg-amber-100/60 text-amber-700 hover:bg-amber-200/60'}`}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${selectedRange === p.key ? 'bg-[#D4A828] text-white shadow-sm' : 'bg-[#F0E6C8]/60 text-[#D4A828] hover:bg-[#E8CA5A]/60'}`}
               data-testid={`mood-pill-${p.key}`}>{p.label}</button>
           ))}
         </div>
-        <Button onClick={handleGenerate} disabled={generating} className="bg-amber-500 hover:bg-amber-600 text-white rounded-full" data-testid="mood-generate-btn">
+        <Button onClick={handleGenerate} disabled={generating} className="bg-[#D4A828] hover:bg-[#E8CA5A] text-white rounded-full" data-testid="mood-generate-btn">
           {generating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Grid3X3 className="w-4 h-4 mr-2" />}
           generate mood board
         </Button>
@@ -101,20 +101,20 @@ const MoodBoardCard = ({ board, isPinned, onExport }) => {
   const rangeLabel = board.time_range === 'week' ? 'Weekly' : board.time_range === 'month' ? 'Monthly' : 'All Time';
 
   return (
-    <Card className={`overflow-hidden border-amber-200/40 group cursor-pointer hover:shadow-md transition-shadow ${isPinned ? 'col-span-2' : ''}`} data-testid="mood-board-card">
+    <Card className={`overflow-hidden border-[#E5DBC8]/40 group cursor-pointer hover:shadow-md transition-shadow ${isPinned ? 'col-span-2' : ''}`} data-testid="mood-board-card">
       {/* 3x3 mini grid */}
       <div className={`grid grid-cols-3 ${isPinned ? 'max-w-sm mx-auto' : ''}`}>
         {[...Array(9)].map((_, i) => (
-          <div key={i} className="aspect-square bg-amber-50">
+          <div key={i} className="aspect-square bg-[#F0E6C8]">
             {covers[i] ? <AlbumArt src={covers[i]} alt={`Mood board vinyl record ${i + 1}`} className="w-full h-full object-cover" />
-              : <div className="w-full h-full bg-amber-100/50" />}
+              : <div className="w-full h-full bg-[#F0E6C8]/50" />}
           </div>
         ))}
       </div>
       <div className="p-3 flex items-center justify-between">
         <div>
           <p className="text-xs text-muted-foreground">{rangeLabel} · {dateStr}</p>
-          {isPinned && <p className="text-[10px] text-amber-600 font-medium">Latest</p>}
+          {isPinned && <p className="text-[10px] text-[#D4A828] font-medium">Latest</p>}
         </div>
         {/* export button — hidden until feature is ready */}
       </div>

@@ -259,7 +259,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
 
           {loading ? (
             <div className="flex items-center justify-center py-20">
-              <Loader2 className="w-6 h-6 animate-spin text-amber-500" />
+              <Loader2 className="w-6 h-6 animate-spin text-[#D4A828]" />
             </div>
           ) : listing ? (
             <div className="overflow-y-auto max-h-[92vh]">
@@ -329,7 +329,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
               {/* ========== EDIT MODE ========== */}
               {editing ? (
                 <div className="p-6 space-y-4" data-testid="listing-edit-form">
-                  <h2 className="font-heading text-xl text-[#2A1A06]">Edit Listing</h2>
+                  <h2 className="font-heading text-xl text-[#1E2A3A]">Edit Listing</h2>
                   <p className="text-sm text-muted-foreground">{listing.artist} — {listing.album}</p>
 
                   {/* Condition */}
@@ -358,7 +358,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                         { key: 'TRADE', label: 'Trade', icon: ArrowRightLeft },
                       ].map(t => (
                         <button key={t.key} onClick={() => setEditListingType(t.key)}
-                          className={`px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-1 justify-center transition-all ${editListingType === t.key ? 'bg-amber-100/60 text-[#C8861A] ring-2 ring-offset-1 ring-amber-300 shadow-sm' : 'bg-gray-50 text-muted-foreground hover:bg-gray-100'}`}
+                          className={`px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-1 justify-center transition-all ${editListingType === t.key ? 'bg-[#F0E6C8]/60 text-[#D4A828] ring-2 ring-offset-1 ring-[#D4A828] shadow-sm' : 'bg-gray-50 text-muted-foreground hover:bg-gray-100'}`}
                           data-testid={`edit-type-${t.key.toLowerCase()}`}>
                           <t.icon className="w-3 h-3" /> {t.label}
                         </button>
@@ -446,7 +446,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                 /* ========== VIEW MODE ========== */
                 <div>
                   {/* Album Art */}
-                  <div className="flex flex-col items-center bg-stone-50 pt-2 pb-2 px-3 gap-1.5">
+                  <div className="flex flex-col items-center bg-[#FFFBF2] pt-2 pb-2 px-3 gap-1.5">
                     <div className="relative w-48 max-w-full">
                       <AlbumArt
                         src={photos[0] || listing.cover_url}
@@ -461,7 +461,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                         href={`https://open.spotify.com/search/${encodeURIComponent(`${listing.artist || ''} ${listing.album || ''}`.trim())}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs text-stone-400 hover:text-[#1DB954] transition-colors"
+                        className="inline-flex items-center gap-1.5 text-xs text-[#7A8694] hover:text-[#1DB954] transition-colors"
                         data-testid="listing-spotify-link"
                       >
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
@@ -472,14 +472,14 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
 
                   {/* Record details */}
                   <div className="text-center px-3 pt-2 pb-1" data-testid="listing-modal-info">
-                    <h2 className="text-base font-heading font-semibold leading-tight text-[#2A1A06]">
+                    <h2 className="text-base font-heading font-semibold leading-tight text-[#1E2A3A]">
                       {listing.artist}
                     </h2>
-                    <p className="text-sm text-[#C8861A] mt-0.5" style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic' }}>
+                    <p className="text-sm text-[#D4A828] mt-0.5" style={{ fontFamily: '"Cormorant Garamond", serif', fontStyle: 'italic' }}>
                       {listing.album}
                     </p>
                     {(listing.pressing_notes || listing.year) && (
-                      <p className="text-[13px] text-[#8A6B4A]/80 mt-1.5 font-medium tracking-wide">
+                      <p className="text-[13px] text-[#3A4D63]/80 mt-1.5 font-medium tracking-wide">
                         {[listing.pressing_notes, listing.year && `${listing.year} pressing`].filter(Boolean).join(' \u00b7 ')}
                       </p>
                     )}
@@ -491,23 +491,23 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                   {/* Edit button for owner */}
                   {canEdit && (
                     <div className="px-4 pb-1.5">
-                      <Button onClick={startEditing} variant="outline" className="w-full rounded-full border-honey/50 text-[#C8861A] hover:bg-honey/10 h-8 text-xs" data-testid="listing-edit-btn">
+                      <Button onClick={startEditing} variant="outline" className="w-full rounded-full border-honey/50 text-[#D4A828] hover:bg-honey/10 h-8 text-xs" data-testid="listing-edit-btn">
                         <Pencil className="w-3 h-3 mr-1.5" /> Edit Listing
                       </Button>
                     </div>
                   )}
 
                   {/* Condition + Seller row */}
-                  <div className="flex items-center justify-between px-4 py-2 border-t border-stone-100" data-testid="listing-modal-seller-row">
+                  <div className="flex items-center justify-between px-4 py-2 border-t border-[#E5DBC8]" data-testid="listing-modal-seller-row">
                     {listing.condition && (
                       <GradeLabel condition={listing.condition} variant="pill" />
                     )}
                     {seller && (
                       <Link to={`/profile/${seller.username}`} onClick={handleClose}
                         className="flex items-center gap-2 hover:opacity-80 transition-opacity" data-testid="listing-seller-link">
-                        <Avatar className="w-7 h-7 border border-amber-200">
+                        <Avatar className="w-7 h-7 border border-[#E5DBC8]">
                           <AvatarImage src={resolveImageUrl(seller.avatar_url)} />
-                          <AvatarFallback className="bg-amber-50 text-xs">{seller.username?.[0]?.toUpperCase()}</AvatarFallback>
+                          <AvatarFallback className="bg-[#F0E6C8] text-xs">{seller.username?.[0]?.toUpperCase()}</AvatarFallback>
                         </Avatar>
                         <div className="text-left">
                           <p className="text-sm font-medium flex items-center gap-1">@{seller.username}
@@ -516,7 +516,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                           <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                             <div className="flex">
                               {[1, 2, 3, 4, 5].map(s => (
-                                <Star key={s} className={`w-2.5 h-2.5 ${s <= Math.round(seller.rating || 5) ? 'fill-amber-400 text-amber-400' : 'text-stone-300'}`} />
+                                <Star key={s} className={`w-2.5 h-2.5 ${s <= Math.round(seller.rating || 5) ? 'fill-[#D4A828] text-[#D4A828]' : 'text-[#7A8694]'}`} />
                               ))}
                             </div>
                             <span>· {seller.completed_sales || 0} sales</span>
@@ -528,11 +528,11 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
 
                   {/* Seller photos */}
                   {photos.length > 0 && (
-                    <div className="px-4 py-2 border-t border-stone-100" data-testid="listing-photos">
+                    <div className="px-4 py-2 border-t border-[#E5DBC8]" data-testid="listing-photos">
                       <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
                         {photos.map((url, i) => (
                           <button key={i} onClick={() => setExpandedPhoto(i)}
-                            className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-stone-200 hover:border-amber-300 transition-colors"
+                            className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-[#E5DBC8] hover:border-[#D4A828] transition-colors"
                             data-testid={`listing-photo-thumb-${i}`}>
                             <img src={resolveImageUrl(url)} alt={`${listing.artist} ${listing.album} vinyl record photo ${i + 1}`} className="w-full h-full object-cover" />
                           </button>
@@ -544,7 +544,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                   {/* Price */}
                   <div className="px-3 pt-2 pb-1" data-testid="listing-price-section">
                     {listing.price && (
-                      <p className="text-3xl leading-none text-[#996012] font-heading font-bold" data-testid="listing-price">
+                      <p className="text-3xl leading-none text-[#D4A828] font-heading font-bold" data-testid="listing-price">
                         ${listing.price}
                       </p>
                     )}
@@ -558,15 +558,15 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
 
                   {/* Honey Pulse — disabled for unofficial releases */}
                   {pulseData?.confident && listing.price && !listing.is_unofficial && (
-                    <div className="mx-4 mt-1 mb-1 bg-amber-50/70 border border-amber-200/60 rounded-xl p-2" data-testid="honey-pulse-module">
+                    <div className="mx-4 mt-1 mb-1 bg-[#F0E6C8]/70 border border-[#E5DBC8]/60 rounded-xl p-2" data-testid="honey-pulse-module">
                       <div className="flex items-center gap-1 mb-1">
                         <Flame className="w-3 h-3 text-orange-500" />
-                        <span className="text-[10px] font-bold text-amber-800">Honey Pulse</span>
+                        <span className="text-[10px] font-bold text-[#1E2A3A]">Honey Pulse</span>
                         <span className="text-[9px] text-muted-foreground">90-Day Market</span>
                       </div>
                       <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-                        <span>Median: <span className="font-semibold text-amber-800">${pulseData.median?.toFixed(2)}</span></span>
-                        <span>Hot: <span className="font-semibold text-amber-800">${pulseData.hot_low?.toFixed(2)}-${pulseData.hot_high?.toFixed(2)}</span></span>
+                        <span>Median: <span className="font-semibold text-[#1E2A3A]">${pulseData.median?.toFixed(2)}</span></span>
+                        <span>Hot: <span className="font-semibold text-[#1E2A3A]">${pulseData.hot_low?.toFixed(2)}-${pulseData.hot_high?.toFixed(2)}</span></span>
                       </div>
                       {listing.price >= pulseData.hot_low && listing.price <= pulseData.hot_high ? (
                         <p className="text-[10px] font-semibold text-orange-600 mt-1 flex items-center gap-1" data-testid="pulse-price-signal">
@@ -583,13 +583,13 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                   {/* Description */}
                   {listing.description && (
                     <div className="px-4 py-2" data-testid="listing-description">
-                      <p className={`text-sm sm:text-base text-[#8A6B4A] leading-relaxed ${!descExpanded ? 'line-clamp-3' : ''}`}
+                      <p className={`text-sm sm:text-base text-[#3A4D63] leading-relaxed ${!descExpanded ? 'line-clamp-3' : ''}`}
                         style={{ fontFamily: '"Cormorant Garamond", serif' }}>
                         {listing.description}
                       </p>
                       {listing.description.length > 120 && (
                         <button onClick={() => setDescExpanded(!descExpanded)}
-                          className="text-[11px] text-amber-600 hover:underline mt-1" data-testid="listing-read-more">
+                          className="text-[11px] text-[#D4A828] hover:underline mt-1" data-testid="listing-read-more">
                           {descExpanded ? 'Less' : 'More'}
                         </button>
                       )}
@@ -624,7 +624,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                           <Package className="w-3 h-3" /> Insurance included
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-amber-700 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#D4A828] bg-[#F0E6C8] border border-[#E5DBC8] px-2 py-1 rounded-full">
                           <Package className="w-3 h-3" /> No insurance
                         </span>
                       )}
@@ -634,7 +634,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                   {/* Shipping costs */}
                   {listing.shipping_cost != null && (
                     <div className="px-4 py-0.5" data-testid="listing-domestic-shipping">
-                      <span className="inline-flex items-center gap-1 text-[10px] font-medium text-stone-600 bg-stone-50 border border-stone-200 px-2 py-1 rounded-full">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#3A4D63] bg-[#FFFBF2] border border-[#E5DBC8] px-2 py-1 rounded-full">
                         <Package className="w-3 h-3" /> Ship: ${listing.shipping_cost.toFixed(2)}{listing.international_shipping ? ' (Dom)' : ''}
                       </span>
                     </div>
@@ -649,7 +649,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                     </div>
                   ) : (
                     <div className="px-4 py-0.5" data-testid="listing-no-intl-shipping">
-                      <span className="inline-flex items-center gap-1 text-[10px] font-medium text-stone-500 bg-stone-50 border border-stone-200 px-2 py-1 rounded-full">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-medium text-[#3A4D63] bg-[#FFFBF2] border border-[#E5DBC8] px-2 py-1 rounded-full">
                         <Package className="w-3 h-3" /> Intl: N/A
                       </span>
                     </div>
@@ -664,7 +664,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
 
                   {/* Domestic-only shipping warning */}
                   {!isOwn && !listing.international_shipping && seller?.country && currentUser?.country && seller.country !== currentUser.country && (
-                    <div className="mx-4 mt-1 px-2 py-1.5 bg-amber-50 border border-amber-200 rounded-lg text-[10px] text-amber-800 flex items-start gap-1.5" data-testid="domestic-only-warning">
+                    <div className="mx-4 mt-1 px-2 py-1.5 bg-[#F0E6C8] border border-[#E5DBC8] rounded-lg text-[10px] text-[#1E2A3A] flex items-start gap-1.5" data-testid="domestic-only-warning">
                       <AlertTriangle className="w-3 h-3 mt-0.5 shrink-0" />
                       <span>Domestic shipping only ({seller.country}).</span>
                     </div>
@@ -675,7 +675,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                     <div className="px-3 pt-2 pb-3 space-y-1.5" data-testid="listing-cta-section">
                       {isBuyNow && (
                         <Button onClick={handleBuyNowClick}
-                          className="w-full min-h-[40px] rounded-full bg-[#E8A820] hover:bg-[#d49a1a] text-[#2A1A06] text-sm font-semibold shadow-md shadow-amber-200/40 active:scale-[0.97] transition-all duration-150"
+                          className="w-full min-h-[40px] rounded-full bg-[#E8A820] hover:bg-[#d49a1a] text-[#1E2A3A] text-sm font-semibold shadow-md shadow-[#D4A828]/20 active:scale-[0.97] transition-all duration-150"
                           data-testid="listing-buy-now-btn">
                           buy now · ${listing.price}
                         </Button>
@@ -683,12 +683,12 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                       {isMakeOffer && !showOfferInput && (
                         <>
                           <Button onClick={handleBuyNowClick}
-                            className="w-full min-h-[40px] rounded-full bg-[#E8A820] hover:bg-[#d49a1a] text-[#2A1A06] text-sm font-semibold shadow-md shadow-amber-200/40 active:scale-[0.97] transition-all duration-150"
+                            className="w-full min-h-[40px] rounded-full bg-[#E8A820] hover:bg-[#d49a1a] text-[#1E2A3A] text-sm font-semibold shadow-md shadow-[#D4A828]/20 active:scale-[0.97] transition-all duration-150"
                             data-testid="listing-buy-asking-btn">
                             buy now · ${listing.price}
                           </Button>
                           <Button onClick={() => setShowOfferInput(true)} variant="outline"
-                            className="w-full min-h-[36px] rounded-full border-[#E8A820]/60 text-[#996012] hover:bg-amber-50/60 text-xs font-medium active:scale-[0.97] transition-all duration-150"
+                            className="w-full min-h-[36px] rounded-full border-[#E8A820]/60 text-[#D4A828] hover:bg-[#F0E6C8]/60 text-xs font-medium active:scale-[0.97] transition-all duration-150"
                             data-testid="listing-make-offer-btn">
                             make an offer
                           </Button>
@@ -701,28 +701,28 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                               <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
                               <Input type="number" placeholder="Your offer" value={offerAmount}
                                 onChange={(e) => setOfferAmount(e.target.value)}
-                                className="pl-7 border-amber-300 h-9 text-sm" autoFocus
+                                className="pl-7 border-[#D4A828] h-9 text-sm" autoFocus
                                 data-testid="listing-offer-input" />
                             </div>
                             <Button onClick={handleOfferSubmit} disabled={!offerAmount}
-                              className="bg-[#E8A820] hover:bg-[#d49a1a] text-[#2A1A06] rounded-full px-4 min-h-[36px] text-sm"
+                              className="bg-[#E8A820] hover:bg-[#d49a1a] text-[#1E2A3A] rounded-full px-4 min-h-[36px] text-sm"
                               data-testid="listing-submit-offer-btn">
                               send
                             </Button>
                           </div>
-                          <button onClick={() => setShowOfferInput(false)} className="text-[10px] text-muted-foreground hover:text-stone-600">cancel</button>
+                          <button onClick={() => setShowOfferInput(false)} className="text-[10px] text-muted-foreground hover:text-[#3A4D63]">cancel</button>
                         </div>
                       )}
                       {isTrade && (
                         <Button onClick={handleTradeClick}
-                          className="w-full min-h-[40px] rounded-full bg-[#E8A820] hover:bg-[#d49a1a] text-[#2A1A06] text-sm font-semibold shadow-md shadow-amber-200/40 active:scale-[0.97] transition-all duration-150"
+                          className="w-full min-h-[40px] rounded-full bg-[#E8A820] hover:bg-[#d49a1a] text-[#1E2A3A] text-sm font-semibold shadow-md shadow-[#D4A828]/20 active:scale-[0.97] transition-all duration-150"
                           data-testid="listing-trade-btn">
                           propose a trade
                         </Button>
                       )}
                       {!isTrade && onProposeTrade && (
                         <Button onClick={handleTradeClick} variant="outline"
-                          className="w-full min-h-[36px] rounded-full border-amber-300/60 text-[#996012] hover:bg-amber-50/60 text-xs active:scale-[0.97] transition-all duration-150"
+                          className="w-full min-h-[36px] rounded-full border-[#D4A828]/60 text-[#D4A828] hover:bg-[#F0E6C8]/60 text-xs active:scale-[0.97] transition-all duration-150"
                           data-testid="listing-trade-instead-btn">
                           <ArrowRightLeft className="w-3 h-3 mr-1.5" />
                           propose trade instead
@@ -745,7 +745,7 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
                   {!isOwn && (
                     <div className="px-6 py-2 text-center" data-testid="listing-wantlist-section">
                       <button onClick={toggleWantlist} disabled={wantlistLoading}
-                        className={`text-xs transition-colors ${onWantlist ? 'text-green-600' : 'text-amber-600 hover:text-amber-700'}`}
+                        className={`text-xs transition-colors ${onWantlist ? 'text-green-600' : 'text-[#D4A828] hover:text-[#D4A828]'}`}
                         data-testid="listing-wantlist-toggle">
                         {wantlistLoading ? <Loader2 className="w-3 h-3 animate-spin inline mr-1" /> : null}
                         {onWantlist ? (
@@ -776,13 +776,13 @@ const ListingDetailModal = ({ listingId, open, onClose, onBuyNow, onMakeOffer, o
 
                   {/* Similar listings */}
                   {similar.length > 0 && (
-                    <div className="px-6 pt-3 pb-5 border-t border-stone-100" data-testid="listing-similar">
+                    <div className="px-6 pt-3 pb-5 border-t border-[#E5DBC8]" data-testid="listing-similar">
                       <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide mb-2">more like this</p>
                       <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1">
                         {similar.map(s => (
                           <button key={s.id} onClick={() => { setListing(null); setLoading(true); }}
                             className="flex-shrink-0 w-28 text-left" data-testid={`similar-listing-${s.id}`}>
-                            <div className="w-28 h-28 rounded-lg overflow-hidden bg-stone-100 mb-1">
+                            <div className="w-28 h-28 rounded-lg overflow-hidden bg-[#F3EBE0] mb-1">
                               <AlbumArt src={s.cover_url} alt={`${s.artist} ${s.album} vinyl record`} className="w-full h-full object-cover" isUnofficial={s.is_unofficial} />
                             </div>
                             <p className="text-xs font-medium truncate">{s.album}</p>

@@ -137,7 +137,7 @@ const PWAInstallBanner = () => {
           </button>
           <button
             onClick={handleDismiss}
-            className="ml-1 p-1.5 rounded-full transition-colors hover:bg-amber-200/50 active:bg-amber-200"
+            className="ml-1 p-1.5 rounded-full transition-colors hover:bg-[#E8CA5A]/50 active:bg-[#F0E6C8]"
             style={{ color: '#915527' }}
             aria-label="Dismiss install banner"
             data-testid="pwa-dismiss-btn"

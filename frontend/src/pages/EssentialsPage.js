@@ -111,9 +111,9 @@ const LIGHT_UP = [
 ];
 
 const ApprovedSeal = () => (
-  <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-100/80 to-yellow-50/80 border border-amber-300/40 rounded-full px-3 py-1" data-testid="approved-seal">
-    <Award className="w-3.5 h-3.5 text-amber-600" />
-    <span className="text-[11px] font-semibold tracking-wide text-amber-700 uppercase">Honey Groove Approved</span>
+  <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-[#F0E6C8]/80 to-yellow-50/80 border border-[#D4A828]/40 rounded-full px-3 py-1" data-testid="approved-seal">
+    <Award className="w-3.5 h-3.5 text-[#D4A828]" />
+    <span className="text-[11px] font-semibold tracking-wide text-[#D4A828] uppercase">Honey Groove Approved</span>
   </div>
 );
 
@@ -163,7 +163,7 @@ const GrooveGatewayModal = ({ item, open, onClose }) => {
           <button onClick={onClose} className="flex items-center gap-1.5 text-sm text-vinyl-black/70 hover:text-vinyl-black transition-colors" data-testid="gateway-back-btn">
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
-          <span className="text-xs font-bold uppercase tracking-widest text-[#C8861A]">The Groove Gateway</span>
+          <span className="text-xs font-bold uppercase tracking-widest text-[#D4A828]">The Groove Gateway</span>
           <button onClick={onClose} className="text-vinyl-black/40 hover:text-vinyl-black/70 transition-colors" data-testid="gateway-close-btn">
             <X className="w-5 h-5" />
           </button>
@@ -181,7 +181,7 @@ const GrooveGatewayModal = ({ item, open, onClose }) => {
                 <circle cx="12" cy="12" r="3.5" fill="#DAA520" />
                 <circle cx="12" cy="12" r="1.5" fill="#1A1A1A" />
               </svg>
-              <p className="text-sm text-[#C8861A] font-medium mt-5 tracking-wide">Securing your request...</p>
+              <p className="text-sm text-[#D4A828] font-medium mt-5 tracking-wide">Securing your request...</p>
             </div>
           ) : (
             <div className="text-center" data-testid="groove-gateway-handoff">
@@ -189,7 +189,7 @@ const GrooveGatewayModal = ({ item, open, onClose }) => {
                 <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
               </div>
 
-              <p className="text-xs font-bold uppercase tracking-widest text-[#C8861A] mb-2">{item.honeyLabel}</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-[#D4A828] mb-2">{item.honeyLabel}</p>
               <h3 className="font-heading text-xl text-vinyl-black mb-4">{item.name}</h3>
 
               <div
@@ -203,8 +203,8 @@ const GrooveGatewayModal = ({ item, open, onClose }) => {
                 onClick={() => { window.open(item.url, '_blank', 'noopener,noreferrer'); onClose(); }}
                 className="w-full py-4 rounded-2xl text-base font-bold uppercase tracking-wider transition-all duration-200 active:scale-[0.98]"
                 style={{
-                  background: 'linear-gradient(135deg, #FFD700, #DAA520, #C8861A)',
-                  color: '#2A1A06',
+                  background: 'linear-gradient(135deg, #FFD700, #DAA520, #D4A828)',
+                  color: '#1E2A3A',
                   border: '2px solid rgba(218,165,32,0.6)',
                   boxShadow: '0 4px 20px rgba(218,165,32,0.3), inset 0 1px 0 rgba(255,255,255,0.3)',
                 }}
@@ -258,14 +258,14 @@ const GrooveTerminalModal = ({ item, open, onClose }) => {
           <div className="flex items-center gap-2">
             <span className="text-sm font-heading text-vinyl-black tracking-tight">The Honey Groove</span>
             <span className="text-[#DAA520] text-sm font-light mx-0.5">&times;</span>
-            <span className="text-sm font-heading text-[#C8861A] tracking-tight">{item?.partnerLabel || 'Partner'}</span>
+            <span className="text-sm font-heading text-[#D4A828] tracking-tight">{item?.partnerLabel || 'Partner'}</span>
           </div>
           <button
             onClick={onClose}
             className="w-8 h-8 flex items-center justify-center rounded-full transition-colors hover:bg-[#DAA520]/10"
             data-testid="groove-terminal-close-btn"
           >
-            <X className="w-5 h-5" style={{ color: '#C8861A' }} />
+            <X className="w-5 h-5" style={{ color: '#D4A828' }} />
           </button>
         </div>
 
@@ -293,7 +293,7 @@ const GrooveTerminalModal = ({ item, open, onClose }) => {
                   <circle cx="12" cy="12" r="1.5" fill="#1A1A1A" />
                 </svg>
               </div>
-              <p className="text-sm text-[#C8861A] font-medium mt-6 tracking-wide">Securing your request...</p>
+              <p className="text-sm text-[#D4A828] font-medium mt-6 tracking-wide">Securing your request...</p>
             </div>
           ) : (
             <div className="text-center" data-testid="groove-terminal-ready">
@@ -301,7 +301,7 @@ const GrooveTerminalModal = ({ item, open, onClose }) => {
                 <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
               </div>
 
-              <p className="text-xs font-bold uppercase tracking-widest text-[#C8861A] mb-2">{item.honeyLabel}</p>
+              <p className="text-xs font-bold uppercase tracking-widest text-[#D4A828] mb-2">{item.honeyLabel}</p>
               <h3 className="font-heading text-xl text-vinyl-black mb-4">{item.name}</h3>
 
               <div
@@ -315,8 +315,8 @@ const GrooveTerminalModal = ({ item, open, onClose }) => {
                 onClick={() => { window.open(item.url, '_blank', 'noopener,noreferrer'); onClose(); }}
                 className="w-full py-4 rounded-2xl text-base font-bold uppercase tracking-wider transition-all duration-200 active:scale-[0.98]"
                 style={{
-                  background: 'linear-gradient(135deg, #FFD700, #DAA520, #C8861A)',
-                  color: '#2A1A06',
+                  background: 'linear-gradient(135deg, #FFD700, #DAA520, #D4A828)',
+                  color: '#1E2A3A',
                   border: '2px solid rgba(218,165,32,0.6)',
                   boxShadow: '0 4px 20px rgba(218,165,32,0.3), inset 0 1px 0 rgba(255,255,255,0.3)',
                 }}
@@ -339,10 +339,10 @@ const GrooveTerminalModal = ({ item, open, onClose }) => {
 const ProductCard = ({ item, onAcquire }) => {
   return (
     <div
-      className="group bg-white rounded-2xl border border-stone-200/60 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col"
+      className="group bg-white rounded-2xl border border-[#E5DBC8]/60 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col"
       data-testid={`product-card-${item.id}`}
     >
-      <div className="relative aspect-square bg-stone-50 overflow-hidden">
+      <div className="relative aspect-square bg-[#FFFBF2] overflow-hidden">
         <img
           src={item.image}
           alt={`${item.name} - Vinyl Record Accessory`}
@@ -355,21 +355,21 @@ const ProductCard = ({ item, onAcquire }) => {
         <ApprovedSeal />
 
         <div className="space-y-1">
-          <p className="text-xs font-semibold tracking-widest uppercase text-amber-600" data-testid="honey-label">
+          <p className="text-xs font-semibold tracking-widest uppercase text-[#D4A828]" data-testid="honey-label">
             {item.honeyLabel}
           </p>
-          <h3 className="font-heading text-lg text-stone-900 leading-snug" data-testid="product-name">
+          <h3 className="font-heading text-lg text-[#1E2A3A] leading-snug" data-testid="product-name">
             {item.name}
           </h3>
         </div>
 
-        <p className="text-sm text-stone-500 leading-relaxed flex-1" data-testid="product-descriptor">
+        <p className="text-sm text-[#3A4D63] leading-relaxed flex-1" data-testid="product-descriptor">
           {item.descriptor}
         </p>
 
         <Button
           onClick={() => onAcquire(item)}
-          className="mt-auto bg-stone-900 text-white hover:bg-stone-800 rounded-full gap-2 w-full text-center py-2.5 px-2"
+          className="mt-auto bg-[#1E2A3A] text-white hover:bg-[#2A3B50] rounded-full gap-2 w-full text-center py-2.5 px-2"
           style={{ fontSize: 'clamp(0.75rem, 2vw, 1rem)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
           data-testid={`cta-${item.id}`}
         >
@@ -388,8 +388,8 @@ const SectionHeader = ({ title, subtext, testId, showDivider }) => (
       <div className="mt-10 sm:mt-14 mb-10 sm:mb-14 mx-auto" style={{ maxWidth: '120px', borderTop: '1px solid rgba(218, 165, 32, 0.2)' }} />
     )}
     <div className="text-center mb-6 sm:mb-8 space-y-2" data-testid={testId}>
-      <h2 className="font-heading text-2xl sm:text-3xl text-stone-900 tracking-tight">{title}</h2>
-      <p className="text-sm text-stone-500 max-w-lg mx-auto leading-relaxed">{subtext}</p>
+      <h2 className="font-heading text-2xl sm:text-3xl text-[#1E2A3A] tracking-tight">{title}</h2>
+      <p className="text-sm text-[#3A4D63] max-w-lg mx-auto leading-relaxed">{subtext}</p>
     </div>
   </>
 );
@@ -416,10 +416,10 @@ const EssentialsPage = () => {
       <PullIndicator />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 pt-3 md:pt-2 pb-24 md:pb-8">
         <div className="text-center mb-10 sm:mb-14 space-y-3" data-testid="essentials-header">
-          <h1 className="font-heading text-4xl sm:text-5xl text-stone-900 tracking-tight">
+          <h1 className="font-heading text-4xl sm:text-5xl text-[#1E2A3A] tracking-tight">
             Honey Essentials
           </h1>
-          <p className="text-base text-stone-500 max-w-md mx-auto">
+          <p className="text-base text-[#3A4D63] max-w-md mx-auto">
             The curated essentials that keep your vault sweet.
           </p>
         </div>

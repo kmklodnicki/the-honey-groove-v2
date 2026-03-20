@@ -50,7 +50,7 @@ const UserRow = ({ u, currentUserId, token, API, onFollowChange }) => {
           <p className="font-medium text-sm truncate">@{u.username}</p>
           {u.bio && <p className="text-xs text-muted-foreground truncate">{u.bio}</p>}
           {!isMe && u.records_in_common > 0 ? (
-            <p className="text-xs text-amber-700 flex items-center gap-1" data-testid={`common-records-${u.username}`}>
+            <p className="text-xs text-[#D4A828] flex items-center gap-1" data-testid={`common-records-${u.username}`}>
               <Disc className="w-3 h-3" /> {u.records_in_common} record{u.records_in_common !== 1 ? 's' : ''} in common
             </p>
           ) : u.record_count !== undefined ? (

@@ -31,15 +31,15 @@ const WaxReportPin = ({ username, API, token }) => {
       <Card className="p-4 rounded-2xl shadow-sm hover:shadow-md transition-all" style={{ background: '#FAEDC7', border: '1px solid rgba(200,134,26,0.15)' }}>
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: 'rgba(200,134,26,0.08)' }}>
-            <Disc className="w-4 h-4" style={{ color: '#C8861A' }} />
+            <Disc className="w-4 h-4" style={{ color: '#D4A828' }} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-heading" style={{ color: '#2A1A06' }}>your week in wax</p>
-            <p className="text-[11px] truncate" style={{ color: '#8A6B4A' }}>
+            <p className="text-sm font-heading" style={{ color: '#1E2A3A' }}>your week in wax</p>
+            <p className="text-[11px] truncate" style={{ color: '#3A4D63' }}>
               {weekRange} · {report.total_spins} spins · {report.personality?.label?.slice(0, 40)}...
             </p>
           </div>
-          <span className="text-[11px] shrink-0" style={{ color: '#C8861A' }}>View &rarr;</span>
+          <span className="text-[11px] shrink-0" style={{ color: '#D4A828' }}>View &rarr;</span>
         </div>
       </Card>
     </Link>

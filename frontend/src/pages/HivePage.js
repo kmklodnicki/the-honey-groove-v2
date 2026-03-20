@@ -405,10 +405,10 @@ const HivePage = () => {
         <h1 className="font-heading text-3xl mb-6">The Hive</h1>
         {feedError ? (
           <Card className="p-8 text-center border-honey/30" data-testid="hive-error-state">
-            <p className="italic text-muted-foreground mb-4" style={{ fontFamily: '"DM Serif Display", serif', color: '#8A6B4A' }}>
+            <p className="italic text-muted-foreground mb-4" style={{ fontFamily: '"DM Serif Display", serif', color: '#3A4D63' }}>
               couldn't reach the hive. tap below to try again.
             </p>
-            <Button onClick={() => { setLoading(true); setFeedError(false); fetchFeed(); }} className="bg-amber-500 text-white hover:bg-amber-600 rounded-full" data-testid="hive-retry-btn">
+            <Button onClick={() => { setLoading(true); setFeedError(false); fetchFeed(); }} className="bg-[#D4A828] text-white hover:bg-[#E8CA5A] rounded-full" data-testid="hive-retry-btn">
               Try Again
             </Button>
           </Card>
@@ -439,11 +439,11 @@ const HivePage = () => {
 
       {/* Welcome Banner */}
       {showWelcome && (
-        <div className="mb-4 px-4 py-3 rounded-xl bg-amber-50 border border-amber-200/50 text-center"
+        <div className="mb-4 px-4 py-3 rounded-xl bg-[#F0E6C8] border border-[#E5DBC8]/50 text-center"
           style={{ animation: 'bingoCelebFadeIn 300ms ease-out' }}
           data-testid="welcome-banner"
         >
-          <p className="text-amber-700 font-medium italic" style={{ fontFamily: '"DM Serif Display", serif' }}>
+          <p className="text-[#D4A828] font-medium italic" style={{ fontFamily: '"DM Serif Display", serif' }}>
             welcome to the hive. 🐝 you're in.
           </p>
         </div>
@@ -459,13 +459,13 @@ const HivePage = () => {
 
       {/* Feed Mode Toggle: All | Following */}
       <div className="flex items-center justify-between mb-3" data-testid="feed-mode-toggle">
-        <div className="flex w-52 bg-stone-100 rounded-full p-1">
+        <div className="flex w-52 bg-[#F3EBE0] rounded-full p-1">
           <button
             onClick={() => setFeedMode('all')}
             className={`flex-1 py-1.5 rounded-full text-sm font-medium text-center transition-all duration-250 ${
               feedMode === 'all'
                 ? 'text-white shadow-sm'
-                : 'text-stone-500 hover:text-stone-700'
+                : 'text-[#3A4D63] hover:text-[#3A4D63]'
             }`}
             style={feedMode === 'all' ? { background: 'linear-gradient(135deg, #FFB300 0%, #FFA000 100%)' } : {}}
             data-testid="feed-mode-all"
@@ -477,7 +477,7 @@ const HivePage = () => {
             className={`flex-1 py-1.5 rounded-full text-sm font-medium text-center transition-all duration-250 ${
               feedMode === 'following'
                 ? 'text-white shadow-sm'
-                : 'text-stone-500 hover:text-stone-700'
+                : 'text-[#3A4D63] hover:text-[#3A4D63]'
             }`}
             style={feedMode === 'following' ? { background: 'linear-gradient(135deg, #FFB300 0%, #FFA000 100%)' } : {}}
             data-testid="feed-mode-following"
@@ -515,7 +515,7 @@ const HivePage = () => {
               <React.Fragment key={f.key}>
                 <DropdownMenuItem
                   onClick={() => setActiveFilter(f.key)}
-                  className="rounded-lg px-3 py-2.5 cursor-pointer flex items-center justify-center gap-2 text-sm font-medium transition-colors hover:bg-amber-50"
+                  className="rounded-lg px-3 py-2.5 cursor-pointer flex items-center justify-center gap-2 text-sm font-medium transition-colors hover:bg-[#F0E6C8]"
                   style={{ color: '#78350F' }}
                   data-testid={`filter-${f.key}`}
                 >
@@ -534,14 +534,14 @@ const HivePage = () => {
 
       {/* Prompt Filter Banner */}
       {promptFilter && promptFilterText && (
-        <div className="mb-4 px-4 py-3 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-between gap-3" data-testid="prompt-filter-banner">
-          <p className="text-sm text-amber-800 font-medium italic truncate">
+        <div className="mb-4 px-4 py-3 rounded-xl bg-[#F0E6C8] border border-[#E5DBC8]/60 flex items-center justify-between gap-3" data-testid="prompt-filter-banner">
+          <p className="text-sm text-[#1E2A3A] font-medium italic truncate">
             Viewing responses to: {promptFilterText}
           </p>
           <Button
             size="sm" variant="ghost"
             onClick={() => setSearchParams({})}
-            className="shrink-0 text-xs text-amber-600 hover:text-amber-800"
+            className="shrink-0 text-xs text-[#D4A828] hover:text-[#1E2A3A]"
             data-testid="clear-prompt-filter"
           >
             Clear Filter
@@ -556,7 +556,7 @@ const HivePage = () => {
           className="w-full mb-4 py-2.5 px-4 rounded-xl border border-honey/50 text-sm font-medium flex items-center justify-center gap-2 transition-all duration-300 hover:shadow-md animate-in slide-in-from-top-2 fade-in duration-300"
           style={{
             background: 'linear-gradient(135deg, rgba(244,185,66,0.12) 0%, rgba(217,140,47,0.08) 100%)',
-            color: '#C8861A',
+            color: '#D4A828',
           }}
           data-testid="new-posts-btn"
         >
@@ -571,7 +571,7 @@ const HivePage = () => {
       {filteredPosts.length === 0 ? (
         <Card className="p-8 text-center border-honey/30" data-testid="hive-empty-state">
           <span className="text-4xl block mb-3">🐝</span>
-          <p className="italic text-muted-foreground mb-4" style={{ fontFamily: '"DM Serif Display", serif', color: '#8A6B4A' }}>
+          <p className="italic text-muted-foreground mb-4" style={{ fontFamily: '"DM Serif Display", serif', color: '#3A4D63' }}>
             {feedMode === 'following' && activeFilter === 'all'
               ? 'No posts yet.'
               : feedMode === 'following'
@@ -581,11 +581,11 @@ const HivePage = () => {
                   : `No ${FEED_FILTERS.find(f => f.key === activeFilter)?.label || ''} posts yet.`}
           </p>
           {feedMode === 'following' ? (
-            <Button onClick={() => navigate('/nectar')} className="bg-amber-500 text-white hover:bg-amber-600 rounded-full" data-testid="find-collectors-btn">
+            <Button onClick={() => navigate('/nectar')} className="bg-[#D4A828] text-white hover:bg-[#E8CA5A] rounded-full" data-testid="find-collectors-btn">
               browse collectors
             </Button>
           ) : (
-            <Button onClick={() => {}} className="bg-amber-500 text-white hover:bg-amber-600 rounded-full" data-testid="hive-empty-cta">
+            <Button onClick={() => {}} className="bg-[#D4A828] text-white hover:bg-[#E8CA5A] rounded-full" data-testid="hive-empty-cta">
               post something
             </Button>
           )}

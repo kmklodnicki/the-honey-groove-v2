@@ -100,10 +100,10 @@ const JoinPage = () => {
     }
   };
 
-  const inputClass = 'w-full bg-[#FAF6EE] border border-[#C8861A]/20 rounded-xl px-4 py-3.5 font-serif text-base text-[#2A1A06] placeholder:text-[#8A6B4A]/50 focus:outline-none focus:border-[#C8861A] transition-colors';
+  const inputClass = 'w-full bg-[#FFFBF2] border border-[#D4A828]/20 rounded-xl px-4 py-3.5 font-serif text-base text-[#1E2A3A] placeholder:text-[#3A4D63]/50 focus:outline-none focus:border-[#D4A828] transition-colors';
 
   return (
-    <div className="min-h-screen bg-[#FAF6EE] flex flex-col items-center" data-testid="join-page">
+    <div className="min-h-screen bg-[#FFFBF2] flex flex-col items-center" data-testid="join-page">
       <div className="w-full max-w-md mx-auto px-6" style={{ paddingTop: '80px' }}>
         {/* Logo */}
         <div className="flex justify-center mb-10">
@@ -116,13 +116,13 @@ const JoinPage = () => {
           <div className="text-center" data-testid="join-invalid-code">
             <h1
               className="mb-4"
-              style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: '36px', color: '#2A1A06' }}
+              style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: '36px', color: '#1E2A3A' }}
             >
               hmm, that didn't work.
             </h1>
             <p
               className="mb-6"
-              style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: '22px', color: '#8A6B4A', lineHeight: 1.5 }}
+              style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: '22px', color: '#3A4D63', lineHeight: 1.5 }}
             >
               this invite code is invalid or has already been used.
             </p>
@@ -137,7 +137,7 @@ const JoinPage = () => {
                 value={resendEmail}
                 onChange={e => setResendEmail(e.target.value)}
                 placeholder="enter your email"
-                className="w-full bg-[#FAF6EE] border border-[#C8861A]/20 rounded-xl px-4 py-3.5 font-serif text-base text-[#2A1A06] placeholder:text-[#8A6B4A]/50 focus:outline-none focus:border-[#C8861A] transition-colors mb-3"
+                className="w-full bg-[#FFFBF2] border border-[#D4A828]/20 rounded-xl px-4 py-3.5 font-serif text-base text-[#1E2A3A] placeholder:text-[#3A4D63]/50 focus:outline-none focus:border-[#D4A828] transition-colors mb-3"
                 data-testid="join-resend-email"
               />
               {resendStatus === 'sent' ? (
@@ -161,23 +161,23 @@ const JoinPage = () => {
             </div>
 
             <p
-              style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: '18px', color: '#8A6B4A', lineHeight: 1.5 }}
+              style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: '18px', color: '#3A4D63', lineHeight: 1.5 }}
             >
               or join the waitlist at{' '}
-              <Link to="/beta" className="text-[#C8861A] underline">thehoneygroove.com/beta</Link>
+              <Link to="/beta" className="text-[#D4A828] underline">thehoneygroove.com/beta</Link>
             </p>
           </div>
         ) : (
           <>
             <h1
               className="text-center mb-2"
-              style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: '40px', color: '#2A1A06' }}
+              style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: '40px', color: '#1E2A3A' }}
             >
               you're invited.
             </h1>
             <p
               className="text-center mb-8"
-              style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: '22px', color: '#C8861A' }}
+              style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: '22px', color: '#D4A828' }}
             >
               create your account and join the hive.
             </p>
@@ -217,7 +217,7 @@ const JoinPage = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8A6B4A]/50 hover:text-[#8A6B4A]"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#3A4D63]/50 hover:text-[#3A4D63]"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -235,7 +235,7 @@ const JoinPage = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#E8A820] hover:bg-[#d49a1a] text-[#2A1A06] font-serif text-lg font-medium rounded-2xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full bg-[#E8A820] hover:bg-[#d49a1a] text-[#1E2A3A] font-serif text-lg font-medium rounded-2xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 style={{ height: '56px' }}
                 data-testid="join-submit-btn"
               >
@@ -243,9 +243,9 @@ const JoinPage = () => {
               </button>
             </form>
 
-            <p className="text-center mt-6" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '16px', color: '#8A6B4A' }}>
+            <p className="text-center mt-6" style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '16px', color: '#3A4D63' }}>
               already have an account?{' '}
-              <Link to="/login" className="text-[#C8861A] underline" data-testid="join-login-link">sign in</Link>
+              <Link to="/login" className="text-[#D4A828] underline" data-testid="join-login-link">sign in</Link>
             </p>
           </>
         )}

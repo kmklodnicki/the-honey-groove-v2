@@ -24,12 +24,12 @@ import { prefetchAPI } from '../hooks/useAPI';
 // Bee icon SVG component
 const BeeIcon = ({ className = "w-4 h-4" }) => (
   <svg viewBox="0 0 24 24" className={className} fill="none">
-    <ellipse cx="12" cy="14" rx="5" ry="4" fill="#1F1F1F"/>
-    <ellipse cx="12" cy="13" rx="3.5" ry="2" fill="#F4B942"/>
-    <ellipse cx="12" cy="15" rx="3" ry="1.5" fill="#F4B942"/>
-    <circle cx="12" cy="9" r="2.5" fill="#1F1F1F"/>
-    <ellipse cx="8" cy="11" rx="2" ry="3" fill="#1F1F1F" opacity="0.3"/>
-    <ellipse cx="16" cy="11" rx="2" ry="3" fill="#1F1F1F" opacity="0.3"/>
+    <ellipse cx="12" cy="14" rx="5" ry="4" fill="#1E2A3A"/>
+    <ellipse cx="12" cy="13" rx="3.5" ry="2" fill="#D4A828"/>
+    <ellipse cx="12" cy="15" rx="3" ry="1.5" fill="#D4A828"/>
+    <circle cx="12" cy="9" r="2.5" fill="#1E2A3A"/>
+    <ellipse cx="8" cy="11" rx="2" ry="3" fill="#1E2A3A" opacity="0.3"/>
+    <ellipse cx="16" cy="11" rx="2" ry="3" fill="#1E2A3A" opacity="0.3"/>
   </svg>
 );
 
@@ -95,7 +95,7 @@ const Navbar = () => {
               <Link to="/hive" data-testid="nav-hive" className={`nav-honey-link ${isActive('/hive') ? 'nav-active' : ''}`}>
                 <Button 
                   variant="ghost" 
-                  className={`gap-2 ${isActive('/hive') ? 'bg-honey/20 text-[#C8861A]' : ''}`}
+                  className={`gap-2 ${isActive('/hive') ? 'bg-honey/20 text-[#D4A828]' : ''}`}
                 >
                   <Home className="w-4 h-4" />
                   The Hive
@@ -104,7 +104,7 @@ const Navbar = () => {
               <Link to="/nectar" data-testid="nav-explore" onMouseEnter={() => handlePrefetch('/nectar')} className={`nav-honey-link ${isActive('/nectar') ? 'nav-active' : ''}`}>
                 <Button 
                   variant="ghost" 
-                  className={`gap-2 ${isActive('/nectar') ? 'bg-honey/20 text-[#C8861A]' : ''}`}
+                  className={`gap-2 ${isActive('/nectar') ? 'bg-honey/20 text-[#D4A828]' : ''}`}
                 >
                   <Globe className="w-4 h-4" />
                   Nectar
@@ -113,7 +113,7 @@ const Navbar = () => {
               <Link to="/collection" data-testid="nav-collection" onMouseEnter={() => handlePrefetch('/collection')} className={`nav-honey-link ${isActive('/collection') ? 'nav-active' : ''}`}>
                 <Button 
                   variant="ghost" 
-                  className={`gap-2 ${isActive('/collection') ? 'bg-honey/20 text-[#C8861A]' : ''}`}
+                  className={`gap-2 ${isActive('/collection') ? 'bg-honey/20 text-[#D4A828]' : ''}`}
                 >
                   <Library className="w-4 h-4" />
                   The Vault
@@ -122,7 +122,7 @@ const Navbar = () => {
               <Link to="/honeypot" data-testid="nav-honeypot" onMouseEnter={() => handlePrefetch('/honeypot')} className={`nav-honey-link ${isActive('/honeypot') ? 'nav-active' : ''}`}>
                 <Button 
                   variant="ghost" 
-                  className={`gap-2 ${isActive('/honeypot') ? 'bg-honey/20 text-[#C8861A]' : ''}`}
+                  className={`gap-2 ${isActive('/honeypot') ? 'bg-honey/20 text-[#D4A828]' : ''}`}
                 >
                   <ShoppingBag className="w-4 h-4" />
                   The Honeypot
@@ -131,7 +131,7 @@ const Navbar = () => {
               <Link to="/essentials" data-testid="nav-essentials" className={`nav-honey-link ${isActive('/essentials') ? 'nav-active' : ''}`}>
                 <Button 
                   variant="ghost" 
-                  className={`gap-2 ${isActive('/essentials') ? 'bg-honey/20 text-[#C8861A]' : ''}`}
+                  className={`gap-2 ${isActive('/essentials') ? 'bg-honey/20 text-[#D4A828]' : ''}`}
                 >
                   <Sparkles className="w-4 h-4" />
                   Essentials
@@ -175,7 +175,7 @@ const Navbar = () => {
                     <BeeAvatar user={user} className="h-8 w-8" />
                     <div className="flex flex-col">
                       <p className="text-sm font-medium flex items-center gap-1">
-                        {user.username ? `@${user.username}` : <span className="w-16 h-3 rounded bg-stone-200 animate-pulse inline-block" />}
+                        {user.username ? `@${user.username}` : <span className="w-16 h-3 rounded bg-[#F3EBE0] animate-pulse inline-block" />}
                         <UserBadges user={{ ...user, is_founder: user.is_admin || user.id === KATIE_ID }} size="small" />
                       </p>
                       <p className="text-xs text-muted-foreground">{user.email}</p>
@@ -233,7 +233,7 @@ const Navbar = () => {
 
     {/* Mobile Slim Top Bar — sits below PWA banner via CSS var */}
     {user && (
-      <div className="md:hidden sticky h-[52px] bg-[#FAF6EE] border-b border-[#C8861A]/10" data-testid="mobile-top-bar" style={{ top: 'var(--pwa-banner-h, 0px)', zIndex: 100, transition: 'top 0.3s ease', overflow: 'visible', contain: 'none' }}>
+      <div className="md:hidden sticky h-[52px] bg-[#FFFBF2] border-b border-[#D4A828]/10" data-testid="mobile-top-bar" style={{ top: 'var(--pwa-banner-h, 0px)', zIndex: 100, transition: 'top 0.3s ease', overflow: 'visible', contain: 'none' }}>
         <div className="flex items-center h-full px-3">
           <Link to="/hive" className="shrink-0 mr-auto overflow-visible">
             <img src="/logo-wordmark.png" alt="the Honey Groove" style={{minWidth: '120px', width: '120px'}} className="object-contain" />
@@ -267,34 +267,34 @@ const Navbar = () => {
     {/* Mobile Bottom Nav */}
     {user && (
       <div
-        className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-[#FAF6EE] border-t border-[#C8861A]/10"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-[100] bg-[#FFFBF2] border-t border-[#D4A828]/10"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
         data-testid="mobile-bottom-nav"
       >
         <div className="flex justify-around items-center h-16">
           <Link to="/hive" className={`mobile-nav-item flex flex-col items-center justify-center flex-1 h-full gap-0.5 ${isActive('/hive') ? 'nav-active' : ''}`} data-testid="mobile-hive">
-            <Home className="w-5 h-5 transition-all duration-200" style={{ color: isActive('/hive') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
-            <span className="text-[10px] font-medium transition-colors duration-200" style={{ color: isActive('/hive') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }}>Hive</span>
+            <Home className="w-5 h-5 transition-all duration-200" style={{ color: isActive('/hive') ? '#D4A828' : 'rgba(138, 107, 74, 0.65)' }} />
+            <span className="text-[10px] font-medium transition-colors duration-200" style={{ color: isActive('/hive') ? '#D4A828' : 'rgba(138, 107, 74, 0.5)' }}>Hive</span>
             <span className="mobile-nav-dot" />
           </Link>
           <Link to="/nectar" className={`mobile-nav-item flex flex-col items-center justify-center flex-1 h-full gap-0.5 ${isActive('/nectar') ? 'nav-active' : ''}`} data-testid="mobile-explore">
-            <Globe className="w-5 h-5 transition-all duration-200" style={{ color: isActive('/nectar') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
-            <span className="text-[10px] font-medium transition-colors duration-200" style={{ color: isActive('/nectar') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }}>Nectar</span>
+            <Globe className="w-5 h-5 transition-all duration-200" style={{ color: isActive('/nectar') ? '#D4A828' : 'rgba(138, 107, 74, 0.65)' }} />
+            <span className="text-[10px] font-medium transition-colors duration-200" style={{ color: isActive('/nectar') ? '#D4A828' : 'rgba(138, 107, 74, 0.5)' }}>Nectar</span>
             <span className="mobile-nav-dot" />
           </Link>
           <Link to="/collection" className={`mobile-nav-item flex flex-col items-center justify-center flex-1 h-full gap-0.5 ${isActive('/collection') ? 'nav-active' : ''}`} data-testid="mobile-collection">
-            <Library className="w-5 h-5 transition-all duration-200" style={{ color: isActive('/collection') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
-            <span className="text-[10px] font-medium transition-colors duration-200" style={{ color: isActive('/collection') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }}>The Vault</span>
+            <Library className="w-5 h-5 transition-all duration-200" style={{ color: isActive('/collection') ? '#D4A828' : 'rgba(138, 107, 74, 0.65)' }} />
+            <span className="text-[10px] font-medium transition-colors duration-200" style={{ color: isActive('/collection') ? '#D4A828' : 'rgba(138, 107, 74, 0.5)' }}>The Vault</span>
             <span className="mobile-nav-dot" />
           </Link>
           <Link to="/honeypot" className={`mobile-nav-item flex flex-col items-center justify-center flex-1 h-full gap-0.5 ${isActive('/honeypot') ? 'nav-active' : ''}`} data-testid="mobile-honeypot">
-            <ShoppingBag className="w-5 h-5 transition-all duration-200" style={{ color: isActive('/honeypot') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
-            <span className="text-[10px] font-medium transition-colors duration-200" style={{ color: isActive('/honeypot') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }}>Honeypot</span>
+            <ShoppingBag className="w-5 h-5 transition-all duration-200" style={{ color: isActive('/honeypot') ? '#D4A828' : 'rgba(138, 107, 74, 0.65)' }} />
+            <span className="text-[10px] font-medium transition-colors duration-200" style={{ color: isActive('/honeypot') ? '#D4A828' : 'rgba(138, 107, 74, 0.5)' }}>Honeypot</span>
             <span className="mobile-nav-dot" />
           </Link>
           <Link to="/essentials" className={`mobile-nav-item flex flex-col items-center justify-center flex-1 h-full gap-0.5 ${isActive('/essentials') ? 'nav-active' : ''}`} data-testid="mobile-essentials">
-            <Sparkles className="w-5 h-5 transition-all duration-200" style={{ color: isActive('/essentials') ? '#C8861A' : 'rgba(138, 107, 74, 0.65)' }} />
-            <span className="text-[10px] font-medium transition-colors duration-200" style={{ color: isActive('/essentials') ? '#C8861A' : 'rgba(138, 107, 74, 0.5)' }}>Essentials</span>
+            <Sparkles className="w-5 h-5 transition-all duration-200" style={{ color: isActive('/essentials') ? '#D4A828' : 'rgba(138, 107, 74, 0.65)' }} />
+            <span className="text-[10px] font-medium transition-colors duration-200" style={{ color: isActive('/essentials') ? '#D4A828' : 'rgba(138, 107, 74, 0.5)' }}>Essentials</span>
             <span className="mobile-nav-dot" />
           </Link>
         </div>
@@ -393,7 +393,7 @@ const MobileProfileMenu = ({ user, onLogout }) => {
               <BeeAvatar user={user} className="h-8 w-8" />
               <div className="flex flex-col min-w-0">
                 <p className="text-sm font-medium truncate flex items-center gap-1">
-                  {user.username ? `@${user.username}` : <span className="w-16 h-3 rounded bg-stone-200 animate-pulse inline-block" />}
+                  {user.username ? `@${user.username}` : <span className="w-16 h-3 rounded bg-[#F3EBE0] animate-pulse inline-block" />}
                   <UserBadges user={{ ...user, is_founder: user.is_admin || user.id === KATIE_ID }} size="small" />
                 </p>
                 <p className="text-xs text-muted-foreground truncate">{user.email}</p>
@@ -610,7 +610,7 @@ const NotificationBell = () => {
         <Button variant="ghost" className="relative h-9 w-9 rounded-full" data-testid="notification-bell">
           <Bell className="w-5 h-5" />
           {unreadCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 bg-[#C8861A] text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 badge-pulse" data-testid="notification-badge">
+            <span className="absolute -top-0.5 -right-0.5 bg-[#D4A828] text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 badge-pulse" data-testid="notification-badge">
               {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}
@@ -657,7 +657,7 @@ const NotificationBell = () => {
                 data-testid="notif-view-more"
               >
                 {loadingMore ? (
-                  <Loader2 className="w-4 h-4 animate-spin mx-auto text-[#C8861A]" />
+                  <Loader2 className="w-4 h-4 animate-spin mx-auto text-[#D4A828]" />
                 ) : (
                   'View More'
                 )}

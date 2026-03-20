@@ -301,12 +301,12 @@ const SettingsPage = () => {
                     className="absolute bottom-0 right-0 w-6 h-6"
                     fill="none"
                   >
-                    <ellipse cx="12" cy="14" rx="5" ry="4" fill="#1F1F1F"/>
-                    <ellipse cx="12" cy="13" rx="3.5" ry="2" fill="#F4B942"/>
-                    <ellipse cx="12" cy="15" rx="3" ry="1.5" fill="#F4B942"/>
-                    <circle cx="12" cy="9" r="2.5" fill="#1F1F1F"/>
-                    <ellipse cx="8" cy="11" rx="2" ry="3" fill="#1F1F1F" opacity="0.3"/>
-                    <ellipse cx="16" cy="11" rx="2" ry="3" fill="#1F1F1F" opacity="0.3"/>
+                    <ellipse cx="12" cy="14" rx="5" ry="4" fill="#1E2A3A"/>
+                    <ellipse cx="12" cy="13" rx="3.5" ry="2" fill="#D4A828"/>
+                    <ellipse cx="12" cy="15" rx="3" ry="1.5" fill="#D4A828"/>
+                    <circle cx="12" cy="9" r="2.5" fill="#1E2A3A"/>
+                    <ellipse cx="8" cy="11" rx="2" ry="3" fill="#1E2A3A" opacity="0.3"/>
+                    <ellipse cx="16" cy="11" rx="2" ry="3" fill="#1E2A3A" opacity="0.3"/>
                   </svg>
                 </AvatarFallback>
               </Avatar>
@@ -562,16 +562,16 @@ const SettingsPage = () => {
       {/* Privacy & Messaging */}
       <Card className="border-honey/30 mb-6" data-testid="privacy-settings-card">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Shield className="w-5 h-5 text-amber-600" /> Privacy & Messaging</CardTitle>
+          <CardTitle className="flex items-center gap-2"><Shield className="w-5 h-5 text-[#D4A828]" /> Privacy & Messaging</CardTitle>
           <CardDescription>control who can follow you and send you messages.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Profile Privacy */}
           <div>
             <Label className="text-sm font-medium mb-3 block">Profile Visibility</Label>
-            <div className="flex items-center justify-between p-3 rounded-lg bg-stone-50/80 border border-stone-200/50">
+            <div className="flex items-center justify-between p-3 rounded-lg bg-[#FFFBF2]/80 border border-[#E5DBC8]/50">
               <div className="flex items-center gap-3">
-                {isPrivate ? <Lock className="w-4 h-4 text-amber-600" /> : <Globe className="w-4 h-4 text-green-600" />}
+                {isPrivate ? <Lock className="w-4 h-4 text-[#D4A828]" /> : <Globe className="w-4 h-4 text-green-600" />}
                 <div>
                   <p className="text-sm font-medium">{isPrivate ? 'Private' : 'Public'}</p>
                   <p className="text-xs text-muted-foreground">
@@ -601,17 +601,17 @@ const SettingsPage = () => {
                   onClick={() => setDmSetting(opt.value)}
                   className={`w-full flex items-center gap-3 p-3 rounded-lg border transition-all text-left ${
                     dmSetting === opt.value
-                      ? 'border-amber-400 bg-amber-50/50'
-                      : 'border-stone-200/50 bg-stone-50/40 hover:bg-stone-50/80'
+                      ? 'border-[#D4A828] bg-[#F0E6C8]/50'
+                      : 'border-[#E5DBC8]/50 bg-[#FFFBF2]/40 hover:bg-[#FFFBF2]/80'
                   }`}
                   data-testid={`dm-setting-${opt.value}`}
                 >
-                  <opt.icon className={`w-4 h-4 shrink-0 ${dmSetting === opt.value ? 'text-amber-600' : 'text-stone-400'}`} />
+                  <opt.icon className={`w-4 h-4 shrink-0 ${dmSetting === opt.value ? 'text-[#D4A828]' : 'text-[#7A8694]'}`} />
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-medium ${dmSetting === opt.value ? 'text-amber-800' : 'text-stone-700'}`}>{opt.label}</p>
+                    <p className={`text-sm font-medium ${dmSetting === opt.value ? 'text-[#1E2A3A]' : 'text-[#3A4D63]'}`}>{opt.label}</p>
                     <p className="text-xs text-muted-foreground">{opt.desc}</p>
                   </div>
-                  {dmSetting === opt.value && <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />}
+                  {dmSetting === opt.value && <CheckCircle2 className="w-4 h-4 text-[#D4A828] shrink-0" />}
                 </button>
               ))}
             </div>
@@ -622,14 +622,14 @@ const SettingsPage = () => {
       {/* Notification Preferences */}
       <Card className="border-honey/30 mb-6" data-testid="notification-prefs-card">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Bell className="w-5 h-5 text-amber-500" /> Notifications</CardTitle>
+          <CardTitle className="flex items-center gap-2"><Bell className="w-5 h-5 text-[#D4A828]" /> Notifications</CardTitle>
           <CardDescription>control which notifications you receive, separately for in-app and email.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* In-App Notifications */}
           <div>
             <p className="text-sm font-semibold text-vinyl-black mb-2 flex items-center gap-1.5">
-              <Bell className="w-3.5 h-3.5 text-amber-600" /> In-App Notifications
+              <Bell className="w-3.5 h-3.5 text-[#D4A828]" /> In-App Notifications
             </p>
             <div className="space-y-1.5">
               {[
@@ -643,27 +643,27 @@ const SettingsPage = () => {
                   disabled={notifSaving}
                   className={`w-full flex items-center gap-3 p-2.5 rounded-lg border transition-all text-left ${
                     notifPrefApp === opt.value
-                      ? 'border-amber-400 bg-amber-50/50'
-                      : 'border-stone-200/50 bg-stone-50/40 hover:bg-stone-50/80'
+                      ? 'border-[#D4A828] bg-[#F0E6C8]/50'
+                      : 'border-[#E5DBC8]/50 bg-[#FFFBF2]/40 hover:bg-[#FFFBF2]/80'
                   }`}
                   data-testid={`notif-pref-app-${opt.value}`}
                 >
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-medium ${notifPrefApp === opt.value ? 'text-amber-800' : 'text-stone-700'}`}>{opt.label}</p>
+                    <p className={`text-sm font-medium ${notifPrefApp === opt.value ? 'text-[#1E2A3A]' : 'text-[#3A4D63]'}`}>{opt.label}</p>
                     <p className="text-xs text-muted-foreground">{opt.desc}</p>
                   </div>
-                  {notifPrefApp === opt.value && <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />}
+                  {notifPrefApp === opt.value && <CheckCircle2 className="w-4 h-4 text-[#D4A828] shrink-0" />}
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="border-t border-stone-200/50" />
+          <div className="border-t border-[#E5DBC8]/50" />
 
           {/* Email Notifications */}
           <div>
             <p className="text-sm font-semibold text-vinyl-black mb-1.5 flex items-center gap-1.5">
-              <Mail className="w-3.5 h-3.5 text-amber-600" /> Email Notifications
+              <Mail className="w-3.5 h-3.5 text-[#D4A828]" /> Email Notifications
             </p>
             <p className="text-xs text-muted-foreground mb-2">Order confirmations and account emails are always delivered. Weekly Wax is controlled separately below.</p>
             <div className="space-y-1.5">
@@ -678,16 +678,16 @@ const SettingsPage = () => {
                   disabled={notifSaving}
                   className={`w-full flex items-center gap-3 p-2.5 rounded-lg border transition-all text-left ${
                     notifPrefEmail === opt.value
-                      ? 'border-amber-400 bg-amber-50/50'
-                      : 'border-stone-200/50 bg-stone-50/40 hover:bg-stone-50/80'
+                      ? 'border-[#D4A828] bg-[#F0E6C8]/50'
+                      : 'border-[#E5DBC8]/50 bg-[#FFFBF2]/40 hover:bg-[#FFFBF2]/80'
                   }`}
                   data-testid={`notif-pref-email-${opt.value}`}
                 >
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-medium ${notifPrefEmail === opt.value ? 'text-amber-800' : 'text-stone-700'}`}>{opt.label}</p>
+                    <p className={`text-sm font-medium ${notifPrefEmail === opt.value ? 'text-[#1E2A3A]' : 'text-[#3A4D63]'}`}>{opt.label}</p>
                     <p className="text-xs text-muted-foreground">{opt.desc}</p>
                   </div>
-                  {notifPrefEmail === opt.value && <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0" />}
+                  {notifPrefEmail === opt.value && <CheckCircle2 className="w-4 h-4 text-[#D4A828] shrink-0" />}
                 </button>
               ))}
             </div>
@@ -698,7 +698,7 @@ const SettingsPage = () => {
       {/* Newsletter - original */}
       <Card className="border-honey/30 mb-6" data-testid="newsletter-settings-card">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Mail className="w-5 h-5 text-amber-500" /> The Weekly Wax</CardTitle>
+          <CardTitle className="flex items-center gap-2"><Mail className="w-5 h-5 text-[#D4A828]" /> The Weekly Wax</CardTitle>
           <CardDescription>get the honey groove newsletter in your inbox every week.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -720,7 +720,7 @@ const SettingsPage = () => {
       {/* Download App */}
       <Card className="border-honey/30 mb-6" data-testid="download-app-card">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Download className="w-5 h-5 text-amber-500" /> Download App</CardTitle>
+          <CardTitle className="flex items-center gap-2"><Download className="w-5 h-5 text-[#D4A828]" /> Download App</CardTitle>
           <CardDescription>Install The Honey Groove on your device for the best experience.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -867,7 +867,7 @@ const SettingsPage = () => {
 
           {/* Verification */}
           <div className="border-t border-honey/20 pt-4" data-testid="verification-section">
-            <Label className="text-sm font-medium text-[#2A1A06] mb-2 block">Verification</Label>
+            <Label className="text-sm font-medium text-[#1E2A3A] mb-2 block">Verification</Label>
             {(() => {
               const isVerified = user?.is_verified || user?.golden_hive_verified;
               const method = user?.verified_method;
@@ -877,7 +877,7 @@ const SettingsPage = () => {
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="11" fill="#22C55E"/><path d="M7.5 12l3 3 6-6" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/></svg>
                     <span className="font-medium">Your identity is verified.</span>
                   </div>
-                  <p className="text-[11px] text-[#8A6B4A]">
+                  <p className="text-[11px] text-[#3A4D63]">
                     {method === 'stripe_kyc' && 'Verified via Stripe seller account (KYC).'}
                     {method === 'paid' && 'Verified via one-time ID check.'}
                     {method === 'legacy_golden_hive' && 'Verified as a Golden Hive founding member.'}
@@ -888,7 +888,7 @@ const SettingsPage = () => {
               );
               return (
                 <div className="space-y-3" data-testid="get-verified-cta">
-                  <p className="text-xs text-[#8A6B4A] leading-relaxed">Get verified to show other collectors you're trustworthy. Verification is free when you complete Stripe seller onboarding.</p>
+                  <p className="text-xs text-[#3A4D63] leading-relaxed">Get verified to show other collectors you're trustworthy. Verification is free when you complete Stripe seller onboarding.</p>
                   <div className="flex flex-col gap-2">
                     {!stripeStatus?.stripe_connected && (
                       <Button onClick={handleStripeConnect} disabled={stripeConnecting}
@@ -908,7 +908,7 @@ const SettingsPage = () => {
             <button
               type="button"
               onClick={() => setBugReportOpen(true)}
-              className="flex items-center gap-2 text-sm text-[#8A6B4A] hover:text-amber-600 transition-colors"
+              className="flex items-center gap-2 text-sm text-[#3A4D63] hover:text-[#D4A828] transition-colors"
               data-testid="report-bug-btn"
             >
               <Bug className="w-4 h-4" />
@@ -919,7 +919,7 @@ const SettingsPage = () => {
           <div className="border-t border-honey/20 pt-4">
             <button
               onClick={() => setShowDeleteModal(true)}
-              className="flex items-center gap-2 text-sm text-[#8A6B4A] hover:text-[#6B5238] transition-colors"
+              className="flex items-center gap-2 text-sm text-[#3A4D63] hover:text-[#6B5238] transition-colors"
               data-testid="delete-account-btn"
             >
               <Trash2 className="w-4 h-4" />
@@ -937,7 +937,7 @@ const SettingsPage = () => {
 
       {/* Delete Account Confirmation Modal */}
       <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
-        <DialogContent className="sm:max-w-md bg-[#FAF6EE] border-honey/30 rounded-2xl" data-testid="delete-account-modal">
+        <DialogContent className="sm:max-w-md bg-[#FFFBF2] border-honey/30 rounded-2xl" data-testid="delete-account-modal">
           <DialogHeader>
             <DialogTitle className="font-heading text-2xl text-vinyl-black">Are you sure?</DialogTitle>
             <DialogDescription className="font-serif italic text-base text-vinyl-black/70 leading-relaxed mt-3">
@@ -957,7 +957,7 @@ const SettingsPage = () => {
             </Button>
             <Button
               onClick={() => setShowDeleteModal(false)}
-              className="w-full bg-[#E8A820] text-vinyl-black hover:bg-[#C8861A] rounded-full font-medium"
+              className="w-full bg-[#E8A820] text-vinyl-black hover:bg-[#D4A828] rounded-full font-medium"
               data-testid="cancel-delete-btn"
             >
               Cancel
@@ -1013,7 +1013,7 @@ const SettingsPage = () => {
 
       {/* Update Password Modal */}
       <Dialog open={showPwModal} onOpenChange={setShowPwModal}>
-        <DialogContent className="sm:max-w-md bg-[#FAF6EE] border-honey/30 rounded-2xl" data-testid="password-modal">
+        <DialogContent className="sm:max-w-md bg-[#FFFBF2] border-honey/30 rounded-2xl" data-testid="password-modal">
           <DialogHeader>
             <DialogTitle className="font-heading text-xl text-vinyl-black">Update Password</DialogTitle>
             <DialogDescription className="text-sm text-vinyl-black/60">Enter your current password and choose a new one.</DialogDescription>

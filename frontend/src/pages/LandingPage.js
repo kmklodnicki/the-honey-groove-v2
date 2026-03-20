@@ -84,11 +84,11 @@ const LandingPage = () => {
       {/* Hero Section */}
       <section className="relative pb-10 overflow-visible pt-[120px]">
         {/* Gold line · top edge */}
-        <div className="absolute top-0 left-0 w-screen z-10" style={{ height: '2px', background: 'linear-gradient(90deg, #D4A017, #E8B923, #D4A017)' }} />
+        <div className="absolute top-0 left-0 w-screen z-10" style={{ height: '2px', background: 'linear-gradient(90deg, #D4A828, #E8CA5A, #D4A828)' }} />
         {/* Honey drip · tiled video strip pinned flush to top */}
         <div
           className="absolute top-0 left-0 w-screen overflow-hidden z-0 flex"
-          style={{ height: '120px', marginTop: '-1px', backgroundColor: '#FEF6E6' }}
+          style={{ height: '120px', marginTop: '-1px', backgroundColor: '#FFFBF2' }}
           data-testid="hero-drip"
         >
           {[0,1,2].map(i => {
@@ -118,7 +118,7 @@ const LandingPage = () => {
           })}
         </div>
         {/* Gold line · bottom of drip */}
-        <div className="absolute left-0 w-screen z-10" style={{ top: '120px', height: '2px', background: 'linear-gradient(90deg, #D4A017, #E8B923, #D4A017)' }} />
+        <div className="absolute left-0 w-screen z-10" style={{ top: '120px', height: '2px', background: 'linear-gradient(90deg, #D4A828, #E8CA5A, #D4A828)' }} />
 
         {/* Organic hero assets · desktop only */}
         <img
@@ -167,7 +167,7 @@ const LandingPage = () => {
             {/* Headline */}
             <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl text-vinyl-black tracking-tight mb-6 animate-fade-in">
               the vinyl social club,{' '}
-              <span className="text-honey-amber italic">finally.</span>
+              <span className="text-honey italic">finally.</span>
             </h1>
 
             {/* Sub-copy */}
@@ -179,14 +179,14 @@ const LandingPage = () => {
             <div className="flex flex-col items-center gap-4 animate-slide-up" style={{ animationDelay: '0.2s' }}>
               <Button
                 onClick={() => setWaitlistOpen(true)}
-                className="bg-honey text-vinyl-black hover:bg-honey-amber rounded-full px-8 py-6 text-lg font-medium hover:scale-105 transition-transform"
+                className="bg-honey text-vinyl-black hover:bg-honey-soft rounded-full px-8 py-6 text-lg font-medium hover:scale-105 transition-transform"
                 data-testid="hero-signup-btn"
               >
                 join the hive
               </Button>
               <Link
                 to="/login"
-                className="text-sm text-vinyl-black/60 hover:text-honey-amber transition-colors"
+                className="text-sm text-vinyl-black/60 hover:text-honey transition-colors"
                 data-testid="hero-login-link"
               >
                 already a member? sign in &rarr;
@@ -197,10 +197,10 @@ const LandingPage = () => {
       </section>
 
       {/* Gold separator line */}
-      <div className="w-full" style={{ height: '2px', background: 'linear-gradient(90deg, #D4A017, #E8B923, #D4A017)' }} />
+      <div className="w-full" style={{ height: '2px', background: 'linear-gradient(90deg, #D4A828, #E8CA5A, #D4A828)' }} />
 
       {/* SECTION 1 · Stats Strip */}
-      <section className="py-12 md:py-16 relative" style={{ background: '#F0E8D8' }} data-testid="stats-strip">
+      <section className="py-12 md:py-16 relative" style={{ background: '#F0E6C8' }} data-testid="stats-strip">
         <div className="max-w-5xl mx-auto px-4 md:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-0">
             {[
@@ -209,11 +209,11 @@ const LandingPage = () => {
               { num: '100%', label: 'of trade holds reversed on confirmed delivery.' },
               { num: 'Limited', label: 'Founding Members. Join the hive.' },
             ].map((stat, i) => (
-              <div key={i} className={`text-center ${i < 3 ? 'lg:border-r lg:border-[#C8861A]/20' : ''}`} data-testid={`stat-${i}`}>
-                <div className="text-5xl md:text-[64px] font-bold leading-none mb-3" style={{ fontFamily: "'Playfair Display', serif", color: '#996012' }}>
+              <div key={i} className={`text-center ${i < 3 ? 'lg:border-r lg:border-[#D4A828]/20' : ''}`} data-testid={`stat-${i}`}>
+                <div className="text-5xl md:text-[64px] font-bold leading-none mb-3" style={{ fontFamily: "'Playfair Display', serif", color: '#D4A828' }}>
                   {stat.num}
                 </div>
-                <p className="text-sm md:text-lg italic max-w-[200px] mx-auto leading-snug" style={{ fontFamily: "'Cormorant Garamond', serif", color: '#8A6B4A' }}>
+                <p className="text-sm md:text-lg italic max-w-[200px] mx-auto leading-snug" style={{ fontFamily: "'Cormorant Garamond', serif", color: '#3A4D63' }}>
                   {stat.label}
                 </p>
               </div>
@@ -228,54 +228,54 @@ const LandingPage = () => {
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
             {/* Left column · Text */}
             <div>
-              <p className="text-xs font-semibold tracking-[0.2em] uppercase mb-4" style={{ color: '#C8861A' }}>
+              <p className="text-xs font-semibold tracking-[0.2em] uppercase mb-4" style={{ color: '#D4A828' }}>
                 TRADE WITH CONFIDENCE
               </p>
               <h2 className="text-3xl sm:text-4xl lg:text-[52px] lg:leading-[1.1] font-bold text-vinyl-black mb-6" style={{ fontFamily: "'Playfair Display', serif" }}>
                 Both parties protected.{' '}
-                <span className="italic text-honey-amber">Every single trade.</span>
+                <span className="italic text-honey">Every single trade.</span>
               </h2>
-              <p className="text-base md:text-xl leading-relaxed mb-8" style={{ fontFamily: "'Cormorant Garamond', serif", color: '#8A6B4A' }}>
+              <p className="text-base md:text-xl leading-relaxed mb-8" style={{ fontFamily: "'Cormorant Garamond', serif", color: '#3A4D63' }}>
                 Every trade on the Honey Groove requires a Mutual Hold. Both collectors put up a hold equal to the estimated value of the records being traded. The hold is fully reversed within 48 hours of confirmed delivery on both sides. Nobody walks away ahead by scamming. The math makes it impossible.
               </p>
-              <Link to="/faq#trades" className="inline-flex items-center gap-2 text-sm font-medium text-[#C8861A] hover:text-[#996012] transition-colors" data-testid="learn-hold-link">
+              <Link to="/faq#trades" className="inline-flex items-center gap-2 text-sm font-medium text-[#D4A828] hover:text-[#D4A828] transition-colors" data-testid="learn-hold-link">
                 Learn how it works <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
             {/* Right column · Visual diagram */}
             <div className="flex justify-center">
-              <div className="w-full max-w-[400px] rounded-3xl border-2 border-[#C8861A]/15 bg-white/60 p-8 md:p-10" data-testid="hold-diagram">
+              <div className="w-full max-w-[400px] rounded-3xl border-2 border-[#D4A828]/15 bg-white/60 p-8 md:p-10" data-testid="hold-diagram">
                 <div className="flex items-center justify-between mb-8">
                   <div className="text-center">
-                    <div className="w-16 h-16 rounded-2xl bg-[#F0E8D8] border border-[#C8861A]/20 flex items-center justify-center mx-auto mb-2">
-                      <Disc className="w-7 h-7 text-[#C8861A]" />
+                    <div className="w-16 h-16 rounded-2xl bg-[#F0E6C8] border border-[#D4A828]/20 flex items-center justify-center mx-auto mb-2">
+                      <Disc className="w-7 h-7 text-[#D4A828]" />
                     </div>
                     <p className="text-xs font-medium text-vinyl-black/70">Collector A</p>
                   </div>
                   <div className="flex-1 flex flex-col items-center gap-1 px-2">
-                    <div className="flex items-center gap-1 text-[#C8861A]/50">
-                      <div className="h-px flex-1 bg-[#C8861A]/20" />
+                    <div className="flex items-center gap-1 text-[#D4A828]/50">
+                      <div className="h-px flex-1 bg-[#D4A828]/20" />
                       <ArrowLeftRight className="w-4 h-4 shrink-0" />
-                      <div className="h-px flex-1 bg-[#C8861A]/20" />
+                      <div className="h-px flex-1 bg-[#D4A828]/20" />
                     </div>
                   </div>
                   <div className="text-center">
-                    <div className="w-16 h-16 rounded-2xl bg-[#F0E8D8] border border-[#C8861A]/20 flex items-center justify-center mx-auto mb-2">
-                      <Disc className="w-7 h-7 text-[#C8861A]" />
+                    <div className="w-16 h-16 rounded-2xl bg-[#F0E6C8] border border-[#D4A828]/20 flex items-center justify-center mx-auto mb-2">
+                      <Disc className="w-7 h-7 text-[#D4A828]" />
                     </div>
                     <p className="text-xs font-medium text-vinyl-black/70">Collector B</p>
                   </div>
                 </div>
                 <div className="text-center mb-6">
-                  <div className="inline-flex items-center gap-2 bg-[#E8A820]/10 border border-[#C8861A]/20 rounded-full px-5 py-2.5">
-                    <Shield className="w-5 h-5 text-[#C8861A]" />
-                    <span className="text-sm font-semibold text-[#996012]">Hold Active</span>
+                  <div className="inline-flex items-center gap-2 bg-[#E8A820]/10 border border-[#D4A828]/20 rounded-full px-5 py-2.5">
+                    <Shield className="w-5 h-5 text-[#D4A828]" />
+                    <span className="text-sm font-semibold text-[#D4A828]">Hold Active</span>
                   </div>
                 </div>
-                <div className="border-t border-dashed border-[#C8861A]/20 pt-5">
+                <div className="border-t border-dashed border-[#D4A828]/20 pt-5">
                   <div className="flex items-center justify-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-[#C8861A]" />
-                    <span className="text-sm font-medium text-[#C8861A]">Delivery Confirmed · Holds Released</span>
+                    <CheckCircle2 className="w-5 h-5 text-[#D4A828]" />
+                    <span className="text-sm font-medium text-[#D4A828]">Delivery Confirmed · Holds Released</span>
                   </div>
                 </div>
               </div>
@@ -285,15 +285,15 @@ const LandingPage = () => {
       </section>
 
       {/* SECTION 3 · Fee Comparison */}
-      <section className="py-16 md:py-20 relative" style={{ background: '#F0E8D8' }} data-testid="fee-comparison">
+      <section className="py-16 md:py-20 relative" style={{ background: '#F0E6C8' }} data-testid="fee-comparison">
         <div className="max-w-xl mx-auto px-4 md:px-8 text-center">
           <h2 className="font-heading text-3xl md:text-4xl text-vinyl-black mb-3">
-            Finally. A marketplace that's <span className="text-honey-amber italic">on your side.</span>
+            Finally. A marketplace that's <span className="text-honey italic">on your side.</span>
           </h2>
-          <p className="text-base md:text-lg italic mb-10" style={{ fontFamily: "'Cormorant Garamond', serif", color: '#8A6B4A' }}>
+          <p className="text-base md:text-lg italic mb-10" style={{ fontFamily: "'Cormorant Garamond', serif", color: '#3A4D63' }}>
             we charge less so you keep more.
           </p>
-          <div className="max-w-[480px] mx-auto rounded-2xl overflow-hidden border border-[#C8861A]/15 bg-white/80" data-testid="fee-table">
+          <div className="max-w-[480px] mx-auto rounded-2xl overflow-hidden border border-[#D4A828]/15 bg-white/80" data-testid="fee-table">
             {[
               { name: 'Other Platforms', fee: '12.9%', highlight: false },
               { name: 'Competitors', fee: '8%', highlight: false },
@@ -304,16 +304,16 @@ const LandingPage = () => {
                 className={`flex items-center justify-between px-6 py-4 ${
                   row.highlight
                     ? 'bg-[#E8A820]/15 border-l-[3px] border-l-[#E8A820] font-bold text-vinyl-black'
-                    : 'text-vinyl-black/50 border-b border-[#C8861A]/10'
+                    : 'text-vinyl-black/50 border-b border-[#D4A828]/10'
                 }`}
                 data-testid={`fee-row-${row.name.toLowerCase().replace(/\s+/g, '-')}`}
               >
                 <span className={row.highlight ? 'text-base' : 'text-sm'}>{row.name}</span>
-                <span className={row.highlight ? 'text-xl text-[#996012]' : 'text-sm'}>{row.fee}</span>
+                <span className={row.highlight ? 'text-xl text-[#D4A828]' : 'text-sm'}>{row.fee}</span>
               </div>
             ))}
           </div>
-          <p className="text-sm italic mt-6" style={{ fontFamily: "'Cormorant Garamond', serif", color: '#8A6B4A' }}>
+          <p className="text-sm italic mt-6" style={{ fontFamily: "'Cormorant Garamond', serif", color: '#3A4D63' }}>
             fees apply to completed sales only. trades with no sweetener are always free.
           </p>
         </div>
@@ -324,7 +324,7 @@ const LandingPage = () => {
         <div className="max-w-6xl mx-auto px-4 md:px-8">
           <div className="text-center mb-16">
             <h2 className="font-heading text-3xl md:text-4xl text-vinyl-black mb-4">
-              built for the <span className="text-honey-amber italic">obsessed.</span>
+              built for the <span className="text-honey italic">obsessed.</span>
             </h2>
             <p className="text-base md:text-lg text-vinyl-black/70 max-w-xl mx-auto">
               The Honey Groove is designed by collectors, for collectors. Here's what makes our hive different.
@@ -348,7 +348,7 @@ const LandingPage = () => {
             a weekly letter for collectors. new finds, community stories, and what's buzzing in the hive. no spam, just wax.
           </p>
           {nlSuccess ? (
-            <p className="text-amber-700 font-medium text-lg">you're in! welcome to the hive 🍯</p>
+            <p className="text-[#D4A828] font-medium text-lg">you're in! welcome to the hive 🍯</p>
           ) : (
             <div className="flex gap-2 max-w-md mx-auto">
               <Input
@@ -357,13 +357,13 @@ const LandingPage = () => {
                 value={nlEmail}
                 onChange={e => setNlEmail(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleSubscribe(nlEmail, setNlLoading, setNlSuccess)}
-                className="border-amber-200 bg-white flex-1"
+                className="border-[#E5DBC8] bg-white flex-1"
                 data-testid="newsletter-email-input"
               />
               <Button
                 onClick={() => handleSubscribe(nlEmail, setNlLoading, setNlSuccess)}
                 disabled={nlLoading}
-                className="bg-amber-500 hover:bg-amber-600 text-white rounded-full px-6 shrink-0"
+                className="bg-[#D4A828] hover:bg-[#E8CA5A] text-white rounded-full px-6 shrink-0"
                 data-testid="newsletter-subscribe-btn"
               >
                 {nlLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'subscribe 🍯'}
@@ -404,11 +404,11 @@ const LandingPage = () => {
               className="w-[120px] sm:w-[160px] md:w-[200px] shrink-0"
             />
             <div className="flex items-center gap-3 sm:gap-5 flex-nowrap">
-              <Link to="/about" className="text-xs sm:text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors whitespace-nowrap" data-testid="footer-about-link">About</Link>
-              <Link to="/faq" className="text-xs sm:text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors whitespace-nowrap" data-testid="footer-faq-link">FAQ</Link>
-              <Link to="/terms" className="text-xs sm:text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors whitespace-nowrap" data-testid="footer-terms-link">Terms</Link>
-              <Link to="/privacy" className="text-xs sm:text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors whitespace-nowrap" data-testid="footer-privacy-link">Privacy</Link>
-              <Link to="/guidelines" className="text-xs sm:text-sm text-vinyl-black/50 hover:text-honey-amber transition-colors whitespace-nowrap" data-testid="footer-guidelines-link">Guidelines</Link>
+              <Link to="/about" className="text-xs sm:text-sm text-vinyl-black/50 hover:text-honey transition-colors whitespace-nowrap" data-testid="footer-about-link">About</Link>
+              <Link to="/faq" className="text-xs sm:text-sm text-vinyl-black/50 hover:text-honey transition-colors whitespace-nowrap" data-testid="footer-faq-link">FAQ</Link>
+              <Link to="/terms" className="text-xs sm:text-sm text-vinyl-black/50 hover:text-honey transition-colors whitespace-nowrap" data-testid="footer-terms-link">Terms</Link>
+              <Link to="/privacy" className="text-xs sm:text-sm text-vinyl-black/50 hover:text-honey transition-colors whitespace-nowrap" data-testid="footer-privacy-link">Privacy</Link>
+              <Link to="/guidelines" className="text-xs sm:text-sm text-vinyl-black/50 hover:text-honey transition-colors whitespace-nowrap" data-testid="footer-guidelines-link">Guidelines</Link>
             </div>
           </div>
           <p className="text-xs text-vinyl-black/40 mt-3 text-center">
@@ -420,7 +420,7 @@ const LandingPage = () => {
       {/* Waitlist Modal */}
       {waitlistOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 animate-fade-in" data-testid="waitlist-modal">
-          <div className="bg-honey-cream rounded-2xl p-8 max-w-md mx-4 relative shadow-2xl border border-amber-200/50">
+          <div className="bg-honey-cream rounded-2xl p-8 max-w-md mx-4 relative shadow-2xl border border-[#E5DBC8]/50">
             <button onClick={() => setWaitlistOpen(false)} className="absolute top-3 right-3 text-vinyl-black/40 hover:text-vinyl-black" data-testid="waitlist-close-btn">
               <X className="w-5 h-5" />
             </button>
@@ -430,7 +430,7 @@ const LandingPage = () => {
             </p>
             <Button
               onClick={() => { setWaitlistOpen(false); navigate('/beta'); }}
-              className="w-full bg-honey text-vinyl-black hover:bg-honey-amber rounded-full py-5 text-base font-medium"
+              className="w-full bg-honey text-vinyl-black hover:bg-honey-soft rounded-full py-5 text-base font-medium"
               data-testid="waitlist-beta-btn"
             >
               join the waitlist 🐝
@@ -442,7 +442,7 @@ const LandingPage = () => {
       {/* Newsletter Popup */}
       {popupOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 animate-fade-in" data-testid="newsletter-popup">
-          <div className="bg-honey-cream rounded-2xl p-8 max-w-md mx-4 relative shadow-2xl border border-amber-200/50">
+          <div className="bg-honey-cream rounded-2xl p-8 max-w-md mx-4 relative shadow-2xl border border-[#E5DBC8]/50">
             <button onClick={dismissPopup} className="absolute top-3 right-3 text-vinyl-black/40 hover:text-vinyl-black" data-testid="popup-dismiss-btn">
               <X className="w-5 h-5" />
             </button>
@@ -451,7 +451,7 @@ const LandingPage = () => {
               a weekly letter for collectors. new finds, community stories, and what's buzzing in the hive. no spam, just wax.
             </p>
             {popupSuccess ? (
-              <p className="text-amber-700 font-medium text-center">you're in! welcome to the hive 🍯</p>
+              <p className="text-[#D4A828] font-medium text-center">you're in! welcome to the hive 🍯</p>
             ) : (
               <div className="flex gap-2">
                 <Input
@@ -460,13 +460,13 @@ const LandingPage = () => {
                   value={popupEmail}
                   onChange={e => setPopupEmail(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleSubscribe(popupEmail, setPopupLoading, setPopupSuccess)}
-                  className="border-amber-200 bg-white flex-1"
+                  className="border-[#E5DBC8] bg-white flex-1"
                   data-testid="popup-email-input"
                 />
                 <Button
                   onClick={() => handleSubscribe(popupEmail, setPopupLoading, setPopupSuccess)}
                   disabled={popupLoading}
-                  className="bg-amber-500 hover:bg-amber-600 text-white rounded-full px-5 shrink-0"
+                  className="bg-[#D4A828] hover:bg-[#E8CA5A] text-white rounded-full px-5 shrink-0"
                   data-testid="popup-subscribe-btn"
                 >
                   {popupLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'subscribe 🍯'}
@@ -482,7 +482,7 @@ const LandingPage = () => {
 
 const FeatureCard = ({ icon, title, description }) => (
   <div className="honey-card p-6 hover-lift" data-testid={`feature-${title.toLowerCase().replace(/\s+/g, '-')}`}>
-    <div className="w-12 h-12 bg-honey/30 rounded-xl flex items-center justify-center mb-4 text-honey-amber">
+    <div className="w-12 h-12 bg-honey/30 rounded-xl flex items-center justify-center mb-4 text-honey">
       {icon}
     </div>
     <h3 className="font-heading text-xl text-vinyl-black mb-2">{title}</h3>

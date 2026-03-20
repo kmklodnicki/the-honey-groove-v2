@@ -3,7 +3,7 @@ import { Disc } from 'lucide-react';
 import { toast } from 'sonner';
 
 const TIER_CONFIG = {
-  'Grail':      { label: 'Grail',      color: '#FFF', bg: 'linear-gradient(135deg, #7B2FF2, #C8861A)', border: '#7B2FF2', glow: '0 0 12px rgba(123,47,242,0.4)' },
+  'Grail':      { label: 'Grail',      color: '#FFF', bg: 'linear-gradient(135deg, #7B2FF2, #D4A828)', border: '#7B2FF2', glow: '0 0 12px rgba(123,47,242,0.4)' },
   'Ultra Rare': { label: 'Ultra Rare', color: '#FFF', bg: 'linear-gradient(135deg, #FF6B00, #FF9500)', border: '#FF6B00', glow: '0 0 10px rgba(255,107,0,0.3)' },
   'Very Rare':  { label: 'Very Rare',  color: '#FFF', bg: '#E11D48', border: '#E11D48', glow: 'none' },
   'Rare':       { label: 'Rare',       color: '#FFF', bg: '#DC2626', border: '#DC2626', glow: 'none' },

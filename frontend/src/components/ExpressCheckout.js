@@ -64,7 +64,7 @@ const CheckoutForm = ({ amount, listingId, onSuccess, onCancel }) => {
       {/* OR divider */}
       <div className="flex items-center gap-3 py-1">
         <div className="flex-1 h-px" style={{ background: 'rgba(200,134,26,0.3)' }} />
-        <span className="text-xs font-medium text-stone-400 uppercase tracking-widest">or pay with card</span>
+        <span className="text-xs font-medium text-[#7A8694] uppercase tracking-widest">or pay with card</span>
         <div className="flex-1 h-px" style={{ background: 'rgba(200,134,26,0.3)' }} />
       </div>
 
@@ -95,7 +95,7 @@ const CheckoutForm = ({ amount, listingId, onSuccess, onCancel }) => {
         </Button>
       </form>
 
-      <div className="flex items-center justify-center gap-2 text-xs text-stone-400">
+      <div className="flex items-center justify-center gap-2 text-xs text-[#7A8694]">
         <Lock className="w-3 h-3" />
         <span>Secured by Stripe</span>
         <ShieldCheck className="w-3 h-3 ml-2" />
@@ -104,7 +104,7 @@ const CheckoutForm = ({ amount, listingId, onSuccess, onCancel }) => {
 
       <button
         onClick={onCancel}
-        className="w-full text-center text-sm text-stone-400 hover:text-stone-600 transition-colors py-2"
+        className="w-full text-center text-sm text-[#7A8694] hover:text-[#3A4D63] transition-colors py-2"
         data-testid="checkout-cancel"
       >
         Cancel
@@ -118,8 +118,8 @@ const ExpressCheckout = ({ clientSecret, amount, listingId, onSuccess, onCancel 
   if (!clientSecret) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-6 h-6 animate-spin" style={{ color: '#C8861A' }} />
-        <span className="ml-2 text-stone-500">Preparing checkout...</span>
+        <Loader2 className="w-6 h-6 animate-spin" style={{ color: '#D4A828' }} />
+        <span className="ml-2 text-[#3A4D63]">Preparing checkout...</span>
       </div>
     );
   }
@@ -129,7 +129,7 @@ const ExpressCheckout = ({ clientSecret, amount, listingId, onSuccess, onCancel 
     appearance: {
       theme: 'stripe',
       variables: {
-        colorPrimary: '#C8861A',
+        colorPrimary: '#D4A828',
         colorBackground: '#FFFDF5',
         fontFamily: '"DM Sans", system-ui, sans-serif',
         borderRadius: '8px',

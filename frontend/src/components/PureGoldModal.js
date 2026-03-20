@@ -39,7 +39,7 @@ const PureGoldModal = ({ open, onClose }) => {
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
       <DialogContent className="sm:max-w-md p-0 overflow-hidden border-0 rounded-2xl" data-testid="pure-gold-modal">
         {/* Header */}
-        <div className="px-6 pt-5 pb-4 text-center" style={{ background: 'linear-gradient(135deg, #1A1A1A 0%, #2A1A06 100%)' }}>
+        <div className="px-6 pt-5 pb-4 text-center" style={{ background: 'linear-gradient(135deg, #1A1A1A 0%, #1E2A3A 100%)' }}>
           <p className="text-[10px] font-medium tracking-[0.3em] uppercase mb-3" style={{ color: '#2C2C2C', fontFamily: '"DM Serif Display", Georgia, serif', color: '#B8860B' }} data-testid="pure-gold-brand">
             THE HONEY GROOVE
           </p>
@@ -50,12 +50,12 @@ const PureGoldModal = ({ open, onClose }) => {
 
         {/* Body */}
         <div className="px-6 pb-6 pt-5 space-y-4 text-center">
-          <p className="text-sm text-stone-600 leading-relaxed">
+          <p className="text-sm text-[#3A4D63] leading-relaxed">
             Your connection is solid. We've synced your crates, verified your status,
             and polished up your stats. Welcome to the authenticated inner circle of
             The Honey Groove.
           </p>
-          <p className="text-sm italic" style={{ color: '#C8861A' }}>
+          <p className="text-sm italic" style={{ color: '#D4A828' }}>
             Everything is looking sweet.
           </p>
 

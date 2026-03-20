@@ -110,7 +110,7 @@ const AlbumLink = ({ record, children, className = '', onAlbumClick }) => {
 // ── Shared Pill Style System ──
 // Used by both filter pills (HivePage) and card badges (PostCards)
 const PILL_STYLES = {
-  NOW_SPINNING:         { bg: 'bg-amber-100',   text: 'text-amber-700',   border: 'border-amber-200' },
+  NOW_SPINNING:         { bg: 'bg-[#F0E6C8]',   text: 'text-[#D4A828]',   border: 'border-[#E5DBC8]' },
   NEW_HAUL:             { bg: 'bg-pink-100',     text: 'text-pink-600',    border: 'border-pink-200' },
   ISO:                  { bg: 'bg-rose-100',     text: 'text-rose-600',    border: 'border-rose-200' },
   ADDED_TO_COLLECTION:  { bg: 'bg-green-100',    text: 'text-green-700',   border: 'border-green-200' },
@@ -120,14 +120,14 @@ const PILL_STYLES = {
   WEEKLY_WRAP:          { bg: 'bg-purple-100',   text: 'text-purple-700',  border: 'border-purple-200' },
   VINYL_MOOD:           { bg: 'bg-purple-100',   text: 'text-purple-700',  border: 'border-purple-200' },
   DAILY_PROMPT:         { bg: 'bg-sky-100',      text: 'text-sky-700',     border: 'border-sky-200' },
-  RANDOMIZER:           { bg: 'bg-amber-200',    text: 'text-black',       border: 'border-amber-400' },
+  RANDOMIZER:           { bg: 'bg-[#F0E6C8]',    text: 'text-black',       border: 'border-[#D4A828]' },
   NOTE:                 { bg: 'bg-yellow-100',   text: 'text-yellow-700',  border: 'border-yellow-200' },
-  RELEASE_NOTE:         { bg: 'bg-amber-500',    text: 'text-white',       border: 'border-amber-600' },
-  POLL:                 { bg: 'bg-amber-100',    text: 'text-amber-800',   border: 'border-amber-200' },
+  RELEASE_NOTE:         { bg: 'bg-[#D4A828]',    text: 'text-white',       border: 'border-[#D4A828]' },
+  POLL:                 { bg: 'bg-[#F0E6C8]',    text: 'text-[#1E2A3A]',   border: 'border-[#E5DBC8]' },
   NEW_FEATURE:          { bg: 'bg-green-100',    text: 'text-green-700',   border: 'border-green-200' },
-  ROOM_JOIN:            { bg: 'bg-amber-50',     text: 'text-amber-700',   border: 'border-amber-200' },
+  ROOM_JOIN:            { bg: 'bg-[#F0E6C8]',     text: 'text-[#D4A828]',   border: 'border-[#E5DBC8]' },
   following:            { bg: 'bg-violet-100',   text: 'text-violet-700',  border: 'border-violet-200' },
-  all:                  { bg: 'bg-stone-100',    text: 'text-stone-600',   border: 'border-stone-200' },
+  all:                  { bg: 'bg-[#F3EBE0]',    text: 'text-[#3A4D63]',   border: 'border-[#E5DBC8]' },
 };
 
 const VARIANT_PILL_STYLES = {
@@ -141,10 +141,10 @@ const VARIANT_PILL_STYLES = {
   white:   'bg-gray-50 text-gray-600 border-gray-200',
   black:   'bg-gray-900/10 text-gray-800 border-gray-300',
   clear:   'bg-gray-100 text-gray-600 border-gray-200',
-  gold:    'bg-amber-100 text-amber-700 border-amber-200',
+  gold:    'bg-[#F0E6C8] text-[#D4A828] border-[#E5DBC8]',
   silver:  'bg-slate-100 text-slate-600 border-slate-200',
 };
-const VARIANT_DEFAULT = 'bg-stone-100 text-stone-600 border-stone-200';
+const VARIANT_DEFAULT = 'bg-[#F3EBE0] text-[#3A4D63] border-[#E5DBC8]';
 
 // Build link path for a variant pill from a record's discogs_id
 const variantLink = (record) => record?.discogs_id ? `/variant/${record.discogs_id}` : undefined;
@@ -246,7 +246,7 @@ const VariantTag = ({ variant, glass, ghost, gold, prefix, linkTo }) => {
   }
   if (ghost) {
     return wrap(
-      <span className={`inline-flex items-center gap-1 text-[10px] sm:text-[10px] font-medium px-2 py-0.5 rounded-full border border-stone-300 text-stone-400 bg-transparent ${truncClass}`}
+      <span className={`inline-flex items-center gap-1 text-[10px] sm:text-[10px] font-medium px-2 py-0.5 rounded-full border border-[#E5DBC8] text-[#7A8694] bg-transparent ${truncClass}`}
         data-testid="variant-pill-ghost">
         <Disc className="w-2.5 h-2.5 shrink-0" />
         <span className="truncate">{label}</span>
@@ -256,7 +256,7 @@ const VariantTag = ({ variant, glass, ghost, gold, prefix, linkTo }) => {
   }
   if (gold) {
     return wrap(
-      <span className={`inline-flex items-center gap-1 text-[10px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-400 bg-gradient-to-r from-yellow-400/80 via-amber-400/80 to-yellow-500/80 text-amber-950 ${truncClass}`}
+      <span className={`inline-flex items-center gap-1 text-[10px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full border border-[#D4A828] bg-gradient-to-r from-yellow-400/80 via-amber-400/80 to-yellow-500/80 text-[#1E2A3A] ${truncClass}`}
         data-testid="variant-pill-gold">
         <Disc className="w-2.5 h-2.5 shrink-0" />
         <span className="truncate">{label}</span>
@@ -394,7 +394,7 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
                   {variantText && <VariantTag variant={variantText} linkTo={variantLink(record)} />}
                   {(record.edition_number || post.edition_number) && <EditionTag number={record.edition_number || post.edition_number} />}
                   {!variantText && record.format && record.format !== 'Vinyl' && (
-                    <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border border-stone-200 text-stone-500 bg-stone-50" data-testid="format-pill">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border border-[#E5DBC8] text-[#3A4D63] bg-[#FFFBF2]" data-testid="format-pill">
                       <Disc className="w-2.5 h-2.5" /> {record.format}
                     </span>
                   )}
@@ -411,7 +411,7 @@ const NowSpinningCard = ({ post, onAlbumClick, imgPriority }) => {
               <img
                 src={resolveImageUrl(post.photo_url)}
                 alt="User photo"
-                className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity border border-stone-200/60 shadow-sm"
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity border border-[#E5DBC8]/60 shadow-sm"
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLightboxOpen(true); }}
                 loading="lazy"
                 data-testid="user-photo-thumb"
@@ -462,7 +462,7 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
                 <AlbumLink key={idx} record={item} onAlbumClick={onAlbumClick}>
                   <div className="relative group/cover">
                     <AlbumArt src={item.cover_url} alt={`${item.artist} - ${item.title}`} 
-                      className="w-full aspect-square rounded-lg object-cover border border-stone-200/60" isUnofficial={item.is_unofficial} />
+                      className="w-full aspect-square rounded-lg object-cover border border-[#E5DBC8]/60" isUnofficial={item.is_unofficial} />
                     {item.color_variant && (
                       <div className="absolute bottom-1 left-1 right-1 z-[6]">
                         <span className="inline-block max-w-full truncate text-[8px] font-bold uppercase tracking-wide px-1.5 py-px rounded-full"
@@ -485,7 +485,7 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
                 <button
                   onClick={(e) => { e.stopPropagation(); setExpanded(true); }}
                   className="aspect-square rounded-lg flex items-center justify-center text-sm font-bold"
-                  style={{ background: 'rgba(232,168,32,0.12)', color: '#996012', border: '1px dashed rgba(200,134,26,0.3)' }}
+                  style={{ background: 'rgba(232,168,32,0.12)', color: '#D4A828', border: '1px dashed rgba(200,134,26,0.3)' }}
                   data-testid="haul-bundle-expand"
                 >
                   +{extra} more
@@ -503,7 +503,7 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
               <img
                 src={resolveImageUrl(photoUrl)}
                 alt="Haul photo"
-                className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity border border-stone-200/60 shadow-sm"
+                className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity border border-[#E5DBC8]/60 shadow-sm"
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLightboxOpen(true); }}
                 loading="lazy"
                 data-testid="user-photo-thumb"
@@ -570,12 +570,12 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
     <div data-testid="new-haul-card">
       <div className="flex justify-between items-start gap-3">
         <div className={`${photoUrl ? 'flex-1 mr-2' : 'w-full'} min-w-0`}>
-          {haul.store_name && <p className="text-sm text-amber-700 font-medium mb-2">📍 {haul.store_name}</p>}
+          {haul.store_name && <p className="text-sm text-[#D4A828] font-medium mb-2">📍 {haul.store_name}</p>}
           {post.caption && <p className="text-sm mb-3 whitespace-pre-wrap"><MentionText text={post.caption} /></p>}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {items.slice(0, 6).map((item, idx) => (
               <AlbumLink key={idx} record={item} onAlbumClick={onAlbumClick}>
-                <div className="flex items-center gap-2 bg-amber-50 rounded-lg p-2">
+                <div className="flex items-center gap-2 bg-[#F0E6C8] rounded-lg p-2">
                   <AlbumArt src={item.cover_url} alt={`${item.artist} ${item.title}${item.color_variant ? ` ${item.color_variant}` : ''} vinyl record`} className="w-10 h-10 rounded object-cover" isUnofficial={item.is_unofficial} />
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-medium truncate">{item.title}</p>
@@ -593,7 +593,7 @@ const NewHaulCard = ({ post, onAlbumClick, imgPriority }) => {
             <img
               src={resolveImageUrl(photoUrl)}
               alt="Haul photo"
-              className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity border border-stone-200/60 shadow-sm"
+              className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity border border-[#E5DBC8]/60 shadow-sm"
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLightboxOpen(true); }}
               loading="lazy"
               data-testid="user-photo-thumb"
@@ -640,7 +640,7 @@ const ISOCard = ({ post, onAlbumClick }) => {
   const isoRecord = { title: isoData.album, artist: isoData.artist, discogs_id: isoData.discogs_id, cover_url: isoData.cover_url, year: isoData.year };
   return (
     <AlbumLink record={isoRecord} onAlbumClick={onAlbumClick}>
-      <div className="relative bg-[#FAF6EE] border border-[#C8861A]/15 rounded-xl p-4 hover:border-[#C8861A]/40 transition-colors" data-testid="iso-card">
+      <div className="relative bg-[#FFFBF2] border border-[#D4A828]/15 rounded-xl p-4 hover:border-[#D4A828]/40 transition-colors" data-testid="iso-card">
         {/* Intent Badge */}
         {intent && (
           <span
@@ -659,7 +659,7 @@ const ISOCard = ({ post, onAlbumClick }) => {
             {isoData.cover_url ? (
               <AlbumArt src={isoData.cover_url} alt={`${isoData.artist} ${isoData.album}${isoData.color_variant ? ` ${isoData.color_variant}` : ''} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow-sm" isUnofficial={isoData.is_unofficial} />
             ) : (
-              <div className="w-14 h-14 rounded-lg bg-[#C8861A]/10 flex items-center justify-center"><Search className="w-5 h-5 text-[#C8861A]/50" /></div>
+              <div className="w-14 h-14 rounded-lg bg-[#D4A828]/10 flex items-center justify-center"><Search className="w-5 h-5 text-[#D4A828]/50" /></div>
             )}
           </div>
           <div className="flex-1 min-w-0">
@@ -673,11 +673,11 @@ const ISOCard = ({ post, onAlbumClick }) => {
               </div>
             )}
             {isoData.pressing_notes && !(/^(mint|near mint|nm|m|vg|vg\+|g\+|g|f|p|nm\/m|near mint \/ mint)/i.test(isoData.pressing_notes.trim())) && (
-              <p className="text-xs text-[#8A6B4A]" data-testid="iso-notes">Notes: {isoData.pressing_notes}</p>
+              <p className="text-xs text-[#3A4D63]" data-testid="iso-notes">Notes: {isoData.pressing_notes}</p>
             )}
-            {isoData.condition_pref && <p className="text-xs text-[#8A6B4A]" data-testid="iso-condition">Condition: {isoData.condition_pref}</p>}
+            {isoData.condition_pref && <p className="text-xs text-[#3A4D63]" data-testid="iso-condition">Condition: {isoData.condition_pref}</p>}
             {(isoData.target_price_min || isoData.target_price_max) && (
-              <p className="text-xs text-[#8A6B4A] mt-0.5">Budget: {isoData.target_price_min && isoData.target_price_max ? `$${isoData.target_price_min} – $${isoData.target_price_max}` : isoData.target_price_max ? `Up to $${isoData.target_price_max}` : isoData.target_price_min ? `From $${isoData.target_price_min}` : ''}</p>
+              <p className="text-xs text-[#3A4D63] mt-0.5">Budget: {isoData.target_price_min && isoData.target_price_max ? `$${isoData.target_price_min} – $${isoData.target_price_max}` : isoData.target_price_max ? `Up to $${isoData.target_price_max}` : isoData.target_price_min ? `From $${isoData.target_price_min}` : ''}</p>
             )}
             {isoData.is_unofficial && <UnofficialPill variant="inline" className="mt-1.5" />}
           </div>
@@ -685,7 +685,7 @@ const ISOCard = ({ post, onAlbumClick }) => {
         {post.caption && <p className="text-sm mt-3 whitespace-pre-wrap"><MentionText text={post.caption} /></p>}
         {isoData.is_unofficial && (
           <div className="mt-3 px-3 py-2 rounded-lg text-[11px] leading-relaxed" style={{ background: 'rgba(74,74,74,0.05)', border: '1px solid rgba(74,74,74,0.1)', color: '#6B6B6B' }} data-testid="unofficial-disclaimer">
-            <span className="font-semibold text-stone-500">NOTICE:</span> This release is identified as &lsquo;Unofficial.&rsquo; The Hive facilitates the secondary market trade of these items for archival and collection purposes.
+            <span className="font-semibold text-[#3A4D63]">NOTICE:</span> This release is identified as &lsquo;Unofficial.&rsquo; The Hive facilitates the secondary market trade of these items for archival and collection purposes.
           </div>
         )}
       </div>
@@ -791,9 +791,9 @@ const DailyPromptPostCard = ({ post, imgPriority, onAlbumClick }) => {
   };
   return (
   <div data-testid="daily-prompt-post-card">
-    <p className="text-sm italic text-amber-700 mb-3">{post.prompt_text}</p>
+    <p className="text-sm italic text-[#D4A828] mb-3">{post.prompt_text}</p>
     <AlbumLink record={promptRecord} onAlbumClick={onAlbumClick}>
-    <div className="flex gap-4 items-start bg-amber-50/60 rounded-lg p-3">
+    <div className="flex gap-4 items-start bg-[#F0E6C8]/60 rounded-lg p-3">
       {post.cover_url ? (
         <div className="shrink-0 pr-2">
           <AlbumWithVinyl preset="prompt">
@@ -808,7 +808,7 @@ const DailyPromptPostCard = ({ post, imgPriority, onAlbumClick }) => {
           </AlbumWithVinyl>
         </div>
       ) : (
-        <div className="w-20 h-20 rounded-lg bg-amber-100 flex items-center justify-center"><Disc className="w-8 h-8 text-amber-300" /></div>
+        <div className="w-20 h-20 rounded-lg bg-[#F0E6C8] flex items-center justify-center"><Disc className="w-8 h-8 text-[#D4A828]" /></div>
       )}
       <div className="flex-1 min-w-0">
         <p className="font-heading text-lg leading-tight truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{post.record_title}</p>
@@ -833,11 +833,11 @@ const NoteCard = ({ post, onAlbumClick }) => {
       <p className="text-sm whitespace-pre-wrap"><MentionText text={post.caption || post.content} /></p>
       {post.record && (
         <AlbumLink record={post.record} onAlbumClick={onAlbumClick}>
-          <div className="flex items-center gap-2.5 bg-stone-50 rounded-lg px-3 py-2 mt-3" data-testid="note-record-tag">
+          <div className="flex items-center gap-2.5 bg-[#FFFBF2] rounded-lg px-3 py-2 mt-3" data-testid="note-record-tag">
             {post.record.cover_url ? (
               <AlbumArt src={post.record.cover_url} alt={`${post.record.artist} ${post.record.title}${post.record.color_variant ? ` ${post.record.color_variant}` : ''} vinyl record`} className="w-10 h-10 rounded object-cover shadow-sm" isUnofficial={post.record.is_unofficial} />
             ) : (
-              <div className="w-10 h-10 rounded bg-stone-200 flex items-center justify-center"><Disc className="w-5 h-5 text-stone-400" /></div>
+              <div className="w-10 h-10 rounded bg-[#F3EBE0] flex items-center justify-center"><Disc className="w-5 h-5 text-[#7A8694]" /></div>
             )}
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium truncate">{post.record.title}</p>
@@ -1018,13 +1018,13 @@ const ListingPostCard = ({ post }) => {
   return (
     <div>
       <Link to={post.listing_id ? `/honeypot/listing/${post.listing_id}` : '/honeypot'} className="block" data-testid={`listing-post-${post.id}`}>
-        <div className="flex gap-3 items-center bg-stone-50 rounded-xl p-3 hover:bg-stone-100 transition-colors">
+        <div className="flex gap-3 items-center bg-[#FFFBF2] rounded-xl p-3 hover:bg-[#F3EBE0] transition-colors">
           {post.cover_url ? (
             <div className="shrink-0">
               <AlbumArt src={post.cover_url} alt={`${post.record_artist || 'Artist'} ${post.record_title || 'Album'}${variantText ? ` ${variantText}` : ''} vinyl record`} className="w-16 h-16 rounded-[10px] object-cover shadow-sm" isUnofficial={post.is_unofficial} />
             </div>
           ) : (
-            <div className="w-16 h-16 rounded-lg bg-amber-100 flex items-center justify-center"><Disc className="w-6 h-6 text-amber-400" /></div>
+            <div className="w-16 h-16 rounded-lg bg-[#F0E6C8] flex items-center justify-center"><Disc className="w-6 h-6 text-[#D4A828]" /></div>
           )}
           <div className="flex-1 min-w-0">
             <p className="font-medium text-sm truncate">{post.record_title}</p>
@@ -1036,7 +1036,7 @@ const ListingPostCard = ({ post }) => {
                 {isSale ? 'For Sale' : 'For Trade'}
               </span>
             </div>
-            {post.pressing_notes && <p className="text-xs italic text-stone-500 font-serif mt-1 truncate">{post.pressing_notes.length > 60 ? post.pressing_notes.slice(0, 60) + '...' : post.pressing_notes}</p>}
+            {post.pressing_notes && <p className="text-xs italic text-[#3A4D63] font-serif mt-1 truncate">{post.pressing_notes.length > 60 ? post.pressing_notes.slice(0, 60) + '...' : post.pressing_notes}</p>}
           </div>
         </div>
       </Link>
@@ -1047,10 +1047,10 @@ const ListingPostCard = ({ post }) => {
 
 const RoomJoinCard = ({ post }) => {
   const THEME_COLORS = {
-    honey: '#C8861A', midnight: '#7B68EE', forest: '#74C69D',
+    honey: '#D4A828', midnight: '#7B68EE', forest: '#74C69D',
     rose: '#D98FA1', slate: '#85A7C0', plum: '#D7BDE2',
   };
-  const accentColor = THEME_COLORS[post.room_theme_preset] || '#C8861A';
+  const accentColor = THEME_COLORS[post.room_theme_preset] || '#D4A828';
   return (
     <Link to={`/nectar/rooms/${post.room_slug}`} className="block group" data-testid={`room-join-card-${post.room_slug}`}>
       <div
@@ -1059,10 +1059,10 @@ const RoomJoinCard = ({ post }) => {
       >
         <div className="text-4xl flex-shrink-0">{post.room_emoji || '🍯'}</div>
         <div className="min-w-0">
-          <p className="font-semibold text-sm" style={{ color: post.room_theme?.textColor || '#2A1A06' }}>
+          <p className="font-semibold text-sm" style={{ color: post.room_theme?.textColor || '#1E2A3A' }}>
             {post.room_name}
           </p>
-          <p className="text-xs mt-0.5" style={{ color: post.room_theme?.textColor || '#2A1A06', opacity: 0.7 }}>
+          <p className="text-xs mt-0.5" style={{ color: post.room_theme?.textColor || '#1E2A3A', opacity: 0.7 }}>
             {post.room_type} room · tap to join
           </p>
         </div>
@@ -1107,7 +1107,7 @@ const PostCardBody = ({ post, onAlbumClick, imgPriority }) => {
                   {defCover ? (
                     <AlbumArt src={defCover} alt={`${defArtist} ${defTitle} vinyl record`} className="w-14 h-14 rounded object-cover" isUnofficial={defRecord.is_unofficial} />
                   ) : (
-                    <div className="w-14 h-14 rounded bg-stone-100 flex items-center justify-center"><Disc className="w-6 h-6 text-stone-400" /></div>
+                    <div className="w-14 h-14 rounded bg-[#F3EBE0] flex items-center justify-center"><Disc className="w-6 h-6 text-[#7A8694]" /></div>
                   )}
                   <div className="min-w-0">
                     <p className="font-medium truncate" style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:'100%'}}>{defTitle}</p>
@@ -1141,9 +1141,9 @@ const ListingTypeBadge = ({ type, price, size = 'sm' }) => {
 
 // Tag pill — shared across ISO cards, Hive feed, Profile, listing detail
 const TAG_COLOR_MAP = {
-  'OG Press':        'bg-amber-100/70 text-amber-800',
+  'OG Press':        'bg-[#F0E6C8]/70 text-[#1E2A3A]',
   'Factory Sealed':  'bg-emerald-100/70 text-emerald-800',
-  'Any':             'bg-stone-100 text-stone-600',
+  'Any':             'bg-[#F3EBE0] text-[#3A4D63]',
   'Promo':           'bg-violet-100/70 text-violet-800',
 };
 const TAG_DEFAULT = 'bg-honey/15 text-honey-amber';
@@ -1173,7 +1173,7 @@ const FORMAT_ICONS = {
 };
 
 const FORMAT_STYLES = {
-  Vinyl: 'bg-stone-100 text-stone-600 border-stone-200',
+  Vinyl: 'bg-[#F3EBE0] text-[#3A4D63] border-[#E5DBC8]',
   CD: 'bg-blue-50 text-blue-600 border-blue-200',
   Cassette: 'bg-orange-50 text-orange-600 border-orange-200',
 };

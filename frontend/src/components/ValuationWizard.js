@@ -121,16 +121,16 @@ const ValuationWizard = ({ open, onClose, onComplete, onSave }) => {
         data-testid="valuation-wizard-modal"
       >
         {/* Progress bar */}
-        <div className="h-1 w-full bg-stone-100" data-testid="wizard-progress-bar">
+        <div className="h-1 w-full bg-[#F3EBE0]" data-testid="wizard-progress-bar">
           <div
             className="h-full transition-all duration-500 ease-out"
-            style={{ width: `${progressPct}%`, background: 'linear-gradient(90deg, #C8861A, #FFD700)' }}
+            style={{ width: `${progressPct}%`, background: 'linear-gradient(90deg, #D4A828, #FFD700)' }}
           />
         </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#C8861A' }} />
+            <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#D4A828' }} />
           </div>
         ) : finished ? (
           /* ===== CELEBRATION STATE ===== */
@@ -138,7 +138,7 @@ const ValuationWizard = ({ open, onClose, onComplete, onSave }) => {
           <div className="flex flex-col items-center justify-center py-16 px-6 text-center" data-testid="wizard-celebration">
             <div
               className="w-20 h-20 rounded-full flex items-center justify-center mb-5"
-              style={{ background: 'linear-gradient(135deg, #FFD700, #C8861A)' }}
+              style={{ background: 'linear-gradient(135deg, #FFD700, #D4A828)' }}
             >
               <PartyPopper className="w-10 h-10 text-white" />
             </div>
@@ -148,7 +148,7 @@ const ValuationWizard = ({ open, onClose, onComplete, onSave }) => {
               understand the true value of their wax.
             </p>
             {savedCount > 0 && (
-              <p className="text-sm font-medium mt-4" style={{ color: '#C8861A' }}>
+              <p className="text-sm font-medium mt-4" style={{ color: '#D4A828' }}>
                 You valued {savedCount} record{savedCount !== 1 ? 's' : ''} this session.
               </p>
             )}
@@ -164,7 +164,7 @@ const ValuationWizard = ({ open, onClose, onComplete, onSave }) => {
           ) : (
           /* ===== LOADING NEXT BATCH ===== */
           <div className="flex flex-col items-center justify-center py-16 px-6 text-center" data-testid="wizard-loading-batch">
-            <Loader2 className="w-8 h-8 animate-spin mb-4" style={{ color: '#C8861A' }} />
+            <Loader2 className="w-8 h-8 animate-spin mb-4" style={{ color: '#D4A828' }} />
             <p className="text-sm text-muted-foreground">Loading next batch...</p>
           </div>
           )
@@ -178,7 +178,7 @@ const ValuationWizard = ({ open, onClose, onComplete, onSave }) => {
               </p>
               <button
                 onClick={handleDone}
-                className="text-xs text-stone-400 hover:text-stone-600 transition-colors flex items-center gap-1"
+                className="text-xs text-[#7A8694] hover:text-[#3A4D63] transition-colors flex items-center gap-1"
                 data-testid="wizard-done-for-now"
               >
                 <X className="w-3.5 h-3.5" /> Done for now
@@ -187,7 +187,7 @@ const ValuationWizard = ({ open, onClose, onComplete, onSave }) => {
 
             {/* Album Art */}
             <div className="px-5">
-              <div className="w-full aspect-square rounded-xl overflow-hidden bg-stone-200 shadow-lg" data-testid="wizard-album-art">
+              <div className="w-full aspect-square rounded-xl overflow-hidden bg-[#F3EBE0] shadow-lg" data-testid="wizard-album-art">
                 {current.cover_url ? (
                   <AlbumArt
                     src={current.cover_url}
@@ -214,7 +214,7 @@ const ValuationWizard = ({ open, onClose, onComplete, onSave }) => {
                 {current.title}
               </h3>
               <p className="text-sm text-muted-foreground truncate">{current.artist}</p>
-              {current.year && <p className="text-xs text-stone-400 mt-0.5">{current.year}</p>}
+              {current.year && <p className="text-xs text-[#7A8694] mt-0.5">{current.year}</p>}
             </div>
 
             {/* Hive Benchmark */}
@@ -228,20 +228,20 @@ const ValuationWizard = ({ open, onClose, onComplete, onSave }) => {
                   <span className="text-xs font-semibold" style={{ color: '#7A5A1A' }}>
                     Hive Benchmark: ${current.hive_average.toFixed(2)}
                   </span>
-                  <span className="text-[10px] text-stone-400">
+                  <span className="text-[10px] text-[#7A8694]">
                     ({current.hive_count} {current.hive_count === 1 ? 'submission' : 'submissions'})
                   </span>
                 </div>
               ) : (
-                <p className="text-xs text-stone-400 italic">No community data yet — be the first to set the benchmark.</p>
+                <p className="text-xs text-[#7A8694] italic">No community data yet — be the first to set the benchmark.</p>
               )}
             </div>
 
             {/* Value Input */}
             <div className="px-5 pb-3">
-              <label className="text-xs font-medium text-stone-500 block mb-1.5">Your Estimate</label>
+              <label className="text-xs font-medium text-[#3A4D63] block mb-1.5">Your Estimate</label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#7A8694]" />
                 <Input
                   type="number"
                   step="0.01"
@@ -259,7 +259,7 @@ const ValuationWizard = ({ open, onClose, onComplete, onSave }) => {
                 <button
                   onClick={() => setValue(current.hive_average.toFixed(2))}
                   className="text-[11px] mt-1.5 font-medium hover:underline transition-colors"
-                  style={{ color: '#C8861A' }}
+                  style={{ color: '#D4A828' }}
                   data-testid="wizard-accept-hive"
                 >
                   Use Hive Benchmark (${current.hive_average.toFixed(2)})

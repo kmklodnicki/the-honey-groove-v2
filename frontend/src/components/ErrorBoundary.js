@@ -2,7 +2,7 @@ import React from 'react';
 
 // Shared turntable error screen used by both the React error boundary and maintenance mode
 export const TurntableErrorScreen = ({ title, subtitle, actionLabel, onAction, showTimestamp = true }) => (
-  <div className="fixed inset-0 z-[999999] flex items-center justify-center" style={{ background: 'linear-gradient(180deg, #FFF3D4 0%, #F5D76E 40%, #D4A017 100%)' }} data-testid="error-screen">
+  <div className="fixed inset-0 z-[999999] flex items-center justify-center" style={{ background: 'linear-gradient(180deg, #FFF3D4 0%, #F5D76E 40%, #D4A828 100%)' }} data-testid="error-screen">
     <div className="flex flex-col items-center text-center px-6 max-w-md">
       {/* Turntable */}
       <div className="relative mb-8" style={{ width: 220, height: 220 }}>

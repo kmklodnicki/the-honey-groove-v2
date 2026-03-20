@@ -76,8 +76,8 @@ const WelcomeHivePage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#FAF6EE]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#C8861A]" />
+      <div className="min-h-screen flex items-center justify-center bg-[#FFFBF2]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#D4A828]" />
       </div>
     );
   }
@@ -87,7 +87,7 @@ const WelcomeHivePage = () => {
   const hasValue = data.total_collection_value > 0;
 
   return (
-    <div className="min-h-screen bg-[#FAF6EE] flex flex-col items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-[#FFFBF2] flex flex-col items-center justify-center px-4 py-12">
       <div
         className={`max-w-lg w-full text-center space-y-8 transition-all duration-1000 ${
           fadeIn ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'
@@ -96,34 +96,34 @@ const WelcomeHivePage = () => {
         {/* Header */}
         <div className="space-y-2">
           <h1
-            className="font-heading text-4xl sm:text-5xl text-[#1F1F1F] tracking-tight"
+            className="font-heading text-4xl sm:text-5xl text-[#1E2A3A] tracking-tight"
             data-testid="welcome-title"
           >
             Welcome to the Hive
           </h1>
-          <p className="text-base text-[#8A6B4A]" data-testid="welcome-subtitle">
+          <p className="text-base text-[#3A4D63]" data-testid="welcome-subtitle">
             We took a look at your vault... and wow.
           </p>
         </div>
 
         {/* Value Module */}
         <div
-          className="bg-white/70 backdrop-blur-sm rounded-2xl border border-[#C8861A]/15 p-8 shadow-sm"
+          className="bg-white/70 backdrop-blur-sm rounded-2xl border border-[#D4A828]/15 p-8 shadow-sm"
           data-testid="value-module"
         >
           {hasValue ? (
             <>
-              <p className="text-sm text-[#8A6B4A] uppercase tracking-widest mb-2 font-medium">
+              <p className="text-sm text-[#3A4D63] uppercase tracking-widest mb-2 font-medium">
                 Your Vault Value
               </p>
               <p
-                className="font-heading text-5xl sm:text-6xl text-[#1F1F1F] tabular-nums"
+                className="font-heading text-5xl sm:text-6xl text-[#1E2A3A] tabular-nums"
                 data-testid="collection-value"
               >
                 $<CountUp end={Math.round(data.total_collection_value)} />
               </p>
               <p
-                className="text-base text-[#8A6B4A]/80 mt-4 italic"
+                className="text-base text-[#3A4D63]/80 mt-4 italic"
                 data-testid="witty-line"
               >
                 {wittyLine}
@@ -132,12 +132,12 @@ const WelcomeHivePage = () => {
           ) : (
             <>
               <p
-                className="font-heading text-2xl text-[#1F1F1F] mb-2"
+                className="font-heading text-2xl text-[#1E2A3A] mb-2"
                 data-testid="collection-value-fallback"
               >
                 Your collection is in the hive.
               </p>
-              <p className="text-sm text-[#8A6B4A]/70">
+              <p className="text-sm text-[#3A4D63]/70">
                 We're still gathering the honey on its market value.
               </p>
             </>
@@ -153,26 +153,26 @@ const WelcomeHivePage = () => {
         >
           {data.total_records_imported > 0 && (
             <div className="text-center">
-              <p className="font-heading text-2xl text-[#1F1F1F]" data-testid="stat-records">
+              <p className="font-heading text-2xl text-[#1E2A3A]" data-testid="stat-records">
                 {data.total_records_imported}
               </p>
-              <p className="text-xs text-[#8A6B4A] uppercase tracking-wide">Records Imported</p>
+              <p className="text-xs text-[#3A4D63] uppercase tracking-wide">Records Imported</p>
             </div>
           )}
           {data.total_unique_artists > 0 && (
             <div className="text-center">
-              <p className="font-heading text-2xl text-[#1F1F1F]" data-testid="stat-artists">
+              <p className="font-heading text-2xl text-[#1E2A3A]" data-testid="stat-artists">
                 {data.total_unique_artists}
               </p>
-              <p className="text-xs text-[#8A6B4A] uppercase tracking-wide">Artists Collected</p>
+              <p className="text-xs text-[#3A4D63] uppercase tracking-wide">Artists Collected</p>
             </div>
           )}
           {data.top_artist_by_count && (
             <div className="text-center">
-              <p className="font-heading text-lg text-[#1F1F1F] truncate max-w-[180px]" data-testid="stat-top-artist">
+              <p className="font-heading text-lg text-[#1E2A3A] truncate max-w-[180px]" data-testid="stat-top-artist">
                 {data.top_artist_by_count}
               </p>
-              <p className="text-xs text-[#8A6B4A] uppercase tracking-wide">Top Artist</p>
+              <p className="text-xs text-[#3A4D63] uppercase tracking-wide">Top Artist</p>
             </div>
           )}
         </div>
@@ -186,7 +186,7 @@ const WelcomeHivePage = () => {
         >
           <Button
             onClick={() => navigate('/hive')}
-            className="bg-[#C8861A] text-white hover:bg-[#A66F15] rounded-full px-6 gap-2 w-full sm:w-auto"
+            className="bg-[#D4A828] text-white hover:bg-[#A66F15] rounded-full px-6 gap-2 w-full sm:w-auto"
             data-testid="cta-explore-hive"
           >
             <Home className="w-4 h-4" />
@@ -195,7 +195,7 @@ const WelcomeHivePage = () => {
           <Button
             onClick={() => navigate('/collection')}
             variant="outline"
-            className="border-[#C8861A]/30 text-[#1F1F1F] hover:bg-[#C8861A]/10 rounded-full px-6 gap-2 w-full sm:w-auto"
+            className="border-[#D4A828]/30 text-[#1E2A3A] hover:bg-[#D4A828]/10 rounded-full px-6 gap-2 w-full sm:w-auto"
             data-testid="cta-view-collection"
           >
             <Library className="w-4 h-4" />
@@ -204,7 +204,7 @@ const WelcomeHivePage = () => {
           <Button
             onClick={() => navigate('/nectar')}
             variant="outline"
-            className="border-[#C8861A]/30 text-[#1F1F1F] hover:bg-[#C8861A]/10 rounded-full px-6 gap-2 w-full sm:w-auto"
+            className="border-[#D4A828]/30 text-[#1E2A3A] hover:bg-[#D4A828]/10 rounded-full px-6 gap-2 w-full sm:w-auto"
             data-testid="cta-market-trends"
           >
             <TrendingUp className="w-4 h-4" />

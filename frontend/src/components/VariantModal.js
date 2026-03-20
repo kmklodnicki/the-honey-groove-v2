@@ -118,22 +118,22 @@ export default function VariantModal() {
                   {/* Metadata pills row */}
                   <div className="flex flex-wrap gap-1">
                     {ov?.year && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-stone-100 text-[10px] text-stone-600">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#F3EBE0] text-[10px] text-[#3A4D63]">
                         <Calendar className="w-2.5 h-2.5" /> {ov.year}
                       </span>
                     )}
                     {ov?.format && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-stone-100 text-[10px] text-stone-600">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#F3EBE0] text-[10px] text-[#3A4D63]">
                         <Disc className="w-2.5 h-2.5" /> {ov.format}
                       </span>
                     )}
                     {ov?.label && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-stone-100 text-[10px] text-stone-600">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#F3EBE0] text-[10px] text-[#3A4D63]">
                         <Tag className="w-2.5 h-2.5" /> {ov.label}
                       </span>
                     )}
                     {ov?.pressing_country && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-stone-100 text-[10px] text-stone-600">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#F3EBE0] text-[10px] text-[#3A4D63]">
                         <MapPin className="w-2.5 h-2.5" /> {ov.pressing_country}
                       </span>
                     )}
@@ -142,7 +142,7 @@ export default function VariantModal() {
 
                   {/* Row 1: Community — Own / ISO / Posts */}
                   {dm && (
-                    <div className="flex items-center justify-between bg-stone-50 rounded-lg px-3 py-2" data-testid="variant-stats-community">
+                    <div className="flex items-center justify-between bg-[#FFFBF2] rounded-lg px-3 py-2" data-testid="variant-stats-community">
                       <div className="flex items-center gap-1.5">
                         <Users className="w-3 h-3 text-honey-amber" />
                         <span className="text-sm font-semibold">{dm.owners_count ?? '—'}</span>
@@ -163,7 +163,7 @@ export default function VariantModal() {
 
                   {/* Row 2: Market — Med / High / Low */}
                   {hasMarket && (
-                    <div className="flex items-center justify-between bg-stone-50 rounded-lg px-3 py-2" data-testid="variant-stats-market">
+                    <div className="flex items-center justify-between bg-[#FFFBF2] rounded-lg px-3 py-2" data-testid="variant-stats-market">
                       <div className="flex items-center gap-1.5">
                         <DollarSign className="w-3 h-3 text-emerald-500" />
                         <span className="text-sm font-semibold">${medianPrice?.toFixed(0)}</span>
@@ -205,7 +205,7 @@ export default function VariantModal() {
           {!loading && data && (
             <div className="flex-1 overflow-y-auto min-h-0 px-3 pb-3 space-y-2">
               {/* Divider */}
-              <div className="border-t border-stone-100 pt-2" />
+              <div className="border-t border-[#E5DBC8] pt-2" />
 
               {/* Variant Completion tracker */}
               {ov?.discogs_id && <VariantCompletion discogsId={ov.discogs_id} />}

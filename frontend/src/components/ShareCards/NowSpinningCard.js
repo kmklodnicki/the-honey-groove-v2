@@ -36,18 +36,18 @@ const NowSpinningCard = React.forwardRef(function NowSpinningCard({ post, user }
         </div>
 
         {/* "NOW SPINNING" label */}
-        <p style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 44, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#C8861A', margin: '40px 0 0' }}>
+        <p style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 44, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#D4A828', margin: '40px 0 0' }}>
           Now Spinning
         </p>
 
         {/* Album title */}
-        <p style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 56, fontWeight: 700, color: '#2A1A06', textAlign: 'center', lineHeight: 1.15, margin: '24px 0 0', maxWidth: 880 }}>
+        <p style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 56, fontWeight: 700, color: '#1E2A3A', textAlign: 'center', lineHeight: 1.15, margin: '24px 0 0', maxWidth: 880 }}>
           {title}
         </p>
 
         {/* Artist */}
         {artist && (
-          <p style={{ fontFamily: 'Georgia, serif', fontSize: 38, fontStyle: 'italic', color: '#8A6B4A', margin: '20px 0 0', textAlign: 'center' }}>
+          <p style={{ fontFamily: 'Georgia, serif', fontSize: 38, fontStyle: 'italic', color: '#3A4D63', margin: '20px 0 0', textAlign: 'center' }}>
             {artist}
           </p>
         )}

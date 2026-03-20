@@ -195,7 +195,7 @@ const MessagesPage = () => {
   if (activeConv) {
     const threadContent = (
       <div
-        className="fixed inset-0 z-[9999] flex flex-col bg-[#FAF6EE]"
+        className="fixed inset-0 z-[9999] flex flex-col bg-[#FFFBF2]"
         ref={threadRef}
         data-testid="dm-thread"
       >
@@ -257,9 +257,9 @@ const MessagesPage = () => {
         {/* Input — always pinned at bottom */}
         <div className="shrink-0 pt-2" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0.75rem))' }}>
         {convStatus === 'pending' && messages.length > 0 && messages[0].sender_id !== user?.id ? (
-          <div className="flex gap-2 items-center p-3 rounded-xl bg-amber-50 border border-amber-200" data-testid="dm-request-actions">
-            <MessageCircleMore className="w-4 h-4 text-amber-600 shrink-0" />
-            <span className="text-sm text-amber-800 flex-1">Message request from @{otherUser?.username}</span>
+          <div className="flex gap-2 items-center p-3 rounded-xl bg-[#F0E6C8] border border-[#E5DBC8]" data-testid="dm-request-actions">
+            <MessageCircleMore className="w-4 h-4 text-[#D4A828] shrink-0" />
+            <span className="text-sm text-[#1E2A3A] flex-1">Message request from @{otherUser?.username}</span>
             <Button size="sm" onClick={async () => {
               setAcceptLoading(true);
               try {
@@ -279,12 +279,12 @@ const MessagesPage = () => {
                 toast.success('Message request declined');
                 fetchConversations();
               } catch { toast.error('Failed'); }
-            }} className="rounded-full border-stone-300 h-8 px-3" data-testid="dm-decline-btn">
+            }} className="rounded-full border-[#E5DBC8] h-8 px-3" data-testid="dm-decline-btn">
               <X className="w-3.5 h-3.5 mr-1" />Decline
             </Button>
           </div>
         ) : convStatus === 'pending' ? (
-          <div className="text-center text-xs text-stone-400 py-2">Waiting for {otherUser?.username} to accept your message request...</div>
+          <div className="text-center text-xs text-[#7A8694] py-2">Waiting for {otherUser?.username} to accept your message request...</div>
         ) : (
         <div className="flex gap-2" data-testid="dm-input-area">
           <Input
@@ -331,12 +331,12 @@ const MessagesPage = () => {
             <div className="p-4 border-b border-honey/10">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="font-heading text-lg text-vinyl-black">New Message</h2>
-                <button onClick={() => { setComposeOpen(false); setComposeQuery(''); setComposeResults([]); }} className="text-stone-400 hover:text-stone-600" data-testid="dm-compose-close">
+                <button onClick={() => { setComposeOpen(false); setComposeQuery(''); setComposeResults([]); }} className="text-[#7A8694] hover:text-[#3A4D63]" data-testid="dm-compose-close">
                   <X className="w-5 h-5" />
                 </button>
               </div>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#7A8694]" />
                 <Input
                   value={composeQuery}
                   onChange={e => setComposeQuery(e.target.value)}
@@ -377,7 +377,7 @@ const MessagesPage = () => {
                 </button>
               ))}
               {!composeSearching && composeQuery.trim().length < 2 && (
-                <p className="text-center text-xs text-stone-400 py-6">Type at least 2 characters to search</p>
+                <p className="text-center text-xs text-[#7A8694] py-6">Type at least 2 characters to search</p>
               )}
             </div>
           </div>
@@ -389,16 +389,16 @@ const MessagesPage = () => {
         <div className="flex gap-2 mb-4">
           <button
             onClick={() => setMsgTab('inbox')}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${msgTab === 'inbox' ? 'bg-honey text-vinyl-black' : 'bg-stone-100 text-stone-500 hover:bg-stone-200'}`}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${msgTab === 'inbox' ? 'bg-honey text-vinyl-black' : 'bg-[#F3EBE0] text-[#3A4D63] hover:bg-[#F3EBE0]'}`}
             data-testid="msg-tab-inbox"
           >Inbox</button>
           <button
             onClick={() => setMsgTab('requests')}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors flex items-center gap-1.5 ${msgTab === 'requests' ? 'bg-amber-100 text-amber-800' : 'bg-stone-100 text-stone-500 hover:bg-stone-200'}`}
+            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors flex items-center gap-1.5 ${msgTab === 'requests' ? 'bg-[#F0E6C8] text-[#1E2A3A]' : 'bg-[#F3EBE0] text-[#3A4D63] hover:bg-[#F3EBE0]'}`}
             data-testid="msg-tab-requests"
           >
             Requests
-            <span className="bg-amber-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">{requestConvs.length}</span>
+            <span className="bg-[#D4A828] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">{requestConvs.length}</span>
           </button>
         </div>
       )}
@@ -413,7 +413,7 @@ const MessagesPage = () => {
         <div className="space-y-2">
           {(msgTab === 'inbox' ? activeConvs : requestConvs).map(conv => (
             <button key={conv.id} onClick={() => openConversation(conv.id)}
-              className={`w-full text-left p-4 rounded-xl bg-white border hover:shadow-sm transition-all flex items-center gap-3 ${conv.status === 'pending' ? 'border-amber-200' : 'border-honey/20 hover:border-honey/50'}`}
+              className={`w-full text-left p-4 rounded-xl bg-white border hover:shadow-sm transition-all flex items-center gap-3 ${conv.status === 'pending' ? 'border-[#E5DBC8]' : 'border-honey/20 hover:border-honey/50'}`}
               data-testid={`dm-conv-${conv.id}`}>
               {conv.other_user?.avatar_url ? (
                 <img src={resolveImageUrl(conv.other_user.avatar_url)} alt="" className="w-11 h-11 rounded-full object-cover shrink-0" />

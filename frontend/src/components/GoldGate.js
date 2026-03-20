@@ -27,13 +27,13 @@ const GoldGate = ({
       >
         <Crown className={`text-[#DAA520] ${compact ? 'w-4 h-4' : 'w-5 h-5'}`} />
         {hint && (
-          <p className={`text-center text-[#8A6B4A] px-3 ${compact ? 'text-[10px]' : 'text-xs'}`}>
+          <p className={`text-center text-[#3A4D63] px-3 ${compact ? 'text-[10px]' : 'text-xs'}`}>
             {hint}
           </p>
         )}
         <Button
           size="sm"
-          className="rounded-full font-bold text-[#2A1A06] shadow-sm"
+          className="rounded-full font-bold text-[#1E2A3A] shadow-sm"
           style={{ background: '#E8A820', fontSize: compact ? '10px' : '12px' }}
           onClick={() => navigate('/gold')}
           data-testid="gold-gate-cta"

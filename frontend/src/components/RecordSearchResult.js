@@ -8,8 +8,8 @@ const SearchResultImage = ({ src, alt, className }) => {
   const resolvedSrc = resolveImageUrl(src);
   if (failed || !resolvedSrc) {
     return (
-      <div className={`${className} rounded-md bg-stone-100 flex items-center justify-center`}>
-        <Disc className="w-5 h-5 text-stone-400" />
+      <div className={`${className} rounded-md bg-[#F3EBE0] flex items-center justify-center`}>
+        <Disc className="w-5 h-5 text-[#7A8694]" />
       </div>
     );
   }
@@ -46,8 +46,8 @@ const RecordSearchResult = ({ record, onClick, actions, size = 'md', testId }) =
         {r.cover_url ? (
           <SearchResultImage src={r.cover_url} alt={`${r.artist} ${r.title}`} className={imgSize} />
         ) : (
-          <div className={`${imgSize} rounded-md bg-stone-100 flex items-center justify-center`}>
-            <Disc className="w-5 h-5 text-stone-400" />
+          <div className={`${imgSize} rounded-md bg-[#F3EBE0] flex items-center justify-center`}>
+            <Disc className="w-5 h-5 text-[#7A8694]" />
           </div>
         )}
       </div>
@@ -63,7 +63,7 @@ const RecordSearchResult = ({ record, onClick, actions, size = 'md', testId }) =
           <p className="text-[11px] text-muted-foreground truncate flex items-center gap-1 mt-0.5">
             <span>{line2Parts.join(' \u00B7 ')}</span>
             {r.color_variant && (
-              <span className="inline-flex items-center px-1.5 py-0 rounded-full text-[10px] font-medium bg-amber-100 text-amber-700 border border-amber-200/60 whitespace-nowrap">
+              <span className="inline-flex items-center px-1.5 py-0 rounded-full text-[10px] font-medium bg-[#F0E6C8] text-[#D4A828] border border-[#E5DBC8]/60 whitespace-nowrap">
                 {r.color_variant}
               </span>
             )}

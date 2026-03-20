@@ -32,7 +32,7 @@ const CheckoutSuccessPage = () => {
           setStatus('success');
           setTxnData(resp.data);
           trackEvent('purchase_completed', { amount: resp.data.amount });
-          confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 }, colors: ['#FFB300', '#FFA000', '#C8861A'] });
+          confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 }, colors: ['#FFB300', '#FFA000', '#D4A828'] });
         } else if (resp.data.status === 'PENDING') {
           // Payment still processing — poll once more after a delay
           setTimeout(async () => {
@@ -45,7 +45,7 @@ const CheckoutSuccessPage = () => {
                 setStatus('success');
                 setTxnData(retry.data);
                 trackEvent('purchase_completed', { amount: retry.data.amount });
-                confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 }, colors: ['#FFB300', '#FFA000', '#C8861A'] });
+                confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 }, colors: ['#FFB300', '#FFA000', '#D4A828'] });
               } else {
                 setStatus('success'); // Show success if redirect_status says succeeded
                 setTxnData(retry.data);
@@ -78,7 +78,7 @@ const CheckoutSuccessPage = () => {
       <div className="max-w-md w-full text-center space-y-6">
         {status === 'loading' && (
           <div className="space-y-4" data-testid="checkout-loading">
-            <Loader2 className="w-12 h-12 animate-spin mx-auto" style={{ color: '#C8861A' }} />
+            <Loader2 className="w-12 h-12 animate-spin mx-auto" style={{ color: '#D4A828' }} />
             <p className="text-lg font-medium" style={{ color: '#3D2E1E' }}>Verifying your payment...</p>
           </div>
         )}
@@ -92,14 +92,14 @@ const CheckoutSuccessPage = () => {
             <h1 className="text-2xl font-bold" style={{ color: '#3D2E1E', fontFamily: '"DM Serif Display", serif' }}>
               Payment Confirmed!
             </h1>
-            <p className="text-stone-500">
+            <p className="text-[#3A4D63]">
               Your order has been placed. The seller will be notified and you'll receive shipping details soon.
             </p>
             {txnData?.amount && (
               <div className="rounded-xl p-4 mx-auto max-w-xs"
                 style={{ background: '#FFFDF5', border: '1px solid rgba(200,134,26,0.3)' }}>
-                <span className="text-sm text-stone-400">Total paid</span>
-                <p className="text-2xl font-bold" style={{ color: '#C8861A' }}>${txnData.amount.toFixed(2)}</p>
+                <span className="text-sm text-[#7A8694]">Total paid</span>
+                <p className="text-2xl font-bold" style={{ color: '#D4A828' }}>${txnData.amount.toFixed(2)}</p>
               </div>
             )}
             <div className="flex flex-col gap-3 pt-2">
@@ -114,7 +114,7 @@ const CheckoutSuccessPage = () => {
               <Link
                 to="/honeypot"
                 className="text-sm hover:underline transition-colors"
-                style={{ color: '#C8861A' }}
+                style={{ color: '#D4A828' }}
                 data-testid="back-to-shop-link"
               >
                 Back to The Honeypot
@@ -131,7 +131,7 @@ const CheckoutSuccessPage = () => {
             <h1 className="text-2xl font-bold" style={{ color: '#3D2E1E', fontFamily: '"DM Serif Display", serif' }}>
               Payment Issue
             </h1>
-            <p className="text-stone-500">
+            <p className="text-[#3A4D63]">
               We couldn't confirm your payment. If you were charged, it will be refunded automatically.
             </p>
             <Button

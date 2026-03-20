@@ -36,7 +36,7 @@ const VerifyEmailPage = () => {
   }, [token, navigate]);
 
   return (
-    <div className="min-h-screen bg-[#FAF6EE] flex items-center justify-center px-4" data-testid="verify-email-page">
+    <div className="min-h-screen bg-[#FFFBF2] flex items-center justify-center px-4" data-testid="verify-email-page">
       <div className="max-w-md w-full text-center">
         <Link to="/" className="inline-block mb-8">
           <img src="/logo-drip.png" alt="the Honey Groove" className="h-20 mx-auto" />
@@ -44,8 +44,8 @@ const VerifyEmailPage = () => {
 
         {status === 'loading' && (
           <div className="space-y-4" data-testid="verify-loading">
-            <Loader2 className="w-12 h-12 text-[#C8861A] animate-spin mx-auto" />
-            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '22px', color: '#8A6B4A' }}>
+            <Loader2 className="w-12 h-12 text-[#D4A828] animate-spin mx-auto" />
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '22px', color: '#3A4D63' }}>
               Verifying your email...
             </p>
           </div>
@@ -54,10 +54,10 @@ const VerifyEmailPage = () => {
         {status === 'success' && (
           <div className="space-y-4" data-testid="verify-success">
             <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto" />
-            <h1 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: '36px', color: '#2A1A06' }}>
+            <h1 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: '36px', color: '#1E2A3A' }}>
               You're verified!
             </h1>
-            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '20px', color: '#8A6B4A' }}>
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '20px', color: '#3A4D63' }}>
               {message} Redirecting to sign in...
             </p>
           </div>
@@ -66,14 +66,14 @@ const VerifyEmailPage = () => {
         {status === 'error' && (
           <div className="space-y-4" data-testid="verify-error">
             <XCircle className="w-16 h-16 text-red-400 mx-auto" />
-            <h1 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: '36px', color: '#2A1A06' }}>
+            <h1 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: '36px', color: '#1E2A3A' }}>
               Verification failed
             </h1>
-            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '20px', color: '#8A6B4A' }}>
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '20px', color: '#3A4D63' }}>
               {message}
             </p>
             <Link to="/login"
-              className="inline-block mt-4 px-6 py-3 bg-[#E8A820] hover:bg-[#d49a1a] text-[#2A1A06] rounded-full font-medium transition-colors"
+              className="inline-block mt-4 px-6 py-3 bg-[#E8A820] hover:bg-[#d49a1a] text-[#1E2A3A] rounded-full font-medium transition-colors"
               data-testid="verify-back-to-login">
               Back to Sign In
             </Link>

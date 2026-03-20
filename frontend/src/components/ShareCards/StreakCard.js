@@ -80,7 +80,7 @@ const StreakCard = React.forwardRef(function StreakCard({ streakDays = 7, user }
             fontWeight: 700,
             margin: 0,
             lineHeight: 0.9,
-            background: 'linear-gradient(180deg, #FFF8DC 0%, #FFD700 50%, #C8861A 100%)',
+            background: 'linear-gradient(180deg, #FFF8DC 0%, #FFD700 50%, #D4A828 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',

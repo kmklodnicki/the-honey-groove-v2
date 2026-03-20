@@ -26,7 +26,7 @@ const CommentImage = ({ src }) => {
       <img
         src={resolved}
         alt="Comment attachment"
-        className="mt-1.5 rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity border border-stone-200"
+        className="mt-1.5 rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity border border-[#E5DBC8]"
         style={{ maxWidth: '180px', maxHeight: '120px' }}
         onClick={() => setExpanded(true)}
         data-testid="comment-image-thumb"
@@ -55,7 +55,7 @@ const SingleComment = ({ comment, onReply, onLike, onDelete, isReply, topLevelId
           <div className="absolute left-0 top-0 bottom-0" style={{ width: '2px', background: 'rgba(218, 165, 32, 0.2)', borderRadius: '1px' }} data-testid={`thread-line-${comment.id}`} />
         )}
         <div className="flex gap-2 py-1.5">
-          <div className={`${isReply ? 'h-6 w-6' : 'h-8 w-8'} rounded-full bg-stone-200 shrink-0`} />
+          <div className={`${isReply ? 'h-6 w-6' : 'h-8 w-8'} rounded-full bg-[#F3EBE0] shrink-0`} />
           <p className="text-sm italic text-muted-foreground" data-testid={`deleted-comment-${comment.id}`}>This comment has been deleted</p>
         </div>
       </div>

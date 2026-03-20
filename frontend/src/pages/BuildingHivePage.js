@@ -17,7 +17,7 @@ const BUILDING_MESSAGES = [
   'Almost there, honey...',
 ];
 
-const CONFETTI_COLORS = ['#FFD700', '#C8861A', '#DAA520', '#FF8C00', '#8B4513', '#F4B521', '#FFB800'];
+const CONFETTI_COLORS = ['#FFD700', '#D4A828', '#DAA520', '#FF8C00', '#8B4513', '#F4B521', '#FFB800'];
 
 const ConfettiPiece = ({ delay, left }) => (
   <div
@@ -128,7 +128,7 @@ const BuildingHivePage = () => {
   const username = searchParams.get('username') || '';
 
   return (
-    <div className="min-h-screen bg-[#FAF6EE] flex flex-col items-center justify-center px-4 py-12 relative overflow-hidden">
+    <div className="min-h-screen bg-[#FFFBF2] flex flex-col items-center justify-center px-4 py-12 relative overflow-hidden">
       {/* Confetti CSS */}
       <style>{`
         @keyframes confettiFall {
@@ -171,18 +171,18 @@ const BuildingHivePage = () => {
 
             <div className="space-y-2">
               <h1
-                className="font-heading text-3xl sm:text-4xl text-[#1F1F1F] tracking-tight"
+                className="font-heading text-3xl sm:text-4xl text-[#1E2A3A] tracking-tight"
                 style={{ fontFamily: '"Playfair Display", serif' }}
                 data-testid="success-title"
               >
                 Collection Connected!
               </h1>
-              <p className="text-[#8A6B4A] text-base" data-testid="success-summary">
-                <span className="font-semibold text-[#C8861A]">{progress.imported}</span> records imported
-                {progress.skipped > 0 && <span className="text-[#8A6B4A]/60"> ({progress.skipped} already in your vault)</span>}
+              <p className="text-[#3A4D63] text-base" data-testid="success-summary">
+                <span className="font-semibold text-[#D4A828]">{progress.imported}</span> records imported
+                {progress.skipped > 0 && <span className="text-[#3A4D63]/60"> ({progress.skipped} already in your vault)</span>}
               </p>
               {username && (
-                <p className="text-sm text-[#8A6B4A]/60">
+                <p className="text-sm text-[#3A4D63]/60">
                   Connected as @{username} on Discogs
                 </p>
               )}
@@ -204,10 +204,10 @@ const BuildingHivePage = () => {
             {/* Spinning disc animation */}
             <div className="flex justify-center" data-testid="building-hive-disc">
               <div className="relative w-24 h-24">
-                <div className="absolute inset-0 rounded-full border-4 border-[#C8861A]/20" />
-                <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#C8861A] animate-spin" style={{ animationDuration: '2s' }} />
+                <div className="absolute inset-0 rounded-full border-4 border-[#D4A828]/20" />
+                <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#D4A828] animate-spin" style={{ animationDuration: '2s' }} />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Disc className="w-10 h-10 text-[#C8861A]" />
+                  <Disc className="w-10 h-10 text-[#D4A828]" />
                 </div>
               </div>
             </div>
@@ -215,14 +215,14 @@ const BuildingHivePage = () => {
             {/* Title */}
             <div className="space-y-2">
               <h1
-                className="font-heading text-3xl sm:text-4xl text-[#1F1F1F] tracking-tight"
+                className="font-heading text-3xl sm:text-4xl text-[#1E2A3A] tracking-tight"
                 style={{ fontFamily: '"Playfair Display", serif' }}
                 data-testid="building-hive-title"
               >
                 Building your Hive...
               </h1>
               {username && (
-                <p className="text-sm text-[#8A6B4A]" data-testid="building-hive-username">
+                <p className="text-sm text-[#3A4D63]" data-testid="building-hive-username">
                   Connected as <span className="font-medium">@{username}</span> on Discogs
                 </p>
               )}
@@ -232,25 +232,25 @@ const BuildingHivePage = () => {
             <div className="space-y-3 px-4" data-testid="building-hive-progress">
               <Progress value={progressPercent} className="h-2" />
               <div className="flex items-center justify-between text-sm">
-                <span className="text-[#8A6B4A] flex items-center gap-2">
+                <span className="text-[#3A4D63] flex items-center gap-2">
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   {BUILDING_MESSAGES[messageIndex]}
                 </span>
                 {progress.total > 0 && (
-                  <span className="text-[#8A6B4A]/70 tabular-nums text-xs">
+                  <span className="text-[#3A4D63]/70 tabular-nums text-xs">
                     {progress.imported + progress.skipped} / {progress.total}
                   </span>
                 )}
               </div>
               {progress.imported > 0 && (
-                <div className="flex gap-4 justify-center text-xs text-[#8A6B4A]/60">
+                <div className="flex gap-4 justify-center text-xs text-[#3A4D63]/60">
                   <span className="text-green-600">{progress.imported} imported</span>
                   {progress.skipped > 0 && <span>{progress.skipped} skipped</span>}
                 </div>
               )}
             </div>
 
-            <p className="text-xs text-[#8A6B4A]/50">
+            <p className="text-xs text-[#3A4D63]/50">
               This usually takes about a minute. Don't close this tab.
             </p>
           </>

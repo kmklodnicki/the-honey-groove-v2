@@ -438,7 +438,7 @@ const ISOPage = () => {
       }, { headers: { Authorization: `Bearer ${token}` }});
       setIsos(prev => prev.filter(i => i.id !== acquireTarget.id));
       setAcquireTarget(null);
-      confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 }, colors: ['#E8A820', '#C8861A', '#8A6B4A', '#FFD700'] });
+      confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 }, colors: ['#E8A820', '#D4A828', '#3A4D63', '#FFD700'] });
       toast.success(`Congrats! ${res.data.title || 'Your record'} is now in your Collection.`);
       setTimeout(() => navigate('/collection'), 1500);
     } catch { toast.error('something went wrong.'); }
@@ -678,24 +678,24 @@ const ISOPage = () => {
 
           {/* Glass Search Bar */}
           <div className="relative" data-testid="honeypot-search-bar">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#C8861A]/60 pointer-events-none" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#D4A828]/60 pointer-events-none" />
             <input
               type="text"
               placeholder="Search artist, album, or variant..."
               value={marketSearch}
               onChange={e => setMarketSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm placeholder:text-stone-400 outline-none transition-all duration-200"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm placeholder:text-[#7A8694] outline-none transition-all duration-200"
               style={{
                 background: 'rgba(255, 255, 255, 0.1)',
                 border: '1px solid rgba(255, 215, 0, 0.3)',
-                color: '#2A1A06',
+                color: '#1E2A3A',
               }}
               onFocus={e => { e.target.style.borderColor = '#DAA520'; e.target.style.boxShadow = '0 0 0 3px rgba(218,165,32,0.15)'; }}
               onBlur={e => { e.target.style.borderColor = 'rgba(255, 215, 0, 0.3)'; e.target.style.boxShadow = 'none'; }}
               data-testid="honeypot-fuzzy-search"
             />
             {marketSearch && (
-              <button onClick={() => setMarketSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600" data-testid="clear-market-search">
+              <button onClick={() => setMarketSearch('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7A8694] hover:text-[#3A4D63]" data-testid="clear-market-search">
                 <X className="w-4 h-4" />
               </button>
             )}
@@ -720,11 +720,11 @@ const ISOPage = () => {
         <TabsContent value="shop">
           {/* ISO Matches */}
           {isoMatches.length > 0 && (
-            <Card className="p-4 border-[#C8861A]/15 bg-amber-50/30 mb-6" data-testid="iso-matches-banner">
-              <p className="text-sm font-medium text-[#C8861A] mb-2">ISO Matches Found!</p>
+            <Card className="p-4 border-[#D4A828]/15 bg-[#F0E6C8]/30 mb-6" data-testid="iso-matches-banner">
+              <p className="text-sm font-medium text-[#D4A828] mb-2">ISO Matches Found!</p>
               <div className="flex gap-3 overflow-x-auto pb-2">
                 {isoMatches.map(m => (
-                  <div key={m.id} className="flex-shrink-0 bg-white rounded-lg p-3 border border-[#C8861A]/15 w-48 cursor-pointer hover:shadow-md hover:border-[#C8861A]/30 transition-all"
+                  <div key={m.id} className="flex-shrink-0 bg-white rounded-lg p-3 border border-[#D4A828]/15 w-48 cursor-pointer hover:shadow-md hover:border-[#D4A828]/30 transition-all"
                     onClick={() => setSelectedListingId(m.id)} data-testid={`iso-match-card-${m.id}`}>
                     <div className="flex items-center gap-2 mb-1">
                       <IsoMatchCover coverUrl={m.cover_url} />
@@ -732,7 +732,7 @@ const ISOPage = () => {
                     </div>
                     <ListingTypeBadge type={m.listing_type} price={m.price} size="sm" />
                     <Link to={`/profile/${m.user?.username}`} onClick={e => e.stopPropagation()}
-                      className="text-xs text-muted-foreground hover:text-[#C8861A] hover:underline ml-1" data-testid={`iso-match-seller-${m.id}`}>by @{m.user?.username}</Link>
+                      className="text-xs text-muted-foreground hover:text-[#D4A828] hover:underline ml-1" data-testid={`iso-match-seller-${m.id}`}>by @{m.user?.username}</Link>
                   </div>
                 ))}
               </div>
@@ -751,7 +751,7 @@ const ISOPage = () => {
             </Card>
           ) : (
             <div>
-              <div className="divide-y divide-[#C8861A]/10 border border-honey/20 rounded-xl overflow-hidden bg-white">
+              <div className="divide-y divide-[#D4A828]/10 border border-honey/20 rounded-xl overflow-hidden bg-white">
                 {shopListings.slice(0, visibleListings).map(listing => (
                   <ListingCard key={listing.id} listing={listing} currentUserId={user?.id}
                     onBuyNow={handleBuyNow} onMakeOffer={(l) => setOfferTarget(l)}
@@ -777,12 +777,12 @@ const ISOPage = () => {
           {myListings.filter(l => l.listing_type !== 'TRADE').length > 0 && (
             <div className="mt-8">
               <h3 className="font-heading text-lg text-vinyl-black mb-3">Your Listings</h3>
-              <div className="divide-y divide-[#C8861A]/10 border border-honey/20 rounded-xl overflow-hidden bg-white">
+              <div className="divide-y divide-[#D4A828]/10 border border-honey/20 rounded-xl overflow-hidden bg-white">
                 {myListings.filter(l => l.listing_type !== 'TRADE').map(listing => (
                   <div key={listing.id} className="relative">
                     <ListingCard listing={listing} onClick={() => setSelectedListingId(listing.id)} />
                     <Button size="sm" variant="ghost" onClick={() => { setDeleteConfirmId(listing.id); setDeleteConfirmType('listing'); }}
-                      className="absolute top-3 right-3 text-[#8A6B4A]/60 hover:bg-[#8A6B4A]/10 h-8 w-8 p-0" data-testid={`delete-listing-${listing.id}`}>
+                      className="absolute top-3 right-3 text-[#3A4D63]/60 hover:bg-[#3A4D63]/10 h-8 w-8 p-0" data-testid={`delete-listing-${listing.id}`}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -795,9 +795,9 @@ const ISOPage = () => {
         {/* ====== WANTLIST (READY TO BUY) TAB ====== */}
         <TabsContent value="iso">
           {/* Actively Seeking Header */}
-          <div className="mb-5 p-4 rounded-xl bg-gradient-to-r from-amber-50/80 to-stone-50" data-testid="wantlist-header">
+          <div className="mb-5 p-4 rounded-xl bg-gradient-to-r from-[#F0E6C8]/80 to-[#FFFBF2]" data-testid="wantlist-header">
             <p className="font-heading text-lg text-vinyl-black">The Hunt is On.</p>
-            <p className="text-sm text-stone-500 font-serif italic">You're actively looking, and we're actively matching. No more gatekeeping.</p>
+            <p className="text-sm text-[#3A4D63] font-serif italic">You're actively looking, and we're actively matching. No more gatekeeping.</p>
           </div>
 
           {/* Your Hunt List */}
@@ -810,13 +810,13 @@ const ISOPage = () => {
             <div className="flex gap-1">
               {FILTER_OPTIONS.map(f => (
                 <Button key={f} size="sm" variant={filter === f ? 'default' : 'outline'} onClick={() => setFilter(f)}
-                  className={`rounded-full text-xs ${filter === f ? 'bg-[#E8A820] text-[#2A1A06] hover:bg-[#C8861A]' : ''}`} data-testid={`iso-filter-${f.toLowerCase()}`}>{f}</Button>
+                  className={`rounded-full text-xs ${filter === f ? 'bg-[#E8A820] text-[#1E2A3A] hover:bg-[#D4A828]' : ''}`} data-testid={`iso-filter-${f.toLowerCase()}`}>{f}</Button>
               ))}
             </div>
           </div>
           {filteredIsos.length === 0 ? (
             <Card className="p-6 text-center border-honey/30 mb-8">
-              <Search className="w-10 h-10 text-[#C8861A]/30 mx-auto mb-3" />
+              <Search className="w-10 h-10 text-[#D4A828]/30 mx-auto mb-3" />
               <h3 className="font-heading text-lg mb-1">{isos.length === 0 ? 'No ISOs yet' : 'No results'}</h3>
               <p className="text-muted-foreground text-sm">{isos.length === 0 ? 'Tap "Add to Actively Seeking" to start your vinyl hunt!' : 'Try a different filter.'}</p>
             </Card>
@@ -830,7 +830,7 @@ const ISOPage = () => {
           <h3 className="font-heading text-lg text-vinyl-black mb-3" data-testid="community-hunt-title">The Community Hunt</h3>
           {communityIsos.length === 0 ? (
             <Card className="p-6 text-center border-honey/30">
-              <Search className="w-10 h-10 text-[#C8861A]/30 mx-auto mb-3" />
+              <Search className="w-10 h-10 text-[#D4A828]/30 mx-auto mb-3" />
               <p className="text-muted-foreground text-sm">No community ISOs right now. Check back later!</p>
             </Card>
           ) : (
@@ -853,7 +853,7 @@ const ISOPage = () => {
           {/* How Trades Work CTA */}
           <button
             onClick={() => setShowHowTradesWork(true)}
-            className="flex items-center gap-1.5 text-sm text-[#C8861A] hover:text-[#996012] hover:underline mb-5 transition-colors"
+            className="flex items-center gap-1.5 text-sm text-[#D4A828] hover:text-[#D4A828] hover:underline mb-5 transition-colors"
             data-testid="how-trades-work-btn"
           >
             <HelpCircle className="w-4 h-4" /> How do trades work?
@@ -882,7 +882,7 @@ const ISOPage = () => {
             </Card>
           ) : (
             <div>
-              <div className="divide-y divide-[#C8861A]/10 border border-honey/20 rounded-xl overflow-hidden bg-white">
+              <div className="divide-y divide-[#D4A828]/10 border border-honey/20 rounded-xl overflow-hidden bg-white">
                 {tradeListings.slice(0, visibleListings).map(listing => (
                   <ListingCard key={listing.id} listing={listing} currentUserId={user?.id} onProposeTrade={(l) => { if (!user?.country) { setShowCountryGate(true); return; } setTradeTarget(l); }}
                     onClick={() => setSelectedListingId(listing.id)} />
@@ -907,12 +907,12 @@ const ISOPage = () => {
           {myListings.filter(l => l.listing_type === 'TRADE').length > 0 && (
             <div className="mt-8">
               <h3 className="font-heading text-lg text-vinyl-black mb-3">Your Trade Listings</h3>
-              <div className="divide-y divide-[#C8861A]/10 border border-honey/20 rounded-xl overflow-hidden bg-white">
+              <div className="divide-y divide-[#D4A828]/10 border border-honey/20 rounded-xl overflow-hidden bg-white">
                 {myListings.filter(l => l.listing_type === 'TRADE').map(listing => (
                   <div key={listing.id} className="relative">
                     <ListingCard listing={listing} onClick={() => setSelectedListingId(listing.id)} />
                     <Button size="sm" variant="ghost" onClick={() => { setDeleteConfirmId(listing.id); setDeleteConfirmType('listing'); }}
-                      className="absolute top-3 right-3 text-[#8A6B4A]/60 hover:bg-[#8A6B4A]/10 h-8 w-8 p-0" data-testid={`delete-listing-${listing.id}`}>
+                      className="absolute top-3 right-3 text-[#3A4D63]/60 hover:bg-[#3A4D63]/10 h-8 w-8 p-0" data-testid={`delete-listing-${listing.id}`}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
@@ -927,7 +927,7 @@ const ISOPage = () => {
       <Dialog open={showCreate === 'iso'} onOpenChange={(open) => !open && closeModal()}>
         <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-heading flex items-center gap-2"><Search className="w-5 h-5 text-[#C8861A]" /> {modalTitles.iso}</DialogTitle>
+            <DialogTitle className="font-heading flex items-center gap-2"><Search className="w-5 h-5 text-[#D4A828]" /> {modalTitles.iso}</DialogTitle>
             <DialogDescription>What vinyl are you searching for?</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-2">
@@ -958,7 +958,7 @@ const ISOPage = () => {
                 </div>
                 <Textarea placeholder="Caption for The Hive (optional)" value={isoCaption} onChange={e => setIsoCaption(e.target.value)} className="border-honey/50 resize-none" rows={2} />
                 <Button onClick={submitISO} disabled={submitting || (manualMode && (!isoArtist || !isoAlbum)) || (!manualMode && !selectedRelease)}
-                  className="w-full bg-[#E8A820]/15 text-[#C8861A] hover:bg-[#E8A820]/25 rounded-full" data-testid="iso-form-submit">
+                  className="w-full bg-[#E8A820]/15 text-[#D4A828] hover:bg-[#E8A820]/25 rounded-full" data-testid="iso-form-submit">
                   {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Search className="w-4 h-4 mr-2" />}
                   Add to Actively Seeking
                 </Button>
@@ -996,9 +996,9 @@ const ISOPage = () => {
                     <label className="text-sm font-medium mb-2 block">Listing Type</label>
                     <div className="grid grid-cols-3 gap-2">
                       {[
-                        { key: 'BUY_NOW', label: 'Buy Now', icon: DollarSign, color: 'bg-amber-100/60 text-[#C8861A]' },
-                        { key: 'MAKE_OFFER', label: 'Offer', icon: ShoppingBag, color: 'bg-amber-100/60 text-[#C8861A]' },
-                        { key: 'TRADE', label: 'Trade', icon: ArrowRightLeft, color: 'bg-[#E8A820]/15 text-[#C8861A] border border-[#C8861A]/30' },
+                        { key: 'BUY_NOW', label: 'Buy Now', icon: DollarSign, color: 'bg-[#F0E6C8]/60 text-[#D4A828]' },
+                        { key: 'MAKE_OFFER', label: 'Offer', icon: ShoppingBag, color: 'bg-[#F0E6C8]/60 text-[#D4A828]' },
+                        { key: 'TRADE', label: 'Trade', icon: ArrowRightLeft, color: 'bg-[#E8A820]/15 text-[#D4A828] border border-[#D4A828]/30' },
                       ].map(t => (
                         <button key={t.key} onClick={() => setListType(t.key)}
                           className={`px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-1 justify-center transition-all ${listType === t.key ? `${t.color} ring-2 ring-offset-1 ring-current shadow-sm` : 'bg-gray-50 text-muted-foreground hover:bg-gray-100'}`}
@@ -1017,7 +1017,7 @@ const ISOPage = () => {
                       <Input placeholder="Price" type="number" min="0.01" step="0.01" value={listPrice} onChange={e => setListPrice(e.target.value)} className="pl-9 border-honey/50" data-testid="list-price-input" />
                     </div>
                     {listPrice && parseFloat(listPrice) > 0 && parseFloat(listPrice) < 0.50 && (
-                      <p className="text-[11px] text-amber-700 bg-amber-50/80 border border-amber-200/60 rounded-lg px-3 py-1.5" data-testid="low-price-warning">
+                      <p className="text-[11px] text-[#D4A828] bg-[#F0E6C8]/80 border border-[#E5DBC8]/60 rounded-lg px-3 py-1.5" data-testid="low-price-warning">
                         heads up: processing fees may exceed this price. you might receive $0 after fees.
                       </p>
                     )}
@@ -1030,17 +1030,17 @@ const ISOPage = () => {
                       </p>
                     )}
                     {isUnofficial && (
-                      <p className="text-[11px] text-stone-400 pl-1 italic" data-testid="unofficial-manual-price-notice">
+                      <p className="text-[11px] text-[#7A8694] pl-1 italic" data-testid="unofficial-manual-price-notice">
                         Auto-pricing disabled for unofficial releases. Enter price manually.
                       </p>
                     )}
                     {pulseData?.confident && !isUnofficial && (
-                      <p className="text-[11px] text-amber-600 pl-1" data-testid="pulse-suggest">
+                      <p className="text-[11px] text-[#D4A828] pl-1" data-testid="pulse-suggest">
                         Honey Pulse Suggests: ${pulseData.hot_low?.toFixed(2)} - ${pulseData.hot_high?.toFixed(2)}
                       </p>
                     )}
                     {sellerStats && sellerStats.completed_transactions < 3 && parseFloat(listPrice) > 150 && (
-                      <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2" data-testid="new-seller-restriction-msg">
+                      <p className="text-xs text-[#D4A828] bg-[#F0E6C8] border border-[#E5DBC8] rounded-lg px-3 py-2" data-testid="new-seller-restriction-msg">
                         New sellers can list items up to $150. Complete 3 transactions to unlock higher value listings.
                       </p>
                     )}
@@ -1060,7 +1060,7 @@ const ISOPage = () => {
                         onChange={(e) => setInternationalShipping(e.target.checked)}
                         className="w-4 h-4 rounded border-honey/50 text-honey accent-[#E8A820] cursor-pointer"
                       />
-                      <span className="text-sm text-foreground group-hover:text-[#C8861A] transition-colors">Offer International Shipping</span>
+                      <span className="text-sm text-foreground group-hover:text-[#D4A828] transition-colors">Offer International Shipping</span>
                     </label>
                     <div className="relative">
                       <DollarSign className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-opacity ${!internationalShipping ? 'opacity-50' : ''}`} />
@@ -1078,7 +1078,7 @@ const ISOPage = () => {
 
                     {/* Payout Estimator */}
                     {payoutEstimate && (
-                      <div className="bg-amber-50/70 border border-amber-200/60 rounded-xl p-3 space-y-1.5" data-testid="payout-estimator">
+                      <div className="bg-[#F0E6C8]/70 border border-[#E5DBC8]/60 rounded-xl p-3 space-y-1.5" data-testid="payout-estimator">
                         <div className="flex items-center justify-between text-xs text-muted-foreground">
                           <span>listing price</span>
                           <span>${payoutEstimate.price.toFixed(2)}</span>
@@ -1091,9 +1091,9 @@ const ISOPage = () => {
                           <span>shipping</span>
                           <span className="text-red-500">-${payoutEstimate.shipping_cost.toFixed(2)}</span>
                         </div>
-                        <div className="border-t border-amber-200/60 pt-1.5 flex items-center justify-between">
-                          <span className="text-sm font-semibold text-amber-800">Take Home Honey</span>
-                          <span className="text-sm font-bold text-amber-800" data-testid="take-home-honey">${payoutEstimate.take_home.toFixed(2)}</span>
+                        <div className="border-t border-[#E5DBC8]/60 pt-1.5 flex items-center justify-between">
+                          <span className="text-sm font-semibold text-[#1E2A3A]">Take Home Honey</span>
+                          <span className="text-sm font-bold text-[#1E2A3A]" data-testid="take-home-honey">${payoutEstimate.take_home.toFixed(2)}</span>
                         </div>
                       </div>
                     )}
@@ -1126,12 +1126,12 @@ const ISOPage = () => {
 
                 {/* Shipping Insurance Prompt */}
                 {showInsurancePrompt && (
-                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3" data-testid="insurance-prompt">
-                    <p className="text-sm text-amber-800 font-medium">For items over $75 we recommend adding shipping insurance to protect you and your buyer.</p>
+                  <div className="bg-[#F0E6C8] border border-[#E5DBC8] rounded-xl p-4 space-y-3" data-testid="insurance-prompt">
+                    <p className="text-sm text-[#1E2A3A] font-medium">For items over $75 we recommend adding shipping insurance to protect you and your buyer.</p>
                     <div className="flex gap-2">
                       <Button
                         onClick={() => { setInsuranceChoice(true); setShowInsurancePrompt(false); }}
-                        className="flex-1 bg-[#E8A820]/15 text-[#C8861A] hover:bg-[#E8A820]/25 rounded-full text-xs"
+                        className="flex-1 bg-[#E8A820]/15 text-[#D4A828] hover:bg-[#E8A820]/25 rounded-full text-xs"
                         data-testid="insurance-add-btn"
                       >
                         Got it, I'll add insurance
@@ -1139,7 +1139,7 @@ const ISOPage = () => {
                       <Button
                         onClick={() => { setInsuranceChoice(false); setShowInsurancePrompt(false); }}
                         variant="outline"
-                        className="flex-1 rounded-full text-xs border-amber-300 text-amber-700"
+                        className="flex-1 rounded-full text-xs border-[#D4A828] text-[#D4A828]"
                         data-testid="insurance-skip-btn"
                       >
                         Skip for now
@@ -1153,16 +1153,16 @@ const ISOPage = () => {
                   <div className="rounded-xl p-4 space-y-2.5" style={{ background: 'rgba(74,74,74,0.05)', border: '1px solid rgba(74,74,74,0.15)' }} data-testid="unofficial-compliance">
                     <div className="flex items-start gap-1.5">
                       <span className="inline-flex items-center text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full shrink-0" style={{ background: '#4A4A4A', color: '#fff' }}>Unofficial</span>
-                      <p className="text-xs text-stone-500">This release is flagged as unofficial. You must acknowledge the terms below.</p>
+                      <p className="text-xs text-[#3A4D63]">This release is flagged as unofficial. You must acknowledge the terms below.</p>
                     </div>
                     <label className="flex items-start gap-2.5 cursor-pointer group" data-testid="unofficial-ack-checkbox">
                       <input
                         type="checkbox"
                         checked={unofficialAcked}
                         onChange={e => setUnofficialAcked(e.target.checked)}
-                        className="mt-0.5 w-4 h-4 accent-amber-600 rounded"
+                        className="mt-0.5 w-4 h-4 accent-[#D4A828] rounded"
                       />
-                      <span className="text-xs leading-relaxed text-stone-600">
+                      <span className="text-xs leading-relaxed text-[#3A4D63]">
                         {user?.golden_hive_verified
                           ? 'I confirm this is an unofficial pressing and have described its condition accurately to protect my Golden Hive status.'
                           : 'I confirm this is an unofficial pressing and have described its condition accurately. I understand that transparency on unofficial items is a requirement for maintaining account standing and working toward Golden Hive verification.'}
@@ -1199,7 +1199,7 @@ const ISOPage = () => {
             </div>
             <p className="text-xs text-muted-foreground">{platformFee}% platform fee applies. You'll be redirected to secure checkout.</p>
             <Button onClick={handleMakeOfferSubmit} disabled={paymentLoading || !offerAmount}
-              className="w-full bg-[#C8861A] text-white hover:bg-[#B07516] rounded-full" data-testid="submit-offer-btn">
+              className="w-full bg-[#D4A828] text-white hover:bg-[#B07516] rounded-full" data-testid="submit-offer-btn">
               {paymentLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <DollarSign className="w-4 h-4 mr-2" />}
               Pay ${offerAmount || '0'}
             </Button>
@@ -1221,7 +1221,7 @@ const ISOPage = () => {
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle className="font-heading flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-[#C8861A]" /> Upgrade to Collection
+              <CheckCircle2 className="w-5 h-5 text-[#D4A828]" /> Upgrade to Collection
             </DialogTitle>
             <DialogDescription>
               {acquireTarget?.album && acquireTarget?.artist
@@ -1300,7 +1300,7 @@ const ISOPage = () => {
         <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-heading text-xl flex items-center gap-2">
-              <ArrowRightLeft className="w-5 h-5 text-[#C8861A]" /> How Trading Works: The 4-Step Groove
+              <ArrowRightLeft className="w-5 h-5 text-[#D4A828]" /> How Trading Works: The 4-Step Groove
             </DialogTitle>
             <DialogDescription>Secure, scam-free vinyl trading.</DialogDescription>
           </DialogHeader>
@@ -1308,40 +1308,40 @@ const ISOPage = () => {
             {/* Step 1 */}
             <div className="flex gap-3" data-testid="trade-step-1">
               <div className="w-8 h-8 rounded-full bg-[#E8A820]/20 flex items-center justify-center shrink-0 mt-0.5">
-                <span className="text-sm font-bold text-[#996012]">1</span>
+                <span className="text-sm font-bold text-[#D4A828]">1</span>
               </div>
               <div>
-                <p className="font-heading text-sm font-semibold text-[#2A1A06]">Agree & Value</p>
+                <p className="font-heading text-sm font-semibold text-[#1E2A3A]">Agree & Value</p>
                 <p className="text-sm text-muted-foreground leading-relaxed">Both parties agree on the exchange. The system sets the hold amount based on Discogs Median value.</p>
               </div>
             </div>
             {/* Step 2 */}
             <div className="flex gap-3" data-testid="trade-step-2">
               <div className="w-8 h-8 rounded-full bg-[#E8A820]/20 flex items-center justify-center shrink-0 mt-0.5">
-                <span className="text-sm font-bold text-[#996012]">2</span>
+                <span className="text-sm font-bold text-[#D4A828]">2</span>
               </div>
               <div>
-                <p className="font-heading text-sm font-semibold text-[#2A1A06]">Activate the Mutual Hold</p>
+                <p className="font-heading text-sm font-semibold text-[#1E2A3A]">Activate the Mutual Hold</p>
                 <p className="text-sm text-muted-foreground leading-relaxed">Collectors authorize the Mutual Hold. No money is moved yet — it's just a pending safety authorization. This ensures everyone is incentivized to ship their wax safely.</p>
               </div>
             </div>
             {/* Step 3 */}
             <div className="flex gap-3" data-testid="trade-step-3">
               <div className="w-8 h-8 rounded-full bg-[#E8A820]/20 flex items-center justify-center shrink-0 mt-0.5">
-                <span className="text-sm font-bold text-[#996012]">3</span>
+                <span className="text-sm font-bold text-[#D4A828]">3</span>
               </div>
               <div>
-                <p className="font-heading text-sm font-semibold text-[#2A1A06]">Secure Shipping</p>
+                <p className="font-heading text-sm font-semibold text-[#1E2A3A]">Secure Shipping</p>
                 <p className="text-sm text-muted-foreground leading-relaxed">Both parties upload tracking. The system monitors the journey.</p>
               </div>
             </div>
             {/* Step 4 */}
             <div className="flex gap-3" data-testid="trade-step-4">
               <div className="w-8 h-8 rounded-full bg-[#E8A820]/20 flex items-center justify-center shrink-0 mt-0.5">
-                <span className="text-sm font-bold text-[#996012]">4</span>
+                <span className="text-sm font-bold text-[#D4A828]">4</span>
               </div>
               <div>
-                <p className="font-heading text-sm font-semibold text-[#2A1A06]">Instant Release</p>
+                <p className="font-heading text-sm font-semibold text-[#1E2A3A]">Instant Release</p>
                 <p className="text-sm text-muted-foreground leading-relaxed">Once both sides confirm receipt and condition, the holds are reversed. Cost to you: <strong>$0</strong>.</p>
               </div>
             </div>

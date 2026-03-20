@@ -69,7 +69,7 @@ const TasteMatchPill = ({ tasteMatch, onOpen }) => {
         style={{ background: 'linear-gradient(135deg, #FFD700 0%, #FDB931 100%)', color: '#3E2723', border: '1px solid rgba(253,185,49,0.3)', boxShadow: '0 2px 10px rgba(253,185,49,0.25)' }}
         data-testid="taste-match-pill"
       >
-        <Sparkles className="w-3.5 h-3.5" style={{ color: '#C8861A' }} />
+        <Sparkles className="w-3.5 h-3.5" style={{ color: '#D4A828' }} />
         {tasteMatch.score}% Taste Match
       </button>
       {show && ReactDOM.createPortal(
@@ -92,7 +92,7 @@ const TasteMatchPill = ({ tasteMatch, onOpen }) => {
         >
           <p className="font-heading text-sm font-bold text-vinyl-black mb-1.5">Your Groove Sync</p>
           <p className="text-xs text-[#5a4a3a] leading-relaxed mb-2">This score is calculated by comparing your vinyl collection and ISOs with this user. We look at shared genres, overlapping artists, and similar era preferences to see how much your record crates have in common.</p>
-          <p className="text-[11px] font-medium italic" style={{ color: '#C8861A' }}>The higher the percentage, the deeper the shared groove.</p>
+          <p className="text-[11px] font-medium italic" style={{ color: '#D4A828' }}>The higher the percentage, the deeper the shared groove.</p>
         </div>,
         document.body
       )}
@@ -473,16 +473,16 @@ const ProfilePage = () => {
     return (
       <div className="max-w-3xl mx-auto px-4 py-8 pt-3 md:pt-2 text-center" data-testid="profile-unavailable">
         <div className="flex flex-col items-center gap-4 py-16">
-          <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center">
-            <ShieldOff className="w-7 h-7 text-stone-400" />
+          <div className="w-16 h-16 rounded-full bg-[#F3EBE0] flex items-center justify-center">
+            <ShieldOff className="w-7 h-7 text-[#7A8694]" />
           </div>
-          <h2 className="font-heading text-2xl text-stone-700">Profile Unavailable</h2>
-          <p className="text-sm text-stone-500 max-w-xs">This profile is not available to you.</p>
+          <h2 className="font-heading text-2xl text-[#3A4D63]">Profile Unavailable</h2>
+          <p className="text-sm text-[#3A4D63] max-w-xs">This profile is not available to you.</p>
           <Button
             variant="outline"
             size="sm"
             onClick={() => navigate(-1)}
-            className="mt-2 rounded-full border-stone-300 text-stone-600"
+            className="mt-2 rounded-full border-[#E5DBC8] text-[#3A4D63]"
             data-testid="go-back-btn"
           >
             Go Back
@@ -534,8 +534,8 @@ const ProfilePage = () => {
       {isOwnProfile && user?.discogs_migration_dismissed && !user?.discogs_oauth_verified && (
         <div className="mx-auto max-w-2xl mb-4 px-4" data-testid="discogs-reconnect-banner">
           <div className="rounded-xl p-3.5 flex items-center gap-3" style={{ background: 'linear-gradient(135deg, #FFF8E1, #FFFDF5)', border: '1px solid rgba(200,134,26,0.3)' }}>
-            <Shield className="w-5 h-5 shrink-0" style={{ color: '#C8861A' }} />
-            <p className="text-sm text-stone-600 flex-1">
+            <Shield className="w-5 h-5 shrink-0" style={{ color: '#D4A828' }} />
+            <p className="text-sm text-[#3A4D63] flex-1">
               Your Discogs connection needs re-verification. <button
                 onClick={async () => {
                   try {
@@ -544,7 +544,7 @@ const ProfilePage = () => {
                     window.location.href = resp.data.authorization_url;
                   } catch { /* ignore */ }
                 }}
-                className="font-semibold underline hover:no-underline" style={{ color: '#C8861A' }}
+                className="font-semibold underline hover:no-underline" style={{ color: '#D4A828' }}
                 data-testid="reconnect-inline-btn"
               >Reconnect now</button>
             </p>
@@ -552,7 +552,7 @@ const ProfilePage = () => {
         </div>
       )}
       {/* Profile Header — Unified Golden Vault Dashboard */}
-      <Card className="p-0 overflow-hidden mb-6" style={{ backgroundColor: '#FAF6EE', border: '1px solid rgba(200,134,26,0.2)', boxShadow: '0 4px 24px rgba(200,134,26,0.08)' }} data-testid="dashboard-hero">
+      <Card className="p-0 overflow-hidden mb-6" style={{ backgroundColor: '#FFFBF2', border: '1px solid rgba(200,134,26,0.2)', boxShadow: '0 4px 24px rgba(200,134,26,0.08)' }} data-testid="dashboard-hero">
         {/* Branding watermark — BLOCK 494: deeper charcoal for legibility */}
         <div className="px-6 pt-4 pb-0">
           <span className="text-[10px] font-medium tracking-[0.25em] uppercase" style={{ color: '#2C2C2C', fontFamily: '"DM Serif Display", Georgia, serif' }} data-testid="brand-watermark">
@@ -575,11 +575,11 @@ const ProfilePage = () => {
                 {/* Row 1: Report & Block icons (BLOCK 533/544) */}
                 {!isOwnProfile && (
                   <div className="flex gap-2 items-center" data-testid="admin-action-icons">
-                    <button onClick={() => setReportSellerOpen(true)} className="p-1 rounded-full text-stone-400/50 hover:text-red-500 transition-colors" data-testid="report-seller-btn" title="Report">
+                    <button onClick={() => setReportSellerOpen(true)} className="p-1 rounded-full text-[#7A8694]/50 hover:text-red-500 transition-colors" data-testid="report-seller-btn" title="Report">
                       <Flag className="w-3.5 h-3.5" />
                     </button>
                     <button onClick={() => isBlocked ? handleUnblock() : setShowBlockConfirm(true)} disabled={blockLoading}
-                      className={`p-1 rounded-full transition-colors ${isBlocked ? 'text-red-500 hover:text-stone-600' : 'text-stone-400/50 hover:text-red-500'}`} data-testid="block-btn" title={isBlocked ? 'Unblock' : 'Block'}>
+                      className={`p-1 rounded-full transition-colors ${isBlocked ? 'text-red-500 hover:text-[#3A4D63]' : 'text-[#7A8694]/50 hover:text-red-500'}`} data-testid="block-btn" title={isBlocked ? 'Unblock' : 'Block'}>
                       {blockLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : isBlocked ? <ShieldCheck className="w-3.5 h-3.5" /> : <ShieldOff className="w-3.5 h-3.5" />}
                     </button>
                   </div>
@@ -593,7 +593,7 @@ const ProfilePage = () => {
                       disabled={followLoading}
                       className={`rounded-full h-8 px-3 text-xs ${
                         isFollowing ? 'bg-white border border-vinyl-black/30 text-vinyl-black hover:bg-red-50 hover:text-red-600' :
-                        followRequestPending ? 'bg-white border border-amber-400 text-amber-700 hover:bg-red-50 hover:text-red-600' :
+                        followRequestPending ? 'bg-white border border-[#D4A828] text-[#D4A828] hover:bg-red-50 hover:text-red-600' :
                         followsMe && !isFollowing ? 'bg-honey text-vinyl-black hover:bg-honey-amber shadow-[0_0_12px_rgba(244,185,66,0.4)] animate-[honeyPulse_2s_ease-in-out_infinite]' :
                         'bg-honey text-vinyl-black hover:bg-honey-amber'
                       }`}
@@ -646,17 +646,17 @@ const ProfilePage = () => {
                 </p>
               )}
               {profile.favorite_genre && (
-                <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 text-xs font-medium" data-testid="profile-genre">
+                <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full bg-[#F0E6C8] text-[#D4A828] text-xs font-medium" data-testid="profile-genre">
                   {profile.favorite_genre}
                 </span>
               )}
               {profile.founding_member && !profile.is_admin && (
                 <div className="mt-1 inline-block" data-testid="founding-badge">
-                  <span className="italic text-xs" style={{ color: '#C8861A', fontFamily: '"DM Serif Display", serif' }}>founding member</span>
+                  <span className="italic text-xs" style={{ color: '#D4A828', fontFamily: '"DM Serif Display", serif' }}>founding member</span>
                 </div>
               )}
               {promptStreak && promptStreak.streak > 0 && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-700 text-xs font-bold mt-1" data-testid="profile-streak-pill">
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[#F0E6C8] text-[#D4A828] text-xs font-bold mt-1" data-testid="profile-streak-pill">
                   {promptStreak.streak} day streak
                 </span>
               )}
@@ -697,7 +697,7 @@ const ProfilePage = () => {
                 <span className="font-heading text-2xl text-vinyl-black">{profile.following_count}</span>
                 <span className="text-[11px] text-muted-foreground ml-1">Following</span>
               </button>
-              <span className="text-stone-300">|</span>
+              <span className="text-[#7A8694]">|</span>
               <button onClick={() => setFollowListType('followers')} className="hover:opacity-70 transition" data-testid="followers-stat">
                 <span className="font-heading text-2xl text-vinyl-black">{profile.followers_count}</span>
                 <span className="text-[11px] text-muted-foreground ml-1">Followers</span>
@@ -711,7 +711,7 @@ const ProfilePage = () => {
               </div>
               {collectionValue && collectionValue.total_value > 0 && (
                 <Link to={isOwnProfile ? '/collection' : '#'} className={isOwnProfile ? 'hover:opacity-70 transition' : ''} data-testid="profile-collection-value">
-                  <div className="font-heading text-4xl lg:text-5xl" style={{ color: '#C8861A', letterSpacing: '0.02em' }}>
+                  <div className="font-heading text-4xl lg:text-5xl" style={{ color: '#D4A828', letterSpacing: '0.02em' }}>
                     ${collectionValue.total_value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                   </div>
                   <div className="text-[11px] text-muted-foreground tracking-[0.1em] uppercase mt-1">Est. Value</div>
@@ -722,13 +722,13 @@ const ProfilePage = () => {
             {isOwnProfile && collectionValue && collectionValue.pending_count > 0 && (
               <div className="mt-3 w-full max-w-xs" data-testid="valuation-inline-progress">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] text-amber-600 font-medium">{collectionValue.pending_count} unvalued</span>
-                  <span className="text-[10px] text-stone-400">{Math.round(((profile.collection_count - collectionValue.pending_count) / Math.max(profile.collection_count, 1)) * 100)}%</span>
+                  <span className="text-[10px] text-[#D4A828] font-medium">{collectionValue.pending_count} unvalued</span>
+                  <span className="text-[10px] text-[#7A8694]">{Math.round(((profile.collection_count - collectionValue.pending_count) / Math.max(profile.collection_count, 1)) * 100)}%</span>
                 </div>
                 <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(200,134,26,0.1)' }}>
                   <div className="h-full rounded-full transition-all duration-500" style={{
                     width: `${Math.round(((profile.collection_count - collectionValue.pending_count) / Math.max(profile.collection_count, 1)) * 100)}%`,
-                    background: 'linear-gradient(90deg, #C8861A, #FFD700)'
+                    background: 'linear-gradient(90deg, #D4A828, #FFD700)'
                   }} />
                 </div>
               </div>
@@ -750,11 +750,11 @@ const ProfilePage = () => {
             {/* Dream Value */}
             {dreamValue && dreamValue.total_count > 0 && (
               <div className="mt-2" data-testid="profile-dream-value">
-                <p className="font-serif italic text-sm" style={{ color: '#C8861A', letterSpacing: '0.02em' }}>
+                <p className="font-serif italic text-sm" style={{ color: '#D4A828', letterSpacing: '0.02em' }}>
                   Dream Records: ${dreamValue.total_value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                 </p>
                 {dreamValue.pending_count > 0 && isOwnProfile && (
-                  <Link to="/collection?tab=wishlist&filter=pending_value" className="inline-flex items-center gap-1 mt-0.5 text-xs text-amber-600 hover:text-amber-700 transition-colors group/pending" data-testid="profile-pending-link">
+                  <Link to="/collection?tab=wishlist&filter=pending_value" className="inline-flex items-center gap-1 mt-0.5 text-xs text-[#D4A828] hover:text-[#D4A828] transition-colors group/pending" data-testid="profile-pending-link">
                     <AlertTriangle className="w-3 h-3 shrink-0" />
                     <span className="underline decoration-dotted group-hover/pending:decoration-solid">{dreamValue.pending_count} pending</span>
                   </Link>
@@ -828,20 +828,20 @@ const ProfilePage = () => {
       {profile?.profile_locked ? (
         <div className="text-center py-12 px-4" data-testid="profile-locked">
           <div className="flex flex-col items-center gap-4 max-w-sm mx-auto">
-            <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center">
-              <Lock className="w-7 h-7 text-stone-400" />
+            <div className="w-16 h-16 rounded-full bg-[#F3EBE0] flex items-center justify-center">
+              <Lock className="w-7 h-7 text-[#7A8694]" />
             </div>
-            <h3 className="font-heading text-xl text-stone-700">This Account is Private</h3>
-            <p className="text-sm text-stone-500">Follow this user to see their posts, collection, ISOs, and Dream Items.</p>
+            <h3 className="font-heading text-xl text-[#3A4D63]">This Account is Private</h3>
+            <p className="text-sm text-[#3A4D63]">Follow this user to see their posts, collection, ISOs, and Dream Items.</p>
             
             {/* Mutual signals */}
             {profile.mutual_followers?.length > 0 && (
-              <p className="text-xs text-stone-500" data-testid="mutual-followers-hint">
-                Followed by <span className="font-medium text-stone-700">{profile.mutual_followers.join(', ')}</span>
+              <p className="text-xs text-[#3A4D63]" data-testid="mutual-followers-hint">
+                Followed by <span className="font-medium text-[#3A4D63]">{profile.mutual_followers.join(', ')}</span>
               </p>
             )}
             {profile.records_in_common > 0 && (
-              <p className="text-xs text-amber-700 flex items-center gap-1" data-testid="records-common-hint">
+              <p className="text-xs text-[#D4A828] flex items-center gap-1" data-testid="records-common-hint">
                 <Disc className="w-3 h-3" /> {profile.records_in_common} record{profile.records_in_common !== 1 ? 's' : ''} in common
               </p>
             )}
@@ -851,7 +851,7 @@ const ProfilePage = () => {
               onClick={handleFollow}
               disabled={followLoading || followRequestPending}
               className={`rounded-full mt-2 ${
-                followRequestPending ? 'bg-white border border-amber-400 text-amber-700' :
+                followRequestPending ? 'bg-white border border-[#D4A828] text-[#D4A828]' :
                 followsMe ? 'bg-honey text-vinyl-black hover:bg-honey-amber shadow-[0_0_12px_rgba(244,185,66,0.4)] animate-[honeyPulse_2s_ease-in-out_infinite]' :
                 'bg-honey text-vinyl-black hover:bg-honey-amber'
               }`}
@@ -877,28 +877,28 @@ const ProfilePage = () => {
             <div className="mb-2">
               <h3 className="text-sm font-bold tracking-tight" style={{ color: '#7A5A1A' }}>Your Week in Wax</h3>
               {/* BLOCK 503: View Full Report link hidden — togglable when ready */}
-              {/* <span className="text-[10px] text-stone-400">View Full Report &rarr;</span> */}
+              {/* <span className="text-[10px] text-[#7A8694]">View Full Report &rarr;</span> */}
             </div>
             <div className="flex gap-4 text-center">
               <div className="flex-1">
-                <p className="text-lg font-bold" style={{ color: '#C8861A' }}>{records.filter(r => {
+                <p className="text-lg font-bold" style={{ color: '#D4A828' }}>{records.filter(r => {
                   const d = new Date(r.created_at);
                   return d > new Date(Date.now() - 7 * 86400000);
                 }).length}</p>
-                <p className="text-[10px] text-stone-500">Added</p>
+                <p className="text-[10px] text-[#3A4D63]">Added</p>
               </div>
               <div className="flex-1">
-                <p className="text-lg font-bold" style={{ color: '#C8861A' }}>{spins.filter(s => {
+                <p className="text-lg font-bold" style={{ color: '#D4A828' }}>{spins.filter(s => {
                   const d = new Date(s.spun_at || s.created_at);
                   return d > new Date(Date.now() - 7 * 86400000);
                 }).length}</p>
-                <p className="text-[10px] text-stone-500">Spins</p>
+                <p className="text-[10px] text-[#3A4D63]">Spins</p>
               </div>
               <div className="flex-1" data-testid="avg-value-stat">
-                <p className="text-lg font-bold" style={{ color: '#C8861A' }}>
+                <p className="text-lg font-bold" style={{ color: '#D4A828' }}>
                   {swrCollectionValue?.avg_value > 0 ? `$${swrCollectionValue.avg_value.toFixed(2)}` : '–'}
                 </p>
-                <p className="text-[10px] text-stone-500">Avg. Value</p>
+                <p className="text-[10px] text-[#3A4D63]">Avg. Value</p>
               </div>
             </div>
           </div>
@@ -950,13 +950,13 @@ const ProfilePage = () => {
                     className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all border ${
                       active
                         ? 'bg-vinyl-black text-white border-vinyl-black shadow-sm'
-                        : 'bg-white text-stone-500 border-stone-200 hover:border-stone-300'
+                        : 'bg-white text-[#3A4D63] border-[#E5DBC8] hover:border-[#E5DBC8]'
                     }`}
                     data-testid={`profile-format-${value}`}
                   >
                     {value === 'vinyl' && <Disc className="w-2.5 h-2.5" />}
                     {label}
-                    <span className={`text-[9px] ${active ? 'text-white/70' : 'text-stone-400'}`}>({count})</span>
+                    <span className={`text-[9px] ${active ? 'text-white/70' : 'text-[#7A8694]'}`}>({count})</span>
                   </button>
                 );
               })}
@@ -1082,7 +1082,7 @@ const ProfilePage = () => {
                     <div className="p-3">
                       <h4 className="font-medium text-sm truncate">{record.title}</h4>
                       <p className="text-xs text-muted-foreground truncate">{record.artist}</p>
-                      {isCommon && <span className="inline-block mt-1 text-[10px] font-medium text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full" data-testid="common-badge">In Your Collection</span>}
+                      {isCommon && <span className="inline-block mt-1 text-[10px] font-medium text-[#D4A828] bg-[#F0E6C8] px-1.5 py-0.5 rounded-full" data-testid="common-badge">In Your Collection</span>}
                     </div>
                   </Card>
                 </button>
@@ -1096,8 +1096,8 @@ const ProfilePage = () => {
         <TabsContent value="for-sale" data-testid="for-sale-tab">
           {/* BLOCK 530: Stripe disconnect notice */}
           {isOwnProfile && stripeStatus && !stripeStatus.stripe_connected && (
-            <div className="mb-4 p-3 rounded-lg border border-amber-300/50 bg-amber-50/50 text-sm text-stone-600 text-center" data-testid="sales-paused-notice">
-              Sales are currently paused. <button onClick={() => navigate('/settings')} className="font-bold underline" style={{ color: '#C8861A' }}>Connect Stripe</button> to start selling.
+            <div className="mb-4 p-3 rounded-lg border border-[#D4A828]/50 bg-[#F0E6C8]/50 text-sm text-[#3A4D63] text-center" data-testid="sales-paused-notice">
+              Sales are currently paused. <button onClick={() => navigate('/settings')} className="font-bold underline" style={{ color: '#D4A828' }}>Connect Stripe</button> to start selling.
             </div>
           )}
           {userListings.length === 0 ? (
@@ -1381,12 +1381,12 @@ const ProfilePage = () => {
         <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-heading flex items-center gap-2">
-              <Sparkles className="w-5 h-5" style={{ color: '#C8861A' }} /> Common Ground with @{username}
+              <Sparkles className="w-5 h-5" style={{ color: '#D4A828' }} /> Common Ground with @{username}
             </DialogTitle>
             <DialogDescription>
               {tasteMatch?.score}% Taste Match {tasteMatch?.label && `· ${tasteMatch.label}`}
               {tasteMatch?.shared_dream_value > 0 && (
-                <span className="block mt-1 font-medium" style={{ color: '#C8861A' }} data-testid="shared-dream-value">
+                <span className="block mt-1 font-medium" style={{ color: '#D4A828' }} data-testid="shared-dream-value">
                   You share ${tasteMatch.shared_dream_value.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} in Value of Dream Records.
                 </span>
               )}
@@ -1399,7 +1399,7 @@ const ProfilePage = () => {
                 <h4 className="text-sm font-semibold text-vinyl-black mb-2">Shared Collection</h4>
                 <p className="text-xs text-muted-foreground mb-2">You both own these.</p>
                 {tasteMatch.shared_reality.length === 0 ? (
-                  <p className="text-xs text-stone-400 italic">No shared records yet.</p>
+                  <p className="text-xs text-[#7A8694] italic">No shared records yet.</p>
                 ) : (
                   <div className="flex gap-2 overflow-x-auto pb-2" data-testid="shared-reality-list">
                     {tasteMatch.shared_reality.map((r, i) => (
@@ -1419,7 +1419,7 @@ const ProfilePage = () => {
                 <h4 className="text-sm font-semibold text-vinyl-black mb-2">Shared Dreams</h4>
                 <p className="text-xs text-muted-foreground mb-2">You both have these on your Dream List.</p>
                 {tasteMatch.shared_dreams.length === 0 ? (
-                  <p className="text-xs text-stone-400 italic">No shared dreams yet.</p>
+                  <p className="text-xs text-[#7A8694] italic">No shared dreams yet.</p>
                 ) : (
                   <div className="flex gap-2 overflow-x-auto pb-2" data-testid="shared-dreams-list">
                     {tasteMatch.shared_dreams.map((r, i) => (
@@ -1439,7 +1439,7 @@ const ProfilePage = () => {
                 <h4 className="text-sm font-semibold text-vinyl-black mb-2">Perfect Swap</h4>
                 <p className="text-xs text-muted-foreground mb-2">They own what you're hunting for.</p>
                 {tasteMatch.swap_potential.length === 0 ? (
-                  <p className="text-xs text-stone-400 italic">No swap matches right now.</p>
+                  <p className="text-xs text-[#7A8694] italic">No swap matches right now.</p>
                 ) : (
                   <div className="flex gap-2 overflow-x-auto pb-2" data-testid="swap-potential-list">
                     {tasteMatch.swap_potential.map((r, i) => (
@@ -1499,7 +1499,7 @@ const ProfilePage = () => {
       <Dialog open={!!deleteSpinTarget} onOpenChange={(open) => !open && setDeleteSpinTarget(null)}>
         <DialogContent className="sm:max-w-xs" aria-describedby="delete-spin-desc">
           <DialogHeader>
-            <DialogTitle className="font-heading text-center" style={{ color: '#D98C2F' }}>
+            <DialogTitle className="font-heading text-center" style={{ color: '#D4A828' }}>
               Delete this spin?
             </DialogTitle>
             <DialogDescription id="delete-spin-desc" className="text-center text-sm text-muted-foreground mt-1">
@@ -1537,7 +1537,7 @@ const ProfilePage = () => {
             </Button>
             <Button
               variant="outline"
-              className="flex-1 rounded-full font-medium text-stone-500 border-stone-300 hover:bg-stone-100"
+              className="flex-1 rounded-full font-medium text-[#3A4D63] border-[#E5DBC8] hover:bg-[#F3EBE0]"
               data-testid="stripe-disconnect-confirm"
               onClick={async () => {
                 try {

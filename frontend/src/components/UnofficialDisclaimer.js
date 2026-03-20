@@ -16,9 +16,9 @@ const UnofficialDisclaimer = () => (
     data-testid="unofficial-disclaimer"
   >
     <div className="flex items-start gap-2">
-      <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0 text-stone-400" />
+      <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0 text-[#7A8694]" />
       <p>
-        <span className="font-semibold text-stone-500">NOTICE:</span> This release is identified as
+        <span className="font-semibold text-[#3A4D63]">NOTICE:</span> This release is identified as
         &lsquo;Unofficial.&rsquo; The Honey Groove facilitates the secondary market trade of these items for
         archival and collection purposes. The platform does not claim affiliation with the original
         rights holders or guarantee audio fidelity.

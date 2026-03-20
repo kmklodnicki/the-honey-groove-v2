@@ -24,7 +24,7 @@ const VaultValueCard = React.forwardRef(function VaultValueCard({ vaultData, use
         </p>
 
         {/* Gold foil line */}
-        <div style={{ width: 480, height: 3, background: 'linear-gradient(90deg, transparent, #C8861A, #F0B429, #C8861A, transparent)', borderRadius: 2, marginTop: 20 }} />
+        <div style={{ width: 480, height: 3, background: 'linear-gradient(90deg, transparent, #D4A828, #F0B429, #D4A828, transparent)', borderRadius: 2, marginTop: 20 }} />
 
         {/* Total value */}
         <p style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 130, fontWeight: 700, color: BRAND.amber, margin: '16px 0 0', lineHeight: 1, letterSpacing: '-0.02em' }}>

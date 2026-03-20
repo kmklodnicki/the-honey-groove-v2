@@ -232,7 +232,7 @@ const AddRecordPage = () => {
       </Button>
 
       <div className="flex items-center gap-3 mb-6">
-        {isDreaming ? <Cloud className="w-6 h-6 text-stone-400" /> : <Sparkles className="w-6 h-6 text-honey-amber" />}
+        {isDreaming ? <Cloud className="w-6 h-6 text-[#7A8694]" /> : <Sparkles className="w-6 h-6 text-honey-amber" />}
         <div>
           <h1 className="font-heading text-3xl text-vinyl-black">{isDreaming ? 'Add to Dream List' : 'Add to Your Vault'}</h1>
           <p className="text-sm text-muted-foreground font-serif italic">{isDreaming ? 'The millionaire mood board grows.' : 'Your Gold Standard just got richer.'}</p>
@@ -325,7 +325,7 @@ const AddRecordPage = () => {
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all border ${
                       recordFormat === fmt
                         ? 'bg-vinyl-black text-white border-vinyl-black shadow-sm'
-                        : 'bg-white text-stone-500 border-stone-200 hover:border-stone-300'
+                        : 'bg-white text-[#3A4D63] border-[#E5DBC8] hover:border-[#E5DBC8]'
                     }`}
                     data-testid={`format-pick-${fmt.toLowerCase()}`}
                   >
@@ -339,7 +339,7 @@ const AddRecordPage = () => {
             <Button
               onClick={handleAddRecord}
               disabled={adding}
-              className={`w-full rounded-full gap-2 ${isDreaming ? 'bg-stone-200 text-stone-700 hover:bg-stone-300' : 'bg-honey text-vinyl-black hover:bg-honey-amber'}`}
+              className={`w-full rounded-full gap-2 ${isDreaming ? 'bg-[#F3EBE0] text-[#3A4D63] hover:bg-[#E5DBC8]' : 'bg-honey text-vinyl-black hover:bg-honey-amber'}`}
               data-testid="confirm-add-btn"
             >
               {adding ? 'Adding...' : (
@@ -437,7 +437,7 @@ const AddRecordPage = () => {
                     className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all border ${
                       recordFormat === fmt
                         ? 'bg-vinyl-black text-white border-vinyl-black shadow-sm'
-                        : 'bg-white text-stone-500 border-stone-200 hover:border-stone-300'
+                        : 'bg-white text-[#3A4D63] border-[#E5DBC8] hover:border-[#E5DBC8]'
                     }`}
                     data-testid={`manual-format-pick-${fmt.toLowerCase()}`}
                   >
@@ -459,7 +459,7 @@ const AddRecordPage = () => {
               <Button
                 onClick={handleAddRecord}
                 disabled={adding || !manualTitle || !manualArtist}
-                className={`flex-1 rounded-full gap-2 ${isDreaming ? 'bg-stone-200 text-stone-700 hover:bg-stone-300' : 'bg-honey text-vinyl-black hover:bg-honey-amber'}`}
+                className={`flex-1 rounded-full gap-2 ${isDreaming ? 'bg-[#F3EBE0] text-[#3A4D63] hover:bg-[#E5DBC8]' : 'bg-honey text-vinyl-black hover:bg-honey-amber'}`}
                 data-testid="manual-add-btn"
               >
                 {adding ? 'Adding...' : isDreaming ? 'Save to Dreams' : 'Confirm to Collection'}
@@ -480,7 +480,7 @@ const AddRecordPage = () => {
                 className="pl-10 h-12 text-lg border-honey/50"
                 data-testid="discogs-search"
               />
-              {searching && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 animate-spin text-amber-400" />}
+              {searching && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 animate-spin text-[#D4A828]" />}
             </div>
             <p className="text-xs text-muted-foreground mt-2">
               Search powered by Discogs database

@@ -6,7 +6,7 @@ export function GoldenHiveBadge({ verified }) {
   if (!verified) return null;
   return (
     <span
-      className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-700 border border-amber-300"
+      className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#F0E6C8] text-[#D4A828] border border-[#D4A828]"
       data-testid="golden-hive-badge"
       title="Golden Hive Verified"
     >

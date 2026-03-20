@@ -19,7 +19,7 @@ function HoneycombPlaceholder({ albumTitle, artistName, size, onUploadClick, sho
       <svg aria-hidden="true" className="absolute inset-0 w-full h-full opacity-10 pointer-events-none">
         <defs>
           <pattern id="hc-pat" width="28" height="32" patternUnits="userSpaceOnUse">
-            <polygon points="14,2 26,9 26,23 14,30 2,23 2,9" fill="none" stroke="#1F1F1F" strokeWidth="1.2" />
+            <polygon points="14,2 26,9 26,23 14,30 2,23 2,9" fill="none" stroke="#1E2A3A" strokeWidth="1.2" />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill="url(#hc-pat)" />
@@ -127,7 +127,7 @@ const AlbumArt = ({
           />
         ) : isLegacyUploadUrl(effectiveSrc) ? (
           <div className="migration-placeholder w-full h-full">
-            <Disc className="w-8 h-8 text-amber-700 opacity-60" />
+            <Disc className="w-8 h-8 text-[#D4A828] opacity-60" />
             <span className="migration-placeholder-text">migration in progress</span>
           </div>
         ) : (

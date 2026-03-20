@@ -16,7 +16,7 @@ const LoadingHoney = ({ text = 'Fetching the honey...', size = 'md', className =
         <ellipse cx="32" cy="42" rx="18" ry="16" fill="#DAA520" />
         <ellipse cx="32" cy="42" rx="18" ry="16" fill="url(#honey-grad)" />
         {/* Pot rim */}
-        <rect x="16" y="28" width="32" height="6" rx="3" fill="#C8861A" />
+        <rect x="16" y="28" width="32" height="6" rx="3" fill="#D4A828" />
         {/* Honey drip */}
         <path d="M28 28c0-4 2-8 4-10 2 2 4 6 4 10" fill="#DAA520" />
         {/* Honey label */}
@@ -24,7 +24,7 @@ const LoadingHoney = ({ text = 'Fetching the honey...', size = 'md', className =
         <defs>
           <linearGradient id="honey-grad" x1="14" y1="26" x2="50" y2="58">
             <stop stopColor="#F5C842" />
-            <stop offset="1" stopColor="#C8861A" />
+            <stop offset="1" stopColor="#D4A828" />
           </linearGradient>
         </defs>
       </svg>

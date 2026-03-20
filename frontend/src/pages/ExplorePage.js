@@ -272,7 +272,7 @@ const ExplorePage = () => {
             /* Spotify-sourced art: flat card layout — no tinting, art shown as square thumbnail */
             <div
               className="rounded-2xl overflow-hidden cursor-pointer border border-honey/20"
-              style={{ background: 'linear-gradient(135deg, #2A1A06 0%, #4A2E10 100%)', minHeight: 120 }}
+              style={{ background: 'linear-gradient(135deg, #1E2A3A 0%, #4A2E10 100%)', minHeight: 120 }}
               onClick={() => honeyDrop.record.discogs_id && navigate(`/variant/${honeyDrop.record.discogs_id}`)}
               data-testid="honey-drop-card"
             >
@@ -304,7 +304,7 @@ const ExplorePage = () => {
                 </div>
                 <Button
                   size="sm"
-                  className="shrink-0 rounded-full text-[#2A1A06] font-bold self-start"
+                  className="shrink-0 rounded-full text-[#1E2A3A] font-bold self-start"
                   style={{ background: '#E8A820' }}
                   onClick={(e) => { e.stopPropagation(); if (navigator.share) { navigator.share({ title: `${honeyDrop.record.title} on The Honey Groove`, url: window.location.origin }); } else { navigator.clipboard.writeText(window.location.origin); toast.success('Link copied!'); } }}
                 >
@@ -340,7 +340,7 @@ const ExplorePage = () => {
                   </div>
                   <Button
                     size="sm"
-                    className="shrink-0 rounded-full text-[#2A1A06] font-bold"
+                    className="shrink-0 rounded-full text-[#1E2A3A] font-bold"
                     style={{ background: '#E8A820' }}
                     onClick={(e) => { e.stopPropagation(); if (navigator.share) { navigator.share({ title: `${honeyDrop.record.title} on The Honey Groove`, url: window.location.origin }); } else { navigator.clipboard.writeText(window.location.origin); toast.success('Link copied!'); } }}
                   >
@@ -397,11 +397,11 @@ const ExplorePage = () => {
                     <div className="w-14 h-14 mx-auto mb-2">
                       <BeeAvatar user={p} className="h-14 w-14" />
                     </div>
-                    <p className="text-sm font-medium truncate hover:underline" style={{ color: '#C8861A' }}>@{p.username}</p>
+                    <p className="text-sm font-medium truncate hover:underline" style={{ color: '#D4A828' }}>@{p.username}</p>
                     {p.follows_me && !isFollowed && (
-                      <span className="inline-block text-[10px] font-medium mt-0.5 px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(218,165,32,0.12)', color: '#C8861A' }} data-testid={`follows-you-${p.username}`}>Follows you</span>
+                      <span className="inline-block text-[10px] font-medium mt-0.5 px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(218,165,32,0.12)', color: '#D4A828' }} data-testid={`follows-you-${p.username}`}>Follows you</span>
                     )}
-                    <p className="text-sm font-semibold mt-0.5" style={{ color: '#C8861A' }}>{p.common_count || 0} {(p.common_count || 0) === 1 ? 'record' : 'records'} in common</p>
+                    <p className="text-sm font-semibold mt-0.5" style={{ color: '#D4A828' }}>{p.common_count || 0} {(p.common_count || 0) === 1 ? 'record' : 'records'} in common</p>
                     {p.shared_covers?.length > 0 && (
                       <div className="flex justify-center gap-1 mt-2">
                         {p.shared_covers.slice(0, 3).map((c, i) => (
@@ -418,7 +418,7 @@ const ExplorePage = () => {
                       size="sm"
                       onClick={(e) => { e.preventDefault(); handleKindaUnfollow(p.username); }}
                       className="mt-2 w-full text-xs rounded-full border-transparent text-white hover:opacity-90 transition-all"
-                      style={{ background: '#C8861A' }}
+                      style={{ background: '#D4A828' }}
                       data-testid={`following-btn-${p.username}`}
                     >
                       <Check className="w-3 h-3 mr-1" /> Following
@@ -428,7 +428,7 @@ const ExplorePage = () => {
                       variant="outline"
                       size="sm"
                       onClick={(e) => { e.preventDefault(); handleKindaFollow(p.username); }}
-                      className="mt-2 w-full text-xs rounded-full border-honey/40 text-[#C8861A] hover:bg-honey hover:text-vinyl-black transition-all"
+                      className="mt-2 w-full text-xs rounded-full border-honey/40 text-[#D4A828] hover:bg-honey hover:text-vinyl-black transition-all"
                       data-testid={`follow-btn-${p.username}`}
                     >
                       <UserPlus className="w-3 h-3 mr-1" /> {p.follows_me ? 'Follow Back' : 'Follow'}
@@ -471,7 +471,7 @@ const ExplorePage = () => {
           ) : (
             <Button
               size="sm"
-              className="rounded-full font-bold text-[#2A1A06] shadow-sm"
+              className="rounded-full font-bold text-[#1E2A3A] shadow-sm"
               style={{ background: '#E8A820' }}
               onClick={() => navigate('/gold')}
               data-testid="create-room-gold-cta"
@@ -541,7 +541,7 @@ const ExplorePage = () => {
                   {r.estimated_value > 0 && (
                     <span
                       className="absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full"
-                      style={{ background: 'rgba(255,215,0,0.85)', color: '#2A1A06', backdropFilter: 'blur(6px)', border: '1px solid rgba(218,165,32,0.6)' }}
+                      style={{ background: 'rgba(255,215,0,0.85)', color: '#1E2A3A', backdropFilter: 'blur(6px)', border: '1px solid rgba(218,165,32,0.6)' }}
                       data-testid={`cj-value-${r.discogs_id || idx}`}
                     >
                       ${r.estimated_value >= 1000 ? (r.estimated_value / 1000).toFixed(1) + 'k' : r.estimated_value.toFixed(0)}
@@ -718,7 +718,7 @@ const ExplorePage = () => {
                 <span className="text-2xl shrink-0">{m.emoji}</span>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">
-                    <Link to={`/profile/${m.username}`} className="font-semibold" style={{ color: '#C8861A' }}>@{m.username}</Link>
+                    <Link to={`/profile/${m.username}`} className="font-semibold" style={{ color: '#D4A828' }}>@{m.username}</Link>
                     {' '}reached <span className="font-semibold">{m.label}</span> 🎉
                   </p>
                 </div>
@@ -728,7 +728,7 @@ const ExplorePage = () => {
                   style={
                     reactedMilestones.has(m.id)
                       ? { background: 'linear-gradient(135deg, #FFB300, #FFA000)', color: '#fff' }
-                      : { background: 'rgba(218,165,32,0.15)', color: '#C8861A' }
+                      : { background: 'rgba(218,165,32,0.15)', color: '#D4A828' }
                   }
                   data-testid={`milestone-react-${m.id}`}
                 >
@@ -744,7 +744,7 @@ const ExplorePage = () => {
       <Dialog open={!!dreamTarget} onOpenChange={(open) => !open && setDreamTarget(null)}>
         <DialogContent className="sm:max-w-xs" aria-describedby="dream-catcher-desc">
           <DialogHeader>
-            <DialogTitle className="font-heading text-center" style={{ color: '#D98C2F' }}>
+            <DialogTitle className="font-heading text-center" style={{ color: '#D4A828' }}>
               Add to your list
             </DialogTitle>
             <p id="dream-catcher-desc" className="text-sm text-center text-muted-foreground mt-1">
@@ -776,7 +776,7 @@ const ExplorePage = () => {
       <Dialog open={showCreateRoom} onOpenChange={setShowCreateRoom}>
         <DialogContent className="sm:max-w-sm" aria-describedby="create-room-desc">
           <DialogHeader>
-            <DialogTitle className="font-heading" style={{ color: '#D98C2F' }}>Create a Room</DialogTitle>
+            <DialogTitle className="font-heading" style={{ color: '#D4A828' }}>Create a Room</DialogTitle>
             <p id="create-room-desc" className="text-xs text-muted-foreground mt-1">Vibe and Collector rooms are reviewed before going live.</p>
           </DialogHeader>
           <div className="space-y-3 pt-2">
@@ -805,8 +805,8 @@ const ExplorePage = () => {
                         onClick={() => setCreateRoomForm(f => ({ ...f, type: t }))}
                         className="flex-1 rounded-full py-1.5 text-xs font-semibold border transition-all capitalize"
                         style={createRoomForm.type === t
-                          ? { background: '#E8A820', color: '#2A1A06', borderColor: '#E8A820' }
-                          : { background: 'transparent', color: '#C8861A', borderColor: 'rgba(218,165,32,0.4)' }
+                          ? { background: '#E8A820', color: '#1E2A3A', borderColor: '#E8A820' }
+                          : { background: 'transparent', color: '#D4A828', borderColor: 'rgba(218,165,32,0.4)' }
                         }
                         data-testid={`room-type-${t}`}
                       >
@@ -858,7 +858,7 @@ const ExplorePage = () => {
             <Button
               onClick={handleCreateRoom}
               disabled={creatingRoom || !createRoomForm.name.trim()}
-              className="w-full rounded-full font-bold text-[#2A1A06]"
+              className="w-full rounded-full font-bold text-[#1E2A3A]"
               style={{ background: '#E8A820' }}
               data-testid="create-room-submit"
             >
@@ -907,11 +907,11 @@ const HexRoomCard = ({ room, onClick }) => {
             data-testid={`room-hex-${room.slug}`}
           >
             <span className="text-3xl">{room.emoji}</span>
-            <span className="text-xs font-semibold text-center mt-1 px-2" style={{ color: room.theme?.textColor || '#2A1A06' }}>
+            <span className="text-xs font-semibold text-center mt-1 px-2" style={{ color: room.theme?.textColor || '#1E2A3A' }}>
               {room.nickname || room.name}
             </span>
             {room.type && (
-              <span className="text-[9px] font-medium capitalize mt-0.5 opacity-60" style={{ color: room.theme?.textColor || '#2A1A06' }}>
+              <span className="text-[9px] font-medium capitalize mt-0.5 opacity-60" style={{ color: room.theme?.textColor || '#1E2A3A' }}>
                 {room.type}
               </span>
             )}
@@ -935,7 +935,7 @@ const ExploreSection = ({ icon, title, testId, seeAllTo, children }) => (
         <h2 className="font-heading text-lg text-vinyl-black">{title}</h2>
       </div>
       {seeAllTo && (
-        <Link to={seeAllTo} className="text-xs text-honey-amber hover:text-amber-600 font-medium transition-colors" data-testid={`${testId}-see-all`}>
+        <Link to={seeAllTo} className="text-xs text-honey-amber hover:text-[#D4A828] font-medium transition-colors" data-testid={`${testId}-see-all`}>
           See All &rarr;
         </Link>
       )}

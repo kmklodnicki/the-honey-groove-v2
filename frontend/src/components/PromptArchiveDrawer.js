@@ -43,7 +43,7 @@ const MiniCard = ({ prompt, onNavigate }) => {
       <div className="px-3.5 pt-3">
         <span
           className="text-[9px] font-semibold tracking-[0.2em] uppercase"
-          style={{ color: '#C8861A', fontVariant: 'small-caps' }}
+          style={{ color: '#D4A828', fontVariant: 'small-caps' }}
           data-testid="mini-card-label"
         >
           Daily Prompt
@@ -54,10 +54,10 @@ const MiniCard = ({ prompt, onNavigate }) => {
         <p className="text-[13px] font-medium text-vinyl-black italic leading-snug">
           "{prompt.text}"
         </p>
-        <span className="text-[9px] text-stone-400 uppercase tracking-wider mt-1 block">
+        <span className="text-[9px] text-[#7A8694] uppercase tracking-wider mt-1 block">
           {formatDate(prompt.scheduled_date)}
           {prompt.response_count > 0 && (
-            <span className="ml-2 text-amber-600">{prompt.response_count} buzzed in</span>
+            <span className="ml-2 text-[#D4A828]">{prompt.response_count} buzzed in</span>
           )}
         </span>
       </div>
@@ -65,16 +65,16 @@ const MiniCard = ({ prompt, onNavigate }) => {
       {/* Featured response mini-card body */}
       {feat && (
         <div className="px-3.5 pb-3.5">
-          <div className="rounded-lg bg-amber-50/60 p-2.5">
+          <div className="rounded-lg bg-[#F0E6C8]/60 p-2.5">
             {/* User identity row */}
             <div className="flex items-center gap-1.5 mb-2">
               <Avatar className="w-4 h-4" data-testid="mini-card-avatar">
                 <AvatarImage src={feat.avatar_url} alt={feat.username || ''} />
-                <AvatarFallback className="text-[6px] bg-amber-200 text-amber-800">
+                <AvatarFallback className="text-[6px] bg-[#F0E6C8] text-[#1E2A3A]">
                   {(feat.username || '?')[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-[10px] text-stone-500 font-medium" data-testid="mini-card-username">
+              <span className="text-[10px] text-[#3A4D63] font-medium" data-testid="mini-card-username">
                 @{feat.username || 'anonymous'}
               </span>
             </div>
@@ -96,7 +96,7 @@ const MiniCard = ({ prompt, onNavigate }) => {
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(255,184,0,0.15), rgba(218,165,32,0.1))' }}>
-                    <Disc className="w-5 h-5 text-amber-900/20" />
+                    <Disc className="w-5 h-5 text-[#1E2A3A]/20" />
                   </div>
                 )}
               </div>
@@ -106,11 +106,11 @@ const MiniCard = ({ prompt, onNavigate }) => {
                 <p className="text-[12px] font-semibold text-vinyl-black truncate leading-tight">
                   {feat.record_title || 'Unknown'}
                 </p>
-                <p className="text-[10px] text-stone-500 truncate">
+                <p className="text-[10px] text-[#3A4D63] truncate">
                   {feat.record_artist || 'Unknown'}
                 </p>
                 {feat.caption && (
-                  <p className="text-[10px] text-stone-600 italic line-clamp-2 mt-0.5 leading-snug">
+                  <p className="text-[10px] text-[#3A4D63] italic line-clamp-2 mt-0.5 leading-snug">
                     {feat.caption}
                   </p>
                 )}
@@ -153,12 +153,12 @@ const PromptArchiveDrawer = ({ open, onOpenChange }) => {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="overflow-y-auto bg-[#FAF6EE] z-[2000]" style={{ zIndex: 2000 }} data-testid="prompt-archive-drawer">
+      <SheetContent side="right" className="overflow-y-auto bg-[#FFFBF2] z-[2000]" style={{ zIndex: 2000 }} data-testid="prompt-archive-drawer">
         <SheetHeader className="mb-5">
           <SheetTitle className="font-heading text-xl text-vinyl-black" data-testid="prompt-archive-title">
             The Mini-Groove
           </SheetTitle>
-          <SheetDescription className="text-amber-700 text-xs tracking-wide">
+          <SheetDescription className="text-[#D4A828] text-xs tracking-wide">
             A look back at what the Hive has been buzzing about
           </SheetDescription>
         </SheetHeader>
@@ -166,20 +166,20 @@ const PromptArchiveDrawer = ({ open, onOpenChange }) => {
         {loading ? (
           <div className="flex flex-col gap-6" data-testid="prompt-archive-loading">
             {[1, 2, 3].map(i => (
-              <div key={i} className="rounded-xl border border-amber-200/30 bg-white/40 overflow-hidden p-3.5 animate-pulse">
-                <div className="h-2 w-16 rounded-full bg-amber-200/40 mb-2" />
-                <div className="h-4 w-4/5 rounded-full bg-amber-200/30 mb-1.5" />
-                <div className="h-3 w-1/3 rounded-full bg-amber-200/20 mb-3" />
-                <div className="rounded-lg bg-amber-50/60 p-2.5">
+              <div key={i} className="rounded-xl border border-[#E5DBC8]/30 bg-white/40 overflow-hidden p-3.5 animate-pulse">
+                <div className="h-2 w-16 rounded-full bg-[#F0E6C8]/40 mb-2" />
+                <div className="h-4 w-4/5 rounded-full bg-[#F0E6C8]/30 mb-1.5" />
+                <div className="h-3 w-1/3 rounded-full bg-[#F0E6C8]/20 mb-3" />
+                <div className="rounded-lg bg-[#F0E6C8]/60 p-2.5">
                   <div className="flex items-center gap-1.5 mb-2">
-                    <div className="w-4 h-4 rounded-full bg-amber-200/40" />
-                    <div className="h-2.5 w-16 rounded-full bg-amber-200/30" />
+                    <div className="w-4 h-4 rounded-full bg-[#F0E6C8]/40" />
+                    <div className="h-2.5 w-16 rounded-full bg-[#F0E6C8]/30" />
                   </div>
                   <div className="flex items-start gap-2.5">
-                    <div className="w-10 h-10 rounded-md bg-amber-200/30" />
+                    <div className="w-10 h-10 rounded-md bg-[#F0E6C8]/30" />
                     <div className="flex-1 space-y-1.5">
-                      <div className="h-3 w-3/4 rounded-full bg-amber-200/30" />
-                      <div className="h-2.5 w-1/2 rounded-full bg-amber-200/20" />
+                      <div className="h-3 w-3/4 rounded-full bg-[#F0E6C8]/30" />
+                      <div className="h-2.5 w-1/2 rounded-full bg-[#F0E6C8]/20" />
                     </div>
                   </div>
                 </div>
@@ -187,7 +187,7 @@ const PromptArchiveDrawer = ({ open, onOpenChange }) => {
             ))}
           </div>
         ) : prompts.length === 0 ? (
-          <div className="text-center py-12 text-stone-400" data-testid="prompt-archive-empty">
+          <div className="text-center py-12 text-[#7A8694]" data-testid="prompt-archive-empty">
             <Clock className="w-8 h-8 mx-auto mb-2 opacity-40" />
             <p className="text-sm">No past prompts yet.</p>
           </div>

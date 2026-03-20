@@ -63,7 +63,7 @@ function ShieldUI({ onRetry }) {
           }}>
             <div style={{
               position:'absolute',bottom:-3,left:5,width:3,height:6,
-              background:'#C8861A',borderRadius:'0 0 1px 1px',
+              background:'#D4A828',borderRadius:'0 0 1px 1px',
             }} />
           </div>
         </div>
@@ -88,7 +88,7 @@ function ShieldUI({ onRetry }) {
         data-testid="vinyl-shield-retry"
         onClick={onRetry}
         style={{
-          background:'#C8861A',color:'#fff',border:'none',borderRadius:999,
+          background:'#D4A828',color:'#fff',border:'none',borderRadius:999,
           padding:'13px 36px',fontSize:15,fontWeight:600,cursor:'pointer',
           boxShadow:'0 4px 16px rgba(200,134,26,0.4)',
           transition:'transform .15s,box-shadow .15s',

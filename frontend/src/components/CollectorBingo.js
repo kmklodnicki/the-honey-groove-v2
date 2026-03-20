@@ -218,16 +218,16 @@ const CollectorBingo = () => {
       <div data-testid="collector-bingo">
         <div className="flex justify-center">
           <div className="w-full" style={{ maxWidth: '500px' }}>
-            <Card className="p-5 border-amber-200/50 w-full" data-testid="bingo-locked-card">
+            <Card className="p-5 border-[#E5DBC8]/50 w-full" data-testid="bingo-locked-card">
               {/* Countdown line */}
               {countdown && (
                 <p
                   className="text-xs mb-3"
-                  style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', color: '#8A6B4A' }}
+                  style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', color: '#3A4D63' }}
                   data-testid="bingo-countdown"
                 >
                   new card drops in{' '}
-                  <span style={{ fontWeight: 700, color: '#996012' }} data-testid="bingo-countdown-time">{countdown}</span>
+                  <span style={{ fontWeight: 700, color: '#D4A828' }} data-testid="bingo-countdown-time">{countdown}</span>
                   {' '}&middot; {dropDateStr}
                 </p>
               )}
@@ -235,7 +235,7 @@ const CollectorBingo = () => {
               {/* Teaser copy */}
               <p
                 className="mb-4"
-                style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontStyle: 'italic', color: '#8A6B4A', fontSize: '15px', lineHeight: '1.4' }}
+                style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontStyle: 'italic', color: '#3A4D63', fontSize: '15px', lineHeight: '1.4' }}
                 data-testid="bingo-locked-text"
               >
                 {userPlayed
@@ -248,7 +248,7 @@ const CollectorBingo = () => {
                 <Button
                   onClick={() => setModalOpen(true)}
                   variant="outline"
-                  className="w-full rounded-full border-amber-300 text-amber-700 hover:bg-amber-50 text-sm h-10"
+                  className="w-full rounded-full border-[#D4A828] text-[#D4A828] hover:bg-[#F0E6C8] text-sm h-10"
                   data-testid="bingo-view-locked-btn"
                 >
                   view your card
@@ -274,9 +274,9 @@ const CollectorBingo = () => {
   }
 
   /* ── Active state: compact teaser card ── */
-  const urgentBorder = activeUrgency === 'normal' ? 'rgba(200,134,26,0.15)' : '#C8861A';
-  const urgentBg = activeUrgency === 'normal' ? '#FAF6EE' : 'rgba(232,168,32,0.08)';
-  const urgentTimeColor = activeUrgency === 'normal' ? '#996012' : '#C8861A';
+  const urgentBorder = activeUrgency === 'normal' ? 'rgba(200,134,26,0.15)' : '#D4A828';
+  const urgentBg = activeUrgency === 'normal' ? '#FFFBF2' : 'rgba(232,168,32,0.08)';
+  const urgentTimeColor = activeUrgency === 'normal' ? '#D4A828' : '#D4A828';
 
   return (
     <div data-testid="collector-bingo">
@@ -284,7 +284,7 @@ const CollectorBingo = () => {
         <div className="w-full" style={{ maxWidth: '500px' }}>
           {/* Lock banner · shows briefly when card just locked */}
           {showLockBanner && (
-            <div className="flex items-center justify-center gap-2 mb-2 px-4 rounded-xl bg-amber-50 border border-amber-300/40 text-amber-700 text-sm font-medium"
+            <div className="flex items-center justify-center gap-2 mb-2 px-4 rounded-xl bg-[#F0E6C8] border border-[#D4A828]/40 text-[#D4A828] text-sm font-medium"
               style={{ height: '44px', animation: 'bingoCelebFadeIn 300ms ease-out' }}
               data-testid="bingo-lock-banner"
             >
@@ -292,12 +292,12 @@ const CollectorBingo = () => {
             </div>
           )}
 
-          <Card className="p-5 border-amber-200/50 w-full" data-testid="bingo-preview">
+          <Card className="p-5 border-[#E5DBC8]/50 w-full" data-testid="bingo-preview">
             {/* Countdown line */}
             {activeCountdown && (
               <p
                 className="text-xs mb-3"
-                style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', color: '#8A6B4A' }}
+                style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', color: '#3A4D63' }}
                 data-testid="bingo-active-countdown"
               >
                 card locks in{' '}
@@ -309,7 +309,7 @@ const CollectorBingo = () => {
             {/* Teaser copy */}
             <p
               className="mb-4"
-              style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontStyle: 'italic', color: '#8A6B4A', fontSize: '15px', lineHeight: '1.4' }}
+              style={{ fontFamily: '"Cormorant Garamond", Georgia, serif', fontStyle: 'italic', color: '#3A4D63', fontSize: '15px', lineHeight: '1.4' }}
               data-testid="bingo-teaser-text"
             >
               this week's card is live. how many can you check off?
@@ -318,7 +318,7 @@ const CollectorBingo = () => {
             {/* CTA button */}
             <Button
               onClick={() => setModalOpen(true)}
-              className="w-full rounded-full bg-[#E8A820] hover:bg-[#C8861A] text-white text-sm h-10 font-medium"
+              className="w-full rounded-full bg-[#E8A820] hover:bg-[#D4A828] text-white text-sm h-10 font-medium"
               data-testid="bingo-open-btn"
             >
               play now 🐝
@@ -359,9 +359,9 @@ const BingoModal = ({
       <div className="relative" data-testid="bingo-modal">
         {showCelebration && (
           <div className="absolute inset-0 z-20 flex items-center justify-center rounded-xl pointer-events-none" style={{ animation: 'bingoCelebFadeIn 300ms ease-out' }}>
-            <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl px-8 py-6 text-center border-2 border-amber-400" style={{ animation: 'bingoCelebPop 400ms cubic-bezier(0.34,1.56,0.64,1)' }}>
-              <PartyPopper className="w-10 h-10 text-amber-500 mx-auto mb-2" />
-              <p className="font-heading text-2xl text-amber-700">you got a bingo 🍯</p>
+            <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl px-8 py-6 text-center border-2 border-[#D4A828]" style={{ animation: 'bingoCelebPop 400ms cubic-bezier(0.34,1.56,0.64,1)' }}>
+              <PartyPopper className="w-10 h-10 text-[#D4A828] mx-auto mb-2" />
+              <p className="font-heading text-2xl text-[#D4A828]">you got a bingo 🍯</p>
               <p className="text-sm text-muted-foreground mt-1">share it with the hive!</p>
             </div>
           </div>
@@ -369,7 +369,7 @@ const BingoModal = ({
 
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            {hasBingo && <span className="px-3 py-1 rounded-full bg-amber-500 text-white text-xs font-bold" data-testid="bingo-badge-modal">BINGO 🍯</span>}
+            {hasBingo && <span className="px-3 py-1 rounded-full bg-[#D4A828] text-white text-xs font-bold" data-testid="bingo-badge-modal">BINGO 🍯</span>}
             <span className="text-xs text-muted-foreground">{markedCount}/25 marked</span>
           </div>
           {isLocked && (
@@ -391,9 +391,9 @@ const BingoModal = ({
               <button key={i} onClick={() => toggleMark(i)}
                 disabled={isLocked || isFree || toggling !== null}
                 className={`aspect-square rounded-lg p-1.5 flex flex-col items-center justify-center text-center relative overflow-hidden
-                  ${isFree ? 'bg-amber-400/25 border-2 border-amber-600 cursor-default'
-                    : isMarked ? 'border-2 border-amber-600 shadow-inner cursor-pointer'
-                    : 'bg-white border border-amber-200/30 hover:border-amber-300/60 cursor-pointer'}
+                  ${isFree ? 'bg-[#D4A828]/25 border-2 border-[#D4A828] cursor-default'
+                    : isMarked ? 'border-2 border-[#D4A828] shadow-inner cursor-pointer'
+                    : 'bg-white border border-[#E5DBC8]/30 hover:border-[#D4A828]/60 cursor-pointer'}
                   ${isLocked && !isFree ? 'cursor-default' : ''}
                   ${!isLocked && !isFree ? 'active:scale-[0.96]' : ''}
                 `}
@@ -413,15 +413,15 @@ const BingoModal = ({
                     }}
                   />
                 )}
-                {toggling === i && <Loader2 className="w-3 h-3 animate-spin absolute top-1 right-1 text-amber-400 z-10" />}
+                {toggling === i && <Loader2 className="w-3 h-3 animate-spin absolute top-1 right-1 text-[#D4A828] z-10" />}
                 <span className="text-lg leading-none mb-0.5 relative z-10">{sq.emoji}</span>
-                <span className={`text-[9px] leading-tight relative z-10 px-0.5 ${isMarked ? 'text-amber-900 font-medium' : 'text-muted-foreground'}`}
+                <span className={`text-[9px] leading-tight relative z-10 px-0.5 ${isMarked ? 'text-[#1E2A3A] font-medium' : 'text-muted-foreground'}`}
                   style={{ wordBreak: 'break-word', hyphens: 'auto', display: '-webkit-box', WebkitLineClamp: 4, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                   {isFree ? 'sweet spot 🍯' : sq.text}
                 </span>
                 {isLocked && pct !== undefined && !isFree && (
                   <span className="text-[8px] sm:text-[9px] leading-none mt-0.5 relative z-10 italic"
-                    style={{ color: '#8A6B4A', opacity: 0.6, fontFamily: '"DM Serif Display", serif' }}
+                    style={{ color: '#3A4D63', opacity: 0.6, fontFamily: '"DM Serif Display", serif' }}
                     data-testid={`bingo-stat-${i}`}
                   >{pct}% of the hive</span>
                 )}

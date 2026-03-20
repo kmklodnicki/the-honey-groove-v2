@@ -35,15 +35,15 @@ const EssentialsUpsellModal = ({ open, onClose, onProceed }) => {
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onProceed(); }}>
-      <DialogContent className="max-w-md border-amber-200/50 p-0 overflow-hidden" data-testid="essentials-upsell-modal">
+      <DialogContent className="max-w-md border-[#E5DBC8]/50 p-0 overflow-hidden" data-testid="essentials-upsell-modal">
         {/* Header */}
-        <div className="bg-gradient-to-b from-amber-50/80 to-white px-6 pt-6 pb-4">
+        <div className="bg-gradient-to-b from-[#F0E6C8]/80 to-white px-6 pt-6 pb-4">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-lg text-stone-900">
-              <ShieldCheck className="w-5 h-5 text-amber-600" />
+            <DialogTitle className="flex items-center gap-2 text-lg text-[#1E2A3A]">
+              <ShieldCheck className="w-5 h-5 text-[#D4A828]" />
               Protect Your Investment
             </DialogTitle>
-            <DialogDescription className="text-sm text-stone-500 mt-1.5 leading-relaxed">
+            <DialogDescription className="text-sm text-[#3A4D63] mt-1.5 leading-relaxed">
               Vinyl deserves a little protection. Would you like to grab a few essentials to keep your new record safe and sounding sweet?
             </DialogDescription>
           </DialogHeader>
@@ -52,25 +52,25 @@ const EssentialsUpsellModal = ({ open, onClose, onProceed }) => {
         {/* Products */}
         <div className="px-6 pb-2 space-y-3">
           {CORE_ESSENTIALS.map(item => (
-            <div key={item.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-stone-50/50 transition-colors" data-testid={`upsell-item-${item.id}`}>
+            <div key={item.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#FFFBF2]/50 transition-colors" data-testid={`upsell-item-${item.id}`}>
               <img
                 src={item.image}
                 alt={item.name}
-                className="w-14 h-14 rounded-lg object-cover border border-stone-200/60 shrink-0"
+                className="w-14 h-14 rounded-lg object-cover border border-[#E5DBC8]/60 shrink-0"
               />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5 mb-0.5">
-                  <Award className="w-3 h-3 text-amber-500 shrink-0" />
-                  <span className="text-[10px] font-semibold text-amber-600 uppercase tracking-wide">
+                  <Award className="w-3 h-3 text-[#D4A828] shrink-0" />
+                  <span className="text-[10px] font-semibold text-[#D4A828] uppercase tracking-wide">
                     {item.honeyLabel}
                   </span>
                 </div>
-                <p className="text-sm font-medium text-stone-800 leading-tight">{item.name}</p>
-                <p className="text-xs text-stone-400 leading-snug mt-0.5 line-clamp-1">{item.descriptor}</p>
+                <p className="text-sm font-medium text-[#1E2A3A] leading-tight">{item.name}</p>
+                <p className="text-xs text-[#7A8694] leading-snug mt-0.5 line-clamp-1">{item.descriptor}</p>
               </div>
             </div>
           ))}
-          <p className="text-[11px] text-stone-400 italic text-center pt-1">
+          <p className="text-[11px] text-[#7A8694] italic text-center pt-1">
             Sleeves and cleaning tools can extend the life of your collection.
           </p>
         </div>
@@ -80,14 +80,14 @@ const EssentialsUpsellModal = ({ open, onClose, onProceed }) => {
           <Button
             variant="ghost"
             onClick={onProceed}
-            className="flex-1 rounded-full text-sm text-stone-500"
+            className="flex-1 rounded-full text-sm text-[#3A4D63]"
             data-testid="upsell-no-thanks"
           >
             No Thanks
           </Button>
           <Button
             onClick={handleYes}
-            className="flex-1 bg-amber-600 text-white hover:bg-amber-700 rounded-full text-sm gap-1.5"
+            className="flex-1 bg-[#D4A828] text-white hover:bg-[#E8CA5A] rounded-full text-sm gap-1.5"
             data-testid="upsell-yes"
           >
             Yes, Show Me

@@ -59,9 +59,9 @@ export const BeeAvatar = ({ user, className = "h-10 w-10" }) => {
       <AvatarFallback className="bg-honey-soft text-vinyl-black relative">
         <span className="font-heading">{firstLetter}</span>
         <svg viewBox="0 0 24 24" className="absolute -bottom-0.5 -right-0.5 w-3 h-3" fill="none">
-          <ellipse cx="12" cy="14" rx="5" ry="4" fill="#1F1F1F"/>
-          <ellipse cx="12" cy="13" rx="3.5" ry="2" fill="#F4B942"/>
-          <circle cx="12" cy="9" r="2.5" fill="#1F1F1F"/>
+          <ellipse cx="12" cy="14" rx="5" ry="4" fill="#1E2A3A"/>
+          <ellipse cx="12" cy="13" rx="3.5" ry="2" fill="#D4A828"/>
+          <circle cx="12" cy="9" r="2.5" fill="#1E2A3A"/>
         </svg>
       </AvatarFallback>
     </Avatar>
@@ -346,7 +346,7 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
           <span className="flex-1">{rnCollapsed ? 'Release Note' : 'Release Note'}</span>
           <button
             onClick={(e) => { e.stopPropagation(); toggleRnCollapse(); }}
-            className="p-0.5 rounded hover:bg-amber-200/50 transition-colors"
+            className="p-0.5 rounded hover:bg-[#E8CA5A]/50 transition-colors"
             data-testid={`release-note-toggle-${post.id}`}
             aria-label={rnCollapsed ? 'Expand release note' : 'Collapse release note'}
           >
@@ -428,7 +428,7 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
       </div>
       <div className="px-4 py-3 flex items-center gap-4 border-t border-honey/20">
         <button type="button" onClick={(e) => { e.stopPropagation(); onLike(post.id, post.is_liked); }}
-          className={`flex items-center gap-1.5 text-sm transition-all p-2 -m-2 rounded-full ${post.is_liked ? 'text-amber-600 honey-like-burst' : 'text-muted-foreground hover:text-amber-500'}`}
+          className={`flex items-center gap-1.5 text-sm transition-all p-2 -m-2 rounded-full ${post.is_liked ? 'text-[#D4A828] honey-like-burst' : 'text-muted-foreground hover:text-[#D4A828]'}`}
           style={{ touchAction: 'manipulation' }} data-testid={`like-btn-${post.id}`}>
           <Heart className={`w-4 h-4 transition-all duration-200 ${post.is_liked ? 'fill-current scale-110 honey-like-pop' : 'hover:scale-110'}`} />
           {post.likes_count > 0 && <span className={post.is_liked ? 'count-bump' : ''}>{post.likes_count}</span>}
@@ -539,7 +539,7 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
                 <form onSubmit={handleSubmitComment} className="pt-2 border-t border-honey/20">
                   {commentPhotoPreview && (
                     <div className="mb-2 relative inline-block" data-testid={`comment-photo-preview-${post.id}`}>
-                      <img src={commentPhotoPreview} alt="Attachment" className="h-16 w-16 object-cover rounded-lg border border-stone-200" />
+                      <img src={commentPhotoPreview} alt="Attachment" className="h-16 w-16 object-cover rounded-lg border border-[#E5DBC8]" />
                       <button type="button" onClick={clearCommentPhoto} className="absolute -top-1.5 -right-1.5 bg-black/70 text-white rounded-full p-0.5" data-testid={`comment-photo-remove-${post.id}`}>
                         <X className="w-3 h-3" />
                       </button>
@@ -547,7 +547,7 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
                   )}
                   <div className="flex gap-2 items-center">
                     <input type="file" ref={commentPhotoRef} className="hidden" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif" onChange={handleCommentPhotoSelect} data-testid={`comment-photo-input-${post.id}`} />
-                    <button type="button" onClick={() => commentPhotoRef.current?.click()} className="shrink-0 p-1.5 rounded-full text-stone-400 hover:text-honey-amber hover:bg-honey/10 transition-colors" data-testid={`comment-camera-btn-${post.id}`} disabled={photoUploading}>
+                    <button type="button" onClick={() => commentPhotoRef.current?.click()} className="shrink-0 p-1.5 rounded-full text-[#7A8694] hover:text-honey-amber hover:bg-honey/10 transition-colors" data-testid={`comment-camera-btn-${post.id}`} disabled={photoUploading}>
                       {photoUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
                     </button>
                     <Input ref={commentInputRef} placeholder={replyTo ? `Reply to @${replyTo.username}...` : "Write a comment..."}

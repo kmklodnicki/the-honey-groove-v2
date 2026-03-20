@@ -66,7 +66,7 @@ const ReportImg = ({ src, fallbacks, alt, className, style }) => {
 
 // ─── Color utility: extract dominant hue from an image via canvas sampling ───
 const extractDominantColor = (imgUrl) => new Promise((resolve) => {
-  if (!imgUrl) { resolve('#C8861A'); return; }
+  if (!imgUrl) { resolve('#D4A828'); return; }
   const img = new Image();
   img.crossOrigin = 'anonymous';
   img.onload = () => {
@@ -80,9 +80,9 @@ const extractDominantColor = (imgUrl) => new Promise((resolve) => {
       for (let i = 0; i < data.length; i += 4) { r += data[i]; g += data[i + 1]; b += data[i + 2]; }
       const px = data.length / 4;
       resolve(`rgb(${Math.round(r / px)}, ${Math.round(g / px)}, ${Math.round(b / px)})`);
-    } catch { resolve('#C8861A'); }
+    } catch { resolve('#D4A828'); }
   };
-  img.onerror = () => resolve('#C8861A');
+  img.onerror = () => resolve('#D4A828');
   img.src = proxyImageUrl(imgUrl) || resolveImageUrl(imgUrl);
 });
 
@@ -105,7 +105,7 @@ const IntroSlide = ({ username, dominantColor, dateRange }) => (
     <h1 className="font-heading text-3xl sm:text-5xl font-black text-white leading-tight mb-2" data-testid="intro-title">
       {username ? `@${username}'s` : 'Your'}<br />Week in the Hive
     </h1>
-    <ChevronDown className="w-5 h-5 text-stone-500 mt-4 animate-bounce" />
+    <ChevronDown className="w-5 h-5 text-[#3A4D63] mt-4 animate-bounce" />
   </div>
 );
 
@@ -129,7 +129,7 @@ const HeroSlide = ({ record, fallbacks, spinCount, isTopSpin, dominantColor }) =
       <h2 className="text-2xl sm:text-4xl font-black text-white leading-tight" data-testid="hero-title">
         {record?.title || 'No Activity'}
       </h2>
-      <p className="text-base text-stone-400 mt-1">{record?.artist}</p>
+      <p className="text-base text-[#7A8694] mt-1">{record?.artist}</p>
       {spinCount > 0 && (
         <div className="flex items-center gap-2 mt-4">
           <Play className="w-5 h-5" style={{ color: dominantColor }} />
@@ -150,15 +150,15 @@ const StatsSlide = ({ stats, dominantColor }) => (
     <div className="grid grid-cols-3 gap-6 max-w-md w-full">
       <div>
         <p className="text-4xl sm:text-6xl font-black" style={{ color: dominantColor }}>{stats.weekSpins}</p>
-        <p className="text-xs text-stone-500 mt-1 tracking-[0.15em] uppercase">Spins</p>
+        <p className="text-xs text-[#3A4D63] mt-1 tracking-[0.15em] uppercase">Spins</p>
       </div>
       <div>
         <p className="text-4xl sm:text-6xl font-black" style={{ color: dominantColor }}>{stats.weekAdds}</p>
-        <p className="text-xs text-stone-500 mt-1 tracking-[0.15em] uppercase">Added</p>
+        <p className="text-xs text-[#3A4D63] mt-1 tracking-[0.15em] uppercase">Added</p>
       </div>
       <div>
         <p className="text-4xl sm:text-6xl font-black text-white">${stats.totalValue?.toLocaleString() || '0'}</p>
-        <p className="text-xs text-stone-500 mt-1 tracking-[0.15em] uppercase">Value</p>
+        <p className="text-xs text-[#3A4D63] mt-1 tracking-[0.15em] uppercase">Value</p>
       </div>
     </div>
     {stats.valueGained > 0 && (
@@ -183,7 +183,7 @@ const MilestoneSlide = ({ totalRecords, dominantColor }) => {
         Collection Milestone
       </p>
       <p className="text-6xl sm:text-8xl font-black text-white mb-2">{totalRecords}</p>
-      <p className="text-sm text-stone-400">records in your vault</p>
+      <p className="text-sm text-[#7A8694]">records in your vault</p>
       {away && (
         <p className="mt-4 text-lg font-bold" style={{ color: dominantColor }}>
           Only {away} away from {next}!
@@ -207,14 +207,14 @@ const NewAdditionsSlide = ({ additions, dominantColor }) => {
               {r.cover_url ? (
                 <ReportImg src={r.cover_url} alt={r.title} className="w-full h-full object-cover" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-stone-900">
-                  <Disc className="w-8 h-8 text-stone-700" />
+                <div className="w-full h-full flex items-center justify-center bg-[#1E2A3A]">
+                  <Disc className="w-8 h-8 text-[#3A4D63]" />
                 </div>
               )}
             </div>
             <div className="p-2.5">
               <p className="text-xs font-bold text-white truncate">{r.title}</p>
-              <p className="text-[10px] text-stone-500 truncate">{r.artist}</p>
+              <p className="text-[10px] text-[#3A4D63] truncate">{r.artist}</p>
             </div>
           </div>
         ))}
@@ -293,13 +293,13 @@ const FreshStartSlide = ({ totalValue, dominantColor }) => (
   <div className="min-h-[50vh] flex flex-col items-center justify-center p-8 text-center snap-start" data-testid="slide-fresh-start">
     <Disc className="w-16 h-16 mb-6" style={{ color: dominantColor, opacity: 0.4 }} />
     <h2 className="text-3xl sm:text-4xl font-black text-white mb-2">A Fresh Start in the Hive</h2>
-    <p className="text-sm text-stone-400 mb-8">No spins this week. Your collection is waiting.</p>
+    <p className="text-sm text-[#7A8694] mb-8">No spins this week. Your collection is waiting.</p>
     {totalValue > 0 && (
       <>
         <p className="text-6xl sm:text-8xl font-black" style={{ color: dominantColor }}>
           ${totalValue.toLocaleString()}
         </p>
-        <p className="text-xs text-stone-500 mt-2 tracking-[0.15em] uppercase">Total Collection Value</p>
+        <p className="text-xs text-[#3A4D63] mt-2 tracking-[0.15em] uppercase">Total Collection Value</p>
       </>
     )}
   </div>
@@ -311,7 +311,7 @@ const WeeklyReportPage = () => {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [dominantColor, setDominantColor] = useState('#C8861A');
+  const [dominantColor, setDominantColor] = useState('#D4A828');
   const [exporting, setExporting] = useState(false);
   const shareRef = useRef(null);
 
@@ -442,8 +442,8 @@ const WeeklyReportPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: '#0A0A0A' }} data-testid="weekly-report-loading">
-        <Disc className="w-12 h-12 animate-spin" style={{ color: '#C8861A' }} />
-        <p className="text-sm font-medium tracking-[0.15em] uppercase" style={{ color: '#C8861A' }}>
+        <Disc className="w-12 h-12 animate-spin" style={{ color: '#D4A828' }} />
+        <p className="text-sm font-medium tracking-[0.15em] uppercase" style={{ color: '#D4A828' }}>
           Digging through the crates...
         </p>
       </div>
@@ -454,9 +454,9 @@ const WeeklyReportPage = () => {
   if (!data) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ background: '#0A0A0A', color: '#fff' }}>
-        <Disc className="w-16 h-16 mb-4" style={{ color: '#C8861A', opacity: 0.3 }} />
+        <Disc className="w-16 h-16 mb-4" style={{ color: '#D4A828', opacity: 0.3 }} />
         <p className="text-lg font-bold">No collection data yet</p>
-        <p className="text-sm text-stone-500 mt-1">Start adding records to build your weekly story.</p>
+        <p className="text-sm text-[#3A4D63] mt-1">Start adding records to build your weekly story.</p>
         <Button onClick={() => navigate(-1)} className="mt-6 rounded-full" variant="outline">Go Back</Button>
       </div>
     );
@@ -510,7 +510,7 @@ const WeeklyReportPage = () => {
           <p className="text-xs font-medium tracking-[0.2em] uppercase mb-6" style={{ color: dominantColor }}>
             Share Your Week
           </p>
-          <p className="text-lg text-stone-400 mb-8 max-w-xs">
+          <p className="text-lg text-[#7A8694] mb-8 max-w-xs">
             Show the Hive what you've been spinning. Export a ready-to-share story card.
           </p>
           <Button
@@ -526,7 +526,7 @@ const WeeklyReportPage = () => {
           <Button
             onClick={() => navigate(-1)}
             variant="ghost"
-            className="mt-4 rounded-full text-sm text-stone-500 hover:text-white"
+            className="mt-4 rounded-full text-sm text-[#3A4D63] hover:text-white"
             data-testid="weekly-report-done"
           >
             Back to Profile

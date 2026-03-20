@@ -11,8 +11,8 @@ const StripeGateModal = ({ open, onClose }) => {
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-sm text-center p-8" data-testid="stripe-gate-modal">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center">
-            <CreditCard className="w-7 h-7 text-amber-600" />
+          <div className="w-14 h-14 rounded-full bg-[#F0E6C8] flex items-center justify-center">
+            <CreditCard className="w-7 h-7 text-[#D4A828]" />
           </div>
           <h3 className="font-heading text-xl text-vinyl-black">connect stripe to list</h3>
           <p className="text-sm text-muted-foreground">

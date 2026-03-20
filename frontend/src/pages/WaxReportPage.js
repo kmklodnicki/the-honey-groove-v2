@@ -19,8 +19,8 @@ import WaxReportCard from '../components/ShareCards/WaxReportCard';
 
 /* ═══════ Brand Colors ═══════ */
 const C = {
-  bg: '#FAEDC7', card: '#FFFFFF', textDark: '#2A1A06', textMuted: '#8A6B4A',
-  amber: '#996012', amberAccent: '#C8861A', amberLight: '#E8A820', amberDark: '#7A5008',
+  bg: '#FAEDC7', card: '#FFFFFF', textDark: '#1E2A3A', textMuted: '#3A4D63',
+  amber: '#D4A828', amberAccent: '#D4A828', amberLight: '#E8A820', amberDark: '#7A5008',
   purple: '#6B47AD', green: '#339147',
   border: 'rgba(200,134,26,0.15)', divider: 'rgba(200,134,26,0.20)',
   barFill: 'rgba(232,168,32,0.65)', barTrack: 'rgba(200,134,26,0.08)',

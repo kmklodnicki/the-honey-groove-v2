@@ -134,7 +134,7 @@ const DisputeCard = ({ trade, onSelect, resolved }) => {
           <span className={`px-2 py-1 rounded-full text-xs font-bold ${
             d.resolution.outcome === 'COMPLETED' ? 'bg-green-100 text-green-700' :
             d.resolution.outcome === 'CANCELLED' ? 'bg-red-100 text-red-700' :
-            'bg-amber-100 text-amber-700'
+            'bg-[#F0E6C8] text-[#D4A828]'
           }`}>{d.resolution.outcome}</span>
         )}
       </div>
@@ -236,7 +236,7 @@ const ResolveModal = ({ open, onOpenChange, trade, token, API, onResolved }) => 
           </div>
           {resolution === 'PARTIAL' && (
             <Input placeholder="Cash difference amount ($)" type="number" value={partialAmount} onChange={e => setPartialAmount(e.target.value)}
-              className="border-amber-300" data-testid="partial-amount-input" />
+              className="border-[#D4A828]" data-testid="partial-amount-input" />
           )}
           <Textarea placeholder="Resolution notes (visible to both parties)" value={notes} onChange={e => setNotes(e.target.value)}
             className="resize-none" rows={3} data-testid="resolution-notes-input" />

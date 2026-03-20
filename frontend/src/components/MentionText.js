@@ -49,7 +49,7 @@ const MentionText = ({ text, className = '', noLinks = false }) => {
             <Link
               key={i}
               to={`/profile/${username}`}
-              className="text-amber-700 font-medium hover:underline"
+              className="text-[#D4A828] font-medium hover:underline"
               data-testid={`mention-link-${username}`}
             >
               {part}
@@ -65,7 +65,7 @@ const MentionText = ({ text, className = '', noLinks = false }) => {
               href={part}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-amber-700 hover:underline break-all"
+              className="text-[#D4A828] hover:underline break-all"
               data-testid="auto-link"
             >
               {part.length > 50 ? part.slice(0, 47) + '...' : part}

@@ -88,8 +88,8 @@ const CropModal = ({ open, onClose, imageSrc, onCropComplete }) => {
               step={0.05}
               value={zoom}
               onChange={(e) => setZoom(Number(e.target.value))}
-              className="flex-1 h-1.5 rounded-full appearance-none cursor-pointer accent-[#C8861A]"
-              style={{ background: `linear-gradient(to right, #C8861A ${((zoom - 1) / 2) * 100}%, #e5e7eb ${((zoom - 1) / 2) * 100}%)` }}
+              className="flex-1 h-1.5 rounded-full appearance-none cursor-pointer accent-[#D4A828]"
+              style={{ background: `linear-gradient(to right, #D4A828 ${((zoom - 1) / 2) * 100}%, #e5e7eb ${((zoom - 1) / 2) * 100}%)` }}
               data-testid="crop-zoom-slider"
             />
             <ZoomIn className="w-4 h-4 text-muted-foreground shrink-0" />
@@ -99,7 +99,7 @@ const CropModal = ({ open, onClose, imageSrc, onCropComplete }) => {
           <div className="flex justify-center">
             <button
               onClick={() => setRotation((r) => (r + 90) % 360)}
-              className="text-xs text-muted-foreground hover:text-stone-700 flex items-center gap-1.5 transition-colors"
+              className="text-xs text-muted-foreground hover:text-[#3A4D63] flex items-center gap-1.5 transition-colors"
               data-testid="crop-rotate-btn"
             >
               <RotateCw className="w-3.5 h-3.5" /> Rotate

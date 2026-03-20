@@ -555,7 +555,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
         <DialogContent className="sm:max-w-md max-h-[90dvh] flex flex-col overflow-hidden p-0 max-sm:max-w-[95vw] max-sm:max-h-[88dvh]">
           <div className="px-6 max-sm:px-4 pt-6 max-sm:pt-4 pb-2 shrink-0">
             <DialogHeader>
-              <DialogTitle className="font-heading flex items-center gap-2 shrink" style={{ color: '#D98C2F' }}>
+              <DialogTitle className="font-heading flex items-center gap-2 shrink" style={{ color: '#D4A828' }}>
                 <Music className="w-5 h-5 shrink-0" /> <span className="shrink">Now Spinning</span>
                 {spinMood && <span className="text-sm font-normal ml-1">· {MOOD_CONFIG[spinMood].emoji} {spinMood}</span>}
               </DialogTitle>
@@ -589,11 +589,11 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                     )}
                     {spinSearch.length >= 2 && spinSearchResults.length === 0 && (
                       <div className="absolute z-50 left-0 right-0 mt-1 border rounded-lg p-4 text-center shadow-lg bg-white" style={{ borderColor: 'rgba(200,134,26,0.3)' }}>
-                        <p className="text-sm" style={{ color: '#8A6B4A' }}>
+                        <p className="text-sm" style={{ color: '#3A4D63' }}>
                           no results in your vault
                         </p>
                         <a href="/add-record" className="text-xs mt-1 inline-block hover:underline"
-                          style={{ color: '#C8861A' }}
+                          style={{ color: '#D4A828' }}
                           data-testid="spin-add-record-link">
                           add it first &rarr;
                         </a>
@@ -605,14 +605,14 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                     {(spinSelectedRecord.imageUrl || spinSelectedRecord.cover_url) ? (
                       <AlbumArt src={spinSelectedRecord.imageSmall || spinSelectedRecord.imageUrl || spinSelectedRecord.cover_url} alt={`${spinSelectedRecord.artist} ${spinSelectedRecord.title} vinyl record`} className="w-10 h-10 max-sm:w-8 max-sm:h-8 rounded-md object-cover shadow-sm" />
                     ) : (
-                      <div className="w-10 h-10 max-sm:w-8 max-sm:h-8 rounded-md bg-stone-100 flex items-center justify-center"><Disc className="w-5 h-5 text-stone-400" /></div>
+                      <div className="w-10 h-10 max-sm:w-8 max-sm:h-8 rounded-md bg-[#F3EBE0] flex items-center justify-center"><Disc className="w-5 h-5 text-[#7A8694]" /></div>
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{spinSelectedRecord.title}</p>
-                      <p className="text-xs truncate" style={{ color: '#8A6B4A' }}>{spinSelectedRecord.artist}</p>
+                      <p className="text-xs truncate" style={{ color: '#3A4D63' }}>{spinSelectedRecord.artist}</p>
                     </div>
                     <button onClick={deselectSpinRecord} className="p-1 rounded-full hover:bg-black/10"
-                      style={{ color: '#8A6B4A' }}
+                      style={{ color: '#3A4D63' }}
                       data-testid="spin-deselect-record">
                       <X className="w-4 h-4" />
                     </button>
@@ -625,12 +625,12 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                 {spinTracksLoading ? (
                   <div className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm" style={{ border: '1px solid rgba(200,134,26,0.5)', background: '#FFFDF5' }} data-testid="spin-track-loading">
                     <div className="flex gap-1 items-end h-4">
-                      <span className="w-1 rounded-full animate-pulse" style={{ background: '#C8861A', height: '8px', animationDelay: '0ms', animationDuration: '800ms' }} />
-                      <span className="w-1 rounded-full animate-pulse" style={{ background: '#C8861A', height: '12px', animationDelay: '200ms', animationDuration: '800ms' }} />
-                      <span className="w-1 rounded-full animate-pulse" style={{ background: '#C8861A', height: '16px', animationDelay: '400ms', animationDuration: '800ms' }} />
-                      <span className="w-1 rounded-full animate-pulse" style={{ background: '#C8861A', height: '10px', animationDelay: '600ms', animationDuration: '800ms' }} />
+                      <span className="w-1 rounded-full animate-pulse" style={{ background: '#D4A828', height: '8px', animationDelay: '0ms', animationDuration: '800ms' }} />
+                      <span className="w-1 rounded-full animate-pulse" style={{ background: '#D4A828', height: '12px', animationDelay: '200ms', animationDuration: '800ms' }} />
+                      <span className="w-1 rounded-full animate-pulse" style={{ background: '#D4A828', height: '16px', animationDelay: '400ms', animationDuration: '800ms' }} />
+                      <span className="w-1 rounded-full animate-pulse" style={{ background: '#D4A828', height: '10px', animationDelay: '600ms', animationDuration: '800ms' }} />
                     </div>
-                    <span style={{ color: '#8A6B4A' }}>Fetching tracks... 🐝</span>
+                    <span style={{ color: '#3A4D63' }}>Fetching tracks... 🐝</span>
                   </div>
                 ) : spinTrackManual ? (
                   <div className="space-y-1.5">
@@ -646,7 +646,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                       <button
                         onClick={() => { setSpinTrackManual(false); setSpinTrack(''); }}
                         className="text-xs underline transition-colors"
-                        style={{ color: '#C8861A' }}
+                        style={{ color: '#D4A828' }}
                         data-testid="spin-track-back-to-list"
                       >
                         Back to tracklist
@@ -668,7 +668,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                     style={{
                       border: '1px solid rgba(200,134,26,0.5)',
                       background: '#FFFDF5',
-                      color: spinTrack ? '#1a1a1a' : '#8A6B4A',
+                      color: spinTrack ? '#1a1a1a' : '#3A4D63',
                       backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath d=\'M2 4l4 4 4-4\' fill=\'none\' stroke=\'%23C8861A\' stroke-width=\'1.5\'/%3E%3C/svg%3E")',
                       backgroundRepeat: 'no-repeat',
                       backgroundPosition: 'right 10px center',
@@ -696,11 +696,11 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                     {spinTracksFetched && spinSelectedRecord?.discogs_id && (
                       <button
                         onClick={() => fetchTracklist(spinSelectedRecord.discogs_id)}
-                        className="shrink-0 p-2 rounded-md transition-colors hover:bg-amber-50"
+                        className="shrink-0 p-2 rounded-md transition-colors hover:bg-[#F0E6C8]"
                         title="Retry fetching tracklist"
                         data-testid="spin-track-refresh"
                       >
-                        <RefreshCw className="w-4 h-4" style={{ color: '#C8861A' }} />
+                        <RefreshCw className="w-4 h-4" style={{ color: '#D4A828' }} />
                       </button>
                     )}
                   </div>
@@ -708,7 +708,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
               </div>
 
               <div>
-                <label className="text-xs font-medium mb-1.5 block" style={{ color: '#8A6B4A' }}>
+                <label className="text-xs font-medium mb-1.5 block" style={{ color: '#3A4D63' }}>
                   how does it feel?
                 </label>
                 <div className="grid grid-cols-3 gap-1.5">
@@ -744,7 +744,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                 style={{ borderColor: 'rgba(200,134,26,0.5)' }}
                 rows={2} data-testid="spin-caption-input" />
               {!spinCaption.trim() && (
-                <p className="text-xs italic mt-1" style={{ color: '#C8861A' }} data-testid="spin-caption-helper">
+                <p className="text-xs italic mt-1" style={{ color: '#D4A828' }} data-testid="spin-caption-helper">
                   Tell the hive what you love about this record! 🐝
                 </p>
               )}
@@ -761,7 +761,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
               ) : (
                 <button
                   onClick={() => postPhotoInputRef.current?.click()}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-dashed border-honey/40 text-stone-500 hover:text-stone-700 hover:border-honey/60 transition-colors"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-dashed border-honey/40 text-[#3A4D63] hover:text-[#3A4D63] hover:border-honey/60 transition-colors"
                   data-testid="spin-photo-upload-btn"
                 >
                   <Camera className="w-3.5 h-3.5" /> Add a photo
@@ -773,7 +773,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
           {/* Sticky footer — always visible */}
           <div className="shrink-0 px-6 max-sm:px-4 pt-3 max-sm:pt-2 border-t border-honey/15 bg-white" style={{ paddingBottom: 'max(1.25rem, env(safe-area-inset-bottom, 0.75rem))' }}>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-medium text-stone-600 flex items-center gap-1.5 cursor-pointer" data-testid="post-to-hive-label">
+              <label className="text-xs font-medium text-[#3A4D63] flex items-center gap-1.5 cursor-pointer" data-testid="post-to-hive-label">
                 Post to Hive
               </label>
               <button
@@ -781,13 +781,13 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                 role="switch"
                 aria-checked={postToHive}
                 onClick={() => setPostToHive(!postToHive)}
-                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${postToHive ? 'bg-amber-500' : 'bg-stone-300'}`}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${postToHive ? 'bg-[#D4A828]' : 'bg-[#E5DBC8]'}`}
                 data-testid="post-to-hive-toggle"
               >
                 <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${postToHive ? 'translate-x-4' : 'translate-x-0.5'}`} />
               </button>
             </div>
-            {!postToHive && <p className="text-xs text-stone-400 mb-2" data-testid="silent-spin-hint">Silent spin — logged to your Vault only, not posted to the feed.</p>}
+            {!postToHive && <p className="text-xs text-[#7A8694] mb-2" data-testid="silent-spin-hint">Silent spin — logged to your Vault only, not posted to the feed.</p>}
             <Button onClick={submitNowSpinning} disabled={submitting || !spinRecordId || (!postToHive ? false : !spinCaption.trim())}
               className="w-full rounded-full transition-all duration-200 text-white"
               style={{ background: 'linear-gradient(135deg, #FFB300, #FFA000)' }}
@@ -807,7 +807,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
         <DialogContent className="sm:max-w-lg max-h-[90dvh] flex flex-col overflow-hidden p-0 max-sm:max-w-[95vw] max-sm:max-h-[88dvh]">
           <div className="px-6 max-sm:px-4 pt-6 max-sm:pt-4 pb-2 shrink-0">
             <DialogHeader>
-              <DialogTitle className="font-heading flex items-center gap-2"><Package className="w-5 h-5 text-amber-600" /> New Haul</DialogTitle>
+              <DialogTitle className="font-heading flex items-center gap-2"><Package className="w-5 h-5 text-[#D4A828]" /> New Haul</DialogTitle>
               <DialogDescription>Share your latest finds</DialogDescription>
             </DialogHeader>
           </div>
@@ -839,7 +839,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                     <AlbumArt src={item.imageSmall || item.imageUrl || item.cover_url} alt={`${item.artist} ${item.title} vinyl record`} className="w-12 h-12 rounded-md object-cover shadow-sm" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{item.title}</p>
-                      <p className="text-xs truncate" style={{ color: '#8A6B4A' }}>{item.artist}</p>
+                      <p className="text-xs truncate" style={{ color: '#3A4D63' }}>{item.artist}</p>
                     </div>
                     <button onClick={() => setHaulItems(prev => prev.filter((_, i) => i !== idx))} className="p-1 rounded-full hover:bg-black/10 text-muted-foreground hover:text-red-500"><X className="w-4 h-4" /></button>
                   </div>
@@ -849,7 +849,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
             )}
             {/* 2. Location — optional */}
             <div>
-              <label className="text-xs font-medium mb-1 block" style={{ color: '#8A6B4A' }}>📍 Where'd you find them? <span className="text-muted-foreground font-normal">(optional)</span></label>
+              <label className="text-xs font-medium mb-1 block" style={{ color: '#3A4D63' }}>📍 Where'd you find them? <span className="text-muted-foreground font-normal">(optional)</span></label>
               <Input placeholder="Record store, thrift shop, eBay..." value={haulStoreName} onChange={e => setHaulStoreName(e.target.value)} className="border-honey/50" data-testid="haul-store-input" />
             </div>
             {/* 3. Caption */}
@@ -867,14 +867,14 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                 <button 
                   type="button"
                   onClick={() => postPhotoInputRef.current.click()}
-                  className="flex items-center gap-2 text-stone-500 hover:text-amber-600 transition text-sm font-medium border border-dashed border-stone-300 rounded-lg p-3 w-full justify-center"
+                  className="flex items-center gap-2 text-[#3A4D63] hover:text-[#D4A828] transition text-sm font-medium border border-dashed border-[#E5DBC8] rounded-lg p-3 w-full justify-center"
                 >
                   <ImagePlus size={18} />
                   Add a photo of your haul (Optional)
                 </button>
               ) : (
                 <div className="relative w-full max-h-[200px] overflow-hidden rounded-xl group">
-                  <img src={postPhotoPreview} className="w-full h-full object-cover border border-stone-200 shadow-sm" alt="Haul preview" />
+                  <img src={postPhotoPreview} className="w-full h-full object-cover border border-[#E5DBC8] shadow-sm" alt="Haul preview" />
                   <button 
                     onClick={clearPostPhoto}
                     className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 shadow-md hover:bg-red-600 transition"
@@ -889,7 +889,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
           {/* Sticky footer — always visible */}
           <div className="shrink-0 px-6 max-sm:px-4 pt-3 max-sm:pt-2 border-t border-honey/15 bg-white" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 0.75rem))' }}>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium text-stone-600" data-testid="haul-hive-label">
+              <label className="text-sm font-medium text-[#3A4D63]" data-testid="haul-hive-label">
                 Post to Hive
               </label>
               <button
@@ -897,17 +897,17 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                 role="switch"
                 aria-checked={haulPostToHive}
                 onClick={() => setHaulPostToHive(!haulPostToHive)}
-                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${haulPostToHive ? 'bg-amber-500' : 'bg-stone-300'}`}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${haulPostToHive ? 'bg-[#D4A828]' : 'bg-[#E5DBC8]'}`}
                 data-testid="haul-post-to-hive-toggle"
               >
                 <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${haulPostToHive ? 'translate-x-4' : 'translate-x-0.5'}`} />
               </button>
             </div>
-            {!haulPostToHive && <p className="text-xs text-stone-400 mb-2" data-testid="haul-silent-hint">Silent haul — logged to your Vault only, not posted to the feed.</p>}
+            {!haulPostToHive && <p className="text-xs text-[#7A8694] mb-2" data-testid="haul-silent-hint">Silent haul — logged to your Vault only, not posted to the feed.</p>}
             <Button onClick={() => {
               if (haulPostToHive && !haulCaption.trim()) { toast.error('a caption is required to share with the hive.'); return; }
               submitNewHaul();
-            }} disabled={submitting || haulItems.length === 0} className="w-full bg-amber-100 text-amber-800 hover:bg-amber-200 rounded-full" data-testid="haul-submit-btn">
+            }} disabled={submitting || haulItems.length === 0} className="w-full bg-[#F0E6C8] text-[#1E2A3A] hover:bg-[#E8CA5A] rounded-full" data-testid="haul-submit-btn">
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Package className="w-4 h-4 mr-2" />}
               {haulPostToHive ? `Post Haul (${haulItems.length} record${haulItems.length !== 1 ? 's' : ''})` : `Log Haul to Vault (${haulItems.length})`}
             </Button>
@@ -1049,7 +1049,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
           {(isoManualMode || isoSelectedRelease) && (
           <div className="shrink-0 px-6 max-sm:px-4 pt-3 max-sm:pt-2 border-t border-honey/15 bg-white" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 0.75rem))' }}>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium text-stone-600" data-testid="iso-hive-label">
+              <label className="text-sm font-medium text-[#3A4D63]" data-testid="iso-hive-label">
                 Post to Hive
               </label>
               <button
@@ -1057,18 +1057,18 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                 role="switch"
                 aria-checked={isoPostToHive}
                 onClick={() => setIsoPostToHive(!isoPostToHive)}
-                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${isoPostToHive ? 'bg-amber-500' : 'bg-stone-300'}`}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${isoPostToHive ? 'bg-[#D4A828]' : 'bg-[#E5DBC8]'}`}
                 data-testid="iso-post-to-hive-toggle"
               >
                 <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${isoPostToHive ? 'translate-x-4' : 'translate-x-0.5'}`} />
               </button>
             </div>
-            {!isoPostToHive && <p className="text-xs text-stone-400 mb-2" data-testid="iso-silent-hint">{isoIntent === 'dreaming' ? 'Added to your Dream List only.' : 'Saved privately — not posted to the feed.'}</p>}
+            {!isoPostToHive && <p className="text-xs text-[#7A8694] mb-2" data-testid="iso-silent-hint">{isoIntent === 'dreaming' ? 'Added to your Dream List only.' : 'Saved privately — not posted to the feed.'}</p>}
             <Button onClick={submitISO} disabled={submitting || (isoManualMode && (!isoArtist || !isoAlbum)) || (!isoManualMode && !isoSelectedRelease)}
               className="w-full rounded-full"
               style={isoIntent === 'dreaming'
                 ? { background: '#f3f4f6', color: '#374151' }
-                : { background: 'linear-gradient(135deg, #FFD700, #DAA520)', color: '#2A1A06' }
+                : { background: 'linear-gradient(135deg, #FFD700, #DAA520)', color: '#1E2A3A' }
               }
               data-testid="iso-submit-btn">
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Search className="w-4 h-4 mr-2" />}
@@ -1096,19 +1096,19 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
               placeholder="Thinking about..."
               value={noteText}
               onChange={v => setNoteText(isAdmin ? v : v.slice(0, 1500))}
-              className="border-stone-200 resize-none text-base min-h-[120px] focus-visible:ring-amber-300"
+              className="border-[#E5DBC8] resize-none text-base min-h-[120px] focus-visible:ring-[#D4A828]"
               rows={4}
               maxLength={isAdmin ? undefined : 1500}
               data-testid="note-text-input"
             />
             <div className="flex items-center justify-between">
               {isAdmin ? (
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200" data-testid="admin-changelog-badge">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-[#F0E6C8] text-[#D4A828] border border-[#E5DBC8]" data-testid="admin-changelog-badge">
                   <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" strokeLinecap="round" strokeLinejoin="round"/></svg>
                   Admin: Change Log Mode
                 </span>
               ) : (
-                <span className={`text-xs ${noteText.length > 260 ? 'text-amber-600 font-medium' : 'text-muted-foreground'}`}>
+                <span className={`text-xs ${noteText.length > 260 ? 'text-[#D4A828] font-medium' : 'text-muted-foreground'}`}>
                   {noteText.length}/1500
                 </span>
               )}
@@ -1116,7 +1116,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                 {/* Tag a record */}
                 <button
                   onClick={() => setNoteShowRecordPicker(!noteShowRecordPicker)}
-                  className="text-xs text-stone-400 hover:text-amber-600 flex items-center gap-1 transition-colors"
+                  className="text-xs text-[#7A8694] hover:text-[#D4A828] flex items-center gap-1 transition-colors"
                   data-testid="note-tag-record-btn"
                 >
                   <Tag className="w-3.5 h-3.5" /> tag a record
@@ -1124,7 +1124,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                 {/* Image upload */}
                 <button
                   onClick={() => noteFileRef.current?.click()}
-                  className="text-xs text-stone-400 hover:text-amber-600 flex items-center gap-1 transition-colors"
+                  className="text-xs text-[#7A8694] hover:text-[#D4A828] flex items-center gap-1 transition-colors"
                   data-testid="note-add-image-btn"
                 >
                   <ImagePlus className="w-3.5 h-3.5" /> add image
@@ -1141,7 +1141,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                   placeholder="search your vault..."
                   value={noteSearch}
                   onChange={e => { setNoteSearch(e.target.value); searchCollectionForNote(e.target.value); }}
-                  className="pl-9 border-stone-200"
+                  className="pl-9 border-[#E5DBC8]"
                   data-testid="note-record-search"
                   autoFocus
                 />
@@ -1154,7 +1154,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                 )}
                 {noteSearch.length >= 2 && noteSearchResults.length === 0 && (
                   <div className="absolute z-50 left-0 right-0 mt-1 border rounded-lg p-3 text-center shadow-lg bg-white" style={{ borderColor: 'rgba(200,134,26,0.3)' }}>
-                    <p className="text-sm" style={{ color: '#8A6B4A' }}>no results in your vault</p>
+                    <p className="text-sm" style={{ color: '#3A4D63' }}>no results in your vault</p>
                   </div>
                 )}
               </div>
@@ -1162,11 +1162,11 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
 
             {/* Tagged record preview */}
             {noteRecord && (
-              <div className="flex items-center gap-2 bg-stone-50 rounded-lg px-3 py-2" data-testid="note-tagged-record">
+              <div className="flex items-center gap-2 bg-[#FFFBF2] rounded-lg px-3 py-2" data-testid="note-tagged-record">
                 {(noteRecord.imageUrl || noteRecord.cover_url) ? (
                   <AlbumArt src={noteRecord.imageSmall || noteRecord.imageUrl || noteRecord.cover_url} alt={`${noteRecord.artist} ${noteRecord.title} vinyl record`} className="w-8 h-8 rounded object-cover" />
                 ) : (
-                  <div className="w-8 h-8 rounded bg-stone-200 flex items-center justify-center"><Disc className="w-4 h-4 text-stone-400" /></div>
+                  <div className="w-8 h-8 rounded bg-[#F3EBE0] flex items-center justify-center"><Disc className="w-4 h-4 text-[#7A8694]" /></div>
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-medium truncate">{noteRecord.title}</p>
@@ -1192,7 +1192,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
             <Button
               onClick={submitNote}
               disabled={submitting || !noteText.trim()}
-              className="w-full rounded-full bg-amber-500 hover:bg-amber-600 text-white"
+              className="w-full rounded-full bg-[#D4A828] hover:bg-[#E8CA5A] text-white"
               data-testid="note-submit-btn"
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Feather className="w-4 h-4 mr-2" />}
@@ -1208,7 +1208,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
         <DialogContent className="sm:max-w-sm max-h-[90dvh] flex flex-col overflow-hidden p-0 max-sm:max-w-[95vw] max-sm:max-h-[88dvh]">
           <div className="px-6 max-sm:px-4 pt-6 max-sm:pt-4 pb-2 shrink-0">
             <DialogHeader>
-              <DialogTitle className="font-heading flex items-center gap-2 text-amber-700">
+              <DialogTitle className="font-heading flex items-center gap-2 text-[#D4A828]">
                 <Shuffle className="w-5 h-5" /> Randomizer
               </DialogTitle>
               <DialogDescription>What record should you spin today?</DialogDescription>
@@ -1219,8 +1219,8 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
             {/* Record display */}
             {randAnimating ? (
               <div className="flex flex-col items-center py-8" data-testid="randomizer-shuffling">
-                <div className="w-40 h-40 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center honey-shimmer">
-                  <Shuffle className="w-10 h-10 text-amber-600 animate-spin" />
+                <div className="w-40 h-40 rounded-xl bg-gradient-to-br from-[#F0E6C8] to-[#F0E6C8] flex items-center justify-center honey-shimmer">
+                  <Shuffle className="w-10 h-10 text-[#D4A828] animate-spin" />
                 </div>
                 <p className="text-sm text-muted-foreground mt-3">shuffling your vault...</p>
               </div>
@@ -1230,13 +1230,13 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                   {(randRecord.imageUrl || randRecord.cover_url) ? (
                     <AlbumArt src={randRecord.imageSmall || randRecord.imageUrl || randRecord.cover_url} alt={`${randRecord.artist} ${randRecord.title}`} className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full bg-stone-100 flex items-center justify-center"><Disc className="w-12 h-12 text-stone-300" /></div>
+                    <div className="w-full h-full bg-[#F3EBE0] flex items-center justify-center"><Disc className="w-12 h-12 text-[#7A8694]" /></div>
                   )}
                 </div>
                 <p className="font-heading text-base mt-3 text-center" data-testid="randomizer-album">{randRecord.title}</p>
                 <p className="text-sm text-muted-foreground text-center" data-testid="randomizer-artist">{randRecord.artist}</p>
                 {(randRecord.color_variant || randRecord.pressing_notes) && (
-                  <p className="text-xs text-amber-600 mt-0.5" data-testid="randomizer-variant">{randRecord.color_variant || randRecord.pressing_notes}</p>
+                  <p className="text-xs text-[#D4A828] mt-0.5" data-testid="randomizer-variant">{randRecord.color_variant || randRecord.pressing_notes}</p>
                 )}
               </div>
             ) : (
@@ -1294,21 +1294,21 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <div>
-              <label className="text-xs font-medium text-stone-500 mb-1 block">Question</label>
+              <label className="text-xs font-medium text-[#3A4D63] mb-1 block">Question</label>
               <Textarea
                 placeholder="What's your question?"
                 value={pollQuestion}
                 onChange={(e) => setPollQuestion(e.target.value.slice(0, 500))}
-                className="resize-none focus:border-amber-400"
+                className="resize-none focus:border-[#D4A828]"
                 style={{ borderColor: 'rgba(218,165,32,0.3)' }}
                 rows={2}
                 data-testid="poll-question-input"
               />
-              <span className="text-xs text-stone-400 float-right mt-0.5">{pollQuestion.length}/500</span>
+              <span className="text-xs text-[#7A8694] float-right mt-0.5">{pollQuestion.length}/500</span>
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-medium text-stone-500">Options</label>
+              <label className="text-xs font-medium text-[#3A4D63]">Options</label>
               {pollOptions.map((opt, i) => (
                 <div key={i} className="flex gap-2 items-center">
                   <Input
@@ -1319,7 +1319,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                       next[i] = e.target.value;
                       setPollOptions(next);
                     }}
-                    className="flex-1 focus:border-amber-400"
+                    className="flex-1 focus:border-[#D4A828]"
                     style={{ borderColor: 'rgba(218,165,32,0.2)' }}
                     data-testid={`poll-option-input-${i}`}
                   />
@@ -1327,7 +1327,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                     <button
                       type="button"
                       onClick={() => setPollOptions(pollOptions.filter((_, j) => j !== i))}
-                      className="p-1.5 rounded-full hover:bg-red-50 text-stone-400 hover:text-red-500 transition-colors"
+                      className="p-1.5 rounded-full hover:bg-red-50 text-[#7A8694] hover:text-red-500 transition-colors"
                       data-testid={`poll-remove-option-${i}`}
                     >
                       <Trash2 className="w-3.5 h-3.5" />

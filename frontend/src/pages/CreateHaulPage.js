@@ -199,7 +199,7 @@ const CreateHaulPage = () => {
                         className={`px-2 py-0.5 rounded-full text-[10px] font-medium transition-all border ${
                           (item.itemFormat || 'Vinyl') === fmt
                             ? 'bg-vinyl-black text-white border-vinyl-black'
-                            : 'bg-white text-stone-400 border-stone-200 hover:border-stone-300'
+                            : 'bg-white text-[#7A8694] border-[#E5DBC8] hover:border-[#E5DBC8]'
                         }`}
                         data-testid={`haul-format-${item.discogs_id}-${fmt.toLowerCase()}`}
                       >

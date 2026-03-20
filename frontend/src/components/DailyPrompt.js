@@ -181,7 +181,7 @@ useEffect(() => {
   }, [carouselIdx, responses]);
 
   if (loading) return (
-    <Card className="my-4 p-5 border-orange-200/60 overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,179,0,0.08), rgba(255,160,0,0.04))' }}>
+    <Card className="my-4 p-5 border-[#E5DBC8]/60 overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(255,179,0,0.08), rgba(255,160,0,0.04))' }}>
       <div className="h-4 w-24 rounded-full mb-3" style={{ background: 'rgba(200,134,26,0.12)' }} />
       <div className="h-7 w-4/5 rounded-full mb-3" style={{ background: 'rgba(200,134,26,0.08)' }} />
       <div className="h-10 w-32 rounded-full" style={{ background: 'rgba(200,134,26,0.1)' }} />
@@ -193,9 +193,9 @@ useEffect(() => {
 
   return (
     <>
-      <Card className="my-4 p-5 border-orange-200/60 bg-gradient-to-br from-amber-50/80 to-orange-50/60 relative overflow-hidden" data-testid="daily-prompt-card">
+      <Card className="my-4 p-5 border-[#E5DBC8]/60 bg-gradient-to-br from-[#F0E6C8]/80 to-[#F0E6C8]/60 relative overflow-hidden" data-testid="daily-prompt-card">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-[11px] uppercase tracking-widest text-amber-600/70 font-medium">Daily Prompt</p>
+          <p className="text-[11px] uppercase tracking-widest text-[#D4A828]/70 font-medium">Daily Prompt</p>
           {buzzCount > 0 && (
             <a href={`/hive?prompt_id=${prompt.id}`} className="text-[11px] font-semibold transition relative z-10" style={{ color: '#8B6914' }} data-testid="buzz-count-top">
               {buzzCount} buzzed in
@@ -210,7 +210,7 @@ useEffect(() => {
           /* ── GATEKEEPER: Pre-buzz state ── */
           <div>
             {buzzCount > 0 && (
-              <p className="text-sm text-amber-700 mb-3 font-medium" data-testid="buzz-gate-msg">
+              <p className="text-sm text-[#D4A828] mb-3 font-medium" data-testid="buzz-gate-msg">
                 {buzzCount} member{buzzCount !== 1 ? 's' : ''} of the Hive {buzzCount === 1 ? 'has' : 'have'} buzzed in, it's your turn!
               </p>
             )}
@@ -219,7 +219,7 @@ useEffect(() => {
                 buzz in 🐝
               </Button>
               {streak > 0 && (
-                <span className="flex items-center gap-1 text-sm text-amber-600 font-bold">🐝 {streak} {streak === 1 ? 'day' : 'days'} in a row</span>
+                <span className="flex items-center gap-1 text-sm text-[#D4A828] font-bold">🐝 {streak} {streak === 1 ? 'day' : 'days'} in a row</span>
               )}
             </div>
           </div>
@@ -228,14 +228,14 @@ useEffect(() => {
           <div data-testid="prompt-review-mode">
             <div className="flex items-center justify-between gap-3 mb-3">
               <div className="flex items-center gap-3">
-                <span className="text-sm text-amber-700 font-medium">buzzed in</span>
-                {streak > 0 && <span className="flex items-center gap-1 text-sm text-amber-600 font-bold">🐝 {streak} {streak === 1 ? 'day' : 'days'} in a row</span>}
+                <span className="text-sm text-[#D4A828] font-medium">buzzed in</span>
+                {streak > 0 && <span className="flex items-center gap-1 text-sm text-[#D4A828] font-bold">🐝 {streak} {streak === 1 ? 'day' : 'days'} in a row</span>}
               </div>
               {buzzResponse && (
                 <button
                   onClick={handleCardShare}
                   disabled={cardShareExporting}
-                  className="flex items-center gap-1 text-xs font-semibold text-amber-700 hover:text-amber-900 transition"
+                  className="flex items-center gap-1 text-xs font-semibold text-[#D4A828] hover:text-[#1E2A3A] transition"
                   data-testid="prompt-card-share-btn"
                 >
                   {cardShareExporting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Share2 className="w-3 h-3" />}
@@ -246,12 +246,12 @@ useEffect(() => {
 
             {/* Carousel */}
             {loadingResponses ? (
-              <div className="flex items-center justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-amber-500" /></div>
+              <div className="flex items-center justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-[#D4A828]" /></div>
             ) : responses.length > 0 && currentResp ? (
               <div className="relative" data-testid="prompt-carousel">
                 <Link
                   to={currentResp.post_id ? `/hive?post=${currentResp.post_id}` : '#'}
-                  className={`flex items-center gap-3 transition-all duration-300 rounded-lg p-2 -m-2 ${currentResp.post_id ? 'hover:bg-amber-100/40 cursor-pointer' : ''}`}
+                  className={`flex items-center gap-3 transition-all duration-300 rounded-lg p-2 -m-2 ${currentResp.post_id ? 'hover:bg-[#F0E6C8]/40 cursor-pointer' : ''}`}
                   onClick={e => { if (!currentResp.post_id) e.preventDefault(); }}
                   data-testid="prompt-response-link"
                 >
@@ -315,11 +315,11 @@ useEffect(() => {
                       <span onClick={(e) => { e.preventDefault(); e.stopPropagation(); window.location.href = `/profile/${currentResp.username}`; }} className="text-xs font-bold text-vinyl-black hover:text-honey-amber transition cursor-pointer" data-testid="carousel-username">
                         @{currentResp.username}
                       </span>
-                      {currentResp.username?.toLowerCase() === 'katieintheafterglow' && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-honey/20 text-amber-700 font-bold">Founder</span>}
+                      {currentResp.username?.toLowerCase() === 'katieintheafterglow' && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-honey/20 text-[#D4A828] font-bold">Founder</span>}
                     </div>
                     <p className="text-sm font-medium truncate">{currentResp.record_title}</p>
                     <p className="text-xs text-muted-foreground truncate">{currentResp.record_artist}</p>
-                    {currentResp.caption && <p className="text-xs text-stone-600 mt-1 italic line-clamp-2"><MentionText text={currentResp.caption} /></p>}
+                    {currentResp.caption && <p className="text-xs text-[#3A4D63] mt-1 italic line-clamp-2"><MentionText text={currentResp.caption} /></p>}
                   </div>
                 </Link>
                 {/* Navigation arrows */}
@@ -352,7 +352,7 @@ useEffect(() => {
             target="_blank"
             rel="noopener noreferrer"
             onClick={e => e.stopPropagation()}
-            className="inline-flex items-center gap-1.5 mt-2 text-xs text-stone-400 hover:text-[#1DB954] transition-colors"
+            className="inline-flex items-center gap-1.5 mt-2 text-xs text-[#7A8694] hover:text-[#1DB954] transition-colors"
             data-testid="prompt-spotify-link"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
@@ -396,7 +396,7 @@ useEffect(() => {
         <div className="text-center mt-4">
           <button
             onClick={() => setArchiveOpen(true)}
-            className="text-[11px] text-amber-600/50 hover:text-amber-800 hover:underline transition font-medium inline-flex items-center gap-1"
+            className="text-[11px] text-[#D4A828]/50 hover:text-[#1E2A3A] hover:underline transition font-medium inline-flex items-center gap-1"
             data-testid="prompt-archive-link"
           >
             See what the Hive said yesterday <span className="text-[10px]">&rarr;</span>
@@ -595,14 +595,14 @@ const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-heading text-xl">buzz in 🐝</DialogTitle>
-          <DialogDescription className="italic text-amber-700">{prompt?.text}</DialogDescription>
+          <DialogDescription className="italic text-[#D4A828]">{prompt?.text}</DialogDescription>
         </DialogHeader>
         <div className="space-y-4 pt-2">
           {!responseData ? (
             <>
               {/* Record search */}
               <div>
-                <label className="text-sm font-medium mb-1 block text-amber-800">Record</label>
+                <label className="text-sm font-medium mb-1 block text-[#1E2A3A]">Record</label>
                 {!selectedRecord ? (
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -610,35 +610,35 @@ const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
                       placeholder="search your vault..."
                       value={buzzSearch}
                       onChange={e => { setBuzzSearch(e.target.value); searchCollection(e.target.value); }}
-                      className="pl-9 border-amber-200"
+                      className="pl-9 border-[#E5DBC8]"
                       data-testid="buzz-record-search"
                       autoFocus
                     />
                     {buzzSearchResults.length > 0 && (
-                      <div className="absolute z-50 left-0 right-0 mt-1 border border-amber-200/60 rounded-lg max-h-52 overflow-y-auto shadow-lg bg-white" data-testid="buzz-search-results">
+                      <div className="absolute z-50 left-0 right-0 mt-1 border border-[#E5DBC8]/60 rounded-lg max-h-52 overflow-y-auto shadow-lg bg-white" data-testid="buzz-search-results">
                         {buzzSearchResults.map(r => (
                           <RecordSearchResult key={r.id} record={r} onClick={() => selectBuzzRecord(r)} size="sm" testId={`buzz-result-${r.id}`} />
                         ))}
                       </div>
                     )}
                     {buzzSearch.length >= 2 && buzzSearchResults.length === 0 && (
-                      <div className="absolute z-50 left-0 right-0 mt-1 border border-amber-200/60 rounded-lg p-4 text-center shadow-lg bg-white" data-testid="buzz-no-results">
-                        <p className="text-sm text-amber-700">no results in your vault</p>
+                      <div className="absolute z-50 left-0 right-0 mt-1 border border-[#E5DBC8]/60 rounded-lg p-4 text-center shadow-lg bg-white" data-testid="buzz-no-results">
+                        <p className="text-sm text-[#D4A828]">no results in your vault</p>
                       </div>
                     )}
                   </div>
                 ) : (
-                  <div className="flex items-center gap-3 rounded-lg p-2.5 bg-amber-50/60 border border-amber-100" data-testid="buzz-selected-record">
+                  <div className="flex items-center gap-3 rounded-lg p-2.5 bg-[#F0E6C8]/60 border border-[#E5DBC8]" data-testid="buzz-selected-record">
                     {selectedRecord.cover_url ? (
                       <AlbumArt src={selectedRecord.cover_url} alt={`${selectedRecord.title} by ${selectedRecord.artist}`} className="w-11 h-11 rounded-md object-cover shadow-sm" />
                     ) : (
-                      <div className="w-11 h-11 rounded-md bg-amber-100 flex items-center justify-center"><Disc className="w-5 h-5 text-amber-400" /></div>
+                      <div className="w-11 h-11 rounded-md bg-[#F0E6C8] flex items-center justify-center"><Disc className="w-5 h-5 text-[#D4A828]" /></div>
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{selectedRecord.title}</p>
                       <p className="text-xs text-muted-foreground truncate">{selectedRecord.artist}</p>
                     </div>
-                    <button onClick={deselectBuzzRecord} className="p-1 rounded-full hover:bg-amber-100 text-amber-600" data-testid="buzz-deselect-record">
+                    <button onClick={deselectBuzzRecord} className="p-1 rounded-full hover:bg-[#F0E6C8] text-[#D4A828]" data-testid="buzz-deselect-record">
                       <X className="w-4 h-4" />
                     </button>
                   </div>
@@ -647,24 +647,24 @@ const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
 
               {/* Live preview */}
               {selectedRecordId && (
-                <div className="bg-[#FAF6EE] rounded-xl p-4 space-y-3 border border-amber-100" data-testid="buzz-preview">
-                  <p className="text-center italic text-amber-700 text-sm">{prompt?.text}</p>
+                <div className="bg-[#FFFBF2] rounded-xl p-4 space-y-3 border border-[#E5DBC8]" data-testid="buzz-preview">
+                  <p className="text-center italic text-[#D4A828] text-sm">{prompt?.text}</p>
                   {loadingDiscogs ? (
-                    <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-amber-400" /></div>
+                    <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-[#D4A828]" /></div>
                   ) : (
                     <>
                       <div className="flex justify-center">
                         {coverUrl ? (
                           <img src={coverUrl} alt="" className="w-40 h-40 rounded-xl object-cover shadow-md" />
                         ) : (
-                          <div className="w-40 h-40 rounded-xl bg-amber-100 flex items-center justify-center"><Disc className="w-10 h-10 text-amber-300" /></div>
+                          <div className="w-40 h-40 rounded-xl bg-[#F0E6C8] flex items-center justify-center"><Disc className="w-10 h-10 text-[#D4A828]" /></div>
                         )}
                       </div>
                       <div className="text-center">
                         <p className="font-heading text-lg">{displayData?.title || 'Unknown'}</p>
                         <p className="text-sm text-muted-foreground">{displayData?.artist || 'Unknown'}</p>
                         {(labelText || yearText) && (
-                          <p className="text-xs text-amber-600 italic mt-1">
+                          <p className="text-xs text-[#D4A828] italic mt-1">
                             {[labelText, yearText].filter(Boolean).join(' · ')}
                           </p>
                         )}
@@ -677,14 +677,14 @@ const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
               <Textarea
                 placeholder="My take on today's prompt is..."
                 value={caption} onChange={e => setCaption(e.target.value)}
-                className="border-amber-200 resize-none" rows={2}
+                className="border-[#E5DBC8] resize-none" rows={2}
                 data-testid="buzz-caption"
               />
               <p className="text-[10px] text-muted-foreground/70 italic">A comment is required to share on the feed.</p>
 
               <div className="flex justify-center">
                 <Button onClick={() => handleSubmit(true)} disabled={submitting || !selectedRecordId || !caption.trim()}
-                  className="rounded-full bg-amber-500 hover:bg-amber-600 text-white w-full" data-testid="buzz-post-hive-btn">
+                  className="rounded-full bg-[#D4A828] hover:bg-[#E8CA5A] text-white w-full" data-testid="buzz-post-hive-btn">
                   {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Send className="w-4 h-4 mr-1" />}
                   post to the hive
                 </Button>
@@ -693,10 +693,10 @@ const BuzzInModal = ({ open, onOpenChange, prompt, records, onSuccess }) => {
           ) : (
             /* Post-submit: success message */
             <div className="text-center space-y-4">
-              <div className="bg-amber-50 rounded-xl p-4">
-                <p className="text-amber-700 font-medium mb-1">buzzed in!</p>
+              <div className="bg-[#F0E6C8] rounded-xl p-4">
+                <p className="text-[#D4A828] font-medium mb-1">buzzed in!</p>
                 {responseData.streak > 0 && (
-                  <p className="flex items-center justify-center gap-1 text-amber-600 font-bold text-lg">
+                  <p className="flex items-center justify-center gap-1 text-[#D4A828] font-bold text-lg">
                     {responseData.streak} {responseData.streak === 1 ? 'day' : 'days'} in a row
                   </p>
                 )}
@@ -743,7 +743,7 @@ export const StreakBadge = ({ username }) => {
 
   if (streak <= 0) return null;
   return (
-    <div className="flex items-center gap-1.5 text-amber-600 font-bold text-sm" data-testid="profile-streak-badge">
+    <div className="flex items-center gap-1.5 text-[#D4A828] font-bold text-sm" data-testid="profile-streak-badge">
       🐝 {streak} {streak === 1 ? 'day' : 'days'} in a row
     </div>
   );

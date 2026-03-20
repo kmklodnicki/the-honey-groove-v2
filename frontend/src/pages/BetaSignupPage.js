@@ -48,7 +48,7 @@ const BetaSignupPage = () => {
     }
   };
 
-  const inputClass = 'w-full bg-[#FAF6EE] border border-[#C8861A]/20 rounded-xl px-4 py-3.5 font-serif text-lg text-[#2A1A06] placeholder:text-[#8A6B4A]/50 focus:outline-none focus:border-[#C8861A] transition-colors';
+  const inputClass = 'w-full bg-[#FFFBF2] border border-[#D4A828]/20 rounded-xl px-4 py-3.5 font-serif text-lg text-[#1E2A3A] placeholder:text-[#3A4D63]/50 focus:outline-none focus:border-[#D4A828] transition-colors';
 
   return (
     <>
@@ -61,11 +61,11 @@ const BetaSignupPage = () => {
         <meta property="og:type" content="website" />
       </Helmet>
 
-      <div className="min-h-screen bg-[#FAF6EE] flex flex-col items-center pb-16 relative" data-testid="beta-signup-page">
+      <div className="min-h-screen bg-[#FFFBF2] flex flex-col items-center pb-16 relative" data-testid="beta-signup-page">
         {/* Honey drip · living video pinned flush to top */}
         <div
           className="absolute top-0 left-0 w-screen overflow-hidden z-0 flex"
-          style={{ height: '120px', marginTop: '-1px', backgroundColor: '#FEF6E6' }}
+          style={{ height: '120px', marginTop: '-1px', backgroundColor: '#FFFBF2' }}
           data-testid="beta-drip"
         >
           {[0,1,2].map(i => {
@@ -107,14 +107,14 @@ const BetaSignupPage = () => {
               {/* Headline */}
               <h1
                 className="text-center mb-4"
-                style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: '64px', lineHeight: 1.1, color: '#2A1A06' }}
+                style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: '64px', lineHeight: 1.1, color: '#1E2A3A' }}
                 data-testid="beta-headline"
               >
                 you found it.
               </h1>
 
               {/* Subhead */}
-              <div className="text-center mb-6" style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: '28px', lineHeight: 1.4, color: '#C8861A' }}>
+              <div className="text-center mb-6" style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: '28px', lineHeight: 1.4, color: '#D4A828' }}>
                 <p>the Honey Groove<sup style={{ fontSize: '0.6em' }}>&trade;</sup> is almost ready.</p>
                 <p>We're looking for Limited Founding Members to shape it.</p>
               </div>
@@ -122,13 +122,13 @@ const BetaSignupPage = () => {
               {/* Body copy */}
               <p
                 className="text-center mb-8 mx-auto"
-                style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '20px', lineHeight: 1.6, color: '#8A6B4A', maxWidth: '420px', padding: '0 12px' }}
+                style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '20px', lineHeight: 1.6, color: '#3A4D63', maxWidth: '420px', padding: '0 12px' }}
               >
                 Limited Founding Members get early access before public launch, a permanent founding member badge on their profile that never goes away, and a direct line to the founder during beta.
               </p>
 
               {/* Divider */}
-              <div className="mx-auto mb-10" style={{ height: '1px', maxWidth: '320px', background: 'linear-gradient(90deg, transparent, #C8861A40, transparent)' }} />
+              <div className="mx-auto mb-10" style={{ height: '1px', maxWidth: '320px', background: 'linear-gradient(90deg, transparent, #D4A82840, transparent)' }} />
 
               {/* Form */}
               <form onSubmit={handleSubmit} className="space-y-4" data-testid="beta-signup-form">
@@ -151,7 +151,7 @@ const BetaSignupPage = () => {
                   data-testid="beta-email"
                 />
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 font-serif text-lg text-[#8A6B4A]/50">@</span>
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 font-serif text-lg text-[#3A4D63]/50">@</span>
                   <input
                     type="text"
                     placeholder="yourhandle"
@@ -171,15 +171,15 @@ const BetaSignupPage = () => {
                     className={`${inputClass} text-left flex items-center justify-between`}
                     data-testid="beta-feature-trigger"
                   >
-                    <span className={form.feature_interest ? 'text-[#2A1A06]' : 'text-[#8A6B4A]/50'}>
+                    <span className={form.feature_interest ? 'text-[#1E2A3A]' : 'text-[#3A4D63]/50'}>
                       {form.feature_interest || 'what feature are you most excited about?'}
                     </span>
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className={`transition-transform ${selectOpen ? 'rotate-180' : ''}`}>
-                      <path d="M4 6L8 10L12 6" stroke="#8A6B4A" strokeWidth="1.5" strokeLinecap="round" />
+                      <path d="M4 6L8 10L12 6" stroke="#3A4D63" strokeWidth="1.5" strokeLinecap="round" />
                     </svg>
                   </button>
                   {selectOpen && (
-                    <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-[#FAF6EE] border border-[#C8861A]/20 rounded-xl shadow-lg overflow-hidden" data-testid="beta-feature-dropdown">
+                    <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-[#FFFBF2] border border-[#D4A828]/20 rounded-xl shadow-lg overflow-hidden" data-testid="beta-feature-dropdown">
                       {FEATURE_OPTIONS.map((opt) => (
                         <button
                           key={opt}
@@ -188,7 +188,7 @@ const BetaSignupPage = () => {
                             setForm({ ...form, feature_interest: opt });
                             setSelectOpen(false);
                           }}
-                          className="w-full text-left px-4 py-3 font-serif text-base text-[#2A1A06] hover:bg-[#C8861A]/10 transition-colors"
+                          className="w-full text-left px-4 py-3 font-serif text-base text-[#1E2A3A] hover:bg-[#D4A828]/10 transition-colors"
                           data-testid={`beta-feature-option-${opt.toLowerCase().replace(/\s+/g, '-')}`}
                         >
                           {opt}
@@ -215,7 +215,7 @@ const BetaSignupPage = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-[#E8A820] hover:bg-[#d49a1a] text-[#2A1A06] font-serif text-lg font-medium rounded-2xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full bg-[#E8A820] hover:bg-[#d49a1a] text-[#1E2A3A] font-serif text-lg font-medium rounded-2xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                   style={{ height: '56px' }}
                   data-testid="beta-submit-btn"
                 >
@@ -228,15 +228,15 @@ const BetaSignupPage = () => {
             <div className="text-center animate-fade-in" data-testid="beta-confirmation">
               <div style={{ fontSize: '80px', lineHeight: 1, marginBottom: '24px' }}>🍯</div>
               <h1
-                style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: '56px', lineHeight: 1.1, color: '#2A1A06', marginBottom: '20px' }}
+                style={{ fontFamily: "'Playfair Display', serif", fontWeight: 700, fontSize: '56px', lineHeight: 1.1, color: '#1E2A3A', marginBottom: '20px' }}
               >
                 you're on the list.
               </h1>
               <p
-                style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: '24px', lineHeight: 1.5, color: '#8A6B4A', maxWidth: '380px', margin: '0 auto' }}
+                style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: '24px', lineHeight: 1.5, color: '#3A4D63', maxWidth: '380px', margin: '0 auto' }}
               >
                 i'll be in touch soon with everything you need to know to get started testing. follow{' '}
-                <a href="https://www.instagram.com/thehoneygroove" target="_blank" rel="noopener noreferrer" style={{ color: '#C8861A', textDecoration: 'underline' }}>@thehoneygroove</a>
+                <a href="https://www.instagram.com/thehoneygroove" target="_blank" rel="noopener noreferrer" style={{ color: '#D4A828', textDecoration: 'underline' }}>@thehoneygroove</a>
                 {' '}for updates.
               </p>
             </div>

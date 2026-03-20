@@ -148,7 +148,7 @@ const RoomPage = () => {
   }
 
   const theme = room.theme || {};
-  const accentColor = theme.accentColor || '#C8861A';
+  const accentColor = theme.accentColor || '#D4A828';
   const bgGradient = theme.bgGradient || 'linear-gradient(135deg, #FFF3E0, #FFE0B2)';
 
   return (
@@ -166,11 +166,11 @@ const RoomPage = () => {
         <span className="text-5xl mb-3">{room.emoji}</span>
         <h1
           className="font-heading text-3xl font-bold mb-1"
-          style={{ color: theme.textColor || '#2A1A06', fontFamily: 'DM Serif Display, serif' }}
+          style={{ color: theme.textColor || '#1E2A3A', fontFamily: 'DM Serif Display, serif' }}
         >
           {room.nickname || room.name}
         </h1>
-        <p className="text-sm mb-3" style={{ color: theme.textColor ? theme.textColor + 'CC' : '#2A1A0699' }}>
+        <p className="text-sm mb-3" style={{ color: theme.textColor ? theme.textColor + 'CC' : '#1E2A3A99' }}>
           {room.tagline}
         </p>
         <p className="text-sm font-semibold mb-3" style={{ color: accentColor }}>
@@ -183,7 +183,7 @@ const RoomPage = () => {
               <TooltipTrigger asChild>
                 <span
                   className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium capitalize mb-4 cursor-default"
-                  style={{ background: 'rgba(0,0,0,0.12)', color: theme.textColor || '#2A1A06' }}
+                  style={{ background: 'rgba(0,0,0,0.12)', color: theme.textColor || '#1E2A3A' }}
                   data-testid="room-type-badge"
                 >
                   {room.type}
@@ -200,7 +200,7 @@ const RoomPage = () => {
         {!isMember && !isGold && roomsLimit !== null && (
           <p
             className="text-xs font-medium mb-3 px-3 py-1 rounded-full"
-            style={{ background: 'rgba(0,0,0,0.10)', color: theme.textColor || '#2A1A06' }}
+            style={{ background: 'rgba(0,0,0,0.10)', color: theme.textColor || '#1E2A3A' }}
             data-testid="rooms-count-pill"
           >
             {roomsJoinedCount} of {roomsLimit} free rooms joined
@@ -349,7 +349,7 @@ const RoomPage = () => {
             <div className="text-center mb-1">
               <span className="text-3xl">🍯</span>
             </div>
-            <DialogTitle className="font-heading text-center text-xl" style={{ color: '#D98C2F', fontFamily: 'DM Serif Display, serif' }}>
+            <DialogTitle className="font-heading text-center text-xl" style={{ color: '#D4A828', fontFamily: 'DM Serif Display, serif' }}>
               You've filled your hive
             </DialogTitle>
           </DialogHeader>
@@ -362,14 +362,14 @@ const RoomPage = () => {
               className="rounded-xl p-4 text-left space-y-2 text-sm"
               style={{ background: 'linear-gradient(135deg, #FFF8E7, #FFF3D0)', border: '1px solid #F5C842' }}
             >
-              <p className="font-semibold text-amber-800 mb-1">Gold unlocks:</p>
+              <p className="font-semibold text-[#1E2A3A] mb-1">Gold unlocks:</p>
               {[
                 '🐝  Unlimited rooms — join every one that calls to you',
                 '✨  Golden Hive badge on your profile & posts',
                 '🎨  Create your own Vibe & Collector rooms',
                 '📊  Advanced vault analytics & rarity scores',
               ].map((line, i) => (
-                <p key={i} className="text-amber-900 text-xs leading-snug">{line}</p>
+                <p key={i} className="text-[#1E2A3A] text-xs leading-snug">{line}</p>
               ))}
             </div>
             <p className="text-xs text-muted-foreground">Starting at <strong>$4.99 / month</strong></p>

@@ -18,15 +18,15 @@ const BeeAvatar = ({ user, className = "h-10 w-10", showBorder = true }) => {
           fill="none"
         >
           {/* Bee body */}
-          <ellipse cx="12" cy="14" rx="5" ry="4" fill="#1F1F1F"/>
+          <ellipse cx="12" cy="14" rx="5" ry="4" fill="#1E2A3A"/>
           {/* Yellow stripes */}
-          <ellipse cx="12" cy="13" rx="3.5" ry="2" fill="#F4B942"/>
-          <ellipse cx="12" cy="15" rx="3" ry="1.5" fill="#F4B942"/>
+          <ellipse cx="12" cy="13" rx="3.5" ry="2" fill="#D4A828"/>
+          <ellipse cx="12" cy="15" rx="3" ry="1.5" fill="#D4A828"/>
           {/* Head */}
-          <circle cx="12" cy="9" r="2.5" fill="#1F1F1F"/>
+          <circle cx="12" cy="9" r="2.5" fill="#1E2A3A"/>
           {/* Wings */}
-          <ellipse cx="8" cy="11" rx="2" ry="3" fill="#1F1F1F" opacity="0.3"/>
-          <ellipse cx="16" cy="11" rx="2" ry="3" fill="#1F1F1F" opacity="0.3"/>
+          <ellipse cx="8" cy="11" rx="2" ry="3" fill="#1E2A3A" opacity="0.3"/>
+          <ellipse cx="16" cy="11" rx="2" ry="3" fill="#1E2A3A" opacity="0.3"/>
         </svg>
       </AvatarFallback>
     </Avatar>

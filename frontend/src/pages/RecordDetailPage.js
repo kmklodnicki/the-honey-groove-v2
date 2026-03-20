@@ -140,7 +140,7 @@ const RecordDetailPage = () => {
         }}
       />
       {/* Back nav */}
-      <button onClick={() => navigate(-1)} className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-vinyl-black mb-8 transition-colors group" data-testid="back-btn">
+      <button onClick={() => navigate(-1)} className="inline-flex items-center gap-1.5 text-sm text-[#3A4D63] hover:text-vinyl-black mb-8 transition-colors group" data-testid="back-btn">
         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" /> Back
       </button>
 
@@ -289,7 +289,7 @@ const RecordDetailPage = () => {
         <div className="flex gap-3 mb-8" data-testid="listing-actions">
           <Button
             variant="outline"
-            className="flex-1 h-11 gap-2 border-amber-400 text-amber-700 hover:bg-amber-50 hover:border-amber-500"
+            className="flex-1 h-11 gap-2 border-[#D4A828] text-[#D4A828] hover:bg-[#F0E6C8] hover:border-[#D4A828]"
             onClick={() => navigate(`/honeypot?create=sale&artist=${encodeURIComponent(record.artist)}&album=${encodeURIComponent(record.title)}&discogs_id=${record.discogs_id || ''}&cover_url=${encodeURIComponent(record.cover_url || '')}&year=${record.year || ''}&is_unofficial=${record.is_unofficial ? 'true' : ''}`)}
             data-testid="list-for-sale-btn"
           >
@@ -298,7 +298,7 @@ const RecordDetailPage = () => {
           </Button>
           <Button
             variant="outline"
-            className="flex-1 h-11 gap-2 border-stone-300 text-stone-700 hover:bg-stone-50 hover:border-stone-400"
+            className="flex-1 h-11 gap-2 border-[#E5DBC8] text-[#3A4D63] hover:bg-[#FFFBF2] hover:border-[#3A4D63]"
             style={{ background: 'rgba(255,246,230,0.5)' }}
             onClick={() => navigate(`/honeypot?create=trade&artist=${encodeURIComponent(record.artist)}&album=${encodeURIComponent(record.title)}&discogs_id=${record.discogs_id || ''}&cover_url=${encodeURIComponent(record.cover_url || '')}&year=${record.year || ''}&is_unofficial=${record.is_unofficial ? 'true' : ''}`)}
             data-testid="offer-to-trade-btn"
@@ -375,7 +375,7 @@ const RecordDetailPage = () => {
           <div className="flex items-center gap-2 mb-2">
             <BookOpen className="w-4 h-4 text-honey-amber" />
             <h3 className="font-heading text-lg">Collector's Notebook</h3>
-            <span className="text-[10px] uppercase tracking-wider text-muted-foreground bg-stone-100 px-2 py-0.5 rounded-full">Private</span>
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground bg-[#F3EBE0] px-2 py-0.5 rounded-full">Private</span>
             {notesSaving && <Loader2 className="w-3.5 h-3.5 animate-spin text-honey-amber ml-auto" />}
             {!notesSaving && notesSaved && notesText && <Check className="w-3.5 h-3.5 text-emerald-500 ml-auto" />}
           </div>
@@ -385,7 +385,7 @@ const RecordDetailPage = () => {
               onChange={handleNotesChange}
               placeholder="Add personal notes about this copy... condition, purchase story, pressing details..."
               rows={4}
-              className="w-full rounded-xl p-4 text-sm text-vinyl-black/80 resize-none focus:outline-none focus:ring-2 focus:ring-[#C8861A]/30 transition-all"
+              className="w-full rounded-xl p-4 text-sm text-vinyl-black/80 resize-none focus:outline-none focus:ring-2 focus:ring-[#D4A828]/30 transition-all"
               style={{
                 background: 'rgba(255,246,230,0.35)',
                 border: '1px solid rgba(218,165,32,0.2)',
@@ -397,7 +397,7 @@ const RecordDetailPage = () => {
             {!notesSaved && !notesSaving && (
               <button
                 onClick={() => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); saveNotes(notesText); }}
-                className="absolute bottom-3 right-3 px-3 py-1 rounded-full text-xs font-medium text-[#2A1A06] transition-all"
+                className="absolute bottom-3 right-3 px-3 py-1 rounded-full text-xs font-medium text-[#1E2A3A] transition-all"
                 style={{
                   background: 'linear-gradient(135deg, #E8A820, #D49A18)',
                   animation: 'pulse 2s infinite',

@@ -8,8 +8,8 @@ import { ArrowLeft, Calendar, ChevronRight } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
 
 const C = {
-  bg: '#FAEDC7', textDark: '#2A1A06', textMuted: '#8A6B4A',
-  amber: '#996012', amberAccent: '#C8861A', border: 'rgba(200,134,26,0.15)',
+  bg: '#FAEDC7', textDark: '#1E2A3A', textMuted: '#3A4D63',
+  amber: '#D4A828', amberAccent: '#D4A828', border: 'rgba(200,134,26,0.15)',
 };
 
 const WaxReportHistory = () => {

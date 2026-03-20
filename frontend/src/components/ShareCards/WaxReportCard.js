@@ -21,7 +21,7 @@ const PERSONALITY_THEMES = {
   },
   'The Silent Spinner': {
     bg: 'linear-gradient(160deg, #2C2C3E 0%, #1A1A2C 50%, #0E0E1C 100%)',
-    accent: '#C8861A',
+    accent: '#D4A828',
     sub: '#A06A14',
     dark: true,
   },
@@ -136,7 +136,7 @@ const WaxReportCard = React.forwardRef(function WaxReportCard({ report, user, is
   const topArtistName = ls.top_artist || ls.top_records?.[0]?.artist || '';
   const topArtistSpins = ls.top_artist_spins || ls.top_records?.[0]?.spin_count || '';
 
-  const footerTextColor = theme.dark ? '#C8861A' : BRAND.amber;
+  const footerTextColor = theme.dark ? '#D4A828' : BRAND.amber;
   const footerSubColor = theme.dark ? '#A06A14' : BRAND.warmBrown;
   const userTextColor = theme.dark ? '#E8D0B0' : BRAND.dark;
 

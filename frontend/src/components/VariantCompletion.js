@@ -23,7 +23,7 @@ const BACKEND_URL = API_BASE;
 const API = `${BACKEND_URL}/api`;
 
 const ProgressBar = ({ pct }) => (
-  <div className="w-full h-3 bg-stone-200/60 rounded-full overflow-hidden" data-testid="completion-progress-bar">
+  <div className="w-full h-3 bg-[#F3EBE0]/60 rounded-full overflow-hidden" data-testid="completion-progress-bar">
     <div
       className="h-full rounded-full transition-all duration-700 ease-out"
       style={{
@@ -50,7 +50,7 @@ const VariantRow = ({ variant, onAdd, adding }) => {
       className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 cursor-pointer ${
         variant.owned
           ? 'bg-emerald-50/80 hover:bg-emerald-50'
-          : 'bg-stone-50/60 hover:bg-amber-50/60'
+          : 'bg-[#FFFBF2]/60 hover:bg-[#F0E6C8]/60'
       }`}
       style={{ '--hover-border': 'rgba(218,165,32,0.2)' }}
       onClick={handleNavigate}
@@ -66,12 +66,12 @@ const VariantRow = ({ variant, onAdd, adding }) => {
           data-variant-add="true"
           onClick={(e) => { e.stopPropagation(); onAdd(variant); }}
           disabled={adding}
-          className="w-5 h-5 rounded border-2 border-stone-300 shrink-0 hover:border-honey hover:bg-honey/10 transition-colors cursor-pointer"
+          className="w-5 h-5 rounded border-2 border-[#E5DBC8] shrink-0 hover:border-honey hover:bg-honey/10 transition-colors cursor-pointer"
           data-testid={`variant-add-btn-${variant.name.toLowerCase().replace(/\s+/g, '-')}`}
           aria-label={`Add ${variant.name} to collection`}
         />
       )}
-      <span className={`text-sm flex-1 ${variant.owned ? 'font-medium text-emerald-800' : 'text-stone-500'}`}>
+      <span className={`text-sm flex-1 ${variant.owned ? 'font-medium text-emerald-800' : 'text-[#3A4D63]'}`}>
         {variant.name}
       </span>
       {variant.release_ids?.length > 1 && (
@@ -80,7 +80,7 @@ const VariantRow = ({ variant, onAdd, adding }) => {
         </span>
       )}
       {releaseId && (
-        <ChevronRight className="w-3.5 h-3.5 text-stone-300 shrink-0" />
+        <ChevronRight className="w-3.5 h-3.5 text-[#7A8694] shrink-0" />
       )}
     </div>
   );
@@ -89,16 +89,16 @@ const VariantRow = ({ variant, onAdd, adding }) => {
 const TrackerSkeleton = () => (
   <Card className="p-5 border-honey/20 honey-shimmer" data-testid="variant-tracker-skeleton">
     <div className="flex items-center justify-between mb-3">
-      <div className="h-5 w-32 bg-stone-200 rounded" />
-      <div className="h-4 w-20 bg-stone-200 rounded" />
+      <div className="h-5 w-32 bg-[#F3EBE0] rounded" />
+      <div className="h-4 w-20 bg-[#F3EBE0] rounded" />
     </div>
-    <div className="w-full h-3 bg-stone-200 rounded-full mb-1.5" />
-    <div className="h-3 w-16 bg-stone-100 rounded ml-auto mb-4" />
+    <div className="w-full h-3 bg-[#F3EBE0] rounded-full mb-1.5" />
+    <div className="h-3 w-16 bg-[#F3EBE0] rounded ml-auto mb-4" />
     <div className="space-y-2">
       {[1, 2, 3, 4].map(i => (
         <div key={i} className="flex items-center gap-3 px-3 py-2.5">
-          <div className="w-5 h-5 rounded-full bg-stone-200 shrink-0" />
-          <div className="h-4 bg-stone-200 rounded" style={{ width: `${50 + i * 12}%` }} />
+          <div className="w-5 h-5 rounded-full bg-[#F3EBE0] shrink-0" />
+          <div className="h-4 bg-[#F3EBE0] rounded" style={{ width: `${50 + i * 12}%` }} />
         </div>
       ))}
     </div>
@@ -282,7 +282,7 @@ export default function VariantCompletion({ discogsId }) {
         {/* Missing Section */}
         {missing.length > 0 && (
           <div>
-            <p className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mb-1.5">
+            <p className="text-[11px] font-bold text-[#7A8694] uppercase tracking-wider mb-1.5">
               Missing {!token && <span className="text-[10px] font-normal">(sign in to add)</span>}
             </p>
             <div className="space-y-1">
@@ -297,7 +297,7 @@ export default function VariantCompletion({ discogsId }) {
         {needsExpand && (
           <button
             onClick={() => setExpanded(!expanded)}
-            className="w-full mt-3 flex items-center justify-center gap-1 text-xs text-honey-amber hover:text-amber-600 transition-colors py-1.5"
+            className="w-full mt-3 flex items-center justify-center gap-1 text-xs text-honey-amber hover:text-[#D4A828] transition-colors py-1.5"
             data-testid="completion-toggle"
           >
             {expanded ? (

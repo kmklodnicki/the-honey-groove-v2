@@ -8,11 +8,11 @@ export const HEADER_H = 280; // logo zone height — must clear Instagram Storie
 
 /* ─── Brand tokens ─── */
 export const BRAND = {
-  amber: '#C8861A',
+  amber: '#D4A828',
   amberDark: '#8A5A0A',
-  warmBrown: '#8A6B4A',
+  warmBrown: '#3A4D63',
   cream: '#FFF8EE',
-  dark: '#2A1A06',
+  dark: '#1E2A3A',
   gold: '#F0B429',
 };
 

@@ -16,7 +16,7 @@ export const FollowRequestsBadge = ({ count, onClick }) => {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 px-3 py-2 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-xs font-medium hover:bg-amber-100 transition-colors"
+      className="flex items-center gap-2 px-3 py-2 rounded-full bg-[#F0E6C8] border border-[#E5DBC8] text-[#1E2A3A] text-xs font-medium hover:bg-[#F0E6C8] transition-colors"
       data-testid="follow-requests-badge"
     >
       <UserPlus className="w-3.5 h-3.5" />
@@ -72,17 +72,17 @@ export const FollowRequestsModal = ({ open, onOpenChange }) => {
       <DialogContent className="sm:max-w-md max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <UserPlus className="w-5 h-5 text-amber-600" /> Follow Requests
+            <UserPlus className="w-5 h-5 text-[#D4A828]" /> Follow Requests
           </DialogTitle>
         </DialogHeader>
         {loading ? (
-          <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-stone-400" /></div>
+          <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-[#7A8694]" /></div>
         ) : requests.length === 0 ? (
-          <p className="text-center text-sm text-stone-500 py-8">No pending follow requests</p>
+          <p className="text-center text-sm text-[#3A4D63] py-8">No pending follow requests</p>
         ) : (
           <div className="space-y-1">
             {requests.map(req => (
-              <div key={req.id} className="flex items-center gap-3 py-3 border-b border-stone-100 last:border-0" data-testid={`follow-request-${req.from_user.username}`}>
+              <div key={req.id} className="flex items-center gap-3 py-3 border-b border-[#E5DBC8] last:border-0" data-testid={`follow-request-${req.from_user.username}`}>
                 <Link to={`/profile/${req.from_user.username}`} className="flex items-center gap-3 flex-1 min-w-0" onClick={() => onOpenChange(false)}>
                   <Avatar className="h-10 w-10 border-2 border-honey/30">
                     {req.from_user.avatar_url && <AvatarImage src={resolveImageUrl(req.from_user.avatar_url)} />}
@@ -110,7 +110,7 @@ export const FollowRequestsModal = ({ open, onOpenChange }) => {
                     variant="outline"
                     onClick={() => handleDecline(req.id)}
                     disabled={!!actionLoading[req.id]}
-                    className="rounded-full border-stone-300 h-8 w-8 p-0"
+                    className="rounded-full border-[#E5DBC8] h-8 w-8 p-0"
                     data-testid={`decline-request-${req.from_user.username}`}
                   >
                     {actionLoading[req.id] === 'decline' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <X className="w-3.5 h-3.5" />}

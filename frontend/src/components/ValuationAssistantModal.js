@@ -138,13 +138,13 @@ const ValuationAssistantModal = ({ open, onClose, onValuesUpdated, focusItem }) 
           {focusItem ? (
             /* ===== SINGLE RECORD MODE ===== */
             <div>
-              <div className="rounded-xl border border-stone-200 bg-stone-50/50 overflow-hidden" data-testid="focus-item-card">
+              <div className="rounded-xl border border-[#E5DBC8] bg-[#FFFBF2]/50 overflow-hidden" data-testid="focus-item-card">
                 <div className="flex items-center gap-3 p-3">
-                  <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-stone-200">
+                  <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-[#F3EBE0]">
                     {focusItem.cover_url ? (
                       <AlbumArt src={focusItem.cover_url} alt={focusItem.album || focusItem.title} className="w-16 h-16 object-cover" />
                     ) : (
-                      <div className="w-16 h-16 flex items-center justify-center text-stone-400 text-xs">N/A</div>
+                      <div className="w-16 h-16 flex items-center justify-center text-[#7A8694] text-xs">N/A</div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -159,12 +159,12 @@ const ValuationAssistantModal = ({ open, onClose, onValuesUpdated, focusItem }) 
                         <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(255,215,0,0.15)', color: '#7A5A1A' }}>
                           Hive Average: ${focusCommunity.average_value.toFixed(2)}
                         </span>
-                        <span className="text-[10px] text-stone-400">
+                        <span className="text-[10px] text-[#7A8694]">
                           ({focusCommunity.contribution_count} {focusCommunity.contribution_count === 1 ? 'submission' : 'submissions'})
                         </span>
                       </div>
                     ) : (
-                      <p className="mt-1.5 text-[10px] text-stone-400 italic">No community data yet — be the first!</p>
+                      <p className="mt-1.5 text-[10px] text-[#7A8694] italic">No community data yet — be the first!</p>
                     )}
                   </div>
                 </div>
@@ -172,9 +172,9 @@ const ValuationAssistantModal = ({ open, onClose, onValuesUpdated, focusItem }) 
                 {/* Value input */}
                 {!focusSaved ? (
                   <div className="px-3 pb-3 flex items-center gap-2">
-                    <span className="text-[11px] text-stone-500 font-medium shrink-0">Your Estimate:</span>
+                    <span className="text-[11px] text-[#3A4D63] font-medium shrink-0">Your Estimate:</span>
                     <div className="relative flex-1">
-                      <DollarSign className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400" />
+                      <DollarSign className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#7A8694]" />
                       <Input
                         type="number"
                         step="0.01"
@@ -192,7 +192,7 @@ const ValuationAssistantModal = ({ open, onClose, onValuesUpdated, focusItem }) 
                         size="sm"
                         variant="outline"
                         onClick={acceptFocusHiveValue}
-                        className="h-9 px-2.5 text-[11px] font-semibold rounded-full shrink-0 border-amber-300 hover:bg-amber-50"
+                        className="h-9 px-2.5 text-[11px] font-semibold rounded-full shrink-0 border-[#D4A828] hover:bg-[#F0E6C8]"
                         data-testid="focus-accept-hive-btn"
                       >
                         Accept Hive
@@ -220,24 +220,24 @@ const ValuationAssistantModal = ({ open, onClose, onValuesUpdated, focusItem }) 
             </div>
           ) : loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 animate-spin" style={{ color: '#C8861A' }} />
+              <Loader2 className="w-6 h-6 animate-spin" style={{ color: '#D4A828' }} />
             </div>
           ) : items.length === 0 ? (
             <div className="text-center py-10">
-              <Check className="w-10 h-10 mx-auto mb-3" style={{ color: '#C8861A' }} />
+              <Check className="w-10 h-10 mx-auto mb-3" style={{ color: '#D4A828' }} />
               <p className="text-sm font-semibold">All dream records are valued!</p>
               <p className="text-xs text-muted-foreground mt-1">Your Dream Value is fully calculated.</p>
             </div>
           ) : (
             <div className="space-y-3">
               {items.map(item => (
-                <div key={item.id} className="rounded-xl border border-stone-200 bg-stone-50/50 overflow-hidden" data-testid={`pending-item-${item.id}`}>
+                <div key={item.id} className="rounded-xl border border-[#E5DBC8] bg-[#FFFBF2]/50 overflow-hidden" data-testid={`pending-item-${item.id}`}>
                   <div className="flex items-center gap-3 p-3">
-                    <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-stone-200">
+                    <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-[#F3EBE0]">
                       {item.cover_url ? (
                         <AlbumArt src={item.cover_url} alt={item.album} className="w-14 h-14 object-cover" />
                       ) : (
-                        <div className="w-14 h-14 flex items-center justify-center text-stone-400 text-xs">N/A</div>
+                        <div className="w-14 h-14 flex items-center justify-center text-[#7A8694] text-xs">N/A</div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -250,7 +250,7 @@ const ValuationAssistantModal = ({ open, onClose, onValuesUpdated, focusItem }) 
                           <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(255,215,0,0.15)', color: '#7A5A1A' }}>
                             Hive Average: ${item.hive_average.toFixed(2)}
                           </span>
-                          <span className="text-[10px] text-stone-400">
+                          <span className="text-[10px] text-[#7A8694]">
                             Based on {item.hive_count} {item.hive_count === 1 ? 'submission' : 'submissions'}.
                           </span>
                         </div>
@@ -260,9 +260,9 @@ const ValuationAssistantModal = ({ open, onClose, onValuesUpdated, focusItem }) 
 
                   {/* Value input area */}
                   <div className="px-3 pb-3 flex items-center gap-2">
-                    <span className="text-[11px] text-stone-500 font-medium shrink-0">Your Estimate:</span>
+                    <span className="text-[11px] text-[#3A4D63] font-medium shrink-0">Your Estimate:</span>
                     <div className="relative flex-1">
-                      <DollarSign className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400" />
+                      <DollarSign className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#7A8694]" />
                       <Input
                         type="number"
                         step="0.01"
@@ -280,7 +280,7 @@ const ValuationAssistantModal = ({ open, onClose, onValuesUpdated, focusItem }) 
                         variant="outline"
                         onClick={() => acceptHiveValue(item)}
                         disabled={saving[item.id]}
-                        className="h-9 px-2.5 text-[11px] font-semibold rounded-full shrink-0 border-amber-300 hover:bg-amber-50"
+                        className="h-9 px-2.5 text-[11px] font-semibold rounded-full shrink-0 border-[#D4A828] hover:bg-[#F0E6C8]"
                         data-testid={`accept-hive-btn-${item.id}`}
                       >
                         Accept Hive
@@ -305,7 +305,7 @@ const ValuationAssistantModal = ({ open, onClose, onValuesUpdated, focusItem }) 
           {/* How it works accordion */}
           <button
             onClick={() => setShowInfo(p => !p)}
-            className="flex items-center gap-1.5 mt-4 text-xs text-stone-400 hover:text-stone-600 transition-colors"
+            className="flex items-center gap-1.5 mt-4 text-xs text-[#7A8694] hover:text-[#3A4D63] transition-colors"
             data-testid="how-it-works-toggle"
           >
             <Info className="w-3.5 h-3.5" />
@@ -313,8 +313,8 @@ const ValuationAssistantModal = ({ open, onClose, onValuesUpdated, focusItem }) 
             {showInfo ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </button>
           {showInfo && (
-            <div className="mt-2 p-3 rounded-lg bg-stone-50 border border-stone-200 text-xs text-stone-500 leading-relaxed honey-fade-in" data-testid="how-it-works-content">
-              <p className="font-semibold text-stone-700 mb-1">The Hive Pricing Standard</p>
+            <div className="mt-2 p-3 rounded-lg bg-[#FFFBF2] border border-[#E5DBC8] text-xs text-[#3A4D63] leading-relaxed honey-fade-in" data-testid="how-it-works-content">
+              <p className="font-semibold text-[#3A4D63] mb-1">The Hive Pricing Standard</p>
               <p>
                 To keep our data accurate and protect the Hive from "troll" pricing or extreme inflation, we use a <strong>Trimmed Mean</strong> calculation.
               </p>

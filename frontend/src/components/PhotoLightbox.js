@@ -107,7 +107,7 @@ const PhotoLightbox = ({ photos = [], initialIndex = 0, open, onClose }) => {
         <div className="flex gap-2 px-4 pb-6 pt-3 overflow-x-auto max-w-full" data-testid="lightbox-thumbnails">
           {resolved.map((url, i) => (
             <button key={i} onClick={(e) => { e.stopPropagation(); setIdx(i); }}
-              className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden transition-all duration-200 ${i === idx ? 'ring-2 ring-[#C8861A] ring-offset-2 ring-offset-black opacity-100' : 'opacity-50 hover:opacity-80'}`}
+              className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden transition-all duration-200 ${i === idx ? 'ring-2 ring-[#D4A828] ring-offset-2 ring-offset-black opacity-100' : 'opacity-50 hover:opacity-80'}`}
               data-testid={`lightbox-thumb-${i}`}>
               <img src={url} alt="" className="w-full h-full object-cover" draggable={false} />
             </button>

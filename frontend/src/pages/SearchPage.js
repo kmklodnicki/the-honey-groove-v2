@@ -33,7 +33,7 @@ const VariantCard = ({ v, onOpen }) => (
     className="flex gap-3 p-2.5 rounded-xl hover:bg-honey/8 transition-all group text-left w-full"
     data-testid={`variant-card-${v.discogs_id || 'local'}`}
   >
-    <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-stone-100 shadow-sm">
+    <div className="w-14 h-14 rounded-lg overflow-hidden shrink-0 bg-[#F3EBE0] shadow-sm">
       <AlbumArt
         imageUrl={v.imageUrl || v.cover_url}
         imageSmall={v.imageSmall}
@@ -276,13 +276,13 @@ export default function SearchPage() {
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder="Search artists, albums, or vinyl variants"
-              className="w-full h-11 pl-10 pr-4 rounded-full border border-honey/25 bg-honey/5 text-sm text-vinyl-black placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-honey/40 focus:border-honey/50 transition-all"
+              className="w-full h-11 pl-10 pr-4 rounded-full border border-honey/25 bg-honey/5 text-sm text-vinyl-black placeholder:text-[#7A8694] focus:outline-none focus:ring-2 focus:ring-honey/40 focus:border-honey/50 transition-all"
               data-testid="search-input"
             />
             {query && (
               <button
                 onClick={() => setQuery('')}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-medium text-stone-400 hover:text-vinyl-black px-2 py-1 rounded-full hover:bg-stone-100 transition-colors"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-medium text-[#7A8694] hover:text-vinyl-black px-2 py-1 rounded-full hover:bg-[#F3EBE0] transition-colors"
                 data-testid="search-clear"
               >
                 Clear
@@ -318,12 +318,12 @@ export default function SearchPage() {
                 {/* Filter Drawer */}
                 {filterOpen && (
                   <div
-                    className="absolute left-0 top-full mt-1.5 w-72 bg-white rounded-xl shadow-lg border border-stone-200/80 p-4 z-50"
+                    className="absolute left-0 top-full mt-1.5 w-72 bg-white rounded-xl shadow-lg border border-[#E5DBC8]/80 p-4 z-50"
                     data-testid="filter-drawer"
                   >
                     {availableTags.size > 0 && (
                       <div className="mb-4">
-                        <p className="text-[10px] uppercase tracking-wider text-stone-400 font-semibold mb-2">Attributes</p>
+                        <p className="text-[10px] uppercase tracking-wider text-[#7A8694] font-semibold mb-2">Attributes</p>
                         <div className="flex flex-wrap gap-1.5">
                           {ATTRIBUTE_CHIPS.filter(c => availableTags.has(c.key)).map(chip => {
                             const active = activeFilters.has(chip.key);
@@ -334,7 +334,7 @@ export default function SearchPage() {
                                 className={`text-[11px] font-medium px-2.5 py-1 rounded-full border transition-all ${
                                   active
                                     ? 'bg-vinyl-black text-white border-vinyl-black'
-                                    : 'bg-stone-50 text-stone-600 border-stone-200 hover:border-stone-300'
+                                    : 'bg-[#FFFBF2] text-[#3A4D63] border-[#E5DBC8] hover:border-[#E5DBC8]'
                                 }`}
                                 data-testid={`filter-${chip.key.toLowerCase()}`}
                               >
@@ -349,12 +349,12 @@ export default function SearchPage() {
                     {/* Year range */}
                     {yearList.length > 0 && (
                       <div className="mb-3">
-                        <p className="text-[10px] uppercase tracking-wider text-stone-400 font-semibold mb-2">Year</p>
+                        <p className="text-[10px] uppercase tracking-wider text-[#7A8694] font-semibold mb-2">Year</p>
                         <div className="flex items-center gap-2">
                           <select
                             value={yearFrom ?? ''}
                             onChange={e => setYearFrom(e.target.value ? Number(e.target.value) : null)}
-                            className="flex-1 text-[11px] font-medium px-2.5 py-1.5 rounded-lg border border-stone-200 bg-stone-50 text-stone-600 focus:outline-none focus:ring-1 focus:ring-honey/40 focus:border-honey/50 appearance-none cursor-pointer"
+                            className="flex-1 text-[11px] font-medium px-2.5 py-1.5 rounded-lg border border-[#E5DBC8] bg-[#FFFBF2] text-[#3A4D63] focus:outline-none focus:ring-1 focus:ring-honey/40 focus:border-honey/50 appearance-none cursor-pointer"
                             data-testid="filter-year-from"
                           >
                             <option value="">From</option>
@@ -362,11 +362,11 @@ export default function SearchPage() {
                               <option key={y} value={y} disabled={yearTo !== null && y > yearTo}>{y}</option>
                             ))}
                           </select>
-                          <span className="text-[10px] text-stone-400">to</span>
+                          <span className="text-[10px] text-[#7A8694]">to</span>
                           <select
                             value={yearTo ?? ''}
                             onChange={e => setYearTo(e.target.value ? Number(e.target.value) : null)}
-                            className="flex-1 text-[11px] font-medium px-2.5 py-1.5 rounded-lg border border-stone-200 bg-stone-50 text-stone-600 focus:outline-none focus:ring-1 focus:ring-honey/40 focus:border-honey/50 appearance-none cursor-pointer"
+                            className="flex-1 text-[11px] font-medium px-2.5 py-1.5 rounded-lg border border-[#E5DBC8] bg-[#FFFBF2] text-[#3A4D63] focus:outline-none focus:ring-1 focus:ring-honey/40 focus:border-honey/50 appearance-none cursor-pointer"
                             data-testid="filter-year-to"
                           >
                             <option value="">To</option>
@@ -378,11 +378,11 @@ export default function SearchPage() {
                       </div>
                     )}
 
-                    <div className="flex items-center justify-between pt-2 border-t border-stone-100">
+                    <div className="flex items-center justify-between pt-2 border-t border-[#E5DBC8]">
                       {hasAnyFilter && (
                         <button
                           onClick={() => { clearAllFilters(); }}
-                          className="text-[11px] text-stone-400 hover:text-stone-600 transition-colors"
+                          className="text-[11px] text-[#7A8694] hover:text-[#3A4D63] transition-colors"
                           data-testid="filter-clear-drawer"
                         >
                           Clear all
@@ -390,7 +390,7 @@ export default function SearchPage() {
                       )}
                       <button
                         onClick={() => setFilterOpen(false)}
-                        className="ml-auto text-[11px] font-semibold text-honey-amber hover:text-amber-600 px-3 py-1.5 rounded-full bg-honey/10 transition-colors"
+                        className="ml-auto text-[11px] font-semibold text-honey-amber hover:text-[#D4A828] px-3 py-1.5 rounded-full bg-honey/10 transition-colors"
                         data-testid="filter-apply"
                       >
                         Apply
@@ -406,26 +406,26 @@ export default function SearchPage() {
                   <button
                     key={`af-${f}`}
                     onClick={() => toggleFilter(f)}
-                    className="shrink-0 flex items-center gap-1 text-[11px] font-medium pl-2.5 pr-1.5 py-1 rounded-full bg-stone-100 text-stone-600 border border-stone-200 hover:bg-stone-200 transition-all"
+                    className="shrink-0 flex items-center gap-1 text-[11px] font-medium pl-2.5 pr-1.5 py-1 rounded-full bg-[#F3EBE0] text-[#3A4D63] border border-[#E5DBC8] hover:bg-[#F3EBE0] transition-all"
                     data-testid={`active-filter-${f.toLowerCase()}`}
                   >
-                    {f}<X className="w-3 h-3 text-stone-400" />
+                    {f}<X className="w-3 h-3 text-[#7A8694]" />
                   </button>
                 ))}
                 {hasYearFilter && (
                   <button
                     onClick={() => { setYearFrom(null); setYearTo(null); }}
-                    className="shrink-0 flex items-center gap-1 text-[11px] font-medium pl-2.5 pr-1.5 py-1 rounded-full bg-stone-100 text-stone-600 border border-stone-200 hover:bg-stone-200 transition-all"
+                    className="shrink-0 flex items-center gap-1 text-[11px] font-medium pl-2.5 pr-1.5 py-1 rounded-full bg-[#F3EBE0] text-[#3A4D63] border border-[#E5DBC8] hover:bg-[#F3EBE0] transition-all"
                     data-testid="active-year-range"
                   >
                     {yearFrom && yearTo ? `${yearFrom}–${yearTo}` : yearFrom ? `${yearFrom}+` : `≤${yearTo}`}
-                    <X className="w-3 h-3 text-stone-400" />
+                    <X className="w-3 h-3 text-[#7A8694]" />
                   </button>
                 )}
                 {hasAnyFilter && (
                   <button
                     onClick={clearAllFilters}
-                    className="shrink-0 text-[11px] text-stone-400 hover:text-stone-600 px-1.5 py-1 transition-colors"
+                    className="shrink-0 text-[11px] text-[#7A8694] hover:text-[#3A4D63] px-1.5 py-1 transition-colors"
                     data-testid="filter-clear-all"
                   >
                     Clear
@@ -464,7 +464,7 @@ export default function SearchPage() {
                   <button
                     onClick={loadMore}
                     disabled={loadingMore}
-                    className="w-full mt-4 py-2.5 text-sm text-honey-amber hover:text-amber-600 font-medium flex items-center justify-center gap-1.5 transition-colors"
+                    className="w-full mt-4 py-2.5 text-sm text-honey-amber hover:text-[#D4A828] font-medium flex items-center justify-center gap-1.5 transition-colors"
                     data-testid="load-more"
                   >
                     {loadingMore ? <Loader2 className="w-4 h-4 animate-spin" /> : <ChevronRight className="w-4 h-4" />}
@@ -477,7 +477,7 @@ export default function SearchPage() {
             {/* No matches after filter */}
             {filteredVariants.length === 0 && hasAnyFilter && (
               <div className="text-center py-8" data-testid="no-filter-results">
-                <SlidersHorizontal className="w-8 h-8 text-stone-300 mx-auto mb-2" />
+                <SlidersHorizontal className="w-8 h-8 text-[#7A8694] mx-auto mb-2" />
                 <p className="text-sm text-muted-foreground">No variants match these filters</p>
                 <button onClick={clearAllFilters} className="text-xs text-honey-amber hover:underline mt-1" data-testid="filter-clear-inline">Clear filters</button>
               </div>
@@ -495,7 +495,7 @@ export default function SearchPage() {
                       className="shrink-0 w-28 group text-left"
                       data-testid={`album-card-${a.discogs_id || i}`}
                     >
-                      <div className="w-28 h-28 rounded-lg overflow-hidden bg-stone-100 shadow-sm mb-1.5">
+                      <div className="w-28 h-28 rounded-lg overflow-hidden bg-[#F3EBE0] shadow-sm mb-1.5">
                         <AlbumArt
                           src={a.cover_url}
                           alt={`${a.artist} ${a.title} vinyl record`}
@@ -523,11 +523,11 @@ export default function SearchPage() {
                       className="shrink-0 w-24 flex flex-col items-center gap-1.5 group"
                       data-testid={`artist-card-${a.name}`}
                     >
-                      <div className="w-20 h-20 rounded-full overflow-hidden bg-stone-100 shadow-sm ring-2 ring-transparent group-hover:ring-honey/40 transition-all">
+                      <div className="w-20 h-20 rounded-full overflow-hidden bg-[#F3EBE0] shadow-sm ring-2 ring-transparent group-hover:ring-honey/40 transition-all">
                         {a.image_url ? (
                           <img src={a.image_url} alt={a.name} className="w-full h-full object-cover" loading="lazy" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-honey/20 to-stone-200 text-2xl font-heading font-bold text-honey-amber/60">
+                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-honey/20 to-[#F3EBE0] text-2xl font-heading font-bold text-honey-amber/60">
                             {a.name.charAt(0)}
                           </div>
                         )}
@@ -546,7 +546,7 @@ export default function SearchPage() {
         {/* Collectors Section */}
         {!loading && userResults && userResults.length > 0 && (
           <section className="mb-8" data-testid="collector-results">
-            <h3 className="text-xs uppercase tracking-wider text-stone-400 font-semibold mb-3 flex items-center gap-1.5">
+            <h3 className="text-xs uppercase tracking-wider text-[#7A8694] font-semibold mb-3 flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5" /> Collectors
             </h3>
             <div className="space-y-2">
@@ -554,14 +554,14 @@ export default function SearchPage() {
                 <Link
                   key={u.id}
                   to={`/profile/${u.username}`}
-                  className="flex items-center gap-3 p-3 rounded-xl bg-white/60 border border-stone-200/60 hover:border-honey/30 hover:bg-honey/5 transition-all group"
+                  className="flex items-center gap-3 p-3 rounded-xl bg-white/60 border border-[#E5DBC8]/60 hover:border-honey/30 hover:bg-honey/5 transition-all group"
                   data-testid={`collector-${u.username}`}
                 >
-                  <div className="w-10 h-10 rounded-full bg-stone-200 overflow-hidden shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-[#F3EBE0] overflow-hidden shrink-0">
                     {u.avatar_url ? (
                       <img src={u.avatar_url} alt={u.username} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-stone-400 text-sm font-medium">
+                      <div className="w-full h-full flex items-center justify-center text-[#7A8694] text-sm font-medium">
                         {(u.username || '?')[0].toUpperCase()}
                       </div>
                     )}
@@ -570,7 +570,7 @@ export default function SearchPage() {
                     <p className="text-sm font-medium text-vinyl-black group-hover:text-honey-amber transition-colors truncate">
                       @{u.username}
                     </p>
-                    <p className="text-xs text-stone-400">
+                    <p className="text-xs text-[#7A8694]">
                       {u.record_count.toLocaleString()} record{u.record_count !== 1 ? 's' : ''}
                       {u.records_in_common > 0 && (
                         <span className="ml-1.5 text-honey-amber font-medium">
@@ -579,7 +579,7 @@ export default function SearchPage() {
                       )}
                     </p>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-stone-300 group-hover:text-honey-amber transition-colors shrink-0" />
+                  <ChevronRight className="w-4 h-4 text-[#7A8694] group-hover:text-honey-amber transition-colors shrink-0" />
                 </Link>
               ))}
             </div>
@@ -589,9 +589,9 @@ export default function SearchPage() {
         {/* No Results */}
         {!loading && query.length >= 2 && !hasResults && results !== null && (
           <div className="text-center py-10" data-testid="no-results">
-            <Search className="w-10 h-10 text-stone-300 mx-auto mb-3" />
+            <Search className="w-10 h-10 text-[#7A8694] mx-auto mb-3" />
             <p className="text-sm text-muted-foreground">No variants found for "{query}"</p>
-            <p className="text-xs text-stone-400 mt-1">Try a different artist, album, or color</p>
+            <p className="text-xs text-[#7A8694] mt-1">Try a different artist, album, or color</p>
           </div>
         )}
 

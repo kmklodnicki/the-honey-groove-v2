@@ -43,18 +43,18 @@ const NewHaulCard = React.forwardRef(function NewHaulCard({ post, user }, ref) {
       </div>
 
       {/* "NEW HAUL" label */}
-      <p style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 44, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#C8861A', margin: '40px 0 0' }}>
+      <p style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 44, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', color: '#D4A828', margin: '40px 0 0' }}>
         New Haul
       </p>
 
       {/* Album title */}
-      <p style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 56, fontWeight: 700, color: '#2A1A06', textAlign: 'center', lineHeight: 1.15, margin: '24px 0 0', maxWidth: 880 }}>
+      <p style={{ fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 56, fontWeight: 700, color: '#1E2A3A', textAlign: 'center', lineHeight: 1.15, margin: '24px 0 0', maxWidth: 880 }}>
         {title}
       </p>
 
       {/* Artist */}
       {artist && (
-        <p style={{ fontFamily: 'Georgia, serif', fontSize: 38, fontStyle: 'italic', color: '#8A6B4A', margin: '20px 0 0', textAlign: 'center' }}>
+        <p style={{ fontFamily: 'Georgia, serif', fontSize: 38, fontStyle: 'italic', color: '#3A4D63', margin: '20px 0 0', textAlign: 'center' }}>
           {artist}
         </p>
       )}
@@ -68,7 +68,7 @@ const NewHaulCard = React.forwardRef(function NewHaulCard({ post, user }, ref) {
 
       {/* Bundle indicator */}
       {bundleCount > 1 && (
-        <p style={{ fontFamily: 'Georgia, serif', fontSize: 28, color: '#C8861A', margin: '16px 0 0', opacity: 0.8 }}>
+        <p style={{ fontFamily: 'Georgia, serif', fontSize: 28, color: '#D4A828', margin: '16px 0 0', opacity: 0.8 }}>
           +{bundleCount - 1} more record{bundleCount - 1 !== 1 ? 's' : ''}
         </p>
       )}

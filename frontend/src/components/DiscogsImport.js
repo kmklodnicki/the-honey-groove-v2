@@ -222,7 +222,7 @@ return (
               </Tooltip>
             </TooltipProvider>
             {status?.needs_migration && (
-              <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200 shrink-0" data-testid="needs-migration-badge">
+              <span className="text-[10px] font-semibold text-[#D4A828] bg-[#F0E6C8] px-1.5 py-0.5 rounded-full border border-[#E5DBC8] shrink-0" data-testid="needs-migration-badge">
                 Re-verify
               </span>
             )}
@@ -275,7 +275,7 @@ return (
             </Button>
           ) : status?.needs_migration ? (
             <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg" data-testid="migration-needed-msg">
+              <div className="flex items-center gap-2 text-sm text-[#D4A828] bg-[#F0E6C8] px-3 py-1.5 rounded-lg" data-testid="migration-needed-msg">
                 <AlertTriangle className="w-4 h-4 shrink-0" />
                 <span>Re-verification needed via secure OAuth.</span>
               </div>
@@ -369,8 +369,8 @@ return (
                   <p className="font-heading text-2xl text-green-700" data-testid="summary-imported">{summary.imported}</p>
                   <p className="text-xs text-green-600">imported</p>
                 </div>
-                <div className="bg-stone-50 rounded-xl p-3 text-center">
-                  <p className="font-heading text-2xl text-stone-600" data-testid="summary-skipped">{summary.skipped}</p>
+                <div className="bg-[#FFFBF2] rounded-xl p-3 text-center">
+                  <p className="font-heading text-2xl text-[#3A4D63]" data-testid="summary-skipped">{summary.skipped}</p>
                   <p className="text-xs text-muted-foreground">duplicates skipped</p>
                 </div>
                 {summary.errors > 0 ? (
@@ -379,9 +379,9 @@ return (
                     <p className="text-xs text-red-500">errors</p>
                   </div>
                 ) : (
-                  <div className="bg-amber-50 rounded-xl p-3 text-center">
-                    <p className="font-heading text-2xl text-amber-700" data-testid="summary-total">{summary.total}</p>
-                    <p className="text-xs text-amber-600">total in Discogs</p>
+                  <div className="bg-[#F0E6C8] rounded-xl p-3 text-center">
+                    <p className="font-heading text-2xl text-[#D4A828]" data-testid="summary-total">{summary.total}</p>
+                    <p className="text-xs text-[#D4A828]">total in Discogs</p>
                   </div>
                 )}
               </div>
@@ -392,11 +392,11 @@ return (
                   <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wide">Recently Imported</p>
                   <div className="grid grid-cols-6 gap-1.5" data-testid="import-sample-covers">
                     {summary.sample_covers.slice(0, 12).map((c, i) => (
-                      <div key={i} className="aspect-square rounded-lg overflow-hidden bg-stone-100" title={`${c.artist} · ${c.title}`}>
+                      <div key={i} className="aspect-square rounded-lg overflow-hidden bg-[#F3EBE0]" title={`${c.artist} · ${c.title}`}>
                         {c.cover_url ? (
                           <AlbumArt src={c.cover_url} alt={c.title} className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center"><Disc className="w-5 h-5 text-stone-300" /></div>
+                          <div className="w-full h-full flex items-center justify-center"><Disc className="w-5 h-5 text-[#7A8694]" /></div>
                         )}
                       </div>
                     ))}
@@ -457,8 +457,8 @@ return (
 };
 
 const REASON_CONFIG = {
-  duplicate: { label: 'Already in Collection', icon: Copy, color: 'text-stone-500', bg: 'bg-stone-50' },
-  missing_data: { label: 'Missing Data', icon: Ban, color: 'text-amber-600', bg: 'bg-amber-50' },
+  duplicate: { label: 'Already in Collection', icon: Copy, color: 'text-[#3A4D63]', bg: 'bg-[#FFFBF2]' },
+  missing_data: { label: 'Missing Data', icon: Ban, color: 'text-[#D4A828]', bg: 'bg-[#F0E6C8]' },
   error: { label: 'Import Error', icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-50' },
 };
 
@@ -476,20 +476,20 @@ const SkippedRecordsLog = ({ records }) => {
   const reasonOrder = ['duplicate', 'missing_data', 'error'];
 
   return (
-    <div className="border border-stone-200/60 rounded-xl overflow-hidden" data-testid="skipped-records-section">
+    <div className="border border-[#E5DBC8]/60 rounded-xl overflow-hidden" data-testid="skipped-records-section">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between p-3 text-sm font-medium text-stone-600 hover:bg-stone-50/50 transition-colors"
+        className="w-full flex items-center justify-between p-3 text-sm font-medium text-[#3A4D63] hover:bg-[#FFFBF2]/50 transition-colors"
         data-testid="skipped-records-toggle"
       >
         <span className="flex items-center gap-2">
-          <AlertCircle className="w-3.5 h-3.5 text-stone-400" />
+          <AlertCircle className="w-3.5 h-3.5 text-[#7A8694]" />
           {records.length} record{records.length !== 1 ? 's' : ''} skipped
         </span>
-        {expanded ? <ChevronUp className="w-4 h-4 text-stone-400" /> : <ChevronDown className="w-4 h-4 text-stone-400" />}
+        {expanded ? <ChevronUp className="w-4 h-4 text-[#7A8694]" /> : <ChevronDown className="w-4 h-4 text-[#7A8694]" />}
       </button>
       {expanded && (
-        <div className="border-t border-stone-100 max-h-[280px] overflow-y-auto">
+        <div className="border-t border-[#E5DBC8] max-h-[280px] overflow-y-auto">
           {reasonOrder.filter(r => grouped[r]).map(reason => {
             const cfg = REASON_CONFIG[reason] || REASON_CONFIG.error;
             const Icon = cfg.icon;
@@ -504,12 +504,12 @@ const SkippedRecordsLog = ({ records }) => {
                 </div>
                 <div className="space-y-0.5">
                   {items.map((item, i) => (
-                    <div key={i} className="flex items-center gap-2 text-xs text-stone-500 py-0.5 px-1" data-testid={`skipped-item-${reason}-${i}`}>
-                      <span className="truncate font-medium text-stone-700">{item.artist}</span>
-                      <span className="text-stone-300">-</span>
+                    <div key={i} className="flex items-center gap-2 text-xs text-[#3A4D63] py-0.5 px-1" data-testid={`skipped-item-${reason}-${i}`}>
+                      <span className="truncate font-medium text-[#3A4D63]">{item.artist}</span>
+                      <span className="text-[#7A8694]">-</span>
                       <span className="truncate">{item.title}</span>
                       {item.discogs_id && (
-                        <span className="shrink-0 text-[10px] text-stone-400 ml-auto">
+                        <span className="shrink-0 text-[10px] text-[#7A8694] ml-auto">
                           #{item.discogs_id}
                         </span>
                       )}

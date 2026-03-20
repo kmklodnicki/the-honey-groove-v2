@@ -2,7 +2,7 @@ import React from 'react';
 import { ShareCardHeader, ShareCardFooter, ShareCardUser, CARD_W, CARD_H, HEADER_H } from './ShareCardBase';
 
 const MilestoneCard = React.forwardRef(function MilestoneCard({ milestoneText, description, user }, ref) {
-  const bg = 'linear-gradient(160deg, #FFFADC 0%, #FFE87A 35%, #F0B429 65%, #C8861A 100%)';
+  const bg = 'linear-gradient(160deg, #FFFADC 0%, #FFE87A 35%, #F0B429 65%, #D4A828 100%)';
 
   const confetti = [
     { x: 60,  y: 200, color: '#FF6B6B', w: 22, h: 12, rot: 25 },

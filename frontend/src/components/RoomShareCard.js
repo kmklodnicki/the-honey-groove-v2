@@ -15,8 +15,8 @@ const RoomShareCard = React.forwardRef(({ room, post }, ref) => {
 
   const theme = room.theme || {};
   const bgGradient = theme.bgGradient || 'linear-gradient(135deg, #FFF3E0, #FFE0B2)';
-  const accentColor = theme.accentColor || '#C8861A';
-  const textColor = theme.textColor || '#2A1A06';
+  const accentColor = theme.accentColor || '#D4A828';
+  const textColor = theme.textColor || '#1E2A3A';
 
   return (
     <div

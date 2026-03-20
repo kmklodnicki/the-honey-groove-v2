@@ -187,13 +187,13 @@ const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamL
               <HoneycombIcon className="w-5 h-5 text-white" />
             </div>
             <div className="text-left">
-              <p className="text-[10px] font-medium uppercase tracking-widest text-stone-500">Vault Value</p>
+              <p className="text-[10px] font-medium uppercase tracking-widest text-[#3A4D63]">Vault Value</p>
               <p className="font-serif text-2xl font-bold leading-tight" style={{ color: '#1A1A1A' }} data-testid="treasury-collection-value">
                 ${Math.round(animCollection).toLocaleString()}
               </p>
               {valuedCount != null && (
                 <div>
-                  <p className="text-[10px] text-stone-400 mt-0.5">{valuedCount} of {totalCount} records valued</p>
+                  <p className="text-[10px] text-[#7A8694] mt-0.5">{valuedCount} of {totalCount} records valued</p>
                 </div>
               )}
             </div>
@@ -212,11 +212,11 @@ const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamL
 
           {/* Divider — BLOCK 545: deeper gold for frosted glass contrast */}
           <div className="hidden sm:flex flex-col items-center justify-center px-3">
-            <div className="w-px h-10 bg-gradient-to-b from-transparent via-[#C8861A]/25 to-transparent" />
+            <div className="w-px h-10 bg-gradient-to-b from-transparent via-[#D4A828]/25 to-transparent" />
             <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: '#B8860B' }}>vs</span>
-            <div className="w-px h-10 bg-gradient-to-b from-transparent via-[#C8861A]/25 to-transparent" />
+            <div className="w-px h-10 bg-gradient-to-b from-transparent via-[#D4A828]/25 to-transparent" />
           </div>
-          <div className="sm:hidden h-px mx-4 bg-gradient-to-r from-transparent via-[#C8861A]/20 to-transparent" />
+          <div className="sm:hidden h-px mx-4 bg-gradient-to-r from-transparent via-[#D4A828]/20 to-transparent" />
 
           {/* Dream Value */}
           <button
@@ -224,11 +224,11 @@ const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamL
             className={`flex-1 flex items-center gap-3 sm:gap-4 rounded-xl px-4 py-3 transition-all duration-300 ${collectionTab === 'wishlist' ? 'ring-1 ring-[#DAA520]/40' : 'hover:bg-white/10'}`}
             data-testid="treasury-dream-btn"
           >
-            <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #C8861A, #D4A017)', boxShadow: '0 2px 8px rgba(200,134,26,0.3)' }}>
+            <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: 'linear-gradient(135deg, #D4A828, #D4A828)', boxShadow: '0 2px 8px rgba(200,134,26,0.3)' }}>
               <Cloud className="w-5 h-5 text-white" />
             </div>
             <div className="text-left">
-              <p className="text-[10px] font-medium uppercase tracking-widest text-stone-500">Dream Records</p>
+              <p className="text-[10px] font-medium uppercase tracking-widest text-[#3A4D63]">Dream Records</p>
               {dreamLoading ? (
                 <div className="h-8 w-24 rounded-md honey-shimmer mt-1" data-testid="treasury-dream-shimmer" />
               ) : (
@@ -236,11 +236,11 @@ const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamL
                   ${Math.round(animDream).toLocaleString()}
                 </p>
               )}
-              <p className="text-[10px] text-stone-400 mt-0.5">
+              <p className="text-[10px] text-[#7A8694] mt-0.5">
                 {dreamPendingCount > 0 ? (
                   <button
                     onClick={e => { e.stopPropagation(); onPendingClick?.(); }}
-                    className="flex items-center gap-1 text-amber-600 hover:text-amber-700 transition-colors group/pending"
+                    className="flex items-center gap-1 text-[#D4A828] hover:text-[#D4A828] transition-colors group/pending"
                     title="The Hive doesn't have a price for these grails yet. Click to help set the benchmark!"
                     data-testid="treasury-pending-btn"
                   >
@@ -270,14 +270,14 @@ const TreasuryHeader = ({ collectionValue, dreamValue, dreamPendingCount, dreamL
             data-testid="treasury-refresh-btn"
             aria-label="Quick Sync: Refresh current market prices"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-[#C8861A] ${refreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 text-[#D4A828] ${refreshing ? 'animate-spin' : ''}`} />
           </button>
           <InfoBubble text="Quick Sync: Refresh current market prices." side="bottom" testId="refresh-tooltip" />
 
           {/* Recover Values button + info */}
           {totalCount > 0 && (!recoveryStatus || recoveryStatus.status !== 'in_progress') && (
             <>
-              <div className="w-px h-4 bg-[#C8861A]/20 mx-1" />
+              <div className="w-px h-4 bg-[#D4A828]/20 mx-1" />
               <button
                 onClick={onStartRecovery}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-semibold transition-all hover:scale-105 active:scale-95"
@@ -969,7 +969,7 @@ const CollectionPage = () => {
                   variant={selectMode ? "default" : "outline"}
                   size="sm"
                   onClick={selectMode ? exitSelectMode : () => setSelectMode(true)}
-                  className={`gap-1 shrink-0 flex-1 sm:flex-none h-9 text-xs sm:text-sm px-2 sm:px-3 ${selectMode ? 'bg-honey text-vinyl-black hover:bg-honey-amber' : 'border-honey/50 text-stone-600'}`}
+                  className={`gap-1 shrink-0 flex-1 sm:flex-none h-9 text-xs sm:text-sm px-2 sm:px-3 ${selectMode ? 'bg-honey text-vinyl-black hover:bg-honey-amber' : 'border-honey/50 text-[#3A4D63]'}`}
                   data-testid="select-mode-btn"
                 >
                   <ListChecks className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -980,7 +980,7 @@ const CollectionPage = () => {
                   size="sm"
                   onClick={handleCheckDuplicates}
                   disabled={dupeLoading}
-                  className="gap-1 shrink-0 flex-1 sm:flex-none h-9 text-xs sm:text-sm px-2 sm:px-3 border-honey/50 text-stone-600"
+                  className="gap-1 shrink-0 flex-1 sm:flex-none h-9 text-xs sm:text-sm px-2 sm:px-3 border-honey/50 text-[#3A4D63]"
                   data-testid="remove-duplicates-btn"
                 >
                   {dupeLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Copy className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
@@ -1016,14 +1016,14 @@ const CollectionPage = () => {
                   className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
                     active
                       ? 'bg-vinyl-black text-white border-vinyl-black shadow-sm'
-                      : 'bg-white text-stone-500 border-stone-200 hover:border-stone-300 hover:text-stone-700'
+                      : 'bg-white text-[#3A4D63] border-[#E5DBC8] hover:border-[#E5DBC8] hover:text-[#3A4D63]'
                   }`}
                   data-testid={`format-filter-${value}`}
                 >
                   {Icon && <Icon className="w-3 h-3" />}
                   {value === 'cassette' && <span className="text-[10px]">&#x1F4FC;</span>}
                   {label}
-                  <span className={`text-[10px] ${active ? 'text-white/70' : 'text-stone-400'}`}>({count})</span>
+                  <span className={`text-[10px] ${active ? 'text-white/70' : 'text-[#7A8694]'}`}>({count})</span>
                 </button>
               );
             })}
@@ -1075,7 +1075,7 @@ const CollectionPage = () => {
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={e => e.stopPropagation()}
-                          className="inline-flex items-center gap-1 mt-1 text-[10px] text-stone-400 hover:text-[#1DB954] transition-colors"
+                          className="inline-flex items-center gap-1 mt-1 text-[10px] text-[#7A8694] hover:text-[#1DB954] transition-colors"
                           data-testid={`gem-spotify-${idx}`}
                         >
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
@@ -1093,7 +1093,7 @@ const CollectionPage = () => {
           {/* Multi-select action bar */}
           {selectMode && (
             <div className="flex items-center gap-3 mb-4 p-3 rounded-xl bg-honey/10 border border-honey/30" data-testid="bulk-action-bar">
-              <span className="text-sm font-medium text-stone-600">{selectedIds.size} selected</span>
+              <span className="text-sm font-medium text-[#3A4D63]">{selectedIds.size} selected</span>
               <Button variant="ghost" size="sm" onClick={selectAll} className="text-xs text-honey-amber hover:text-honey" data-testid="select-all-btn">Select All</Button>
               <div className="ml-auto flex gap-2">
                 <Button
@@ -1166,10 +1166,10 @@ const CollectionPage = () => {
           <p className="text-sm text-muted-foreground mt-9 mb-5 px-4 leading-relaxed" data-testid="dreamlist-helper-text">These are your dream records. If you want to actively search for a record on this list, move it to Actively Seeking.</p>
 
           {wishlistItems.length === 0 ? (
-            <Card className="p-12 text-center border-stone-200/60">
-              <Cloud className="w-12 h-12 text-stone-300 mx-auto mb-4" />
-              <h3 className="font-heading text-xl mb-2 text-stone-500">Nothing here yet...</h3>
-              <p className="text-sm text-stone-400 mb-4">Move records from your vault to dream about them here.</p>
+            <Card className="p-12 text-center border-[#E5DBC8]/60">
+              <Cloud className="w-12 h-12 text-[#7A8694] mx-auto mb-4" />
+              <h3 className="font-heading text-xl mb-2 text-[#3A4D63]">Nothing here yet...</h3>
+              <p className="text-sm text-[#7A8694] mb-4">Move records from your vault to dream about them here.</p>
             </Card>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -1203,12 +1203,12 @@ const CollectionPage = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-amber-100 hover:bg-amber-50/50" data-testid="cleanse-cancel-btn">Keep it</AlertDialogCancel>
+            <AlertDialogCancel className="border-[#E5DBC8] hover:bg-[#F0E6C8]/50" data-testid="cleanse-cancel-btn">Keep it</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmCleanse}
               style={cleanseTarget?.type === 'dreaming'
                 ? { background: '#FFB300', color: '#fff', boxShadow: '0 4px 18px rgba(255, 179, 0, 0.35)' }
-                : { background: 'linear-gradient(135deg, #E8A820, #C8861A)', color: '#fff' }}
+                : { background: 'linear-gradient(135deg, #E8A820, #D4A828)', color: '#fff' }}
               className="border-0 font-medium"
               data-testid="cleanse-confirm-btn"
             >
@@ -1278,18 +1278,18 @@ const CollectionPage = () => {
               </p>
               <div className="max-h-48 overflow-y-auto space-y-2 mb-5">
                 {dupeData.duplicate_groups.slice(0, 10).map((g, i) => (
-                  <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-stone-50 border border-stone-200" data-testid={`dupe-group-${i}`}>
-                    <div className="w-8 h-8 rounded overflow-hidden bg-stone-200 shrink-0">
+                  <div key={i} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[#FFFBF2] border border-[#E5DBC8]" data-testid={`dupe-group-${i}`}>
+                    <div className="w-8 h-8 rounded overflow-hidden bg-[#F3EBE0] shrink-0">
                       {g.records[0]?.cover_url && (
                         <AlbumArt src={g.records[0].cover_url} alt="" className="w-8 h-8 object-cover" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs font-semibold truncate">{g.records[0]?.title}</p>
-                      <p className="text-[10px] text-stone-400">{g.records[0]?.artist}</p>
+                      <p className="text-[10px] text-[#7A8694]">{g.records[0]?.artist}</p>
                     </div>
                     {g.total_spins > 0 && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-honey/15 text-amber-700 shrink-0" data-testid={`dupe-spins-${i}`}>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-honey/15 text-[#D4A828] shrink-0" data-testid={`dupe-spins-${i}`}>
                         {g.total_spins} spin{g.total_spins !== 1 ? 's' : ''}
                       </span>
                     )}
@@ -1299,7 +1299,7 @@ const CollectionPage = () => {
                   </div>
                 ))}
                 {dupeData.duplicate_groups.length > 10 && (
-                  <p className="text-xs text-stone-400 text-center">...and {dupeData.duplicate_groups.length - 10} more</p>
+                  <p className="text-xs text-[#7A8694] text-center">...and {dupeData.duplicate_groups.length - 10} more</p>
                 )}
               </div>
               <div className="flex gap-2">
@@ -1319,7 +1319,7 @@ const CollectionPage = () => {
             </div>
           ) : (
             <div className="text-center py-8" data-testid="no-duplicates">
-              <Sparkles className="w-10 h-10 mx-auto mb-3" style={{ color: '#C8861A' }} />
+              <Sparkles className="w-10 h-10 mx-auto mb-3" style={{ color: '#D4A828' }} />
               <p className="text-sm font-semibold">No Duplicates Found</p>
               <p className="text-xs text-muted-foreground mt-1">Your collection is already clean!</p>
               <Button onClick={() => setDupeModalOpen(false)} className="mt-4 rounded-full" variant="outline" data-testid="dupe-close-btn">Close</Button>
@@ -1340,7 +1340,7 @@ const CollectionPage = () => {
             <div className="space-y-4 pt-2">
               {/* Big Win number */}
               <div className="text-center rounded-xl p-4" style={{ background: 'linear-gradient(135deg, rgba(255,215,0,0.12), rgba(218,165,32,0.08))' }} data-testid="recovery-big-win">
-                <p className="text-[10px] uppercase tracking-widest text-amber-600/70 font-medium mb-1">Total Value Increase</p>
+                <p className="text-[10px] uppercase tracking-widest text-[#D4A828]/70 font-medium mb-1">Total Value Increase</p>
                 <p className="font-serif text-3xl font-bold" style={{ color: '#1A1A1A' }}>
                   +${recoveryDetails.totalIncrease.toFixed(2)}
                 </p>
@@ -1357,8 +1357,8 @@ const CollectionPage = () => {
                     </div>
                     <div className="text-right shrink-0">
                       <div className="flex items-center gap-1.5 text-xs">
-                        <span className="text-stone-400">${item.old_value.toFixed(0)}</span>
-                        <ArrowRight className="w-3 h-3 text-amber-500" />
+                        <span className="text-[#7A8694]">${item.old_value.toFixed(0)}</span>
+                        <ArrowRight className="w-3 h-3 text-[#D4A828]" />
                         <span className="font-bold" style={{ color: '#1A1A1A' }}>${item.new_value.toFixed(0)}</span>
                       </div>
                       {item.increase > 0 && (
@@ -1411,26 +1411,26 @@ const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg, pending
   const hasDreams = itemCount > 0;
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-stone-200/60 bg-gradient-to-br from-amber-50/40 via-white to-stone-50/40 p-5 mb-6 transition-all duration-500" data-testid="dream-debt-banner">
+    <div className="relative overflow-hidden rounded-2xl border border-[#E5DBC8]/60 bg-gradient-to-br from-[#F0E6C8]/40 via-white to-[#FFFBF2]/40 p-5 mb-6 transition-all duration-500" data-testid="dream-debt-banner">
       {totalValue > 5000 && (
-        <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-amber-950 shadow-sm" data-testid="delusional-badge-collection">
+        <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-[#1E2A3A] shadow-sm" data-testid="delusional-badge-collection">
           Certified Delusional
         </div>
       )}
       {hasDreams ? (
         <>
-          <p className="text-xs font-medium uppercase tracking-widest text-stone-400 mb-1">Value of Dream Records</p>
+          <p className="text-xs font-medium uppercase tracking-widest text-[#7A8694] mb-1">Value of Dream Records</p>
           <p className="font-heading text-2xl sm:text-3xl text-vinyl-black leading-tight" data-testid="dream-debt-headline">
             If only I had{' '}
-            <span className="font-serif italic" style={{ color: '#C8861A' }} data-testid="dream-debt-amount">
+            <span className="font-serif italic" style={{ color: '#D4A828' }} data-testid="dream-debt-amount">
               ${displayValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
             ...{' '}
-            <span className="text-base font-light text-stone-400 font-serif italic">(Value of Dream Records)</span>
+            <span className="text-base font-light text-[#7A8694] font-serif italic">(Value of Dream Records)</span>
             {pendingCount > 0 && (
               <button
                 onClick={onPendingClick}
-                className="text-sm font-normal text-stone-400 ml-1.5 underline decoration-dotted cursor-pointer hover:text-amber-600 transition-colors"
+                className="text-sm font-normal text-[#7A8694] ml-1.5 underline decoration-dotted cursor-pointer hover:text-[#D4A828] transition-colors"
                 title="The Hive doesn't have a price for these grails yet. Click to help set the benchmark!"
                 data-testid="dream-pending-count"
               >
@@ -1438,18 +1438,18 @@ const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg, pending
               </button>
             )}
           </p>
-          <p className="text-xs text-stone-400 mt-2">{itemCount} record{itemCount !== 1 ? 's' : ''} on Dream List</p>
+          <p className="text-xs text-[#7A8694] mt-2">{itemCount} record{itemCount !== 1 ? 's' : ''} on Dream List</p>
         </>
       ) : (
         <>
-          <p className="text-xs font-medium uppercase tracking-widest text-stone-400 mb-1">Dreaming</p>
-          <p className="font-heading text-xl sm:text-2xl text-stone-500 leading-tight font-serif italic" data-testid="dream-debt-empty">
+          <p className="text-xs font-medium uppercase tracking-widest text-[#7A8694] mb-1">Dreaming</p>
+          <p className="font-heading text-xl sm:text-2xl text-[#3A4D63] leading-tight font-serif italic" data-testid="dream-debt-empty">
             Your dreams are currently free. Go find some grails.
           </p>
         </>
       )}
       {subtractMsg && (
-        <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-3 animate-pulse font-serif italic" data-testid="dream-subtract-msg">
+        <p className="text-xs text-[#D4A828] bg-[#F0E6C8] border border-[#E5DBC8] rounded-lg px-3 py-2 mt-3 animate-pulse font-serif italic" data-testid="dream-subtract-msg">
           {subtractMsg}
         </p>
       )}
@@ -1475,7 +1475,7 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, o
         </div>
       )}
       <Link to={selectMode ? '#' : `/record/${record.id}`} onClick={selectMode ? (e) => e.preventDefault() : undefined}>
-        <div className="relative aspect-square bg-stone-200">
+        <div className="relative aspect-square bg-[#F3EBE0]">
           <AlbumArt
             imageUrl={record.imageUrl || record.cover_url}
             imageSmall={record.imageSmall}
@@ -1552,7 +1552,7 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, o
               {/* Multi-copy badge */}
               {record.total_copies > 1 && (
                 <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide z-[5]"
-                  style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', color: '#996012', border: '1px solid rgba(218,165,32,0.4)' }}
+                  style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', color: '#D4A828', border: '1px solid rgba(218,165,32,0.4)' }}
                   data-testid={`copy-badge-${record.id}`}>
                   Copy {record.copy_number} of {record.total_copies}
                 </div>
@@ -1626,7 +1626,7 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, o
               target="_blank"
               rel="noopener noreferrer"
               onClick={e => e.stopPropagation()}
-              className="flex items-center justify-center h-8 w-8 shrink-0 rounded-md text-stone-400 hover:text-[#1DB954] transition-colors"
+              className="flex items-center justify-center h-8 w-8 shrink-0 rounded-md text-[#7A8694] hover:text-[#1DB954] transition-colors"
               title="Listen on Spotify"
               data-testid={`spotify-link-${record.id}`}
             >
@@ -1667,7 +1667,7 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, o
 const WishlistCard = ({ item, onPromote, onAddToCollection, onDelete }) => (
   <Card className="relative group overflow-hidden border-honey/20 hover:shadow-honey transition-all duration-300 hover:-translate-y-1" style={{ backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', background: 'rgba(255,255,255,0.75)' }} data-testid={`wishlist-card-${item.id}`}>
     <Link to={item.discogs_id ? `/variant/${item.discogs_id}` : '#'} className="block">
-      <div className="relative aspect-square bg-stone-100">
+      <div className="relative aspect-square bg-[#F3EBE0]">
         <AlbumArt
           imageUrl={item.cover_url}
           imageSource={item.cover_url ? 'community' : undefined}
@@ -1763,7 +1763,7 @@ const WishlistCard = ({ item, onPromote, onAddToCollection, onDelete }) => (
             Actively Seeking
           </Button>
           <Button size="sm" variant="ghost" onClick={() => onDelete(item.id)}
-            className="h-8 w-8 p-0 shrink-0 text-stone-400 hover:text-red-500"
+            className="h-8 w-8 p-0 shrink-0 text-[#7A8694] hover:text-red-500"
             data-testid={`delete-wishlist-${item.id}`}>
             <Trash2 className="w-3.5 h-3.5" />
           </Button>

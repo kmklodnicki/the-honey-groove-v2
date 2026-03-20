@@ -15,7 +15,7 @@ import {
 
 const THEME_PRESETS = ['honey', 'midnight', 'forest', 'rose', 'slate', 'plum'];
 const THEME_COLORS = {
-  honey: '#C8861A', midnight: '#7B68EE', forest: '#74C69D',
+  honey: '#D4A828', midnight: '#7B68EE', forest: '#74C69D',
   rose: '#D98FA1', slate: '#85A7C0', plum: '#D7BDE2',
 };
 const REJECT_REASONS = [
@@ -156,20 +156,20 @@ function QueueTab({ API, headers }) {
       <div className="flex gap-2 mb-5">
         {['all', 'rooms', 'reports'].map(f => (
           <button key={f} onClick={() => setFilter(f)}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${filter === f ? 'bg-amber-400 text-amber-900 border-amber-500' : 'bg-white text-stone-500 border-stone-200 hover:border-amber-300'}`}
+            className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all ${filter === f ? 'bg-[#D4A828] text-white border-[#D4A828]' : 'bg-white text-[#3A4D63] border-[#E5DBC8] hover:border-[#D4A828]'}`}
           >
             {f.charAt(0).toUpperCase() + f.slice(1)}
           </button>
         ))}
-        <button onClick={fetchQueue} className="ml-auto text-stone-400 hover:text-stone-600 transition-colors" aria-label="Refresh">
+        <button onClick={fetchQueue} className="ml-auto text-[#7A8694] hover:text-[#3A4D63] transition-colors" aria-label="Refresh">
           <RefreshCw className="w-4 h-4" />
         </button>
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-amber-400" /></div>
+        <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-[#D4A828]" /></div>
       ) : items.length === 0 ? (
-        <div className="text-center py-16 text-stone-400">
+        <div className="text-center py-16 text-[#7A8694]">
           <CheckCircle className="w-10 h-10 mx-auto mb-3 text-green-400" />
           <p className="font-medium">Queue is clear</p>
         </div>
@@ -194,14 +194,14 @@ function QueueTab({ API, headers }) {
       {rejectDialog && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
-            <h3 className="font-semibold text-lg text-stone-800 mb-1">Reject room</h3>
-            <p className="text-sm text-stone-500 mb-4">"{rejectDialog.name}"</p>
+            <h3 className="font-semibold text-lg text-[#1E2A3A] mb-1">Reject room</h3>
+            <p className="text-sm text-[#3A4D63] mb-4">"{rejectDialog.name}"</p>
             <div className="space-y-2 mb-4">
               {REJECT_REASONS.map(r => (
-                <label key={r.value} className="flex items-center gap-3 p-3 rounded-xl border cursor-pointer hover:bg-stone-50 transition-colors">
+                <label key={r.value} className="flex items-center gap-3 p-3 rounded-xl border cursor-pointer hover:bg-[#FFFBF2] transition-colors">
                   <input type="radio" name="reason" value={r.value} checked={rejectReason === r.value}
-                    onChange={() => setRejectReason(r.value)} className="accent-amber-500" />
-                  <span className="text-sm text-stone-700">{r.label}</span>
+                    onChange={() => setRejectReason(r.value)} className="accent-[#D4A828]" />
+                  <span className="text-sm text-[#3A4D63]">{r.label}</span>
                 </label>
               ))}
             </div>
@@ -209,11 +209,11 @@ function QueueTab({ API, headers }) {
               value={rejectNote}
               onChange={e => setRejectNote(e.target.value)}
               placeholder="Optional note to creator..."
-              className="w-full border border-stone-200 rounded-xl p-3 text-sm resize-none h-20 focus:outline-none focus:ring-2 focus:ring-amber-300 mb-4"
+              className="w-full border border-[#E5DBC8] rounded-xl p-3 text-sm resize-none h-20 focus:outline-none focus:ring-2 focus:ring-[#D4A828] mb-4"
             />
             <div className="flex gap-3">
               <button onClick={() => setRejectDialog(null)}
-                className="flex-1 py-2 rounded-xl border border-stone-200 text-stone-600 text-sm font-medium hover:bg-stone-50 transition-colors">
+                className="flex-1 py-2 rounded-xl border border-[#E5DBC8] text-[#3A4D63] text-sm font-medium hover:bg-[#FFFBF2] transition-colors">
                 Cancel
               </button>
               <button onClick={reject} disabled={actionLoading}
@@ -229,33 +229,33 @@ function QueueTab({ API, headers }) {
       <div className="mt-8">
         <button
           onClick={() => setArtistRoomsOpen(o => !o)}
-          className="flex items-center gap-2 text-sm font-semibold text-stone-600 hover:text-stone-800 transition-colors mb-3"
+          className="flex items-center gap-2 text-sm font-semibold text-[#3A4D63] hover:text-[#1E2A3A] transition-colors mb-3"
           data-testid="artist-rooms-toggle"
         >
           {artistRoomsOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
           Artist Rooms ({artistRooms.length})
-          <span className="text-xs font-normal text-stone-400">— set display nicknames</span>
+          <span className="text-xs font-normal text-[#7A8694]">— set display nicknames</span>
         </button>
         {artistRoomsOpen && (
           <div className="space-y-2">
             {artistRooms.length === 0 ? (
-              <p className="text-sm text-stone-400 pl-6">No artist rooms found.</p>
+              <p className="text-sm text-[#7A8694] pl-6">No artist rooms found.</p>
             ) : artistRooms.map(room => (
-              <div key={room.slug} className="bg-white rounded-xl border border-stone-200 p-4 flex items-center gap-3 shadow-sm">
+              <div key={room.slug} className="bg-white rounded-xl border border-[#E5DBC8] p-4 flex items-center gap-3 shadow-sm">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0"
                   style={{ background: room.theme?.bgGradient || '#FFF3E0' }}>
                   {room.emoji || '🎵'}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-stone-800">{room.nickname || room.name}</p>
+                  <p className="text-sm font-medium text-[#1E2A3A]">{room.nickname || room.name}</p>
                   {room.nickname && (
-                    <p className="text-xs text-stone-400">system name: {room.name}</p>
+                    <p className="text-xs text-[#7A8694]">system name: {room.name}</p>
                   )}
-                  <p className="text-xs text-stone-400">{room.member_count || 0} members · /{room.slug}</p>
+                  <p className="text-xs text-[#7A8694]">{room.member_count || 0} members · /{room.slug}</p>
                 </div>
                 <button
                   onClick={() => openNicknameDialog(room)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-100 text-amber-700 text-xs font-medium hover:bg-amber-200 transition-colors flex-shrink-0"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F0E6C8] text-[#D4A828] text-xs font-medium hover:bg-[#E8CA5A] transition-colors flex-shrink-0"
                   data-testid={`nickname-${room.slug}`}
                 >
                   <Pencil className="w-3 h-3" /> Nickname
@@ -270,8 +270,8 @@ function QueueTab({ API, headers }) {
       {nicknameDialog && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
-            <h3 className="font-semibold text-lg text-stone-800 mb-1">Set Nickname</h3>
-            <p className="text-sm text-stone-500 mb-4">
+            <h3 className="font-semibold text-lg text-[#1E2A3A] mb-1">Set Nickname</h3>
+            <p className="text-sm text-[#3A4D63] mb-4">
               System name: <strong>{nicknameDialog.name}</strong><br />
               Slug &amp; match criteria stay unchanged. Leave blank to clear the nickname.
             </p>
@@ -280,17 +280,17 @@ function QueueTab({ API, headers }) {
               onChange={e => setNicknameValue(e.target.value)}
               placeholder={nicknameDialog.name}
               maxLength={80}
-              className="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300 mb-4"
+              className="w-full border border-[#E5DBC8] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#D4A828] mb-4"
               data-testid="nickname-input"
               autoFocus
             />
             <div className="flex gap-3">
               <button onClick={() => setNicknameDialog(null)}
-                className="flex-1 py-2 rounded-xl border border-stone-200 text-stone-600 text-sm font-medium hover:bg-stone-50 transition-colors">
+                className="flex-1 py-2 rounded-xl border border-[#E5DBC8] text-[#3A4D63] text-sm font-medium hover:bg-[#FFFBF2] transition-colors">
                 Cancel
               </button>
               <button onClick={saveNickname} disabled={nicknameSaving}
-                className="flex-1 py-2 rounded-xl bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition-colors disabled:opacity-50"
+                className="flex-1 py-2 rounded-xl bg-[#D4A828] text-white text-sm font-medium hover:bg-[#E8CA5A] transition-colors disabled:opacity-50"
                 data-testid="nickname-save-btn">
                 {nicknameSaving ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Save'}
               </button>
@@ -303,20 +303,20 @@ function QueueTab({ API, headers }) {
       {editDialog && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
-            <h3 className="font-semibold text-lg text-stone-800 mb-4">Edit & Approve</h3>
+            <h3 className="font-semibold text-lg text-[#1E2A3A] mb-4">Edit & Approve</h3>
             <div className="space-y-3 mb-4">
               <div>
-                <label className="block text-xs font-medium text-stone-500 mb-1">Room Name</label>
+                <label className="block text-xs font-medium text-[#3A4D63] mb-1">Room Name</label>
                 <input value={editForm.name || ''} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
-                  className="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
+                  className="w-full border border-[#E5DBC8] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#D4A828]" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-stone-500 mb-1">Description</label>
+                <label className="block text-xs font-medium text-[#3A4D63] mb-1">Description</label>
                 <textarea value={editForm.description || ''} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))}
-                  className="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm resize-none h-20 focus:outline-none focus:ring-2 focus:ring-amber-300" />
+                  className="w-full border border-[#E5DBC8] rounded-xl px-3 py-2 text-sm resize-none h-20 focus:outline-none focus:ring-2 focus:ring-[#D4A828]" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-stone-500 mb-1">Theme</label>
+                <label className="block text-xs font-medium text-[#3A4D63] mb-1">Theme</label>
                 <div className="flex gap-2 flex-wrap">
                   {THEME_PRESETS.map(t => (
                     <button key={t} onClick={() => setEditForm(f => ({ ...f, theme_preset: t }))}
@@ -330,11 +330,11 @@ function QueueTab({ API, headers }) {
             </div>
             <div className="flex gap-3">
               <button onClick={() => setEditDialog(null)}
-                className="flex-1 py-2 rounded-xl border border-stone-200 text-stone-600 text-sm font-medium hover:bg-stone-50 transition-colors">
+                className="flex-1 py-2 rounded-xl border border-[#E5DBC8] text-[#3A4D63] text-sm font-medium hover:bg-[#FFFBF2] transition-colors">
                 Cancel
               </button>
               <button onClick={saveEdit} disabled={actionLoading}
-                className="flex-1 py-2 rounded-xl bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition-colors disabled:opacity-50">
+                className="flex-1 py-2 rounded-xl bg-[#D4A828] text-white text-sm font-medium hover:bg-[#E8CA5A] transition-colors disabled:opacity-50">
                 {actionLoading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Save & Approve'}
               </button>
             </div>
@@ -348,11 +348,11 @@ function QueueTab({ API, headers }) {
 function RoomQueueCard({ item, actionLoading, onApprove, onReject, onEdit }) {
   const room = item.data;
   const creator = item.creator;
-  const accentColor = THEME_COLORS[room.theme_preset] || '#C8861A';
+  const accentColor = THEME_COLORS[room.theme_preset] || '#D4A828';
   const isGold = creator?.golden_hive_verified || creator?.golden_hive;
 
   return (
-    <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-sm">
+    <div className="bg-white rounded-2xl border border-[#E5DBC8] p-5 shadow-sm">
       <div className="flex items-start gap-4">
         <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
           style={{ background: room.theme?.bgGradient || '#FFF3E0' }}>
@@ -360,18 +360,18 @@ function RoomQueueCard({ item, actionLoading, onApprove, onReject, onEdit }) {
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
-            <h3 className="font-semibold text-stone-800 text-sm">{room.name}</h3>
+            <h3 className="font-semibold text-[#1E2A3A] text-sm">{room.name}</h3>
             <span className="px-2 py-0.5 rounded-full text-xs font-medium" style={{ background: accentColor + '20', color: accentColor }}>
               {room.type}
             </span>
-            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-stone-100 text-stone-500">
+            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[#F3EBE0] text-[#3A4D63]">
               {room.theme_preset}
             </span>
           </div>
-          {room.tagline && <p className="text-xs text-stone-500 mb-2 line-clamp-2">{room.tagline}</p>}
-          <div className="flex items-center gap-2 text-xs text-stone-400">
+          {room.tagline && <p className="text-xs text-[#3A4D63] mb-2 line-clamp-2">{room.tagline}</p>}
+          <div className="flex items-center gap-2 text-xs text-[#7A8694]">
             <span>by @{creator?.username || 'unknown'}</span>
-            {isGold && <span className="text-amber-500 font-medium">Gold</span>}
+            {isGold && <span className="text-[#D4A828] font-medium">Gold</span>}
             <span>·</span>
             <span>{timeAgo(item.submitted_at)}</span>
           </div>
@@ -386,7 +386,7 @@ function RoomQueueCard({ item, actionLoading, onApprove, onReject, onEdit }) {
           Approve
         </button>
         <button onClick={() => onEdit(room)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-100 text-amber-700 text-xs font-medium hover:bg-amber-200 transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F0E6C8] text-[#D4A828] text-xs font-medium hover:bg-[#E8CA5A] transition-colors"
           data-testid={`edit-${room.slug}`}>
           <Pencil className="w-3.5 h-3.5" /> Edit & Approve
         </button>
@@ -409,11 +409,11 @@ function ReportQueueCard({ item }) {
         <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm font-medium text-stone-800">{report.type || 'Report'}</span>
+            <span className="text-sm font-medium text-[#1E2A3A]">{report.type || 'Report'}</span>
             <span className="px-2 py-0.5 rounded-full text-xs bg-orange-100 text-orange-700">{report.target_type}</span>
           </div>
-          {report.reason && <p className="text-xs text-stone-600 mb-1">{report.reason}</p>}
-          <div className="text-xs text-stone-400">
+          {report.reason && <p className="text-xs text-[#3A4D63] mb-1">{report.reason}</p>}
+          <div className="text-xs text-[#7A8694]">
             by @{item.reporter?.username || 'unknown'} · {timeAgo(item.submitted_at)}
           </div>
         </div>
@@ -490,14 +490,14 @@ function HoneyDropTab({ API, headers }) {
     <div className="grid md:grid-cols-2 gap-6">
       {/* Left: search + suggestions */}
       <div>
-        <h3 className="font-semibold text-stone-700 mb-3 text-sm">Search Discogs</h3>
+        <h3 className="font-semibold text-[#3A4D63] mb-3 text-sm">Search Discogs</h3>
         <div className="flex gap-2 mb-4">
           <input value={query} onChange={e => setQuery(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && searchDiscogs()}
             placeholder="Artist, album title..."
-            className="flex-1 border border-stone-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
+            className="flex-1 border border-[#E5DBC8] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#D4A828]" />
           <button onClick={searchDiscogs} disabled={searching}
-            className="px-3 py-2 rounded-xl bg-amber-500 text-white hover:bg-amber-600 transition-colors disabled:opacity-50">
+            className="px-3 py-2 rounded-xl bg-[#D4A828] text-white hover:bg-[#E8CA5A] transition-colors disabled:opacity-50">
             {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
           </button>
         </div>
@@ -506,30 +506,30 @@ function HoneyDropTab({ API, headers }) {
           <div className="space-y-2 mb-6 max-h-64 overflow-y-auto">
             {searchResults.slice(0, 10).map(r => (
               <button key={r.id || r.discogs_id} onClick={() => setSelected(r)}
-                className={`w-full flex items-center gap-3 p-2 rounded-xl border text-left transition-all hover:border-amber-300 ${selected?.id === r.id ? 'border-amber-400 bg-amber-50' : 'border-stone-200'}`}>
+                className={`w-full flex items-center gap-3 p-2 rounded-xl border text-left transition-all hover:border-[#D4A828] ${selected?.id === r.id ? 'border-[#D4A828] bg-[#F0E6C8]' : 'border-[#E5DBC8]'}`}>
                 <AlbumArt src={r.cover_image || r.cover_url} alt={r.title} className="w-10 h-10 rounded-lg flex-shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-xs font-medium text-stone-800 truncate">{r.title}</p>
-                  <p className="text-xs text-stone-400 truncate">{r.artist || r.label?.[0]}</p>
+                  <p className="text-xs font-medium text-[#1E2A3A] truncate">{r.title}</p>
+                  <p className="text-xs text-[#7A8694] truncate">{r.artist || r.label?.[0]}</p>
                 </div>
               </button>
             ))}
           </div>
         )}
 
-        <h3 className="font-semibold text-stone-700 mb-3 text-sm">Suggestions (want/own ratio)</h3>
+        <h3 className="font-semibold text-[#3A4D63] mb-3 text-sm">Suggestions (want/own ratio)</h3>
         <div className="space-y-2">
           {suggestions.map(s => (
             <button key={s.discogs_id} onClick={() => setSelected(s)}
-              className={`w-full flex items-center gap-3 p-2 rounded-xl border text-left transition-all hover:border-amber-300 ${selected?.discogs_id === s.discogs_id ? 'border-amber-400 bg-amber-50' : 'border-stone-200'}`}>
+              className={`w-full flex items-center gap-3 p-2 rounded-xl border text-left transition-all hover:border-[#D4A828] ${selected?.discogs_id === s.discogs_id ? 'border-[#D4A828] bg-[#F0E6C8]' : 'border-[#E5DBC8]'}`}>
               <AlbumArt src={s.cover_url} alt={s.album} className="w-10 h-10 rounded-lg flex-shrink-0" />
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-medium text-stone-800 truncate">{s.album}</p>
-                <p className="text-xs text-stone-400 truncate">{s.artist}</p>
+                <p className="text-xs font-medium text-[#1E2A3A] truncate">{s.album}</p>
+                <p className="text-xs text-[#7A8694] truncate">{s.artist}</p>
               </div>
               <div className="text-right flex-shrink-0">
-                <p className="text-xs text-amber-600 font-medium">{s.want_count} wants</p>
-                <p className="text-xs text-stone-400">{s.own_count} own</p>
+                <p className="text-xs text-[#D4A828] font-medium">{s.want_count} wants</p>
+                <p className="text-xs text-[#7A8694]">{s.own_count} own</p>
               </div>
             </button>
           ))}
@@ -539,28 +539,28 @@ function HoneyDropTab({ API, headers }) {
       {/* Right: selected + scheduler */}
       <div>
         {selected && (
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4">
+          <div className="bg-[#F0E6C8] border border-[#E5DBC8] rounded-2xl p-4 mb-4">
             <div className="flex gap-3 mb-3">
               <AlbumArt src={selected.cover_image || selected.cover_url} alt={selected.title || selected.album}
                 className="w-16 h-16 rounded-xl flex-shrink-0" />
               <div>
-                <p className="font-semibold text-stone-800 text-sm">{selected.title || selected.album}</p>
-                <p className="text-xs text-stone-500">{selected.artist}</p>
-                {selected.want_count && <p className="text-xs text-amber-600 mt-1">{selected.want_count} wants · {selected.own_count} own</p>}
-                {selected.estimated_value > 0 && <p className="text-xs text-stone-500">~${selected.estimated_value}</p>}
+                <p className="font-semibold text-[#1E2A3A] text-sm">{selected.title || selected.album}</p>
+                <p className="text-xs text-[#3A4D63]">{selected.artist}</p>
+                {selected.want_count && <p className="text-xs text-[#D4A828] mt-1">{selected.want_count} wants · {selected.own_count} own</p>}
+                {selected.estimated_value > 0 && <p className="text-xs text-[#3A4D63]">~${selected.estimated_value}</p>}
               </div>
             </div>
             <textarea value={blurb} onChange={e => setBlurb(e.target.value)}
               placeholder="Write a 2-3 sentence editorial blurb..."
-              className="w-full border border-amber-200 rounded-xl p-3 text-sm resize-none h-24 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white mb-3" />
+              className="w-full border border-[#E5DBC8] rounded-xl p-3 text-sm resize-none h-24 focus:outline-none focus:ring-2 focus:ring-[#D4A828] bg-white mb-3" />
             <div className="flex gap-3 items-center">
               <div className="flex-1">
-                <label className="block text-xs font-medium text-stone-500 mb-1">Schedule date</label>
+                <label className="block text-xs font-medium text-[#3A4D63] mb-1">Schedule date</label>
                 <input type="date" value={scheduleDate} onChange={e => setScheduleDate(e.target.value)}
-                  className="w-full border border-amber-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white" />
+                  className="w-full border border-[#E5DBC8] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#D4A828] bg-white" />
               </div>
               <button onClick={schedule} disabled={submitting}
-                className="mt-5 px-4 py-2 rounded-xl bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition-colors disabled:opacity-50 whitespace-nowrap flex items-center gap-2">
+                className="mt-5 px-4 py-2 rounded-xl bg-[#D4A828] text-white text-sm font-medium hover:bg-[#E8CA5A] transition-colors disabled:opacity-50 whitespace-nowrap flex items-center gap-2">
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Droplets className="w-4 h-4" />}
                 Schedule Drop
               </button>
@@ -570,14 +570,14 @@ function HoneyDropTab({ API, headers }) {
 
         {today && (
           <div>
-            <h3 className="font-semibold text-stone-700 mb-3 text-sm">Today's Drop</h3>
-            <div className="bg-white border border-stone-200 rounded-2xl p-4 flex gap-3">
+            <h3 className="font-semibold text-[#3A4D63] mb-3 text-sm">Today's Drop</h3>
+            <div className="bg-white border border-[#E5DBC8] rounded-2xl p-4 flex gap-3">
               <AlbumArt src={today.record?.cover_url} alt={today.record?.title} className="w-14 h-14 rounded-xl flex-shrink-0" />
               <div>
-                <p className="font-semibold text-stone-800 text-sm">{today.record?.title}</p>
-                <p className="text-xs text-stone-500">{today.record?.artist}</p>
-                {today.auto_selected && <span className="text-xs text-stone-400 italic">Auto-selected</span>}
-                {today.blurb && <p className="text-xs text-stone-600 mt-1 line-clamp-2">{today.blurb}</p>}
+                <p className="font-semibold text-[#1E2A3A] text-sm">{today.record?.title}</p>
+                <p className="text-xs text-[#3A4D63]">{today.record?.artist}</p>
+                {today.auto_selected && <span className="text-xs text-[#7A8694] italic">Auto-selected</span>}
+                {today.blurb && <p className="text-xs text-[#3A4D63] mt-1 line-clamp-2">{today.blurb}</p>}
               </div>
             </div>
           </div>
@@ -607,7 +607,7 @@ function MetricsTab({ API, headers }) {
 
   useEffect(() => { fetchMetrics(); }, []);
 
-  if (loading) return <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-amber-400" /></div>;
+  if (loading) return <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-[#D4A828]" /></div>;
   if (!data) return null;
 
   const panels = [
@@ -679,22 +679,22 @@ function MetricsTab({ API, headers }) {
     <div>
       <div className="flex justify-end mb-4">
         <button onClick={fetchMetrics}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-200 text-stone-500 text-sm hover:bg-stone-50 transition-colors">
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E5DBC8] text-[#3A4D63] text-sm hover:bg-[#FFFBF2] transition-colors">
           <RefreshCw className="w-3.5 h-3.5" /> Refresh
         </button>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {panels.map(panel => (
-          <div key={panel.title} className="bg-white rounded-2xl border border-stone-200 p-4 shadow-sm">
+          <div key={panel.title} className="bg-white rounded-2xl border border-[#E5DBC8] p-4 shadow-sm">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-2 h-2 rounded-full" style={{ background: panel.color }} />
-              <h3 className="font-semibold text-stone-700 text-sm">{panel.title}</h3>
+              <h3 className="font-semibold text-[#3A4D63] text-sm">{panel.title}</h3>
             </div>
             <div className="space-y-2">
               {panel.rows.map(([label, value]) => (
                 <div key={label} className="flex items-center justify-between">
-                  <span className="text-xs text-stone-400">{label}</span>
-                  <span className="text-xs font-semibold text-stone-800">{value ?? '—'}</span>
+                  <span className="text-xs text-[#7A8694]">{label}</span>
+                  <span className="text-xs font-semibold text-[#1E2A3A]">{value ?? '—'}</span>
                 </div>
               ))}
             </div>
@@ -774,29 +774,29 @@ function UsersTab({ API, headers }) {
       {/* User list */}
       <div className="md:col-span-2">
         <div className="relative mb-3">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#7A8694]" />
           <input value={query} onChange={handleQueryChange}
             placeholder="Search username or email..."
-            className="w-full border border-stone-200 rounded-xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-amber-300" />
+            className="w-full border border-[#E5DBC8] rounded-xl pl-9 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#D4A828]" />
         </div>
         {loading ? (
-          <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-amber-400" /></div>
+          <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-[#D4A828]" /></div>
         ) : (
           <div className="space-y-1 max-h-[600px] overflow-y-auto">
             {users.map(u => (
               <button key={u.id} onClick={() => openDetail(u)}
-                className={`w-full text-left p-3 rounded-xl border transition-all hover:border-amber-300 ${selected?.id === u.id ? 'border-amber-400 bg-amber-50' : 'border-stone-100 bg-white hover:bg-stone-50'}`}>
+                className={`w-full text-left p-3 rounded-xl border transition-all hover:border-[#D4A828] ${selected?.id === u.id ? 'border-[#D4A828] bg-[#F0E6C8]' : 'border-[#E5DBC8] bg-white hover:bg-[#FFFBF2]'}`}>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-sm font-medium text-stone-800">@{u.username}</span>
-                      {u.golden_hive_verified && <span className="text-amber-500 text-xs">Gold</span>}
+                      <span className="text-sm font-medium text-[#1E2A3A]">@{u.username}</span>
+                      {u.golden_hive_verified && <span className="text-[#D4A828] text-xs">Gold</span>}
                       {u.is_banned && <span className="text-red-500 text-xs">Banned</span>}
                     </div>
-                    <p className="text-xs text-stone-400 truncate">{u.email}</p>
+                    <p className="text-xs text-[#7A8694] truncate">{u.email}</p>
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="text-xs text-stone-500">{u.records_count} records</p>
+                    <p className="text-xs text-[#3A4D63]">{u.records_count} records</p>
                   </div>
                 </div>
               </button>
@@ -808,12 +808,12 @@ function UsersTab({ API, headers }) {
       {/* User detail */}
       <div className="md:col-span-3">
         {!selected && (
-          <div className="flex items-center justify-center h-full text-stone-400 text-sm">
+          <div className="flex items-center justify-center h-full text-[#7A8694] text-sm">
             Select a user to view details
           </div>
         )}
         {selected && detailLoading && (
-          <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-amber-400" /></div>
+          <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-[#D4A828]" /></div>
         )}
         {selected && detail && !detailLoading && (
           <UserDetail user={detail.user} stats={detail.stats} moderation={detail.moderation}
@@ -831,21 +831,21 @@ function UserDetail({ user, stats, moderation, onAction, actionLoading }) {
   const [showWarnInput, setShowWarnInput] = useState(false);
 
   return (
-    <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-sm">
+    <div className="bg-white rounded-2xl border border-[#E5DBC8] p-5 shadow-sm">
       {/* Header */}
-      <div className="flex items-start gap-4 mb-4 pb-4 border-b border-stone-100">
-        <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-bold text-lg flex-shrink-0">
+      <div className="flex items-start gap-4 mb-4 pb-4 border-b border-[#E5DBC8]">
+        <div className="w-12 h-12 rounded-full bg-[#F0E6C8] flex items-center justify-center text-[#D4A828] font-bold text-lg flex-shrink-0">
           {user.username?.[0]?.toUpperCase() || '?'}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-0.5">
-            <h3 className="font-semibold text-stone-800">@{user.username}</h3>
-            {user.golden_hive_verified && <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Gold</span>}
+            <h3 className="font-semibold text-[#1E2A3A]">@{user.username}</h3>
+            {user.golden_hive_verified && <span className="text-xs px-2 py-0.5 rounded-full bg-[#F0E6C8] text-[#D4A828]">Gold</span>}
             {user.is_admin && <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">Admin</span>}
             {user.is_banned && <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700">Banned</span>}
           </div>
-          <p className="text-xs text-stone-400">{user.email}</p>
-          {user.created_at && <p className="text-xs text-stone-400">Joined {new Date(user.created_at).toLocaleDateString()}</p>}
+          <p className="text-xs text-[#7A8694]">{user.email}</p>
+          {user.created_at && <p className="text-xs text-[#7A8694]">Joined {new Date(user.created_at).toLocaleDateString()}</p>}
         </div>
       </div>
 
@@ -859,9 +859,9 @@ function UserDetail({ user, stats, moderation, onAction, actionLoading }) {
           ['Followers', stats?.followers],
           ['Following', stats?.following],
         ].map(([label, val]) => (
-          <div key={label} className="text-center p-2 bg-stone-50 rounded-xl">
-            <p className="text-sm font-semibold text-stone-800">{val ?? 0}</p>
-            <p className="text-xs text-stone-400">{label}</p>
+          <div key={label} className="text-center p-2 bg-[#FFFBF2] rounded-xl">
+            <p className="text-sm font-semibold text-[#1E2A3A]">{val ?? 0}</p>
+            <p className="text-xs text-[#7A8694]">{label}</p>
           </div>
         ))}
       </div>
@@ -922,7 +922,7 @@ function UserDetail({ user, stats, moderation, onAction, actionLoading }) {
               className="px-3 py-1.5 rounded-xl bg-orange-500 text-white text-xs font-medium hover:bg-orange-600 transition-colors disabled:opacity-50">
               {actionLoading === 'warn' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Send'}
             </button>
-            <button onClick={() => setShowWarnInput(false)} className="px-2 text-stone-400 hover:text-stone-600">
+            <button onClick={() => setShowWarnInput(false)} className="px-2 text-[#7A8694] hover:text-[#3A4D63]">
               <XCircle className="w-4 h-4" />
             </button>
           </div>
@@ -931,7 +931,7 @@ function UserDetail({ user, stats, moderation, onAction, actionLoading }) {
         {/* Suspend */}
         <div className="flex gap-2 items-center">
           <select value={suspendDays} onChange={e => setSuspendDays(e.target.value)}
-            className="border border-stone-200 rounded-xl px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-amber-300">
+            className="border border-[#E5DBC8] rounded-xl px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-[#D4A828]">
             <option value={7}>7 days</option>
             <option value={14}>14 days</option>
             <option value={30}>30 days</option>
@@ -947,7 +947,7 @@ function UserDetail({ user, stats, moderation, onAction, actionLoading }) {
 
 function ActionBtn({ icon: Icon, label, color, onClick, loading }) {
   const colorMap = {
-    amber: 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100',
+    amber: 'bg-[#F0E6C8] text-[#D4A828] border-[#E5DBC8] hover:bg-[#F0E6C8]',
     blue: 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100',
     green: 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100',
     red: 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100',
@@ -1071,7 +1071,7 @@ function MatchingTab({ API, headers }) {
     }
   };
 
-  if (loading) return <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-amber-400" /></div>;
+  if (loading) return <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-[#D4A828]" /></div>;
 
   const coveragePct = stats?.coveragePct ?? 0;
 
@@ -1080,7 +1080,7 @@ function MatchingTab({ API, headers }) {
       {/* Stats cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'Pending', value: stats?.pending ?? '—', color: 'text-amber-600', filter: null },
+          { label: 'Pending', value: stats?.pending ?? '—', color: 'text-[#D4A828]', filter: null },
           { label: 'Matched', value: stats?.matched ?? '—', color: 'text-green-600', filter: 'matched' },
           { label: 'Unmatched', value: stats?.unmatched ?? '—', color: 'text-red-500', filter: 'unmatched' },
           { label: 'Manual', value: stats?.manual_override ?? '—', color: 'text-blue-600', filter: 'manual_override' },
@@ -1088,28 +1088,28 @@ function MatchingTab({ API, headers }) {
           <div
             key={label}
             onClick={() => filter && handleFilterClick(filter)}
-            className={`bg-white rounded-2xl border p-4 shadow-sm transition-all ${filter ? 'cursor-pointer hover:shadow-md' : ''} ${activeFilter === filter && filter ? 'border-stone-400 ring-1 ring-stone-300' : 'border-stone-200'}`}
+            className={`bg-white rounded-2xl border p-4 shadow-sm transition-all ${filter ? 'cursor-pointer hover:shadow-md' : ''} ${activeFilter === filter && filter ? 'border-[#D4A828] ring-1 ring-[#D4A828]/30' : 'border-[#E5DBC8]'}`}
           >
-            <p className="text-xs text-stone-400 mb-1">{label}</p>
+            <p className="text-xs text-[#7A8694] mb-1">{label}</p>
             <p className={`text-2xl font-semibold ${color}`}>{value}</p>
-            {filter && <p className="text-xs text-stone-300 mt-1">{activeFilter === filter ? 'click to hide ↑' : 'click to view →'}</p>}
+            {filter && <p className="text-xs text-[#7A8694] mt-1">{activeFilter === filter ? 'click to hide ↑' : 'click to view →'}</p>}
           </div>
         ))}
       </div>
 
       {/* Coverage progress */}
-      <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-sm">
+      <div className="bg-white rounded-2xl border border-[#E5DBC8] p-5 shadow-sm">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-sm font-medium text-stone-700">Album art coverage</p>
-          <p className="text-sm font-semibold text-amber-600">{coveragePct}%</p>
+          <p className="text-sm font-medium text-[#3A4D63]">Album art coverage</p>
+          <p className="text-sm font-semibold text-[#D4A828]">{coveragePct}%</p>
         </div>
-        <div className="h-2.5 bg-stone-100 rounded-full overflow-hidden">
+        <div className="h-2.5 bg-[#F3EBE0] rounded-full overflow-hidden">
           <div
-            className="h-full bg-amber-400 rounded-full transition-all duration-500"
+            className="h-full bg-[#D4A828] rounded-full transition-all duration-500"
             style={{ width: `${Math.min(coveragePct, 100)}%` }}
           />
         </div>
-        <p className="text-xs text-stone-400 mt-2">
+        <p className="text-xs text-[#7A8694] mt-2">
           {stats?.matched ?? 0} of {stats?.total ?? 0} releases have Spotify album art
         </p>
       </div>
@@ -1131,7 +1131,7 @@ function MatchingTab({ API, headers }) {
               <button
                 onClick={() => doAction('retry')}
                 disabled={!!actionLoading}
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-100 text-amber-700 text-sm font-medium hover:bg-amber-200 transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#F0E6C8] text-[#D4A828] text-sm font-medium hover:bg-[#E8CA5A] transition-colors disabled:opacity-50"
                 data-testid="retry-matching-btn"
               >
                 {actionLoading === 'retry' ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
@@ -1152,7 +1152,7 @@ function MatchingTab({ API, headers }) {
         )}
         <button
           onClick={() => { fetchStats(); fetchUnmatched(); }}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-stone-100 text-stone-600 text-sm font-medium hover:bg-stone-200 transition-colors"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#F3EBE0] text-[#3A4D63] text-sm font-medium hover:bg-[#F3EBE0] transition-colors"
         >
           <RefreshCw className="w-4 h-4" />
           Refresh
@@ -1161,7 +1161,7 @@ function MatchingTab({ API, headers }) {
 
       {/* Running indicator */}
       {stats?.isRunning && (
-        <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-50 rounded-xl px-4 py-2 border border-amber-200">
+        <div className="flex items-center gap-2 text-sm text-[#D4A828] bg-[#F0E6C8] rounded-xl px-4 py-2 border border-[#E5DBC8]">
           <Loader2 className="w-4 h-4 animate-spin" />
           Matching in progress…
         </div>
@@ -1169,44 +1169,44 @@ function MatchingTab({ API, headers }) {
 
       {/* Last run result */}
       {stats?.lastRunResult && !stats?.isRunning && (
-        <div className="bg-stone-50 rounded-xl border border-stone-200 px-4 py-3 text-sm text-stone-600">
+        <div className="bg-[#FFFBF2] rounded-xl border border-[#E5DBC8] px-4 py-3 text-sm text-[#3A4D63]">
           Last run: {stats.lastRunResult.processed} processed · {stats.lastRunResult.matched} matched · {stats.lastRunResult.unmatched} unmatched
         </div>
       )}
 
       {/* Filtered releases list */}
       {activeFilter && (
-        <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
-          <div className="px-5 py-3 border-b border-stone-100 flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-stone-700 capitalize">
+        <div className="bg-white rounded-2xl border border-[#E5DBC8] shadow-sm overflow-hidden">
+          <div className="px-5 py-3 border-b border-[#E5DBC8] flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-[#3A4D63] capitalize">
               {activeFilter === 'manual_override' ? 'Manual overrides' : `${activeFilter} releases`}
             </h3>
-            <span className="text-xs text-stone-400">{filteredTotal} total</span>
+            <span className="text-xs text-[#7A8694]">{filteredTotal} total</span>
           </div>
           {filterLoading ? (
-            <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-amber-400" /></div>
+            <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-[#D4A828]" /></div>
           ) : filteredReleases.length === 0 ? (
-            <p className="text-sm text-stone-400 text-center py-8">No releases</p>
+            <p className="text-sm text-[#7A8694] text-center py-8">No releases</p>
           ) : (
-            <div className="divide-y divide-stone-100">
+            <div className="divide-y divide-[#E5DBC8]">
               {filteredReleases.map(rel => (
                 <div key={rel.discogsReleaseId} className="flex items-center gap-3 px-5 py-3">
                   {rel.spotifyImageUrl && (
                     <img src={rel.spotifyImageUrl} alt="" className="w-9 h-9 rounded-md object-cover flex-shrink-0" />
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-stone-800 truncate">{rel.title || 'Unknown'}</p>
-                    <p className="text-xs text-stone-400 truncate">
+                    <p className="text-sm font-medium text-[#1E2A3A] truncate">{rel.title || 'Unknown'}</p>
+                    <p className="text-xs text-[#7A8694] truncate">
                       {(rel.artists || []).join(', ') || '—'} · {rel.year || '—'} · ID {rel.discogsReleaseId}
                     </p>
                     {rel.barcode?.length > 0 && (
-                      <p className="text-xs text-stone-300 truncate">UPC: {rel.barcode[0]}</p>
+                      <p className="text-xs text-[#7A8694] truncate">UPC: {rel.barcode[0]}</p>
                     )}
                   </div>
                   {activeFilter === 'unmatched' && (
                     <button
                       onClick={() => { setManualDialog(rel); setManualInput(''); }}
-                      className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-50 text-amber-700 text-xs font-medium hover:bg-amber-100 transition-colors"
+                      className="flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[#F0E6C8] text-[#D4A828] text-xs font-medium hover:bg-[#F0E6C8] transition-colors"
                     >
                       <Music2 className="w-3.5 h-3.5" />
                       Match
@@ -1233,24 +1233,24 @@ function MatchingTab({ API, headers }) {
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/30 backdrop-blur-sm"
           onClick={(e) => { if (e.target === e.currentTarget) setManualDialog(null); }}>
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <h3 className="font-semibold text-stone-800 mb-1">Manual Spotify Match</h3>
-            <p className="text-xs text-stone-500 mb-4 line-clamp-1">
+            <h3 className="font-semibold text-[#1E2A3A] mb-1">Manual Spotify Match</h3>
+            <p className="text-xs text-[#3A4D63] mb-4 line-clamp-1">
               {manualDialog.title} — {(manualDialog.artists || []).join(', ')}
             </p>
             <input
               value={manualInput}
               onChange={e => setManualInput(e.target.value)}
               placeholder="Paste Spotify album URL or album ID…"
-              className="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-amber-300"
+              className="w-full border border-[#E5DBC8] rounded-xl px-3 py-2 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-[#D4A828]"
               autoFocus
             />
             <div className="flex gap-2">
               <button onClick={() => setManualDialog(null)}
-                className="flex-1 px-4 py-2 rounded-xl border border-stone-200 text-sm text-stone-600 hover:bg-stone-50 transition-colors">
+                className="flex-1 px-4 py-2 rounded-xl border border-[#E5DBC8] text-sm text-[#3A4D63] hover:bg-[#FFFBF2] transition-colors">
                 Cancel
               </button>
               <button onClick={doManualMatch} disabled={manualLoading || !manualInput.trim()}
-                className="flex-1 px-4 py-2 rounded-xl bg-amber-400 text-amber-900 text-sm font-medium hover:bg-amber-500 transition-colors disabled:opacity-50">
+                className="flex-1 px-4 py-2 rounded-xl bg-[#D4A828] text-white text-sm font-medium hover:bg-[#D4A828] transition-colors disabled:opacity-50">
                 {manualLoading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Save Match'}
               </button>
             </div>
@@ -1304,7 +1304,7 @@ function CoversTab({ API, headers }) {
           <button
             key={s}
             onClick={() => setStatusFilter(s)}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors capitalize ${statusFilter === s ? 'bg-amber-400 text-amber-900' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'}`}
+            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors capitalize ${statusFilter === s ? 'bg-[#D4A828] text-white' : 'bg-[#F3EBE0] text-[#3A4D63] hover:bg-[#F3EBE0]'}`}
           >
             {s}
           </button>
@@ -1312,23 +1312,23 @@ function CoversTab({ API, headers }) {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-amber-400" /></div>
+        <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-[#D4A828]" /></div>
       ) : submissions.length === 0 ? (
-        <div className="text-center py-16 text-stone-400">
+        <div className="text-center py-16 text-[#7A8694]">
           <ImageIcon className="w-10 h-10 mx-auto mb-3 opacity-30" />
           <p className="text-sm">No {statusFilter} submissions</p>
         </div>
       ) : (
         <>
-          <p className="text-xs text-stone-400">{total} submission{total !== 1 ? 's' : ''}</p>
+          <p className="text-xs text-[#7A8694]">{total} submission{total !== 1 ? 's' : ''}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {submissions.map(sub => (
-              <div key={sub.id} className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
+              <div key={sub.id} className="bg-white rounded-2xl border border-[#E5DBC8] shadow-sm overflow-hidden">
                 <img src={sub.imageUrl} alt="" className="w-full aspect-square object-cover" />
                 <div className="p-4">
-                  <p className="text-sm font-semibold text-stone-800 truncate">{sub.title || 'Unknown'}</p>
-                  <p className="text-xs text-stone-400 truncate mb-1">{(sub.artists || []).join(', ') || '—'}</p>
-                  <p className="text-xs text-stone-300">by @{sub.submittedByUsername} · ID {sub.discogsReleaseId}</p>
+                  <p className="text-sm font-semibold text-[#1E2A3A] truncate">{sub.title || 'Unknown'}</p>
+                  <p className="text-xs text-[#7A8694] truncate mb-1">{(sub.artists || []).join(', ') || '—'}</p>
+                  <p className="text-xs text-[#7A8694]">by @{sub.submittedByUsername} · ID {sub.discogsReleaseId}</p>
                   <div className="flex gap-2 mt-3">
                     {statusFilter !== 'approved' && (
                       <button
@@ -1449,26 +1449,26 @@ function MigrationTab({ API, headers }) {
     <div className="space-y-6" data-testid="migration-tab">
 
       {/* Compliance Audit */}
-      <div className="bg-white rounded-2xl border border-stone-200 shadow-sm p-5">
+      <div className="bg-white rounded-2xl border border-[#E5DBC8] shadow-sm p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-amber-500" />
-            <h2 className="font-semibold text-stone-800">Discogs TOS Compliance Audit</h2>
+            <ShieldCheck className="w-5 h-5 text-[#D4A828]" />
+            <h2 className="font-semibold text-[#1E2A3A]">Discogs TOS Compliance Audit</h2>
           </div>
           <button onClick={fetchCompliance}
-            className="text-xs text-stone-400 hover:text-stone-600 flex items-center gap-1">
+            className="text-xs text-[#7A8694] hover:text-[#3A4D63] flex items-center gap-1">
             <RefreshCw className="w-3 h-3" /> Refresh
           </button>
         </div>
 
         {loadingCompliance ? (
-          <div className="flex items-center gap-2 text-stone-400 py-4">
+          <div className="flex items-center gap-2 text-[#7A8694] py-4">
             <Loader2 className="w-4 h-4 animate-spin" /> Checking...
           </div>
         ) : compliance ? (
           <>
             <div className={`flex items-center gap-2 px-3 py-2 rounded-lg mb-4 text-sm font-medium ${
-              allClear ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
+              allClear ? 'bg-green-50 text-green-700' : 'bg-[#F0E6C8] text-[#D4A828]'
             }`}>
               {allClear
                 ? <><CheckCircle className="w-4 h-4" /> All clear — no Restricted Data found</>
@@ -1482,16 +1482,16 @@ function MigrationTab({ API, headers }) {
                 { label: 'Stored OAuth tokens', value: compliance.stored_oauth_tokens, bad: true },
                 { label: 'Users with discogs_username', value: compliance.users_with_discogs_username, bad: false },
               ].map(({ label, value, bad }) => (
-                <div key={label} className="bg-stone-50 rounded-xl p-3">
-                  <p className="text-xs text-stone-500 mb-1">{label}</p>
-                  <p className={`text-xl font-semibold ${bad && value > 0 ? 'text-red-500' : value === 0 ? 'text-green-600' : 'text-stone-700'}`}>
+                <div key={label} className="bg-[#FFFBF2] rounded-xl p-3">
+                  <p className="text-xs text-[#3A4D63] mb-1">{label}</p>
+                  <p className={`text-xl font-semibold ${bad && value > 0 ? 'text-red-500' : value === 0 ? 'text-green-600' : 'text-[#3A4D63]'}`}>
                     {value ?? '—'}
                   </p>
                 </div>
               ))}
             </div>
             {compliance.checked_at && (
-              <p className="text-[10px] text-stone-400 mt-3">
+              <p className="text-[10px] text-[#7A8694] mt-3">
                 Checked {new Date(compliance.checked_at).toLocaleString()}
               </p>
             )}
@@ -1500,26 +1500,26 @@ function MigrationTab({ API, headers }) {
       </div>
 
       {/* Migration Control */}
-      <div className="bg-white rounded-2xl border border-stone-200 shadow-sm p-5">
+      <div className="bg-white rounded-2xl border border-[#E5DBC8] shadow-sm p-5">
         <div className="flex items-center gap-2 mb-1">
-          <ShieldCheck className="w-5 h-5 text-amber-500" />
-          <h2 className="font-semibold text-stone-800">Beta User Migration</h2>
+          <ShieldCheck className="w-5 h-5 text-[#D4A828]" />
+          <h2 className="font-semibold text-[#1E2A3A]">Beta User Migration</h2>
         </div>
-        <p className="text-xs text-stone-500 mb-4">
-          Backfills <code className="bg-stone-100 px-1 rounded">releaseId</code> on all Discogs-imported records,
+        <p className="text-xs text-[#3A4D63] mb-4">
+          Backfills <code className="bg-[#F3EBE0] px-1 rounded">releaseId</code> on all Discogs-imported records,
           clears stored OAuth tokens, removes Discogs CDN image URLs, and triggers Spotify matching for unlinked releases.
         </p>
 
         <div className="flex gap-2 mb-5">
           <button onClick={handleStart} disabled={isRunning || starting}
-            className="flex items-center gap-2 px-4 py-2 bg-amber-400 hover:bg-amber-500 text-amber-900 font-medium text-sm rounded-xl transition-all disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 bg-[#D4A828] hover:bg-[#E8CA5A] text-white font-medium text-sm rounded-xl transition-all disabled:opacity-50"
             data-testid="migration-start-btn">
             {starting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
             {isRunning ? 'Running…' : 'Start Migration'}
           </button>
           {isRunning && (
             <button onClick={handleStop} disabled={stopping}
-              className="flex items-center gap-2 px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium text-sm rounded-xl transition-all disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 bg-[#F3EBE0] hover:bg-[#F3EBE0] text-[#3A4D63] font-medium text-sm rounded-xl transition-all disabled:opacity-50"
               data-testid="migration-stop-btn">
               {stopping ? <Loader2 className="w-4 h-4 animate-spin" /> : <Square className="w-4 h-4" />}
               Stop
@@ -1532,12 +1532,12 @@ function MigrationTab({ API, headers }) {
             {/* Progress bar */}
             {isRunning && migration.processed > 0 && (
               <div>
-                <div className="flex justify-between text-xs text-stone-500 mb-1">
+                <div className="flex justify-between text-xs text-[#3A4D63] mb-1">
                   <span>Processing records…</span>
                   <span>{migration.processed} processed · {migration.linked} linked</span>
                 </div>
-                <div className="h-2 bg-stone-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-amber-400 rounded-full transition-all"
+                <div className="h-2 bg-[#F3EBE0] rounded-full overflow-hidden">
+                  <div className="h-full bg-[#D4A828] rounded-full transition-all"
                     style={{ width: migration.linked > 0 ? `${Math.min((migration.linked / Math.max(migration.processed, 1)) * 100, 100)}%` : '0%' }} />
                 </div>
               </div>
@@ -1553,15 +1553,15 @@ function MigrationTab({ API, headers }) {
                 { label: 'Usernames cleared', value: migration.usernames_cleared },
                 { label: 'Images cleared', value: migration.images_cleared },
               ].map(({ label, value }) => (
-                <div key={label} className="bg-stone-50 rounded-xl p-3 text-center">
-                  <p className="text-lg font-semibold text-stone-800">{value ?? 0}</p>
-                  <p className="text-[10px] text-stone-500">{label}</p>
+                <div key={label} className="bg-[#FFFBF2] rounded-xl p-3 text-center">
+                  <p className="text-lg font-semibold text-[#1E2A3A]">{value ?? 0}</p>
+                  <p className="text-[10px] text-[#3A4D63]">{label}</p>
                 </div>
               ))}
             </div>
 
             {/* Timestamps */}
-            <div className="flex gap-4 text-[10px] text-stone-400">
+            <div className="flex gap-4 text-[10px] text-[#7A8694]">
               {migration.started_at && <span>Started: {new Date(migration.started_at).toLocaleString()}</span>}
               {migration.completed_at && <span>Completed: {new Date(migration.completed_at).toLocaleString()}</span>}
             </div>
@@ -1616,7 +1616,7 @@ export default function BeekeeperPage() {
     <div className="max-w-6xl mx-auto px-4 py-6 pb-24" data-testid="beekeeper-page">
       <div className="flex items-center gap-3 mb-6">
         <span className="text-2xl">🐝</span>
-        <h1 className="font-heading text-2xl text-stone-800">Beekeeper</h1>
+        <h1 className="font-heading text-2xl text-[#1E2A3A]">Beekeeper</h1>
       </div>
 
       {/* Tab nav */}
@@ -1625,8 +1625,8 @@ export default function BeekeeperPage() {
           <button key={key} onClick={() => setActiveTab(key)}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all border flex-shrink-0 ${
               activeTab === key
-                ? 'bg-amber-400 text-amber-900 border-amber-500 shadow-sm'
-                : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-50 hover:border-stone-300'
+                ? 'bg-[#D4A828] text-white border-[#D4A828] shadow-[0_2px_4px_#D4A82828]'
+                : 'bg-white text-[#3A4D63] border-[#E5DBC8] hover:bg-[#FFFBF2] hover:border-[#D4A828] hover:text-[#1E2A3A]'
             }`}
             data-testid={`beekeeper-tab-${key}`}>
             <Icon className="w-4 h-4" />

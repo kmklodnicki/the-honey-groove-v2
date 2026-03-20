@@ -12,13 +12,27 @@ module.exports = {
                 body: ['"Inter"', 'sans-serif'],
             },
             colors: {
-                'honey': '#F4B942',
-                'honey-soft': '#F9D776',
-                'honey-cream': '#FFF6E6',
-                'honey-amber': '#D98C2F',
-                'honey-dark': '#C4922A',
-                'vinyl-black': '#1F1F1F',
-                'honey-muted': '#FFF0D6',
+                /* ── Official Brand Palette ── */
+                'foiled-gold': '#D4A828',
+                'champagne': '#E8CA5A',
+                'gold-wash': '#F0E6C8',
+                'deep-ink': '#1E2A3A',
+                'navy-hover': '#2A3B50',
+                'warm-cream': '#FFFBF2',
+                'forest': '#2D6A4F',
+                'wheat': '#E5DBC8',
+                'parchment': '#F3EBE0',
+                'merlot': '#9B2C2C',
+                'slate-ink': '#3A4D63',
+                'pewter': '#7A8694',
+                /* ── Legacy aliases → remapped to brand ── */
+                'honey': '#D4A828',
+                'honey-soft': '#E8CA5A',
+                'honey-cream': '#FFFBF2',
+                'honey-amber': '#D4A828',
+                'honey-dark': '#2A3B50',
+                'vinyl-black': '#1E2A3A',
+                'honey-muted': '#F0E6C8',
                 background: 'hsl(var(--background))',
                 foreground: 'hsl(var(--foreground))',
                 card: {
@@ -108,9 +122,17 @@ module.exports = {
                 'float': 'float 3s ease-in-out infinite'
             },
             boxShadow: {
-                'honey': '0 4px 20px -2px rgba(244, 185, 66, 0.25)',
+                'gold-primary': '0 2px 4px #D4A82828, 0 4px 12px #D4A82820',
+                'gold-cta': '0 2px 4px #D4A82828, 0 4px 12px #D4A82820, inset 0 1px 0 rgba(255,255,255,0.2)',
+                'navy-accent': '0 2px 4px #1E2A3A20, 0 4px 12px #1E2A3A12',
+                'card': '0 1px 3px rgba(30,42,58,0.04), 0 4px 12px rgba(30,42,58,0.06)',
+                'card-hover': '0 2px 8px rgba(30,42,58,0.07), 0 8px 24px rgba(30,42,58,0.10)',
+                'gold-badge': '0 2px 6px #D4A82830',
+                'navy-badge': '0 2px 6px #1E2A3A25',
+                /* Legacy */
+                'honey': '0 2px 4px #D4A82828, 0 4px 12px #D4A82820',
                 'vinyl': '0 10px 30px -5px rgba(0, 0, 0, 0.3)',
-                'float': '0 20px 40px -5px rgba(217, 140, 47, 0.2)',
+                'float': '0 20px 40px -5px rgba(30,42,58,0.15)',
             }
         }
     },

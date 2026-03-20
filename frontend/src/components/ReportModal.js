@@ -113,8 +113,8 @@ const ReportModal = ({ open, onOpenChange, targetType, targetId }) => {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md border-honey/30" data-testid="report-modal">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-amber-800">
-            {isBugMode ? <AlertTriangle className="w-5 h-5 text-amber-600" /> : <Heart className="w-5 h-5 text-amber-600" />}
+          <DialogTitle className="flex items-center gap-2 text-[#1E2A3A]">
+            {isBugMode ? <AlertTriangle className="w-5 h-5 text-[#D4A828]" /> : <Heart className="w-5 h-5 text-[#D4A828]" />}
             {showToggle ? (isBugMode ? 'Report a Bug' : 'General Feedback') : (titles[targetType] || 'Report')}
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
@@ -148,12 +148,12 @@ const ReportModal = ({ open, onOpenChange, targetType, targetId }) => {
 
         {/* Toggle — only for bug/feedback entry point */}
         {showToggle && (
-          <div className="flex rounded-full bg-stone-100 p-0.5 mt-1" data-testid="report-mode-toggle">
+          <div className="flex rounded-full bg-[#F3EBE0] p-0.5 mt-1" data-testid="report-mode-toggle">
             <button
               type="button"
               onClick={() => switchMode('bug')}
               className={`flex-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                isBugMode ? 'bg-white text-amber-800 shadow-sm' : 'text-stone-500 hover:text-stone-700'
+                isBugMode ? 'bg-white text-[#1E2A3A] shadow-sm' : 'text-[#3A4D63] hover:text-[#3A4D63]'
               }`}
               data-testid="toggle-bug"
             >
@@ -163,7 +163,7 @@ const ReportModal = ({ open, onOpenChange, targetType, targetId }) => {
               type="button"
               onClick={() => switchMode('feedback')}
               className={`flex-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                !isBugMode ? 'bg-white text-amber-800 shadow-sm' : 'text-stone-500 hover:text-stone-700'
+                !isBugMode ? 'bg-white text-[#1E2A3A] shadow-sm' : 'text-[#3A4D63] hover:text-[#3A4D63]'
               }`}
               data-testid="toggle-feedback"
             >
@@ -183,8 +183,8 @@ const ReportModal = ({ open, onOpenChange, targetType, targetId }) => {
                   onClick={() => setSelectedReason(reason)}
                   className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all border ${
                     selectedReason === reason
-                      ? 'bg-amber-100 border-amber-300 text-amber-800 font-medium'
-                      : 'border-gray-200 hover:border-amber-200 hover:bg-amber-50/50 text-gray-700'
+                      ? 'bg-[#F0E6C8] border-[#D4A828] text-[#1E2A3A] font-medium'
+                      : 'border-gray-200 hover:border-[#E5DBC8] hover:bg-[#F0E6C8]/50 text-gray-700'
                   }`}
                   data-testid={`report-reason-${reason.toLowerCase().replace(/\s+/g, '-')}`}
                 >
@@ -209,9 +209,9 @@ const ReportModal = ({ open, onOpenChange, targetType, targetId }) => {
           {isBugMode && (
             <div data-testid="screenshot-upload-section">
               {!screenshotPreview ? (
-                <label className="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-dashed border-amber-300/60 bg-amber-50/30 cursor-pointer hover:bg-amber-50/60 transition-colors">
-                  <ImagePlus className="w-4 h-4 text-amber-600" />
-                  <span className="text-xs text-amber-700">Attach Screenshot (Optional)</span>
+                <label className="flex items-center gap-2 px-3 py-2.5 rounded-lg border border-dashed border-[#D4A828]/60 bg-[#F0E6C8]/30 cursor-pointer hover:bg-[#F0E6C8]/60 transition-colors">
+                  <ImagePlus className="w-4 h-4 text-[#D4A828]" />
+                  <span className="text-xs text-[#D4A828]">Attach Screenshot (Optional)</span>
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -223,7 +223,7 @@ const ReportModal = ({ open, onOpenChange, targetType, targetId }) => {
                 </label>
               ) : (
                 <div className="relative inline-block" data-testid="screenshot-preview">
-                  <img src={screenshotPreview} alt="Screenshot preview" className="w-24 h-24 object-cover rounded-lg border border-amber-200" />
+                  <img src={screenshotPreview} alt="Screenshot preview" className="w-24 h-24 object-cover rounded-lg border border-[#E5DBC8]" />
                   <button type="button" onClick={removeScreenshot} className="absolute -top-2 -right-2 bg-white border border-gray-200 rounded-full p-0.5 shadow-sm hover:bg-red-50 transition-colors" data-testid="screenshot-remove-btn">
                     <X className="w-3.5 h-3.5 text-red-500" />
                   </button>
@@ -238,7 +238,7 @@ const ReportModal = ({ open, onOpenChange, targetType, targetId }) => {
             <Button
               onClick={handleSubmit}
               disabled={submitting || uploading || !notes.trim() || (isBugMode && !selectedReason)}
-              className="bg-amber-600 text-white hover:bg-amber-700 rounded-full text-xs px-5"
+              className="bg-[#D4A828] text-white hover:bg-[#E8CA5A] rounded-full text-xs px-5"
               data-testid="report-submit-btn"
             >
               {(submitting || uploading) && <Loader2 className="w-3 h-3 animate-spin mr-1" />}
