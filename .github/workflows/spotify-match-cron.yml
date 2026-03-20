@@ -1,23 +1,23 @@
-name: Spotify Match Cron
-
-  on:
-    schedule:
-      - cron: '*/10 * * * *'
-    workflow_dispatch:
-
-  jobs:
-    match:
+ name: Spotify Match Cron                                                                 
+                                                                                             
+  "on":                                                                                      
+    schedule:                                                                                
+      - cron: '*/10 * * * *'                                                                 
+    workflow_dispatch:                                                                       
+  
+  jobs:                                                                                      
+    match:                                                                                 
       runs-on: ubuntu-latest
-      timeout-minutes: 8
+      timeout-minutes: 8                                                                     
       steps:
-        - name: Trigger Spotify matching batch
-          run: |
-            response=$(curl -s -o /dev/null -w "%{http_code}" \
-              -X GET "https://thehoneygroove.com/api/cron/spotify-match" \
-              -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-              --max-time 420)
+        - name: Trigger Spotify matching batch                                               
+          run: |                                                                             
+            response=$(curl -s -o /dev/null -w "%{http_code}" \                              
+              -X GET "https://thehoneygroove.com/api/cron/spotify-match" \                   
+              -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \                        
+              --max-time 420)                                                                
             echo "Response status: $response"
-            if [ "$response" != "200" ]; then
-              echo "Cron endpoint returned $response"
-              exit 1
-            fi
+            if [ "$response" != "200" ]; then                                                
+              echo "Cron endpoint returned $response"                                      
+              exit 1                                                                         
+            fi                     
