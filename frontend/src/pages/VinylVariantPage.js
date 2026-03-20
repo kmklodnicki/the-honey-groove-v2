@@ -159,14 +159,16 @@ export default function VinylVariantPage() {
                 isUnofficial={ov.is_unofficial}
                 formatText={ov.format || ''}
               />
-              {/* Variant pill */}
-              <div
-                className="absolute bottom-3 left-3 right-3 truncate uppercase text-[11px] font-bold px-3 py-1 rounded-full text-center"
-                style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
-                data-testid="variant-pill"
-              >
-                {ov.variant}
-              </div>
+              {/* Variant pill — hidden on Spotify-sourced art (Spotify compliance §1.1); variant name shown in info section instead */}
+              {ov.imageSource !== 'spotify' && (
+                <div
+                  className="absolute bottom-3 left-3 right-3 truncate uppercase text-[11px] font-bold px-3 py-1 rounded-full text-center"
+                  style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
+                  data-testid="variant-pill"
+                >
+                  {ov.variant}
+                </div>
+              )}
             </div>
           </div>
 

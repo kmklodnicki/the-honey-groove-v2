@@ -261,62 +261,108 @@ const ExplorePage = () => {
       <p className="text-sm text-muted-foreground mb-8">what the hive is into right now.</p>
 
       {/* 0. The Honey Drop — today's featured record */}
-      {honeyDrop?.record && (
+      {honeyDrop?.record && (() => {
+        // Spotify compliance §1.2: do not tint/overlay Spotify-sourced art as a background.
+        // §2.1: must provide a Spotify link when displaying Spotify art.
+        const isSpotifyCover = honeyDrop.record.cover_url?.includes('i.scdn.co');
+        return (
         <ExploreSection icon={<span className="text-base">🍯</span>} title="The Honey Drop" testId="honey-drop-section" seeAllTo={null}>
           <p className="text-xs text-muted-foreground italic -mt-2 mb-3 pl-1">Today's featured record from the Hive.</p>
-          <div
-            className="relative rounded-2xl overflow-hidden cursor-pointer group"
-            style={{ minHeight: 200 }}
-            onClick={() => honeyDrop.record.discogs_id && navigate(`/variant/${honeyDrop.record.discogs_id}`)}
-            data-testid="honey-drop-card"
-          >
-            {/* Banner art */}
-            {honeyDrop.record.cover_url && (
-              <div className="absolute inset-0">
+          {isSpotifyCover ? (
+            /* Spotify-sourced art: flat card layout — no tinting, art shown as square thumbnail */
+            <div
+              className="rounded-2xl overflow-hidden cursor-pointer border border-honey/20"
+              style={{ background: 'linear-gradient(135deg, #2A1A06 0%, #4A2E10 100%)', minHeight: 120 }}
+              onClick={() => honeyDrop.record.discogs_id && navigate(`/variant/${honeyDrop.record.discogs_id}`)}
+              data-testid="honey-drop-card"
+            >
+              <div className="flex items-center gap-4 p-4">
                 <AlbumArt
                   src={honeyDrop.record.cover_url}
-                  alt={honeyDrop.record.title}
-                  className="w-full h-full object-cover"
+                  alt={`${honeyDrop.record.title} album art`}
+                  className="w-20 h-20 rounded-xl shadow-lg shrink-0"
                 />
-                <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(20,10,0,0.88) 40%, rgba(0,0,0,0.2) 100%)' }} />
-              </div>
-            )}
-            {!honeyDrop.record.cover_url && (
-              <div className="absolute inset-0 bg-honey/20" />
-            )}
-            {/* Overlay content */}
-            <div className="relative z-10 p-5 flex flex-col justify-end" style={{ minHeight: 200 }}>
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-white font-heading text-xl font-bold leading-tight mb-0.5">{honeyDrop.record.title}</p>
-                  <p className="text-white/80 text-sm">{honeyDrop.record.artist}</p>
-                  {honeyDrop.blurb && <p className="text-white/70 text-xs mt-1 italic max-w-xs">{honeyDrop.blurb}</p>}
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-heading text-lg font-bold leading-tight mb-0.5 truncate">{honeyDrop.record.title}</p>
+                  <p className="text-white/80 text-sm truncate">{honeyDrop.record.artist}</p>
+                  {honeyDrop.blurb && <p className="text-white/60 text-xs mt-1 italic line-clamp-2">{honeyDrop.blurb}</p>}
+                  <div className="flex items-center gap-3 mt-2">
+                    {/* Spotify attribution — required per Spotify compliance §2.1 */}
+                    <a
+                      href={`https://open.spotify.com/search/${encodeURIComponent(`${honeyDrop.record.artist || ''} ${honeyDrop.record.title || ''}`.trim())}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={e => e.stopPropagation()}
+                      className="inline-flex items-center gap-1 text-xs text-white/50 hover:text-[#1DB954] transition-colors"
+                      data-testid="honey-drop-spotify-link"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+                      Spotify
+                    </a>
+                    {honeyDrop.ownership_count > 0 && <span className="text-[10px] text-white/40">🎵 {honeyDrop.ownership_count} own this</span>}
+                  </div>
                 </div>
                 <Button
                   size="sm"
-                  className="shrink-0 rounded-full text-[#2A1A06] font-bold"
+                  className="shrink-0 rounded-full text-[#2A1A06] font-bold self-start"
                   style={{ background: '#E8A820' }}
                   onClick={(e) => { e.stopPropagation(); if (navigator.share) { navigator.share({ title: `${honeyDrop.record.title} on The Honey Groove`, url: window.location.origin }); } else { navigator.clipboard.writeText(window.location.origin); toast.success('Link copied!'); } }}
                 >
                   Share
                 </Button>
               </div>
-              {/* Stats row */}
-              <div className="flex gap-4 mt-3 text-xs text-white/60">
-                {honeyDrop.ownership_count > 0 && <span>🎵 {honeyDrop.ownership_count} members own this</span>}
-                {honeyDrop.estimated_value > 0 && <span>Est. ${honeyDrop.estimated_value >= 1000 ? (honeyDrop.estimated_value / 1000).toFixed(1) + 'k' : honeyDrop.estimated_value.toFixed(0)}</span>}
-              </div>
-              {/* Gold hint */}
-              {!isGold && (
-                <p className="text-[10px] text-[#E8A820] mt-2">
-                  <Crown className="inline w-3 h-3 mr-0.5" />
-                  Gold members get price alerts when this drops on Discogs
-                </p>
-              )}
             </div>
-          </div>
+          ) : (
+            /* Non-Spotify art (user upload / community): full-bleed banner layout */
+            <div
+              className="relative rounded-2xl overflow-hidden cursor-pointer group"
+              style={{ minHeight: 200 }}
+              onClick={() => honeyDrop.record.discogs_id && navigate(`/variant/${honeyDrop.record.discogs_id}`)}
+              data-testid="honey-drop-card"
+            >
+              {honeyDrop.record.cover_url && (
+                <div className="absolute inset-0">
+                  <AlbumArt
+                    src={honeyDrop.record.cover_url}
+                    alt={honeyDrop.record.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(20,10,0,0.88) 40%, rgba(0,0,0,0.2) 100%)' }} />
+                </div>
+              )}
+              {!honeyDrop.record.cover_url && <div className="absolute inset-0 bg-honey/20" />}
+              <div className="relative z-10 p-5 flex flex-col justify-end" style={{ minHeight: 200 }}>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-white font-heading text-xl font-bold leading-tight mb-0.5">{honeyDrop.record.title}</p>
+                    <p className="text-white/80 text-sm">{honeyDrop.record.artist}</p>
+                    {honeyDrop.blurb && <p className="text-white/70 text-xs mt-1 italic max-w-xs">{honeyDrop.blurb}</p>}
+                  </div>
+                  <Button
+                    size="sm"
+                    className="shrink-0 rounded-full text-[#2A1A06] font-bold"
+                    style={{ background: '#E8A820' }}
+                    onClick={(e) => { e.stopPropagation(); if (navigator.share) { navigator.share({ title: `${honeyDrop.record.title} on The Honey Groove`, url: window.location.origin }); } else { navigator.clipboard.writeText(window.location.origin); toast.success('Link copied!'); } }}
+                  >
+                    Share
+                  </Button>
+                </div>
+                <div className="flex gap-4 mt-3 text-xs text-white/60">
+                  {honeyDrop.ownership_count > 0 && <span>🎵 {honeyDrop.ownership_count} members own this</span>}
+                  {honeyDrop.estimated_value > 0 && <span>Est. ${honeyDrop.estimated_value >= 1000 ? (honeyDrop.estimated_value / 1000).toFixed(1) + 'k' : honeyDrop.estimated_value.toFixed(0)}</span>}
+                </div>
+                {!isGold && (
+                  <p className="text-[10px] text-[#E8A820] mt-2">
+                    <Crown className="inline w-3 h-3 mr-0.5" />
+                    Gold members get price alerts when this drops on Discogs
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
         </ExploreSection>
-      )}
+        );
+      })()}
 
       {/* Your Kinda People Discovery Carousel */}
       <section className="mb-8" data-testid="make-friends-carousel">

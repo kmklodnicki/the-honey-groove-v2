@@ -1045,11 +1045,18 @@ const CollectionPage = () => {
                 {hiddenGems.map((gem, idx) => (
                   <Link key={gem.id} to={`/record/${gem.id}`}>
                     <Card className="p-3 border-honey/30 flex items-center gap-3 hover:shadow-md transition-all cursor-pointer" data-testid={`hidden-gem-${idx}`}>
-                    <div className="relative shrink-0">
-                      <AlbumArt src={gem.cover_url} alt={`${gem.artist} ${gem.title}${gem.color_variant ? ` ${gem.color_variant}` : ''} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow-sm" isUnofficial={gem.is_unofficial} />
-                      <span className="absolute -top-1.5 -left-1.5 w-5 h-5 bg-honey rounded-full flex items-center justify-center text-[10px] font-bold text-vinyl-black shadow">
+                    {/* Rank badge outside image — Spotify compliance §1.1 */}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="w-5 h-5 bg-honey rounded-full flex items-center justify-center text-[10px] font-bold text-vinyl-black shadow shrink-0">
                         {idx + 1}
                       </span>
+                      <AlbumArt
+                        src={gem.cover_url}
+                        imageSource={gem.imageSource}
+                        alt={`${gem.artist} ${gem.title} vinyl record`}
+                        className="w-14 h-14 rounded-lg object-cover shadow-sm"
+                        isUnofficial={gem.is_unofficial}
+                      />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{gem.title}</p>
@@ -1062,6 +1069,19 @@ const CollectionPage = () => {
                           </span>
                         )}
                       </p>
+                      {gem.imageSource === 'spotify' && gem.spotifyAlbumId && (
+                        <a
+                          href={`https://open.spotify.com/album/${gem.spotifyAlbumId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={e => e.stopPropagation()}
+                          className="inline-flex items-center gap-1 mt-1 text-[10px] text-stone-400 hover:text-[#1DB954] transition-colors"
+                          data-testid={`gem-spotify-${idx}`}
+                        >
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+                          Spotify
+                        </a>
+                      )}
                     </div>
                   </Card>
                   </Link>
@@ -1438,6 +1458,7 @@ const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg, pending
 };
 
 const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, onUploadClick, isSpinning, value, selectMode, isSelected, onToggleSelect, blurData, isFading, priority }) => {
+  const isSpotify = record.imageSource === 'spotify';
   return (
     <Card 
       className={`relative group border-honey/20 overflow-hidden hover:shadow-honey transition-all duration-300 hover:-translate-y-1 flex flex-col w-full h-full ${isSelected ? 'ring-2 ring-honey shadow-honey' : ''} ${selectMode ? 'cursor-pointer' : ''} ${isFading ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}
@@ -1474,88 +1495,93 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, o
             showUploadCta
           />
           
-          {/* Spin count badge */}
-          {record.spin_count > 0 && (
-            <div className="absolute bottom-2 left-2 bg-honey text-vinyl-black text-xs px-2 py-1 rounded-full font-medium">
-              {record.spin_count} {record.spin_count === 1 ? 'spin' : 'spins'}
-            </div>
-          )}
-
-          {/* Variant pill overlay with scrim */}
-          {record.color_variant && (
+          {/* Overlays — only shown for non-Spotify art (Spotify compliance §1.1) */}
+          {!isSpotify && (
             <>
-              <div className="absolute top-0 left-0 w-1/2 h-1/2 z-[4] pointer-events-none rounded-tl-2xl" style={{ background: 'linear-gradient(135deg, rgba(0,0,0,0.25) 0%, transparent 60%)' }} />
-              {record.discogs_id ? (
-                <Link
-                  to={`/variant/${record.discogs_id}`}
-                  onClick={e => e.stopPropagation()}
-                  className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] font-bold px-2 py-0.5 rounded-full z-[5] cursor-pointer transition-transform duration-150 hover:scale-105"
-                  style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
-                  data-testid={`variant-${record.id}`}
-                >
-                  {record.color_variant}
-                </Link>
-              ) : (
-                <div
-                  className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] font-bold px-2 py-0.5 rounded-full z-[5]"
-                  style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
-                  data-testid={`variant-${record.id}`}
-                >
-                  {record.color_variant}
+              {/* Spin count badge */}
+              {record.spin_count > 0 && (
+                <div className="absolute bottom-2 left-2 bg-honey text-vinyl-black text-xs px-2 py-1 rounded-full font-medium">
+                  {record.spin_count} {record.spin_count === 1 ? 'spin' : 'spins'}
                 </div>
               )}
+
+              {/* Variant pill overlay with scrim */}
+              {record.color_variant && (
+                <>
+                  <div className="absolute top-0 left-0 w-1/2 h-1/2 z-[4] pointer-events-none rounded-tl-2xl" style={{ background: 'linear-gradient(135deg, rgba(0,0,0,0.25) 0%, transparent 60%)' }} />
+                  {record.discogs_id ? (
+                    <Link
+                      to={`/variant/${record.discogs_id}`}
+                      onClick={e => e.stopPropagation()}
+                      className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] font-bold px-2 py-0.5 rounded-full z-[5] cursor-pointer transition-transform duration-150 hover:scale-105"
+                      style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
+                      data-testid={`variant-${record.id}`}
+                    >
+                      {record.color_variant}
+                    </Link>
+                  ) : (
+                    <div
+                      className="absolute top-2 left-2 max-w-[70%] truncate uppercase text-[10px] font-bold px-2 py-0.5 rounded-full z-[5]"
+                      style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
+                      data-testid={`variant-${record.id}`}
+                    >
+                      {record.color_variant}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Edition number pill */}
+              {record.edition_number && (
+                <div
+                  className={`absolute ${record.color_variant ? 'top-8' : 'top-2'} left-2 uppercase text-[9px] font-bold px-2 py-0.5 rounded-full z-[5]`}
+                  style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
+                  data-testid={`edition-${record.id}`}
+                >
+                  No. {record.edition_number}
+                </div>
+              )}
+
+              {/* Never spun indicator */}
+              {record.spin_count === 0 && (
+                <div className="absolute bottom-2 left-2 bg-white/80 text-muted-foreground text-xs px-2 py-1 rounded-full">
+                  no logged spins
+                </div>
+              )}
+
+              {/* Multi-copy badge */}
+              {record.total_copies > 1 && (
+                <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide z-[5]"
+                  style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', color: '#996012', border: '1px solid rgba(218,165,32,0.4)' }}
+                  data-testid={`copy-badge-${record.id}`}>
+                  Copy {record.copy_number} of {record.total_copies}
+                </div>
+              )}
+
+              {/* BLOCK 487: Smart Valuation Hierarchy — Market > Personal > Dash */}
+              {Math.round(value || 0) >= 1 ? (
+                <div className="absolute top-2 right-2 px-2.5 py-1 rounded-full font-bold text-sm z-[5] transition-transform duration-200 hover:scale-110 cursor-default"
+                  style={{ background: 'rgba(255, 191, 0, 0.85)', color: '#000' }}
+                  data-testid={`record-value-${record.id}`}>
+                  ${value.toFixed(0)}
+                </div>
+              ) : record.custom_valuation && record.custom_valuation > 0 ? (
+                <div className="absolute top-2 right-2 px-2.5 py-1 rounded-full font-semibold text-sm z-[5] flex items-center gap-1 transition-transform duration-200 hover:scale-110 cursor-default"
+                  style={{ background: 'rgba(255, 191, 0, 0.55)', color: '#000' }}
+                  data-testid={`record-value-personal-${record.id}`}>
+                  <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 3a2.83 2.83 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                  ${record.custom_valuation.toFixed(0)}
+                </div>
+              ) : record.discogs_id ? (
+                <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-medium z-[5] cursor-default"
+                  style={{ background: 'rgba(218,165,32,0.12)', color: '#7A5A1A', border: '1px solid rgba(218,165,32,0.2)' }}
+                  title="Valuation Pending — use Recover Values in the header to find prices for all unvalued records."
+                  data-testid={`record-value-pending-${record.id}`}>
+                  Pending
+                </div>
+              ) : null}
             </>
           )}
-
-          {/* Edition number pill */}
-          {record.edition_number && (
-            <div
-              className={`absolute ${record.color_variant ? 'top-8' : 'top-2'} left-2 uppercase text-[9px] font-bold px-2 py-0.5 rounded-full z-[5]`}
-              style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
-              data-testid={`edition-${record.id}`}
-            >
-              No. {record.edition_number}
-            </div>
-          )}
-
-          {/* Never spun indicator */}
-          {record.spin_count === 0 && (
-            <div className="absolute bottom-2 left-2 bg-white/80 text-muted-foreground text-xs px-2 py-1 rounded-full">
-              no logged spins
-            </div>
-          )}
-
-          {/* Multi-copy badge */}
-          {record.total_copies > 1 && (
-            <div className="absolute bottom-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide z-[5]"
-              style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', color: '#996012', border: '1px solid rgba(218,165,32,0.4)' }}
-              data-testid={`copy-badge-${record.id}`}>
-              Copy {record.copy_number} of {record.total_copies}
-            </div>
-          )}
-
-          {/* BLOCK 487: Smart Valuation Hierarchy — Market > Personal > Dash */}
-          {Math.round(value || 0) >= 1 ? (
-            <div className="absolute top-2 right-2 px-2.5 py-1 rounded-full font-bold text-sm z-[5] transition-transform duration-200 hover:scale-110 cursor-default"
-              style={{ background: 'rgba(255, 191, 0, 0.85)', color: '#000' }}
-              data-testid={`record-value-${record.id}`}>
-              ${value.toFixed(0)}
-            </div>
-          ) : record.custom_valuation && record.custom_valuation > 0 ? (
-            <div className="absolute top-2 right-2 px-2.5 py-1 rounded-full font-semibold text-sm z-[5] flex items-center gap-1 transition-transform duration-200 hover:scale-110 cursor-default"
-              style={{ background: 'rgba(255, 191, 0, 0.55)', color: '#000' }}
-              data-testid={`record-value-personal-${record.id}`}>
-              <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M17 3a2.83 2.83 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-              ${record.custom_valuation.toFixed(0)}
-            </div>
-          ) : record.discogs_id ? (
-            <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-medium z-[5] cursor-default"
-              style={{ background: 'rgba(218,165,32,0.12)', color: '#7A5A1A', border: '1px solid rgba(218,165,32,0.2)' }}
-              title="Valuation Pending — use Recover Values in the header to find prices for all unvalued records."
-              data-testid={`record-value-pending-${record.id}`}>
-              Pending
-            </div>
-          ) : null}
         </div>
       </Link>
 
@@ -1593,6 +1619,20 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, o
             <Play className="w-3 h-3" />
             {isSpinning ? 'Spinning...' : 'Spin Now'}
           </Button>
+          {/* Spotify attribution link — required when displaying Spotify-sourced art (§2.1) */}
+          {isSpotify && record.spotifyAlbumId && (
+            <a
+              href={`https://open.spotify.com/album/${record.spotifyAlbumId}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={e => e.stopPropagation()}
+              className="flex items-center justify-center h-8 w-8 shrink-0 rounded-md text-stone-400 hover:text-[#1DB954] transition-colors"
+              title="Listen on Spotify"
+              data-testid={`spotify-link-${record.id}`}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+            </a>
+          )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="h-8 w-8 p-0 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">

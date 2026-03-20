@@ -111,7 +111,8 @@ export const CommunityISOCard = ({ iso, onHaveThis, onOpenVariant }) => (
     <div className="flex items-start gap-3">
       <div className="relative shrink-0">
         <AlbumArt imageUrl={iso.cover_url} albumTitle={iso.album} artistName={iso.artist} size="small" alt={`${iso.artist} ${iso.album} vinyl record`} className="w-14 h-14 rounded-lg object-cover shadow" isUnofficial={iso.is_unofficial} />
-        {iso.color_variant && (
+        {/* Variant pill — hidden on Spotify-sourced art (Spotify compliance §1.1) */}
+        {iso.color_variant && !iso.cover_url?.includes('i.scdn.co') && (
           <div className="absolute -bottom-1 -right-1 max-w-[90%] truncate uppercase text-[7px] font-bold px-1.5 py-px rounded-full z-[5]"
             style={{ background: 'rgba(255,215,0,0.25)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', color: '#000', border: '1.5px solid #DAA520' }}
             data-testid={`community-iso-variant-${iso.id}`}>

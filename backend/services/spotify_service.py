@@ -62,7 +62,8 @@ def _search_spotify_sync(query: str, token: str, limit: int = 5) -> list:
         if resp.status_code == 200:
             return resp.json().get("albums", {}).get("items", [])
         if resp.status_code == 429:
-            raise Exception("RATE_LIMITED")
+            retry_after = int(resp.headers.get("Retry-After", 30))
+            raise Exception(f"RATE_LIMITED:{retry_after}")
     except Exception:
         raise
     return []
@@ -122,17 +123,8 @@ async def save_spotify_match(release: dict, album: dict, match_type: str) -> Non
     )
 
 
-async def match_to_spotify(release: dict) -> None:
-    """3-strategy Spotify matching. Updates releases collection in-place."""
-    if not release or not release.get("discogsReleaseId"):
-        return
-
-    token = await get_spotify_token()
-    if not token:
-        logger.warning("Spotify token unavailable; skipping match")
-        return
-
-    discogs_id = release["discogsReleaseId"]
+async def _run_spotify_strategies(release: dict, token: str) -> tuple:
+    """Execute 3-strategy Spotify search. Returns (matched_album, match_type)."""
     title = release.get("title", "")
     artists = release.get("artists", [])
     artist = artists[0] if artists else ""
@@ -142,43 +134,81 @@ async def match_to_spotify(release: dict) -> None:
     matched_album = None
     match_type = None
 
-    try:
-        # Strategy 1: UPC barcode
-        for barcode in barcodes:
-            digits = re.sub(r"[^0-9]", "", barcode)
-            if len(digits) >= 10:
-                results = await asyncio.get_event_loop().run_in_executor(
-                    None, _search_spotify_sync, f"upc:{digits}", token, 5
-                )
-                if results:
-                    matched_album = find_best_match(results, release)
-                    match_type = "upc"
-                    break
-
-        # Strategy 2: Artist + album title
-        if not matched_album and artist and title:
+    # Strategy 1: UPC barcode
+    for barcode in barcodes:
+        digits = re.sub(r"[^0-9]", "", barcode)
+        if len(digits) >= 10:
             results = await asyncio.get_event_loop().run_in_executor(
-                None, _search_spotify_sync, f"artist:{artist} album:{clean}", token, 5
+                None, _search_spotify_sync, f"upc:{digits}", token, 5
             )
             if results:
                 matched_album = find_best_match(results, release)
-                match_type = "artist_album"
+                match_type = "upc"
+                break
 
-        # Strategy 3: Simple combined search
-        if not matched_album and artist and title:
-            results = await asyncio.get_event_loop().run_in_executor(
-                None, _search_spotify_sync, f"{artist} {clean}", token, 5
-            )
-            if results:
-                matched_album = find_best_match(results, release)
-                match_type = "simple"
+    # Strategy 2: Artist + album title
+    if not matched_album and artist and title:
+        results = await asyncio.get_event_loop().run_in_executor(
+            None, _search_spotify_sync, f"artist:{artist} album:{clean}", token, 5
+        )
+        if results:
+            matched_album = find_best_match(results, release)
+            match_type = "artist_album"
 
-    except Exception as e:
-        if "RATE_LIMITED" in str(e):
-            logger.warning(f"Spotify rate limited for release {discogs_id}")
-            return
-        logger.warning(f"Spotify match error for release {discogs_id}: {e}")
+    # Strategy 3: Simple combined search
+    if not matched_album and artist and title:
+        results = await asyncio.get_event_loop().run_in_executor(
+            None, _search_spotify_sync, f"{artist} {clean}", token, 5
+        )
+        if results:
+            matched_album = find_best_match(results, release)
+            match_type = "simple"
+
+    return matched_album, match_type
+
+
+async def match_to_spotify(release: dict) -> None:
+    """3-strategy Spotify matching. Updates releases collection in-place.
+    Retries up to 2 times on 429, respecting Retry-After header."""
+    if not release or not release.get("discogsReleaseId"):
         return
+
+    token = await get_spotify_token()
+    if not token:
+        logger.warning("Spotify token unavailable; skipping match")
+        return
+
+    discogs_id = release["discogsReleaseId"]
+    matched_album = None
+    match_type = None
+
+    for attempt in range(3):
+        try:
+            matched_album, match_type = await _run_spotify_strategies(release, token)
+            break  # success — exit retry loop
+        except Exception as e:
+            if "RATE_LIMITED" in str(e):
+                # Parse Retry-After from exception (format: "RATE_LIMITED:{seconds}")
+                try:
+                    retry_after = int(str(e).split(":")[1])
+                except (IndexError, ValueError):
+                    retry_after = 30
+                if attempt < 2:
+                    logger.warning(
+                        f"Spotify rate limited for release {discogs_id} "
+                        f"(attempt {attempt + 1}/3), retrying in {retry_after}s"
+                    )
+                    await asyncio.sleep(retry_after)
+                    token = await get_spotify_token()  # refresh token after wait
+                else:
+                    logger.warning(
+                        f"Spotify rate limited for release {discogs_id} after 3 attempts; "
+                        f"will retry on next batch run"
+                    )
+                    return  # leave spotifyMatchStatus as "pending" for retry
+            else:
+                logger.warning(f"Spotify match error for release {discogs_id}: {e}")
+                return
 
     if matched_album:
         await save_spotify_match(release, matched_album, match_type)
@@ -192,7 +222,7 @@ async def match_to_spotify(release: dict) -> None:
 async def batch_match_releases(stop_event: asyncio.Event) -> dict:
     """Process all pending releases in batches of 5 with 3-sec delay between batches.
     Respects 429 rate limits and the stop_event signal."""
-    processed = matched = unmatched = 0
+    processed = matched = unmatched = rate_limited = 0
     batch_size = 5
     delay = 3.0
 
@@ -209,12 +239,14 @@ async def batch_match_releases(stop_event: asyncio.Event) -> dict:
                     break
                 await match_to_spotify(r)
                 processed += 1
-                # Re-fetch to check result
                 updated = await db.releases.find_one(
                     {"discogsReleaseId": r["discogsReleaseId"]}, {"_id": 0, "spotifyMatchStatus": 1}
                 )
-                if updated and updated.get("spotifyMatchStatus") == "matched":
+                status = updated.get("spotifyMatchStatus") if updated else None
+                if status == "matched":
                     matched += 1
+                elif status == "pending":
+                    rate_limited += 1  # still pending = rate limited, will retry next run
                 else:
                     unmatched += 1
 
@@ -231,9 +263,12 @@ async def batch_match_releases(stop_event: asyncio.Event) -> dict:
         updated = await db.releases.find_one(
             {"discogsReleaseId": r["discogsReleaseId"]}, {"_id": 0, "spotifyMatchStatus": 1}
         )
-        if updated and updated.get("spotifyMatchStatus") == "matched":
+        status = updated.get("spotifyMatchStatus") if updated else None
+        if status == "matched":
             matched += 1
+        elif status == "pending":
+            rate_limited += 1
         else:
             unmatched += 1
 
-    return {"processed": processed, "matched": matched, "unmatched": unmatched}
+    return {"processed": processed, "matched": matched, "unmatched": unmatched, "rate_limited": rate_limited}

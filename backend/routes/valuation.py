@@ -570,17 +570,41 @@ async def get_hidden_gems(user: Dict = Depends(require_auth), limit: int = 3):
     ).to_list(5000)
     val_map = {v["release_id"]: v for v in values}
 
+    # Fetch releases for Spotify compliance fields (imageSource + spotifyAlbumId)
+    release_ids = [r["releaseId"] for r in records if r.get("releaseId")]
+    discogs_release_ids = list({r["discogsReleaseId"] for r in records if r.get("discogsReleaseId")})
+    releases_by_discogs = {}
+    if discogs_release_ids:
+        releases = await db.releases.find(
+            {"discogsReleaseId": {"$in": discogs_release_ids}},
+            {"_id": 0, "discogsReleaseId": 1, "spotifyAlbumId": 1, "spotifyImageUrl": 1}
+        ).to_list(5000)
+        releases_by_discogs = {rel["discogsReleaseId"]: rel for rel in releases}
+
     enriched = []
     for r in records:
         v = val_map.get(r.get("discogs_id"))
         if v and v.get("median_value"):
+            rel = releases_by_discogs.get(r.get("discogsReleaseId")) or {}
+            # Determine imageSource for Spotify compliance
+            if r.get("userPhotoUrl"):
+                image_source = "user_upload"
+                cover_url = r["userPhotoUrl"]
+            elif rel.get("spotifyImageUrl"):
+                image_source = "spotify"
+                cover_url = rel["spotifyImageUrl"]
+            else:
+                image_source = r.get("imageSource", "placeholder")
+                cover_url = r.get("cover_url")
             enriched.append({
                 "id": r["id"],
                 "title": r.get("title"),
                 "artist": r.get("artist"),
-                "cover_url": r.get("cover_url"),
+                "cover_url": cover_url,
                 "discogs_id": r.get("discogs_id"),
                 "year": r.get("year"),
+                "imageSource": image_source,
+                "spotifyAlbumId": rel.get("spotifyAlbumId"),
                 "median_value": v["median_value"],
                 "low_value": v.get("low_value"),
                 "high_value": v.get("high_value"),

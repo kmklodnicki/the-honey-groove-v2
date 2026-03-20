@@ -287,7 +287,8 @@ useEffect(() => {
                         <AlbumArt src={currentResp.proxy_cover_url ? `${API.replace('/api', '')}${currentResp.proxy_cover_url}` : currentResp.cover_url} alt={`${currentResp.record_artist || ''} ${currentResp.record_title || ''} vinyl record`} className="w-full h-full object-cover" blurDataUrl={currentResp.blur_data_url} thumbSrc={currentResp.thumb_url} />
                       )
                     ) : <div className="w-full h-full flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>}
-                    {currentResp.color_variant && (
+                    {/* Variant pill — hidden on Spotify-sourced art (Spotify compliance §1.1) */}
+                    {currentResp.color_variant && currentResp.image_source !== 'spotify' && (
                       <div
                         className="absolute bottom-0.5 right-0.5 max-w-[90%] truncate uppercase text-[8px] font-bold px-1 py-0.5 rounded-full cursor-pointer hover:scale-105 transition-transform"
                         style={{ background: 'rgba(255,215,0,0.2)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', color: '#000', letterSpacing: '0.5px', border: '2px solid #DAA520', boxShadow: '0 8px 32px 0 rgba(0,0,0,0.1), inset 0 0 0 0.5px rgba(255,215,0,0.4)' }}
