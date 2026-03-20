@@ -1,6 +1,7 @@
 """Beekeeper admin panel routes — room moderation, metrics, honey drop, user management,
 and Spotify matching / CC0 backfill tooling."""
-from fastapi import APIRouter, HTTPException, Depends
+import os
+from fastapi import APIRouter, HTTPException, Depends, Request
 from typing import Dict, Optional
 from datetime import datetime, timezone, timedelta
 import asyncio
@@ -445,30 +446,46 @@ async def get_metrics(admin: Dict = Depends(require_admin)):
 # ─── User Management ───
 
 @router.get("/beekeeper/users")
-async def search_users(q: str = "", limit: int = 20, admin: Dict = Depends(require_admin)):
-    """Search users by username or email."""
-    if not q:
-        users = await db.users.find(
-            {},
-            {"_id": 0, "id": 1, "username": 1, "email": 1, "golden_hive_verified": 1,
-             "discogs_oauth_verified": 1, "created_at": 1, "is_banned": 1, "suspended_until": 1}
-        ).sort("created_at", -1).limit(limit).to_list(limit)
-    else:
-        query = {"$or": [
+async def search_users(
+    q: str = "",
+    skip: int = 0,
+    limit: int = 50,
+    filter: str = "",
+    admin: Dict = Depends(require_admin)
+):
+    """Search users by username or email, with optional status filter and pagination."""
+    query: dict = {}
+
+    if q:
+        query["$or"] = [
             {"username": {"$regex": q, "$options": "i"}},
             {"email": {"$regex": q, "$options": "i"}},
-        ]}
-        users = await db.users.find(
-            query,
-            {"_id": 0, "id": 1, "username": 1, "email": 1, "golden_hive_verified": 1,
-             "discogs_oauth_verified": 1, "created_at": 1, "is_banned": 1, "suspended_until": 1}
-        ).limit(limit).to_list(limit)
+        ]
+
+    now_iso = datetime.now(timezone.utc).isoformat()
+    if filter == "gold":
+        query["golden_hive_verified"] = True
+    elif filter == "verified":
+        query["discogs_oauth_verified"] = True
+    elif filter == "banned":
+        query["is_banned"] = True
+    elif filter == "suspended":
+        query["suspended_until"] = {"$gt": now_iso}
+
+    projection = {
+        "_id": 0, "id": 1, "username": 1, "email": 1,
+        "golden_hive_verified": 1, "discogs_oauth_verified": 1,
+        "created_at": 1, "is_banned": 1, "suspended_until": 1,
+    }
+
+    total = await db.users.count_documents(query)
+    users = await db.users.find(query, projection).sort("created_at", -1).skip(skip).limit(limit).to_list(limit)
 
     # Enrich with record count
     for u in users:
         u["records_count"] = await db.records.count_documents({"user_id": u["id"]})
 
-    return {"users": users, "total": len(users)}
+    return {"users": users, "total": total, "skip": skip, "limit": limit}
 
 
 @router.get("/beekeeper/users/{user_id}")
@@ -517,7 +534,7 @@ async def user_action(user_id: str, body: dict, admin: Dict = Depends(require_ad
     note = body.get("note", "")
     duration_days = body.get("duration_days")
 
-    valid_actions = {"verify", "warn", "suspend", "ban", "grant-gold", "delete", "unban", "unsuspend"}
+    valid_actions = {"verify", "remove-verify", "warn", "suspend", "ban", "grant-gold", "revoke-gold", "delete", "unban", "unsuspend"}
     if action not in valid_actions:
         raise HTTPException(status_code=400, detail=f"Invalid action. Must be one of: {', '.join(valid_actions)}")
 
@@ -531,6 +548,10 @@ async def user_action(user_id: str, body: dict, admin: Dict = Depends(require_ad
     if action == "verify":
         await db.users.update_one({"id": user_id}, {"$set": {"discogs_oauth_verified": True}})
         return {"success": True, "action": action, "message": "User verified"}
+
+    elif action == "remove-verify":
+        await db.users.update_one({"id": user_id}, {"$unset": {"discogs_oauth_verified": ""}})
+        return {"success": True, "action": action, "message": "Verified status removed"}
 
     elif action == "grant-gold":
         await db.users.update_one({"id": user_id}, {"$set": {
@@ -547,6 +568,14 @@ async def user_action(user_id: str, body: dict, admin: Dict = Depends(require_ad
             sender_id=admin["id"],
         )
         return {"success": True, "action": action, "message": "Gold granted"}
+
+    elif action == "revoke-gold":
+        await db.users.update_one({"id": user_id}, {"$unset": {
+            "golden_hive": "",
+            "golden_hive_verified": "",
+            "golden_hive_status": "",
+        }})
+        return {"success": True, "action": action, "message": "Gold revoked"}
 
     elif action == "warn":
         warning = {"note": note, "issued_at": now_iso, "issued_by": admin["id"]}
@@ -771,6 +800,29 @@ async def clear_spotify_match(release_id: str, admin: Dict = Depends(require_adm
     if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Release not found")
     return {"success": True}
+
+
+@router.get("/cron/spotify-match")
+async def cron_spotify_match(request: Request):
+    """Vercel Cron Job endpoint — processes up to 40 pending Spotify matches per invocation.
+    Authenticated via CRON_SECRET env var sent as Bearer token by Vercel.
+    Runs every 10 minutes, resuming from where the previous run left off.
+    """
+    cron_secret = os.environ.get("CRON_SECRET", "")
+    auth = request.headers.get("authorization", "")
+    if not cron_secret or auth != f"Bearer {cron_secret}":
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    from services.spotify_service import batch_match_releases
+
+    pending = await db.releases.count_documents({"spotifyMatchStatus": "pending"})
+    if pending == 0:
+        return {"success": True, "message": "No pending releases", "processed": 0}
+
+    stop_event = asyncio.Event()
+    result = await batch_match_releases(stop_event, run_limit=40)
+    logger.info(f"Cron Spotify match: {result}")
+    return {"success": True, **result}
 
 
 # ─── CC0 Backfill ────────────────────────────────────────────────────────────
@@ -1000,6 +1052,169 @@ async def stop_discogs_migration(admin: Dict = Depends(require_admin)):
     if _migration_stop_event:
         _migration_stop_event.set()
     return {"message": "Stop signal sent", **_migration_status}
+
+
+# ─── Invites ───────────────────────────────────────────────────────────────
+
+@router.get("/beekeeper/invites")
+async def get_invite_overview(admin: Dict = Depends(require_admin)):
+    """Beta signups + invite tokens + stats for the Invites tab."""
+    from database import FRONTEND_URL
+
+    # Beta signups enriched with code status
+    signups = await db.beta_signups.find({}, {"_id": 0}).sort("submitted_at", -1).to_list(1000)
+    for s in signups:
+        code_id = s.get("invite_code_id")
+        if code_id:
+            code_doc = await db.invite_codes.find_one({"id": code_id}, {"_id": 0, "status": 1, "used_at": 1, "used_by": 1})
+            if code_doc and code_doc.get("status") == "used":
+                s["invite_status"] = "joined"
+                s["invite_used_at"] = code_doc.get("used_at")
+                if code_doc.get("used_by"):
+                    u = await db.users.find_one({"id": code_doc["used_by"]}, {"_id": 0, "username": 1})
+                    s["joined_username"] = u.get("username") if u else None
+
+    # Recent direct invite tokens (token-based invites)
+    tokens = await db.invite_tokens.find({}, {"_id": 0}).sort("created_at", -1).to_list(200)
+    for t in tokens:
+        user = await db.users.find_one({"email": t["email"]}, {"_id": 0, "username": 1, "id": 1})
+        t["claimed"] = user is not None
+        t["username"] = user.get("username") if user else None
+
+    total_signups = len(signups)
+    invited = sum(1 for s in signups if s.get("invite_status") in ("sent", "joined"))
+    joined = sum(1 for s in signups if s.get("invite_status") == "joined")
+    pending_tokens = sum(1 for t in tokens if not t.get("claimed"))
+
+    return {
+        "signups": signups,
+        "tokens": tokens,
+        "stats": {
+            "total_signups": total_signups,
+            "invited": invited,
+            "joined": joined,
+            "pending_tokens": pending_tokens,
+        },
+    }
+
+
+@router.post("/beekeeper/invites/send")
+async def beekeeper_send_invite(data: dict, admin: Dict = Depends(require_admin)):
+    """Send a fresh token-based invite link to any email address."""
+    import uuid
+    from database import FRONTEND_URL
+    from services.email_service import send_email
+
+    email = (data.get("email") or "").lower().strip()
+    if not email:
+        raise HTTPException(status_code=400, detail="Email is required")
+
+    user = await db.users.find_one({"email": email}, {"_id": 0, "id": 1, "username": 1})
+    is_existing = user is not None
+
+    await db.invite_tokens.delete_many({"email": email})
+
+    new_token = str(uuid.uuid4())
+    await db.invite_tokens.insert_one({
+        "token": new_token,
+        "email": email,
+        "is_existing": is_existing,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "sent_by": admin["id"],
+    })
+
+    claim_url = f"{FRONTEND_URL}/invite/{new_token}"
+    html = f"""\
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/></head>
+<body style="margin:0;padding:0;background-color:#FFFBF2;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:#1E2A3A;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#FFFBF2;">
+<tr><td align="center" style="padding:24px 16px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:580px;background-color:#FFFFFF;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(30,42,58,0.08);">
+<tr><td align="center" style="background-color:#1E2A3A;padding:28px 24px 20px;">
+<img src="https://www.thehoneygroove.com/logo-wordmark.png" alt="the Honey Groove" width="200" style="display:block;height:auto;"/>
+</td></tr>
+<tr><td style="padding:32px 28px 12px;">
+<h1 style="font-size:22px;font-weight:700;color:#D4A828;margin:0 0 20px;line-height:1.3;">You're invited to the Hive.</h1>
+<p style="font-size:15px;line-height:1.7;color:#1E2A3A;margin:0 0 16px;">
+Welcome to <strong>The Honey Groove</strong> — the social marketplace for vinyl collectors. Click below to claim your spot and start cataloguing your collection, connecting with diggers, and finding your next favorite record.
+</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+<tr><td align="center" style="padding:8px 0 28px;">
+<a href="{claim_url}" target="_blank"
+   style="display:inline-block;background-color:#D4A828;color:#FFFFFF;font-size:16px;font-weight:700;text-decoration:none;padding:14px 36px;border-radius:999px;letter-spacing:0.3px;">
+Join Now
+</a>
+</td></tr>
+</table>
+<p style="font-size:13px;line-height:1.6;color:#7A8694;margin:0 0 16px;">This link expires in 7 days. If you didn't request this, you can safely ignore this email.</p>
+<p style="font-size:15px;line-height:1.7;color:#1E2A3A;margin:0;">Best,<br/><strong style="color:#D4A828;">Katie</strong><br/><span style="font-size:13px;color:#7A8694;">Founder, The Honey Groove&trade;</span></p>
+</td></tr>
+<tr><td align="center" style="padding:20px 28px 24px;border-top:1px solid #E5DBC8;">
+<p style="font-size:11px;color:#7A8694;margin:0;line-height:1.5;">&copy; 2026 The Honey Groove&trade; &middot; the vinyl social club, finally.</p>
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>"""
+
+    sent = await send_email(email, "You're invited to The Honey Groove 🍯", html, reply_to="hello@thehoneygroove.com")
+    if not sent:
+        raise HTTPException(status_code=500, detail="Failed to send email")
+
+    logger.info(f"Beekeeper invite sent to {email} by {admin.get('username', admin['id'])}")
+    return {"status": "sent", "email": email, "is_existing": is_existing}
+
+
+@router.post("/beekeeper/invites/beta-signups/{signup_id}/send")
+async def beekeeper_send_signup_invite(signup_id: str, admin: Dict = Depends(require_admin)):
+    """Send invite code to a beta signup from the Invites tab."""
+    from database import FRONTEND_URL
+    from services.email_service import send_email
+    import uuid, string, random
+
+    signup = await db.beta_signups.find_one({"id": signup_id}, {"_id": 0})
+    if not signup:
+        raise HTTPException(status_code=404, detail="Signup not found")
+
+    now = datetime.now(timezone.utc).isoformat()
+    old_code = signup.get("invite_code_id")
+    if old_code:
+        await db.invite_codes.update_one(
+            {"id": old_code, "status": "unused"},
+            {"$set": {"status": "revoked", "revoked_at": now}},
+        )
+
+    chars = string.ascii_uppercase + string.digits
+    code = "HG-" + "".join(random.choices(chars, k=8))
+    code_doc = {
+        "id": str(uuid.uuid4()),
+        "code": code,
+        "status": "unused",
+        "created_at": now,
+        "created_by": admin["id"],
+        "used_by": None,
+        "used_at": None,
+        "sent_to": signup["email"],
+        "sent_at": now,
+        "beta_signup_id": signup_id,
+    }
+    await db.invite_codes.insert_one(code_doc)
+
+    from templates.emails import invite_code as invite_code_tpl
+    tpl = invite_code_tpl(signup.get("first_name", "there"), code)
+    await send_email(signup["email"], tpl["subject"], tpl["html"], reply_to="hello@thehoneygroove.com")
+
+    await db.beta_signups.update_one({"id": signup_id}, {"$set": {
+        "invite_code_id": code_doc["id"],
+        "invite_code": code,
+        "invite_status": "sent",
+        "invite_sent_at": now,
+    }})
+
+    return {"status": "sent", "invite_code": code, "email": signup["email"]}
 
 
 async def _run_discogs_migration(stop_event: asyncio.Event):

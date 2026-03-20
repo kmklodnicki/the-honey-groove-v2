@@ -219,56 +219,72 @@ async def match_to_spotify(release: dict) -> None:
         )
 
 
-async def batch_match_releases(stop_event: asyncio.Event) -> dict:
-    """Process all pending releases in batches of 5 with 3-sec delay between batches.
-    Respects 429 rate limits and the stop_event signal."""
+async def batch_match_releases(stop_event: asyncio.Event, run_limit: Optional[int] = None) -> dict:
+    """Process pending releases in batches of 5 with adaptive delay.
+
+    Pre-loads release IDs upfront so the MongoDB cursor closes immediately —
+    this avoids the 30-minute cursor timeout that previously capped runs at ~300.
+    Fetches the full document for each release at processing time.
+    Adapts inter-batch delay upward when 429s are seen, and resets when clear.
+
+    run_limit: if set, stop after processing this many releases. Intended for
+    Vercel Cron Job invocations that must complete within maxDuration.
+    """
     processed = matched = unmatched = rate_limited = 0
     batch_size = 5
-    delay = 3.0
+    base_delay = 3.0
+    delay = base_delay
 
-    cursor = db.releases.find({"spotifyMatchStatus": "pending"}, {"_id": 0})
-    batch = []
+    # Pre-load only IDs — cursor opens and closes in one fast query.
+    # Processing can now run for hours without hitting cursor timeout.
+    pending_ids = await db.releases.distinct(
+        "discogsReleaseId", {"spotifyMatchStatus": "pending"}
+    )
+    logger.info(f"Spotify batch: {len(pending_ids)} pending releases")
 
-    async for release in cursor:
+    for i in range(0, len(pending_ids), batch_size):
         if stop_event.is_set():
             break
-        batch.append(release)
-        if len(batch) >= batch_size:
-            for r in batch:
-                if stop_event.is_set():
-                    break
-                await match_to_spotify(r)
-                processed += 1
-                updated = await db.releases.find_one(
-                    {"discogsReleaseId": r["discogsReleaseId"]}, {"_id": 0, "spotifyMatchStatus": 1}
-                )
-                status = updated.get("spotifyMatchStatus") if updated else None
-                if status == "matched":
-                    matched += 1
-                elif status == "pending":
-                    rate_limited += 1  # still pending = rate limited, will retry next run
-                else:
-                    unmatched += 1
 
-            batch = []
-            if not stop_event.is_set():
-                await asyncio.sleep(delay)
+        batch_ids = pending_ids[i:i + batch_size]
+        batch_rate_limited = 0
 
-    # Process remaining
-    for r in batch:
-        if stop_event.is_set():
-            break
-        await match_to_spotify(r)
-        processed += 1
-        updated = await db.releases.find_one(
-            {"discogsReleaseId": r["discogsReleaseId"]}, {"_id": 0, "spotifyMatchStatus": 1}
-        )
-        status = updated.get("spotifyMatchStatus") if updated else None
-        if status == "matched":
-            matched += 1
-        elif status == "pending":
-            rate_limited += 1
-        else:
-            unmatched += 1
+        for discogs_id in batch_ids:
+            if stop_event.is_set():
+                break
+            if run_limit is not None and processed >= run_limit:
+                break
+            # Re-fetch full document — re-checks status so already-processed
+            # items (e.g. from a parallel run) are safely skipped.
+            release = await db.releases.find_one(
+                {"discogsReleaseId": discogs_id, "spotifyMatchStatus": "pending"},
+                {"_id": 0},
+            )
+            if not release:
+                continue
+
+            await match_to_spotify(release)
+            processed += 1
+
+            updated = await db.releases.find_one(
+                {"discogsReleaseId": discogs_id}, {"_id": 0, "spotifyMatchStatus": 1}
+            )
+            status = updated.get("spotifyMatchStatus") if updated else None
+            if status == "matched":
+                matched += 1
+            elif status == "pending":
+                rate_limited += 1
+                batch_rate_limited += 1
+            else:
+                unmatched += 1
+
+        if not stop_event.is_set():
+            # Adaptive delay: back off when rate-limited, recover when clear
+            if batch_rate_limited > 0:
+                delay = min(delay * 2, 60.0)
+                logger.info(f"Spotify rate limits in batch; backing off to {delay:.1f}s")
+            else:
+                delay = max(delay * 0.75, base_delay)
+            await asyncio.sleep(delay)
 
     return {"processed": processed, "matched": matched, "unmatched": unmatched, "rate_limited": rate_limited}
