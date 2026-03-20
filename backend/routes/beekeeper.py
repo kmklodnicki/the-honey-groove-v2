@@ -1371,3 +1371,48 @@ async def discogs_compliance_check(admin: Dict = Depends(require_admin)):
         "users_with_discogs_username": users_with_username,
         "checked_at": datetime.now(timezone.utc).isoformat(),
     }
+
+
+@router.post("/beekeeper/compliance/cleanup")
+async def run_compliance_cleanup(admin: Dict = Depends(require_admin)):
+    """Synchronously purge all Discogs Restricted Data from the database.
+
+    Runs the three cleanup steps inline (no background task) so it works
+    reliably in serverless environments:
+    1. Delete all documents in discogs_tokens.
+    2. Unset discogs_username from all user documents.
+    3. Clear cover_url / imageUrl fields pointing to Discogs CDN from records.
+    """
+    tokens_deleted = (await db.discogs_tokens.delete_many({})).deleted_count
+
+    usernames_cleared = (await db.users.update_many(
+        {"discogs_username": {"$exists": True}},
+        {"$unset": {"discogs_username": ""}},
+    )).modified_count
+
+    await db.records.update_many(
+        {"cover_url": {"$regex": r"i\.discogs\.com|st\.discogs\.com", "$options": "i"}},
+        {"$unset": {"cover_url": ""}},
+    )
+    await db.records.update_many(
+        {"imageUrl": {"$regex": r"i\.discogs\.com|st\.discogs\.com", "$options": "i"}},
+        {"$unset": {"imageUrl": ""}},
+    )
+    images_checked = await db.records.count_documents({
+        "$or": [
+            {"cover_url": {"$regex": r"i\.discogs\.com|st\.discogs\.com", "$options": "i"}},
+            {"imageUrl": {"$regex": r"i\.discogs\.com|st\.discogs\.com", "$options": "i"}},
+        ]
+    })
+
+    logger.info(
+        f"Compliance cleanup: {tokens_deleted} tokens deleted, "
+        f"{usernames_cleared} usernames cleared, images remaining: {images_checked}"
+    )
+
+    return {
+        "tokens_deleted": tokens_deleted,
+        "usernames_cleared": usernames_cleared,
+        "images_remaining": images_checked,
+        "cleaned_at": datetime.now(timezone.utc).isoformat(),
+    }

@@ -1667,10 +1667,13 @@ async def discogs_oauth_callback(oauth_token: str = Query(...), oauth_verifier: 
             )
             
             # Also update user doc with locked discogs identity
+            # NOTE: discogs_username is intentionally NOT stored here — it is
+            # Discogs Restricted Data (TOS §4). It lives only in discogs_tokens
+            # (which is deleted after collection import) so we never persist it
+            # long-term on the user document.
             await db.users.update_one(
                 {"id": user_id},
                 {"$set": {
-                    "discogs_username": discogs_username,
                     "discogs_oauth_verified": True,
                     "discogs_migration_dismissed": False,
                     "has_seen_security_migration": True,

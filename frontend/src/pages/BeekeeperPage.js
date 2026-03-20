@@ -1495,6 +1495,20 @@ function MigrationTab({ API, headers }) {
     }
   };
 
+  const [cleaning, setCleaning] = useState(false);
+  const handleCleanup = async () => {
+    setCleaning(true);
+    try {
+      const res = await axios.post(`${API}/beekeeper/compliance/cleanup`, {}, { headers });
+      toast.success(`Cleanup done — ${res.data.tokens_deleted} tokens deleted, ${res.data.usernames_cleared} usernames cleared`);
+      await fetchCompliance();
+    } catch (e) {
+      toast.error(e?.response?.data?.detail || 'Cleanup failed');
+    } finally {
+      setCleaning(false);
+    }
+  };
+
   const allClear = compliance?.all_clear;
   const isRunning = migration?.running;
 
@@ -1563,12 +1577,18 @@ function MigrationTab({ API, headers }) {
           clears stored OAuth tokens, removes Discogs CDN image URLs, and triggers Spotify matching for unlinked releases.
         </p>
 
-        <div className="flex gap-2 mb-5">
+        <div className="flex gap-2 mb-5 flex-wrap">
           <button onClick={handleStart} disabled={isRunning || starting}
             className="flex items-center gap-2 px-4 py-2 bg-[#D4A828] hover:bg-[#E8CA5A] text-white font-medium text-sm rounded-xl transition-all disabled:opacity-50"
             data-testid="migration-start-btn">
             {starting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
             {isRunning ? 'Running…' : 'Start Migration'}
+          </button>
+          <button onClick={handleCleanup} disabled={cleaning || isRunning}
+            className="flex items-center gap-2 px-4 py-2 bg-[#1E2A3A] hover:bg-[#2A3B50] text-white font-medium text-sm rounded-xl transition-all disabled:opacity-50"
+            data-testid="compliance-cleanup-btn">
+            {cleaning ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+            Run Cleanup
           </button>
           {isRunning && (
             <button onClick={handleStop} disabled={stopping}
