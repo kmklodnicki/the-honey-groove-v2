@@ -8,7 +8,7 @@ import {
   Loader2, RefreshCw, CheckCircle, XCircle, Pencil, Search,
   Users, BarChart2, Droplets, ListChecks, Shield, AlertTriangle,
   ChevronRight, ChevronDown, Ban, AlertCircle, Star, Trash2,
-  Music2, Play, Square, RotateCcw, ImageIcon,
+  Music2, Play, Square, RotateCcw, ImageIcon, ShieldCheck,
 } from 'lucide-react';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
@@ -1361,6 +1361,232 @@ function CoversTab({ API, headers }) {
   );
 }
 
+// ─── Migration Tab ────────────────────────────────────────────────────────────
+
+function MigrationTab({ API, headers }) {
+  const [compliance, setCompliance] = useState(null);
+  const [migration, setMigration] = useState(null);
+  const [loadingCompliance, setLoadingCompliance] = useState(true);
+  const [starting, setStarting] = useState(false);
+  const [stopping, setStopping] = useState(false);
+  const pollRef = useRef(null);
+
+  const fetchCompliance = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API}/beekeeper/compliance/discogs`, { headers });
+      setCompliance(res.data);
+    } catch (e) {
+      toast.error(e?.response?.data?.detail || 'Failed to load compliance data');
+    } finally {
+      setLoadingCompliance(false);
+    }
+  }, [API, headers]);
+
+  const fetchMigrationStatus = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API}/beekeeper/migration/discogs/status`, { headers });
+      setMigration(res.data);
+      // Update compliance counts from migration status
+      if (res.data.compliance) setCompliance(c => ({ ...c, ...res.data.compliance }));
+      return res.data;
+    } catch (e) {
+      return null;
+    }
+  }, [API, headers]);
+
+  useEffect(() => {
+    fetchCompliance();
+    fetchMigrationStatus();
+  }, [fetchCompliance, fetchMigrationStatus]);
+
+  // Poll while migration is running
+  useEffect(() => {
+    if (migration?.running) {
+      pollRef.current = setInterval(async () => {
+        const data = await fetchMigrationStatus();
+        if (data && !data.running) {
+          clearInterval(pollRef.current);
+          fetchCompliance();
+          toast.success('Migration complete');
+        }
+      }, 2000);
+    } else {
+      clearInterval(pollRef.current);
+    }
+    return () => clearInterval(pollRef.current);
+  }, [migration?.running, fetchMigrationStatus, fetchCompliance]);
+
+  const handleStart = async () => {
+    setStarting(true);
+    try {
+      const res = await axios.post(`${API}/beekeeper/migration/discogs/start`, {}, { headers });
+      setMigration(res.data);
+      toast.success('Migration started');
+    } catch (e) {
+      toast.error(e?.response?.data?.detail || 'Failed to start migration');
+    } finally {
+      setStarting(false);
+    }
+  };
+
+  const handleStop = async () => {
+    setStopping(true);
+    try {
+      await axios.post(`${API}/beekeeper/migration/discogs/stop`, {}, { headers });
+      toast.success('Stop signal sent');
+      await fetchMigrationStatus();
+    } catch (e) {
+      toast.error('Failed to send stop signal');
+    } finally {
+      setStopping(false);
+    }
+  };
+
+  const allClear = compliance?.all_clear;
+  const isRunning = migration?.running;
+
+  return (
+    <div className="space-y-6" data-testid="migration-tab">
+
+      {/* Compliance Audit */}
+      <div className="bg-white rounded-2xl border border-stone-200 shadow-sm p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-amber-500" />
+            <h2 className="font-semibold text-stone-800">Discogs TOS Compliance Audit</h2>
+          </div>
+          <button onClick={fetchCompliance}
+            className="text-xs text-stone-400 hover:text-stone-600 flex items-center gap-1">
+            <RefreshCw className="w-3 h-3" /> Refresh
+          </button>
+        </div>
+
+        {loadingCompliance ? (
+          <div className="flex items-center gap-2 text-stone-400 py-4">
+            <Loader2 className="w-4 h-4 animate-spin" /> Checking...
+          </div>
+        ) : compliance ? (
+          <>
+            <div className={`flex items-center gap-2 px-3 py-2 rounded-lg mb-4 text-sm font-medium ${
+              allClear ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
+            }`}>
+              {allClear
+                ? <><CheckCircle className="w-4 h-4" /> All clear — no Restricted Data found</>
+                : <><AlertTriangle className="w-4 h-4" /> Restricted Data detected — run migration</>}
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: 'Records with Discogs image URLs', value: compliance.records_with_discogs_image_urls, bad: true },
+                { label: 'Releases with images field', value: compliance.releases_with_images_field, bad: true },
+                { label: 'Stored OAuth tokens', value: compliance.stored_oauth_tokens, bad: true },
+                { label: 'Users with discogs_username', value: compliance.users_with_discogs_username, bad: false },
+              ].map(({ label, value, bad }) => (
+                <div key={label} className="bg-stone-50 rounded-xl p-3">
+                  <p className="text-xs text-stone-500 mb-1">{label}</p>
+                  <p className={`text-xl font-semibold ${bad && value > 0 ? 'text-red-500' : value === 0 ? 'text-green-600' : 'text-stone-700'}`}>
+                    {value ?? '—'}
+                  </p>
+                </div>
+              ))}
+            </div>
+            {compliance.checked_at && (
+              <p className="text-[10px] text-stone-400 mt-3">
+                Checked {new Date(compliance.checked_at).toLocaleString()}
+              </p>
+            )}
+          </>
+        ) : null}
+      </div>
+
+      {/* Migration Control */}
+      <div className="bg-white rounded-2xl border border-stone-200 shadow-sm p-5">
+        <div className="flex items-center gap-2 mb-1">
+          <ShieldCheck className="w-5 h-5 text-amber-500" />
+          <h2 className="font-semibold text-stone-800">Beta User Migration</h2>
+        </div>
+        <p className="text-xs text-stone-500 mb-4">
+          Backfills <code className="bg-stone-100 px-1 rounded">releaseId</code> on all Discogs-imported records,
+          clears stored OAuth tokens, removes Discogs CDN image URLs, and triggers Spotify matching for unlinked releases.
+        </p>
+
+        <div className="flex gap-2 mb-5">
+          <button onClick={handleStart} disabled={isRunning || starting}
+            className="flex items-center gap-2 px-4 py-2 bg-amber-400 hover:bg-amber-500 text-amber-900 font-medium text-sm rounded-xl transition-all disabled:opacity-50"
+            data-testid="migration-start-btn">
+            {starting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+            {isRunning ? 'Running…' : 'Start Migration'}
+          </button>
+          {isRunning && (
+            <button onClick={handleStop} disabled={stopping}
+              className="flex items-center gap-2 px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 font-medium text-sm rounded-xl transition-all disabled:opacity-50"
+              data-testid="migration-stop-btn">
+              {stopping ? <Loader2 className="w-4 h-4 animate-spin" /> : <Square className="w-4 h-4" />}
+              Stop
+            </button>
+          )}
+        </div>
+
+        {migration && (
+          <div className="space-y-4">
+            {/* Progress bar */}
+            {isRunning && migration.processed > 0 && (
+              <div>
+                <div className="flex justify-between text-xs text-stone-500 mb-1">
+                  <span>Processing records…</span>
+                  <span>{migration.processed} processed · {migration.linked} linked</span>
+                </div>
+                <div className="h-2 bg-stone-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-amber-400 rounded-full transition-all"
+                    style={{ width: migration.linked > 0 ? `${Math.min((migration.linked / Math.max(migration.processed, 1)) * 100, 100)}%` : '0%' }} />
+                </div>
+              </div>
+            )}
+
+            {/* Stats grid */}
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: 'Processed', value: migration.processed },
+                { label: 'Linked', value: migration.linked },
+                { label: 'Spotify triggered', value: migration.spotify_triggered },
+                { label: 'Tokens deleted', value: migration.tokens_deleted },
+                { label: 'Usernames cleared', value: migration.usernames_cleared },
+                { label: 'Images cleared', value: migration.images_cleared },
+              ].map(({ label, value }) => (
+                <div key={label} className="bg-stone-50 rounded-xl p-3 text-center">
+                  <p className="text-lg font-semibold text-stone-800">{value ?? 0}</p>
+                  <p className="text-[10px] text-stone-500">{label}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Timestamps */}
+            <div className="flex gap-4 text-[10px] text-stone-400">
+              {migration.started_at && <span>Started: {new Date(migration.started_at).toLocaleString()}</span>}
+              {migration.completed_at && <span>Completed: {new Date(migration.completed_at).toLocaleString()}</span>}
+            </div>
+
+            {/* Error log */}
+            {migration.errors?.length > 0 && (
+              <div className="border border-red-100 rounded-xl p-3">
+                <p className="text-xs font-medium text-red-600 mb-2 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5" /> {migration.errors.length} error{migration.errors.length !== 1 ? 's' : ''}
+                </p>
+                <div className="space-y-1 max-h-40 overflow-y-auto">
+                  {migration.errors.map((e, i) => (
+                    <p key={i} className="text-[10px] text-red-500 font-mono">{e}</p>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 const TABS = [
@@ -1370,6 +1596,7 @@ const TABS = [
   { key: 'users', label: 'Users', icon: Users },
   { key: 'matching', label: 'Matching', icon: Music2 },
   { key: 'covers', label: 'Covers', icon: ImageIcon },
+  { key: 'migration', label: 'Migration', icon: ShieldCheck },
 ];
 
 export default function BeekeeperPage() {
@@ -1421,6 +1648,7 @@ export default function BeekeeperPage() {
         {activeTab === 'users' && <UsersTab API={API} headers={headers} />}
         {activeTab === 'matching' && <MatchingTab API={API} headers={headers} />}
         {activeTab === 'covers' && <CoversTab API={API} headers={headers} />}
+        {activeTab === 'migration' && <MigrationTab API={API} headers={headers} />}
       </div>
     </div>
   );
