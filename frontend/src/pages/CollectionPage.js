@@ -1458,7 +1458,7 @@ const DreamDebtHeader = ({ totalValue, itemCount, countKey, subtractMsg, pending
 };
 
 const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, onUploadClick, isSpinning, value, selectMode, isSelected, onToggleSelect, blurData, isFading, priority }) => {
-  const isSpotify = record.imageSource === 'spotify';
+  const isSpotify = record.imageSource === 'spotify' || record.cover_url?.includes('i.scdn.co') || record.imageUrl?.includes('i.scdn.co');
   return (
     <Card 
       className={`relative group border-honey/20 overflow-hidden hover:shadow-honey transition-all duration-300 hover:-translate-y-1 flex flex-col w-full h-full ${isSelected ? 'ring-2 ring-honey shadow-honey' : ''} ${selectMode ? 'cursor-pointer' : ''} ${isFading ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'}`}
@@ -1620,9 +1620,11 @@ const RecordCard = ({ record, onSpin, onDelete, onMoveToWishlist, onMoveToISO, o
             {isSpinning ? 'Spinning...' : 'Spin Now'}
           </Button>
           {/* Spotify attribution link — required when displaying Spotify-sourced art (§2.1) */}
-          {isSpotify && record.spotifyAlbumId && (
+          {isSpotify && (record.spotifyAlbumId || record.artist || record.title) && (
             <a
-              href={`https://open.spotify.com/album/${record.spotifyAlbumId}`}
+              href={record.spotifyAlbumId
+                ? `https://open.spotify.com/album/${record.spotifyAlbumId}`
+                : `https://open.spotify.com/search/${encodeURIComponent(`${record.artist || ''} ${record.title || ''}`.trim())}`}
               target="_blank"
               rel="noopener noreferrer"
               onClick={e => e.stopPropagation()}

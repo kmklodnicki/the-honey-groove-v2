@@ -1023,7 +1023,7 @@ const ProfilePage = () => {
                         className="w-full h-full object-cover"
                         isUnofficial={record.is_unofficial}
                       />
-                      {record.imageSource !== 'spotify' && (
+                      {record.imageSource !== 'spotify' && !record.cover_url?.includes('i.scdn.co') && !record.imageUrl?.includes('i.scdn.co') && (
                         <>
                           {record.color_variant && (
                             <>
@@ -1121,7 +1121,7 @@ const ProfilePage = () => {
                     ) : (
                       <div className="w-full h-full flex items-center justify-center"><Disc className="w-6 h-6 text-honey" /></div>
                     )}
-                    {listing.price > 0 && (listing.imageSource || listing.record?.imageSource) !== 'spotify' && (
+                    {listing.price > 0 && (listing.imageSource || listing.record?.imageSource) !== 'spotify' && !listing.cover_url?.includes('i.scdn.co') && !listing.record?.cover_url?.includes('i.scdn.co') && (
                       <div className="absolute top-2 right-2 px-2 py-0.5 rounded-full font-bold text-xs z-[5]"
                         style={{ background: 'rgba(255, 191, 0, 0.85)', color: '#000' }}
                         data-testid={`listing-price-${listing.id}`}>
@@ -1166,7 +1166,7 @@ const ProfilePage = () => {
                           <Disc className="w-12 h-12 text-honey" />
                         </div>
                       )}
-                      {item.imageSource !== 'spotify' && (
+                      {item.imageSource !== 'spotify' && !item.cover_url?.includes('i.scdn.co') && (
                         <>
                           {item.color_variant && (
                             <>
@@ -1283,7 +1283,7 @@ const ProfilePage = () => {
                         <Disc className="w-12 h-12 text-honey" />
                       </div>
                     )}
-                    {iso.imageSource !== 'spotify' && (
+                    {iso.imageSource !== 'spotify' && !iso.cover_url?.includes('i.scdn.co') && (
                       <>
                         {iso.pressing_notes && (
                           <>
