@@ -1454,32 +1454,58 @@ async def list_all_testimonials(admin: Dict = Depends(require_admin)):
 # Admin: create
 @router.post("/beekeeper/testimonials")
 async def create_testimonial(body: dict, admin: Dict = Depends(require_admin)):
-    required = {"quote", "username", "avatarLetter"}
-    if not required.issubset(body.keys()):
-        raise HTTPException(400, "Missing required fields: quote, username, avatarLetter")
-    if len(body.get("quote", "")) > 300:
-        raise HTTPException(400, "quote must be 300 characters or fewer")
+    try:
+        quote = (body.get("quote") or "").strip()
+        username = (body.get("username") or "").strip()
+        avatar_letter = (body.get("avatarLetter") or "").strip()
 
-    # Auto-assign sortOrder at the end
-    last = await db.testimonials.find_one({}, sort=[("sortOrder", -1)])
-    next_order = (last["sortOrder"] + 1) if last else 1
+        if not quote or not username or not avatar_letter:
+            raise HTTPException(400, "Missing required fields: quote, username, avatarLetter")
+        if len(quote) > 300:
+            raise HTTPException(400, "quote must be 300 characters or fewer")
 
-    doc = {
-        "quote": body["quote"].strip(),
-        "username": body["username"].strip(),
-        "label": body.get("label", "beta collector").strip(),
-        "avatarLetter": (body.get("avatarLetter") or "?")[0].upper(),
-        "avatarUrl": body.get("avatarUrl"),
-        "recordCount": int(body.get("recordCount", 0)),
-        "isActive": bool(body.get("isActive", True)),
-        "sortOrder": int(body.get("sortOrder", next_order)),
-        "createdAt": datetime.now(timezone.utc),
-        "linkedUserId": ObjectId(body["linkedUserId"]) if body.get("linkedUserId") else None,
-        "linkedUsername": body.get("linkedUsername"),
-    }
-    result = await db.testimonials.insert_one(doc)
-    doc["_id"] = result.inserted_id
-    return _serialize_testimonial(doc)
+        # Auto-assign sortOrder at the end
+        last = await db.testimonials.find_one({}, sort=[("sortOrder", -1)])
+        next_order = (last.get("sortOrder", 0) + 1) if last else 1
+
+        try:
+            record_count = int(body.get("recordCount") or 0)
+        except (ValueError, TypeError):
+            record_count = 0
+
+        try:
+            sort_order = int(body.get("sortOrder") or next_order)
+        except (ValueError, TypeError):
+            sort_order = next_order
+
+        linked_user_id = None
+        if body.get("linkedUserId"):
+            try:
+                linked_user_id = ObjectId(str(body["linkedUserId"]))
+            except Exception:
+                linked_user_id = None
+
+        doc = {
+            "quote": quote,
+            "username": username,
+            "label": (body.get("label") or "beta collector").strip(),
+            "avatarLetter": avatar_letter[0].upper(),
+            "avatarUrl": body.get("avatarUrl"),
+            "recordCount": record_count,
+            "isActive": bool(body.get("isActive", True)),
+            "sortOrder": sort_order,
+            "createdAt": datetime.now(timezone.utc),
+            "linkedUserId": linked_user_id,
+            "linkedUsername": body.get("linkedUsername"),
+        }
+        result = await db.testimonials.insert_one(doc)
+        doc["_id"] = result.inserted_id
+        return _serialize_testimonial(doc)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("create_testimonial failed: %s | body keys: %s", e, list(body.keys()) if body else [])
+        raise HTTPException(500, f"Failed to create testimonial: {type(e).__name__}: {e}")
 
 
 # Admin: update
