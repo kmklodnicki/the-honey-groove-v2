@@ -350,28 +350,22 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
       {/* Post Type Banner */}
       {!post.is_release_note && (
         <div
-          className="px-4 py-1.5 flex items-center justify-between"
-          style={{ background: '#354B66', borderRadius: '12px 12px 0 0' }}
+          style={{ background: '#1E2A3A', padding: '5px 16px', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '12px 12px 0 0' }}
           data-testid={`post-type-banner-${post.id}`}
         >
-          <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#E8CA5A', letterSpacing: '0.06em' }}>
-            <span className="text-[11px] leading-none">{bannerConfig.icon}</span>
-            {bannerConfig.label}
-          </span>
-          {spinCount > 0 && (
-            <span className="text-[11px]" style={{ color: '#F0E6C8' }}>
-              {spinCount} {spinCount === 1 ? 'spin' : 'spins'}
-            </span>
-          )}
+          <span style={{ fontSize: '10px' }}>{bannerConfig.icon}</span>
+          <span style={{ fontSize: '9px', fontWeight: 700, color: '#E8CA5A', textTransform: 'uppercase', letterSpacing: '1px' }}>{bannerConfig.label}</span>
+          {spinCount > 0 && <span style={{ fontSize: '9px', color: '#F0E6C8', marginLeft: 'auto' }}>🎵 {spinCount} spins</span>}
         </div>
       )}
       {post.is_pinned && (
-        <div className="px-4 py-1.5 flex items-center gap-1.5 text-xs font-semibold" style={{ background: '#354B66', color: '#E8CA5A', borderRadius: '12px 12px 0 0' }} data-testid={`pinned-${post.id}`}>
-          <Pin className="w-3 h-3" />
-          <span className="flex-1">{pinnedCollapsed ? 'Pinned Post' : 'Pinned'}</span>
+        <div style={{ background: '#1E2A3A', padding: '5px 16px', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '12px 12px 0 0', color: '#E8CA5A' }} data-testid={`pinned-${post.id}`}>
+          <Pin className="w-3 h-3" style={{ color: '#E8CA5A' }} />
+          <span style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', flex: 1 }}>{pinnedCollapsed ? 'Pinned Post' : 'Pinned'}</span>
           <button
             onClick={(e) => { e.stopPropagation(); togglePinnedCollapse(); }}
-            className="p-0.5 rounded hover:bg-[#E8CA5A]/20 transition-colors"
+            className="p-0.5 rounded transition-colors"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#E8CA5A' }}
             data-testid={`pinned-toggle-${post.id}`}
             aria-label={pinnedCollapsed ? 'Expand pinned post' : 'Collapse pinned post'}
           >
@@ -380,12 +374,13 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
         </div>
       )}
       {post.is_release_note && !post.is_pinned && (
-        <div className="px-4 py-1.5 border-b flex items-center gap-1.5 text-xs font-semibold" style={{ background: '#354B66', borderColor: '#354B66', color: '#E8CA5A', borderRadius: '12px 12px 0 0' }} data-testid={`release-note-banner-${post.id}`}>
-          <FileText className="w-3 h-3" />
-          <span className="flex-1">{rnCollapsed ? 'Release Note' : 'Release Note'}</span>
+        <div style={{ background: '#1E2A3A', padding: '5px 16px', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '12px 12px 0 0', color: '#E8CA5A' }} data-testid={`release-note-banner-${post.id}`}>
+          <FileText className="w-3 h-3" style={{ color: '#E8CA5A' }} />
+          <span style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', flex: 1 }}>Release Note</span>
           <button
             onClick={(e) => { e.stopPropagation(); toggleRnCollapse(); }}
-            className="p-0.5 rounded hover:bg-[#E8CA5A]/50 transition-colors"
+            className="p-0.5 rounded transition-colors"
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#E8CA5A' }}
             data-testid={`release-note-toggle-${post.id}`}
             aria-label={rnCollapsed ? 'Expand release note' : 'Collapse release note'}
           >

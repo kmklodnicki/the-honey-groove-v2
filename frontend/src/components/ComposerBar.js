@@ -545,10 +545,10 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
     <>
       {/* Composer Bar — Command Center */}
       <div className="rounded-xl border overflow-hidden mb-6 shadow" style={{ borderColor: '#E5DBC8', background: '#FFFFFF' }} data-testid="composer-bar">
-        {/* Slate-blue header bar */}
-        <div className="px-4 pt-3.5 pb-3" style={{ background: '#354B66' }}>
-          <p className="text-sm font-semibold" style={{ color: '#FFFFFF', fontFamily: "'Playfair Display', Georgia, serif" }}>What's on the turntable?</p>
-          <p className="text-[11px] mt-0.5" style={{ color: '#F0E6C8', opacity: 0.75 }}>Share a spin, haul, or note with the hive</p>
+        {/* Navy header strip */}
+        <div style={{ background: '#1E2A3A', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: '12px', color: '#FFFFFF', fontWeight: 600 }}>What's on the turntable?</span>
+          <span style={{ fontSize: '9px', color: '#F0E6C8' }}>Only posts with comments will be shared in The Hive.</span>
         </div>
         {/* Action chips */}
         <div className="p-4 max-sm:p-3">

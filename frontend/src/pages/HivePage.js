@@ -99,7 +99,6 @@ const HivePage = () => {
     { key: 'NOTE', emoji: '\u{1F4DD}', text: 'Notes' },
     { key: 'POLL', emoji: '\u{1F4CA}', text: 'Polls' },
     { key: 'listing', emoji: '\u{1F3F7}\uFE0F', text: 'For Sale' },
-    { key: 'RELEASE_NOTE', emoji: '\u270F\uFE0F', text: 'Releases' },
   ];
 
   const headers = { Authorization: `Bearer ${token}` };
@@ -453,46 +452,43 @@ const HivePage = () => {
       )}
 
       <div className="flex items-center justify-between mb-6">
-        <h1 className="font-heading text-3xl text-vinyl-black">The Hive</h1>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <div className="w-2 h-2 rounded-full bg-honey animate-pulse" />
+        <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: '24px', fontWeight: 700, color: '#1E2A3A', margin: 0 }}>The Hive</h1>
+        <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: '#2D6A4F' }}>
+          <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#2D6A4F' }} />
           Live Feed
         </div>
       </div>
 
       {/* Feed Mode Toggle: All | Following */}
-      <div className="flex items-center justify-between mb-3" data-testid="feed-mode-toggle">
-        <div className="flex w-52 bg-[#F3EBE0] rounded-full p-1">
+      <div className="flex items-center justify-between mb-4" data-testid="feed-mode-toggle">
+        <div className="flex" style={{ borderRadius: '8px', overflow: 'hidden' }}>
           <button
             onClick={() => setFeedMode('all')}
-            className={`flex-1 py-1.5 rounded-full text-sm font-medium text-center transition-all duration-250 ${
-              feedMode === 'all'
-                ? 'shadow-sm'
-                : 'hover:text-[#354B66]'
-            }`}
-            style={feedMode === 'all'
-              ? { background: '#1E2A3A', color: '#E8CA5A', boxShadow: '0 2px 4px rgba(30,42,58,0.2), 0 4px 12px rgba(30,42,58,0.12)' }
-              : { color: '#7A8694', background: 'rgba(255,255,255,0.5)' }
-            }
+            className="transition-all duration-200"
+            style={{
+              padding: '8px 24px', fontSize: '12px', fontWeight: 700, cursor: 'pointer',
+              background: feedMode === 'all' ? '#1E2A3A' : 'rgba(255,255,255,0.5)',
+              color: feedMode === 'all' ? '#E8CA5A' : '#7A8694',
+              border: feedMode === 'all' ? 'none' : '1px solid #E5DBC8',
+              borderRadius: '8px 0 0 8px',
+              boxShadow: feedMode === 'all' ? '0 2px 4px rgba(30,42,58,0.2), 0 4px 12px rgba(30,42,58,0.12)' : 'none',
+            }}
             data-testid="feed-mode-all"
-          >
-            All
-          </button>
+          >All</button>
           <button
             onClick={() => setFeedMode('following')}
-            className={`flex-1 py-1.5 rounded-full text-sm font-medium text-center transition-all duration-250 ${
-              feedMode === 'following'
-                ? 'shadow-sm'
-                : 'hover:text-[#354B66]'
-            }`}
-            style={feedMode === 'following'
-              ? { background: '#1E2A3A', color: '#E8CA5A', boxShadow: '0 2px 4px rgba(30,42,58,0.2), 0 4px 12px rgba(30,42,58,0.12)' }
-              : { color: '#7A8694', background: 'rgba(255,255,255,0.5)' }
-            }
+            className="transition-all duration-200"
+            style={{
+              padding: '8px 24px', fontSize: '12px', fontWeight: 700, cursor: 'pointer',
+              background: feedMode === 'following' ? '#1E2A3A' : 'rgba(255,255,255,0.5)',
+              color: feedMode === 'following' ? '#E8CA5A' : '#7A8694',
+              border: feedMode === 'following' ? 'none' : '1px solid #E5DBC8',
+              borderLeft: 'none',
+              borderRadius: '0 8px 8px 0',
+              boxShadow: feedMode === 'following' ? '0 2px 4px rgba(30,42,58,0.2), 0 4px 12px rgba(30,42,58,0.12)' : 'none',
+            }}
             data-testid="feed-mode-following"
-          >
-            Following
-          </button>
+          >Following</button>
         </div>
       </div>
 
@@ -502,23 +498,31 @@ const HivePage = () => {
       {/* Streak Banner — shown when user hasn't buzzed in yet */}
       {!promptBuzzedIn && (
         <div
-          className="rounded-xl mb-4 px-4 py-3 flex items-center justify-between gap-3"
-          style={{ background: '#354B66', boxShadow: '0 2px 8px rgba(30,42,58,0.15)' }}
+          style={{
+            background: '#1E2A3A', borderRadius: '10px', padding: '12px 16px',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px',
+            boxShadow: '0 2px 4px rgba(30,42,58,0.2), 0 4px 12px rgba(30,42,58,0.12)',
+            marginBottom: '14px',
+          }}
           data-testid="streak-banner"
         >
-          <div className="flex items-center gap-3 min-w-0">
-            <span className="text-xl leading-none shrink-0">🐝{promptStreak > 0 ? '🔥' : ''}</span>
-            <div className="min-w-0">
-              <p className="text-sm font-semibold leading-tight" style={{ color: '#FFFFFF', fontFamily: "'Playfair Display', Georgia, serif" }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+            <span style={{ fontSize: '20px', lineHeight: 1, flexShrink: 0 }}>🐝{promptStreak > 0 ? '🔥' : ''}</span>
+            <div style={{ minWidth: 0 }}>
+              <p style={{ fontSize: '12px', fontWeight: 700, color: '#FFFFFF', margin: 0, lineHeight: 1.2 }}>
                 {promptStreak > 0 ? `${promptStreak}-day Buzz In streak!` : 'Daily Buzz In'}
               </p>
-              <p className="text-[11px] mt-0.5 truncate" style={{ color: '#F0E6C8', opacity: 0.8 }}>Answer today's prompt to keep it going</p>
+              <p style={{ fontSize: '10px', color: '#F0E6C8', margin: '2px 0 0', opacity: 0.85 }}>Answer today's prompt to keep it going</p>
             </div>
           </div>
           <button
             onClick={() => promptRef.current?.openBuzzModal()}
-            className="flex-shrink-0 inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-semibold transition-all hover:scale-105 hover:shadow-md"
-            style={{ background: 'linear-gradient(135deg, #D4A828, #E8CA5A)', color: '#1E2A3A' }}
+            style={{
+              flexShrink: 0, padding: '7px 16px', borderRadius: '7px', fontSize: '10px', fontWeight: 700,
+              background: '#D4A828', color: '#FFFFFF', border: 'none', cursor: 'pointer',
+              boxShadow: '0 2px 4px rgba(212,168,40,0.28), 0 4px 12px rgba(212,168,40,0.20)',
+              transition: 'opacity 0.15s',
+            }}
             data-testid="streak-buzz-in-btn"
           >
             Buzz In
@@ -534,20 +538,24 @@ const HivePage = () => {
         onBuzzStatusChange={handleBuzzStatusChange}
       />
 
-      {/* Feed Filter — pill row, wraps to fit all in view */}
-      <div className="mb-4 flex flex-wrap gap-1.5" data-testid="feed-filter-bar">
+      {/* Feed Filter — centered pill row */}
+      <div className="mb-4 flex flex-wrap gap-1.5 justify-center" data-testid="feed-filter-bar">
         {FEED_FILTERS.map(f => (
           <button
             key={f.key}
             onClick={() => setActiveFilter(f.key)}
-            className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium border transition-all whitespace-nowrap"
-            style={activeFilter === f.key
-              ? { background: '#1E2A3A', borderColor: '#1E2A3A', color: '#E8CA5A', boxShadow: '0 2px 4px rgba(30,42,58,0.2), 0 4px 12px rgba(30,42,58,0.12)' }
-              : { background: 'rgba(255,255,255,0.8)', borderColor: '#E5DBC8', color: '#354B66' }
-            }
+            style={{
+              padding: '6px 14px', borderRadius: '9999px', fontSize: '10px', fontWeight: 600,
+              whiteSpace: 'nowrap', cursor: 'pointer', transition: 'all 0.15s ease',
+              display: 'inline-flex', alignItems: 'center', gap: '4px',
+              background: activeFilter === f.key ? '#1E2A3A' : 'rgba(255,255,255,0.6)',
+              color: activeFilter === f.key ? '#E8CA5A' : '#3A4D63',
+              border: activeFilter === f.key ? 'none' : '1px solid #E5DBC8',
+              boxShadow: activeFilter === f.key ? '0 2px 4px rgba(30,42,58,0.2), 0 4px 12px rgba(30,42,58,0.12)' : 'none',
+            }}
             data-testid={`filter-${f.key}`}
           >
-            <span className="leading-none">{f.emoji}</span>
+            <span>{f.emoji}</span>
             <span>{f.text}</span>
           </button>
         ))}
@@ -619,21 +627,31 @@ const HivePage = () => {
             const upsellCard = (key) => (
               <div
                 key={key}
-                className="rounded-xl border px-5 py-4 flex items-center justify-between gap-4"
                 style={{
-                  background: 'linear-gradient(135deg, rgba(30,42,58,0.03), rgba(30,42,58,0.07))',
-                  borderColor: '#1E2A3A',
+                  background: 'linear-gradient(135deg, rgba(30,42,58,0.08), rgba(30,42,58,0.12))',
+                  border: '1px solid rgba(30,42,58,0.15)',
+                  borderRadius: '10px',
+                  padding: '12px 16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '12px',
                 }}
                 data-testid="gold-upsell-card"
               >
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold" style={{ color: '#1E2A3A', fontFamily: "'Playfair Display', Georgia, serif" }}>Unlock Gold Collector perks</p>
-                  <p className="text-xs mt-0.5" style={{ color: '#7A8694' }}>Wax Reports, full Explore charts, vault insights & more</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                  <span style={{ fontSize: '16px', flexShrink: 0 }}>✦</span>
+                  <span style={{ fontSize: '11px', color: '#1E2A3A', lineHeight: 1.4 }}>Unlock advanced filters, Silent Spins, and the Gold Collector badge</span>
                 </div>
                 <a
                   href="/gold"
-                  className="flex-shrink-0 inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-bold transition-all hover:scale-105 hover:shadow-md"
-                  style={{ background: 'linear-gradient(135deg, #D4A828, #E8CA5A)', color: '#1E2A3A', textDecoration: 'none' }}
+                  style={{
+                    flexShrink: 0, padding: '7px 16px', borderRadius: '7px', fontSize: '10px', fontWeight: 700,
+                    background: 'linear-gradient(135deg, #D4A828, #E8CA5A, #D4A828)', color: '#1E2A3A',
+                    border: 'none', cursor: 'pointer', textDecoration: 'none', whiteSpace: 'nowrap',
+                    boxShadow: '0 2px 4px rgba(212,168,40,0.25), inset 0 1px 0 rgba(255,255,255,0.2)',
+                    display: 'inline-block',
+                  }}
                   data-testid="gold-upsell-cta"
                 >
                   Go Gold
