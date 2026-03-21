@@ -19,18 +19,18 @@ import AlbumArt from './AlbumArt';
 import RecordSearchResult from './RecordSearchResult';
 
 const MOOD_CONFIG = {
-  'New Arrival': { emoji: '\u{1F4E6}', bg: '#1a1a08', btnColor: '#c8861a', placeholder: 'what just came in the mail?' },
-  'Deep Listening': { emoji: '\u{1F9D8}', bg: '#0a1a2a', btnColor: '#4a7aaa', placeholder: 'what are you really hearing right now?' },
-  'In The Zone': { emoji: '\u{1F3AF}', bg: '#0a1a0a', btnColor: '#2a6a2a', placeholder: 'locked in. what are you working to?' },
-  'Me Time': { emoji: '\u{1F9CD}', bg: '#1a1230', btnColor: '#6a3a9a', placeholder: 'just you and the record...' },
-  'Cleaning Session': { emoji: '\u{1F9FC}', bg: '#0a2a1a', btnColor: '#3a9a5a', placeholder: 'fresh grooves only...' },
-  'Spin Party': { emoji: '\u{1FAA9}', bg: '#1a0a2a', btnColor: '#aa3a8a', placeholder: "who's pulling up?" },
-  'Limited Edition': { emoji: '\u{1F48E}', bg: '#0a0a2a', btnColor: '#5a5aaa', placeholder: 'how rare is this one?' },
-  'Vibe Check': { emoji: '\u2728', bg: '#2a1a08', btnColor: '#aa7a3a', placeholder: "what's the vibe?" },
-  'Late Night': { emoji: '\u{1F319}', bg: '#0a0a1a', btnColor: '#4a4a8a', placeholder: 'what are you listening to at this hour?' },
-  'Background': { emoji: '\u2615', bg: '#1a1208', btnColor: '#8a6a3a', placeholder: "what's on in the background?" },
-  'In My Feels': { emoji: '\u{1F972}', bg: '#1a1a2a', btnColor: '#5a5a8a', placeholder: 'some records just hit different...' },
-  'Daydreaming': { emoji: '\u2601\uFE0F', bg: '#0a1a2a', btnColor: '#6a8aaa', placeholder: 'where is this record taking you?' },
+  'Late Night': { emoji: '🌙', placeholder: 'what are you listening to at this hour?' },
+  'Deep Listening': { emoji: '🎧', placeholder: 'what are you really hearing right now?' },
+  'In The Zone': { emoji: '⚡', placeholder: 'locked in. what are you working to?' },
+  'Cleaning Session': { emoji: '🧹', placeholder: 'fresh grooves only...' },
+  'Spin Party': { emoji: '🥂', placeholder: "who's pulling up?" },
+  'Limited Edition': { emoji: '💎', placeholder: 'how rare is this one?' },
+  'Golden Hour': { emoji: '🌅', placeholder: 'the light is just right...' },
+  'Morning Ritual': { emoji: '☕', placeholder: 'starting the day right...' },
+  'Road Trip Energy': { emoji: '🚗', placeholder: 'windows down, volume up...' },
+  'In My Feels': { emoji: '💭', placeholder: 'some records just hit different...' },
+  'New Arrival': { emoji: '🆕', placeholder: 'what just came in the mail?' },
+  'Background Vibes': { emoji: '🔇', placeholder: "what's on in the background?" },
 };
 const MOOD_KEYS = Object.keys(MOOD_CONFIG);
 
@@ -47,6 +47,10 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
   const [spinTrack, setSpinTrack] = useState('');
   const [spinCaption, setSpinCaption] = useState('');
   const [spinMood, setSpinMood] = useState('');
+  const [moodDropdownOpen, setMoodDropdownOpen] = useState(false);
+  const [customMoodMode, setCustomMoodMode] = useState(false);
+  const [customMoodInput, setCustomMoodInput] = useState('');
+  const moodDropdownRef = useRef(null);
   const [spinSearch, setSpinSearch] = useState('');
   const [spinSearchResults, setSpinSearchResults] = useState([]);
   const [spinSelectedRecord, setSpinSelectedRecord] = useState(null);
@@ -111,6 +115,7 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
 
   const resetAll = () => {
     setSpinRecordId(''); setSpinTrack(''); setSpinCaption(''); setSpinMood('');
+    setMoodDropdownOpen(false); setCustomMoodMode(false); setCustomMoodInput('');
     setSpinSearch(''); setSpinSearchResults([]); setSpinSelectedRecord(null);
     setSpinTracks([]); setSpinTracksLoading(false); setSpinTrackDropdownOpen(false); setSpinTrackSearch(''); setSpinTracksFetched(false);
     setPostToHive(true);
@@ -178,6 +183,19 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [spinTrackDropdownOpen]);
+
+  // Close mood dropdown when clicking outside
+  useEffect(() => {
+    if (!moodDropdownOpen) return;
+    const handleClickOutside = (e) => {
+      if (moodDropdownRef.current && !moodDropdownRef.current.contains(e.target)) {
+        setMoodDropdownOpen(false);
+        setCustomMoodMode(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [moodDropdownOpen]);
 
   // Local collection search for Now Spinning
   const searchCollection = useCallback((query) => {
@@ -552,17 +570,43 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
 
       {/* ═══ Now Spinning Modal (merged with Mood) ═══ */}
       <Dialog open={activeModal === 'NOW_SPINNING'} onOpenChange={(open) => !open && closeModal()}>
-        <DialogContent className="sm:max-w-md max-h-[90dvh] flex flex-col overflow-hidden p-0 max-sm:max-w-[95vw] max-sm:max-h-[88dvh]">
-          <div className="px-6 max-sm:px-4 pt-6 max-sm:pt-4 pb-2 shrink-0">
-            <DialogHeader>
-              <DialogTitle className="font-heading flex items-center gap-2 shrink" style={{ color: '#D4A828' }}>
-                <Music className="w-5 h-5 shrink-0" /> <span className="shrink">Now Spinning</span>
-                {spinMood && <span className="text-sm font-normal ml-1">· {MOOD_CONFIG[spinMood].emoji} {spinMood}</span>}
+        <DialogContent
+          className="sm:max-w-md max-h-[90dvh] flex flex-col overflow-hidden p-0 max-sm:max-w-[95vw] max-sm:max-h-[88dvh] [&>button:last-child]:hidden"
+          overlayClassName="!bg-[rgba(30,42,58,0.7)]"
+        >
+          {/* Modal header — full navy */}
+          <div
+            className="shrink-0 px-6 max-sm:px-4 pt-5 max-sm:pt-4 pb-4 flex items-start justify-between"
+            style={{ background: '#1E2A3A', borderRadius: '12px 12px 0 0' }}
+          >
+            <div>
+              <DialogTitle
+                className="flex items-center gap-2"
+                style={{
+                  color: '#FFFFFF',
+                  fontFamily: "'Playfair Display', Georgia, serif",
+                  fontSize: '18px',
+                  fontWeight: 700,
+                  lineHeight: 1.2,
+                  margin: 0,
+                }}
+              >
+                <Music className="w-5 h-5 shrink-0" style={{ color: '#E8CA5A' }} />
+                Now Spinning
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription style={{ color: '#7A8694', fontSize: '13px', marginTop: '4px' }}>
                 Share what you're listening to right now
               </DialogDescription>
-            </DialogHeader>
+            </div>
+            <button
+              onClick={closeModal}
+              className="rounded-full p-1 transition-colors hover:bg-white/10"
+              style={{ color: '#F0E6C8' }}
+              aria-label="Close"
+              data-testid="spin-modal-close"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
 
           {/* Scrollable content area */}
@@ -707,34 +751,228 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                 )}
               </div>
 
-              <div>
-                <label className="text-xs font-medium mb-1.5 block" style={{ color: '#3A4D63' }}>
-                  how does it feel?
+              {/* Mood dropdown */}
+              <div ref={moodDropdownRef} style={{ position: 'relative' }}>
+                <label
+                  className="block mb-1.5"
+                  style={{
+                    color: '#1E2A3A',
+                    fontSize: '10px',
+                    fontWeight: 600,
+                    letterSpacing: '1px',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  How does it feel?
                 </label>
-                <div className="grid grid-cols-3 gap-1.5">
-                  {MOOD_KEYS.map(m => {
-                    const mc = MOOD_CONFIG[m];
-                    const isSelected = spinMood === m;
-                    return (
-                      <button key={m}
-                        onClick={() => setSpinMood(isSelected ? '' : m)}
-                        className="flex items-center justify-center rounded-lg font-medium transition-all whitespace-nowrap"
+                {/* Trigger button */}
+                <button
+                  type="button"
+                  onClick={() => { setMoodDropdownOpen(prev => !prev); setCustomMoodMode(false); }}
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    background: '#F3EBE0',
+                    border: moodDropdownOpen ? '1.5px solid #D4A828' : '1.5px solid #E5DBC8',
+                    borderRadius: '8px',
+                    padding: '10px 14px',
+                    fontSize: '14px',
+                    color: spinMood ? '#1E2A3A' : '#7A8694',
+                    cursor: 'pointer',
+                    transition: 'border-color 150ms, box-shadow 150ms',
+                    boxShadow: moodDropdownOpen ? '0 0 0 3px rgba(212,168,40,0.15)' : 'none',
+                    fontWeight: spinMood ? 600 : 400,
+                    textAlign: 'left',
+                  }}
+                  data-testid="mood-dropdown-trigger"
+                >
+                  <span>
+                    {spinMood
+                      ? `${MOOD_CONFIG[spinMood] ? MOOD_CONFIG[spinMood].emoji : '✨'} ${spinMood}`
+                      : 'Select a mood...'}
+                  </span>
+                  <ChevronDown
+                    className="w-4 h-4 shrink-0"
+                    style={{
+                      color: '#7A8694',
+                      transform: moodDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                      transition: 'transform 200ms',
+                    }}
+                  />
+                </button>
+
+                {/* Dropdown panel */}
+                {moodDropdownOpen && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 'calc(100% + 4px)',
+                      left: 0,
+                      right: 0,
+                      background: '#FFFFFF',
+                      border: '1px solid #E5DBC8',
+                      borderRadius: '10px',
+                      boxShadow: '0 8px 32px rgba(30,42,58,0.12)',
+                      zIndex: 10,
+                      maxHeight: '260px',
+                      overflowY: 'auto',
+                    }}
+                    data-testid="mood-dropdown-panel"
+                  >
+                    {/* Preset moods */}
+                    {MOOD_KEYS.map(m => {
+                      const mc = MOOD_CONFIG[m];
+                      const isSelected = spinMood === m;
+                      return (
+                        <button
+                          key={m}
+                          type="button"
+                          onClick={() => {
+                            setSpinMood(isSelected ? '' : m);
+                            setMoodDropdownOpen(false);
+                            setCustomMoodMode(false);
+                          }}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            width: '100%',
+                            padding: '9px 14px',
+                            fontSize: '13px',
+                            color: '#1E2A3A',
+                            background: isSelected ? 'rgba(212,168,40,0.12)' : 'transparent',
+                            fontWeight: isSelected ? 700 : 400,
+                            border: 'none',
+                            cursor: 'pointer',
+                            textAlign: 'left',
+                            transition: 'background 120ms',
+                          }}
+                          onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(212,168,40,0.06)'; }}
+                          onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}
+                          data-testid={`mood-option-${m.toLowerCase().replace(/\s/g, '-')}`}
+                        >
+                          <span style={{ fontSize: '16px', lineHeight: 1 }}>{mc.emoji}</span>
+                          <span>{m}</span>
+                          {isSelected && (
+                            <span style={{ marginLeft: 'auto', color: '#D4A828', fontSize: '12px' }}>✓</span>
+                          )}
+                        </button>
+                      );
+                    })}
+
+                    {/* Divider + Create your own */}
+                    <div style={{ borderTop: '1px solid #E5DBC8', margin: '4px 0' }} />
+
+                    {!customMoodMode ? (
+                      <button
+                        type="button"
+                        onClick={() => setCustomMoodMode(true)}
                         style={{
-                          height: '36px',
-                          fontSize: '10.5px',
-                          padding: '0 6px',
-                          background: isSelected ? 'linear-gradient(135deg, #FFB300, #FFA000)' : '#FFF8E1',
-                          color: isSelected ? '#000' : '#3E2723',
-                          border: isSelected ? '2px solid #FFA000' : '1.5px solid rgba(255,179,0,0.2)',
-                          transform: isSelected ? 'scale(1.04)' : 'scale(1)',
-                          transition: 'transform 180ms ease-in-out, background 200ms, border 200ms, color 200ms',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          width: '100%',
+                          padding: '9px 14px',
+                          fontSize: '13px',
+                          color: '#7A8694',
+                          background: 'transparent',
+                          border: 'none',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          fontStyle: 'italic',
                         }}
-                        data-testid={`mood-${m.toLowerCase().replace(/\s/g, '-')}`}>
-                        {mc.emoji} {m}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(212,168,40,0.06)'; e.currentTarget.style.color = '#1E2A3A'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#7A8694'; }}
+                        data-testid="mood-create-custom-btn"
+                      >
+                        <Plus className="w-3.5 h-3.5 shrink-0" style={{ color: '#D4A828' }} />
+                        Create your own mood...
                       </button>
-                    );
-                  })}
-                </div>
+                    ) : (
+                      <div style={{ padding: '8px 10px', display: 'flex', gap: '6px', alignItems: 'center' }}>
+                        <input
+                          type="text"
+                          placeholder="Name your mood..."
+                          value={customMoodInput}
+                          onChange={e => setCustomMoodInput(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' && customMoodInput.trim()) {
+                              setSpinMood(customMoodInput.trim());
+                              setMoodDropdownOpen(false);
+                              setCustomMoodMode(false);
+                              setCustomMoodInput('');
+                            }
+                            if (e.key === 'Escape') { setCustomMoodMode(false); setCustomMoodInput(''); }
+                          }}
+                          autoFocus
+                          style={{
+                            flex: 1,
+                            padding: '7px 10px',
+                            fontSize: '13px',
+                            borderRadius: '6px',
+                            border: '1.5px solid #E5DBC8',
+                            background: '#F3EBE0',
+                            color: '#1E2A3A',
+                            outline: 'none',
+                          }}
+                          onFocus={e => { e.currentTarget.style.borderColor = '#D4A828'; }}
+                          onBlur={e => { e.currentTarget.style.borderColor = '#E5DBC8'; }}
+                          data-testid="mood-custom-input"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (customMoodInput.trim()) {
+                              setSpinMood(customMoodInput.trim());
+                              setMoodDropdownOpen(false);
+                              setCustomMoodMode(false);
+                              setCustomMoodInput('');
+                            }
+                          }}
+                          style={{
+                            padding: '7px 12px',
+                            borderRadius: '6px',
+                            background: '#1E2A3A',
+                            color: '#E8CA5A',
+                            border: 'none',
+                            fontSize: '13px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            whiteSpace: 'nowrap',
+                          }}
+                          data-testid="mood-custom-add-btn"
+                        >
+                          Add
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Clear mood chip if one is selected */}
+                {spinMood && (
+                  <button
+                    type="button"
+                    onClick={() => setSpinMood('')}
+                    style={{
+                      marginTop: '6px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      fontSize: '11px',
+                      color: '#7A8694',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: '0',
+                    }}
+                    data-testid="mood-clear-btn"
+                  >
+                    <X className="w-3 h-3" /> Clear mood
+                  </button>
+                )}
               </div>
 
               <MentionTextarea
@@ -789,13 +1027,17 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
             </div>
             {!postToHive && <p className="text-xs text-[#7A8694] mb-2" data-testid="silent-spin-hint">Silent spin — logged to your Vault only, not posted to the feed.</p>}
             <Button onClick={submitNowSpinning} disabled={submitting || !spinRecordId || (!postToHive ? false : !spinCaption.trim())}
-              className="w-full rounded-full transition-all duration-200 text-white"
-              style={{ background: 'linear-gradient(135deg, #FFB300, #FFA000)' }}
+              className="w-full rounded-full transition-all duration-200"
+              style={{
+                background: '#1E2A3A',
+                color: '#E8CA5A',
+                boxShadow: '0 2px 4px rgba(30,42,58,0.2), 0 4px 12px rgba(30,42,58,0.12)',
+              }}
               data-testid="spin-submit-btn">
               {submitting ? (
                 <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Spinning your record...</>
               ) : (
-                <><Disc className="w-4 h-4 mr-2" /> {postToHive ? (spinMood ? `Post Now Spinning · ${MOOD_CONFIG[spinMood].emoji} ${spinMood}` : 'Post Now Spinning') : 'Log Silent Spin'}</>
+                <><Disc className="w-4 h-4 mr-2" /> {postToHive ? (spinMood ? `Post Now Spinning · ${MOOD_CONFIG[spinMood] ? MOOD_CONFIG[spinMood].emoji : ''} ${spinMood}` : 'Post Now Spinning') : 'Log Silent Spin'}</>
               )}
             </Button>
           </div>
