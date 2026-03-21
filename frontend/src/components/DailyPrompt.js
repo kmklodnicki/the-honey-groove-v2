@@ -193,15 +193,25 @@ useEffect(() => {
 
   return (
     <>
-      <Card className="my-4 p-5 border-[#E5DBC8]/60 bg-gradient-to-br from-[#F0E6C8]/80 to-[#F0E6C8]/60 relative overflow-hidden" data-testid="daily-prompt-card">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-[11px] uppercase tracking-widest text-[#D4A828]/70 font-medium">Daily Prompt</p>
+      <Card className="my-4 border-[#E5DBC8]/60 overflow-hidden relative" style={{ background: '#FFFBF2' }} data-testid="daily-prompt-card">
+        {/* Slate-blue header bar */}
+        <div className="flex items-center justify-between px-4 py-2.5" style={{ background: '#354B66' }}>
+          <p className="text-[11px] uppercase tracking-widest font-semibold" style={{ color: '#D4A828' }}>Daily Prompt</p>
           {buzzCount > 0 && (
-            <a href={`/hive?prompt_id=${prompt.id}`} className="text-[11px] font-semibold transition relative z-10" style={{ color: '#8B6914' }} data-testid="buzz-count-top">
-              {buzzCount} buzzed in
+            <a
+              href={`/hive?prompt_id=${prompt.id}`}
+              className="flex items-center gap-1 text-[11px] font-bold transition relative z-10"
+              style={{ color: '#E8CA5A' }}
+              data-testid="buzz-count-top"
+            >
+              <span style={{ background: '#1E2A3A', color: '#E8CA5A', borderRadius: '9999px', padding: '1px 7px', fontSize: '10px' }}>
+                {buzzCount} buzzed in
+              </span>
             </a>
           )}
         </div>
+        {/* Card body */}
+        <div className="p-5">
         <p className="font-heading text-xl md:text-2xl text-vinyl-black leading-snug mb-3 italic" data-testid="daily-prompt-text">
           {prompt.text}
         </p>
@@ -403,6 +413,7 @@ useEffect(() => {
           </button>
         </div>
         )}
+        </div>{/* /p-5 body */}
       </Card>
 
       <DailyPromptShareCard

@@ -8,7 +8,7 @@ import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Skeleton } from '../components/ui/skeleton';
-import { Heart, MessageCircle, Share2, Disc, Send, ChevronDown, ChevronUp, MoreVertical, Trash2, Play, Plus, Loader2, Pin, Reply, ArrowUp, Sparkles, Check } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Disc, Send, ChevronUp, MoreVertical, Trash2, Play, Plus, Loader2, Pin, Reply, ArrowUp, Sparkles } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -16,12 +16,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../components/ui/dialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '../components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -496,49 +490,51 @@ const HivePage = () => {
       {/* Composer Bar */}
       <ComposerBar onPostCreated={handlePostCreated} records={records} />
 
+      {/* Streak Banner */}
+      <div
+        className="rounded-xl mb-4 px-4 py-3 flex items-center justify-between gap-3"
+        style={{ background: '#354B66', boxShadow: '0 2px 8px rgba(30,42,58,0.15)' }}
+        data-testid="streak-banner"
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="text-xl leading-none shrink-0">🐝</span>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold leading-tight" style={{ color: '#FFFFFF', fontFamily: "'Playfair Display', Georgia, serif" }}>Daily Streak</p>
+            <p className="text-[11px] mt-0.5 truncate" style={{ color: '#F0E6C8', opacity: 0.8 }}>Buzz in every day to keep your streak alive</p>
+          </div>
+        </div>
+        <button
+          onClick={() => document.querySelector('[data-testid="buzz-in-btn"]')?.click()}
+          className="flex-shrink-0 inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-semibold transition-all hover:scale-105 hover:shadow-md"
+          style={{ background: 'linear-gradient(135deg, #D4A828, #E8CA5A)', color: '#1E2A3A' }}
+          data-testid="streak-buzz-in-btn"
+        >
+          Buzz In
+        </button>
+      </div>
+
       {/* Daily Prompt */}
       <DailyPromptCard records={records} onPostCreated={handlePostCreated} />
 
-      {/* Feed Filter — Dropdown */}
-      <div className="mb-4 flex justify-center lg:justify-start" data-testid="feed-filter-bar">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+      {/* Feed Filter — Scrollable pill row */}
+      <div className="mb-4 -mx-4 px-4 overflow-x-auto no-scrollbar" data-testid="feed-filter-bar">
+        <div className="flex gap-2 w-max">
+          {FEED_FILTERS.map(f => (
             <button
-              className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium border transition-colors w-auto justify-center"
-              style={activeFilter !== 'all'
+              key={f.key}
+              onClick={() => setActiveFilter(f.key)}
+              className="flex-shrink-0 inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium border transition-all whitespace-nowrap"
+              style={activeFilter === f.key
                 ? { background: '#1E2A3A', borderColor: '#1E2A3A', color: '#E8CA5A', boxShadow: '0 2px 4px rgba(30,42,58,0.2), 0 4px 12px rgba(30,42,58,0.12)' }
-                : { background: 'rgba(255,255,255,0.5)', borderColor: '#E5DBC8', color: '#7A8694' }
+                : { background: 'rgba(255,255,255,0.8)', borderColor: '#E5DBC8', color: '#354B66' }
               }
-              data-testid="feed-filter-trigger"
+              data-testid={`filter-${f.key}`}
             >
-              <span>{(() => { const f = FEED_FILTERS.find(f => f.key === activeFilter); return f ? `${f.emoji} ${f.text}` : 'All'; })()}</span>
-              <ChevronDown className="w-4 h-4 shrink-0" style={{ color: activeFilter !== 'all' ? '#E8CA5A' : '#7A8694' }} />
+              <span className="text-sm leading-none">{f.emoji}</span>
+              <span>{f.text}</span>
             </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="center"
-            className="rounded-xl border-2 p-1"
-            style={{ borderColor: '#E5DBC8', backdropFilter: 'blur(12px)', background: 'rgba(255,255,255,0.95)', width: '280px', maxWidth: '80vw' }}
-          >
-            {FEED_FILTERS.map((f, idx) => (
-              <React.Fragment key={f.key}>
-                <DropdownMenuItem
-                  onClick={() => setActiveFilter(f.key)}
-                  className="rounded-lg px-3 py-2.5 cursor-pointer flex items-center justify-center gap-2 text-sm font-medium transition-colors hover:bg-[#F0E6C8]"
-                  style={activeFilter === f.key ? { background: '#1E2A3A', color: '#E8CA5A' } : { color: '#354B66' }}
-                  data-testid={`filter-${f.key}`}
-                >
-                  <span className="shrink-0">{f.emoji}</span>
-                  <span>{f.text}</span>
-                  {activeFilter === f.key && <Check className="w-4 h-4 shrink-0 ml-auto" style={{ color: '#E8CA5A' }} />}
-                </DropdownMenuItem>
-                {idx < FEED_FILTERS.length - 1 && (
-                  <div className="mx-3 my-0.5" style={{ borderBottom: '1px solid rgba(229,219,200,0.5)' }} />
-                )}
-              </React.Fragment>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          ))}
+        </div>
       </div>
 
       {/* Prompt Filter Banner */}
@@ -601,26 +597,61 @@ const HivePage = () => {
         </Card>
       ) : (
         <div className="space-y-4">
-          {filteredPosts.map((post, idx) => (
-            <PostCard
-              key={post.id}
-              post={post}
-              onLike={handleLike}
-              onCommentCountChange={updatePostCommentCount}
-              onDelete={handleDeletePost}
-              onAlbumClick={handleAlbumClick}
-              onPin={handlePinPost}
-              onToggleFeature={handleToggleFeature}
-              onToggleReleaseNote={handleToggleReleaseNote}
-              token={token}
-              API={API}
-              currentUserId={user?.id}
-              isAdmin={user?.is_admin}
-              highlighted={post.id === targetPostId}
-              autoOpenComments={post.id === targetPostId && !!targetCommentId}
-              imgPriority={idx < 5}
-            />
-          ))}
+          {(() => {
+            const isGold = user?.golden_hive || user?.golden_hive_verified;
+            const UPSELL_POSITIONS = [5, 12];
+            const upsellCard = (key) => (
+              <div
+                key={key}
+                className="rounded-xl border px-5 py-4 flex items-center justify-between gap-4"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(30,42,58,0.03), rgba(30,42,58,0.07))',
+                  borderColor: '#1E2A3A',
+                }}
+                data-testid="gold-upsell-card"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold" style={{ color: '#1E2A3A', fontFamily: "'Playfair Display', Georgia, serif" }}>Unlock Gold Collector perks</p>
+                  <p className="text-xs mt-0.5" style={{ color: '#7A8694' }}>Wax Reports, full Explore charts, vault insights & more</p>
+                </div>
+                <a
+                  href="/gold"
+                  className="flex-shrink-0 inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-sm font-bold transition-all hover:scale-105 hover:shadow-md"
+                  style={{ background: 'linear-gradient(135deg, #D4A828, #E8CA5A)', color: '#1E2A3A', textDecoration: 'none' }}
+                  data-testid="gold-upsell-cta"
+                >
+                  Go Gold
+                </a>
+              </div>
+            );
+            const items = [];
+            filteredPosts.forEach((post, idx) => {
+              if (!isGold && UPSELL_POSITIONS.includes(idx)) {
+                items.push(upsellCard(`upsell-${idx}`));
+              }
+              items.push(
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  onLike={handleLike}
+                  onCommentCountChange={updatePostCommentCount}
+                  onDelete={handleDeletePost}
+                  onAlbumClick={handleAlbumClick}
+                  onPin={handlePinPost}
+                  onToggleFeature={handleToggleFeature}
+                  onToggleReleaseNote={handleToggleReleaseNote}
+                  token={token}
+                  API={API}
+                  currentUserId={user?.id}
+                  isAdmin={user?.is_admin}
+                  highlighted={post.id === targetPostId}
+                  autoOpenComments={post.id === targetPostId && !!targetCommentId}
+                  imgPriority={idx < 5}
+                />
+              );
+            });
+            return items;
+          })()}
         </div>
       )}
 

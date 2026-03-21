@@ -544,27 +544,33 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
   return (
     <>
       {/* Composer Bar — Command Center */}
-      <div className="bg-white rounded-xl border border-honey/30 p-4 max-sm:p-3 mb-6 shadow" data-testid="composer-bar">
-        <p className="text-sm text-muted-foreground mb-1">What's on the turntable?</p>
-        <p className="text-[10px] text-muted-foreground/70 mb-3 italic">Only posts with comments will be shared in The Hive.</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {spectrum.map(chip => {
-            const Icon = chip.icon;
-            return (
-              <button
-                key={chip.key}
-                onClick={() => chip.key === 'RANDOMIZER' ? openRandomizer() : openModal(chip.key)}
-                className="h-10 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all hover:scale-[1.03] hover:shadow-md"
-                style={{ background: '#FDE68A', color: '#78350F', border: '1px solid rgba(0,0,0,0.05)', padding: '0 10px' }}
-                onMouseEnter={e => { e.currentTarget.style.background = '#FBBF24'; e.currentTarget.style.borderColor = '#DAA520'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = '#FDE68A'; e.currentTarget.style.borderColor = 'rgba(0,0,0,0.05)'; }}
-                data-testid={`composer-chip-${chip.key.toLowerCase()}`}
-              >
-                {chip.emoji ? <span className="text-sm shrink-0 leading-none">{chip.emoji}</span> : <Icon className="w-4 h-4 shrink-0" style={{ color: '#78350F' }} />}
-                <span className="text-xs sm:text-sm" style={{ whiteSpace: 'nowrap' }}>{chip.label}</span>
-              </button>
-            );
-          })}
+      <div className="rounded-xl border overflow-hidden mb-6 shadow" style={{ borderColor: '#E5DBC8', background: '#FFFFFF' }} data-testid="composer-bar">
+        {/* Slate-blue header bar */}
+        <div className="px-4 pt-3.5 pb-3" style={{ background: '#354B66' }}>
+          <p className="text-sm font-semibold" style={{ color: '#FFFFFF', fontFamily: "'Playfair Display', Georgia, serif" }}>What's on the turntable?</p>
+          <p className="text-[11px] mt-0.5" style={{ color: '#F0E6C8', opacity: 0.75 }}>Share a spin, haul, or note with the hive</p>
+        </div>
+        {/* Action chips */}
+        <div className="p-4 max-sm:p-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {spectrum.map(chip => {
+              const Icon = chip.icon;
+              return (
+                <button
+                  key={chip.key}
+                  onClick={() => chip.key === 'RANDOMIZER' ? openRandomizer() : openModal(chip.key)}
+                  className="h-10 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all hover:scale-[1.03] hover:shadow-md"
+                  style={{ background: '#F3EBE0', color: '#354B66', border: '1px solid #E5DBC8', padding: '0 10px' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#1E2A3A'; e.currentTarget.style.color = '#E8CA5A'; e.currentTarget.style.borderColor = '#1E2A3A'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = '#F3EBE0'; e.currentTarget.style.color = '#354B66'; e.currentTarget.style.borderColor = '#E5DBC8'; }}
+                  data-testid={`composer-chip-${chip.key.toLowerCase()}`}
+                >
+                  {chip.emoji ? <span className="text-sm shrink-0 leading-none">{chip.emoji}</span> : <Icon className="w-4 h-4 shrink-0" />}
+                  <span className="text-xs sm:text-sm" style={{ whiteSpace: 'nowrap' }}>{chip.label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
