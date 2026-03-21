@@ -2,11 +2,7 @@
   "installCommand": "cd frontend && npm install --legacy-peer-deps",
   "buildCommand": "cd frontend && npm run build",
   "outputDirectory": "frontend/build",
-  "functions": {
-    "api/index.py": {
-      "maxDuration": 300
-    }
-  },
+  "maxDuration": 300,
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.py" },
     { "source": "/(.*)", "destination": "/index.html" }
