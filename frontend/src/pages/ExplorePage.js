@@ -489,7 +489,7 @@ const ExplorePage = () => {
           <EmptyCard text="No trending records yet. Start spinning!" />
         ) : (
           <ScrollRow>
-            {trending.map((r, idx) => {
+            {trending.slice(0, 10).map((r, idx) => {
               const card = (
                 <button key={r.id} onClick={() => openTrendingModal(r)}
                   className="flex-shrink-0 w-36 text-left group" data-testid={`trending-${r.id}`}>
@@ -532,7 +532,7 @@ const ExplorePage = () => {
           <EmptyCard text="Scanning the vaults for grails..." />
         ) : (
           <ScrollRow>
-            {crownJewels.map((r, idx) => (
+            {crownJewels.slice(0, 6).map((r, idx) => (
               <div key={r.discogs_id || idx} className="flex-shrink-0 w-40">
               <GoldGate isGold={isGold || idx < 3} compact hint="Gold members see the full Crown Jewels vault">
               <button onClick={() => navigate(`/variant/${r.discogs_id}`)} className="w-full text-left group border-2 border-[#DAA520] rounded-xl p-1 shadow-[0_0_12px_rgba(218,165,32,0.2)]" data-testid={`crown-jewel-${r.discogs_id || idx}`}>
@@ -610,35 +610,50 @@ const ExplorePage = () => {
           <EmptyCard text="No Dream List data yet. Add records to your Dream List!" />
         ) : (
           <div className="space-y-2">
-            {mostWanted.map((r, idx) => {
-              const row = (
-                <button key={`${r.artist}-${r.album}`} onClick={() => openTrendingModal({ ...r, title: r.album })}
-                  className="flex items-center gap-3 py-2 px-1 rounded-lg hover:bg-honey/5 transition-colors w-full text-left" data-testid={`most-wanted-${idx}`}>
-                  <span className="text-sm font-heading text-honey-amber w-6 text-right shrink-0">{idx + 1}</span>
-                  <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} className="w-10 h-10 rounded-lg object-cover" isUnofficial={r.is_unofficial} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{r.album}</p>
-                    <p className="text-xs text-muted-foreground truncate">{r.artist}{r.year ? ` (${r.year})` : ''}</p>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-xs text-red-500 font-medium">{r.want_count} {r.want_count === 1 ? 'want' : 'wants'}</span>
-                    <span onClick={(e) => { e.stopPropagation(); openDreamCatcher(r.artist, r.album, r.discogs_id, r.cover_url, r.year); }}
-                      className="hover:bg-honey/10 rounded-full p-1 cursor-pointer" data-testid={`want-${idx}`}
-                      style={addedIds.has(r.discogs_id) ? { background: 'linear-gradient(135deg, #FFB300, #FFA000)', borderRadius: '9999px' } : {}}>
-                      {addedIds.has(r.discogs_id) ? <Check className="w-4 h-4 text-white" /> : <Plus className="w-4 h-4 text-honey-amber" />}
-                    </span>
-                  </div>
-                </button>
-              );
-              if (idx >= 5) {
-                return (
-                  <GoldGate key={`${r.artist}-${r.album}`} isGold={isGold} compact hint="See the full Buzz Board with Gold">
-                    {row}
-                  </GoldGate>
-                );
-              }
-              return row;
-            })}
+            {mostWanted.slice(0, 5).map((r, idx) => (
+              <button key={`${r.artist}-${r.album}`} onClick={() => openTrendingModal({ ...r, title: r.album })}
+                className="flex items-center gap-3 py-2 px-1 rounded-lg hover:bg-honey/5 transition-colors w-full text-left" data-testid={`most-wanted-${idx}`}>
+                <span className="text-sm font-heading text-honey-amber w-6 text-right shrink-0">{idx + 1}</span>
+                <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} className="w-10 h-10 rounded-lg object-cover" isUnofficial={r.is_unofficial} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{r.album}</p>
+                  <p className="text-xs text-muted-foreground truncate">{r.artist}{r.year ? ` (${r.year})` : ''}</p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs text-red-500 font-medium">{r.want_count} {r.want_count === 1 ? 'want' : 'wants'}</span>
+                  <span onClick={(e) => { e.stopPropagation(); openDreamCatcher(r.artist, r.album, r.discogs_id, r.cover_url, r.year); }}
+                    className="hover:bg-honey/10 rounded-full p-1 cursor-pointer" data-testid={`want-${idx}`}
+                    style={addedIds.has(r.discogs_id) ? { background: 'linear-gradient(135deg, #FFB300, #FFA000)', borderRadius: '9999px' } : {}}>
+                    {addedIds.has(r.discogs_id) ? <Check className="w-4 h-4 text-white" /> : <Plus className="w-4 h-4 text-honey-amber" />}
+                  </span>
+                </div>
+              </button>
+            ))}
+            {mostWanted.length > 5 && (
+              <GoldGate isGold={isGold} hint="See the full Buzz Board with Gold">
+                <div className="space-y-2">
+                  {mostWanted.slice(5, 10).map((r, idx) => (
+                    <button key={`${r.artist}-${r.album}`} onClick={() => openTrendingModal({ ...r, title: r.album })}
+                      className="flex items-center gap-3 py-2 px-1 rounded-lg hover:bg-honey/5 transition-colors w-full text-left" data-testid={`most-wanted-${idx + 5}`}>
+                      <span className="text-sm font-heading text-honey-amber w-6 text-right shrink-0">{idx + 6}</span>
+                      <AlbumArt src={r.cover_url} alt={`${r.artist} ${r.title} vinyl record`} className="w-10 h-10 rounded-lg object-cover" isUnofficial={r.is_unofficial} />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{r.album}</p>
+                        <p className="text-xs text-muted-foreground truncate">{r.artist}{r.year ? ` (${r.year})` : ''}</p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-xs text-red-500 font-medium">{r.want_count} {r.want_count === 1 ? 'want' : 'wants'}</span>
+                        <span onClick={(e) => { e.stopPropagation(); openDreamCatcher(r.artist, r.album, r.discogs_id, r.cover_url, r.year); }}
+                          className="hover:bg-honey/10 rounded-full p-1 cursor-pointer" data-testid={`want-${idx + 5}`}
+                          style={addedIds.has(r.discogs_id) ? { background: 'linear-gradient(135deg, #FFB300, #FFA000)', borderRadius: '9999px' } : {}}>
+                          {addedIds.has(r.discogs_id) ? <Check className="w-4 h-4 text-white" /> : <Plus className="w-4 h-4 text-honey-amber" />}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </GoldGate>
+            )}
           </div>
         )}
       </ExploreSection>
