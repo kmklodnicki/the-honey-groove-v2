@@ -34,6 +34,9 @@ from services.spotify_service import batch_match_releases
 
 
 async def main():
+    pending = await db.releases.count_documents({"spotifyMatchStatus": "pending"})
+    print(f"DB: {os.environ['DB_NAME']} | pending releases: {pending}")
+
     stop_event = asyncio.Event()
     result = await batch_match_releases(stop_event, run_limit=100, deadline_secs=800)
     print(
