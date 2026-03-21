@@ -15,12 +15,12 @@
 .btn-primary:hover {
     @apply bg-honey-amber;
     transform: scale(1.03);
-    box-shadow: 0 4px 20px rgba(244, 185, 66, 0.3);
+    box-shadow: 0 4px 20px rgba(212, 168, 40, 0.3);
 }
 
 .btn-primary:active {
     transform: scale(0.97);
-    box-shadow: 0 2px 8px rgba(244, 185, 66, 0.2);
+    box-shadow: 0 2px 8px rgba(212, 168, 40, 0.2);
 }
 
 .btn-secondary {
@@ -98,7 +98,7 @@
 }
 
 .honey-input:focus {
-    box-shadow: 0 0 0 3px rgba(244, 185, 66, 0.15), 0 2px 8px rgba(244, 185, 66, 0.1);
+    box-shadow: 0 0 0 3px rgba(212, 168, 40, 0.15), 0 2px 8px rgba(212, 168, 40, 0.1);
 }
 
 /* Record Cover Animation */
@@ -112,14 +112,14 @@
 }
 
 @keyframes nectarPulse {
-    0% { transform: scale(1); opacity: 0.6; box-shadow: 0 0 0 0 rgba(218,165,32,0.4); }
-    50% { transform: scale(1.15); opacity: 1; box-shadow: 0 0 20px 4px rgba(218,165,32,0.25); }
-    100% { transform: scale(1); opacity: 0.6; box-shadow: 0 0 0 0 rgba(218,165,32,0.4); }
+    0% { transform: scale(1); opacity: 0.6; box-shadow: 0 0 0 0 rgba(212,168,40,0.4); }
+    50% { transform: scale(1.15); opacity: 1; box-shadow: 0 0 20px 4px rgba(212,168,40,0.25); }
+    100% { transform: scale(1); opacity: 0.6; box-shadow: 0 0 0 0 rgba(212,168,40,0.4); }
 }
 
 /* Honeycomb Pattern */
 .honeycomb-pattern {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23f4b942' fill-opacity='0.1'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23D4A828' fill-opacity='0.1'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
 
 /* Activity Feed Post */
@@ -149,7 +149,7 @@
 
 .hover-lift:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(200, 134, 26, 0.12);
+    box-shadow: 0 8px 24px rgba(212, 168, 40, 0.12);
 }
 
 /* Bee Float Animation */
@@ -185,12 +185,12 @@
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(200, 134, 26, 0.25);
+    background: rgba(212, 168, 40, 0.25);
     border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(200, 134, 26, 0.45);
+    background: rgba(212, 168, 40, 0.45);
 }
 
 /* Hide scrollbar utility */
@@ -220,12 +220,12 @@
   align-items: center;
   gap: 10px;
   padding: 12px 16px;
-  background: #FAF6EE;
-  border: 1.5px solid rgba(200, 134, 26, 0.6);
-  border-left: 3px solid #C8861A;
+  background: #FFFBF2;
+  border: 1.5px solid rgba(212, 168, 40, 0.6);
+  border-left: 3px solid #D4A828;
   border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(200, 134, 26, 0.15);
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  box-shadow: 0 4px 16px rgba(212, 168, 40, 0.15);
+  font-family: 'DM Sans', -apple-system, sans-serif;
   max-width: 320px;
   margin: 0 auto;
   animation: toastSlideIn 0.35s cubic-bezier(0.4, 0, 0.2, 1);
@@ -239,12 +239,12 @@
   flex-shrink: 0;
 }
 .honey-toast-title {
-  color: #2A1A06;
+  color: #1E2A3A;
   font-size: 16px;
   line-height: 1.4;
 }
 .honey-toast-desc {
-  color: #8A6B4A;
+  color: #7A8694;
   font-size: 14px;
 }
 @keyframes toastSlideIn {
@@ -292,14 +292,14 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
 
 /* Honey burst particle effect on like */
 @keyframes honeyBurst {
-  0% { 
-    box-shadow: 0 0 0 0 rgba(244, 185, 66, 0.5);
+  0% {
+    box-shadow: 0 0 0 0 rgba(212, 168, 40, 0.5);
   }
   50% {
-    box-shadow: 0 0 0 12px rgba(244, 185, 66, 0);
+    box-shadow: 0 0 0 12px rgba(212, 168, 40, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(244, 185, 66, 0);
+    box-shadow: 0 0 0 0 rgba(212, 168, 40, 0);
   }
 }
 .honey-like-burst {
@@ -342,8 +342,7 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   transition: background-color 0.2s, color 0.2s;
 }
 .nav-honey-link:hover button {
-  background-color: #C8861A !important;
-  color: #FFFFFF !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
 }
 .nav-honey-link::after {
   content: '';
@@ -352,7 +351,7 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   left: 50%;
   width: 0;
   height: 2.5px;
-  background: linear-gradient(90deg, #F4B942, #C8861A);
+  background: linear-gradient(90deg, #E8CA5A, #D4A828);
   border-radius: 2px;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -364,7 +363,7 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
 .nav-honey-link.nav-active::after {
   width: 70%;
   left: 15%;
-  background: linear-gradient(90deg, #C8861A, #E8A820, #C8861A);
+  background: linear-gradient(90deg, #D4A828, #E8CA5A, #D4A828);
 }
 
 /* --- Mobile Bottom Nav Active Dot --- */
@@ -383,7 +382,7 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #C8861A;
+  background: #D4A828;
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .mobile-nav-item.nav-active .mobile-nav-dot {
@@ -391,13 +390,13 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
 }
 /* Active icon glow */
 .mobile-nav-item.nav-active svg {
-  filter: drop-shadow(0 0 4px rgba(200, 134, 26, 0.4));
+  filter: drop-shadow(0 0 4px rgba(212, 168, 40, 0.5));
 }
 
 /* --- Notification Badge Pulse --- */
 @keyframes badgePulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(244, 185, 66, 0.5); }
-  50% { box-shadow: 0 0 0 6px rgba(244, 185, 66, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 168, 40, 0.5); }
+  50% { box-shadow: 0 0 0 6px rgba(212, 168, 40, 0); }
 }
 .badge-pulse {
   animation: badgePulse 2s ease-in-out infinite;
@@ -408,7 +407,7 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   transition: box-shadow 0.25s ease, transform 0.2s ease;
 }
 .avatar-honey-ring:hover {
-  box-shadow: 0 0 0 3px rgba(244, 185, 66, 0.35), 0 2px 12px rgba(200, 134, 26, 0.15);
+  box-shadow: 0 0 0 3px rgba(212, 168, 40, 0.35), 0 2px 12px rgba(212, 168, 40, 0.15);
   transform: scale(1.05);
 }
 
@@ -468,10 +467,10 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
 
 /* --- Honey Glow Effect (for featured/special items) --- */
 .honey-glow {
-  box-shadow: 0 0 20px rgba(244, 185, 66, 0.15), 0 0 40px rgba(244, 185, 66, 0.05);
+  box-shadow: 0 0 20px rgba(212, 168, 40, 0.15), 0 0 40px rgba(212, 168, 40, 0.05);
 }
 .honey-glow:hover {
-  box-shadow: 0 0 24px rgba(244, 185, 66, 0.25), 0 0 48px rgba(244, 185, 66, 0.08);
+  box-shadow: 0 0 24px rgba(212, 168, 40, 0.25), 0 0 48px rgba(212, 168, 40, 0.08);
 }
 
 /* --- Dropdown Menu Entrance --- */
@@ -492,7 +491,7 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%), rgba(244, 185, 66, 0.2) 0%, transparent 60%);
+  background: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%), rgba(212, 168, 40, 0.2) 0%, transparent 60%);
   opacity: 0;
   transition: opacity 0.3s ease;
   pointer-events: none;
@@ -505,9 +504,9 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
 .honey-skeleton {
   background: linear-gradient(
     110deg,
-    rgba(244, 185, 66, 0.06) 8%,
-    rgba(244, 185, 66, 0.14) 18%,
-    rgba(244, 185, 66, 0.06) 33%
+    rgba(212, 168, 40, 0.06) 8%,
+    rgba(212, 168, 40, 0.14) 18%,
+    rgba(212, 168, 40, 0.06) 33%
   );
   background-size: 200% 100%;
   animation: honeyShimmer 1.5s linear infinite;
@@ -530,7 +529,7 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
   left: 0;
   right: 0;
   height: 2px;
-  background: #C8861A;
+  background: #D4A828;
   transform: scaleX(0);
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: center;
@@ -556,19 +555,19 @@ button:active:not(:disabled), [role="button"]:active:not(:disabled) {
 
 /* --- Checkbox Honey Theme --- */
 input[type="checkbox"]:checked {
-  background-color: #C8861A;
-  border-color: #C8861A;
+  background-color: #D4A828;
+  border-color: #D4A828;
 }
 
 /* --- Selection Color --- */
 ::selection {
-  background: rgba(244, 185, 66, 0.3);
-  color: #2A1A06;
+  background: rgba(212, 168, 40, 0.3);
+  color: #1E2A3A;
 }
 
 /* --- Focus Ring — Honey themed --- */
 *:focus-visible {
-  outline: 2px solid rgba(200, 134, 26, 0.5);
+  outline: 2px solid rgba(212, 168, 40, 0.5);
   outline-offset: 2px;
 }
 
@@ -593,7 +592,7 @@ main {
 /* --- Honey Divider --- */
 .honey-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(200, 134, 26, 0.2) 20%, rgba(200, 134, 26, 0.3) 50%, rgba(200, 134, 26, 0.2) 80%, transparent);
+  background: linear-gradient(90deg, transparent, rgba(212, 168, 40, 0.2) 20%, rgba(212, 168, 40, 0.3) 50%, rgba(212, 168, 40, 0.2) 80%, transparent);
 }
 
 /* --- Live Equalizer Bars (Now Spinning) --- */
@@ -622,8 +621,8 @@ main {
 }
 
 @keyframes honeyPulse {
-  0%, 100% { box-shadow: 0 0 8px rgba(244,185,66,0.3); }
-  50% { box-shadow: 0 0 16px rgba(244,185,66,0.5); }
+  0%, 100% { box-shadow: 0 0 8px rgba(212,168,40,0.3); }
+  50% { box-shadow: 0 0 16px rgba(212,168,40,0.5); }
 }
 
 /* BLOCK 412/415/442: Responsive variant pill — truncate at all sizes */

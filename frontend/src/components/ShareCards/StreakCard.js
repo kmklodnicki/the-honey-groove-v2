@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShareCardHeader, ShareCardFooter, ShareCardUser, CARD_W, CARD_H, HEADER_H } from './ShareCardBase';
+import { ShareCardHeader, ShareCardFooter, ShareCardUser, CARD_W, CARD_H, HEADER_H, COLORS } from './ShareCardBase';
 
 const StreakCard = React.forwardRef(function StreakCard({ streakDays = 7, user }, ref) {
   const bg = 'linear-gradient(160deg, #FFF3DC 0%, #FFD080 35%, #FF9830 65%, #E86010 100%)';
@@ -101,21 +101,23 @@ const StreakCard = React.forwardRef(function StreakCard({ streakDays = 7, user }
         </p>
       </div>
 
-      {/* FOOTER: pinned bottom */}
+      {/* FOOTER: pinned bottom — navy background */}
       <div
         style={{
           position: 'absolute',
           bottom: 0, left: 0, right: 0,
           height: 260,
+          background: COLORS.NAVY,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 12,
+          gap: 18,
+          zIndex: 1,
         }}
       >
-        <ShareCardUser user={user} textColor="#5A2800" />
-        <ShareCardFooter textColor="#7A3800" subColor="#5A2800" />
+        <ShareCardUser user={user} textColor="#FFFFFF" />
+        <ShareCardFooter />
       </div>
     </div>
   );

@@ -190,7 +190,7 @@ export function useShareCard({ cardType, filename = 'thg-share', title = 'The Ho
               ctx.font = 'bold 22px Arial, sans-serif';
               ctx.textAlign = 'center';
               ctx.textBaseline = 'middle';
-              ctx.fillText('🏅 Gold Member', x + w / 2, y + h / 2);
+              ctx.fillText('🏅 Gold Collector', x + w / 2, y + h / 2);
               console.log('DRAWING PILL — gold-member done');
 
             } else if (pillType === 'verified') {

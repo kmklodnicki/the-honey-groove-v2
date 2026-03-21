@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShareCardHeader, ShareCardFooter, ShareCardUser, CARD_W, CARD_H, HEADER_H } from './ShareCardBase';
+import { ShareCardHeader, ShareCardFooter, ShareCardUser, CARD_W, CARD_H, HEADER_H, COLORS } from './ShareCardBase';
 
 const MilestoneCard = React.forwardRef(function MilestoneCard({ milestoneText, description, user }, ref) {
   const bg = 'linear-gradient(160deg, #FFFADC 0%, #FFE87A 35%, #F0B429 65%, #D4A828 100%)';
@@ -112,21 +112,23 @@ const MilestoneCard = React.forwardRef(function MilestoneCard({ milestoneText, d
         </p>
       </div>
 
-      {/* FOOTER: pinned bottom */}
+      {/* FOOTER: pinned bottom — navy background */}
       <div
         style={{
           position: 'absolute',
           bottom: 0, left: 0, right: 0,
           height: 260,
+          background: COLORS.NAVY,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: 12,
+          gap: 18,
+          zIndex: 1,
         }}
       >
-        <ShareCardUser user={user} textColor="#5A2800" />
-        <ShareCardFooter textColor="#5A2800" subColor="#7A4A18" />
+        <ShareCardUser user={user} textColor="#FFFFFF" />
+        <ShareCardFooter />
       </div>
     </div>
   );

@@ -464,10 +464,13 @@ const HivePage = () => {
             onClick={() => setFeedMode('all')}
             className={`flex-1 py-1.5 rounded-full text-sm font-medium text-center transition-all duration-250 ${
               feedMode === 'all'
-                ? 'text-white shadow-sm'
-                : 'text-[#3A4D63] hover:text-[#3A4D63]'
+                ? 'shadow-sm'
+                : 'hover:text-[#354B66]'
             }`}
-            style={feedMode === 'all' ? { background: 'linear-gradient(135deg, #FFB300 0%, #FFA000 100%)' } : {}}
+            style={feedMode === 'all'
+              ? { background: '#1E2A3A', color: '#E8CA5A', boxShadow: '0 2px 4px rgba(30,42,58,0.2), 0 4px 12px rgba(30,42,58,0.12)' }
+              : { color: '#7A8694', background: 'rgba(255,255,255,0.5)' }
+            }
             data-testid="feed-mode-all"
           >
             All
@@ -476,10 +479,13 @@ const HivePage = () => {
             onClick={() => setFeedMode('following')}
             className={`flex-1 py-1.5 rounded-full text-sm font-medium text-center transition-all duration-250 ${
               feedMode === 'following'
-                ? 'text-white shadow-sm'
-                : 'text-[#3A4D63] hover:text-[#3A4D63]'
+                ? 'shadow-sm'
+                : 'hover:text-[#354B66]'
             }`}
-            style={feedMode === 'following' ? { background: 'linear-gradient(135deg, #FFB300 0%, #FFA000 100%)' } : {}}
+            style={feedMode === 'following'
+              ? { background: '#1E2A3A', color: '#E8CA5A', boxShadow: '0 2px 4px rgba(30,42,58,0.2), 0 4px 12px rgba(30,42,58,0.12)' }
+              : { color: '#7A8694', background: 'rgba(255,255,255,0.5)' }
+            }
             data-testid="feed-mode-following"
           >
             Following
@@ -499,32 +505,35 @@ const HivePage = () => {
           <DropdownMenuTrigger asChild>
             <button
               className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium border transition-colors w-auto justify-center"
-              style={{ background: '#FFF8E7', borderColor: '#DAA520', color: '#78350F' }}
+              style={activeFilter !== 'all'
+                ? { background: '#1E2A3A', borderColor: '#1E2A3A', color: '#E8CA5A', boxShadow: '0 2px 4px rgba(30,42,58,0.2), 0 4px 12px rgba(30,42,58,0.12)' }
+                : { background: 'rgba(255,255,255,0.5)', borderColor: '#E5DBC8', color: '#7A8694' }
+              }
               data-testid="feed-filter-trigger"
             >
               <span>{(() => { const f = FEED_FILTERS.find(f => f.key === activeFilter); return f ? `${f.emoji} ${f.text}` : 'All'; })()}</span>
-              <ChevronDown className="w-4 h-4 shrink-0" style={{ color: '#DAA520' }} />
+              <ChevronDown className="w-4 h-4 shrink-0" style={{ color: activeFilter !== 'all' ? '#E8CA5A' : '#7A8694' }} />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
             align="center"
             className="rounded-xl border-2 p-1"
-            style={{ borderColor: '#DAA520', backdropFilter: 'blur(12px)', background: 'rgba(255,255,255,0.95)', width: '280px', maxWidth: '80vw' }}
+            style={{ borderColor: '#E5DBC8', backdropFilter: 'blur(12px)', background: 'rgba(255,255,255,0.95)', width: '280px', maxWidth: '80vw' }}
           >
             {FEED_FILTERS.map((f, idx) => (
               <React.Fragment key={f.key}>
                 <DropdownMenuItem
                   onClick={() => setActiveFilter(f.key)}
                   className="rounded-lg px-3 py-2.5 cursor-pointer flex items-center justify-center gap-2 text-sm font-medium transition-colors hover:bg-[#F0E6C8]"
-                  style={{ color: '#78350F' }}
+                  style={activeFilter === f.key ? { background: '#1E2A3A', color: '#E8CA5A' } : { color: '#354B66' }}
                   data-testid={`filter-${f.key}`}
                 >
                   <span className="shrink-0">{f.emoji}</span>
                   <span>{f.text}</span>
-                  {activeFilter === f.key && <Check className="w-4 h-4 shrink-0 ml-auto" style={{ color: '#DAA520' }} />}
+                  {activeFilter === f.key && <Check className="w-4 h-4 shrink-0 ml-auto" style={{ color: '#E8CA5A' }} />}
                 </DropdownMenuItem>
                 {idx < FEED_FILTERS.length - 1 && (
-                  <div className="mx-3 my-0.5" style={{ borderBottom: '1px solid rgba(218, 165, 32, 0.12)' }} />
+                  <div className="mx-3 my-0.5" style={{ borderBottom: '1px solid rgba(229,219,200,0.5)' }} />
                 )}
               </React.Fragment>
             ))}

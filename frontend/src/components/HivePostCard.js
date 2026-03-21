@@ -11,6 +11,7 @@ import NowSpinningCard from './ShareCards/NowSpinningCard';
 import NewHaulCard from './ShareCards/NewHaulCard';
 import SaleCard from './ShareCards/SaleCard';
 import DailyPromptShareCard from './ShareCards/DailyPromptCard';
+import ISOShareCard from './ShareCards/ISOCard';
 import UserBadges from './UserBadges';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
@@ -324,8 +325,46 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
     setTimeout(() => commentInputRef.current?.focus(), 50);
   };
 
+  // Post type banner config — label + icon for each type
+  const POST_TYPE_BANNER = {
+    NOW_SPINNING:        { label: 'Now Spinning',        icon: '🎵' },
+    RANDOMIZER:          { label: 'Now Spinning',        icon: '🎵' },
+    NEW_HAUL:            { label: 'Haul',                icon: '📦' },
+    ISO:                 { label: 'ISO',                 icon: '🔍' },
+    NOTE:                { label: 'Note',                icon: '📝' },
+    DAILY_PROMPT:        { label: 'Daily Prompt',        icon: '💬' },
+    POLL:                { label: 'Poll',                icon: '📊' },
+    listing_sale:        { label: 'For Sale',            icon: '🏷️' },
+    listing_trade:       { label: 'For Trade',           icon: '🔄' },
+    WEEKLY_WRAP:         { label: 'Weekly Wrap',         icon: '🎶' },
+    VINYL_MOOD:          { label: 'Vinyl Mood',          icon: '🌙' },
+    ADDED_TO_COLLECTION: { label: 'Added to Collection', icon: '➕' },
+    ROOM_JOIN:           { label: 'Joined a Room',       icon: '🍯' },
+    RELEASE_NOTE:        { label: 'Release Note',        icon: '✏️' },
+  };
+  const bannerConfig = POST_TYPE_BANNER[post.post_type] || POST_TYPE_BANNER.NOW_SPINNING;
+  const spinCount = post.likes_count;
+
   return (
-    <Card ref={cardRef} className={`border-honey/30 overflow-hidden hover:shadow-honey transition-all ${highlighted ? 'ring-2 ring-honey shadow-lg shadow-honey/20' : ''} ${post.is_new_feature ? 'shadow-md' : ''}`} style={post.is_new_feature ? { backgroundColor: '#f3faf5' } : undefined} data-testid={`post-${post.id}`}>
+    <Card ref={cardRef} className={`overflow-hidden transition-all ${highlighted ? 'ring-2 ring-honey shadow-lg shadow-honey/20' : ''} ${post.is_new_feature ? 'shadow-md' : ''}`} style={{ background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(6px)', border: post.is_new_feature ? '1px solid rgba(212,168,40,0.18)' : '1px solid rgba(212,168,40,0.08)', borderRadius: '12px', ...(post.is_new_feature ? { backgroundColor: 'rgba(243,250,245,0.8)' } : {}) }} data-testid={`post-${post.id}`}>
+      {/* Post Type Banner */}
+      {!post.is_release_note && (
+        <div
+          className="px-4 py-1.5 flex items-center justify-between"
+          style={{ background: '#354B66', borderRadius: '12px 12px 0 0' }}
+          data-testid={`post-type-banner-${post.id}`}
+        >
+          <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider" style={{ color: '#E8CA5A', letterSpacing: '0.06em' }}>
+            <span className="text-[11px] leading-none">{bannerConfig.icon}</span>
+            {bannerConfig.label}
+          </span>
+          {spinCount > 0 && (
+            <span className="text-[11px]" style={{ color: '#F0E6C8' }}>
+              {spinCount} {spinCount === 1 ? 'spin' : 'spins'}
+            </span>
+          )}
+        </div>
+      )}
       {post.is_pinned && (
         <div className="px-4 py-1.5 bg-honey/10 border-b border-honey/20 flex items-center gap-1.5 text-xs text-honey-amber" data-testid={`pinned-${post.id}`}>
           <Pin className="w-3 h-3" />
@@ -341,7 +380,7 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
         </div>
       )}
       {post.is_release_note && !post.is_pinned && (
-        <div className="px-4 py-1.5 border-b flex items-center gap-1.5 text-xs font-semibold" style={{ background: 'linear-gradient(135deg, #FFF3D4 0%, #FFEAB0 100%)', borderColor: '#DAA520', color: '#92702A' }} data-testid={`release-note-banner-${post.id}`}>
+        <div className="px-4 py-1.5 border-b flex items-center gap-1.5 text-xs font-semibold" style={{ background: '#354B66', borderColor: '#354B66', color: '#E8CA5A', borderRadius: '12px 12px 0 0' }} data-testid={`release-note-banner-${post.id}`}>
           <FileText className="w-3 h-3" />
           <span className="flex-1">{rnCollapsed ? 'Release Note' : 'Release Note'}</span>
           <button
@@ -444,14 +483,16 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
           <button
             onClick={handleSharePost}
             disabled={shareExporting}
-            className="ml-auto flex items-center gap-1.5 text-sm text-muted-foreground hover:text-honey-amber transition-colors disabled:opacity-50"
+            className="ml-auto flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full transition-opacity disabled:opacity-50 hover:opacity-80"
+            style={{ background: '#1E2A3A', color: '#E8CA5A' }}
             title="Share to Stories"
             data-testid={`share-btn-${post.id}`}
           >
             {shareExporting
-              ? <Loader2 className="w-4 h-4 animate-spin" />
-              : <Share2 className="w-4 h-4" />
+              ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              : <Share2 className="w-3.5 h-3.5" />
             }
+            <span>Share</span>
           </button>
         )}
       </div>
@@ -488,6 +529,16 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
             artist: post.record_artist || post.record?.artist || post.bundle_records?.[0]?.artist,
             color_variant: post.color_variant || post.record?.color_variant,
             bundle_records: post.bundle_records,
+          }}
+          user={post.user}
+        />
+      ) : isShareable && (post.post_type === 'iso' || post.post_type === 'ISO') ? (
+        <ISOShareCard
+          ref={shareCardRef}
+          record={{
+            cover_url: post.cover_url || post.record?.cover_url,
+            title: post.record_title || post.record?.title || post.caption,
+            artist: post.record_artist || post.record?.artist,
           }}
           user={post.user}
         />
