@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo, useImperativeHandle, forwardRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
 import { Card } from './ui/card';
@@ -37,7 +37,7 @@ const cachedPrompt = (() => {
   } catch { return null; }
 })();
 
-export const DailyPromptCard = ({ records, onPostCreated }) => {
+export const DailyPromptCard = forwardRef(({ records, onPostCreated, onBuzzStatusChange }, ref) => {
   const { user, token, API } = useAuth();
   const { openVariantModal } = useVariantModal();
   const [prompt, setPrompt] = useState(cachedPrompt?.prompt || null);
@@ -49,6 +49,15 @@ export const DailyPromptCard = ({ records, onPostCreated }) => {
   const [loading, setLoading] = useState(!cachedPrompt);
   const hasFetchedRef = useRef(!!cachedPrompt);
   const [modalOpen, setModalOpen] = useState(false);
+
+  // Expose openBuzzModal to parent via ref
+  useImperativeHandle(ref, () => ({ openBuzzModal: () => setModalOpen(true) }), []);
+
+  // Notify parent whenever buzz status or streak changes
+  useEffect(() => {
+    if (onBuzzStatusChange) onBuzzStatusChange(hasBuzzedIn, streak);
+  }, [hasBuzzedIn, streak, onBuzzStatusChange]);
+
   // Carousel state
   const [responses, setResponses] = useState([]);
   const [carouselIdx, setCarouselIdx] = useState(0);
@@ -190,6 +199,23 @@ useEffect(() => {
   if (!prompt) return null;
 
   const currentResp = responses[carouselIdx];
+
+  // Before buzzing in: render only the BuzzInModal (hidden until opened via ref)
+  if (!hasBuzzedIn) return (
+    <BuzzInModal
+      open={modalOpen}
+      onOpenChange={setModalOpen}
+      prompt={prompt}
+      records={records}
+      onSuccess={(resp) => {
+        setHasBuzzedIn(true);
+        setBuzzResponse(resp);
+        setStreak(resp.streak);
+        setBuzzCount(c => c + 1);
+        onPostCreated?.();
+      }}
+    />
+  );
 
   return (
     <>
@@ -445,7 +471,7 @@ useEffect(() => {
       {false && <PromptArchiveDrawer open={archiveOpen} onOpenChange={setArchiveOpen} />}
     </>
   );
-};
+});
 
 // ─── Buzz-In Modal ───
 

@@ -64,6 +64,15 @@ const HivePage = () => {
   const postsRef = useRef(posts);
   useEffect(() => { postsRef.current = posts; }, [posts]);
 
+  // Daily prompt buzz state — controls streak banner vs. prompt card visibility
+  const promptRef = useRef(null);
+  const [promptBuzzedIn, setPromptBuzzedIn] = useState(false);
+  const [promptStreak, setPromptStreak] = useState(0);
+  const handleBuzzStatusChange = useCallback((buzzed, streak) => {
+    setPromptBuzzedIn(buzzed);
+    setPromptStreak(streak);
+  }, []);
+
   const targetPostId = searchParams.get('post');
   const targetCommentId = searchParams.get('comment');
 
@@ -490,31 +499,40 @@ const HivePage = () => {
       {/* Composer Bar */}
       <ComposerBar onPostCreated={handlePostCreated} records={records} />
 
-      {/* Streak Banner */}
-      <div
-        className="rounded-xl mb-4 px-4 py-3 flex items-center justify-between gap-3"
-        style={{ background: '#354B66', boxShadow: '0 2px 8px rgba(30,42,58,0.15)' }}
-        data-testid="streak-banner"
-      >
-        <div className="flex items-center gap-3 min-w-0">
-          <span className="text-xl leading-none shrink-0">🐝</span>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold leading-tight" style={{ color: '#FFFFFF', fontFamily: "'Playfair Display', Georgia, serif" }}>Daily Streak</p>
-            <p className="text-[11px] mt-0.5 truncate" style={{ color: '#F0E6C8', opacity: 0.8 }}>Buzz in every day to keep your streak alive</p>
-          </div>
-        </div>
-        <button
-          onClick={() => document.querySelector('[data-testid="buzz-in-btn"]')?.click()}
-          className="flex-shrink-0 inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-semibold transition-all hover:scale-105 hover:shadow-md"
-          style={{ background: 'linear-gradient(135deg, #D4A828, #E8CA5A)', color: '#1E2A3A' }}
-          data-testid="streak-buzz-in-btn"
+      {/* Streak Banner — shown when user hasn't buzzed in yet */}
+      {!promptBuzzedIn && (
+        <div
+          className="rounded-xl mb-4 px-4 py-3 flex items-center justify-between gap-3"
+          style={{ background: '#354B66', boxShadow: '0 2px 8px rgba(30,42,58,0.15)' }}
+          data-testid="streak-banner"
         >
-          Buzz In
-        </button>
-      </div>
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="text-xl leading-none shrink-0">🐝{promptStreak > 0 ? '🔥' : ''}</span>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold leading-tight" style={{ color: '#FFFFFF', fontFamily: "'Playfair Display', Georgia, serif" }}>
+                {promptStreak > 0 ? `${promptStreak}-day Buzz In streak!` : 'Daily Buzz In'}
+              </p>
+              <p className="text-[11px] mt-0.5 truncate" style={{ color: '#F0E6C8', opacity: 0.8 }}>Answer today's prompt to keep it going</p>
+            </div>
+          </div>
+          <button
+            onClick={() => promptRef.current?.openBuzzModal()}
+            className="flex-shrink-0 inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-semibold transition-all hover:scale-105 hover:shadow-md"
+            style={{ background: 'linear-gradient(135deg, #D4A828, #E8CA5A)', color: '#1E2A3A' }}
+            data-testid="streak-buzz-in-btn"
+          >
+            Buzz In
+          </button>
+        </div>
+      )}
 
-      {/* Daily Prompt */}
-      <DailyPromptCard records={records} onPostCreated={handlePostCreated} />
+      {/* Daily Prompt — shown after buzzing in (no buzz-in button, just carousel) */}
+      <DailyPromptCard
+        ref={promptRef}
+        records={records}
+        onPostCreated={handlePostCreated}
+        onBuzzStatusChange={handleBuzzStatusChange}
+      />
 
       {/* Feed Filter — Scrollable pill row */}
       <div className="mb-4 -mx-4 px-4 overflow-x-auto no-scrollbar" data-testid="feed-filter-bar">
