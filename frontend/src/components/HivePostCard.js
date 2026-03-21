@@ -343,7 +343,7 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
     RELEASE_NOTE:        { label: 'Release Note',        icon: '✏️' },
   };
   const bannerConfig = POST_TYPE_BANNER[post.post_type] || POST_TYPE_BANNER.NOW_SPINNING;
-  const spinCount = post.likes_count;
+  const spinCount = post.user?.spin_count ?? 0;
 
   return (
     <Card ref={cardRef} className={`overflow-hidden transition-all ${highlighted ? 'ring-2 ring-honey shadow-lg shadow-honey/20' : ''} ${post.is_new_feature ? 'shadow-md' : ''}`} style={{ background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(6px)', border: post.is_new_feature ? '1px solid rgba(212,168,40,0.18)' : '1px solid rgba(212,168,40,0.08)', borderRadius: '12px', ...(post.is_new_feature ? { backgroundColor: 'rgba(243,250,245,0.8)' } : {}) }} data-testid={`post-${post.id}`}>
@@ -366,12 +366,12 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
         </div>
       )}
       {post.is_pinned && (
-        <div className="px-4 py-1.5 bg-honey/10 border-b border-honey/20 flex items-center gap-1.5 text-xs text-honey-amber" data-testid={`pinned-${post.id}`}>
+        <div className="px-4 py-1.5 flex items-center gap-1.5 text-xs font-semibold" style={{ background: '#354B66', color: '#E8CA5A', borderRadius: '12px 12px 0 0' }} data-testid={`pinned-${post.id}`}>
           <Pin className="w-3 h-3" />
-          <span className="flex-1">{pinnedCollapsed ? 'pinned post' : 'pinned'}</span>
+          <span className="flex-1">{pinnedCollapsed ? 'Pinned Post' : 'Pinned'}</span>
           <button
             onClick={(e) => { e.stopPropagation(); togglePinnedCollapse(); }}
-            className="p-0.5 rounded hover:bg-honey/20 transition-colors"
+            className="p-0.5 rounded hover:bg-[#E8CA5A]/20 transition-colors"
             data-testid={`pinned-toggle-${post.id}`}
             aria-label={pinnedCollapsed ? 'Expand pinned post' : 'Collapse pinned post'}
           >
