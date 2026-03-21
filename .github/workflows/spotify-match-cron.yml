@@ -27,17 +27,4 @@ jobs:
           DB_NAME: ${{ secrets.DB_NAME }}
           SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
           SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
-        run: |
-          cd backend
-          python - <<'EOF'
-import asyncio, sys, os
-sys.path.insert(0, '.')
-from services.spotify_service import batch_match_releases
-
-async def main():
-    stop_event = asyncio.Event()
-    result = await batch_match_releases(stop_event, run_limit=100, deadline_secs=800)
-    print(f"processed={result['processed']} matched={result['matched']} unmatched={result['unmatched']} rate_limited={result['rate_limited']}")
-
-asyncio.run(main())
-EOF
+        run: python backend/scripts/run_spotify_match.py
