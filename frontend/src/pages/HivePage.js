@@ -93,13 +93,13 @@ const HivePage = () => {
 
   const FEED_FILTERS = [
     { key: 'all', emoji: '\u{1F36F}', text: 'All' },
-    { key: 'NOW_SPINNING', emoji: '\u{1F3B5}', text: 'Now Spinning' },
-    { key: 'ISO', emoji: '\u{1F50D}', text: 'ISO' },
-    { key: 'NEW_HAUL', emoji: '\u{1F4E6}', text: 'Haul' },
+    { key: 'NOW_SPINNING', emoji: '\u{1F3B5}', text: 'Spinning' },
+    { key: 'ISO', emoji: '\u{1F50D}', text: 'ISOs' },
+    { key: 'NEW_HAUL', emoji: '\u{1F4E6}', text: 'Hauls' },
     { key: 'NOTE', emoji: '\u{1F4DD}', text: 'Notes' },
     { key: 'POLL', emoji: '\u{1F4CA}', text: 'Polls' },
-    { key: 'listing', emoji: '\u{1F3F7}\uFE0F', text: 'For Sale/Trade' },
-    { key: 'RELEASE_NOTE', emoji: '\u270F\uFE0F', text: 'Release Notes' },
+    { key: 'listing', emoji: '\u{1F3F7}\uFE0F', text: 'For Sale' },
+    { key: 'RELEASE_NOTE', emoji: '\u270F\uFE0F', text: 'Releases' },
   ];
 
   const headers = { Authorization: `Bearer ${token}` };
@@ -534,25 +534,23 @@ const HivePage = () => {
         onBuzzStatusChange={handleBuzzStatusChange}
       />
 
-      {/* Feed Filter — Scrollable pill row */}
-      <div className="mb-4 -mx-4 px-4 overflow-x-auto no-scrollbar" data-testid="feed-filter-bar">
-        <div className="flex gap-2 w-max">
-          {FEED_FILTERS.map(f => (
-            <button
-              key={f.key}
-              onClick={() => setActiveFilter(f.key)}
-              className="flex-shrink-0 inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium border transition-all whitespace-nowrap"
-              style={activeFilter === f.key
-                ? { background: '#1E2A3A', borderColor: '#1E2A3A', color: '#E8CA5A', boxShadow: '0 2px 4px rgba(30,42,58,0.2), 0 4px 12px rgba(30,42,58,0.12)' }
-                : { background: 'rgba(255,255,255,0.8)', borderColor: '#E5DBC8', color: '#354B66' }
-              }
-              data-testid={`filter-${f.key}`}
-            >
-              <span className="text-sm leading-none">{f.emoji}</span>
-              <span>{f.text}</span>
-            </button>
-          ))}
-        </div>
+      {/* Feed Filter — pill row, wraps to fit all in view */}
+      <div className="mb-4 flex flex-wrap gap-1.5" data-testid="feed-filter-bar">
+        {FEED_FILTERS.map(f => (
+          <button
+            key={f.key}
+            onClick={() => setActiveFilter(f.key)}
+            className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium border transition-all whitespace-nowrap"
+            style={activeFilter === f.key
+              ? { background: '#1E2A3A', borderColor: '#1E2A3A', color: '#E8CA5A', boxShadow: '0 2px 4px rgba(30,42,58,0.2), 0 4px 12px rgba(30,42,58,0.12)' }
+              : { background: 'rgba(255,255,255,0.8)', borderColor: '#E5DBC8', color: '#354B66' }
+            }
+            data-testid={`filter-${f.key}`}
+          >
+            <span className="leading-none">{f.emoji}</span>
+            <span>{f.text}</span>
+          </button>
+        ))}
       </div>
 
       {/* Prompt Filter Banner */}
