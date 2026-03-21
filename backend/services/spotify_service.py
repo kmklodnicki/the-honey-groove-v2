@@ -63,6 +63,9 @@ def _search_spotify_sync(query: str, token: str, limit: int = 5) -> list:
             return resp.json().get("albums", {}).get("items", [])
         if resp.status_code == 429:
             retry_after = int(resp.headers.get("Retry-After", 30))
+            # Some API versions return ms instead of seconds; cap to sane range
+            if retry_after > 300:
+                retry_after = 60
             raise Exception(f"RATE_LIMITED:{retry_after}")
     except Exception:
         raise
