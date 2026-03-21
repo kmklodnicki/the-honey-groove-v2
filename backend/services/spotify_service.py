@@ -219,7 +219,11 @@ async def match_to_spotify(release: dict) -> None:
         )
 
 
-async def batch_match_releases(stop_event: asyncio.Event, run_limit: Optional[int] = None) -> dict:
+async def batch_match_releases(
+    stop_event: asyncio.Event,
+    run_limit: Optional[int] = None,
+    deadline_secs: Optional[float] = None,
+) -> dict:
     """Process pending releases in batches of 5 with adaptive delay.
 
     Pre-loads release IDs upfront so the MongoDB cursor closes immediately —
@@ -229,11 +233,15 @@ async def batch_match_releases(stop_event: asyncio.Event, run_limit: Optional[in
 
     run_limit: if set, stop after processing this many releases. Intended for
     Vercel Cron Job invocations that must complete within maxDuration.
+    deadline_secs: if set, stop processing after this many wall-clock seconds
+    (checked before each batch). Use this to guarantee the function returns
+    well before a hard serverless timeout (e.g. pass 240 for a 5-min limit).
     """
     processed = matched = unmatched = rate_limited = 0
     batch_size = 5
     base_delay = 3.0
     delay = base_delay
+    started_at = time.monotonic()
 
     # Pre-load only IDs — cursor opens and closes in one fast query.
     # Processing can now run for hours without hitting cursor timeout.
@@ -245,6 +253,9 @@ async def batch_match_releases(stop_event: asyncio.Event, run_limit: Optional[in
     for i in range(0, len(pending_ids), batch_size):
         if stop_event.is_set():
             break
+        if deadline_secs is not None and (time.monotonic() - started_at) >= deadline_secs:
+            logger.info(f"Spotify batch: deadline reached after {time.monotonic() - started_at:.1f}s, stopping")
+            break
 
         batch_ids = pending_ids[i:i + batch_size]
         batch_rate_limited = 0
@@ -253,6 +264,8 @@ async def batch_match_releases(stop_event: asyncio.Event, run_limit: Optional[in
             if stop_event.is_set():
                 break
             if run_limit is not None and processed >= run_limit:
+                break
+            if deadline_secs is not None and (time.monotonic() - started_at) >= deadline_secs:
                 break
             # Re-fetch full document — re-checks status so already-processed
             # items (e.g. from a parallel run) are safely skipped.
@@ -263,7 +276,13 @@ async def batch_match_releases(stop_event: asyncio.Event, run_limit: Optional[in
             if not release:
                 continue
 
-            await match_to_spotify(release)
+            try:
+                await asyncio.wait_for(match_to_spotify(release), timeout=25.0)
+            except asyncio.TimeoutError:
+                logger.warning(f"match_to_spotify timed out for {discogs_id}, leaving as pending")
+                processed += 1
+                rate_limited += 1
+                continue
             processed += 1
 
             updated = await db.releases.find_one(
