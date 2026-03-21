@@ -38,7 +38,7 @@ async def main():
     print(f"DB: {os.environ['DB_NAME']} | pending releases: {pending}")
 
     stop_event = asyncio.Event()
-    result = await batch_match_releases(stop_event, run_limit=100, deadline_secs=800)
+    result = await batch_match_releases(stop_event, run_limit=5, deadline_secs=780)
     print(
         f"processed={result['processed']} "
         f"matched={result['matched']} "

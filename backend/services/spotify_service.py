@@ -280,11 +280,14 @@ async def batch_match_releases(
                 continue
 
             try:
-                await asyncio.wait_for(match_to_spotify(release), timeout=25.0)
+                # 130s allows one full 60s rate-limit sleep + retry overhead
+                await asyncio.wait_for(match_to_spotify(release), timeout=130.0)
             except asyncio.TimeoutError:
-                logger.warning(f"match_to_spotify timed out for {discogs_id}, leaving as pending")
+                logger.warning(f"match_to_spotify timed out for {discogs_id}, pausing 65s for rate limit")
                 processed += 1
                 rate_limited += 1
+                batch_rate_limited += 1
+                await asyncio.sleep(65)  # let the Spotify rate limit window expire
                 continue
             processed += 1
 
