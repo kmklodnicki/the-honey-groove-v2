@@ -1,6 +1,6 @@
 name: Spotify Match Cron
 
-"on":
+on:
   schedule:
     - cron: '*/10 * * * *'
   workflow_dispatch:
@@ -8,16 +8,36 @@ name: Spotify Match Cron
 jobs:
   match:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 15
     steps:
-      - name: Trigger Spotify matching batch
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Run Spotify matching
+        env:
+          MONGO_URL: ${{ secrets.MONGO_URL }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" \
-            -X GET "https://thehoneygroove.com/api/cron/spotify-match" \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            --max-time 420)
-          echo "Response status: $response"
-          if [ "$response" != "200" ]; then
-            echo "Cron endpoint returned $response"
-            exit 1
-          fi
+          cd backend
+          python - <<'EOF'
+import asyncio, sys, os
+sys.path.insert(0, '.')
+from services.spotify_service import batch_match_releases
+
+async def main():
+    stop_event = asyncio.Event()
+    result = await batch_match_releases(stop_event, run_limit=100, deadline_secs=800)
+    print(f"processed={result['processed']} matched={result['matched']} unmatched={result['unmatched']} rate_limited={result['rate_limited']}")
+
+asyncio.run(main())
+EOF
