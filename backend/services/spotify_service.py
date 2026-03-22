@@ -19,9 +19,8 @@ SPOTIFY_SEARCH_URL = "https://api.spotify.com/v1/search"
 _token_cache = {"token": None, "expires_at": 0}
 
 # Per-request rate limiter — enforces a minimum gap between every Spotify API call.
-# 2.0s per request = ~30 req/min. Spotify's search limit is ~180 req/30s but
-# sustained hammering triggers bans; 30/min keeps us far below any threshold.
-_MIN_REQUEST_INTERVAL = 2.0  # seconds between individual Spotify search requests
+# 5.0s per request = ~12 req/min. Conservative enough to avoid sustained bans.
+_MIN_REQUEST_INTERVAL = 5.0  # seconds between individual Spotify search requests
 _request_lock = asyncio.Lock()
 _last_request_at: float = 0.0
 
@@ -69,10 +68,12 @@ def _search_spotify_sync(query: str, token: str, limit: int = 5) -> list:
         if resp.status_code == 200:
             return resp.json().get("albums", {}).get("items", [])
         if resp.status_code == 429:
-            retry_after = int(resp.headers.get("Retry-After", 30))
-            # Some API versions return ms instead of seconds; cap to sane range
-            if retry_after > 300:
-                retry_after = 60
+            retry_after = int(resp.headers.get("Retry-After", 60))
+            # If value looks like milliseconds (>3600), convert to seconds
+            if retry_after > 3600:
+                retry_after = retry_after // 1000
+            # Respect Spotify's window up to 15 minutes; floor at 60s
+            retry_after = max(60, min(retry_after, 900))
             raise Exception(f"RATE_LIMITED:{retry_after}")
     except Exception:
         raise
@@ -225,8 +226,9 @@ async def match_to_spotify(release: dict) -> None:
                 else:
                     logger.warning(
                         f"Spotify rate limited for release {discogs_id} after 3 attempts; "
-                        f"will retry on next batch run"
+                        f"cooling down {retry_after}s before next release"
                     )
+                    await asyncio.sleep(retry_after)  # respect the window before moving on
                     return  # leave spotifyMatchStatus as "pending" for retry
             else:
                 logger.warning(f"Spotify match error for release {discogs_id}: {e}")
