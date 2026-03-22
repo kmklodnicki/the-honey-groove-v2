@@ -183,6 +183,29 @@ async def proxy_cover_urls_middleware(request: Request, call_next):
         )
 
 
+# ── Release / deployment info ──
+_release_info_path = os.path.join(os.path.dirname(__file__), "release_info.json")
+
+def _load_release_info() -> dict:
+    try:
+        import json as _json_mod
+        with open(_release_info_path) as f:
+            return _json_mod.load(f)
+    except Exception:
+        return {"deployed_at": None, "commit_sha": "unknown", "commit_message": "", "branch": "", "env": "unknown"}
+
+@app.get("/api/release")
+async def get_release():
+    """Returns the current deployment timestamp and git info."""
+    return _load_release_info()
+
+@app.get("/api/release/history")
+async def get_release_history():
+    """Returns all recorded deployments, newest first."""
+    docs = await db.deployments.find({}, {"_id": 0}).sort("deployed_at", -1).to_list(100)
+    return docs
+
+
 # ── Health check ──
 @app.get("/health")
 @app.get("/api/health")
@@ -349,6 +372,20 @@ async def startup_event():
     # Milestones indexes
     await db.milestones.create_index([("userId", 1), ("type", 1)], unique=True)
     await db.milestones.create_index("achieved_at")
+    # ── Record this deployment in MongoDB (deduplicated by commit SHA) ──
+    try:
+        info = _load_release_info()
+        if info.get("deployed_at"):
+            await db.deployments.create_index("commit_sha", unique=True)
+            await db.deployments.update_one(
+                {"commit_sha": info["commit_sha"]},
+                {"$setOnInsert": info},
+                upsert=True,
+            )
+            logger.info(f"Deployment recorded: {info['deployed_at']} ({info['commit_sha'][:7]})")
+    except Exception as e:
+        logger.warning(f"Could not record deployment: {e}")
+
     # Start weekly report scheduler
     asyncio.create_task(schedule_weekly_reports())
     # Start Weekly Wax email scheduler

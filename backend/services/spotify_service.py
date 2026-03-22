@@ -18,6 +18,13 @@ SPOTIFY_SEARCH_URL = "https://api.spotify.com/v1/search"
 # In-memory token cache shared across the module
 _token_cache = {"token": None, "expires_at": 0}
 
+# Per-request rate limiter — enforces a minimum gap between every Spotify API call.
+# 2.0s per request = ~30 req/min. Spotify's search limit is ~180 req/30s but
+# sustained hammering triggers bans; 30/min keeps us far below any threshold.
+_MIN_REQUEST_INTERVAL = 2.0  # seconds between individual Spotify search requests
+_request_lock = asyncio.Lock()
+_last_request_at: float = 0.0
+
 
 async def get_spotify_token() -> Optional[str]:
     """Client credentials flow. Caches token and refreshes before 1-hour expiry."""
@@ -70,6 +77,24 @@ def _search_spotify_sync(query: str, token: str, limit: int = 5) -> list:
     except Exception:
         raise
     return []
+
+
+async def _rate_limited_search(query: str, token: str, limit: int = 5) -> list:
+    """Enforce _MIN_REQUEST_INTERVAL between every Spotify API request, then search.
+
+    All search calls funnel through here so the rate limiter is a single choke
+    point regardless of how many strategies or barcodes a release has.
+    """
+    global _last_request_at
+    async with _request_lock:
+        elapsed = time.monotonic() - _last_request_at
+        wait = _MIN_REQUEST_INTERVAL - elapsed
+        if wait > 0:
+            await asyncio.sleep(wait)
+        _last_request_at = time.monotonic()
+        return await asyncio.get_event_loop().run_in_executor(
+            None, _search_spotify_sync, query, token, limit
+        )
 
 
 def find_best_match(spotify_results: list, release: dict) -> Optional[dict]:
@@ -141,9 +166,7 @@ async def _run_spotify_strategies(release: dict, token: str) -> tuple:
     for barcode in barcodes:
         digits = re.sub(r"[^0-9]", "", barcode)
         if len(digits) >= 10:
-            results = await asyncio.get_event_loop().run_in_executor(
-                None, _search_spotify_sync, f"upc:{digits}", token, 5
-            )
+            results = await _rate_limited_search(f"upc:{digits}", token)
             if results:
                 matched_album = find_best_match(results, release)
                 match_type = "upc"
@@ -151,18 +174,14 @@ async def _run_spotify_strategies(release: dict, token: str) -> tuple:
 
     # Strategy 2: Artist + album title
     if not matched_album and artist and title:
-        results = await asyncio.get_event_loop().run_in_executor(
-            None, _search_spotify_sync, f"artist:{artist} album:{clean}", token, 5
-        )
+        results = await _rate_limited_search(f"artist:{artist} album:{clean}", token)
         if results:
             matched_album = find_best_match(results, release)
             match_type = "artist_album"
 
     # Strategy 3: Simple combined search
     if not matched_album and artist and title:
-        results = await asyncio.get_event_loop().run_in_executor(
-            None, _search_spotify_sync, f"{artist} {clean}", token, 5
-        )
+        results = await _rate_limited_search(f"{artist} {clean}", token)
         if results:
             matched_album = find_best_match(results, release)
             match_type = "simple"
@@ -242,7 +261,7 @@ async def batch_match_releases(
     """
     processed = matched = unmatched = rate_limited = 0
     batch_size = 5
-    base_delay = 3.0
+    base_delay = 1.0   # per-request throttle is the primary limiter; batch delay is secondary insurance
     delay = base_delay
     started_at = time.monotonic()
 
@@ -303,13 +322,16 @@ async def batch_match_releases(
             else:
                 unmatched += 1
 
+            logger.info(f"[{processed}/{len(pending_ids)}] id={discogs_id} → {status}")
+
         if not stop_event.is_set():
-            # Adaptive delay: back off when rate-limited, recover when clear
+            # Adaptive delay: back off hard when rate-limited, recover slowly when clear.
+            # Per-request throttle already spaces calls; this adds extra breathing room.
             if batch_rate_limited > 0:
-                delay = min(delay * 2, 60.0)
+                delay = min(delay * 3, 120.0)
                 logger.info(f"Spotify rate limits in batch; backing off to {delay:.1f}s")
             else:
-                delay = max(delay * 0.75, base_delay)
+                delay = max(delay * 0.9, base_delay)
             await asyncio.sleep(delay)
 
     return {"processed": processed, "matched": matched, "unmatched": unmatched, "rate_limited": rate_limited}

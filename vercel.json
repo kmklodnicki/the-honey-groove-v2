@@ -1,6 +1,6 @@
 {
   "installCommand": "cd frontend && npm install --legacy-peer-deps",
-  "buildCommand": "cd frontend && npm run build",
+  "buildCommand": "python3 backend/scripts/gen_release_info.py && cd frontend && npm run build",
   "outputDirectory": "frontend/build",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index.py" },

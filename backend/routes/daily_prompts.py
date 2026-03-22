@@ -305,16 +305,28 @@ async def get_prompt_archive(user: Dict = Depends(require_auth)):
     return results
 
 
+def _et_day_utc_bounds(et_date) -> tuple:
+    """Return (start_utc_iso, end_utc_iso) for a given ET calendar date."""
+    start_et = datetime(et_date.year, et_date.month, et_date.day, tzinfo=ET)
+    end_et = start_et + timedelta(days=1)
+    return start_et.astimezone(timezone.utc).isoformat(), end_et.astimezone(timezone.utc).isoformat()
+
+
 async def _calculate_streak(user_id: str) -> int:
-    """Calculate consecutive days the user has buzzed in."""
-    today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    """Calculate consecutive ET-calendar days the user has buzzed in.
+
+    Uses ET day boundaries (matching the prompt rotation schedule) rather than
+    UTC midnight, so a user who buzzes in late at night ET is always counted on
+    the correct ET calendar day regardless of UTC date rollover.
+    """
+    today_et = datetime.now(ET).date()
     streak = 0
     for i in range(365):
-        day = today - timedelta(days=i)
-        day_end = day + timedelta(days=1)
+        day_et = today_et - timedelta(days=i)
+        day_start, day_end = _et_day_utc_bounds(day_et)
         has_response = await db.prompt_responses.find_one({
             "user_id": user_id,
-            "created_at": {"$gte": day.isoformat(), "$lt": day_end.isoformat()},
+            "created_at": {"$gte": day_start, "$lt": day_end},
         })
         if has_response:
             streak += 1
@@ -326,13 +338,13 @@ async def _calculate_streak(user_id: str) -> int:
 
 
 async def _check_missed_yesterday(user_id: str) -> bool:
-    """Check if user missed yesterday's prompt (gap > 24hrs from last buzz-in)."""
-    today = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
-    yesterday_start = today - timedelta(days=1)
-    yesterday_end = today
+    """Check if user missed yesterday's ET-day prompt."""
+    today_et = datetime.now(ET).date()
+    yesterday_et = today_et - timedelta(days=1)
+    yest_start, yest_end = _et_day_utc_bounds(yesterday_et)
     had_response = await db.prompt_responses.find_one({
         "user_id": user_id,
-        "created_at": {"$gte": yesterday_start.isoformat(), "$lt": yesterday_end.isoformat()},
+        "created_at": {"$gte": yest_start, "$lt": yest_end},
     })
     if had_response:
         return False
@@ -341,10 +353,11 @@ async def _check_missed_yesterday(user_id: str) -> bool:
     if not any_response:
         return False
     # Check within 72hr grace period (missed yesterday but not more than 2 days ago)
-    two_days_ago_start = today - timedelta(days=2)
+    two_days_ago_et = today_et - timedelta(days=2)
+    two_ago_start, _ = _et_day_utc_bounds(two_days_ago_et)
     had_recent = await db.prompt_responses.find_one({
         "user_id": user_id,
-        "created_at": {"$gte": two_days_ago_start.isoformat(), "$lt": yesterday_start.isoformat()},
+        "created_at": {"$gte": two_ago_start, "$lt": yest_start},
     })
     return had_recent is not None
 
@@ -686,7 +699,8 @@ async def _calculate_longest_streak(user_id: str) -> int:
     for r in responses:
         try:
             dt = datetime.fromisoformat(r["created_at"].replace("Z", "+00:00") if "Z" in r["created_at"] else r["created_at"])
-            dates.add(dt.date())
+            # Use ET date to match the prompt rotation schedule
+            dates.add(dt.astimezone(ET).date())
         except Exception:
             continue
 
@@ -714,8 +728,10 @@ async def send_streak_nudge_notifications():
     - 10pm: Users with streak >= 7 who haven't buzzed in today (urgent)
     """
     now = datetime.now(timezone.utc)
-    today = now.replace(hour=0, minute=0, second=0, microsecond=0)
-    today_end = today + timedelta(days=1)
+    today_et = datetime.now(ET).date()
+    today_et_start, today_et_end = _et_day_utc_bounds(today_et)
+    # Use UTC for the 30-day lookback window (just needs to be approximate)
+    today_utc = now.replace(hour=0, minute=0, second=0, microsecond=0)
 
     # Find all users who have buzzed in within the last 30 days
     recent_responders = await db.prompt_responses.distinct(
@@ -728,10 +744,10 @@ async def send_streak_nudge_notifications():
         if streak < 3:
             continue
 
-        # Check if they've already buzzed in today
+        # Check if they've already buzzed in today (ET calendar day)
         today_response = await db.prompt_responses.find_one({
             "user_id": user_id,
-            "created_at": {"$gte": today.isoformat(), "$lt": today_end.isoformat()},
+            "created_at": {"$gte": today_et_start, "$lt": today_et_end},
         })
         if today_response:
             continue  # Already buzzed in today
@@ -740,7 +756,7 @@ async def send_streak_nudge_notifications():
         existing_nudge = await db.notifications.find_one({
             "user_id": user_id,
             "type": "streak_nudge",
-            "created_at": {"$gte": today.isoformat()},
+            "created_at": {"$gte": today_utc.isoformat()},
         })
 
         if not existing_nudge and streak >= 3:
@@ -755,7 +771,7 @@ async def send_streak_nudge_notifications():
             nudge_user = await db.users.find_one({"id": user_id}, {"_id": 0})
             if nudge_user and nudge_user.get("email"):
                 today_prompt = await db.daily_prompts.find_one(
-                    {"active_date": {"$gte": today.isoformat(), "$lt": today_end.isoformat()}},
+                    {"active_date": {"$gte": today_et_start, "$lt": today_et_end}},
                     {"_id": 0}
                 )
                 prompt_text = today_prompt.get("prompt_text", "check the hive") if today_prompt else "check the hive"
@@ -765,7 +781,7 @@ async def send_streak_nudge_notifications():
         if existing_nudge and not await db.notifications.find_one({
             "user_id": user_id,
             "type": "streak_nudge_urgent",
-            "created_at": {"$gte": today.isoformat()},
+            "created_at": {"$gte": today_utc.isoformat()},
         }) and streak >= 7:
             # Second urgent nudge (10pm style)
             await create_notification(

@@ -805,9 +805,10 @@ async def clear_spotify_match(release_id: str, admin: Dict = Depends(require_adm
 
 @router.get("/cron/spotify-match")
 async def cron_spotify_match(request: Request):
-    """Vercel Cron Job endpoint — processes up to 40 pending Spotify matches per invocation.
+    """Vercel Cron Job endpoint — processes pending Spotify matches per invocation.
     Authenticated via CRON_SECRET env var sent as Bearer token by Vercel.
     Runs every 10 minutes, resuming from where the previous run left off.
+    Stops after 240 seconds to stay well within Vercel's 5-minute hard limit.
     """
     cron_secret = os.environ.get("CRON_SECRET", "")
     auth = request.headers.get("authorization", "")
@@ -821,7 +822,7 @@ async def cron_spotify_match(request: Request):
         return {"success": True, "message": "No pending releases", "processed": 0}
 
     stop_event = asyncio.Event()
-    result = await batch_match_releases(stop_event, run_limit=40)
+    result = await batch_match_releases(stop_event, run_limit=20, deadline_secs=240)
     logger.info(f"Cron Spotify match: {result}")
     return {"success": True, **result}
 
@@ -988,23 +989,34 @@ _migration_status: dict = {
 async def get_discogs_migration_status(admin: Dict = Depends(require_admin)):
     """Current status of the Discogs TOS compliance migration."""
     # Also report compliance counts
+    from datetime import timedelta
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+
     discogs_url_in_records = await db.records.count_documents({
         "$or": [
-            {"cover_url": {"$regex": "discogs", "$options": "i"}},
-            {"imageUrl": {"$regex": "discogs", "$options": "i"}},
+            {"cover_url": {"$regex": r"i\.discogs\.com|st\.discogs\.com", "$options": "i"}},
+            {"imageUrl": {"$regex": r"i\.discogs\.com|st\.discogs\.com", "$options": "i"}},
         ]
     })
     releases_with_images = await db.releases.count_documents({"images": {"$exists": True}})
-    stored_tokens = await db.discogs_tokens.count_documents({})
-    users_with_username = await db.users.count_documents({"discogs_username": {"$exists": True, "$ne": None}})
+    stale_tokens = await db.discogs_tokens.count_documents({"connected_at": {"$lt": cutoff}})
+    active_connections = await db.discogs_tokens.count_documents({"connected_at": {"$gte": cutoff}})
 
     return {
         **_migration_status,
         "compliance": {
-            "discogs_urls_in_records": discogs_url_in_records,
-            "releases_with_images_field": releases_with_images,
-            "stored_oauth_tokens": stored_tokens,
-            "users_with_discogs_username": users_with_username,
+            "violations": {
+                "discogs_urls_in_records": discogs_url_in_records,
+                "releases_with_images_field": releases_with_images,
+                "stale_oauth_tokens_not_discarded": stale_tokens,
+            },
+            "compliant_info": {
+                "active_oauth_connections": active_connections,
+                "note": (
+                    "Discogs username and active OAuth tokens for connected users are expected "
+                    "and compliant. They represent user-authorized connections."
+                ),
+            },
         },
     }
 
@@ -1343,9 +1355,20 @@ async def _run_discogs_migration(stop_event: asyncio.Event):
 
 @router.get("/beekeeper/compliance/discogs")
 async def discogs_compliance_check(admin: Dict = Depends(require_admin)):
-    """Compliance audit: returns counts of any remaining Discogs Restricted Data in the DB.
-    All counts should be zero after a successful migration.
+    """Compliance audit: flags actual Discogs TOS violations in the DB.
+
+    NOT violations (not flagged here):
+    - Active OAuth tokens for users who explicitly connected Discogs — user-authorized consent.
+    - discogs_username stored on user docs — these are expected for connected users.
+
+    IS a violation:
+    - Discogs CDN image URLs stored permanently in records.
+    - Raw Discogs `images` arrays on releases documents.
+    - Stale OAuth tokens (connected >24h ago and never discarded after import).
     """
+    from datetime import timedelta
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+
     records_with_discogs_url = await db.records.count_documents({
         "$or": [
             {"cover_url": {"$regex": r"i\.discogs\.com|st\.discogs\.com", "$options": "i"}},
@@ -1353,7 +1376,15 @@ async def discogs_compliance_check(admin: Dict = Depends(require_admin)):
         ]
     })
     releases_with_images = await db.releases.count_documents({"images": {"$exists": True}})
-    stored_tokens = await db.discogs_tokens.count_documents({})
+
+    # Stale tokens: connected more than 24h ago — import should have completed and token discarded.
+    stale_tokens = await db.discogs_tokens.count_documents({
+        "connected_at": {"$lt": cutoff}
+    })
+    # Informational only — not a violation.
+    active_connections = await db.discogs_tokens.count_documents({
+        "connected_at": {"$gte": cutoff}
+    })
     users_with_username = await db.users.count_documents({
         "discogs_username": {"$exists": True, "$ne": None}
     })
@@ -1361,30 +1392,44 @@ async def discogs_compliance_check(admin: Dict = Depends(require_admin)):
     all_clear = (
         records_with_discogs_url == 0
         and releases_with_images == 0
-        and stored_tokens == 0
+        and stale_tokens == 0
     )
 
     return {
         "all_clear": all_clear,
-        "records_with_discogs_image_urls": records_with_discogs_url,
-        "releases_with_images_field": releases_with_images,
-        "stored_oauth_tokens": stored_tokens,
-        "users_with_discogs_username": users_with_username,
+        "violations": {
+            "records_with_discogs_image_urls": records_with_discogs_url,
+            "releases_with_images_field": releases_with_images,
+            "stale_oauth_tokens_not_discarded": stale_tokens,
+        },
+        "compliant_info": {
+            "active_oauth_connections": active_connections,
+            "users_with_discogs_username_on_user_doc": users_with_username,
+            "note": (
+                "Discogs username and active OAuth tokens for connected users are expected "
+                "and compliant. They represent user-authorized connections."
+            ),
+        },
         "checked_at": datetime.now(timezone.utc).isoformat(),
     }
 
 
 @router.post("/beekeeper/compliance/cleanup")
 async def run_compliance_cleanup(admin: Dict = Depends(require_admin)):
-    """Synchronously purge all Discogs Restricted Data from the database.
+    """Synchronously purge actual Discogs TOS violations from the database.
 
-    Runs the three cleanup steps inline (no background task) so it works
-    reliably in serverless environments:
-    1. Delete all documents in discogs_tokens.
-    2. Unset discogs_username from all user documents.
+    Runs inline (no background task) so it works reliably in serverless environments:
+    1. Delete stale OAuth tokens (connected >24h ago — import completed, token not discarded).
+       Active tokens (<24h) are left intact: they represent live user-authorized sessions.
+    2. Unset discogs_username from user documents (legacy field; new OAuth flow stores it
+       only in discogs_tokens, not on the user doc).
     3. Clear cover_url / imageUrl fields pointing to Discogs CDN from records.
+    4. Remove raw Discogs `images` arrays from releases documents.
     """
-    tokens_deleted = (await db.discogs_tokens.delete_many({})).deleted_count
+    from datetime import timedelta
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+
+    tokens_deleted = (await db.discogs_tokens.delete_many({"connected_at": {"$lt": cutoff}})).deleted_count
 
     usernames_cleared = (await db.users.update_many(
         {"discogs_username": {"$exists": True}},
@@ -1406,15 +1451,25 @@ async def run_compliance_cleanup(admin: Dict = Depends(require_admin)):
         ]
     })
 
+    # Remove the raw Discogs `images` array from any releases documents —
+    # this field is Restricted Data that was stored before the compliance migration.
+    releases_images_cleared = (await db.releases.update_many(
+        {"images": {"$exists": True}},
+        {"$unset": {"images": ""}},
+    )).modified_count
+
     logger.info(
         f"Compliance cleanup: {tokens_deleted} tokens deleted, "
-        f"{usernames_cleared} usernames cleared, images remaining: {images_checked}"
+        f"{usernames_cleared} usernames cleared, "
+        f"{releases_images_cleared} release image arrays cleared, "
+        f"record images remaining: {images_checked}"
     )
 
     return {
-        "tokens_deleted": tokens_deleted,
+        "stale_tokens_deleted": tokens_deleted,
         "usernames_cleared": usernames_cleared,
-        "images_remaining": images_checked,
+        "releases_images_cleared": releases_images_cleared,
+        "record_discogs_images_remaining": images_checked,
         "cleaned_at": datetime.now(timezone.utc).isoformat(),
     }
 
