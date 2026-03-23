@@ -348,7 +348,7 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
   return (
     <Card ref={cardRef} className={`overflow-hidden transition-all ${highlighted ? 'ring-2 ring-honey shadow-lg shadow-honey/20' : ''} ${post.is_new_feature ? 'shadow-md' : ''}`} style={{ background: 'rgba(255,255,255,0.65)', backdropFilter: 'blur(6px)', border: post.is_new_feature ? '1px solid rgba(212,168,40,0.18)' : '1px solid rgba(212,168,40,0.08)', borderRadius: '12px', ...(post.is_new_feature ? { backgroundColor: 'rgba(243,250,245,0.8)' } : {}) }} data-testid={`post-${post.id}`}>
       {/* Post Type Banner */}
-      {!post.is_release_note && (
+      {!post.is_release_note && !post.is_pinned && (
         <div
           style={{ background: '#354B66', padding: '5px 16px', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '12px 12px 0 0' }}
           data-testid={`post-type-banner-${post.id}`}
