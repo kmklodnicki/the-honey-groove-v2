@@ -18,11 +18,27 @@ SPOTIFY_SEARCH_URL = "https://api.spotify.com/v1/search"
 # In-memory token cache shared across the module
 _token_cache = {"token": None, "expires_at": 0}
 
-# Per-request rate limiter — enforces a minimum gap between every Spotify API call.
-# 5.0s per request = ~12 req/min. Conservative enough to avoid sustained bans.
-_MIN_REQUEST_INTERVAL = 5.0  # seconds between individual Spotify search requests
+# ── Rate limiter ──────────────────────────────────────────────────────────────
+# 10s between requests = 6 req/min. Well under Spotify's documented limits.
+_MIN_REQUEST_INTERVAL = 10.0
 _request_lock = asyncio.Lock()
 _last_request_at: float = 0.0
+
+# ── Circuit breaker ───────────────────────────────────────────────────────────
+# Any 429 trips the circuit and blocks ALL requests for 30 minutes.
+# This prevents retry storms and lets Spotify's rate limit window fully expire.
+_CIRCUIT_DURATION = 30 * 60  # 30 minutes
+_circuit_open_until: float = 0.0
+
+
+def _trip_circuit(retry_after: int = 0) -> None:
+    global _circuit_open_until
+    duration = max(retry_after, _CIRCUIT_DURATION)
+    _circuit_open_until = time.monotonic() + duration
+    logger.warning(
+        f"Spotify circuit breaker TRIPPED — all requests blocked for "
+        f"{duration / 60:.0f} min (Retry-After={retry_after}s)"
+    )
 
 
 async def get_spotify_token() -> Optional[str]:
@@ -69,11 +85,10 @@ def _search_spotify_sync(query: str, token: str, limit: int = 5) -> list:
             return resp.json().get("albums", {}).get("items", [])
         if resp.status_code == 429:
             retry_after = int(resp.headers.get("Retry-After", 60))
-            # If value looks like milliseconds (>3600), convert to seconds
-            if retry_after > 3600:
+            if retry_after > 3600:          # looks like ms — convert
                 retry_after = retry_after // 1000
-            # Respect Spotify's window up to 15 minutes; floor at 60s
             retry_after = max(60, min(retry_after, 900))
+            _trip_circuit(retry_after)      # block all requests for 30 min
             raise Exception(f"RATE_LIMITED:{retry_after}")
     except Exception:
         raise
@@ -81,12 +96,23 @@ def _search_spotify_sync(query: str, token: str, limit: int = 5) -> list:
 
 
 async def _rate_limited_search(query: str, token: str, limit: int = 5) -> list:
-    """Enforce _MIN_REQUEST_INTERVAL between every Spotify API request, then search.
+    """Single choke point for all Spotify search calls.
 
-    All search calls funnel through here so the rate limiter is a single choke
-    point regardless of how many strategies or barcodes a release has.
+    1. Waits for the circuit breaker to close if a recent 429 tripped it.
+    2. Enforces _MIN_REQUEST_INTERVAL between requests.
     """
     global _last_request_at
+
+    # ── Circuit breaker check ─────────────────────────────────────────────────
+    circuit_wait = _circuit_open_until - time.monotonic()
+    if circuit_wait > 0:
+        logger.info(
+            f"Spotify circuit open — pausing {circuit_wait / 60:.1f} min before next request"
+        )
+        await asyncio.sleep(circuit_wait)
+        logger.info("Spotify circuit closed — resuming")
+
+    # ── Per-request interval ──────────────────────────────────────────────────
     async with _request_lock:
         elapsed = time.monotonic() - _last_request_at
         wait = _MIN_REQUEST_INTERVAL - elapsed
@@ -226,9 +252,8 @@ async def match_to_spotify(release: dict) -> None:
                 else:
                     logger.warning(
                         f"Spotify rate limited for release {discogs_id} after 3 attempts; "
-                        f"cooling down {retry_after}s before next release"
+                        f"circuit breaker is open — next request will wait automatically"
                     )
-                    await asyncio.sleep(retry_after)  # respect the window before moving on
                     return  # leave spotifyMatchStatus as "pending" for retry
             else:
                 logger.warning(f"Spotify match error for release {discogs_id}: {e}")

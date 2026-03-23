@@ -73,62 +73,35 @@ def _clean_title(title: str) -> str:
 
 
 async def resolve_spotify_link(discogs_id: int) -> Dict:
-    """Resolve a Discogs release to a Spotify link. Uses DB cache."""
-    # Check cache
+    """Return a Spotify link for a Discogs release from DB cache only.
+
+    Live Spotify API calls are disabled here to protect the shared app quota
+    while the batch import runs. The batch import (spotify_service.py) is the
+    sole writer to the releases collection and handles all Spotify lookups.
+    Unmatched releases return a generic Spotify search fallback URL.
+    """
+    # Check legacy spotify_links cache first
     cached = await db.spotify_links.find_one({"discogs_id": discogs_id}, {"_id": 0})
-    if cached:
+    if cached and cached.get("matched"):
         return cached
 
-    # Get Discogs release data
-    discogs = get_discogs_release(discogs_id)
-    if not discogs:
-        return await _fallback(discogs_id, None, None, persist=True)
-
-    artist = discogs.get("artist", "")
-    title = discogs.get("title", "")
-    barcode = None
-    for identifier in discogs.get("identifiers", []):
-        if identifier.get("type") == "Barcode":
-            barcode = re.sub(r"[^0-9]", "", identifier.get("value", ""))
-            if barcode and len(barcode) >= 10:
-                break
-            barcode = None
-
-    token = _get_spotify_token()
-    if not token:
-        return await _fallback(discogs_id, artist, title, persist=True)
-
-    result = None
-
-    # Strategy 1: UPC barcode search
-    if barcode:
-        result = _search_spotify(f"upc:{barcode}", token)
-
-    # Strategy 2: Structured artist + album search
-    if not result and artist and title:
-        clean = _clean_title(title)
-        result = _search_spotify(f"artist:{artist} album:{clean}", token)
-
-    # Strategy 3: Simpler combined search
-    if not result and artist and title:
-        result = _search_spotify(f"{artist} {_clean_title(title)}", token)
-
-    if result:
-        doc = {
+    # Check releases collection (batch import pipeline)
+    release = await db.releases.find_one(
+        {"discogsReleaseId": discogs_id, "spotifyMatchStatus": "matched"},
+        {"_id": 0, "spotifyAlbumId": 1}
+    )
+    if release and release.get("spotifyAlbumId"):
+        album_id = release["spotifyAlbumId"]
+        return {
             "discogs_id": discogs_id,
-            "spotify_id": result["spotify_id"],
-            "spotify_url": result["spotify_url"],
-            "spotify_uri": result["spotify_uri"],
+            "spotify_id": album_id,
+            "spotify_url": f"https://open.spotify.com/album/{album_id}",
+            "spotify_uri": f"spotify:album:{album_id}",
             "matched": True,
-            "artist": artist,
-            "title": title,
         }
-        await db.spotify_links.update_one(
-            {"discogs_id": discogs_id}, {"$set": doc}, upsert=True
-        )
-        return doc
 
-    return await _fallback(discogs_id, artist, title, persist=True)
+    # Not yet matched — return fallback search URL; batch import will match it
+    return await _fallback(discogs_id, None, None, persist=False)
 
 
 async def _fallback(discogs_id: int, artist: str, title: str, persist: bool = False) -> Dict:
@@ -153,27 +126,12 @@ async def _fallback(discogs_id: int, artist: str, title: str, persist: bool = Fa
 
 @router.get("/link/{discogs_id}")
 async def get_spotify_link(discogs_id: int, user: Dict = Depends(get_current_user)):
-    """Get the Spotify link for a Discogs release.
-    Checks releases collection first (new pipeline), falls back to spotify_links cache."""
-    # Check releases collection (new Spotify matching pipeline)
-    release = await db.releases.find_one(
-        {"discogsReleaseId": discogs_id, "spotifyMatchStatus": "matched"},
-        {"_id": 0, "spotifyAlbumId": 1}
-    )
-    if release and release.get("spotifyAlbumId"):
-        album_id = release["spotifyAlbumId"]
-        return {
-            "discogs_id": discogs_id,
-            "spotify_id": album_id,
-            "spotify_url": f"https://open.spotify.com/album/{album_id}",
-            "spotify_uri": f"spotify:album:{album_id}",
-            "matched": True,
-        }
+    """Get the Spotify link for a Discogs release. Returns cached data only — no live API calls."""
     return await resolve_spotify_link(discogs_id)
 
 
 @router.delete("/link/{discogs_id}/cache")
 async def clear_spotify_cache(discogs_id: int, user: Dict = Depends(get_current_user)):
-    """Clear cached Spotify link to force re-resolution."""
+    """Clear legacy spotify_links cache entry. Does not trigger a live re-lookup."""
     await db.spotify_links.delete_one({"discogs_id": discogs_id})
     return await resolve_spotify_link(discogs_id)
