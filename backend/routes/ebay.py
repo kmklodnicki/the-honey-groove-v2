@@ -23,7 +23,7 @@ EBAY_VERIFICATION_TOKEN = os.environ.get(
     "fbf73bb5f592c2c59363992217f0a7313f266ddb0da6ec7a48bd0ebc5c5c42e5",
 )
 
-BACKEND_URL = os.environ.get("BACKEND_URL", "https://the-honey-groove-v2.vercel.app")
+BACKEND_URL = os.environ.get("BACKEND_URL", "https://thehoneygroove.com")
 
 DELETION_ENDPOINT = f"{BACKEND_URL}/api/ebay/account-deletion"
 NOTIFICATIONS_ENDPOINT = f"{BACKEND_URL}/api/ebay/notifications"
