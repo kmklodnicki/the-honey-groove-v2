@@ -19,8 +19,8 @@ SPOTIFY_SEARCH_URL = "https://api.spotify.com/v1/search"
 _token_cache = {"token": None, "expires_at": 0}
 
 # ── Rate limiter ──────────────────────────────────────────────────────────────
-# 10s between requests = 6 req/min. Well under Spotify's documented limits.
-_MIN_REQUEST_INTERVAL = 10.0
+# 15s between requests = 4 req/min. Conservative for long batch runs.
+_MIN_REQUEST_INTERVAL = 15.0
 _request_lock = asyncio.Lock()
 _last_request_at: float = 0.0
 
