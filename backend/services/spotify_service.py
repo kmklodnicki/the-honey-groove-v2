@@ -3,6 +3,7 @@ finding Spotify album art (legally permitted for commercial use) for each releas
 import os
 import re
 import time
+import random
 import asyncio
 import logging
 from typing import Optional
@@ -127,8 +128,11 @@ async def _rate_limited_search(query: str, token: str, limit: int = 5) -> list:
     async with _request_lock:
         elapsed = time.monotonic() - _last_request_at
         wait = _MIN_REQUEST_INTERVAL - elapsed
+        jitter = random.uniform(0, 5)  # 0–5s random jitter
         if wait > 0:
-            await asyncio.sleep(wait)
+            await asyncio.sleep(wait + jitter)
+        else:
+            await asyncio.sleep(jitter)
         _last_request_at = time.monotonic()
         return await asyncio.get_event_loop().run_in_executor(
             None, _search_spotify_sync, query, token, limit
@@ -210,19 +214,12 @@ async def _run_spotify_strategies(release: dict, token: str) -> tuple:
                 match_type = "upc"
                 break
 
-    # Strategy 2: Artist + album title
+    # Strategy 2: Artist + album title (no strategy 3 — saves API quota in batch runs)
     if not matched_album and artist and title:
         results = await _rate_limited_search(f"artist:{artist} album:{clean}", token)
         if results:
             matched_album = find_best_match(results, release)
             match_type = "artist_album"
-
-    # Strategy 3: Simple combined search
-    if not matched_album and artist and title:
-        results = await _rate_limited_search(f"{artist} {clean}", token)
-        if results:
-            matched_album = find_best_match(results, release)
-            match_type = "simple"
 
     return matched_album, match_type
 
