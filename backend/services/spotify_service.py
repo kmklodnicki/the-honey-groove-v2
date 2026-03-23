@@ -25,19 +25,20 @@ _request_lock = asyncio.Lock()
 _last_request_at: float = 0.0
 
 # ── Circuit breaker ───────────────────────────────────────────────────────────
-# Any 429 trips the circuit and blocks ALL requests for 30 minutes.
-# This prevents retry storms and lets Spotify's rate limit window fully expire.
-_CIRCUIT_DURATION = 30 * 60  # 30 minutes
+# Any 429 trips the circuit. Cooldown = Retry-After + 3 min buffer.
+# Minimum 3 minutes if Spotify sends no Retry-After header.
+_CIRCUIT_BUFFER = 3 * 60   # 3 minutes over whatever Spotify asks for
+_CIRCUIT_MIN    = 3 * 60   # floor if no Retry-After
 _circuit_open_until: float = 0.0
 
 
 def _trip_circuit(retry_after: int = 0) -> None:
     global _circuit_open_until
-    duration = max(retry_after, _CIRCUIT_DURATION)
+    duration = max(retry_after + _CIRCUIT_BUFFER, _CIRCUIT_MIN)
     _circuit_open_until = time.monotonic() + duration
     logger.warning(
         f"Spotify circuit breaker TRIPPED — all requests blocked for "
-        f"{duration / 60:.0f} min (Retry-After={retry_after}s)"
+        f"{duration / 60:.1f} min (Retry-After={retry_after}s)"
     )
 
 
