@@ -25,21 +25,31 @@ _request_lock = asyncio.Lock()
 _last_request_at: float = 0.0
 
 # ── Circuit breaker ───────────────────────────────────────────────────────────
-# Any 429 trips the circuit. Cooldown = Retry-After + 3 min buffer.
-# Minimum 3 minutes if Spotify sends no Retry-After header.
-_CIRCUIT_BUFFER = 3 * 60   # 3 minutes over whatever Spotify asks for
-_CIRCUIT_MIN    = 3 * 60   # floor if no Retry-After
+# Trips on any 429. Cooldown = max(retry_after, base) with exponential backoff
+# each consecutive trip. Resets trip count after a successful request.
+_CIRCUIT_BASE    = 3 * 60   # 3 min base cooldown
+_CIRCUIT_MAX     = 20 * 60  # 20 min ceiling
 _circuit_open_until: float = 0.0
+_circuit_trip_count: int = 0
 
 
 def _trip_circuit(retry_after: int = 0) -> None:
-    global _circuit_open_until
-    duration = max(retry_after + _CIRCUIT_BUFFER, _CIRCUIT_MIN)
+    global _circuit_open_until, _circuit_trip_count
+    _circuit_trip_count += 1
+    base = _CIRCUIT_BASE * (2 ** (_circuit_trip_count - 1))  # 3, 6, 12, 20, 20...
+    duration = min(max(retry_after + 60, base), _CIRCUIT_MAX)
     _circuit_open_until = time.monotonic() + duration
     logger.warning(
-        f"Spotify circuit breaker TRIPPED — all requests blocked for "
-        f"{duration / 60:.1f} min (Retry-After={retry_after}s)"
+        f"Spotify circuit breaker TRIPPED (trip #{_circuit_trip_count}) — "
+        f"blocked for {duration / 60:.1f} min (Retry-After={retry_after}s)"
     )
+
+
+def _reset_circuit() -> None:
+    global _circuit_trip_count
+    if _circuit_trip_count > 0:
+        _circuit_trip_count = 0
+        logger.info("Spotify circuit breaker reset after successful request")
 
 
 async def get_spotify_token() -> Optional[str]:
@@ -235,6 +245,7 @@ async def match_to_spotify(release: dict) -> None:
     for attempt in range(3):
         try:
             matched_album, match_type = await _run_spotify_strategies(release, token)
+            _reset_circuit()
             break  # success — exit retry loop
         except Exception as e:
             if "RATE_LIMITED" in str(e):
