@@ -15,11 +15,11 @@ def wrap_email(body_html: str, unsubscribe_url: str = "") -> str:
 <tr><td align="center" style="padding:32px 16px 32px 16px;">
 <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
 
-<!-- Logo — inline text -->
+<!-- Logo -->
 <tr><td align="center" style="padding:0 0 16px 0;">
-  <p style="margin:0;line-height:1;">
-    <span style="color:#D4A828;font-style:italic;font-family:'DM Sans',-apple-system,sans-serif;font-size:11px;">the </span><span style="font-size:22px;font-weight:700;font-family:'Playfair Display',Georgia,serif;letter-spacing:0.01em;"><span style="color:#1E2A3A;">Honey</span><span style="color:#D4A828;">Groove</span></span>
-  </p>
+  <a href="https://thehoneygroove.com" style="display:inline-block;line-height:0;">
+    <img src="https://thehoneygroove.com/logo-compact-gold.png" alt="the HoneyGroove" width="160" style="height:auto;display:block;border:0;" />
+  </a>
 </td></tr>
 
 <!-- Gold divider -->
@@ -35,9 +35,9 @@ def wrap_email(body_html: str, unsubscribe_url: str = "") -> str:
 <!-- Footer -->
 <tr><td align="center" style="padding:32px 0 0 0;">
 <div style="background:#1E2A3A;border-radius:0 0 12px 12px;padding:24px 20px 20px 20px;text-align:center;">
-<p style="margin:0 0 6px 0;">
-  <span style="color:#D4A828;font-style:italic;font-family:'DM Sans',-apple-system,sans-serif;font-size:10px;">the </span><span style="font-size:16px;font-weight:700;font-family:'Playfair Display',Georgia,serif;letter-spacing:0.01em;"><span style="color:#FFFFFF;">Honey</span><span style="color:#D4A828;">Groove</span></span>
-</p>
+<a href="https://thehoneygroove.com" style="display:inline-block;line-height:0;margin-bottom:8px;">
+  <img src="https://thehoneygroove.com/logo-compact-white-gold.png" alt="the HoneyGroove" width="120" style="height:auto;display:block;border:0;" />
+</a>
 <p style="color:#3A4D63;font-size:11px;margin:0 0 10px 0;">The social marketplace for vinyl collectors</p>
 <p style="margin:0;font-size:9px;">
   <a href="{unsub_href}" style="color:#3A4D63;text-decoration:underline;">Unsubscribe</a>

@@ -545,8 +545,8 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
     <>
       {/* Composer Bar — Command Center */}
       <div className="rounded-xl border overflow-hidden mb-6 shadow" style={{ borderColor: '#E5DBC8', background: '#FFFFFF' }} data-testid="composer-bar">
-        {/* Navy header strip */}
-        <div style={{ background: '#1E2A3A', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        {/* Slate blue header strip */}
+        <div style={{ background: '#354B66', padding: '10px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span style={{ fontSize: '12px', color: '#FFFFFF', fontWeight: 600 }}>What's on the turntable?</span>
           <span style={{ fontSize: '9px', color: '#F0E6C8' }}>Only posts with comments will be shared in The Hive.</span>
         </div>
@@ -716,10 +716,10 @@ const ComposerBar = React.forwardRef(({ onPostCreated, records = [] }, ref) => {
                     }}
                     className="w-full rounded-md text-sm px-3 py-2 appearance-none cursor-pointer"
                     style={{
-                      border: '1px solid rgba(200,134,26,0.5)',
-                      background: '#FFFDF5',
-                      color: spinTrack ? '#1a1a1a' : '#3A4D63',
-                      backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath d=\'M2 4l4 4 4-4\' fill=\'none\' stroke=\'%23C8861A\' stroke-width=\'1.5\'/%3E%3C/svg%3E")',
+                      border: '1px solid rgba(212,168,40,0.4)',
+                      background: '#FFFBF2',
+                      color: spinTrack ? '#1E2A3A' : '#3A4D63',
+                      backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath d=\'M2 4l4 4 4-4\' fill=\'none\' stroke=\'%23D4A828\' stroke-width=\'1.5\'/%3E%3C/svg%3E")',
                       backgroundRepeat: 'no-repeat',
                       backgroundPosition: 'right 10px center',
                       paddingRight: '30px',

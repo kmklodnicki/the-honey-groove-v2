@@ -332,7 +332,7 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
     NEW_HAUL:            { label: 'Haul',                icon: '📦' },
     ISO:                 { label: 'ISO',                 icon: '🔍' },
     NOTE:                { label: 'Note',                icon: '📝' },
-    DAILY_PROMPT:        { label: 'Daily Prompt',        icon: '💬' },
+    DAILY_PROMPT:        { label: 'Daily Prompt',        icon: '🐝' },
     POLL:                { label: 'Poll',                icon: '📊' },
     listing_sale:        { label: 'For Sale',            icon: '🏷️' },
     listing_trade:       { label: 'For Trade',           icon: '🔄' },
@@ -350,7 +350,7 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
       {/* Post Type Banner */}
       {!post.is_release_note && (
         <div
-          style={{ background: '#1E2A3A', padding: '5px 16px', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '12px 12px 0 0' }}
+          style={{ background: '#354B66', padding: '5px 16px', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '12px 12px 0 0' }}
           data-testid={`post-type-banner-${post.id}`}
         >
           <span style={{ fontSize: '10px' }}>{bannerConfig.icon}</span>
@@ -359,7 +359,7 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
         </div>
       )}
       {post.is_pinned && (
-        <div style={{ background: '#1E2A3A', padding: '5px 16px', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '12px 12px 0 0', color: '#E8CA5A' }} data-testid={`pinned-${post.id}`}>
+        <div style={{ background: '#354B66', padding: '5px 16px', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '12px 12px 0 0', color: '#E8CA5A' }} data-testid={`pinned-${post.id}`}>
           <Pin className="w-3 h-3" style={{ color: '#E8CA5A' }} />
           <span style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', flex: 1 }}>{pinnedCollapsed ? 'Pinned Post' : 'Pinned'}</span>
           <button
@@ -374,7 +374,7 @@ export const PostCard = ({ post, onLike, onCommentCountChange, onDelete, onAlbum
         </div>
       )}
       {post.is_release_note && !post.is_pinned && (
-        <div style={{ background: '#1E2A3A', padding: '5px 16px', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '12px 12px 0 0', color: '#E8CA5A' }} data-testid={`release-note-banner-${post.id}`}>
+        <div style={{ background: '#354B66', padding: '5px 16px', display: 'flex', alignItems: 'center', gap: '6px', borderRadius: '12px 12px 0 0', color: '#E8CA5A' }} data-testid={`release-note-banner-${post.id}`}>
           <FileText className="w-3 h-3" style={{ color: '#E8CA5A' }} />
           <span style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', flex: 1 }}>Release Note</span>
           <button

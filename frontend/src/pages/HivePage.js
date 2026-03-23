@@ -94,11 +94,10 @@ const HivePage = () => {
   const FEED_FILTERS = [
     { key: 'all', emoji: '\u{1F36F}', text: 'All' },
     { key: 'NOW_SPINNING', emoji: '\u{1F3B5}', text: 'Spinning' },
-    { key: 'ISO', emoji: '\u{1F50D}', text: 'ISOs' },
     { key: 'NEW_HAUL', emoji: '\u{1F4E6}', text: 'Hauls' },
-    { key: 'NOTE', emoji: '\u{1F4DD}', text: 'Notes' },
+    { key: 'ISO', emoji: '\u{1F50D}', text: 'ISOs' },
+    { key: 'DAILY_PROMPT', emoji: '\u{1F41D}', text: 'Prompts' },
     { key: 'POLL', emoji: '\u{1F4CA}', text: 'Polls' },
-    { key: 'listing', emoji: '\u{1F3F7}\uFE0F', text: 'For Sale' },
   ];
 
   const headers = { Authorization: `Bearer ${token}` };
@@ -499,9 +498,9 @@ const HivePage = () => {
       {!promptBuzzedIn && (
         <div
           style={{
-            background: '#1E2A3A', borderRadius: '10px', padding: '12px 16px',
+            background: '#354B66', borderRadius: '10px', padding: '12px 16px',
             display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px',
-            boxShadow: '0 2px 4px rgba(30,42,58,0.2), 0 4px 12px rgba(30,42,58,0.12)',
+            boxShadow: '0 2px 4px rgba(53,75,102,0.2), 0 4px 12px rgba(53,75,102,0.12)',
             marginBottom: '14px',
           }}
           data-testid="streak-banner"

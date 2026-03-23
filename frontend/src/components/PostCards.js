@@ -65,16 +65,16 @@ const MOOD_EMOJI_MAP = {
 };
 const MOOD_COLOR_MAP = {
   // Current 12 moods
-  'New Arrival': '#c8861a', 'Deep Listening': '#4a7aaa', 'In The Zone': '#2a6a2a',
-  'Me Time': '#6a3a9a', 'Cleaning Session': '#3a9a5a', 'Spin Party': '#aa3a8a',
-  'Limited Edition': '#5a5aaa', 'Vibe Check': '#aa7a3a', 'Late Night': '#4a4a8a',
-  'Background': '#8a6a3a', 'In My Feels': '#5a5a8a', 'Daydreaming': '#6a8aaa',
+  'New Arrival': '#D4A828', 'Deep Listening': '#3A4D63', 'In The Zone': '#1E2A3A',
+  'Me Time': '#3A4D63', 'Cleaning Session': '#1E2A3A', 'Spin Party': '#D4A828',
+  'Limited Edition': '#3A4D63', 'Vibe Check': '#D4A828', 'Late Night': '#1E2A3A',
+  'Background': '#3A4D63', 'In My Feels': '#3A4D63', 'Daydreaming': '#3A4D63',
   // Legacy
-  'High Fidelity': '#cc3a2a', 'Solo Session': '#6a3a9a', 'Background Wax': '#8a6a3a',
-  'Good Morning': '#e8a820', 'Sunday Morning': '#e8a820',
-  'Rainy Day': '#4a7aaa', 'Road Trip': '#4a8a4a', 'Golden Hour': '#c8861a',
-  'Deep Focus': '#2a6a2a', 'Party Mode': '#aa3a8a', 'Lazy Afternoon': '#aa7a3a',
-  'Melancholy': '#5a5a8a', 'Upbeat Vibes': '#3a9a5a', 'Cozy Evening': '#aa5a2a', 'Workout': '#cc3a2a',
+  'High Fidelity': '#1E2A3A', 'Solo Session': '#3A4D63', 'Background Wax': '#3A4D63',
+  'Good Morning': '#D4A828', 'Sunday Morning': '#D4A828',
+  'Rainy Day': '#3A4D63', 'Road Trip': '#1E2A3A', 'Golden Hour': '#D4A828',
+  'Deep Focus': '#1E2A3A', 'Party Mode': '#D4A828', 'Lazy Afternoon': '#3A4D63',
+  'Melancholy': '#3A4D63', 'Upbeat Vibes': '#1E2A3A', 'Cozy Evening': '#D4A828', 'Workout': '#1E2A3A',
 };
 
 // Clickable album card wrapper — calls onAlbumClick if provided, otherwise navigates to record detail
@@ -110,24 +110,24 @@ const AlbumLink = ({ record, children, className = '', onAlbumClick }) => {
 // ── Shared Pill Style System ──
 // Used by both filter pills (HivePage) and card badges (PostCards)
 const PILL_STYLES = {
-  NOW_SPINNING:         { bg: 'bg-[#F0E6C8]',   text: 'text-[#D4A828]',   border: 'border-[#E5DBC8]' },
-  NEW_HAUL:             { bg: 'bg-pink-100',     text: 'text-pink-600',    border: 'border-pink-200' },
-  ISO:                  { bg: 'bg-rose-100',     text: 'text-rose-600',    border: 'border-rose-200' },
-  ADDED_TO_COLLECTION:  { bg: 'bg-green-100',    text: 'text-green-700',   border: 'border-green-200' },
-  listing_sale:         { bg: 'bg-teal-100',     text: 'text-teal-700',    border: 'border-teal-200' },
-  listing_trade:        { bg: 'bg-teal-100',     text: 'text-teal-700',    border: 'border-teal-200' },
-  listing:              { bg: 'bg-teal-100',     text: 'text-teal-700',    border: 'border-teal-200' },
-  WEEKLY_WRAP:          { bg: 'bg-purple-100',   text: 'text-purple-700',  border: 'border-purple-200' },
-  VINYL_MOOD:           { bg: 'bg-purple-100',   text: 'text-purple-700',  border: 'border-purple-200' },
-  DAILY_PROMPT:         { bg: 'bg-sky-100',      text: 'text-sky-700',     border: 'border-sky-200' },
-  RANDOMIZER:           { bg: 'bg-[#F0E6C8]',    text: 'text-black',       border: 'border-[#D4A828]' },
-  NOTE:                 { bg: 'bg-yellow-100',   text: 'text-yellow-700',  border: 'border-yellow-200' },
-  RELEASE_NOTE:         { bg: 'bg-[#D4A828]',    text: 'text-white',       border: 'border-[#D4A828]' },
-  POLL:                 { bg: 'bg-[#F0E6C8]',    text: 'text-[#1E2A3A]',   border: 'border-[#E5DBC8]' },
-  NEW_FEATURE:          { bg: 'bg-green-100',    text: 'text-green-700',   border: 'border-green-200' },
-  ROOM_JOIN:            { bg: 'bg-[#F0E6C8]',     text: 'text-[#D4A828]',   border: 'border-[#E5DBC8]' },
-  following:            { bg: 'bg-violet-100',   text: 'text-violet-700',  border: 'border-violet-200' },
-  all:                  { bg: 'bg-[#F3EBE0]',    text: 'text-[#3A4D63]',   border: 'border-[#E5DBC8]' },
+  NOW_SPINNING:         { bg: 'bg-[#F0E6C8]',       text: 'text-[#D4A828]',  border: 'border-[#E5DBC8]' },
+  NEW_HAUL:             { bg: 'bg-[#F0E6C8]',       text: 'text-[#3A4D63]',  border: 'border-[#E5DBC8]' },
+  ISO:                  { bg: 'bg-[#1E2A3A]/10',    text: 'text-[#1E2A3A]',  border: 'border-[#1E2A3A]/20' },
+  ADDED_TO_COLLECTION:  { bg: 'bg-[#F0E6C8]',       text: 'text-[#D4A828]',  border: 'border-[#E5DBC8]' },
+  listing_sale:         { bg: 'bg-[#1E2A3A]/10',    text: 'text-[#1E2A3A]',  border: 'border-[#1E2A3A]/20' },
+  listing_trade:        { bg: 'bg-[#1E2A3A]/10',    text: 'text-[#1E2A3A]',  border: 'border-[#1E2A3A]/20' },
+  listing:              { bg: 'bg-[#1E2A3A]/10',    text: 'text-[#1E2A3A]',  border: 'border-[#1E2A3A]/20' },
+  WEEKLY_WRAP:          { bg: 'bg-[#F0E6C8]',       text: 'text-[#D4A828]',  border: 'border-[#E5DBC8]' },
+  VINYL_MOOD:           { bg: 'bg-[#F0E6C8]',       text: 'text-[#3A4D63]',  border: 'border-[#E5DBC8]' },
+  DAILY_PROMPT:         { bg: 'bg-[#F0E6C8]',       text: 'text-[#D4A828]',  border: 'border-[#E5DBC8]' },
+  RANDOMIZER:           { bg: 'bg-[#F0E6C8]',       text: 'text-[#1E2A3A]',  border: 'border-[#D4A828]' },
+  NOTE:                 { bg: 'bg-[#F3EBE0]',       text: 'text-[#3A4D63]',  border: 'border-[#E5DBC8]' },
+  RELEASE_NOTE:         { bg: 'bg-[#D4A828]',       text: 'text-white',       border: 'border-[#D4A828]' },
+  POLL:                 { bg: 'bg-[#F0E6C8]',       text: 'text-[#1E2A3A]',  border: 'border-[#E5DBC8]' },
+  NEW_FEATURE:          { bg: 'bg-[#F0E6C8]',       text: 'text-[#D4A828]',  border: 'border-[#E5DBC8]' },
+  ROOM_JOIN:            { bg: 'bg-[#F0E6C8]',       text: 'text-[#D4A828]',  border: 'border-[#E5DBC8]' },
+  following:            { bg: 'bg-[#1E2A3A]/10',    text: 'text-[#1E2A3A]',  border: 'border-[#1E2A3A]/20' },
+  all:                  { bg: 'bg-[#F3EBE0]',       text: 'text-[#3A4D63]',  border: 'border-[#E5DBC8]' },
 };
 
 const VARIANT_PILL_STYLES = {

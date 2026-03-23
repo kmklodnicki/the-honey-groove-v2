@@ -220,8 +220,8 @@ useEffect(() => {
   return (
     <>
       <Card className="my-4 border-[#E5DBC8]/60 overflow-hidden relative" style={{ background: '#FFFBF2' }} data-testid="daily-prompt-card">
-        {/* Navy header bar */}
-        <div style={{ background: '#1E2A3A', padding: '8px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        {/* Slate blue header bar */}
+        <div style={{ background: '#354B66', padding: '8px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ fontSize: '11px' }}>🐝</span>
             <span style={{ fontSize: '9px', fontWeight: 700, color: '#D4A828', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Daily Prompt</span>

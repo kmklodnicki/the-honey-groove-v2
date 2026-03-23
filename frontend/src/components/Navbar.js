@@ -78,81 +78,48 @@ const Navbar = () => {
     <>
     <nav className="hidden md:block" style={{ position: 'sticky', top: 0, zIndex: 100, backgroundColor: '#1E2A3A', boxShadow: '0 2px 12px rgba(30,42,58,0.3)', overflow: 'visible', contain: 'none' }}>
       <div className="max-w-6xl mx-auto px-4 md:px-8">
-        <div className="flex items-center justify-between h-[88px]">
+        <div className="flex items-center justify-between h-14">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group" data-testid="nav-logo">
-            <img 
-              src="/logo-wordmark.png" 
-              alt="the Honey Groove" 
-              style={{width: '140px', minWidth: '140px'}}
-              className="group-hover:scale-105 transition-all duration-300 object-contain group-hover:drop-shadow-[0_2px_8px_rgba(244,185,66,0.3)]"
+            <img
+              src="/logo-compact-white-gold.png"
+              alt="the Honey Groove"
+              style={{height: '32px', width: 'auto'}}
+              className="group-hover:scale-105 transition-all duration-300 object-contain group-hover:drop-shadow-[0_2px_8px_rgba(212,168,40,0.3)]"
             />
           </Link>
 
           {/* Navigation Links */}
           {user && (
-            <div className="hidden md:flex items-center gap-1">
-              <Link to="/hive" data-testid="nav-hive" className={`nav-honey-link ${isActive('/hive') ? 'nav-active' : ''}`}>
-                <Button
-                  variant="ghost"
-                  style={isActive('/hive') ? { color: '#D4A828', fontWeight: 700, backgroundColor: 'rgba(212,168,40,0.12)' } : { color: 'rgba(255,255,255,0.55)' }}
-                  className="gap-2 hover:bg-white/10"
+            <div className="hidden md:flex items-center gap-0.5">
+              {[
+                { to: '/hive', label: 'The Hive', testId: 'nav-hive' },
+                { to: '/nectar', label: 'Nectar', testId: 'nav-explore', prefetch: '/nectar' },
+                { to: '/collection', label: 'The Vault', testId: 'nav-collection', prefetch: '/collection' },
+                { to: '/honeypot', label: 'Honeypot', testId: 'nav-honeypot', prefetch: '/honeypot' },
+                { to: '/essentials', label: 'Essentials', testId: 'nav-essentials' },
+              ].map(({ to, label, testId, prefetch }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  data-testid={testId}
+                  onMouseEnter={prefetch ? () => handlePrefetch(prefetch) : undefined}
+                  className={`nav-honey-link ${isActive(to) ? 'nav-active' : ''}`}
+                  style={{
+                    fontSize: '11.5px',
+                    fontWeight: isActive(to) ? 700 : 500,
+                    color: isActive(to) ? '#D4A828' : 'rgba(255,255,255,0.55)',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    backgroundColor: isActive(to) ? 'rgba(212,168,40,0.12)' : 'transparent',
+                    textDecoration: 'none',
+                    transition: 'all 0.15s',
+                    whiteSpace: 'nowrap',
+                  }}
                 >
-                  <Home className="w-4 h-4" />
-                  The Hive
-                </Button>
-              </Link>
-              <Link to="/nectar" data-testid="nav-explore" onMouseEnter={() => handlePrefetch('/nectar')} className={`nav-honey-link ${isActive('/nectar') ? 'nav-active' : ''}`}>
-                <Button
-                  variant="ghost"
-                  style={isActive('/nectar') ? { color: '#D4A828', fontWeight: 700, backgroundColor: 'rgba(212,168,40,0.12)' } : { color: 'rgba(255,255,255,0.55)' }}
-                  className="gap-2 hover:bg-white/10"
-                >
-                  <Globe className="w-4 h-4" />
-                  Nectar
-                </Button>
-              </Link>
-              <Link to="/collection" data-testid="nav-collection" onMouseEnter={() => handlePrefetch('/collection')} className={`nav-honey-link ${isActive('/collection') ? 'nav-active' : ''}`}>
-                <Button
-                  variant="ghost"
-                  style={isActive('/collection') ? { color: '#D4A828', fontWeight: 700, backgroundColor: 'rgba(212,168,40,0.12)' } : { color: 'rgba(255,255,255,0.55)' }}
-                  className="gap-2 hover:bg-white/10"
-                >
-                  <Library className="w-4 h-4" />
-                  The Vault
-                </Button>
-              </Link>
-              <Link to="/honeypot" data-testid="nav-honeypot" onMouseEnter={() => handlePrefetch('/honeypot')} className={`nav-honey-link ${isActive('/honeypot') ? 'nav-active' : ''}`}>
-                <Button
-                  variant="ghost"
-                  style={isActive('/honeypot') ? { color: '#D4A828', fontWeight: 700, backgroundColor: 'rgba(212,168,40,0.12)' } : { color: 'rgba(255,255,255,0.55)' }}
-                  className="gap-2 hover:bg-white/10"
-                >
-                  <ShoppingBag className="w-4 h-4" />
-                  The Honeypot
-                </Button>
-              </Link>
-              <Link to="/essentials" data-testid="nav-essentials" className={`nav-honey-link ${isActive('/essentials') ? 'nav-active' : ''}`}>
-                <Button
-                  variant="ghost"
-                  style={isActive('/essentials') ? { color: '#D4A828', fontWeight: 700, backgroundColor: 'rgba(212,168,40,0.12)' } : { color: 'rgba(255,255,255,0.55)' }}
-                  className="gap-2 hover:bg-white/10"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  Essentials
-                </Button>
-              </Link>
-              <Button
-                variant="ghost"
-                className="gap-2 hover:bg-white/10"
-                style={{ color: 'rgba(255,255,255,0.55)' }}
-                onClick={() => navigate('/search')}
-                data-testid="nav-search-btn"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.55 }}>
-                  <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-              </Button>
+                  {label}
+                </Link>
+              ))}
             </div>
           )}
 
