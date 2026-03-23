@@ -336,7 +336,8 @@ async def propose_trade(data: TradePropose, user: Dict = Depends(require_auth)):
     responder = await db.users.find_one({"id": listing["user_id"]}, {"_id": 0})
     if responder and responder.get("email"):
         sweetener = str(data.boot_amount) if data.boot_amount else ""
-        tpl = email_tpl.new_trade_offer(responder.get("username", ""), u.get("username", ""), listing.get("album", "your listing"), record.get("title", "a record"), sweetener, TRADE_URL)
+        proposer_profile_url = f"{FRONTEND_URL}/profile/{u.get('username', '')}"
+        tpl = email_tpl.new_trade_offer(responder.get("username", ""), u.get("username", ""), listing.get("album", "your listing"), record.get("title", "a record"), sweetener, TRADE_URL, their_album_art_url=record.get("cover_url", ""), your_album_art_url=listing.get("cover_url", ""), profile_url=proposer_profile_url)
         await send_email_fire_and_forget(responder["email"], tpl["subject"], tpl["html"])
 
     return await build_trade_response(trade_doc)

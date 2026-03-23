@@ -258,13 +258,13 @@ def _build_weekly_wax_html(data: dict) -> str:
     import os
     FRONTEND = os.environ.get("FRONTEND_URL", "https://thehoneygroove.com")
 
-    AMBER = "color:#C8861A;"
-    MUTED = "color:#8A6B4A;font-size:13px;"
-    GREETING = "color:#2A1A06;font-size:15px;"
-    SEC_HEAD = "font-family:'Playfair Display',Georgia,serif;font-weight:700;color:#2A1A06;font-size:18px;margin:0 0 12px 0;"
-    STAT = "color:#2A1A06;font-size:14px;line-height:1.8;"
-    STRONG = "font-weight:700;color:#2A1A06;"
-    DIVIDER = '<div style="height:1px;background:#C8861A;opacity:0.2;margin:28px 0;"></div>'
+    AMBER = "color:#D4A828;"
+    MUTED = "color:#3A4D63;font-size:13px;"
+    GREETING = "color:#1E2A3A;font-size:13px;"
+    SEC_HEAD = "font-family:'Playfair Display',Georgia,serif;font-weight:700;color:#1E2A3A;font-size:18px;margin:0 0 12px 0;"
+    STAT = "color:#1E2A3A;font-size:13px;line-height:1.8;"
+    STRONG = "font-weight:700;color:#1E2A3A;"
+    DIVIDER = '<div style="height:1px;background:#D4A828;opacity:0.2;margin:28px 0;"></div>'
 
     first_name = data.get("first_name", "collector")
     spins = data.get("weekly_spins_count", 0)
@@ -330,7 +330,7 @@ def _build_weekly_wax_html(data: dict) -> str:
 
     <p style="{STAT}">Your collection is currently valued at:</p>
 
-    <p style="font-family:'Playfair Display',Georgia,serif;font-weight:700;color:#C8861A;font-size:28px;margin:8px 0 16px 0;">${total_value:,.0f}</p>
+    <p style="font-family:'Playfair Display',Georgia,serif;font-weight:700;color:#D4A828;font-size:28px;margin:8px 0 16px 0;">${total_value:,.0f}</p>
 
     <p style="{STAT}">
     &bull; records valued: <strong style="{STRONG}">{valued_count}</strong> of {total_count}<br>"""

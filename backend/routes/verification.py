@@ -215,11 +215,11 @@ async def approve_verification(request_id: str, user: Dict = Depends(require_adm
         try:
             from templates.base import wrap_email
             html = wrap_email(f"""
-                <h2 style="color:#D98C2F;font-family:serif;">You're Verified</h2>
+                <p style="font-family:'Playfair Display',Georgia,serif;font-weight:700;color:#1E2A3A;font-size:22px;margin:0 0 12px 0;">You&#8217;re Verified</p>
                 <p>Congratulations, <strong>@{target_user.get('username', 'collector')}</strong>!</p>
                 <p>Your Golden Hive ID has been approved. You now have a trusted collector badge and access to premium features.</p>
                 <p>Welcome to the Inner Circle.</p>
-                <p style="color:#8A6B4A;font-size:12px;">— The Honey Groove Team</p>
+                <p style="color:#3A4D63;font-size:12px;">— The Honey Groove Team</p>
             """)
             asyncio.create_task(send_email(target_user["email"], "The Honey Groove: You're Verified.", html))
         except Exception as e:
@@ -266,12 +266,12 @@ async def deny_verification(request_id: str, body: Dict = {}, user: Dict = Depen
             from templates.base import wrap_email
             reason_html = f'<p style="background:#FFF8E1;padding:12px;border-radius:8px;border-left:4px solid #FFB300;"><strong>Reason:</strong> {reason}</p>' if reason else ''
             html = wrap_email(f"""
-                <h2 style="color:#D98C2F;font-family:serif;">Verification Update</h2>
+                <p style="font-family:'Playfair Display',Georgia,serif;font-weight:700;color:#1E2A3A;font-size:22px;margin:0 0 12px 0;">Verification Update</p>
                 <p>Hi <strong>@{target_user.get('username', 'collector')}</strong>,</p>
-                <p>We weren't able to verify your Golden Hive ID at this time.</p>
+                <p>We weren&#8217;t able to verify your Golden Hive ID at this time.</p>
                 {reason_html}
                 <p>You can re-submit your verification from your profile settings. If you have any questions, reach out to our support team.</p>
-                <p style="color:#8A6B4A;font-size:12px;">— The Honey Groove Team</p>
+                <p style="color:#3A4D63;font-size:12px;">— The Honey Groove Team</p>
             """)
             asyncio.create_task(send_email(target_user["email"], "The Honey Groove: Verification Update", html))
         except Exception as e:

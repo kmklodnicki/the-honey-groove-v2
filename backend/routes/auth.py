@@ -335,16 +335,16 @@ async def forgot_password(data: dict, request: Request):
 
     from templates.base import wrap_email
     body = f"""
-    <p style="font-size:16px;color:#2A1A06;line-height:1.6;">
+    <p style="font-size:13px;color:#1E2A3A;line-height:1.7;">
       Hi <strong>{user.get('username', '')}</strong>, we received a request to reset your password.
     </p>
     <div style="text-align:center;margin:28px 0;">
-      <a href="{reset_url}" style="display:inline-block;padding:14px 32px;background:#E8A820;color:#2A1A06;text-decoration:none;border-radius:999px;font-weight:600;font-size:16px;">
+      <a href="{reset_url}" style="display:inline-block;padding:12px 32px;background:#D4A828;color:#FFFFFF;text-decoration:none;border-radius:8px;font-weight:700;font-size:13px;font-family:'DM Sans',-apple-system,sans-serif;box-shadow:0 2px 4px rgba(212,168,40,0.28),0 4px 12px rgba(212,168,40,0.20);">
         Reset My Password
       </a>
     </div>
-    <p style="font-size:13px;color:#8A6B4A;text-align:center;">
-      This link expires in 1 hour. If you didn't request this, you can safely ignore this email.
+    <p style="font-size:12px;color:#3A4D63;text-align:center;">
+      This link expires in 1 hour. If you didn&#8217;t request this, you can safely ignore this email.
     </p>
     """
     html = wrap_email(body)
@@ -695,16 +695,16 @@ async def resend_verification(user: Dict = Depends(require_auth)):
     verify_url = f"{FRONTEND_URL}/verify-email?token={token}"
     from templates.base import wrap_email
     body = f"""
-    <p style="font-size:16px;color:#2A1A06;line-height:1.6;">
+    <p style="font-size:13px;color:#1E2A3A;line-height:1.7;">
       Click the button below to verify your email address and start exploring.
     </p>
     <div style="text-align:center;margin:28px 0;">
-      <a href="{verify_url}" style="display:inline-block;padding:14px 32px;background:#E8A820;color:#2A1A06;text-decoration:none;border-radius:999px;font-weight:600;font-size:16px;">
+      <a href="{verify_url}" style="display:inline-block;padding:12px 32px;background:#D4A828;color:#FFFFFF;text-decoration:none;border-radius:8px;font-weight:700;font-size:13px;font-family:'DM Sans',-apple-system,sans-serif;box-shadow:0 2px 4px rgba(212,168,40,0.28),0 4px 12px rgba(212,168,40,0.20);">
         Verify My Email
       </a>
     </div>
-    <p style="font-size:13px;color:#8A6B4A;text-align:center;">
-      This link expires in 24 hours. If you didn't create an account, you can ignore this email.
+    <p style="font-size:12px;color:#3A4D63;text-align:center;">
+      This link expires in 24 hours. If you didn&#8217;t create an account, you can ignore this email.
     </p>
     """
     html = wrap_email(body)

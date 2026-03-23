@@ -9,7 +9,7 @@ FRONTEND = os.environ.get("FRONTEND_URL", "https://thehoneygroove.com")
 H = "font-family:'Playfair Display',Georgia,serif;font-weight:700;color:#1E2A3A;"
 AMBER = "color:#D4A828;"
 MUTED = "color:#7A8694;font-size:13px;"
-GREETING = "color:#1E2A3A;font-size:15px;"
+GREETING = "color:#1E2A3A;font-size:13px;"
 BTN = "display:inline-block;padding:12px 28px;background:#D4A828;color:#FFFFFF;text-decoration:none;border-radius:8px;font-size:14px;font-weight:700;font-family:'DM Sans',-apple-system,sans-serif;box-shadow:0 2px 4px rgba(212,168,40,0.28),0 4px 12px rgba(212,168,40,0.20);"
 SIG = f'<p style="margin:24px 0 0 0;{MUTED}">— Katie, founder of the Honey Groove<sup style="font-size:0.6em">™</sup></p>'
 SIG_SHORT = f'<p style="margin:24px 0 0 0;{MUTED}">— Katie, founder</p>'
@@ -46,17 +46,109 @@ def beta_waitlist(first_name: str, unsub_url: str = "") -> dict:
     }
 
 
-def weekly_wax_ready(username: str, personality_label: str, top_artist: str, top_spins: int, closing_line: str, unsub_url: str = "") -> dict:
+def gold_welcome(username: str) -> dict:
+    FEATURE_DOT = "display:inline-block;width:8px;height:8px;border-radius:50%;background:#D4A828;margin-right:10px;vertical-align:middle;flex-shrink:0;"
+    features = [
+        ("Vault Analytics", "Full value trends, genre breakdowns, and collection insights"),
+        ("4% Marketplace Fees", "Reduced from 6% on every sale through the Honeypot"),
+        ("Unlimited Rooms", "Join every room that matches your taste, plus create your own"),
+        ("Price Alerts", "Get notified when Dream List records hit your target price"),
+        ("Gold Collector Badge", "Visible on your profile, posts, and share cards"),
+    ]
+    feature_rows = ""
+    for title, desc in features:
+        feature_rows += f"""
+    <div style="display:flex;align-items:flex-start;padding:12px 16px;background:#FFFBF2;border-radius:8px;border:1px solid #E5DBC8;margin:0 0 8px 0;">
+        <span style="{FEATURE_DOT}margin-top:5px;"></span>
+        <div>
+            <p style="color:#1E2A3A;font-size:13px;font-weight:700;margin:0 0 2px 0;">{title}</p>
+            <p style="color:#3A4D63;font-size:12px;margin:0;">{desc}</p>
+        </div>
+    </div>"""
     body = f"""
-    <p style="{GREETING}">Hey {username},</p>
-    <p>Your weekly listening report just dropped.</p>
-    <div style="text-align:center;padding:24px 16px;margin:16px 0;background:linear-gradient(135deg,#FFFBF2,#F3EBE0);border-radius:16px;border:1px solid #F3EBE0;">
-        <p style="{H}font-size:20px;font-style:italic;line-height:1.5;margin:0;{AMBER}">"{closing_line}"</p>
+    <div style="background:#1E2A3A;border-radius:12px;padding:24px 20px;text-align:center;margin:0 0 24px 0;">
+        <p style="margin:0 0 12px 0;font-size:10px;font-style:italic;color:#D4A828;font-family:'DM Sans',-apple-system,sans-serif;">the</p>
+        <p style="margin:0 0 14px 0;font-size:20px;font-weight:700;font-family:'Playfair Display',Georgia,serif;"><span style="color:#FFFFFF;">Honey</span><span style="color:#D4A828;">Groove</span></p>
+        <span style="display:inline-block;padding:4px 14px;background:rgba(212,168,40,0.15);color:#D4A828;border:1px solid rgba(212,168,40,0.25);border-radius:50px;font-size:10px;font-weight:700;font-family:'DM Sans',-apple-system,sans-serif;letter-spacing:0.08em;">GOLD COLLECTOR</span>
     </div>
-    <p>This week you were: <strong style="{AMBER}">{personality_label}</strong></p>
-    <p><strong>{top_artist}</strong> was your most spun artist with <strong>{top_spins}</strong> spins.</p>
+    <p style="{H}font-size:26px;text-align:center;margin:0 0 6px 0;">Welcome to Gold</p>
+    <p style="color:#3A4D63;font-size:13px;text-align:center;margin:0 0 24px 0;">You just unlocked the full Honey Groove experience.</p>
+    {feature_rows}
     <div style="text-align:center;margin:24px 0;">
-        <a href="{FRONTEND}/wax-report" style="{BTN}">read your full report</a>
+        <a href="{FRONTEND}/gold" style="{BTN}">Explore Your Gold Features</a>
+    </div>
+    """
+    return {
+        "subject": "You're Gold. Welcome to the full experience. \U0001F36F",
+        "html": wrap_email(body),
+    }
+
+
+def release_updates(sections: list, date_str: str = "") -> dict:
+    """sections: list of dicts with 'title' (str) and 'items' (list of str)"""
+    date_line = f'<p style="color:#3A4D63;font-size:12px;text-align:center;margin:-8px 0 20px 0;">{date_str}</p>' if date_str else ""
+    sections_html = ""
+    for section in sections:
+        items_html = "".join(
+            f'<li style="color:#1E2A3A;font-size:13px;line-height:1.7;margin:0 0 4px 0;">{item}</li>'
+            for item in section.get("items", [])
+        )
+        sections_html += f"""
+    <p style="{AMBER}font-size:13px;font-weight:700;margin:16px 0 8px 0;">{section["title"]}</p>
+    <ul style="margin:0 0 8px 0;padding-left:20px;">{items_html}</ul>"""
+    body = f"""
+    <p style="{H}font-size:26px;text-align:center;margin:0 0 6px 0;">Release Updates</p>
+    {date_line}
+    <p style="{GREETING}">Hey Hive,</p>
+    <p>Big week. Here&#8217;s what&#8217;s new:</p>
+    {sections_html}
+    <div style="height:1px;background:#E5DBC8;margin:24px 0;"></div>
+    <p style="font-style:italic;color:#3A4D63;font-size:13px;">More coming soon. Thank you for being here while we build this together.</p>
+    <p style="margin:16px 0 2px 0;font-weight:700;color:#1E2A3A;">Katie</p>
+    <p style="margin:0;font-style:italic;color:#3A4D63;font-size:12px;">Founder, The Honey Groove</p>
+    """
+    return {
+        "subject": "What&#8217;s new in the Hive. \U0001F41D",
+        "html": wrap_email(body),
+    }
+
+
+def weekly_wax_ready(username: str, personality_label: str, top_artist: str, top_spins: int, closing_line: str, unsub_url: str = "", date_range: str = "", records_added: int = 0, avg_value: str = "") -> dict:
+    date_line = f'<p style="color:#3A4D63;font-size:12px;margin:4px 0 0 0;">{date_range}</p>' if date_range else ""
+    body = f"""
+    <div style="text-align:center;padding:20px 16px 16px;background:linear-gradient(135deg,#FFFBF2,#F3EBE0);border-radius:12px;border:1px solid #E5DBC8;margin:0 0 20px 0;">
+        <p style="color:#D4A828;font-size:10px;font-weight:700;letter-spacing:0.12em;margin:0;font-family:'DM Sans',-apple-system,sans-serif;">YOUR WEEK IN WAX</p>
+        {date_line}
+    </div>
+    <div style="text-align:center;padding:24px 20px;background:#FFFFFF;border-radius:12px;border:1px solid #E5DBC8;margin:0 0 16px 0;">
+        <p style="color:#3A4D63;font-size:11px;margin:0 0 8px 0;">This week you were</p>
+        <p style="{H}font-size:24px;margin:0 0 10px 0;">{personality_label}</p>
+        <p style="{H}font-size:13px;font-style:italic;font-weight:400;{AMBER}margin:0;">&#8220;{closing_line}&#8221;</p>
+    </div>
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px 0;">
+    <tr>
+        <td width="33%" style="padding:0 4px 0 0;">
+            <div style="background:#FFFBF2;border-radius:10px;border:1px solid #E5DBC8;padding:14px 8px;text-align:center;">
+                <p style="{AMBER}font-size:22px;font-weight:700;font-family:'Playfair Display',Georgia,serif;margin:0 0 4px 0;">{records_added}</p>
+                <p style="color:#3A4D63;font-size:9px;font-weight:700;letter-spacing:0.08em;margin:0;text-transform:uppercase;">Records Added</p>
+            </div>
+        </td>
+        <td width="33%" style="padding:0 2px;">
+            <div style="background:#FFFBF2;border-radius:10px;border:1px solid #E5DBC8;padding:14px 8px;text-align:center;">
+                <p style="{AMBER}font-size:22px;font-weight:700;font-family:'Playfair Display',Georgia,serif;margin:0 0 4px 0;">{top_spins}</p>
+                <p style="color:#3A4D63;font-size:9px;font-weight:700;letter-spacing:0.08em;margin:0;text-transform:uppercase;">Total Spins</p>
+            </div>
+        </td>
+        <td width="33%" style="padding:0 0 0 4px;">
+            <div style="background:#FFFBF2;border-radius:10px;border:1px solid #E5DBC8;padding:14px 8px;text-align:center;">
+                <p style="{AMBER}font-size:22px;font-weight:700;font-family:'Playfair Display',Georgia,serif;margin:0 0 4px 0;">{avg_value}</p>
+                <p style="color:#3A4D63;font-size:9px;font-weight:700;letter-spacing:0.08em;margin:0;text-transform:uppercase;">Avg. Value</p>
+            </div>
+        </td>
+    </tr>
+    </table>
+    <div style="text-align:center;margin:24px 0;">
+        <a href="{FRONTEND}/wax-report" style="{BTN}">View Full Report</a>
     </div>
     """
     return {
@@ -96,16 +188,47 @@ def invite_code(first_name: str, invite_code: str) -> dict:
 
 
 def welcome(username: str) -> dict:
+    STEP = "display:inline-block;width:24px;height:24px;line-height:24px;border-radius:50%;background:#D4A828;color:#FFFFFF;font-size:12px;font-weight:700;text-align:center;font-family:'DM Sans',-apple-system,sans-serif;vertical-align:middle;margin-right:10px;flex-shrink:0;"
     body = f"""
+    <div style="text-align:center;margin:0 0 20px 0;">
+        <p style="{H}font-size:28px;margin:0 0 6px 0;">Welcome to the Hive</p>
+        <p style="color:#3A4D63;font-size:13px;margin:0;">Your vinyl collection just found its home.</p>
+    </div>
     <p style="{GREETING}">Hey {username},</p>
-    <p style="{H}font-size:24px;margin:16px 0 8px 0;">You made it.</p>
-    <p>The Honey Groove<sup style="font-size:0.6em">™</sup> is yours now.</p>
-    <p style="margin:16px 0 4px 0;"><strong>A few things to get you started:</strong></p>
-    <p><strong style="{AMBER}">Add your collection.</strong> Search by artist or album, or import directly from Discogs if you already have one there.</p>
-    <p><strong style="{AMBER}">Drop the needle.</strong> Post your first Now Spinning and let the hive know what's on the turntable.</p>
-    <p><strong style="{AMBER}">Hunt something down.</strong> Add your most wanted record to your Dream List and we'll match you the moment it appears.</p>
-    <p>The hive is just getting started. Glad you're here.</p>
-    {SIG}
+    <p>Welcome to The Honey Groove. You just joined a community of collectors who care about the music they own, not just the music they stream.</p>
+    <p style="margin:16px 0 12px 0;">Here&#8217;s how to get started:</p>
+    <table width="100%" cellpadding="0" cellspacing="0">
+    <tr><td style="padding:0 0 10px 0;">
+        <table cellpadding="0" cellspacing="0"><tr>
+        <td style="vertical-align:top;padding-right:10px;"><div style="{STEP}">1</div></td>
+        <td style="color:#1E2A3A;font-size:13px;line-height:1.6;vertical-align:middle;">Import your collection from Discogs or add records manually</td>
+        </tr></table>
+    </td></tr>
+    <tr><td style="padding:0 0 10px 0;">
+        <table cellpadding="0" cellspacing="0"><tr>
+        <td style="vertical-align:top;padding-right:10px;"><div style="{STEP}">2</div></td>
+        <td style="color:#1E2A3A;font-size:13px;line-height:1.6;vertical-align:middle;">Share what you&#8217;re spinning in The Hive</td>
+        </tr></table>
+    </td></tr>
+    <tr><td style="padding:0 0 10px 0;">
+        <table cellpadding="0" cellspacing="0"><tr>
+        <td style="vertical-align:top;padding-right:10px;"><div style="{STEP}">3</div></td>
+        <td style="color:#1E2A3A;font-size:13px;line-height:1.6;vertical-align:middle;">Answer the Daily Prompt and keep your streak alive</td>
+        </tr></table>
+    </td></tr>
+    <tr><td style="padding:0 0 10px 0;">
+        <table cellpadding="0" cellspacing="0"><tr>
+        <td style="vertical-align:top;padding-right:10px;"><div style="{STEP}">4</div></td>
+        <td style="color:#1E2A3A;font-size:13px;line-height:1.6;vertical-align:middle;">Explore rooms and find collectors who share your taste</td>
+        </tr></table>
+    </td></tr>
+    </table>
+    <div style="text-align:center;margin:24px 0;">
+        <a href="{FRONTEND}" style="{BTN}">Open The Honey Groove</a>
+    </div>
+    <p style="margin:20px 0 4px 0;">See you in the Hive,</p>
+    <p style="margin:0 0 2px 0;font-weight:700;color:#1E2A3A;">Katie</p>
+    <p style="margin:0;font-style:italic;color:#3A4D63;font-size:12px;">Founder, The Honey Groove</p>
     """
     return {
         "subject": "Welcome to the hive. \U0001F36F",
@@ -177,15 +300,40 @@ def wantlist_match(username: str, album: str, artist: str, seller: str, price: s
     }
 
 
-def new_trade_offer(username: str, proposer: str, record_name: str, their_record: str, sweetener: str, trade_url: str) -> dict:
-    sweetener_line = f'<p style="{AMBER}font-weight:600;">Sweetener: + ${sweetener}</p>' if sweetener else ""
+def new_trade_offer(username: str, proposer: str, record_name: str, their_record: str, sweetener: str, trade_url: str, their_album_art_url: str = "", your_album_art_url: str = "", profile_url: str = "") -> dict:
+    sweetener_line = f'<p style="text-align:center;{AMBER}font-weight:600;font-size:12px;margin:8px 0 0 0;">+ ${sweetener} sweetener</p>' if sweetener else ""
+    ALBUM_ART = "width:80px;height:80px;object-fit:cover;border-radius:8px;display:block;"
+    ALBUM_PLACEHOLDER = f"width:80px;height:80px;border-radius:8px;background:#F3EBE0;display:flex;align-items:center;justify-content:center;"
+    their_art = f'<img src="{their_album_art_url}" alt="{their_record}" style="{ALBUM_ART}" />' if their_album_art_url else f'<div style="{ALBUM_PLACEHOLDER}"></div>'
+    your_art = f'<img src="{your_album_art_url}" alt="{record_name}" style="{ALBUM_ART}" />' if your_album_art_url else f'<div style="{ALBUM_PLACEHOLDER}"></div>'
+    BTN_OUTLINE = f"display:inline-block;padding:12px 24px;background:transparent;color:#1E2A3A;text-decoration:none;border-radius:8px;font-size:13px;font-weight:700;font-family:'DM Sans',-apple-system,sans-serif;border:1.5px solid #1E2A3A;"
+    profile_btn = f'<a href="{profile_url}" style="{BTN_OUTLINE}">View Profile</a>' if profile_url else ""
     body = f"""
-    <p style="{GREETING}">Hey {username},</p>
-    <p><strong>{proposer}</strong> proposed a trade for your <strong>{record_name}</strong>.</p>
-    <p>They're offering: <strong>{their_record}</strong></p>
-    {sweetener_line}
+    <p style="{H}font-size:22px;text-align:center;margin:0 0 20px 0;">You&#8217;ve got a trade offer</p>
+    <div style="background:#FFFBF2;border-radius:12px;border:1px solid #E5DBC8;padding:20px 16px;margin:0 0 20px 0;">
+        <table width="100%" cellpadding="0" cellspacing="0">
+        <tr>
+            <td width="44%" style="text-align:center;vertical-align:top;">
+                <p style="color:#3A4D63;font-size:9px;font-weight:700;letter-spacing:0.1em;margin:0 0 10px 0;text-transform:uppercase;">They Send</p>
+                <div style="margin:0 auto 10px auto;width:80px;">{their_art}</div>
+                <p style="{H}font-size:12px;margin:0 0 2px 0;">{their_record}</p>
+                <p style="color:#3A4D63;font-size:11px;font-style:italic;margin:0;">@{proposer}</p>
+            </td>
+            <td width="12%" style="text-align:center;vertical-align:middle;padding-top:30px;">
+                <span style="color:#D4A828;font-size:18px;">&#8644;</span>
+            </td>
+            <td width="44%" style="text-align:center;vertical-align:top;">
+                <p style="color:#3A4D63;font-size:9px;font-weight:700;letter-spacing:0.1em;margin:0 0 10px 0;text-transform:uppercase;">You Send</p>
+                <div style="margin:0 auto 10px auto;width:80px;">{your_art}</div>
+                <p style="{H}font-size:12px;margin:0 0 2px 0;">{record_name}</p>
+            </td>
+        </tr>
+        </table>
+        <p style="text-align:center;color:#3A4D63;font-size:12px;margin:12px 0 0 0;">from @{proposer}</p>
+        {sweetener_line}
+    </div>
     <div style="text-align:center;margin:20px 0;">
-        <a href="{trade_url}" style="{BTN}">view the offer</a>
+        <a href="{trade_url}" style="{BTN}margin-right:8px;">Review Trade</a>{profile_btn}
     </div>
     """
     return {
