@@ -71,11 +71,11 @@ class MaintenanceToggle(BaseModel):
 @router.get("/status/maintenance")
 async def get_maintenance_status():
     """Public endpoint — no auth required. Returns current maintenance mode state.
-    Hardcoded window: 2026-03-22 23:00 UTC – 2026-03-23 10:00 UTC (until 6am EDT)."""
+    Hardcoded window: 2026-03-22 23:00 UTC – 2026-03-23 18:00 UTC (until 2pm EDT)."""
     now = datetime.now(timezone.utc)
-    # EDT = UTC-4. Window: ~11pm UTC Mar 22 → 6am EDT (10am UTC) Mar 23.
+    # EDT = UTC-4. Window: ~11pm UTC Mar 22 → 2pm EDT (18:00 UTC) Mar 23.
     window_start = datetime(2026, 3, 22, 23, 0, 0, tzinfo=timezone.utc)
-    window_end   = datetime(2026, 3, 23, 10, 0, 0, tzinfo=timezone.utc)   # 6am EDT
+    window_end   = datetime(2026, 3, 23, 18, 0, 0, tzinfo=timezone.utc)   # 2pm EDT
     if window_start <= now < window_end:
         return {"maintenance_mode": True}
     doc = await db.platform_settings.find_one({"key": "maintenance_mode"}, {"_id": 0})

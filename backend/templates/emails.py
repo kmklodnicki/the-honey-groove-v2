@@ -108,7 +108,7 @@ def release_updates(sections: list, date_str: str = "") -> dict:
     <p style="margin:0;font-style:italic;color:#3A4D63;font-size:12px;">Founder, The Honey Groove</p>
     """
     return {
-        "subject": "What&#8217;s new in the Hive. \U0001F41D",
+        "subject": "What\u2019s new in the Hive. \U0001F41D",
         "html": wrap_email(body),
     }
 
