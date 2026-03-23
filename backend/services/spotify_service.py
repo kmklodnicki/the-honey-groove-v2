@@ -26,12 +26,39 @@ _request_lock = asyncio.Lock()
 _last_request_at: float = 0.0
 
 # ── Circuit breaker ───────────────────────────────────────────────────────────
-# Trips on any 429. Cooldown = max(retry_after, base) with exponential backoff
-# each consecutive trip. Resets trip count after a successful request.
-_CIRCUIT_BASE    = 3 * 60   # 3 min base cooldown
-_CIRCUIT_MAX     = 20 * 60  # 20 min ceiling
-_circuit_open_until: float = 0.0
-_circuit_trip_count: int = 0
+# Persists to disk so restarts don't reset state and re-trip Spotify.
+_CIRCUIT_BASE      = 3 * 60    # 3 min base cooldown
+_CIRCUIT_MAX       = 20 * 60   # 20 min ceiling
+_CIRCUIT_STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".spotify_circuit.json")
+
+def _load_circuit_state() -> tuple[float, int]:
+    """Load open_until (wall time) and trip count from disk. Returns (0.0, 0) if clean."""
+    try:
+        import json
+        with open(_CIRCUIT_STATE_FILE) as f:
+            d = json.load(f)
+        return float(d.get("open_until", 0)), int(d.get("trip_count", 0))
+    except Exception:
+        return 0.0, 0
+
+def _save_circuit_state(open_until_wall: float, trip_count: int) -> None:
+    try:
+        import json
+        with open(_CIRCUIT_STATE_FILE, "w") as f:
+            json.dump({"open_until": open_until_wall, "trip_count": trip_count}, f)
+    except Exception:
+        pass
+
+# Load persisted state on import — survives restarts
+_wall_open_until, _circuit_trip_count = _load_circuit_state()
+# Convert wall time back to monotonic offset
+_circuit_open_until: float = (
+    time.monotonic() + (_wall_open_until - time.time())
+    if _wall_open_until > time.time() else 0.0
+)
+if _circuit_open_until > time.monotonic():
+    remaining = (_circuit_open_until - time.monotonic()) / 60
+    logger.warning(f"Spotify circuit breaker still open from previous run — {remaining:.1f} min remaining")
 
 
 def _trip_circuit(retry_after: int = 0) -> None:
@@ -40,6 +67,7 @@ def _trip_circuit(retry_after: int = 0) -> None:
     base = _CIRCUIT_BASE * (2 ** (_circuit_trip_count - 1))  # 3, 6, 12, 20, 20...
     duration = min(max(retry_after + 60, base), _CIRCUIT_MAX)
     _circuit_open_until = time.monotonic() + duration
+    _save_circuit_state(time.time() + duration, _circuit_trip_count)
     logger.warning(
         f"Spotify circuit breaker TRIPPED (trip #{_circuit_trip_count}) — "
         f"blocked for {duration / 60:.1f} min (Retry-After={retry_after}s)"
@@ -50,6 +78,7 @@ def _reset_circuit() -> None:
     global _circuit_trip_count
     if _circuit_trip_count > 0:
         _circuit_trip_count = 0
+        _save_circuit_state(0.0, 0)
         logger.info("Spotify circuit breaker reset after successful request")
 
 
